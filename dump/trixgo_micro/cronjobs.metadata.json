@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"ffb1486fa6a843719b223f7c2749b6c8","collectionName":"cronjobs"}
