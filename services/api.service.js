@@ -61,10 +61,7 @@ module.exports = {
 			// get routes from external file - merged with subproject if applicable
 			// sppf.subprojectMergeRoutes(apiV1, path.resolve(resourcesDirectory+"/routes/apiV1") ),
 		
-			// apiV1, // routing
-			apiV1_Authoriz,
-			apiV1_Authen,
-			apiV1_Member,
+			apiV1, // routing
 		
 		],
 

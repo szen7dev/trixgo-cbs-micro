@@ -27,26 +27,6 @@ module.exports = {
 
 	aliases: {
 
-		//--------------------------account--------------------------//
-
-		[`GET ${CF_ROUTINGS_ACCOUNT.ORIGIN_APP}`] : 
-		[`${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.GET_LIST}`],
-
-		//--------------------------app--------------------------//
-
-		// /app/create-app ( demo tạo app )
-		[`POST ${CF_ROUTINGS_ACCOUNT.CREATE_APP}`] : 
-		[  `${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.CREARE_APP}`],
-
-		// /app/update-app/:appID ( demo update app )
-		[`POST ${CF_ROUTINGS_ACCOUNT.UPDATE_APP}`] : 
-		[  `${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.UPDATE_APP}`],
-
-		
-		// /app/add-user-app ( demo add user in app )
-		[`POST ${CF_ROUTINGS_ACCOUNT.ADD_USER_APP}`] : 
-		[  `${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.INSER_MEMBER_IN_APP}`],
-
 		//--------------------------categories--------------------------//
 
 		[`POST ${CF_ROUTINGS_CATEGORIES.ORIGIN_APP}`] : 

@@ -8,7 +8,6 @@ const jwt                           = require('jsonwebtoken');
 const cfJwt                         = require('../../config/cf_jws');
 const ACCOUNT_COLL                  = require('../../database/test/account_coll')
 const { getAppIDByURLRequest }      = require('../../utils/utils');
-const APP_USER_MODEL                = require('../../models/core/app-user').MODEL
  /**
  * Kiểm tra quyền truy cập ứng dụng
  * 1. User của công ty được cấp phép truy cập app (AppUser)
@@ -32,7 +31,6 @@ const checkUserValidAccessApp = async (req, res, next) => {
         /**
          * CHECK USER VALID
          */
-        let signalUserValidAccessApp = await APP_USER_MODEL.checkExistRecord({ userID, appID });
         
         return signalUserValidAccessApp;
     } catch (error) {

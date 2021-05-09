@@ -4,16 +4,12 @@
  */
 let { 
 	CF_ROUTINGS, 
-	CF_ROUTINGS_ACCOUNT,
 	CF_ROUTINGS_PRODUCTS,
-	CF_ROUTINGS_POSTS,
 	CF_ROUTINGS_CATEGORIES,
 } 							= require('../../config/constants/routings');
 let { 
 	CF_ACTIONS,
-    CF_ACTIONS_ACCOUNT,
     CF_ACTIONS_PRODUCTS,
-    CF_ACTIONS_POSTS,
 	CF_ACTIONS_CATEGORIES,
 } 							= require('../../config/constants/actions');
 module.exports = {
@@ -29,17 +25,6 @@ module.exports = {
 
 	aliases: {
 
-		//--------------------------account----------------------------//
-
-		[`POST ${CF_ROUTINGS_ACCOUNT.REGISTER}`] : 
-		[`${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.REGISTER}`],
-
-		[`POST ${CF_ROUTINGS_ACCOUNT.LOGIN}`] : 
-		[`${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.LOGIN}`],
-
-		[`GET ${CF_ROUTINGS_ACCOUNT.LOGOUT}`] : 
-		[`${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.LOGOUT}`],
-
 		//--------------------------categories-------------------------//
 
 		[`GET ${CF_ROUTINGS_CATEGORIES.ORIGIN_APP}`] : 
@@ -49,8 +34,6 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_PRODUCTS.ORIGIN_APP}`] : 
 		[`${CF_ACTIONS.PRODUCTS}.${CF_ACTIONS_PRODUCTS.GET_LIST}`],
-
-		"GET test"	: "test.actionTest",
 
 	},
 

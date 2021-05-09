@@ -4,16 +4,11 @@
  */
 let { 
 	CF_ROUTINGS, 
-	CF_ROUTINGS_ACCOUNT,
 	CF_ROUTINGS_PRODUCTS,
-	CF_ROUTINGS_POSTS,
 } 							= require('../../config/constants/routings');
 let { 
 	CF_ACTIONS,
-    CF_ACTIONS_ACCOUNT,
     CF_ACTIONS_PRODUCTS,
-    CF_ACTIONS_POSTS,
-	CF_ACTIONS_CRONJOB
 } 							= require('../../config/constants/actions');
 module.exports = {
 	path: CF_ROUTINGS.MAIN,
@@ -27,11 +22,6 @@ module.exports = {
 	],
 
 	aliases: {
-
-		//--------------------------account--------------------------//
-
-		[`POST  ${CF_ROUTINGS_ACCOUNT.UPDATE_INFO}`] : 
-		[`${CF_ACTIONS.ACCOUNT}.${CF_ACTIONS_ACCOUNT.UPDATE_INFO}`],
 
 		//--------------------------categories--------------------------//
 
