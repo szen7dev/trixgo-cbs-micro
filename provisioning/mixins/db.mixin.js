@@ -31,11 +31,11 @@ module.exports = function(collection) {
 	// --- NeDB fallback DB adapter
 
 	// Create data folder
-	mkdir(path.resolve("./data"));
+	mkdir(path.resolve("../data"));
 
 	return {
 		mixins: [DbService],
-		adapter: new DbService.MemoryAdapter({ filename: `./data/${collection}.db` }),
+		adapter: new DbService.MemoryAdapter({ filename: `../data/${collection}.db` }),
 
 		methods: {
 			entityChanged(type, json, ctx) {

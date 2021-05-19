@@ -51,7 +51,7 @@ module.exports = {
     getList: {
         async handler(ctx) {
             try {
-                let infoProduct = await PRODUCT_MODEL.getList(ctx);
+                let infoProduct = await PRODUCT_MODEL.getList();
                 return infoProduct;
             } catch (error) {
                 return(error);

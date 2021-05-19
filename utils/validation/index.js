@@ -3,7 +3,6 @@
 const _ = require("lodash");
 
 module.exports = {
-
     CHECK_PASSWOED : 
     {
         async check(value, errors, schema) {

@@ -20,8 +20,8 @@ module.exports = {
 	path: CF_ROUTINGS.API,
 
 	// authentication: true,
-
 	// authorization: true,
+
 	// Cho phép truy cập tất cả các services
 	whitelist: [
 		"**",
@@ -41,7 +41,6 @@ module.exports = {
 		[CHECK_AUTHORIZATION,`${CF_ACTIONS.CATEGORIES}.${CF_ACTIONS_CATEGORIES.REMOVE}`],
 	
 		//---------------------------products--------------------------//
-
 		[`GET ${CF_ROUTINGS_PRODUCTS.ORIGIN_APP}`] : 
 		[`${CF_ACTIONS.PRODUCTS}.${CF_ACTIONS_PRODUCTS.GET_LIST}`],
 
@@ -81,5 +80,4 @@ module.exports = {
 	},
 	// Enable/disable logging
 	logging: true
-	
 };

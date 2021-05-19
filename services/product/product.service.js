@@ -2,23 +2,23 @@
 
 const { MoleculerClientError } 		= require("moleculer").Errors;
 const Cron 							= require("moleculer-cron");
-const DbService                		= require("../mixins/db.mixin");
-const PRODUCT_COLL             		= require("../database/test/products_coll"); 
+const DbService                		= require("../../provisioning/mixins/db.mixin");
+const PRODUCT_COLL             		= require("../../database/test/products_coll"); 
 const ObjectID                 		= require('mongoose').Types.ObjectId;
-const { CF_ACTIONS_PRODUCTS }   	= require('../config/constants/actions');
-const { CF_SERVICES } 				= require('../config/constants/services');
-const PRODUCTS_ACTION				= require('../api/products');
+const { CF_ACTIONS_PRODUCTS }   	= require('../../config/constants/actions');
+const { CF_SERVICES } 				= require('../../config/constants/services');
+const PRODUCTS_ACTION				= require('../../api/products');
 const _                        		= require("lodash");
-const CacheCleaner 					= require("../mixins/cache.cleaner.mixin");
+const CacheCleaner 					= require("../../provisioning/mixins/cache.cleaner.mixin");
 module.exports = {
 	name: CF_SERVICES.PRODUCTS,
 	// version: 1
-
 	/**
 	 	* Mixins
 	*/
 	mixins: [
-		DbService(PRODUCT_COLL), 
+		// DbService(PRODUCT_COLL), 
+		DbService('products'), 
 		CacheCleaner([CF_SERVICES.PRODUCTS]),
 		Cron
 	],

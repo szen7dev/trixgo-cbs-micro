@@ -12,19 +12,17 @@ const
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../../database/test/account_coll'))
+        super(require('../../database/test/products_coll'))
     }
 
-    async getList(ctx){
+    async getList(){
         return new Promise(async resolve => {
             try {
-
                 let listProducts = await PRODUCT_COLL.find({})
                     // .populate({
                     //     path: 'category',
                     //     select:'name',
                     // });
-                
                 return resolve({ error: false, message: 'get_list_products_success', data: { product: listProducts } });
             } catch (error) {
                 resolve({ error: true, message: error.message });

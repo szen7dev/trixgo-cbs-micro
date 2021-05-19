@@ -16,7 +16,7 @@ exports.sendMessageSpecialDevice = function (message, registrationId, callback) 
 		notification: {
 			title: 'hello',
 			body: message,
-			icon: '/template/trixgo_core/images/favicon.ico'
+			// icon: '/template/trixgo_core/images/favicon.ico'
 		},
 		token: registrationId
 	};

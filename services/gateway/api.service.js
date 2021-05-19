@@ -12,16 +12,13 @@ let	ApiGateway 				= require("moleculer-web"),
 	expressStatic 			= require('serve-static'),
 	app               		= express(),
 	server            		= require('http').Server(app),
-	{ CF_SERVICES } 		= require('../config/constants/services'),
+	{ CF_SERVICES } 		= require('../../config/constants/services'),
 	{ 
 		CF_ACTIONS,
 		CF_ACTIONS_AUTH,
-	} 						= require('../config/constants/actions'),
+	} 						= require('../../config/constants/actions'),
 	// cf_swOption				= require('../config/cf_swOption'),
-	apiV1 					= require("../routing/routes/apiV1"), // config api
-	apiV1_Authoriz 			= require("../routing/routes/apiV1_Authoriz"), 
-	apiV1_Authen 			= require("../routing/routes/apiV1_Authen"), 
-	apiV1_Member 			= require("../routing/routes/apiV1_Member");
+	apiV1 					= require("../../routing/routes/apiV1"); // config api
  	// SocketService 			= require('./socket-io.service');			
 
 module.exports = {
