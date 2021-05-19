@@ -3,11 +3,9 @@
 const { MoleculerClientError } 		= require("moleculer").Errors;
 const Cron 							= require("moleculer-cron");
 const DbService                		= require("../../provisioning/mixins/db.mixin");
-const PRODUCT_COLL             		= require("../../database/test/products_coll"); 
-const ObjectID                 		= require('mongoose').Types.ObjectId;
 const { CF_ACTIONS_PRODUCTS }   	= require('../../config/constants/actions');
 const { CF_SERVICES } 				= require('../../config/constants/services');
-const PRODUCTS_ACTION				= require('../../api/products');
+const PRODUCTS_ACTION				= require('./product.handler');
 const _                        		= require("lodash");
 const CacheCleaner 					= require("../../provisioning/mixins/cache.cleaner.mixin");
 module.exports = {

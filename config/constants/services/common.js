@@ -6,7 +6,8 @@ const CF_SERVICES = {
     /**
      * CHUNG
      */
-    API: 'api',
+    API: 'api', //bỏ api -> gateway
+    GATEWAY: 'gateway',
     ACCOUNT: 'account',
     AUTH: 'auth',
     PRODUCTS: 'products',

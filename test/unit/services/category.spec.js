@@ -2,8 +2,7 @@
 
 const { ServiceBroker, Context } = require("moleculer");
 const { ValidationError } = require("moleculer").Errors;
-const CategoryService = require("../../../services/category.service");
-
+const CategoryService = require("../../../services/category/category.service");
 
 describe("Test 'category' service", () => {
 

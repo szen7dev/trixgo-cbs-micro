@@ -72,13 +72,13 @@ module.exports = {
 		  ttl: 10 * 24 * 60 * 60,
 		  // Turns Redis client monitoring on.
 		  monitor: false,
-		  // Redis settings
-		  redis: {
-			host: "0.0.0.0",
-			port: 6379,
-			// password: "1234",
-			// db: 0
-		  },
+		  // Redis settings3
+		//   redis: {
+		// 	host: "0.0.0.0",
+		// 	port: 6379,
+		// 	// password: "1234",
+		// 	// db: 0
+		//   },
 		  lock: {
 			ttl: 15, //the maximum amount of time you want the resource locked in seconds
 			staleTime: 10, // If the TTL is less than this number, means that the resources are staled
@@ -201,24 +201,25 @@ module.exports = {
 	errorHandler: null,
 
 	// Enable/disable built-in metrics function. More info: https://moleculer.services/docs/0.14/metrics.html
-	metrics: {
-		enabled: true,
-		// Available built-in reporters: "Console", "CSV", "Event", "Prometheus", "Datadog", "StatsD"
-		reporter: {
-			type: "Prometheus",
-			options: {
-				// HTTP port
-				port: 3030,
-				// HTTP URL path
-				path: "/metrics",
-				// Default labels which are appended to all metrics labels
-				defaultLabels: registry => ({
-					namespace: registry.broker.namespace,
-					nodeID: registry.broker.nodeID
-				})
-			}
-		}
-	},
+	metrics: false,
+	// metrics: {
+	// 	enabled: false,
+	// 	// Available built-in reporters: "Console", "CSV", "Event", "Prometheus", "Datadog", "StatsD"
+	// 	reporter: {
+	// 		type: "Prometheus",
+	// 		options: {
+	// 			// HTTP port
+	// 			port: 3030,
+	// 			// HTTP URL path
+	// 			path: "/metrics",
+	// 			// Default labels which are appended to all metrics labels
+	// 			defaultLabels: registry => ({
+	// 				namespace: registry.broker.namespace,
+	// 				nodeID: registry.broker.nodeID
+	// 			})
+	// 		}
+	// 	}
+	// },
 
 	// Enable built-in tracing function. More info: https://moleculer.services/docs/0.14/tracing.html
 	tracing: {
