@@ -10,13 +10,13 @@ let {
 	CF_ROUTINGS, 
 	CF_ROUTINGS_PRODUCTS,
 	CF_ROUTINGS_CATEGORIES,
-} 							= require('../../config/constants/routings');
+} 							= require('../../constants/routings');
 let { 
 	CF_ACTIONS,
     CF_ACTIONS_PRODUCTS,
 	CF_ACTIONS_CATEGORIES,
-} 							= require('../../config/constants/actions');
-const { CF_SERVICES } 				= require('../../config/constants/services');
+} 									= require('../../constants/actions');
+const { CF_SERVICES } 				= require('../../constants/services');
 
 module.exports = {
 	path: CF_ROUTINGS.API,

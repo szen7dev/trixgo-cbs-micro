@@ -1,7 +1,7 @@
 "use strict";
 
-const path = require("path");
-const mkdir = require("mkdirp").sync;
+const path 		= require("path");
+const mkdir 	= require("mkdirp").sync;
 
 const DbService	= require("moleculer-db");
 

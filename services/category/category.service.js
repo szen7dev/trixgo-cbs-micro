@@ -3,13 +3,13 @@ const { MoleculerClientError } 		= require("moleculer").Errors;
 const { ForbiddenError }       		= require("moleculer-web").Errors;
 const DbService                		= require("../../provisioning/mixins/db.mixin");
 const CacheCleaner                	= require("../../provisioning/mixins/cache.cleaner.mixin");
-let { CF_SERVICES } 				= require('../../config/constants/services');
-let { CF_ACTIONS_CATEGORIES } 		= require('../../config/constants/actions');
+let { CF_SERVICES } 				= require('../../constants/services');
+let { CF_ACTIONS_CATEGORIES } 		= require('../../constants/actions');
 let CATEGORIES_ACTION				= require('./category.handler');
 
 module.exports = {
-
 	name: CF_SERVICES.CATEGORIES,
+	// version: 1,
 	mixins: [
 		// DbService(CATEGORY_COLL), 
 		DbService('categories'), 
@@ -49,17 +49,12 @@ module.exports = {
 	actions: {
 	
 		[CF_ACTIONS_CATEGORIES.CREATE] 		: CATEGORIES_ACTION.create,
-
 		// add product into products cart then insert product
 		[CF_ACTIONS_CATEGORIES.ADD_PRODUCT]	: CATEGORIES_ACTION.addProduct,
-
 		[CF_ACTIONS_CATEGORIES.FIND_BY_ID]	: CATEGORIES_ACTION.findById,
-
 		// update add product into categoy
 		[CF_ACTIONS_CATEGORIES.UPDATE]		: CATEGORIES_ACTION.update,
-
 		[CF_ACTIONS_CATEGORIES.GET_LIST] 	: CATEGORIES_ACTION.getList,
-		
 		[CF_ACTIONS_CATEGORIES.REMOVE] 		: CATEGORIES_ACTION.remove,
 		
 	},
@@ -68,8 +63,9 @@ module.exports = {
 	 	* Events
 	*/
 	events: {
-		async "some.thing"(ctx) {
-			this.logger.info("Something happened", ctx.params);
+		// emit event: emit [service.event_name] 
+		async "nguyen_dinh"(ctx) {
+			this.logger.in1fo("Something happened", ctx.params);
 		}
 	},
 
@@ -81,7 +77,7 @@ module.exports = {
 	},
 
 	/**
-		 * Service created lifecycle event handler
+	 * Service created lifecycle event handler
 	*/
 	created() {
 

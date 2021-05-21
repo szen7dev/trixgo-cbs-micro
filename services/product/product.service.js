@@ -3,16 +3,16 @@
 const { MoleculerClientError } 		= require("moleculer").Errors;
 const Cron 							= require("moleculer-cron");
 const DbService                		= require("../../provisioning/mixins/db.mixin");
-const { CF_ACTIONS_PRODUCTS }   	= require('../../config/constants/actions');
-const { CF_SERVICES } 				= require('../../config/constants/services');
+const { CF_ACTIONS_PRODUCTS }   	= require('../../constants/actions');
+const { CF_SERVICES } 				= require('../../constants/services');
 const PRODUCTS_ACTION				= require('./product.handler');
 const _                        		= require("lodash");
 const CacheCleaner 					= require("../../provisioning/mixins/cache.cleaner.mixin");
 module.exports = {
 	name: CF_SERVICES.PRODUCTS,
-	// version: 1
+	// version: 1,
 	/**
-	 	* Mixins
+	* Mixins
 	*/
 	mixins: [
 		// DbService(PRODUCT_COLL), 
@@ -82,15 +82,10 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
-
 		[CF_ACTIONS_PRODUCTS.CREATE]		: PRODUCTS_ACTION.create,
-
 		[CF_ACTIONS_PRODUCTS.GET_LIST]		: PRODUCTS_ACTION.getList,
-
 		[CF_ACTIONS_PRODUCTS.FIND_BY_ID]	: PRODUCTS_ACTION.findById,
-
 		[CF_ACTIONS_PRODUCTS.REMOVE]		: PRODUCTS_ACTION.remove,
-
 		[CF_ACTIONS_PRODUCTS.REMOVE_FROM_CATE] : PRODUCTS_ACTION.removeFromCate,
 
 		// [CF_ACTIONS_PRODUCTS.ADD_TO_CART]	: PRODUCTS_ACTION.addToCart,

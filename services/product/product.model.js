@@ -5,7 +5,7 @@ const
 { 
     CF_ACTIONS,
     CF_ACTIONS_CATEGORIES,
-}    				        = require('../../config/constants/actions');
+}    				        = require('../../constants/actions');
 // const redis                 = require("redis");
 // const client                = redis.createClient();
 class Model extends BaseModel {

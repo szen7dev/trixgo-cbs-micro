@@ -5,7 +5,7 @@ const CATEGORY_COLL         = require('../../database/test/category_coll')
 const 
 {   CF_ACTIONS, 
     CF_ACTIONS_PRODUCTS
-}                           = require('../../config/constants/actions');
+}                           = require('../../constants/actions');
 class Model extends BaseModel {
 
     constructor() {
