@@ -1,15 +1,14 @@
 "use strict";
 
-const { MoleculerClientError } 		= require("moleculer").Errors;
 const Cron 							= require("moleculer-cron");
-const DbService                		= require("../../provisioning/mixins/db.mixin");
-const { CF_ACTIONS_PRODUCTS }   	= require('../../constants/actions');
-const { CF_SERVICES } 				= require('../../constants/services');
+const DbService                		= require("../../tools/mixins/db.mixin");
+const { CF_ACTIONS_PRODUCTS }   	= require('./constants/actions.constant.product');
+const { CF_DOMAIN_SERVICES } 				= require('../gateway/constants/domain.constant');
 const PRODUCTS_ACTION				= require('./product.handler');
 const _                        		= require("lodash");
-const CacheCleaner 					= require("../../provisioning/mixins/cache.cleaner.mixin");
+const CacheCleaner 					= require("../../tools/mixins/cache.cleaner.mixin");
 module.exports = {
-	name: CF_SERVICES.PRODUCTS,
+	name: CF_DOMAIN_SERVICES.PRODUCTS,
 	// version: 1,
 	/**
 	* Mixins
@@ -17,7 +16,7 @@ module.exports = {
 	mixins: [
 		// DbService(PRODUCT_COLL), 
 		DbService('products'), 
-		CacheCleaner([CF_SERVICES.PRODUCTS]),
+		CacheCleaner([CF_DOMAIN_SERVICES.PRODUCTS]),
 		Cron
 	],
 
@@ -87,11 +86,6 @@ module.exports = {
 		[CF_ACTIONS_PRODUCTS.FIND_BY_ID]	: PRODUCTS_ACTION.findById,
 		[CF_ACTIONS_PRODUCTS.REMOVE]		: PRODUCTS_ACTION.remove,
 		[CF_ACTIONS_PRODUCTS.REMOVE_FROM_CATE] : PRODUCTS_ACTION.removeFromCate,
-
-		// [CF_ACTIONS_PRODUCTS.ADD_TO_CART]	: PRODUCTS_ACTION.addToCart,
-
-		// [CF_ACTIONS_PRODUCTS.SHOW_CART]		: PRODUCTS_ACTION.showCart,
-
 	},
 	methods: {
 

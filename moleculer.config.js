@@ -1,4 +1,5 @@
 "use strict";
+const { REDIS_SEPERATOR } 			= require('./tools/redis/cf_redis');
 
 /**
  * Moleculer ServiceBroker configuration file
@@ -73,12 +74,12 @@ module.exports = {
 		  // Turns Redis client monitoring on.
 		  monitor: false,
 		  // Redis settings3
-		//   redis: {
-		// 	host: "0.0.0.0",
-		// 	port: 6379,
-		// 	// password: "1234",
-		// 	// db: 0
-		//   },
+		  redis: {
+			host: REDIS_SEPERATOR.HOST,
+			port: REDIS_SEPERATOR.PORT,
+			password: REDIS_SEPERATOR.PWD,
+			// db: 0
+		  },
 		  lock: {
 			ttl: 15, //the maximum amount of time you want the resource locked in seconds
 			staleTime: 10, // If the TTL is less than this number, means that the resources are staled

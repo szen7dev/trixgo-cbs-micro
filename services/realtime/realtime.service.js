@@ -1,11 +1,29 @@
 "use strict";
-const ApiService        = require("moleculer-web");
-const SocketIOService   = require('moleculer-io');
-const redisAdapter      = require('socket.io-redis')
-const express           = require('express');
-const app               = express();
-const server            = require('http').Server(app);
-const { sign , verify }  = require('../../tools/jwt/jwt');
+const ApiService            = require("moleculer-web");
+const SocketIOService       = require('moleculer-io');
+const redis                 = require('redis');
+const redisAdapter          = require('socket.io-redis')
+const express               = require('express');
+const app                   = express();
+const server                = require('http').Server(app);
+const { sign , verify }     = require('../../tools/jwt/jwt');
+const { REDIS_SEPERATOR }   = require('../../tools/redis/cf_redis');
+/**
+ * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
+ */
+const { CHATTING_SOCKET } = require('../chatting/chatting.socket');
+
+let pub = redis.createClient({
+    host: REDIS_SEPERATOR.HOST,
+    port: REDIS_SEPERATOR.PORT,
+    auth_pass: REDIS_SEPERATOR.PWD
+});
+
+let sub = redis.createClient({
+    host: REDIS_SEPERATOR.HOST,
+    port: REDIS_SEPERATOR.PORT,
+    auth_pass: REDIS_SEPERATOR.PWD
+});
 /**
  * socket-io service
  */
@@ -15,7 +33,10 @@ module.exports = {
     settings: {
         io:{
             options: {
-                adapter: redisAdapter({ host: 'localhost', port: 6379 })
+                adapter: redisAdapter({   
+                    pubClient: pub,
+                    subClient: sub 
+                })
             },
             namespaces: {
                 '/':{
@@ -27,21 +48,16 @@ module.exports = {
                         let newUser             = socket.client.user;
                         let newSocketID         = socket.id;
                         let listUserConnected   = this.addNewUserIntoListConnected(newUser, newSocketID);
-
-                        let listAllUserIgnoreSender = listUserConnected.map(user => user.socketID != newSocketID);
+                        let listAllUserIgnoreSender = listUserConnected.filter(user => user.socketID != newSocketID);
                         // listAllUserIgnoreSender.forEach(user => {
                         //     socket.to(user.socketID).emit("NEW_USER", {newUser, newSocketID});
                         // })
-
                         next();
                     }],
-                    // packetMiddlewares:[],
                     events:{
                         'call':{
                             whitelist: [
                                 // 'users.*',
-                                // 'say.*',
-                                // 'accounts.*',
                                 // 'rooms.*',
                                 // 'io.*'
                             ],
@@ -56,43 +72,16 @@ module.exports = {
                             }
                             // callOptions:{}
                         },
-                        'REQUEST_LOGIN': async function(data, ack) { // write your handler function here.
-                            let socket      = this;
-                            let users       = this.$service.users;
-                            let socketID    = socket.id;
-                            
-                            return console.log({ socket, users, socketID })
 
-                            let _data = await verify(data.token);
-                            console.log({_data});
-                            // let infoUser = await socket.$service.broker.call('users.login', {
-                            //  email: _data.data.email,
-                            //  password: _data.data.password
-                            // });
-                            // console.log({infoUser});
-                            // if (infoUser.code == 200){
-                            //  users.push({infoUser, socketID});
-                            // }
-                            // let newUser = {
-                            //  email: infoUser.data.email,
-                            //  socket: socket.id
-                            // };
-                            socket.emit("LOGIN_SUCCESS", {_data});
-                            // socket.$service.broker.call('io.broadcast', {
-                            //  namespace:'/', //optional
-                            //  event:'hello',
-                            //  args: ['my', 'friends','!'], //optional
-                            //  volatile: true, //optional
-                            //  local: true, //optional
-                            //  rooms: ['room1', 'room2'] //optional
-                            // });
-                            // socket.emit("NEW_USER", {infoUser});
-                        },
+                        /**
+                         *  passing all event of all services
+                         */
+                        ...CHATTING_SOCKET,
 
                         'disconnect': async function(data, ack) { // write your handler function here.
                             let socket                      = this;
-                            let listUserConnected           = socket.$service.listUserConnected;
                             let socketDisconnectID          = socket.id;
+                            let listUserConnected           = socket.$service.listUserConnected;
 
                             socket.$service.removeUserDisconnectIntoListConnected(socketDisconnectID)
                             // ---> ví dụ emit
@@ -106,7 +95,6 @@ module.exports = {
     methods: {
         async socketAuthorize(socket, eventHandler){
             let accessToken = socket.handshake.query.token;
-            console.log({ accessToken })
             if (accessToken.length) {
                 // try{
                 //     let user = await this.broker.call("users.verifyToken", {accessToken});
@@ -122,16 +110,15 @@ module.exports = {
                 try {
                     
                     let _data = await verify(accessToken);
-                    console.log({ _data })
                     if (_data) {
                         let { password } = _data;
                         if (password && password == '123456') {
-                            return { message: 'auth_success' }
+                            return Promise.resolve({ id: 1, detail: "You are authorized using token.", name: "John Doe" })
                         } else {
-                            return { message: 'permission_denied' }
+                            return Promise.reject()
                         }
                     } else {
-                        return { message: 'permission_denied' }
+                        return Promise.reject()
                     }
                 } catch (error) {
                     console.log({ error })
@@ -152,7 +139,7 @@ module.exports = {
             console.log({ ['SAU add vào connected']: listUserAfterInsertNewUserConnect })
 
             this.listUserConnected = listUserAfterInsertNewUserConnect;
-            return listUserConnected;
+            return listUserAfterInsertNewUserConnect;
         },
 
         removeUserDisconnectIntoListConnected(socketDisconnectID){
@@ -163,7 +150,7 @@ module.exports = {
             console.log({ socketDisconnectID, listUserAfterFilterUserDisconnect });
 
             this.listUserConnected = listUserAfterFilterUserDisconnect;
-            return listUserConnected;
+            return listUserAfterFilterUserDisconnect;
         }
     },
     /**

@@ -6,16 +6,12 @@ let	ApiGateway 				= require("moleculer-web"),
 	express         		= require('express'),
 	app               		= express(),
 	server            		= require('http').Server(app),
-	{ CF_SERVICES } 		= require('../../constants/services'),
-	{ 
-		CF_ACTIONS,
-		CF_ACTIONS_AUTH,
-	} 						= require('../../constants/actions'),
+	{ CF_DOMAIN_SERVICES } 		= require('./constants/domain.constant'),
 	apiV1 					= require("./gateway.alias"); // config api
  	// SocketService 			= require('./socket-io.service');			
 
 module.exports = {
-	name: CF_SERVICES.GATEWAY,
+	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
 		ApiGateway, 
 		// SocketService,
@@ -75,7 +71,8 @@ module.exports = {
 				let accessToken = req.headers[ 'x-access-token' ] || req.headers.token || null;
 				if(accessToken){
 
-					let resolveToken = await ctx.call(`${CF_ACTIONS.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
+					let resolveToken = null;
+					// let resolveToken = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
 					if(resolveToken.error){
 						return Promise.reject(resolveToken.message);
 					}	
@@ -90,7 +87,8 @@ module.exports = {
         },
 
 		async authorize(ctx, route, req, res) {
-			let checkAuthorization = await ctx.call(`${CF_ACTIONS.AUTH}.${CF_ACTIONS_AUTH.CHECK_AUTHORIZATION}`, {originalUrl: req.originalUrl})
+			let checkAuthorization = null;
+			// let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CHECK_AUTHORIZATION}`, {originalUrl: req.originalUrl})
 			if(checkAuthorization.error){
 				return Promise.reject(checkAuthorization.message);
 			}

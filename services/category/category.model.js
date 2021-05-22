@@ -1,11 +1,11 @@
 "use strict";
-const BaseModel             = require('../../tools/db/base_model');
-const ObjectID              = require('mongoose').Types.ObjectId;
-const CATEGORY_COLL         = require('./database/category_coll')
-const 
-{   CF_ACTIONS, 
-    CF_ACTIONS_PRODUCTS
-}                           = require('../../constants/actions');
+const BaseModel                 = require('../../tools/db/base_model');
+const ObjectID                  = require('mongoose').Types.ObjectId;
+const CATEGORY_COLL             = require('./database/category_coll')
+const { CF_DOMAIN_SERVICES }    = require('../gateway/constants/domain.constant');
+const  {   
+    CF_ACTIONS_PRODUCTS 
+}                           = require('../product/constants/actions.constant.product');
 class Model extends BaseModel {
 
     constructor() {
@@ -129,7 +129,7 @@ class Model extends BaseModel {
             try {
                 let categoryForRemove = await CATEGORY_COLL.findByIdAndDelete(id);
                 
-                let listProductForRemove = await ctx.call(`${CF_ACTIONS.PRODUCTS}.${CF_ACTIONS_PRODUCTS.REMOVE_FROM_CATE}`, {categoryID: id})
+                let listProductForRemove = await ctx.call(`${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.REMOVE_FROM_CATE}`, {categoryID: id})
                 if (!categoryForRemove || !listProductForRemove || listProductForRemove.error) {
                     return resolve({ error: true, message: listProductForRemove ? listProductForRemove.message : 'remove_faild' });
                 }

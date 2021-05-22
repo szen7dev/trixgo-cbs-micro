@@ -3,3 +3,8 @@ parameter validation : fastest-validator
 xem lại các function đã tự có từ db-mongoose
      products.list                          │ (*) 1 │    OK    │  Yes   │ populate, fields, page, pageSize, sort, search, searchFields, query
 Bổ sung status code response cho tất cả api
+
+
+
+- cách đặt utils file:
+     [type: {event, action, ...}].[].[service].js

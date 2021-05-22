@@ -1,19 +1,15 @@
 "use strict";
-const { MoleculerClientError } 		= require("moleculer").Errors;
-const { ForbiddenError }       		= require("moleculer-web").Errors;
-const DbService                		= require("../../provisioning/mixins/db.mixin");
-const CacheCleaner                	= require("../../provisioning/mixins/cache.cleaner.mixin");
-let { CF_SERVICES } 				= require('../../constants/services');
-let { CF_ACTIONS_CATEGORIES } 		= require('../../constants/actions');
+const DbService                		= require("../../tools/mixins/db.mixin");
+const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
+let { CF_DOMAIN_SERVICES } 			= require('../gateway/constants/domain.constant');
+let { CF_ACTIONS_CATEGORIES } 		= require('./constants/actions.constant.category');
 let CATEGORIES_ACTION				= require('./category.handler');
 
 module.exports = {
-	name: CF_SERVICES.CATEGORIES,
-	// version: 1,
+	name: CF_DOMAIN_SERVICES.CATEGORIES,
 	mixins: [
-		// DbService(CATEGORY_COLL), 
 		DbService('categories'), 
-		CacheCleaner([CF_SERVICES.CATEGORIES])
+		CacheCleaner([CF_DOMAIN_SERVICES.CATEGORIES])
 	],
 	/**
 	 	* Service settings
