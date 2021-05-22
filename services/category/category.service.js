@@ -1,8 +1,8 @@
 "use strict";
 const DbService                		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
-let { CF_DOMAIN_SERVICES } 			= require('../gateway/constants/domain.constant');
-let { CF_ACTIONS_CATEGORIES } 		= require('./constants/actions.constant.category');
+let { CF_DOMAIN_SERVICES } 			= require('../gateway/helper/domain.constant');
+let { CF_ACTIONS_CATEGORIES } 		= require('./helper/actions.constant.category');
 let CATEGORIES_ACTION				= require('./category.handler');
 
 module.exports = {

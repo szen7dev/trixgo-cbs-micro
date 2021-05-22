@@ -2,10 +2,10 @@
 const BaseModel                 = require('../../tools/db/base_model');
 const ObjectID                  = require('mongoose').Types.ObjectId;
 const CATEGORY_COLL             = require('./database/category_coll')
-const { CF_DOMAIN_SERVICES }    = require('../gateway/constants/domain.constant');
+const { CF_DOMAIN_SERVICES }    = require('../gateway/helper/domain.constant');
 const  {   
     CF_ACTIONS_PRODUCTS 
-}                           = require('../product/constants/actions.constant.product');
+}                           = require('../product/helper/actions.constant.product');
 class Model extends BaseModel {
 
     constructor() {

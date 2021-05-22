@@ -7,12 +7,12 @@ const {
 	CHECK_AUTHORIZATION,
 } 							= require('./auth');
 
-const { CF_DOMAIN_SERVICES } 	= require('../gateway/constants/domain.constant');
-const { CF_ACTIONS_PRODUCTS } 	= require('../product/constants/actions.constant.product');
-const { CF_ACTIONS_CATEGORIES } = require('../category/constants/actions.constant.category');
+const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
+const { CF_ACTIONS_PRODUCTS } 	= require('../product/helper/actions.constant.product');
+const { CF_ACTIONS_CATEGORIES } = require('../category/helper/actions.constant.category');
 
-const { CF_ROUTINGS_PRODUCTS } = require('../product/constants/routes.constant.product');
-const { CF_ROUTINGS_CATEGORIES } = require('../category/constants/routes.constant.category');
+const { CF_ROUTINGS_PRODUCTS } = require('../product/helper/routes.constant.product');
+const { CF_ROUTINGS_CATEGORIES } = require('../category/helper/routes.constant.category');
 module.exports = {
 	path: CF_DOMAIN_SERVICES.API,
 
@@ -30,29 +30,22 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_CATEGORIES.ORIGIN_APP}`] : 
 		[`${CF_DOMAIN_SERVICES.CATEGORIES}.${CF_ACTIONS_CATEGORIES.GET_LIST}`],
-
 		[`POST ${CF_ROUTINGS_CATEGORIES.ORIGIN_APP}`] : 
 		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.CATEGORIES}.${CF_ACTIONS_CATEGORIES.CREATE}`],
-
 		[`GET ${CF_ROUTINGS_CATEGORIES.REMOVE}`] : 
 		[CHECK_AUTHORIZATION,`${CF_DOMAIN_SERVICES.CATEGORIES}.${CF_ACTIONS_CATEGORIES.REMOVE}`],
 	
 		//---------------------------products--------------------------//
 		[`GET ${CF_ROUTINGS_PRODUCTS.ORIGIN_APP}`] : 
 		[`${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.GET_LIST}`],
-
 		[`POST ${CF_ROUTINGS_PRODUCTS.ORIGIN_APP}`] : 
 		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.CREATE}`],
-
 		[`GET ${CF_ROUTINGS_PRODUCTS.FIND_BY_ID}`] : 
 		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.FIND_BY_ID}`],
-
 		[`POST ${CF_ROUTINGS_PRODUCTS.ADD_TO_CART}`] : 
 		[CHECK_AUTHENCATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.ADD_TO_CART}`],
-
 		[`GET ${CF_ROUTINGS_PRODUCTS.SHOW_CART}`] : 
 		[CHECK_AUTHENCATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.SHOW_CART}`],
-
 		[`GET ${CF_ROUTINGS_PRODUCTS.REMOVE}`] : 
 		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.REMOVE}`],
 

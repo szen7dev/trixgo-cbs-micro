@@ -6,7 +6,7 @@ let	ApiGateway 				= require("moleculer-web"),
 	express         		= require('express'),
 	app               		= express(),
 	server            		= require('http').Server(app),
-	{ CF_DOMAIN_SERVICES } 		= require('./constants/domain.constant'),
+	{ CF_DOMAIN_SERVICES } 		= require('./helper/domain.constant'),
 	apiV1 					= require("./gateway.alias"); // config api
  	// SocketService 			= require('./socket-io.service');			
 
