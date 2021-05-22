@@ -1,7 +1,7 @@
 "use strict";
-const BaseModel             = require('../../database/base_model');
+const BaseModel             = require('../../tools/db/base_model');
 const ObjectID              = require('mongoose').Types.ObjectId;
-const CATEGORY_COLL         = require('../../database/test/category_coll')
+const CATEGORY_COLL         = require('./database/category_coll')
 const 
 {   CF_ACTIONS, 
     CF_ACTIONS_PRODUCTS
@@ -9,7 +9,7 @@ const
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../../database/test/account_coll'))
+        super(require('./database/category_coll'))
     }
 
     async getList(ctx){

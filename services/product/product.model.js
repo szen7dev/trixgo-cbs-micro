@@ -1,6 +1,6 @@
 "use strict";
-const BaseModel             = require('../../database/base_model');
-const PRODUCT_COLL          = require('../../database/test/products_coll')
+const BaseModel             = require('../../tools/db/base_model');
+const PRODUCT_COLL          = require('./database/products_coll')
 const   
 { 
     CF_ACTIONS,
@@ -11,7 +11,7 @@ const
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../../database/test/products_coll'))
+        super(require('./database/products_coll'))
     }
 
     async getList(){

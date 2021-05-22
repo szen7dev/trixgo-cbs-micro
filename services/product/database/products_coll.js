@@ -1,11 +1,7 @@
-"use strict";
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
+const Schema                = require('mongoose').Schema;
 
-
-let mongoose = require('mongoose');
-let Schema = mongoose.Schema;
-
-let productSchema = new Schema({
- 
+module.exports  = DATABASE_MIDDLEWARE("products", {
     name: String,
 
     price: Number,
@@ -29,10 +25,4 @@ let productSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'category'
     },  
-}, {
-	timestamps: true
 });
-
-let PRODUCT_COLL  = mongoose.model('products', productSchema);
-
-module.exports = PRODUCT_COLL;

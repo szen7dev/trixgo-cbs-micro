@@ -1,6 +1,6 @@
 "use strict";
 
-const timeUtils = require('../tools/utils/time_utils');
+const timeUtils = require('../utils/time_utils');
 const PROMISE   = require('bluebird');
 const OBJECT_ID = require('mongoose').Types.ObjectId;
 

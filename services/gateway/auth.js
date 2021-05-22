@@ -4,7 +4,7 @@ const _                             = require("lodash");
 const Redis                         = require("ioredis");
 const jwt                           = require('jsonwebtoken');
 const cfJwt                         = require('../../tools/jwt/cf_jwt');
-const ACCOUNT_COLL                  = require('../../database/test/account_coll')
+// const ACCOUNT_COLL                  = require('../../database/test/account_coll')
 
 const checkAuthencation = async (req, res, next) => {
     try {

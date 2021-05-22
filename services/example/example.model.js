@@ -1,5 +1,5 @@
 "use strict";
-const BaseModel             = require('../../database/base_model');
+const BaseModel             = require('../../tools/db/base_model');
 const CATEGORY_COLL         = require('../../database/test/category_coll');
 
 class Model extends BaseModel {
