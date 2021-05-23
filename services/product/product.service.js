@@ -5,8 +5,11 @@ const DbService                		= require("../../tools/mixins/db.mixin");
 const { CF_ACTIONS_PRODUCTS }   	= require('./helper/actions.constant.product');
 const { CF_DOMAIN_SERVICES } 				= require('../gateway/helper/domain.constant');
 const PRODUCTS_ACTION				= require('./product.handler');
+const PRODUCT_COLL					= require('./database/products_coll');
+
 const _                        		= require("lodash");
 const CacheCleaner 					= require("../../tools/mixins/cache.cleaner.mixin");
+const { created } = require("moleculer-cron");
 module.exports = {
 	name: CF_DOMAIN_SERVICES.PRODUCTS,
 	// version: 1,
@@ -34,7 +37,35 @@ module.exports = {
 				});
 		}
 	}],
-	settings: {
+	settings: { //https://moleculer.services/docs/0.13/moleculer-db.html#Settings
+		// Available fields in the responses
+		fields: [
+			"_id",
+			"name",
+			"price",
+			"amout",
+			"avatar",
+			"category",
+			"status",
+		],
+
+		populates: {
+			category: {
+				action: "categories.get",
+				params: {
+					fields: ["name", "products"],
+				}
+			},
+		},
+
+		entityValidator: {
+			name:     "string",
+			price:    {type: "number", min: 0},
+			amout:    {type: "number", min: 0},
+			// avatar:   "string",
+			category: "string",
+			// status:   "number",
+		},
 	},
 
 	hooks: {
@@ -66,5 +97,5 @@ module.exports = {
 	 	* Fired after database connection establishing.
 	*/
 	async afterConnected() {
-	}
+	},
 };

@@ -8,3 +8,16 @@ Bổ sung status code response cho tất cả api
 
 - cách đặt utils file:
      [type: {event, action, ...}].[].[service].js
+
+
+- TODO:
+     - tạo docs.service.js // cho từng service
+     - import doc các service vào doc.service
+
+- CALL SERVICE:
+     - internal call: ctx.call("products.find", { populate: ["category"]});
+     - external-service call: this.broker.call('products.find', { populate: ['category'] })
+
+- syntax file:
+     - database:
+          [service_name].[collection_name]-coll.js

@@ -8,7 +8,7 @@ const DbService	= require("moleculer-db");
 module.exports = function(collection) {
 	if (process.env.MONGO_URI) {
 		// Mongo adapter
-		const MongoAdapter = require("moleculer-db-adapter-mongoose");
+		const MongoAdapter = require("moleculer-db-adapter-mongo");
 
 		return {
 			mixins: [DbService],
@@ -16,7 +16,7 @@ module.exports = function(collection) {
 				useNewUrlParser: true, 
 				useUnifiedTopology: true 
 			}),
-			model: collection,
+			collection: collection,
 			methods: {
 				fixStringToId(idString) {
 					if ( typeof this.adapter.stringToObjectID !== "undefined" ) {

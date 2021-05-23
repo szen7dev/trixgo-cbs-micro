@@ -1,13 +1,15 @@
 "use strict";
 const DbService                		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
-let { CF_DOMAIN_SERVICES } 			= require('../gateway/helper/domain.constant');
-let { CF_ACTIONS_CATEGORIES } 		= require('./helper/actions.constant.category');
-let CATEGORIES_ACTION				= require('./category.handler');
+const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_CATEGORIES } 	= require('./helper/actions.constant.category');
+const CATEGORIES_ACTION				= require('./category.handler');
+const CATEGORY_COLL					= require('./database/category_coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CATEGORIES,
 	mixins: [
+		// DbService(CATEGORY_COLL), 
 		DbService('categories'), 
 		CacheCleaner([CF_DOMAIN_SERVICES.CATEGORIES])
 	],
@@ -80,7 +82,7 @@ module.exports = {
 	},
 
 	/**
-	 	* Service started lifecycle event handler
+	* Service started lifecycle event handler
 	*/
 	async started() {
 

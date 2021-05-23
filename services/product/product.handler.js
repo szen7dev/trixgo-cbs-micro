@@ -46,14 +46,9 @@ module.exports = {
          * @returns {Object} 
     **/
     getList: {
-        cache: true,
         async handler(ctx) {
-            try {
-                let infoProduct = await PRODUCT_MODEL.getList();
-                return infoProduct;
-            } catch (error) {
-                return(error);
-            }
+            let listProducts = await ctx.call("products.find", { populate: ["category"]});
+            return listProducts;
         },
     },
 
