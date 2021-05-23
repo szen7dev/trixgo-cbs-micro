@@ -1,4 +1,4 @@
-const { EVENT_SOCKET_CONSTANT_CHATTING } = require('./helper/events.socket.constant.chatting');
+const { EVENT_SOCKET_CONSTANT_CHATTING } = require('./helper/chatting.events.socket-constant');
 
 exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.HELLO_WORLD]: async function(data, ack) { // write your handler function here.

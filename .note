@@ -21,3 +21,8 @@ Bổ sung status code response cho tất cả api
 - syntax file:
      - database:
           [service_name].[collection_name]-coll.js
+- require file và đặt tên biến
+     - vd: AUTH__USER_COLL
+          [service_name]__[collection_name]_COLL
+     - vd: AUTH__USER_MODEL
+          [service_name]__[collection_name]_MODEL

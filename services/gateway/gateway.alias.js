@@ -13,11 +13,13 @@ const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
  * ------import action's Services--------
  */
 const { CF_ACTIONS_EXAMPLE } 	= require('../example/helper/actions.constant.example');
+const { CF_ACTIONS_AUTH } 		= require('../auth/helper/auth.actions-constant');
 
 /**
  * ------import route's Services---------
  */
-const { CF_ROUTINGS_EXAMPLE } = require('../example/helper/routes.constant.example');
+const { CF_ROUTINGS_EXAMPLE } 	= require('../example/helper/routes.constant.example');
+const { CF_ROUTINGS_AUTH } 		= require('../auth/helper/auth.routes-constant');
 module.exports = {
 	path: CF_DOMAIN_SERVICES.API,
 
@@ -38,6 +40,10 @@ module.exports = {
 		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.EXAMPLES}.${CF_ACTIONS_EXAMPLE.CREATE}`],
 		[`GET ${CF_ROUTINGS_EXAMPLE.REMOVE}`] : 
 		[CHECK_AUTHORIZATION,`${CF_DOMAIN_SERVICES.EXAMPLES}.${CF_ACTIONS_EXAMPLE.REMOVE}`],
+
+		//--------------------------aliases's EXAMPLE service--------------------------//
+		[`POST ${CF_ACTIONS_AUTH.INSERT_FAST}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.INSERT_FAST}`],
 	},
 
 	

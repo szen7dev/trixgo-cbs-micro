@@ -1,0 +1,8 @@
+const BASE_ROUTE = '/auth';
+
+const CF_ROUTINGS_AUTH = {
+    ORIGIN_APP: BASE_ROUTE,
+    INSERT_FAST: BASE_ROUTE,
+}
+
+exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

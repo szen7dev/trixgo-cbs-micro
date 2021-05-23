@@ -63,7 +63,6 @@
     "moleculer-console-tracer": "^0.2.3",
     "moleculer-cron": "^0.0.2",
     "moleculer-db": "^0.8.14",
-    "moleculer-db-adapter-mongo": "^0.4.12",
     "moleculer-db-adapter-mongoose": "^0.8.9",
     "moleculer-io": "^1.1.3",
     "moleculer-sc": "^0.9.0",

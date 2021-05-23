@@ -1,10 +1,4 @@
 "use strict";
-const { 
-    CF_ROUTINGS_POSTS, 
-    CF_ROUTINGS_ACCOUNT, 
-    CF_ROUTINGS_PRODUCTS, 
-    CF_ROUTINGS_EXAMPLE
-}                   = require('../config/constants/routings')
 
 exports.isEmpty = function (value) {
     return typeof value == 'string'
@@ -149,25 +143,35 @@ exports.numberOfNightsBetweenDates = (startDate, endDate) => {
     return dayCount
 }
 
-/**
- * Get appID từ người dùng truy cập
- */
-exports.getAppIDByURLRequest = (originalUrl) => {
-    /**
-     * originalUrl: sử dụng cho truy cập trực tiếp trên view (load trang)
-     */
-    if(originalUrl){
-        switch (originalUrl.split('/')[1]) {
-            case 'accounts':
-                return CF_ROUTINGS_ACCOUNT.APP_ID;
-            case 'posts':
-                return CF_ROUTINGS_POSTS.APP_ID;
-            case 'products':
-                return CF_ROUTINGS_PRODUCTS.APP_ID;
-            case 'categories':
-                return CF_ROUTINGS_EXAMPLE.APP_ID;
-            default:
-                return null;
-        }
+
+let _isValid = input => {
+    if (!input)
+        return false;
+    let inputForCheck = input.toString();
+    if (ObjectID.isValid(input.toString())) {
+        if (String(new ObjectID(input)) === inputForCheck) 
+            return true;
+        return false;
     }
+    return false;
+}
+exports._isValid = _isValid;
+/**
+ * 
+ * @param  {...any} params 
+ * @returns 
+ * 
+ * -------cách dùng----------
+ *  if (!checkObjectIDs(authorID, companyID, projectID)){
+ *  ...
+    }
+ */
+exports.checkObjectIDs = (...params) => {
+    let flag = true;
+    let arrParams = lodash.flattenDeep(params);
+    for(let i = 0; i < arrParams.length; i++) {
+        if (!_isValid(arrParams[i]))
+            return flag = false
+    }
+    return flag;
 }

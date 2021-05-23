@@ -1,0 +1,1958 @@
+"use strict";
+const BaseModel                         = require('../../../tools/db/base_model');
+/**
+ * import inter-coll, exter-coll
+ */
+const AUTH__USER_COLL                   = require('../database/auth.user-coll');
+
+
+/**
+ * import inter-model, exter-model
+ */
+
+/**
+ * import util files
+ */
+// const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
+const { randomStringFixLengthCode } 
+                                        = require('../../../tools/utils/string_utils');
+const { hash, compare }                 = require('../../../tools/bcrypt');
+const { sign }                          = require('../../../tools/jwt');
+const { checkObjectIDs }                = require('../../../tools/utils/utils');
+// const ObjectID                      = require('mongoose').Types.ObjectId;
+
+// const BaseModel                     = require('../intalize/base_model');
+// const { isEmptyObject }             = require('../../utils/utils');
+
+// const cfJws                         = require('../../config/cf_jws');
+// const { checkObjectIDs }            = require('../../utils/utils');
+// const XLSX      = require('xlsx');
+
+// const COMPANY_COLL                  = require('../../database/core/company-coll');
+// const USER_COLL                     = require('../../database/core/user-coll');
+// const CONTACT_COLL                  = require('../../database/core/contact-coll');
+// const DEPARTMENT_COLL               = require('../../database/core/department-coll');
+// const POSITION_COLL                 = require('../../database/core/position-coll');
+// const CONTRACT_COLL                 = require('../../database/core/contract-coll');
+// const REMOVE_FILE_COLL              = require('../../database/core/file_removed-coll');
+// const PCM_PLAN_GROUP_COLL           = require('../../database/apps/pcm/pcm_plan_group-coll');
+
+
+// const DB_APP_USER_MODEL             = require('../../models/core/app_user').MODEL;
+// const GROUP_OF_FRIEND_MODEL         = require('../../models/core/group_of_friend').MODEL;
+// const FILE_REMOVE_MODEL             = require('../../models/core/file_removed').MODEL;
+
+// const STRING_UTILS                  = require('../../utils/string_utils');
+// const { sendMailForgetPassword, sendMailNewAccount }    = require('../../mailer/module/mail_user');
+// let { socket_product }              = require('../../config/cf_mode');
+// let { cachingInfoUser } = require('../../utils/caching');
+
+/**
+ * worker: (mail)
+ * sử dụng WORKER_POOLS(WOKER_THREADS) thay_cho sendMailForgetPassword, sendMailNewAccount (MAIN_THREAD)
+ */
+// let workerpool          = require('workerpool');
+// let pool                = workerpool.pool(`${__dirname}/../../workers/mail/mail.worker.js`);
+// let MAIL_CONSTANTS      = require('../../workers/constants/mail');
+
+class Model extends BaseModel {
+
+    constructor() {
+        super(require('../database/auth.user-coll'));
+    }
+    
+    // implement by: KHANHNEY✅ 
+    registerFast({ email, fullname, username, level, department, position, companyID }) {
+        return new Promise(async resolve => {
+            try {
+                if (!email || email == '')
+                    return resolve({ error: true, message: 'mail_invalid' });
+
+                if (!username || username == '')
+                    return resolve({ error: true, message: 'username_invalid' });
+
+                let emailValid      = email.toLowerCase().trim();
+                let usernameValid   = username.toLowerCase().trim();
+                let objectExitsUser = {};
+                objectExitsUser.$or = []
+
+                // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
+                if(usernameValid && usernameValid!=''){
+                    objectExitsUser.$or.push({ username : usernameValid } );
+                }
+
+                if(email && email!=''){
+                    objectExitsUser.$or.push({ email : emailValid });
+                }
+                
+                let isExistUser = await AUTH__USER_COLL.findOne(objectExitsUser);
+
+                // //________KIỂM TRA XEM  department, position, companyID CÓ HỢP LỆ HAY KHÔNG
+                // let checkIllegal = 0;
+                // if(department){
+                //     let departmentInfo = await DEPARTMENT_COLL.findOne({_id: department, company: companyID});
+                //     if(!departmentInfo){
+                //         checkIllegal++;
+                //     }
+                // }
+                
+                // if(position){
+                //     let positionInfo = await POSITION_COLL.findOne({_id: position, company: companyID});
+                //     if(!positionInfo){
+                //         checkIllegal++;
+                //     }
+                // }
+
+                // if (Number(checkIllegal) > 0)
+                //     return resolve({ error: true, message: 'Illegal data' });
+
+                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
+                if (isExistUser)
+                    return resolve({ error: true, message: 'email_exists_or_username_exits' });
+
+                let password = randomStringFixLengthCode(6);
+                let hashPassword = await hash(password, 8);
+                if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' });
+
+                // Lấy thông tin công ty để gán ký hiệu công ty
+                let infoCompany = await COMPANY_COLL.findById(companyID);
+
+                let dataInsert = {
+                    email: emailValid,
+                    password: hashPassword,
+                    company: companyID
+                }
+                if(fullname){
+                    dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
+                }
+                if(usernameValid){
+                    dataInsert.username = `${usernameValid}.${infoCompany.sign}`;
+                }
+                // if(department && ObjectID.isValid(department)){
+                //     dataInsert.department = department;
+                // }
+                // if(position && ObjectID.isValid(position)){
+                //     dataInsert.position = position;
+                // }
+                if(Number(level) == 0 || Number(level) == 1){
+                    dataInsert.level = Number(level);
+                }
+
+                let infoUserAfterInsert = await this.insertData(dataInsert);
+                if (!infoUserAfterInsert)
+                    return resolve({ error: true, message: 'cannot_insert_data' });
+
+                // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
+                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+                // let listUserInCompany = await USER_COLL.find({ company: companyID });
+                // let arrUserID = listUserInCompany.map(item => item._id);
+                // // Update bạn bè với các thành viên của công ty
+                // let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                //     friends: arrUserID,
+                // }, { new: true });
+
+                // // Update cho các thành viên công ty nhận bạn bè mới
+                // for(const item of listUserInCompany){
+                //     await USER_COLL.findByIdAndUpdate(item._id, {
+                //         $addToSet: {
+                //             friends: infoUserAfterInsert._id
+                //         }
+                //     }, { new: true });
+                // }
+
+                //TODO add event gửi mail (tích hợp phần event sang service khác)
+                
+                // sendMailNewAccount(email, fullname, password);
+                return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true });
+            } catch (error) {
+                resolve({ error: true, message: error.message });
+            } 
+        });
+    }
+
+    // implement by: KHANHNEY✅ 
+    registerSimple({ email, fullname, username, level, department, position, companyID }) {
+        return new Promise(async resolve => {
+            try {
+
+                if (!email || email == '')
+                    return resolve({ error: true, message: 'mail_invalid' });
+
+                if (!username || username == '')
+                    return resolve({ error: true, message: 'username_invalid' });
+
+                let emailValid      = email.toLowerCase().trim();
+                let usernameValid   = username.toLowerCase().trim();
+
+                let objectExitsUser = {};
+                objectExitsUser.$or = []
+
+                // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
+                if(username && username!=''){
+                    objectExitsUser.$or.push({ username : usernameValid } );
+                }
+                if(email && email!=''){
+                    objectExitsUser.$or.push({ email : emailValid });
+                }
+
+                let isExistUser = await USER_COLL.findOne(objectExitsUser);
+
+                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
+                if (isExistUser)
+                    return resolve({ error: true, message: 'email_exists' });
+
+                let password = 'Trixgo12345@#';
+
+                let hashPassword = await hash(password, 8);
+                if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' });
+
+                // Lấy thông tin công ty để gán ký hiệu công ty
+                let infoCompany = await COMPANY_COLL.findById(companyID);
+
+                let dataInsert = {
+                    email: emailValid,
+                    password: hashPassword,
+                    company: companyID
+                }
+                if(fullname){
+                    dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
+                }
+                if(usernameValid){
+                    dataInsert.username = `${usernameValid}.${infoCompany.sign}`;
+                }
+                if(department && ObjectID.isValid(department)){
+                    dataInsert.department = department;
+                }
+                if(position && ObjectID.isValid(position)){
+                    dataInsert.position = position;
+                }
+                if(Number(level) === 0 || Number(level) === 1){
+                    dataInsert.level = Number(level);
+                }
+
+                let infoUserAfterInsert = await this.insertData(dataInsert);
+                if (!infoUserAfterInsert)
+                    return resolve({ error: true, message: 'cannot_insert_data' });
+
+                // /* TODO: TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
+                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+                // let listUserInCompany = await USER_COLL.find({ company: companyID });
+                // let arrUserID = listUserInCompany.map(item => item._id);
+                // // Update bạn bè với các thành viên của công ty
+                // let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                //     friends: arrUserID,
+                // }, { new: true });
+
+                // // Update cho các thành viên công ty nhận bạn bè mới
+                // for(const item of listUserInCompany){
+                //     await USER_COLL.findByIdAndUpdate(item._id, {
+                //         $addToSet: {
+                //             friends: infoUserAfterInsert._id
+                //         }
+                //     }, { new: true });
+                // }
+                
+                return resolve({ error: false, data: infoUserAfterInsert });
+            } catch (error) {
+                resolve({ error: true, message: error.message });
+            } 
+        });
+    }
+
+    // implement by: KHANHNEY✅ 
+    signin({ email, password }) {
+        return new Promise(async resolve => {
+            try {
+                let emailValid      = email.toLowerCase().trim();
+                let isExist         = await AUTH__USER_COLL.findOne({ email: emailValid });
+                if (!isExist)
+                    return resolve({ error: true, message: 'email_not_exist' });
+                
+                const isMatchPass = await compare(password, isExist.password);
+                if (!isMatchPass) return resolve({
+                    error: true,
+                    message: 'password_not_exist'
+                });
+
+                if (isExist.status == 0) 
+                    return resolve({ error: true, message: 'user_blocked' });
+                if (isExist.status == -1) 
+                    return resolve({ error: true, message: 'user_not_active' });
+                
+                // delete isExist.password;
+                // delete isExist.bookmarks;
+                // delete isExist.sendToFriends;
+                // delete isExist.receiveFromFriends;
+                // delete isExist.friends;
+                // delete isExist.tags;
+
+                let newExist = {
+                    username: isExist.username,
+                    email: isExist.email,
+                    phone: isExist.phone,
+                    name: isExist.name,
+                    fullname: isExist.fullname,
+                    birthDay: isExist.birthDay,
+                    company: isExist.company,
+                    department: isExist.department,
+                    position: isExist.position,
+                    image: isExist.image,
+                    signature: isExist.signature,
+                    status: isExist.status,
+                    level: isExist.level,
+                    numLog: isExist.numLog,
+                    lastLogs: isExist.lastLogs,
+                    noticeConfig: isExist.noticeConfig,
+                    deviceName: isExist.deviceName,
+                    deviceID: isExist.deviceID,
+                    registrationID: isExist.registrationID,
+                    _id: isExist._id,
+                    config: isExist.config
+                }
+
+                const token = sign({ infoUser: newExist }, cfJws.secret);
+
+                // update lastLog of user
+                await USER_COLL.findOneAndUpdate({ email: emailValid }, {
+                    lastLog: new Date()
+                });
+
+                return resolve({
+                    error: false,
+                    data : { user: newExist, token }
+                });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // implement by: KHANHNEY✅ 
+    signinWithMobile({ email, password, deviceID, deviceName, registrationID }) {
+        return new Promise(async resolve => {
+            try {
+                let isExist = await AUTH__USER_COLL.findOne({ email });
+                if (!isExist) return resolve({ error: true, message: 'email_not_exist' });
+                
+                let newExist = {
+                    username: isExist.username,
+                    fullname: isExist.fullname,
+                    email: isExist.email,
+                    phone: isExist.phone,
+                    birthDay: isExist.birthDay,
+                    _id: isExist._id,
+                    image: isExist.image,
+                    config: isExist.config
+                }
+
+                const isMatchPass = await compare(password, isExist.password);
+                if (!isMatchPass) return resolve({
+                    error: true,
+                    message: 'password_not_exist'
+                });
+                
+                delete isExist.password;
+                const token = sign({ infoUser: newExist }, cfJws.secret);
+
+                /**
+                 * UPDATE LAST DEVICE (cập nhật device cuối cùng login)
+                 * Nếu DeviceID tồn tại => cập nhật deviceName + fcm_token
+                 */
+                let devices     = isExist.devices;
+                let newDevices  = [];
+
+                let itemNewDevice = { deviceName, deviceID, registrationID }
+                if (devices.length) {
+                    devices.forEach(device => {
+                        let _device = device;
+                        if (device.deviceID == itemNewDevice.deviceID) {
+                            _device = {
+                                deviceID :  device.deviceID, 
+                                deviceName: device.deviceName, 
+                                registrationID : registrationID
+                            };
+                        } 
+                        newDevices.push(_device);
+                    });
+                    if (!newDevices.find(item => item.deviceID === itemNewDevice.deviceID)) 
+                        newDevices.push(itemNewDevice)
+                } else {
+                    newDevices = [
+                        itemNewDevice
+                    ]
+                }
+
+                let infoAfterUpdateWithRegistration = await AUTH__USER_COLL.findByIdAndUpdate(isExist._id, {
+                    devices :  newDevices, 
+                    modifyAt: Date.now(),
+                    lastLog: Date.now()
+                }, { new: true });
+
+                return resolve({
+                    error: false,
+                    data : { user: newExist, token }
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // insert({ company, apartment, title, manager, email, password, phone, username, name, fullname, birthday, image, signature, level, userCreate }) {
+    //     const that = this;
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if((!username && !email) || (username && username =='' && email && email =='') ){
+    //                 return resolve({ error: true, message: 'email_exists_and_username_exits' });
+    //             }
+
+    //             if(!ObjectID.isValid(company) || !ObjectID.isValid(apartment) || !ObjectID.isValid(title) 
+    //                || !ObjectID.isValid(manager) || !ObjectID.isValid(userCreate) || Number.isNaN(Number(level)) )
+    //                 return resolve({ error: true, message: "param_not_valid" });
+                
+    //             if (!validEmail(email) || !checkValidPhoneNumber(phone))
+    //                 return resolve({ error: true, message: 'email_or_phone_not_valid' });
+
+    //             let emailValid = email.toLowerCase();
+    //             let usernameValid = removeUtf8AndJoinSpace(username.toLowerCase());
+    //             let isExist = await USER_COLL.findOne({ 
+    //                 $or: [
+    //                     { username: usernameValid },
+    //                     { email   : emailValid },
+    //                     { phone   :  phone }
+    //                 ]
+    //             }); 
+    //             if(isExist)
+    //                 return resolve({ error: true, message: "username_or_email_or_phone_existed" });
+    //             let hashpass = await hash(password, 8);
+
+    //             // Lấy thông tin công ty để gán ký hiệu công ty vào tên dự án
+    //             let infoCompany = await COMPANY_COLL.findById(company);
+    //             let infoUserAfterInsert = await that.insertData({
+    //                 company, 
+    //                 apartment, 
+    //                 title, 
+    //                 manager, 
+    //                 email: emailValid, 
+    //                 password: hashpass, 
+    //                 phone, 
+    //                 username: usernameValid, 
+    //                 name, 
+    //                 fullname: `${fullname}-${infoCompany.sign}`, 
+    //                 birthday, 
+    //                 image, 
+    //                 signature, 
+    //                 level, 
+    //                 userCreate
+    //             });
+
+    //             if(!infoUserAfterInsert)
+    //                 return resolve({ error: true, message: "cannot_insert" });
+    //             return resolve({ error: false, data: infoUserAfterInsert })
+
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // // Tạo tài khoản thành viên (STEP 2)
+    // insertFromExcel({ pathInternalFile, companyID, userCreate }) {
+    //     const that = this;
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let wb = XLSX.readFile(pathInternalFile);
+
+    //             let dataUsers = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[6]], { header: 1 });
+    //             dataUsers.splice(0, 2);
+
+    //             // Khai báo password mặc định => cung cấp cho Supporter xử lý
+    //             let password = '12345TRX@#';
+    //             let hashPassword = await hash(password, 8);
+    //             if (!hashPassword) 
+    //                 return resolve({ error: true, message: 'cannot_hash_password' });
+                
+    //             // Đánh dấu lỗi
+    //             let checkIllegal = 0;
+
+    //             // Kiểm tra Danh mục dự án, phòng ban xem có tồn tại trong companyID hay không (trong phương thức insert)
+    //             for(const item of dataUsers){
+    //                 let infoDepartment = await DEPARTMENT_COLL.findOne({_id: item[10], company: companyID});
+    //                 if(!infoDepartment){
+    //                     checkIllegal++;
+    //                 }
+    //                 let infoPosition = await POSITION_COLL.findOne({_id: item[11], company: companyID});
+    //                 if(!infoPosition){
+    //                     checkIllegal++;
+    //                 }
+    //             }
+
+    //             if(Number(checkIllegal) > 0){
+    //                 return resolve({ error: true, message: 'Danh mục không tồn tại trong công ty/Dữ liệu không hợp lệ' });
+    //             }else{
+    //                 for(const item of dataUsers){
+    //                     if(item[2] != "" && ObjectID.isValid(item[10]) && ObjectID.isValid(item[11])){
+    //                         if(item[8] != null && Number(item[8]) === 2){
+    //                             await that.registerSimple({ 
+    //                                 email: item[2], 
+    //                                 fullname: item[1], 
+    //                                 username: item[3], 
+    //                                 level: 0, 
+    //                                 department: item[10], 
+    //                                 position: item[11], 
+    //                                 companyID
+    //                             });
+    //                         }else{
+    //                             await that.registerFast({ 
+    //                                 fullname: item[1],
+    //                                 email: item[2], 
+    //                                 username: item[3], 
+    //                                 level: 1,
+    //                                 department: item[10], 
+    //                                 position: item[11],
+    //                                 companyID 
+    //                             });
+    //                         }
+    //                     }
+    //                 }
+
+    //                 return resolve({ error: false, message: 'read_successfull' });
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+
+    // update({ userID,  email, username, fullname, department, position, level, status, authorID, session }){
+    //     const that = this;
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID) || !ObjectID.isValid(department) || !ObjectID.isValid(position) || !ObjectID.isValid(authorID) )
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             if (!validEmail(email))
+    //                 return resolve({ error: true, message: 'email_or_phone_not_valid' });
+    //             let emailValid = email.toLowerCase();
+
+    //             // Kiểm tra không cho phép trùng email/ngoại trừ chính nó không đổi
+    //             let isExist = await USER_COLL.findOne({ 
+    //                 email: emailValid,
+    //                 _id: {
+    //                     $ne: userID
+    //                 }
+    //             }); 
+    //             if(isExist)
+    //                 return resolve({ error: true, message: "username_or_email_or_phone_existed" });
+
+    //             await that.updateWhereClause({ _id: userID }, {
+    //                 email, username, fullname, department, position, level, status
+    //             }, authorID);
+
+    //             await cachingInfoUser(userID, session, email);
+                
+    //             return resolve({ error: false, message: "udpate_success" })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // updateByUser({ userID,  username, email, fullname, phone, birthday, gender, authorID, session }){
+    //     const that = this;
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID) || !ObjectID.isValid(authorID) )
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             if (!validEmail(email))
+    //                 return resolve({ error: true, message: 'email_not_valid' });
+    //             if(!checkValidPhoneNumber(phone))
+    //                 return resolve({ error: true, message: 'phone_not_valid' });
+
+    //             let emailValid = email.toLowerCase();
+    //             let usernameValid = removeUtf8AndJoinSpace(username.toLowerCase());
+    //             let isExist = await USER_COLL.findOne({
+    //                 $or: [
+    //                     { email   : emailValid },
+    //                 ],
+    //                 _id: {
+    //                     $ne: userID
+    //                 }
+    //             });
+    //             if(isExist)
+    //                 return resolve({ error: true, message: "username_or_email_or_phone_existed" });
+
+    //             let dataUpdate = {
+    //                 email, username, fullname, phone, birthDay: birthday
+    //             }
+    //             if(gender && [1,2,3].includes(Number(gender))){
+    //                 dataUpdate.gender = gender;
+    //             }
+
+    //             await that.updateWhereClause({ _id: userID }, dataUpdate, authorID);
+
+    //             await cachingInfoUser(userID, session, email)
+
+    //             return resolve({ error: false, message: "udpate_success" });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+
+    getInfo({ userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUser = await USER_COLL.findById(userID)
+                    .populate('company position')
+                    .populate('department')
+                    .populate({
+                        path: 'sendToFriends',
+                        select: '_id fullname image company',
+                        populate: {
+                            path: 'company',
+                            select: '_id name',
+                            model: 'company'
+                        }
+                    })
+                    .populate({
+                        path: 'receiveFromFriends',
+                        select: '_id fullname image company',
+                        populate: {
+                            path: 'company',
+                            select: '_id name',
+                            model: 'company'
+                        }
+                    })
+                    .populate({
+                        path: 'friends',
+                        select: '_id fullname image company birthDay',
+                        populate: {
+                            path: 'company',
+                            select: '_id name sign',
+                            model: 'company'
+                        }
+                    })
+                    .populate({
+                        path:'tags',
+                        select:'_id name'
+                    })
+                    .populate({
+                        path: 'recentlyFriends',
+                        select: '_id fullname image company',
+                        populate: {
+                            path: 'company',
+                            select: '_id name',
+                            model: 'company'
+                        }
+                    })
+                // console.log({ infoUser });
+                return resolve({ error: false, data: infoUser });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+    // /**
+    //  * Name: Cập nhật avatar
+    //  * Author: Depv
+    //  * update: 
+    //  *  17/10/2020 -- Depv thêm xóa file cũ bằng cách thêm vào file remove
+    //  *             -- Depv nếu upload thành công thì xóa file hiện tại ra khỏi file remove
+    //  */
+    // updateImage({ userID, image , userUpdate, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             //console.log({ userID, image , userUpdate, session });
+    //             if(!ObjectID.isValid(userID) || !ObjectID.isValid(userUpdate))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let infoUserImageOld = await USER_COLL.findById(userID);
+    //             let { image: imageOld } = infoUserImageOld;
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 image, userUpdate, modifyAt: Date.now()
+    //             }, { new: true });
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+                
+    //             await cachingInfoUser(userID, session);
+
+    //             // Xóa ảnh củ trên S3 bằng cách push vô file-remove
+    //             await FILE_REMOVE_MODEL.insert({ name: imageOld, path: `files/db/users/${imageOld}` });
+
+    //             // pull file hiện tại ra khỏi file-remove
+    //             await REMOVE_FILE_COLL.findOneAndDelete({ path: `files/db/users/${image}`});
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+    // /**
+    //  * Name: Cập nhật chữ ký
+    //  * Author: Depv
+    //  * update: 
+    //  *  17/10/2020 -- Depv thêm xóa file cũ bằng cách thêm vào file remove
+    //  *             -- Depv nếu upload thành công thì xóa file hiện tại ra khỏi file remove
+    //  */
+    // updateSignature({ userID, signature , userUpdate, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let infoUserSignatureOld = await USER_COLL.findById(userID);
+    //             let { signature: signatureOld } = infoUserSignatureOld;
+
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 signature, userUpdate, modifyAt: Date.now()
+    //             }, { new: true });
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             // Xóa ảnh củ trên S3 bằng cách push vô file-remove
+    //             await FILE_REMOVE_MODEL.insert({ name: signatureOld, path: `files/db/users/${signatureOld}` });
+
+    //             // pull file hiện tại ra khỏi file-remove
+    //             await REMOVE_FILE_COLL.findOneAndDelete({ path: `files/db/users/${signature}`});
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // // Recover Pass
+    // checkEmailRecover({ emailRecover }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             let checkEmailRecoverExist = await USER_COLL.findOne({ email: emailRecover });
+    //             if(!checkEmailRecoverExist)
+    //                 return resolve({ error: true, message: "mail_not_exist" });
+    //             let codeReset = makeid(6);
+    //             let infoUserAfterInsert = await USER_COLL.findOneAndUpdate({ email: emailRecover }, {
+    //                 codeReset
+    //             }, { new: true });
+    //             // TODO Send mail voi codeRest and email Recover
+    //             return resolve({ error: false, message: "mail_exist" })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // checkCodeRecoverWithEmailRecover({ emailRecover, codeReset }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             let checkCodeRecover = await USER_COLL.findOne({ email: emailRecover, codeReset });
+    //             if(!checkCodeRecover)
+    //                 return resolve({ error: true, message: "code_reset_not_match" });
+    //             return resolve({ error: false, data: checkCodeRecover  });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // updateAfterForgetPassword({ email, codeReset, newPass, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //                 let hashpass = await hash(newPass, 8);
+    //             let infoUserAfterUpdate = await USER_COLL.findOneAndUpdate({ email, codeReset }, {
+    //                 password: hashpass
+    //             })
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+
+    //             await cachingInfoUser(session, email);
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Cập nhật mật khẩu
+    //  * Đệ
+    //  */
+    // updatePassword({ userID, password, currentPass, newPass, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let checkCurrentPass = await compare( currentPass, password);
+    //             if(!checkCurrentPass)
+    //                 return resolve({ error: true, message: "current_password_faild" });
+    //             let hashpass = await hash(newPass, 8);
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 password: hashpass
+    //             }, { new: true })
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Cập nhật ngôn ngữ(lang)
+    //  * Đệ
+    //  */
+    // updateLanguage({ userID, lang, session }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 lang
+    //             }, { new: true})
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // //_______Cấu hình hiển thị view mặc định ở trang chủ
+    // updateDisplayHomeConfig({ userID, displayHomeConfig, session }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 displayHomeConfig: (!isNaN(displayHomeConfig) && [1,2].includes(Number(displayHomeConfig))) ? Number(displayHomeConfig) : 1
+    //             }, { new: true})
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // //_______Cấu hình giao diện chi tiết công việc
+    // updateDisplayPcmConfig({ userID, displayPcmConfig, session }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 displayPcmConfig: (!isNaN(displayPcmConfig) && [1,2].includes(Number(displayPcmConfig))) ? Number(displayPcmConfig) : 1
+    //             }, { new: true})
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Danh sách thành viên hệ thống
+    //  * Hiepnh
+    //  */
+    // getListMemberOfSystem({}) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let listUsers = await USER_COLL.find({ })
+    //                             .populate({
+    //                                 path: 'company',
+    //                                 select: '_id name sign'
+    //                             })
+    //                             .populate('tags')
+    //                             .populate('department')
+    //                             .populate('position')
+    //                             .populate('userCreate')
+    //                             .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Tìm kiếm thành viên là bạn bè của userID
+    //  * Hiepnh
+    //  */
+    // getListMemberWithKey({ key, userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let infoUser = await USER_COLL.findById(userID);
+    //             let listUsers = await USER_COLL.find({
+    //                 $and: [
+    //                     {status: 1},
+    //                     { _id: { "$in": infoUser.friends } },
+    //                     {
+    //                         $or: [
+    //                             { fullname: new RegExp(key, 'i') },
+    //                             { email:    new RegExp(key, 'i') },
+    //                         ],
+    //                     },
+    //                 ]
+    //             })
+    //             .populate({
+    //                 path: 'company',
+    //                 select: '_id name sign'
+    //             })
+    //             .populate('department')
+    //             .populate('position')
+    //             .populate('userCreate')
+    //             .populate('userUpdate')
+    //             .populate('tags')
+    //             .limit(30)
+    //             .sort({modifyAt: -1})
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // /**
+    //  * Gửi yêu cầu kết bạn tới người khác
+    //  * Hiepnh
+    //  */
+    // sendRequestToFriends({ userID, members, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+
+    //             for (const receiveID of members){   
+    //                 await USER_COLL.findByIdAndUpdate(userID, {
+    //                     $addToSet: { 
+    //                         sendToFriends: receiveID
+    //                     }
+    //                 }, { new: true });
+
+    //                 await USER_COLL.findByIdAndUpdate(receiveID, {
+    //                     $addToSet: { 
+    //                         receiveFromFriends: userID
+    //                     }
+    //                 }, { new: true });
+
+    //                 await cachingInfoUser(userID, session);
+    //             }
+
+    //             return resolve({ error: false, message: 'action_finished' });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Chấp nhận kết bạn
+    //  * Hiepnh
+    //  */
+    // acceptFriendRequest({ userID, friendID, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+
+    //             // Kiểm tra xem số bạn bè đã vượt ngưỡng quy định hay chưa
+    //             let infoUser = await USER_COLL.findById(userID);
+    //             if(infoUser.friends && infoUser.friends.length >= 1500){
+    //                 return resolve({ error: true, message: 'Số bạn bè đã vượt quá quy định (500)' });
+    //             }else{
+    //                 let infoUserSendAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                     $pull: {
+    //                         receiveFromFriends: friendID
+    //                     },
+    //                     $addToSet: {
+    //                         friends: friendID
+    //                     }
+    //                 }, { new: true });
+
+    //                 await cachingInfoUser(userID, session);
+                   
+    //                 let infoUserReceiveAfterUpdate = await USER_COLL.findByIdAndUpdate(friendID, {
+    //                     $pull: {
+    //                         sendToFriends: userID
+    //                     },
+    //                     $addToSet: {
+    //                         friends: userID
+    //                     }
+    //                 }, { new: true });
+                
+    //                 if (!infoUserSendAfterUpdate || !infoUserReceiveAfterUpdate)
+    //                     res.json({ error: true, message: 'cannot_accept_friend_request' });
+    
+    //                 return resolve({ error: false, data: infoUserSendAfterUpdate });
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Hủy lời mời kết bạn
+    //  * Hiepnh
+    //  */
+    // removeFriendRequest({ userID, friendID, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+
+    //             let infoUserSendAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 $pull: {
+    //                     receiveFromFriends: friendID
+    //                 },
+    //             }, { new: true });
+
+    //             await cachingInfoUser(userID, session);
+               
+    //             let infoUserReceiveAfterUpdate = await USER_COLL.findByIdAndUpdate(friendID, {
+    //                 $pull: {
+    //                     sendToFriends: userID
+    //                 },
+    //             }, { new: true });
+
+    //             // Xóa friend trong tất cả các nhóm bạn
+            
+    //             if (!infoUserSendAfterUpdate || !infoUserReceiveAfterUpdate)
+    //                 res.json({ error: true, message: 'cannot_remove_friend_request' });
+
+    //             return resolve({ error: false, data: infoUserSendAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Hủy bạn bè (unfriend)
+    //  * Hiepnh
+    //  */
+    // unFriend({ userID, friendID, session }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+
+    //             let infoUserSendAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 $pull: {
+    //                     friends: friendID
+    //                 },
+    //             }, { new: true });
+                
+    //             await cachingInfoUser(userID, session);
+               
+    //             let infoUserReceiveAfterUpdate = await USER_COLL.findByIdAndUpdate(friendID, {
+    //                 $pull: {
+    //                     friends: userID
+    //                 },
+    //             }, { new: true });
+
+    //             // Xóa bạn bè nằm trong các group
+    //             let infoAfterRemove = await GROUP_OF_FRIEND_MODEL.removeFriendInGroups({ userID, friendID });
+            
+    //             if (!infoUserSendAfterUpdate || !infoUserReceiveAfterUpdate)
+    //                 res.json({ error: true, message: 'cannot_remove_friend_request' });
+
+    //             return resolve({ error: false, data: infoUserSendAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Tìm kiếm bạn bè của user
+    //  * Hiepnh [x]
+    //  */
+    // getListFriendWithKey({ userID, key }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+                    
+    //             let infoUser = await USER_COLL.findById(userID);
+    //             if(!infoUser)
+    //                 return resolve({ error: true, message: "cannot_get_info" });
+
+    //             let listFriends = await USER_COLL.find({
+    //                     status: 1,
+    //                     _id:   {
+    //                         $in: infoUser.friends.map(item => ObjectID(item))
+    //                     },
+    //                     $or: [
+    //                         { fullname: new RegExp(key, 'i') },
+    //                         { email:    new RegExp(key, 'i') },
+    //                     ]
+    //                 })
+    //                 .populate({
+    //                     path: 'company',
+    //                     select: '_id name sign'
+    //                 })
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listFriends });
+
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // /**
+    //  * Name: Danh sách bạn bè
+    //  * Hiepnh [x]
+    //  */
+    // getListMyFriend({ userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+                    
+    //             let infoUser = await USER_COLL.findById(userID);
+    //             if(!infoUser)
+    //                 return resolve({ error: true, message: "cannot_get_info" });
+
+    //             let listFriends = await USER_COLL.find({
+    //                     _id:   {
+    //                         $in: infoUser.friends.map(item => ObjectID(item))
+    //                     },
+    //                 })
+    //                 .populate({
+    //                     path: 'company',
+    //                     select: '_id name sign'
+    //                 })
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listFriends });
+
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // /**
+    //  * Name: Danh sách bạn bè có phân trang
+    //  * Author: Depv
+    //  */
+    // getListMyFriendWithPaging({ userID, page = 1, key }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+                
+    //             let limit = 30;
+                
+    //             let infoUser = await USER_COLL.findById(userID);
+    //             if(!infoUser)
+    //                 return resolve({ error: true, message: "cannot_get_info" });
+
+    //             let conditionSearch = {};
+    //             if(key){
+    //                 conditionSearch.$or = [
+    //                     { fullname: new RegExp(key, 'i') },
+    //                     { email:    new RegExp(key, 'i') },
+    //                 ]
+    //             }
+
+    //             let listFriends = await USER_COLL.find({
+    //                     _id:   {
+    //                         $in: infoUser.friends.map(item => ObjectID(item))
+    //                     },
+    //                     ...conditionSearch
+    //                 })
+    //                 .populate({
+    //                     path: 'company position contact',
+    //                     select: '_id name sign'
+    //                 })
+    //                 .select('_id fullname image')
+    //                 .limit(limit * 1)
+    //                 .skip((page - 1) * limit);
+
+    //             const count = await USER_COLL.count({
+    //                 _id:   {
+    //                     $in: infoUser.friends.map(item => ObjectID(item))
+    //                 },
+    //             });
+
+    //             return resolve({ error: false, data: listFriends, totalPages: Math.ceil(count / limit), currentPage: +page });
+
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // autoAddAllToFriends({ userID, session }) {
+    //     console.log('ok===============>>>>')
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let listUserInSystem = await USER_COLL.find({ });
+    //             let arrUserID = listUserInSystem.map(item => item._id);
+
+    //             // Update bạn bè với các thành viên của hệ thống
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                     friends: arrUserID,
+    //                     sendToFriends: [],
+    //                     receiveFromFriends: [],
+    //                 }, { new: true });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             // Update cho các thành viên công ty nhận bạn bè mới
+    //             for(const item of listUserInSystem){
+    //                 let infoFriend = await USER_COLL.findByIdAndUpdate(item._id, {
+    //                     $addToSet: {
+    //                         friends: userID
+    //                     },
+    //                     $pull: {
+    //                         receiveFromFriends: userID,
+    //                         sendToFriends: userID
+    //                     },
+    //                 }, { new: true });
+
+    //                 if(!infoFriend){
+    //                     console.log('error====================>>>>')
+    //                 }
+    //             }
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             resolve({ error: true, message: error.message });
+    //         } 
+    //     });
+    // }
+
+    // autoUnfriendToAll({ userID, session }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let listUserInSystem = await USER_COLL.find({ });
+    //             let arrUserID = listUserInSystem.map(item => item._id);
+
+    //             // Update hủy bạn bè với các thành viên của hệ thống
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                     friends: [],
+    //                     sendToFriends: [],
+    //                     receiveFromFriends: [],
+    //                 }, { new: true });
+
+    //             await cachingInfoUser(userID, session);
+
+    //             // Update cho các thành viên công ty hủy bạn bè với mình
+    //             for(const item of listUserInSystem){
+    //                 let infoFriend = await USER_COLL.findByIdAndUpdate(item._id, {
+    //                     $pull: {
+    //                         friends: userID,
+    //                         receiveFromFriends: userID,
+    //                         sendToFriends: userID
+    //                     },
+    //                 }, { new: true });
+
+    //                 if(!infoFriend){
+    //                     console.log('error====================>>>>')
+    //                 }
+    //             }
+
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             resolve({ error: true, message: error.message });
+    //         } 
+    //     });
+    // }
+
+    // /**
+    //  * Danh sách thành viên của công ty
+    //  * Hiepnh [x]
+    //  */
+    // getListMemberOfCompany({ companyID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(companyID))
+    //                 return resolve({ error: true, message: 'param_invalid' })
+    //             let listUsers = await USER_COLL.find({ company: companyID })
+    //                 .populate('company')
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    //   /**
+    //  * Danh sách thành viên của công ty search theo key
+    //  * Hiepnh [x]
+    //  */
+    // getListMemberOfCompanyByKey({ key, companyID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(companyID))
+    //                 return resolve({ error: true, message: 'param_invalid' })
+    //             let listUsers = await USER_COLL.find({ 
+    //                     status: 1,
+    //                     company: companyID, 
+    //                     $or: [
+    //                         { fullname: new RegExp(key, 'i') },
+    //                         { email:    new RegExp(key, 'i') },
+    //                     ]
+    //                 })
+    //                 .populate('company')
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Danh sách các thành viên đã link với danh bạ của công ty
+    //  * Hiepnh [x]
+    //  */
+    // getListMemberLinkToContactOfCompany({companyID}){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(companyID))
+    //                 return resolve({ error: true, message: 'param_not_valid' });
+
+    //             let listContacts = await CONTACT_COLL.aggregate([
+    //                 {
+    //                     $match: {
+    //                         company: ObjectID(companyID),
+    //                         linkUser: {$ne: null}
+    //                     }
+    //                 }, 
+    //                 {
+    //                     $group: {
+    //                         _id: { user: '$linkUser' },
+    //                     }
+    //                 }
+    //             ]).sort({"_id.user":"asc"});
+
+    //             // if(!listUsers)
+    //             //     return resolve({ error: true, message: "cannot_get_list" });
+
+    //             let members = listContacts.map(item => ObjectID(item._id.user));
+
+    //             let listUsers = await USER_COLL.find({ 
+    //                     _id: {$in: members},
+    //                 })
+    //                 .populate('company')
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+
+    //   /**
+    //  * Danh sách các thành viên đã link với danh bạ của công ty tìm kiếm theo tên
+    //  * depv
+    //  */
+    // getListMemberLinkToContactOfCompanyByKey({ key, companyID}){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(companyID))
+    //                 return resolve({ error: true, message: 'param_not_valid' });
+
+    //             let listContacts = await CONTACT_COLL.aggregate([
+    //                 {
+    //                     $match: {
+    //                         company: ObjectID(companyID),
+    //                         linkUser: {$ne: null}
+    //                     }
+    //                 }, 
+    //                 {
+    //                     $group: {
+    //                         _id: { user: '$linkUser' },
+    //                     }
+    //                 }
+    //             ]).sort({"_id.user":"asc"});
+
+    //             let members = listContacts.map(item => ObjectID(item._id.user));
+    //             let listUsers = await USER_COLL.find({ 
+    //                     status: 1,
+    //                     _id: {$in: members},
+    //                     $or: [
+    //                         { fullname: new RegExp(key, 'i') },
+    //                         { email:    new RegExp(key, 'i') },
+    //                     ]
+    //                 })
+    //                 .populate('company')
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Tìm kiếm thành viên của công ty
+    //  * Hiepnh [x]
+    //  */
+    // getListMemberOfCompanyWithKey({ companyID, key }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(companyID))
+    //                 return resolve({ error: true, message: 'param_invalid' })
+
+    //             let listUsers = await USER_COLL.find({
+    //                     status: 1,
+    //                     company: companyID,
+    //                     $or: [
+    //                         { fullname: new RegExp(key, 'i') },
+    //                         { email:    new RegExp(key, 'i') },
+    //                     ]
+    //                 })                    
+    //                 .populate('company')
+    //                 .populate('department')
+    //                 .populate('position')
+    //                 .populate('userCreate')
+    //                 .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // getListUserNotRegisterApp({ companyID, appID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let listAppMemberOfCompany = await DB_APP_USER_MODEL.getListMemberOfCompanyAndApp({ company: companyID, app: appID })
+    //             let listAppMemberOfCompanies = [];
+    //             if (listAppMemberOfCompany.data.length > 0)
+    //                 listAppMemberOfCompanies = listAppMemberOfCompany.data[0].data;
+                
+    //             let listAppMemberOfCompaniesWithoutMetaData = listAppMemberOfCompanies.map(item => item.user._id.toString());
+    //             let listAppOfCompany = await this.getListMemberOfCompany({ companyID });
+    //             let { data: listMemberOfCompany } = listAppOfCompany;
+
+    //             /**
+    //              * GET LIST MEMBER OF COMPANY NOT REGISTER APP
+    //              */
+    //             listMemberOfCompany = listMemberOfCompany.filter(member => !listAppMemberOfCompaniesWithoutMetaData.includes(member._id.toString()));
+                
+    //             return resolve({ error: false, data: listMemberOfCompany })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // checkAuth({ token }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let decoded = await jwt.verify(token, cfJws.secret);
+    //             if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
+
+    //             const { infoUser: { _id: userIDSession } } = decoded;
+                
+    //             if (!userIDSession) return resolve({ error: true, message: 'token_not_valid' });
+    //             let infoUserDB = await USER_COLL.findOne({ status: 1, _id: userIDSession });
+
+    //             if (!infoUserDB) 
+    //                 return resolve({ error: true, message: 'token_not_valid' });
+    //             return resolve({ error: false, data: decoded });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: 'token_not_valid' });
+    //         }
+    //     })
+    // }
+
+    // // -----------------------GCM-----------------------//
+    // /**
+    //  * FUNCTIOn được gọi sau mỗi lần user đăng nhập, xử lý bao gồm:
+    //  * 1/ kiểm tra deviceID đã tồn tại, 
+    //     - nếu deviceID là deviceID -> return
+    //     - nếu deviceID là deviceID mới -> update thông tin device và registrationID
+    //  * 2/ ko tồn tại deviceID -> cập nhật thông tin deviceID và registrationID
+    //  */
+    // registerNewDevice({ deviceName, deviceID, registrationID, userID, session }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let isExist = await USER_COLL.findOne({
+    //                 _id: userID,
+    //                 deviceID: {
+    //                     $exists: true,
+    //                     $ne: null
+    //                 }
+    //             });
+
+    //             if (!isExist){
+    //                 let infoUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                     deviceName, deviceID, registrationID, updateAt: Date.now()
+    //                 }, { new: true });
+
+    //                 await cachingInfoUser(userID, session);
+    //             }
+
+    //             else if (!Object.is(isExist.deviceID, deviceID)){
+    //                 let infoUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                     deviceName, deviceID, registrationID, updateAt: Date.now()
+    //                 }, { new: true });
+
+    //                 await cachingInfoUser(userID, session);
+    //             }
+                
+    //             if (!infoUpdate)
+    //                 return resolve({ error: true, message: 'cannot_update_token_device' });
+                    
+    //             return resolve({ error: false, message: 'update_token_device_success' });
+
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // removeRegistrationDevice({ userID, deviceID, session }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(userID))
+    //                 return resolve({ error: true, message: 'user_id_invalid' });
+
+                
+    //             if(!deviceID) //device -> iOS || Android
+    //                 return resolve({ error: true, message: 'device_id_invalid' });
+
+    //             let infoUser =  await USER_COLL.findById(userID);
+                
+    //             let devices  = infoUser.devices;
+
+    //             let newDevices;
+
+    //             if(devices && devices.length>0){
+    //                 newDevices = [];
+    //                 devices.forEach(device=>{
+    //                     if(device.deviceID != deviceID){
+    //                         newDevices.push(device)
+    //                     }
+    //                 });
+                    
+    //                 let infoAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, { devices : newDevices }, { new: true });
+    //                 if (!infoAfterUpdate)
+    //                     return resolve({ error: true, message: 'cannot_update' });
+
+    //                 await cachingInfoUser(userID, session);
+
+    //                 return resolve({ error: false, message: 'update_sucess' });
+    //             } else
+    //                 return resolve({ error: false, message: 'update_sucess' });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+
+    // recover(email, session) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             /**
+    //              * set code (random 6 character)
+    //              * => send mail with code
+    //              * => enter code match => enter new password(not enter oldpass)
+    //              * => redirect /login
+    //              */
+    //             if (!email || !email.length)
+    //                 return res.json({ error: true, message: 'email_invalid' });
+
+    //             email = email.toLowerCase().trim();
+
+    //             let checkExist = await USER_COLL.findOne({ email });
+    //             if (!checkExist) return resolve({ error: true, message: 'email_not_exist' });
+
+    //             // let codeReset  = STRING_UTILS.randomStringFixLengthOnlyAlphabet(6);
+    //             let codeReset  = Math.floor(100000 + Math.random() * 900000);
+    //             console.log({ codeReset })
+    //             let infoAfterUpdateCode = await USER_COLL.findByIdAndUpdate(checkExist._id, { codeReset: codeReset }, { new: true });
+
+    //             if (!infoAfterUpdateCode) return resolve({ error: true, message: 'cannot_update_code_reset' });
+                
+    //             await cachingInfoUser(session, email);
+
+    //             // mở thread khác (worker_pool)
+    //             pool
+    //                 .exec(MAIL_CONSTANTS.MAIL_FORGOT_PASS, [checkExist.email, checkExist.username || checkExist.fullname || checkExist.email , codeReset])
+    //                 // sendMailForgetPassword(checkExist.email, checkExist.username || checkExist.fullname || checkExist.email , codeReset);
+    //             return resolve({ error: false, data: 'send_email_success' });        
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }    
+
+    // checkRecoverPass(email, codeReset) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let checkMatchExact = await USER_COLL.findOne({
+    //                 email, codeReset: codeReset
+    //             });
+    //             if (!checkMatchExact) return resolve({ error: true, message: 'code_not_match' });
+    //             return resolve({ error: false, data: 'code_match' });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // updatePassRecover(email, password, session) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let isExist = await USER_COLL.findOne({ email });
+    //             if (!isExist) return resolve({ error: true, message: 'user_not_exist' });
+
+    //             // if (isExist.codeReset != codeReset)
+    //             //     return resolve({ error: true, message: 'code_invalid' });
+
+    //             let newPassHash = await hash(password, 8);
+    //             let updatePass = await USER_COLL.findOneAndUpdate({
+    //                 email
+    //             }, {
+    //                 password: newPassHash, codeReset: ''
+    //             }, { new: true });
+    //             // console.log({ updatePass })
+    //             if (!updatePass) return resolve({ error: true, message: 'cannot_update_pass' });
+                
+    //             await cachingInfoUser(email, session);
+
+    //             return resolve({ error: false, data: updatePass });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }   
+
+    // updatePassRecoverForMobile(email, password, codeReset) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             let isExist = await USER_COLL.findOne({ email });
+    //             if (!isExist) return resolve({ error: true, message: 'user_not_exist' });
+
+    //             if (isExist.codeReset != codeReset)
+    //                 return resolve({ error: true, message: 'code_invalid' });
+
+    //             let newPassHash = await hash(password, 8);
+    //             let updatePass = await USER_COLL.findOneAndUpdate({
+    //                 email, codeReset
+    //             }, {
+    //                 password: newPassHash, codeReset: ''
+    //             }, { new: true });
+    //             // console.log({ updatePass })
+    //             if (!updatePass) return resolve({ error: true, message: 'cannot_update_pass' });
+                
+    //             await cachingInfoUser(email, session);
+
+    //             return resolve({ error: false, data: updatePass });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }    
+
+    // /**
+    //  * FORUM APP
+    //  */
+    // vote({ pollingPlace, voteId, userIdIsVoted, userIdVoted }) {
+    //     const COMMENT = 'comment',
+    //         ANSWER = 'answer',
+    //         QUESTION = 'question'
+    //     return new Promise(async resolve => {
+    //         try {
+    //             async function saveVote(resouce) {
+    //                 resouce.votes.push(userIdVoted);
+    //                 (await resouce).save();
+    //             }
+                
+    //             async function plusRepulation(id) {
+    //                 const user = USER_COLL.findById(id);
+    //                 user.reputation += 100;
+    //                 (await user).save();
+    //                 return resolve({
+    //                     error: false,
+    //                     message: 'success',
+    //                 })
+    //             }
+
+    //             switch (pollingPlace) {
+    //                 case COMMENT: {
+    //                     if(!ObjectID.isValid(voteId))
+    //                         return resolve({ error: true, message: "param_not_valid" });
+    //                     const comment = COMMENT_COLL.findById(voteId);
+    //                     saveVote(comment);
+    //                     return plusRepulation(userIdIsVoted);
+    //                 }
+    //                 case ANSWER: {
+    //                     if(!ObjectID.isValid(voteId))
+    //                         return resolve({ error: true, message: "param_not_valid" });
+    //                     const answer = COMMENT_COLL.findById(voteId);
+    //                     saveVote(answer);
+    //                     return plusRepulation(userIdIsVoted);
+    //                 }
+    //                 case QUESTION: {
+    //                     if(!ObjectID.isValid(voteId))
+    //                         return resolve({ error: true, message: "param_not_valid" });
+    //                     const question = COMMENT_COLL.findById(voteId);
+    //                     saveVote(question);
+    //                     return plusRepulation(userIdIsVoted);
+    //                 }
+                
+    //                 default:
+    //                     return resolve({
+    //                         error: true,
+    //                         message: 'failed'
+    //                     })
+    //             }
+    //         } catch (err) {
+    //             return resolve({
+    //                 error: true,
+    //                 message: err.message
+    //             })
+    //         }
+    //     })
+    // }
+
+    // /**
+    //  * Tìm kiếm thành viên trong dự án
+    //  * Depv
+    //  */
+    // getListMemberInProjectByKey({ projectID, key }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(projectID))
+    //                 return resolve({ error: true, message: 'param_invalid' })
+    //             let infoProject = await DEPARTMENT_COLL.findById(projectID);
+
+    //             let conditionObj = {
+    //                 status: 1,
+    //                 _id: {
+    //                     $in: infoProject.members.map(item => ObjectID(item))
+    //                 },
+    //             }
+
+    //             if(key){
+    //                 conditionObj.$or =  [
+    //                     { fullname: new RegExp(key, 'i') },
+    //                     { email:    new RegExp(key, 'i') },
+    //                 ]
+    //             }
+    //             let listUsers = await USER_COLL.find({
+    //                ...conditionObj
+    //             })                    
+    //             .populate('company')
+    //             .populate('department')
+    //             .populate('position')
+    //             .populate('userCreate')
+    //             .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // getListMemberInContractByKey({ projectID, key }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(projectID))
+    //                 return resolve({ error: true, message: 'param_invalid' })
+    //             let infoProject = await CONTRACT_COLL.findById(projectID);
+
+    //             let listUsers = await USER_COLL.find({
+    //                 status: 1,
+    //                 _id: {
+    //                     $in: infoProject.members.map(item => ObjectID(item))
+    //                 },
+    //                 $or: [
+    //                     { fullname: new RegExp(key, 'i') },
+    //                     { email:    new RegExp(key, 'i') },
+    //                 ]
+    //             })                    
+    //             .populate('company')
+    //             .populate('department')
+    //             .populate('position')
+    //             .populate('userCreate')
+    //             .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    //  /**
+    //  * Tìm kiếm thành viên trong công ty
+    //  * Depv
+    //  */
+    // getListMemberInCompanyByKey({ company, key }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if (!ObjectID.isValid(company))
+    //                 return resolve({ error: true, message: 'param_invalid' })
+
+    //             let listUsers = await USER_COLL.find({
+    //                 status: 1,
+    //                 company,
+    //                 $or: [
+    //                     { fullname: new RegExp(key, 'i') },
+    //                     { email:    new RegExp(key, 'i') },
+    //                 ]
+    //             })                    
+    //             .populate('company')
+    //             .populate('department')
+    //             .populate('position')
+    //             .populate('userCreate')
+    //             .populate('userUpdate')
+    //             return resolve({ error: false, data: listUsers })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+
+    // /**
+    //  * Auto kết bạn cho các thành viên cùng công ty
+    //  * Author: HiepNH
+    //  */
+    // autoAddFriendInCompany({ companyID }){
+    //     return new Promise(async resolve => {
+    //         try {
+    //             // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+    //             let listUserInCompany = await USER_COLL.find({ company: companyID });
+    //             let arrUserID = listUserInCompany.map(item => item._id);
+    //             // console.log(arrUserID)
+
+    //             for(const item of listUserInCompany){
+    //                 await USER_COLL.findByIdAndUpdate(item._id, {
+    //                     $addToSet: {
+    //                         friends: arrUserID
+    //                     }
+    //                 }, { new: true });
+    //             }
+
+    //             return resolve({ error: false, data: 'Successfull' })
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     });
+    // }
+    // /**
+    // * Cập nhật danh sách bạn bè liên hệ gần đây
+    // * Author : Vinhnh
+    // */
+    // updateRecentlyFriends({ userID, friendID }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID) || !ObjectID.isValid(friendID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             const inforUser = await USER_COLL.findById(userID);
+    //             let recentlyFriends = inforUser.recentlyFriends;
+    //             let newRecentlyFriends = [];
+    //             if(inforUser.recentlyFriends){
+    //                 let isPush = true;
+    //                 recentlyFriends.forEach(user =>{
+    //                     console.log({user, friendID})
+    //                     if(user.toString() == friendID){
+    //                         isPush = false
+    //                     }
+    //                 });
+    //                 if(isPush){
+    //                     if(recentlyFriends.length > 0){
+    //                         if(recentlyFriends.length > 4){
+    //                             let newFriends  = [friendID];
+    //                             newRecentlyFriends = newFriends.concat(recentlyFriends.slice(1,5));
+    //                         }else{
+    //                             newRecentlyFriends = recentlyFriends;
+    //                             newRecentlyFriends.push(friendID);
+    //                         }
+    //                     }else{
+    //                         newRecentlyFriends = [friendID]
+    //                     }
+    //                 }else{
+    //                     return resolve({ error: false, message: 'coincide_friends_id' });
+    //                 }
+    //             }else{
+    //                 newRecentlyFriends = [friendID]
+    //             }
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 recentlyFriends : newRecentlyFriends
+    //             }, { new: true})
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // }
+
+    // /**
+    // * Cập nhật config group
+    // * Author: Depv(30/12/2020)
+    // */
+    // updateConfigGroupTask({ userID, groupID }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!ObjectID.isValid(userID) || !ObjectID.isValid(groupID))
+    //                 return resolve({ error: true, message: "param_not_valid" });
+    //             let infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID);
+    //             if(!infoGroup)
+    //                 return resolve({ error: true, message: "param_not_exist" });
+    //             let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(userID, {
+    //                 "config.groupTask": groupID,
+    //                 "config.nameGroup": infoGroup.name
+    //             }, { new: true})
+    //             if(!infoUserAfterUpdate)
+    //                 return resolve({ error: true, message: "cannot_update" });
+    //             return resolve({ error: false, data: infoUserAfterUpdate });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+}
+
+exports.MODEL = new Model;

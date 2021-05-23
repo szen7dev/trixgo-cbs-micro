@@ -1,4 +1,38 @@
 "use strict";
+let moment = require('moment-timezone');
+
+function setTimeZone(date) {
+    return moment.tz(date,'Asia/Ho_Chi_Minh');
+}
+exports.setTimeZone = setTimeZone;
+exports.getCurrentTime = function () {
+    return setTimeZone(new Date()).format('Y-MM-DD H:m:sZ');
+};
+
+exports.parseFormat1 = function (oldTimeFormat) {
+    return setTimeZone(oldTimeFormat).format('Y-MM-DD | H:m');
+};
+
+exports.parseFormat2 = function (oldTimeFormat) {
+    return setTimeZone(oldTimeFormat).format('H:mm DD-MM-Y');
+};
+
+exports.parseFormat3 = function (oldTimeFormat) {
+    return setTimeZone(oldTimeFormat).format('MM-DD-Y');
+};
+
+exports.parseTimeFormat4 = function (oldTimeFormat) {
+    return setTimeZone(oldTimeFormat).format('HH:mm DD/MM/Y');
+};
+
+exports.parseTimeFormat5 = function (oldTimeFormat) {
+    return setTimeZone(oldTimeFormat).format('DD/MM/Y');
+};
+
+exports.parseTimeFormatOption = function (oldTimeFormat, format) {
+    return setTimeZone(oldTimeFormat).format(format);
+};
+
 
 /**
  * compare time
