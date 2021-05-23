@@ -2,28 +2,28 @@
 const DbService                		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_CATEGORIES } 	= require('./helper/actions.constant.category');
-const CATEGORIES_ACTION				= require('./category.handler');
-const CATEGORY_COLL					= require('./database/category_coll');
+const { CF_ACTIONS_EXAMPLE } 	= require('./helper/actions.constant.example');
+const CATEGORIES_HANDLER			= require('./example.handler');
+const CATEGORY_COLL					= require('./database/example.abc-coll');
 
 module.exports = {
-	name: CF_DOMAIN_SERVICES.CATEGORIES,
+	name: CF_DOMAIN_SERVICES.EXAMPLES,
 	mixins: [
 		// DbService(CATEGORY_COLL), 
 		DbService('categories'), 
-		CacheCleaner([CF_DOMAIN_SERVICES.CATEGORIES])
+		CacheCleaner([CF_DOMAIN_SERVICES.EXAMPLES])
 	],
 	/**
 	 	* Service settings
 	*/
 	settings: {
 		fields: ["_id", "name", "products"],
-		// populates : {
-		// 	"products": {
-		// 		action: "users.get",
-		// 		params: ["_id"]
-		// 	}
-		// }
+		populates : {
+			"products": {
+				action: "products.get",
+				params: ["name"]
+			}
+		},
 		entityValidator: {
 			name: { type: "string"}
 		}
@@ -46,15 +46,8 @@ module.exports = {
 	*/
 	actions: {
 	
-		[CF_ACTIONS_CATEGORIES.CREATE] 		: CATEGORIES_ACTION.create,
-		// add product into products cart then insert product
-		[CF_ACTIONS_CATEGORIES.ADD_PRODUCT]	: CATEGORIES_ACTION.addProduct,
-		[CF_ACTIONS_CATEGORIES.FIND_BY_ID]	: CATEGORIES_ACTION.findById,
-		// update add product into categoy
-		[CF_ACTIONS_CATEGORIES.UPDATE]		: CATEGORIES_ACTION.update,
-		[CF_ACTIONS_CATEGORIES.GET_LIST] 	: CATEGORIES_ACTION.getList,
-		[CF_ACTIONS_CATEGORIES.REMOVE] 		: CATEGORIES_ACTION.remove,
-		
+		[CF_ACTIONS_EXAMPLE.CREATE] 		: CATEGORIES_HANDLER.create,
+		[CF_ACTIONS_EXAMPLE.FIND_BY_ID]		: CATEGORIES_HANDLER.findById,
 	},
 
 	/**
@@ -63,7 +56,9 @@ module.exports = {
 	events: {
 		// emit event: emit [service.event_name] 
 		async "nguyen_dinh"(ctx) {
-			this.logger.in1fo("Something happened", ctx.params);
+			// this.logger.in1fo("Something happened", ctx.params);
+			let listCategoryWithPopulateProducts = await ctx.call('examples.list', { populate: ['products'] });
+			console.log({ listCategoryWithPopulateProducts: listCategoryWithPopulateProducts.rows.map(item => item.products) })
 		}
 	},
 

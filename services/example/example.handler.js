@@ -1,5 +1,5 @@
 
-let CATEGORIES_MODEL    		= require('./category.model').MODEL;
+let CATEGORIES_MODEL    		= require('./example.model').MODEL;
 module.exports = {
 
     /**

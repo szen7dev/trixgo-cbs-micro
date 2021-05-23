@@ -1,11 +1,11 @@
 "use strict";
 const BaseModel             = require('../../tools/db/base_model');
-const CATEGORY_COLL         = require('../../database/test/category_coll');
+const CATEGORY_COLL         = require('./database/example.abc-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../../database/test/account_coll'))
+        super(require('./database/example.abc-coll'))
     }
 
     async getList(ctx){

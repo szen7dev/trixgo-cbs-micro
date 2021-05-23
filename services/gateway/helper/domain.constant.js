@@ -3,7 +3,7 @@ let CF_DOMAIN_SERVICES = {
     GATEWAY: 'gateway',
     AUTH: 'auth',
     PRODUCTS: 'products',
-    CATEGORIES: 'categories',
+    EXAMPLES: 'examples',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

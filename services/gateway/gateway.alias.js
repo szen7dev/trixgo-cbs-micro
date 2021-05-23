@@ -5,14 +5,19 @@
 const { 
 	CHECK_AUTHENCATION,
 	CHECK_AUTHORIZATION,
-} 							= require('./auth');
+} 								= require('./auth');
 
 const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
-const { CF_ACTIONS_PRODUCTS } 	= require('../product/helper/actions.constant.product');
-const { CF_ACTIONS_CATEGORIES } = require('../category/helper/actions.constant.category');
 
-const { CF_ROUTINGS_PRODUCTS } = require('../product/helper/routes.constant.product');
-const { CF_ROUTINGS_CATEGORIES } = require('../category/helper/routes.constant.category');
+/**
+ * ------import action's Services--------
+ */
+const { CF_ACTIONS_EXAMPLE } 	= require('../example/helper/actions.constant.example');
+
+/**
+ * ------import route's Services---------
+ */
+const { CF_ROUTINGS_EXAMPLE } = require('../example/helper/routes.constant.example');
 module.exports = {
 	path: CF_DOMAIN_SERVICES.API,
 
@@ -26,29 +31,13 @@ module.exports = {
 
 	aliases: {
 
-		//--------------------------categories--------------------------//
-
-		[`GET ${CF_ROUTINGS_CATEGORIES.ORIGIN_APP}`] : 
-		[`${CF_DOMAIN_SERVICES.CATEGORIES}.${CF_ACTIONS_CATEGORIES.GET_LIST}`],
-		[`POST ${CF_ROUTINGS_CATEGORIES.ORIGIN_APP}`] : 
-		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.CATEGORIES}.${CF_ACTIONS_CATEGORIES.CREATE}`],
-		[`GET ${CF_ROUTINGS_CATEGORIES.REMOVE}`] : 
-		[CHECK_AUTHORIZATION,`${CF_DOMAIN_SERVICES.CATEGORIES}.${CF_ACTIONS_CATEGORIES.REMOVE}`],
-	
-		//---------------------------products--------------------------//
-		[`GET ${CF_ROUTINGS_PRODUCTS.ORIGIN_APP}`] : 
-		[`${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.GET_LIST}`],
-		[`POST ${CF_ROUTINGS_PRODUCTS.ORIGIN_APP}`] : 
-		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.CREATE}`],
-		[`GET ${CF_ROUTINGS_PRODUCTS.FIND_BY_ID}`] : 
-		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.FIND_BY_ID}`],
-		[`POST ${CF_ROUTINGS_PRODUCTS.ADD_TO_CART}`] : 
-		[CHECK_AUTHENCATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.ADD_TO_CART}`],
-		[`GET ${CF_ROUTINGS_PRODUCTS.SHOW_CART}`] : 
-		[CHECK_AUTHENCATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.SHOW_CART}`],
-		[`GET ${CF_ROUTINGS_PRODUCTS.REMOVE}`] : 
-		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.PRODUCTS}.${CF_ACTIONS_PRODUCTS.REMOVE}`],
-
+		//--------------------------aliases's EXAMPLE service--------------------------//
+		[`GET ${CF_ROUTINGS_EXAMPLE.ORIGIN_APP}`] : 
+		[`${CF_DOMAIN_SERVICES.EXAMPLES}.${CF_ACTIONS_EXAMPLE.GET_LIST}`],
+		[`POST ${CF_ROUTINGS_EXAMPLE.ORIGIN_APP}`] : 
+		[CHECK_AUTHORIZATION, `${CF_DOMAIN_SERVICES.EXAMPLES}.${CF_ACTIONS_EXAMPLE.CREATE}`],
+		[`GET ${CF_ROUTINGS_EXAMPLE.REMOVE}`] : 
+		[CHECK_AUTHORIZATION,`${CF_DOMAIN_SERVICES.EXAMPLES}.${CF_ACTIONS_EXAMPLE.REMOVE}`],
 	},
 
 	

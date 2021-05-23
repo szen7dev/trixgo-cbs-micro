@@ -1,1 +1,0 @@
-service cho gói thầu

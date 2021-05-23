@@ -3,7 +3,7 @@ const {
     CF_ROUTINGS_POSTS, 
     CF_ROUTINGS_ACCOUNT, 
     CF_ROUTINGS_PRODUCTS, 
-    CF_ROUTINGS_CATEGORIES
+    CF_ROUTINGS_EXAMPLE
 }                   = require('../config/constants/routings')
 
 exports.isEmpty = function (value) {
@@ -165,7 +165,7 @@ exports.getAppIDByURLRequest = (originalUrl) => {
             case 'products':
                 return CF_ROUTINGS_PRODUCTS.APP_ID;
             case 'categories':
-                return CF_ROUTINGS_CATEGORIES.APP_ID;
+                return CF_ROUTINGS_EXAMPLE.APP_ID;
             default:
                 return null;
         }

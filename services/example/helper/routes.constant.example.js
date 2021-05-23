@@ -1,6 +1,6 @@
-const BASE_ROUTE = '/categories';
+const BASE_ROUTE = '/examples';
 
-const CF_ROUTINGS_CATEGORIES = {
+const CF_ROUTINGS_EXAMPLE = {
     
     REMOVE: `${BASE_ROUTE}/remove/:id`,
     FIND_BY_ID: `${BASE_ROUTE}/:id`,
@@ -10,4 +10,4 @@ const CF_ROUTINGS_CATEGORIES = {
 
 }
 
-exports.CF_ROUTINGS_CATEGORIES = CF_ROUTINGS_CATEGORIES;
+exports.CF_ROUTINGS_EXAMPLE = CF_ROUTINGS_EXAMPLE;
