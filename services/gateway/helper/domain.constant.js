@@ -1,7 +1,8 @@
 let CF_DOMAIN_SERVICES = {
-    API: 'api', //bỏ api -> gateway
-    GATEWAY: 'gateway',
-    AUTH: 'auth',
+    API         : 'api', //bỏ api -> gateway
+    GATEWAY     : 'gateway',
+    AUTH        : 'auth',
+    CHATTING    : 'message',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

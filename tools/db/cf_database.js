@@ -2,7 +2,7 @@
 
 module.exports = {
     development: {
-        _mongod_name: process.env.MONGO_DB      || 'trixgo_micro',
+        _mongod_name: process.env.MONGO_DB      || 'trixgo_op',
         _mongod_user: process.env.MONGO_USER    || '',
         _mongodb_pass: process.env.MONGO_PWD    || '',
         _mongodb_host: process.env.MONGO_HOST   || 'localhost',
@@ -10,7 +10,7 @@ module.exports = {
     },  
 
     product: {
-        _mongod_name: process.env.MONGO_DB      || 'trixgo_micro',
+        _mongod_name: process.env.MONGO_DB      || 'trixgo_op',
         _mongod_user: process.env.MONGO_USER    || '',
         _mongodb_pass: process.env.MONGO_PWD    || '',
         _mongodb_host: process.env.MONGO_HOST   || 'localhost',

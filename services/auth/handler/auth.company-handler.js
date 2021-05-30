@@ -3,11 +3,12 @@ let AUTH__COMPANY_MODEL              = require('../model/auth.company-model').MO
 module.exports = {
     insertFast: {
         params: {
-            name: { type: "string" }
+            // name: { type: "string" }
         },
         async handler(ctx) {
             try {
-                let { name }        = ctx.params;
+                // let { name }        = ctx.params;
+                let name = 'VInh'
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
 
 				await this.validateEntity(name);
