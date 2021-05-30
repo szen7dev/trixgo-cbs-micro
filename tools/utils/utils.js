@@ -1,4 +1,6 @@
 "use strict";
+const lodash                             = require("lodash");
+const ObjectID                                      = require('mongoose').Types.ObjectId;
 
 exports.isEmpty = function (value) {
     return typeof value == 'string'
@@ -174,4 +176,27 @@ exports.checkObjectIDs = (...params) => {
             return flag = false
     }
     return flag;
+}
+
+
+/**
+*/
+exports.getLinkFromStringV1 = (string)=>{
+
+    const expression = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
+    const regex = new RegExp(expression);
+    if(!string)
+        return
+    let linkArr = string && string.match(regex);
+    let newLinkArr = [];
+    if(linkArr && linkArr.length){
+        linkArr.forEach( link => {
+            stringDomain.forEach(haLink =>{
+                if(link.includes(haLink) && newLinkArr.indexOf(link) == -1){
+                    newLinkArr.push(link)
+                }
+            })
+        })
+    }
+    return newLinkArr;
 }

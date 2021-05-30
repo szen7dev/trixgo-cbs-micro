@@ -47,11 +47,15 @@ module.exports = {
                          */
                         let newUser             = socket.client.user;
                         let newSocketID         = socket.id;
-                        let listUserConnected   = this.addNewUserIntoListConnected(newUser, newSocketID);
+                        let listUserConnected   = this.addNewUserIntoListConnected(newUser, newSocketID, socket);
                         let listAllUserIgnoreSender = listUserConnected.filter(user => user.socketID != newSocketID);
                         // listAllUserIgnoreSender.forEach(user => {
                         //     socket.to(user.socketID).emit("NEW_USER", {newUser, newSocketID});
                         // })
+                        console.log({listAllUserIgnoreSender})
+                        
+                        this.addNewUserIntoListConnectedV2(newSocketID);
+
                         next();
                     }],
                     events:{
@@ -77,11 +81,19 @@ module.exports = {
                          *  passing all event of all services
                          */
                         ...CHATTING_SOCKET,
+                        'test1': function(data, ack) {
+							let socket = this
+							socket.emit('LOGIN_SUCCESS', data)
+						},
+
+
 
                         'disconnect': async function(data, ack) { // write your handler function here.
                             let socket                      = this;
                             let socketDisconnectID          = socket.id;
                             let listUserConnected           = socket.$service.listUserConnected;
+
+                            socket.$service.removeUserDisconnectIntoListConnectedV2( socketDisconnectID)
 
                             socket.$service.removeUserDisconnectIntoListConnected(socketDisconnectID)
                             // ---> ví dụ emit
@@ -95,6 +107,10 @@ module.exports = {
     methods: {
         async socketAuthorize(socket, eventHandler){
             let accessToken = socket.handshake.query.token;
+            console.log({userID : accessToken});
+            this.userID = accessToken;
+            this.userID  = this.userID.toString()
+            return  Promise.resolve('success')
             if (accessToken.length) {
                 // try{
                 //     let user = await this.broker.call("users.verifyToken", {accessToken});
@@ -142,6 +158,37 @@ module.exports = {
             return listUserAfterInsertNewUserConnect;
         },
 
+
+        addNewUserIntoListConnectedV2( socketID){
+            let listUserConnected2 = this.listUserConnected2;
+            socketID = socketID.toString();
+            let _userID = this.userID.toString();
+            if(!listUserConnected2[_userID]){
+                listUserConnected2[_userID]           = {};
+                listUserConnected2[_userID].sockets  = [];
+                listUserConnected2[_userID].sockets  = [...listUserConnected2[_userID].sockets, socketID ];
+            }
+
+            if(listUserConnected2[_userID] ){
+                listUserConnected2[_userID].sockets = listUserConnected2[_userID].sockets.filter(_socketID => _socketID != socketID);
+                listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets,  socketID ];
+            }
+
+              
+            this.listUserConnected2 = listUserConnected2;
+            return listUserConnected2;
+        },
+
+        removeUserDisconnectIntoListConnectedV2( socketDisconnectID){
+            let listUserConnected2                         = this.listUserConnected2;
+            socketDisconnectID  = socketDisconnectID && socketDisconnectID.toString();
+            listUserConnected2[this.userID.toString()].sockets = listUserConnected2[this.userID.toString()].sockets.filter(_socketID => _socketID != socketDisconnectID);
+            console.log(`---------list user connected sau khi disconnect  VVVV2------`);
+            console.log({ socketDisconnectID, listUserConnected2 });
+
+            return listUserConnected2;
+        },
+
         removeUserDisconnectIntoListConnected(socketDisconnectID){
             let listUserConnected = this.listUserConnected;
             // TODO: xem lại trường hợp nếu user có nhiều socket -> cần xoá socket trong mảng socketID:[]
@@ -160,6 +207,8 @@ module.exports = {
         this.initSocketIO(server);
         const listUserConnected = [];
         this.listUserConnected = listUserConnected;
+        this.userID;
+        this.listUserConnected2 = [];
     },
     /**
      * Service started lifecycle event handler

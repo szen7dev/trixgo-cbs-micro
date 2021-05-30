@@ -1,0 +1,31 @@
+// liệt kê các actions của hệ thống
+const BASE_ACTIONS = 'ACT_CHATTING';
+
+/**
+ * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
+ */
+const CONVERSATION  = 'CONVERSATION',
+      MESSAGE       = 'MESSAGE';
+
+/**
+ * nguyên tắc chuyển đổi từ method trong .handler
+ *  VD: handler(insertFast) -> action(INSERT_FAST)
+ */
+const CF_ACTIONS_CHATTING = {
+    /**
+     * CONVERSATION
+    */
+    INSERT_CONVERSATION                 : `${BASE_ACTIONS}_${CONVERSATION}_INSERT`,
+    GET_LIST_CONVERSATION_BY_USER_ID    : `${BASE_ACTIONS}_${CONVERSATION}_GET_LIST_CONVERSATION_BY_USER_ID`,
+    GET_LIST_CONVERSATION_WITH_KEY      : `${BASE_ACTIONS}_${CONVERSATION}_GET_LIST_CONVERSATION_WITH_KEY`,
+    GET_INFO_CONVERSATION_BY_ID         : `${BASE_ACTIONS}_${CONVERSATION}_GET_INFO_CONVERSATION_BY_ID`,
+
+
+    /**
+     * MESSAGE
+    */
+    GET_LIST_MESSAGE_BY_CONVERSATION_ID    : `${BASE_ACTIONS}_${MESSAGE}_GET_LIST_MESSAGE_BY_CONVERSATION_ID`,
+
+}
+
+exports.CF_ACTIONS_CHATTING = CF_ACTIONS_CHATTING;
