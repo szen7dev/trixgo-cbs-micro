@@ -69,7 +69,7 @@ module.exports = {
 	mappingPolicy: "all", // Available values: "all", "restrict"
 
 	// Set CORS headers
-	//cors: true,
+	cors: true,
 
 	// Parse body content
 	bodyParsers: {

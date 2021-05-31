@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.contract_conditions"},{"v":{"$numberInt":"2"},"unique":true,"key":{"suid":{"$numberInt":"1"}},"name":"suid_1","background":true,"ns":"trixgo_op.contract_conditions"}],"uuid":"37530e1e0c614efd8cb2fec8bb4df892"}

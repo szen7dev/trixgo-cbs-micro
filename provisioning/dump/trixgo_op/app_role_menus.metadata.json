@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.app_role_menus"}],"uuid":"62eb235d9f2b40f4a63d905ca792d2dc"}

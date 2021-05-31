@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.warehouses"}],"uuid":"984feb9d105c49a2a74c08b70e9deb33"}
