@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.budget_rfas"}],"uuid":"bacaeb06e2994c248b67ca5349f222cb"}

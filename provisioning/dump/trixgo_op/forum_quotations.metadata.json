@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.forum_quotations"}],"uuid":"139cdd996f904df2897a1e61cc2d6954"}

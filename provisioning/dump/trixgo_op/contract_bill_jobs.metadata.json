@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.contract_bill_jobs"}],"uuid":"195997f1498f48fcb17537ab927a4c68"}

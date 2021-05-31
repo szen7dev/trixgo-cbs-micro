@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.bidding_groups"}],"uuid":"ca4d75d719d04c28a6df595e6a8cf375"}

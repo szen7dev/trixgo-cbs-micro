@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"trixgo_op.docre_docs"}],"uuid":"7eaaa5e493074c23941548a44f549e2a"}
