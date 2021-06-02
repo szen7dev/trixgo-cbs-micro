@@ -1,2 +1,72 @@
 [![Moleculer](https://badgen.net/badge/Powered%20by/Moleculer/0e83cd)](https://moleculer.services)
-# CBS_MICRO TRX
+# CBS Microservices [TRIXGO](https://app.trixgo.com)
+
+## **Import Convention**
+```javascript
+
+- Same Service (thứ tự file được import):
+  + Handler files
+  + Model files
+  + Database files
+  + Helper files
+
+- Other Services ()
+   + Handler -> Model -> Database -> Helper
+
+/**
+ * * AUTH       : service
+ * * USER_COLL  : collection 
+ */
+const AUTH__USER_COLL                           = require
+/**
+ * * AUTH        : service
+ * * USER_MODEL  : model 
+ */
+const AUTH__USER_MODEL                          = require
+
+```
+
+## **Best Use-Cases:**
+> Tổng hợp các key Best Practice cho NodeJS - Caching(Redis) - MongoDB
+
+- *[NodeJS]* Partioning: Handle Heavy Task (CPU-Intensive Task)
+- *[NodeJS]* PromisePool: handle parallel task tốt hơn so với Promise.all
+    * Error Hanler: Promise.all stop khi 1 trong các task error
+    * Task Parallel: Khi Batch_1 done với task_1 -> tiếp tục run task_1 của Batch_2, **chứ không đợi Batch_1 done như Promise.all**
+- *[MongoDB]* Pagination with Range Queries: 
+    * **skip()**: với skip method, fetch dữ liệu càng chậm khi skip càng lớn, VD: skip(1000), bỏ qua 1000 item đầu, nhưng MongoDB Engine vẫn phải scan với 1000 item đầu và lấy những dữ liệu tiếp theo
+    * **Cursor-based paging với Range Queries** [MongoDB docs](https://docs.mongodb.com/manual/reference/method/cursor.skip/), [RightWay](https://www.mixmax.com/engineering/api-paging-built-the-right-way/) xem ví dụ:
+```javascript
+    function printStudents(startValue, nPerPage) {
+        let endValue = null;
+        db.students.find({ _id: { $lt: startValue } })
+            .sort({ _id: -1 })
+            .limit(nPerPage)
+            .forEach(student => {
+                console.log(student.name);
+                endValue = student._id;
+            });
+        return endValue;
+    }
+
+
+    let MaxKey = 100; 
+
+    let currentKey = MaxKey;
+    while (currentKey !== null) {
+    currentKey = printStudents(currentKey, 10);
+    }
+```
+
+* *[NodeJS]* Revoke Token:
+    * Method 1: Gán Expired Time vào payload (jwt đã hỗ trợ)
+    * Method 2: Tạo collection với 2 field: ***userID*** và ***jti(jwt id)***, Quản trị hệ thống có thể revoke theo device hoặc revoke all device(app, web) của user dựa vào bảng này
+
+* *[Queue]* **Bulk -> Batch Process**, [ref](https://github.com/OptimalBits/bull/issues/751):
+    * *Problem*: Những tác vụ lập đi lập lại nhiều(mỗi lần cần phải xử lý tác vụ I/O như write DB, ...)
+    * *Solution*: Sử dụng cơ chế WRITE-BACK, tương ứng việc tạo QUEUE, các request đẩy vào QUEUE(Bulk), khi Bulk = size thiết lập(ví dụ size batch = 20) -> Tasks.length = 20 -> Chạy Bulk đó với BatchProcess.
+* *[NodeJS]* **Anti ReDos**:
+    * safe-regex
+* *[NodeJS]* **Anti JSON.stringify**:
+    * fast-json-stringif
+
