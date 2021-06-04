@@ -2,7 +2,7 @@ module.exports = {
     // CHATTING
     // code  :chatting_1
     // Lấy danh sách cuộc hội thoại
-    "GET /message/conversation/getListConversationByUserId": {
+    "GET /chatting/conversations/users/:userID": {
         swaggerDoc: {
             tags: ["message"],
             description: "Get list conversation of user",
@@ -27,7 +27,7 @@ module.exports = {
 
     // Tìm kiến tên tên cuộc hội thoại
     // code : chatting_4
-    "GET /message/conversation/getListConversationByKey [chatting_4]": {
+    "GET /message/conversation/getListConversationByKey": {
         swaggerDoc: {
             tags: ["message"],
             description: "find conversation with name",

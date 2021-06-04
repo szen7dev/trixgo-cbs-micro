@@ -69,4 +69,15 @@ const AUTH__USER_MODEL                          = require
     * safe-regex
 * *[NodeJS]* **Anti JSON.stringify**:
     * fast-json-stringif
+## **Status Code Response**
 
+- 200 OK	Request accepted
+- 201 CREATED	This response code is returned from PUT or POST, and indicates that a new resource was created successfully
+- 204 NO CONTENT	Indicates that the request was accepted but that there was nothing to return. 
+
+- 400 BAD REQUEST	The request was not valid. 
+- 401 UNAUTHORIZED	Is returned from the application server when application security is enabled, and authorization information was missing from the request.
+- 403 FORBIDDEN	Indicates that the client attempted to access a resource which they do not have access to. 
+- 404 NOT FOUND	Indicates that the targeted resource does not exist.
+
+- 500 INTERNAL SERVER ERROR	An internal error occurred in the server. 

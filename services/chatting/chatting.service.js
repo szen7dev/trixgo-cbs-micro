@@ -5,6 +5,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant'
 const { CF_ACTIONS_CHATTING } 	        = require('./helper/chatting.actions-constant');
 const CHATTING__CONVERSATION_HANDLER    = require('./handler/chatting.convensation-handler');
 const CHATTING__MESSAGE_HANDLER         = require('./handler/chatting.message-handler');
+const CHATTING__EVENTS_CONSTANT   		= require('./helper/chatting.events-constant');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CHATTING,
@@ -80,6 +81,7 @@ module.exports = {
 	 	* Events
 	*/
 	events: {
+		...CHATTING__EVENTS_CONSTANT
 	},
 
 	/**

@@ -1,3 +1,5 @@
+const { kdf } = require("crypto-js");
+
 let app = express()();
 
 /**
@@ -38,7 +40,13 @@ app.get('/items', (req, res) => {
 //  curl /items?limit=2&sort=createAt&next=2017-09-11T00%3A44%3A54.036Z_590e9abd4abbf1165862d342
  
 var next = `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`;
-const [nextCreateAt, nextId] = next.split("_");
+/**
+ * nextCreateAt: createAt của phần tử cuối cùng
+ * nextID      : id của phần tử cuối cùng
+ */
+
+// cần đánh index composeIndex: 'createAt_-1_id_-1'
+const [nextCreateAt, nextID] = next.split("_"); 
 
 //demo trên noSQLBootster
 db.message_messages.find({
@@ -53,3 +61,14 @@ db.message_messages.find({
     createAt: -1,
     _id: -1, //tránh việc createAt bị trùng -> sort theo thuộc tính 2 là _id
 }).limit(10);
+
+//??? TÌM TIN NHẮN TẠI TRANG THỨ ??? -> KHÁNH
+//??? Reminder -> nhắc việc
+//??? Tạo Thumnail cho các ảnh preview File: excel, word, pdf, ...
+  // Package:
+  //   - YES: -> field
+  //   - NO:
+  //     + lấy ảnh thumnail (EVENT) -> RABBITMQ (MESSAING - async task) HEAVY_TASK
+  //     + save -> field
+
+//??? ACID Transaction (áp dụng cho các ứng dụng tài chính, kế toán, hợp đồng) - session

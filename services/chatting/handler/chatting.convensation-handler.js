@@ -102,7 +102,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let {  key }        = ctx.params;
+                let { key }        = ctx.params;
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
 
                 // await this.validateEntity(name);
