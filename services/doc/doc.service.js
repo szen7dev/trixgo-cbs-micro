@@ -1,7 +1,5 @@
-const SwaggerService 							= require("swagger-moleculer");
-
-const CHATTING__DOCS               = require('../chatting/helper/chatting.docs-constant');
-
+const SwaggerService 				= require("swagger-moleculer");
+const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 
 module.exports = {
 	// Service name
@@ -28,7 +26,7 @@ module.exports = {
 					url: "https://www.apache.org/licenses/LICENSE-2.0.html"
 				}
 			},
-			host: "0.0.0.0:3002",
+			host: "127.0.0.1:3002",
 			basePath: "/api",
 			tags: [
 				{
@@ -44,11 +42,106 @@ module.exports = {
 			consumes: ["application/json"],
 			produces: ["application/json"]
 		},
+		schemas: {
+			name:{
+				type: "string",
+			}
+		},
 		routes: [
 			{
 				path: "/api",
 				aliases: {
-					...CHATTING__DOCS
+					// Admin login
+					"GET /greeter/hello": {
+						swaggerDoc: {
+							tags: ["greeter"],
+							description: "Hello Page",
+							parameters: []
+						},
+						action: "greeter.hello"
+					},
+					"GET /greeter/welcome": {
+						swaggerDoc: {
+							tags: ["greeter"],
+							description: "Welcome Page",
+							parameters: [
+								{
+									in: "query",
+									name: "name",
+									type: "string",
+									description: "",
+									required: true,
+									schema: {
+										name:{
+											type: "string",
+										}
+									}
+								},
+
+							]
+						},
+						action: "greeter.welcome"
+					},
+
+					// CHATTING
+					//code  :chatting_1
+					// Lấy danh sách cuộc hội thoại
+					[`GET ${ CF_ROUTINGS_CHATTING.GET_INFO_CONVERSATION_BY_ID }`]: {
+						swaggerDoc: {
+							tags: ["message"],
+							description: "Get list conversation of user",
+							parameters: [{
+								currentPage : 'string'
+							}]
+						},
+						action: "message.ACT_CHATTING_CONVERSATION_GET_LIST_CONVERSATION_BY_USER_ID"
+					},
+
+					// Tìm kiến tên tên cuộc hội thoại
+					// code : chatting_search_conversation_key
+					[`GET ${ CF_ROUTINGS_CHATTING.GET_LIST_CONVERSATION_BY_KEY }`]: {
+						swaggerDoc: {
+							tags: ["message"],
+							description: "find conversation with name",
+							parameters: [{
+								key : 'string'
+							}]
+						},
+						action: "message.ACT_CHATTING_CONVERSATION_GET_LIST_CONVERSATION_WITH_KEY"
+					},
+
+					// Lấy thông tin cuộc hội thoại
+					// code : chatting_info_conversation
+					[`GET ${ CF_ROUTINGS_CHATTING.GET_INFO_CONVERSATION_BY_ID }`]: {
+						swaggerDoc: {
+							tags: ["message"],
+							description: "get info conversation by userID",
+							parameters: [{
+								conversationID  : 'string'
+							}]
+						},
+						action: "message.ACT_CHATTING_CONVERSATION_GET_INFO_CONVERSATION_BY_ID"
+					},
+
+					// Xem các tệp của cuộc hội thoại [****** để sau]
+
+					// Danh sách bạn bè để thêm vào cuộc hội thoại ----> lấy từ api lấy thông tin user 
+
+					// Lây tin nhắn của cuộc hội thoại phân trang 30 mẫu tin
+					//code : chatting_info_conversation
+					[`GET ${ CF_ROUTINGS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID }`]: {
+						swaggerDoc: {
+							tags: ["message"],
+							description: "get message of conversation",
+							parameters: [{
+								conversationID  : 'string'
+							}]
+						},
+						action: "message.ACT_CHATTING_MESSAGE_GET_LIST_MESSAGE_BY_CONVERSATION_ID"
+					},
+
+					// Tìm kiếm tinh nhắn trong một cuộc hội thoại [******** để sau]
+
 				}
 
 			}
@@ -61,8 +154,8 @@ module.exports = {
 		],
 		servers: [
 			{
-				url: "http://localhost:3003/",
-				description: "Development Server"
+				url: "http://localhost:3000/",
+				description: "Develop server"
 			}
 		]
 	}

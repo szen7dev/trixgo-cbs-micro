@@ -1,7 +1,6 @@
 // danh sách events socket
 exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     HELLO_WORLD                     : 'HELLO_WORLD',
-    
     CSS_SEND_MESSAGE                : 'CSS_SEND_MESSAGE',
     CSS_RECEIVED_MESSAGE            : 'CSS_RECEIVED_MESSAGE',
     CSS_SEEN_MESSAGE                : 'CSS_SEEN_MESSAGE',
@@ -24,8 +23,4 @@ exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     CSS_SEND_TAG_MESSAGE            : 'CSS_SEND_TAG_MESSAGE',
     CSS_REMOVE_ADMIN_MESSAGE        : 'CSS_REMOVE_ADMIN_MESSAGE',
     CSS_STATUS_MESSAGE              : 'CSS_STATUS_MESSAGE',
-    
-    CSS_TAGS_COMMENT                : 'CSS_TAGS_COMMENT',
-    
-    CSS_NEW_REACH_CRM               : 'CSS_NEW_REACH_CRM',
 }

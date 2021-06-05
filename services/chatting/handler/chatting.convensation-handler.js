@@ -58,7 +58,6 @@ module.exports = {
         async handler(ctx) {
             try {
                 let {  currentPage }        = ctx.params;
-                currentPage = 1;
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
 
                 // await this.validateEntity(name);
@@ -84,7 +83,7 @@ module.exports = {
 
                 // await this.validateEntity(name);
                 // id demo 
-                conversationID = '602c7a51ea1d1274020b2e08'
+                // conversationID = '602c7a51ea1d1274020b2e08'
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoByID({ userID: '5e60f58cf63b8a4e196a1942', conversationID });
                 console.log({resultAfterCallHandler})
