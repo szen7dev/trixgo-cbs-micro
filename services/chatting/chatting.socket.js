@@ -17,7 +17,7 @@ exports.CHATTING_SOCKET = {
         let socket                      = this;
         let socketID                    = socket.id;
         // let listUserActive              = socket.$service.listUserConnected;
-        let userID                      = socket.$service.userID;
+        let userID                      = socket.client.user;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
         let { receivers }               = data;
@@ -41,7 +41,7 @@ exports.CHATTING_SOCKET = {
         let socket                      = this;
         let socketID                    = socket.id;
         let listUserActive              = socket.$service.listUserConnected2;
-        let userID                      = socket.$service.userID;
+        let userID                      = socket.client.user;
         let io                          = socket.$service.io;
 
         let { name, description,  receivers, chatPrivate } = data;
@@ -85,7 +85,7 @@ exports.CHATTING_SOCKET = {
         // let listUserActive              = socket.$service.listUserConnected;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
-        let userID                      = socket.$service.userID;
+        let userID                      = socket.client.user;
 
         let {   conversationID, receivers, name } = data;
         let arrReceiver = [];
@@ -118,7 +118,7 @@ exports.CHATTING_SOCKET = {
         let socketID                    = socket.id;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
-        let userID                      = socket.$service.userID;
+        let userID                      = socket.client.user;
 
         let {  members, conversationID, receivers } = data; 
 
@@ -155,7 +155,7 @@ exports.CHATTING_SOCKET = {
         let socketID                    = socket.id;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
-        let userID                      = socket.$service.userID;
+        let userID                      = socket.client.user;
 
         let {  memberID, conversationID, receivers, nameMemberDelete } = data;
         let arrReceiver = [];
@@ -196,7 +196,7 @@ exports.CHATTING_SOCKET = {
         let socketID                    = socket.id;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
-        let userID                      = socket.$service.userID;
+        let userID                      = socket.client.user;
         
         let { tempID, content, receivers, conversationID, messageID, isLikeIcon, isShareMessage, messageShareID } = data;
         
@@ -303,7 +303,7 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_TYPING_MESAGE]: async function(data, ack) { // write your handler function here.
         let socket                                          = this;
         let listUserActive                                  = socket.$service.listUserConnected2;
-        let userID                                          = socket.$service.userID;
+        let userID                                          = socket.client.user;
         let { typing, receivers, conversationID }           = data;
         let arrReceiver                                     = [];
         let  io                                             = socket.$service.io;
@@ -344,7 +344,7 @@ exports.CHATTING_SOCKET = {
         let socket                                      = this;
         let listUserActive                              = socket.$service.listUserConnected2;
         let  io                                         = socket.$service.io;
-        let authorID                                    = socket.$service.userID;
+        let authorID                                    = socket.client.user;
         let { messageID  , conversationID , receivers } = data;
 
         let arrReceiver = [];
@@ -363,6 +363,5 @@ exports.CHATTING_SOCKET = {
         let inforUpdate =  await CHATTING__MESSAGE_MODEL.seenMessageOneByOne({ messageID, userID :userID });
         sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { authorID, conversationID, infoConversation: inforUpdateMiss, infoMesage : infoMessage }, event :'SSC_SEEN_MESSAGE', io})
     },
-    // Phản hồi tin nhắn
     
 }
