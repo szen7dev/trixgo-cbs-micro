@@ -302,6 +302,7 @@ class Model extends BaseModel {
                 }).skip((page * perPage) - perPage)
                 .limit(perPage)
                
+                
                 let amoutConverMiss  = await CHATTING__CONVERSATION_COLL.count({ arrMissMessage :  { $elemMatch: { userID:authorID, amout: { $gte: 1} } } })
                 if (!listConversation)
                     return resolve({ error: true, message: 'cannot_get_list' });
@@ -455,7 +456,7 @@ class Model extends BaseModel {
                 //     arrMember = members.split(',');
                 // } else {
                 //     arrMember.push(members);
-                // }
+                // }\
 
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID) || !Array.isArray(arrMember))
                     return resolve({ error: true, message: 'invalid_object_id' });

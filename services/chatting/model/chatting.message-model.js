@@ -26,7 +26,6 @@ class Model extends BaseModel {
     // Thêm tin nhắn mới
     insert({ senderID, content, parentID, receivers, conversationID, status }) { 
         const that = this;
-        console.log({senderID, content, parentID, receivers, conversationID, status})
         return new Promise(async (resolve) => {
             try {
                 if(!status){
