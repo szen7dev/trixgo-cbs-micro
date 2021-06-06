@@ -1,3 +1,4 @@
+let CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
 let CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
 
 
@@ -25,6 +26,7 @@ module.exports = {
 
     // AUTHOR : HUYNHVINH
 
+   
     //================================================================  MESAGE  ============================================================
 
     // Lấy danh sách tin nhắn của cuộc hội thoại
@@ -36,9 +38,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 let {  currentPage, conversationID }        = ctx.params;
-                currentPage     = 1;
-                conversationID  = '602c7a51ea1d1274020b2e08';
+
+                // if(!conversationID){
+                //     conversationID = '602c7a51ea1d1274020b2e08';
+                // }
+                // if(!currentPage){
+                //     currentPage = 1;
+                // }
+                
                 let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID: '5e60f58cf63b8a4e196a1942', currentPage });
+                console.log({resultAfterCallHandler})
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -47,4 +56,6 @@ module.exports = {
     }
 
     //================================================================ END MESAGE  ============================================================
+
+
 }

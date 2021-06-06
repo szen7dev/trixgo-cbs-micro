@@ -86,13 +86,34 @@ module.exports = {
 					// CHATTING
 					//code  :chatting_1
 					// Lấy danh sách cuộc hội thoại
-					[`GET ${ CF_ROUTINGS_CHATTING.GET_INFO_CONVERSATION_BY_ID }`]: {
+					[`GET /chatting/conversations/users/{userID}`]: {
 						swaggerDoc: {
 							tags: ["message"],
 							description: "Get list conversation of user",
-							parameters: [{
-								currentPage : 'string'
-							}]
+							parameters: [
+								{
+									in: "query",
+									name: "currentPage",
+									type: "string",
+									required: true,
+									schema: {
+										currentPage:{
+											type: "string",
+										}
+									}
+								},
+								{
+									in: "path",
+									name: "userID",
+									type: "string",
+									required: true,
+									schema: {
+										userID:{
+											type: "string",
+										}
+									}
+								},
+						]	,
 						},
 						action: "message.ACT_CHATTING_CONVERSATION_GET_LIST_CONVERSATION_BY_USER_ID"
 					},
@@ -104,7 +125,15 @@ module.exports = {
 							tags: ["message"],
 							description: "find conversation with name",
 							parameters: [{
-								key : 'string'
+								in: "query",
+								name: "key",
+								type: "string",
+								required: true,
+								schema: {
+									key:{
+										type: "string",
+									}
+								}
 							}]
 						},
 						action: "message.ACT_CHATTING_CONVERSATION_GET_LIST_CONVERSATION_WITH_KEY"
@@ -112,12 +141,20 @@ module.exports = {
 
 					// Lấy thông tin cuộc hội thoại
 					// code : chatting_info_conversation
-					[`GET ${ CF_ROUTINGS_CHATTING.GET_INFO_CONVERSATION_BY_ID }`]: {
+					[`GET /chatting/conversations/{conversationID} `]: {
 						swaggerDoc: {
 							tags: ["message"],
-							description: "get info conversation by userID",
+							description: "get info conversation by ID limit 15 page",
 							parameters: [{
-								conversationID  : 'string'
+								in: "path",
+								name: "conversationID",
+								type: "string",
+								required: true,
+								schema: {
+									conversationID:{
+										type: "string",
+									}
+								}
 							}]
 						},
 						action: "message.ACT_CHATTING_CONVERSATION_GET_INFO_CONVERSATION_BY_ID"
@@ -129,13 +166,35 @@ module.exports = {
 
 					// Lây tin nhắn của cuộc hội thoại phân trang 30 mẫu tin
 					//code : chatting_info_conversation
-					[`GET ${ CF_ROUTINGS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID }`]: {
+					[`GET /chatting/messages/conversations/{conversationID}`]: {
 						swaggerDoc: {
 							tags: ["message"],
 							description: "get message of conversation",
-							parameters: [{
-								conversationID  : 'string'
-							}]
+							parameters: [
+								{
+									in: "path",
+									name: "conversationID",
+									type: "string",
+									required: true,
+									schema: {
+										conversationID:{
+											type: "string",
+										}
+									}
+								},
+								{
+									in: "query",
+									name: "currentPage",
+									type: "string",
+									required: true,
+									schema: {
+										currentPage:{
+											type: "string",
+										}
+									}
+								},
+
+							]
 						},
 						action: "message.ACT_CHATTING_MESSAGE_GET_LIST_MESSAGE_BY_CONVERSATION_ID"
 					},
@@ -154,7 +213,7 @@ module.exports = {
 		],
 		servers: [
 			{
-				url: "http://localhost:3000/",
+				url: "http://localhost:3003/",
 				description: "Develop server"
 			}
 		]
