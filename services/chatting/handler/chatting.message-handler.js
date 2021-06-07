@@ -47,7 +47,6 @@ module.exports = {
                 // }
                 
                 let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID: '5e60f58cf63b8a4e196a1942', currentPage });
-                console.log({resultAfterCallHandler})
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
