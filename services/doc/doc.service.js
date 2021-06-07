@@ -1,5 +1,6 @@
 const SwaggerService 				= require("swagger-moleculer");
-const SwaggerServiceChattings 		= require("../chatting/helper/chatting.docs-constant")
+const CHATTING__DOC					= require('../chatting/helper/chatting.docs-constant');
+
 module.exports = {
 	// Service name
 	mixins: [SwaggerService],
@@ -50,40 +51,7 @@ module.exports = {
 			{
 				path: "/api",
 				aliases: {
-					// Admin login
-					"GET /greeter/hello": {
-						swaggerDoc: {
-							tags: ["greeter"],
-							description: "Hello Page",
-							parameters: []
-						},
-						action: "greeter.hello"
-					},
-					"GET /greeter/welcome": {
-						swaggerDoc: {
-							tags: ["greeter"],
-							description: "Welcome Page",
-							parameters: [
-								{
-									in: "query",
-									name: "name",
-									type: "string",
-									description: "",
-									required: true,
-									schema: {
-										name:{
-											type: "string",
-										}
-									}
-								},
-
-							]
-						},
-						action: "greeter.welcome"
-					},
-					...SwaggerServiceChattings
-
-				
+					...CHATTING__DOC
 				}
 
 			}

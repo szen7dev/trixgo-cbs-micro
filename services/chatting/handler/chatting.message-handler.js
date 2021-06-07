@@ -1,5 +1,5 @@
-let CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
 let CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
+let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
 
 
 module.exports = {
@@ -45,8 +45,8 @@ module.exports = {
                 // if(!currentPage){
                 //     currentPage = 1;
                 // }
-                
-                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID: '5e60f58cf63b8a4e196a1942', currentPage });
+                //'5e60f58cf63b8a4e196a1942'
+                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID : CF_DATA_DEMO_CHATTING.userID_1, currentPage });
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
