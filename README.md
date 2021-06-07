@@ -29,6 +29,15 @@ const AUTH__USER_MODEL                          = require
 ## **Best Use-Cases:**
 > Tổng hợp các key Best Practice cho NodeJS - Caching(Redis) - MongoDB
 
+- *[Database]* Method Build API: 
+    __Populate Middleware__(thiết lập populate mongodb trong phần setting services) | __Split API__(tách API Category, Product ra riêng)
+    --------------------|----------
+    Dữ liệu __1-1__ => Populate | Dữ liệu __1-N hoặc N-N__ -> cần phải tách API (cần phải tách ra 1 bảng riêng, thay vì lưu [objectID])
+    VD: 1 message - 1 author | VD: 1 message - N media
+    Solve: vẫn thiết kế với dạng reference | Solve: thiết kế collection với bảng phụ, VD: message_media
+
+    * Nếu sub-document được đảm bảo với số lượng ít, hoặc kiểm soát (VD: 1 category có tối đa 10 sản phẩm) -> việc phân trang dữ liệu sản phẩm thì cũng không có ý nghĩa -> không cần phân tách API (Chia để trị) => Có thể dùng phương án Populate Middleware
+
 - *[NodeJS]* Partioning: Handle Heavy Task (CPU-Intensive Task)
 - *[NodeJS]* PromisePool: handle parallel task tốt hơn so với Promise.all
     * Error Hanler: Promise.all stop khi 1 trong các task error

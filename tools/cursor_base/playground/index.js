@@ -32,7 +32,6 @@ app.get('/items', (req, res) => {
  */
 // /items?limit=2&next=590e9abd4abbf1165862d342
 
-
 /**
  * sort theo datetime field bất kỳ
  */
@@ -64,11 +63,15 @@ db.message_messages.find({
 
 //??? TÌM TIN NHẮN TẠI TRANG THỨ ??? -> KHÁNH
 //??? Reminder -> nhắc việc
-//??? Tạo Thumnail cho các ảnh preview File: excel, word, pdf, ...
+//??? Tạo Thumnail cho các ảnh preview File: excel, word, pdf, ... (cần demo 1 flow để xử lý)
   // Package:
   //   - YES: -> field
   //   - NO:
   //     + lấy ảnh thumnail (EVENT) -> RABBITMQ (MESSAING - async task) HEAVY_TASK
   //     + save -> field
 
-//??? ACID Transaction (áp dụng cho các ứng dụng tài chính, kế toán, hợp đồng) - session
+exports.RANGE_BASE_PAGINATION = () => {
+  return new Promise(async resolve => {
+
+  });
+}

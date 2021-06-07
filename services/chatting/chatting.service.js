@@ -17,8 +17,12 @@ module.exports = {
     ],
     
 	/**
-	 	* Service settings
+	* Service settings
 	*/
+	/**
+	 * * Dữ liệu 1 - 1 => Populate 
+	 * * Dữ liệu 1 - N hoặc N-N -> cần phải tách API (cần phải tách ra 1 bảng riêng, thay vì lưu [objectID])
+	 */
 	// settings: {
 	// 	fields: ["_id", "name", "products"],
 	// 	populates : {
@@ -48,7 +52,6 @@ module.exports = {
  		* Actions
 	*/
 	actions: {	
-
 		//================================================================   CONVERSATION ACTIONS   =================================================================
 		
 		// Thêm cuộc hội thoại mới
@@ -73,8 +76,6 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID] 	: CHATTING__MESSAGE_HANDLER.getListMessageByConversationID,
 
 		// Tìm kiếm tinh nhắn trong một cuộc hội thoại [******** để sau]
-
-
 	},
 
 	/**
