@@ -7,7 +7,7 @@ const express               = require('express');
 const app                   = express();
 const server                = require('http').Server(app);
 const { sign , verify }     = require('../../tools/jwt');
-const { REDIS_SEPERATOR }   = require('../../tools/redis/cf_redis');
+const { REDIS_SEPERATOR }   = require('../../tools/cache/cf_redis');
 /**
  * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
  */

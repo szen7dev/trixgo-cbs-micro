@@ -112,6 +112,16 @@ module.exports = {
                             }
                         }
                     },
+                    {
+                        in: "query",
+                        name: "nextInfo",
+                        type: "string",
+                        schema: {
+                            nextInfo:{
+                                type: "string",
+                            }
+                        }
+                    },
                 ]
             },
             action: "message.ACT_CHATTING_MESSAGE_GET_LIST_MESSAGE_BY_CONVERSATION_ID"

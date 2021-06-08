@@ -2,11 +2,6 @@
 const fs                                            = require('fs');
 const path                                          = require('path');
 
-// Tools
-const BaseModel                                     = require('../../../tools/db/base_model');
-const ObjectID                                      = require('mongoose').Types.ObjectId;
-const { checkObjectIDs }                            = require('../../../tools/utils/utils');
-
 // Colls
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.convensation-coll');
@@ -16,6 +11,15 @@ const REACTION_COLL                                 = {}
 // Models  || actions
 const REACTION_MODEL                                = {}
 const FILE__REMOVED_MODEL                           = {}
+
+
+// Tools
+const BaseModel                                     = require('../../../tools/db/base_model');
+const ObjectID                                      = require('mongoose').Types.ObjectId;
+const { checkObjectIDs }                            = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
+
+
 
 class Model extends BaseModel {
 
@@ -324,7 +328,7 @@ class Model extends BaseModel {
     }
     
     // lấy toàn bộ các tin nhắn trong cuộc hội thoại phân trang
-    getMessageByConversationIDWithPage({ conversationID, currentPage, userID }){
+    getMessageByConversationIDWithPage({ conversationID, currentPage, userID, nextInfo }){
         return new Promise(async(resolve)=>{
             try {
                 console.log({ conversationID, currentPage, userID })
@@ -340,9 +344,19 @@ class Model extends BaseModel {
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: 'permission_denied'});
+                
+                
+               let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
+               
+                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
+                    return resolve({ error: true, message: 'invalid_object_id_paggin'});
+
+                let ObjectSearch            = dataPaggingAndSort.data.find;
+                ObjectSearch.conversation   =  conversationID;
+                console.log({ObjectSearch});
 
 
-                let listMessage = await CHATTING__MESSAGE_COLL.find({ conversation: conversationID })
+                let listMessage = await CHATTING__MESSAGE_COLL.find(ObjectSearch)
                     // .populate({ 
                     //     path: 'files',
                     // })
@@ -369,9 +383,8 @@ class Model extends BaseModel {
                     //         select :'_id fullname image company' 
                     //     }
                     // })
-                    .skip((page * perPage) - perPage)
                     .limit(perPage)
-                    .sort({ createAt: -1 });
+                    .sort( dataPaggingAndSort.data.sort );
 
 
                 if(!listMessage  || !Array.isArray(listMessage))

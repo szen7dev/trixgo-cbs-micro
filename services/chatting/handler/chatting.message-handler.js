@@ -34,10 +34,12 @@ module.exports = {
         params: {
             currentPage     : { type: "string" },
             conversationID  : { type: "string" },
+            nextInfo        : { type: "string" },
+
         },
         async handler(ctx) {
             try {
-                let {  currentPage, conversationID }        = ctx.params;
+                let {  currentPage, conversationID, nextInfo }        = ctx.params;
 
                 // if(!conversationID){
                 //     conversationID = '602c7a51ea1d1274020b2e08';
@@ -46,15 +48,12 @@ module.exports = {
                 //     currentPage = 1;
                 // }
                 //'5e60f58cf63b8a4e196a1942'
-                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID : CF_DATA_DEMO_CHATTING.userID_1, currentPage });
+                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID : CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo });
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     }
-
     //================================================================ END MESAGE  ============================================================
-
-
 }
