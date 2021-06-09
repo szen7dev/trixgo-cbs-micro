@@ -38,15 +38,14 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(senderID, conversationID)) 
                     return resolve({ error: true, message: 'invalid_object_id_S' });
                 
-                let arrReceiver = [];
-                if(receivers && receivers.includes(',')) {
-                    arrReceiver = receivers.split(',');
-                } else {
-                    arrReceiver.push(receivers);
-                }
-
+                let arrReceiver = receivers;
+                // if(receivers && receivers.includes(',')) {
+                //     arrReceiver = receivers.split(',');
+                // } else {
+                //     arrReceiver.push(receivers);
+                // }
                 arrReceiver.forEach(receiver =>{
-                    if(receiver && !checkObjectIDs(receiver.trim()))
+                    if(receiver && !checkObjectIDs(receiver))
                         return resolve({ error: true, message: 'invalid_object_id1' });
                 })
                 
@@ -409,23 +408,28 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'invalid_object_id'});
 
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
+                
+                // kiểm tra thời gian hiện tại nếu quá 1h không cho xoá tin 
+                let currentDate     = new Date();
+                let createMessage   =   infoMessage.createdAt
+                console.log({ currentDate, messageDate : infoMessage.createdAt })
+                // return resolve({ error: false, data : 'okkk' });
 
                 let infoMessageAfterRemoved = await CHATTING__MESSAGE_COLL.findOneAndRemove({ _id: messageID, conversation: conversationID, sender: senderID });
                 if(!infoMessageAfterRemoved)
                     return resolve({ error: true, message : 'cannot_remove' });
 
-                let pathFileMessage = path.resolve(__dirname, '../../../..');
-                await infoMessage.files.forEach(async file=>{
-                    let info = await FILE__FILE_COLL.findById(file);
-                    await FILE__FILE_COLL.findByIdAndDelete(file)
-                    await FILE__REMOVED_MODEL.insert({name: info.name, path: info.path});
-                    // fs.unlink(`${pathFileMessage}${info.url}`, (err) => {
-                    //     if (err) {
-                    //         console.error(err)
-                    //         return
-                    //     }
-                    // })
-                })
+                // await infoMessage.files.forEach(async file=>{
+                //     let info = await FILE__FILE_COLL.findById(file);
+                //     await FILE__FILE_COLL.findByIdAndDelete(file)
+                //     await FILE__REMOVED_MODEL.insert({name: info.name, path: info.path});
+                //     // fs.unlink(`${pathFileMessage}${info.url}`, (err) => {
+                //     //     if (err) {
+                //     //         console.error(err)
+                //     //         return
+                //     //     }
+                //     // })
+                // })
                
                 return resolve({ error: false, data : infoMessageAfterRemoved });
             } catch (error) {
@@ -440,26 +444,26 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(messageID))
                     return resolve({ error: true, message: 'invalid_object_id'});
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById( messageID )
-                    .populate({ 
-                        path: 'files',
-                    })
-                    .populate({
-                        path: 'parent',
-                        populate: {
-                            path: "files"
-                        },
-                        populate : { 
-                            path : 'sender', select :  '_id fullname  image' 
-                        }
-                    })
-                    .populate({path : 'sender', select :  '_id fullname  image' })
-                    .populate({path : 'listSeen', select :  '_id fullname  image' })
-                    .populate({
-                        path: 'reactions',
-                        populate: {
-                            path: "author"
-                        }
-                    });
+                    // .populate({ 
+                    //     path: 'files',
+                    // })
+                    // .populate({
+                    //     path: 'parent',
+                    //     populate: {
+                    //         path: "files"
+                    //     },
+                    //     populate : { 
+                    //         path : 'sender', select :  '_id fullname  image' 
+                    //     }
+                    // })
+                    // .populate({path : 'sender', select :  '_id fullname  image' })
+                    // .populate({path : 'listSeen', select :  '_id fullname  image' })
+                    // .populate({
+                    //     path: 'reactions',
+                    //     populate: {
+                    //         path: "author"
+                    //     }
+                    // });
 
                 if(!infoMessage)
                     return resolve({ error: true, message : 'cannot_find'});
