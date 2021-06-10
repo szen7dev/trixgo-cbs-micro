@@ -114,12 +114,12 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(senderID, conversationID)) 
                     return resolve({ error: true, message: 'invalid_object_id_S' });
                 
-                let arrReceiver = [];
-                if(receivers && receivers.includes(',')) {
-                    arrReceiver = receivers.split(',');
-                } else {
-                    arrReceiver.push(receivers);
-                }
+                let arrReceiver = receivers;
+                // if(receivers && receivers.includes(',')) {
+                //     arrReceiver = receivers.split(',');
+                // } else {
+                //     arrReceiver.push(receivers);
+                // }
                 arrReceiver.forEach(receiver =>{
                     if(!checkObjectIDs(receiver))
                         return resolve({ error: true, message: 'invalid_object_id' });
