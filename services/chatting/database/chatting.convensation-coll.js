@@ -89,6 +89,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
         }
     }],
 
+    // chatting.conversation_link-coll.js
     /**
     * Các files được đính kèm trong cuộc hội thoại
     */
@@ -111,6 +112,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
         }
     }],
 
+    // chatting.conversation_draft-coll.js
     // lưu lại tin nhắn đang soạn dỡ
     arrMesageTypingUsers : [{
         userID :  {

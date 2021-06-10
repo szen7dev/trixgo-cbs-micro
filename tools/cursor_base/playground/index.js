@@ -109,8 +109,6 @@ const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
             keys: [`createAt__-1`, '_id__-1']
           } });
 
-       
-
         let listParmsAssignWithKey = listParamsFind.map((itemValue, index) => {
           return {
             key: keysParse[index].prop, value: itemValue
