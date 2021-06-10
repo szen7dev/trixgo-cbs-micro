@@ -1,15 +1,18 @@
 "use strict";
 
-const BaseModel                                 = require('../../../tools/db/base_model');
-const ObjectID                                  = require('mongoose').Types.ObjectId;
-
 const CHATTING__CONVERSATION_COLL               = require('../database/chatting.convensation-coll');
 const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 // const FILE__REMOVED_MODEL                        = require('../../../models/core/file_removed').MODEL;
 // const FILE__FILE_COLL                            = require('../../../database/core/file-coll');
 const FILE__FILE_COLL                           = {};
 const FILE__REMOVED_MODEL                       = {};
+
+
+const BaseModel                                 = require('../../../tools/db/base_model');
+const ObjectID                                  = require('mongoose').Types.ObjectId;
+
 const { checkObjectIDs }                            = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 /**
  * MODEL
@@ -274,8 +277,18 @@ class Model extends BaseModel {
                     
                 // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
 
+                
+                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
                
-                listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
+                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
+                    return resolve({ error: true, message: 'invalid_object_id_paggin'});
+
+                let ObjectSearch            = dataPaggingAndSort.data.find;
+                ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
+                console.log({ObjectSearch});
+
+
+                listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
                 // .populate({
                 //     path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
                 // })
@@ -296,10 +309,9 @@ class Model extends BaseModel {
                 //         path : 'task', select : '_id name'
                 //     }
                 // })
-                .sort({
-                    modifyAt: -1,
-                    creatAt: -1
-                }).skip((page * perPage) - perPage)
+                .sort(
+                    dataPaggingAndSort.data.sort
+                )
                 .limit(perPage)
                
                 
@@ -362,7 +374,7 @@ class Model extends BaseModel {
 
 
     // Lấy thông tin cuộc hội thoại của user
-    getInfoByID({ conversationID, userID }){
+    getInfoByUserID({ conversationID, userID }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
