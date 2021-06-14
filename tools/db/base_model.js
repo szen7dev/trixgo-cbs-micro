@@ -52,15 +52,16 @@ class BaseModel {
      * @param {*} data 
      * @param {*} authorID user tạo || add
      */
-    insertData(data, authorID) {
+    insertData(data) {
         let coll = this.coll;
         return new PROMISE(function (resolve) {
             data.modifyAt = timeUtils.getCurrentTime();
             data.createAt = timeUtils.getCurrentTime();
-            if (OBJECT_ID.isValid(authorID))
-                data.userCreate = authorID;
+            // if (OBJECT_ID.isValid(authorID))
+            //     data.userCreate = authorID;
 
             (new coll(data)).save(function (error, result) {
+                console.log({ error, result })
                 return resolve(result, error);
             });
         });

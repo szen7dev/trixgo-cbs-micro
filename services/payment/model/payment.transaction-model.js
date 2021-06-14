@@ -13,7 +13,7 @@ class Model extends BaseModel {
     }
 
     // tạo order transaction ngay lập tức khi user chọn thông tin thanh toán ngay màn hình CBS
-    insert({ orderID, orderInfo, amount, bankCode, orderType, locale, userID }) {
+    insert({ orderID, orderInfo, amount, bankCode, orderType, locale, userID, status=0 }) {
         //orderID: là ID random, ko phải là OBJECTID
         const that = this;
         return new Promise(async (resolve) => {
@@ -21,7 +21,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
 
-                let infoAfterInsert = await that.insertData({ orderID, orderInfo, amount, bankCode, orderType, locale, user: userID });
+                let infoAfterInsert = await that.insertData({ orderID, orderInfo, amount, bankCode, orderType, locale, user: userID, status });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

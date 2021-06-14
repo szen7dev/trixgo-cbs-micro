@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("payment_transaction", {
+module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
     orderID: {
         type: String,
         require: true,
@@ -40,11 +40,6 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transaction", {
      */
     status: {
         type: Number,
-        default: 0,
-        enum: {
-            values: [0, 1, 2],
-            message: '{VALUE} is not supported'
-        }
     }
     
 })
