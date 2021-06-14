@@ -166,6 +166,7 @@ exports.CHATTING_SOCKET = {
         }
 
     },
+    
     // Thêm người vào cuộc hội [done]
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_ADD_MEMBER_CONVERSATION]: async function(data, ack) { 
         let socket                      = this;
