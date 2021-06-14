@@ -330,7 +330,6 @@ class Model extends BaseModel {
     getMessageByConversationIDWithPage({ conversationID, currentPage, userID, nextInfo }){
         return new Promise(async(resolve)=>{
             try {
-                console.log({ conversationID, currentPage, userID })
                 const page = Number(currentPage) || 1;
                 const perPage = 15;
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
@@ -345,15 +344,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'permission_denied'});
                 
                 
-               let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
+               let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
                
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
                     return resolve({ error: true, message: 'invalid_object_id_paggin'});
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
                 ObjectSearch.conversation   =  conversationID;
-                console.log({ObjectSearch});
-
+                // console.log({ObjectSearch});
 
                 let listMessage = await CHATTING__MESSAGE_COLL.find(ObjectSearch)
                     // .populate({ 

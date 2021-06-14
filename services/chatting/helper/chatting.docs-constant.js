@@ -32,7 +32,18 @@ module.exports = {
                             }
                         }
                     },
-            ]	,
+                    {
+                        in: "query",
+                        name: "nextInfo",
+                        type: "string",
+                        required: true,
+                        schema: {
+                            userID:{
+                                type: "string",
+                            }
+                        }
+                    },
+                ],
             },
             action: "message.ACT_CHATTING_CONVERSATION_GET_LIST_CONVERSATION_BY_USER_ID"
         },

@@ -263,7 +263,7 @@ class Model extends BaseModel {
 
     */
     // Lấy danh sách các cuộc hội thoại của một người dùng 
-    getListConversationByAuthorID({ authorID, currentPage }){
+    getListConversationByAuthorID({ authorID, currentPage, nextInfo }){
         const that = this;
 
         return new Promise(async resolve => {
@@ -276,18 +276,22 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'invalid_object_id' });
                     
                 // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
-
                 
-                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
-               
-                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'invalid_object_id_paggin'});
+                let _sort = {
+                    modifyAt: -1,
+                    creatAt: -1
+                }
+                let ObjectSearch            = {};
+                if(page!=1){
+                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
+                    if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
+                        return resolve({ error: true, message: 'invalid_object_id_paggin'});
 
-                let ObjectSearch            = dataPaggingAndSort.data.find;
+                    _sort                               =  dataPaggingAndSort.data.sort
+                    ObjectSearch                        = dataPaggingAndSort.data.find;
+                }
+
                 ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
-                console.log({ObjectSearch});
-
-
                 listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
                 // .populate({
                 //     path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
@@ -310,7 +314,7 @@ class Model extends BaseModel {
                 //     }
                 // })
                 .sort(
-                    dataPaggingAndSort.data.sort
+                    _sort
                 )
                 .limit(perPage)
                

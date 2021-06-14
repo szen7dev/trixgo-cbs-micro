@@ -82,11 +82,9 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Danh sách user ẩn thông báo cuộc hội thoại
      */
-    arrUserMuteMessage : [{
-        userID :  {
-            type    : Schema.Types.ObjectId,
-            ref     : 'user'
-        }
+    userMute : [{
+        type    : Schema.Types.ObjectId,
+        ref     : 'user'
     }],
 
     // chatting.conversation_link-coll.js
@@ -95,7 +93,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
     */
    links: [{
        type : String
-   }],
+    }],
 
    /*
    *Các task được chọn để giao checklist
