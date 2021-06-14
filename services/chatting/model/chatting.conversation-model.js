@@ -277,7 +277,6 @@ class Model extends BaseModel {
                     
                 // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
 
-                
                 let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
                
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
