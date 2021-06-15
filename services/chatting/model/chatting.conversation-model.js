@@ -1283,6 +1283,15 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * author : HuynhVinh
+     * decription : chức năng Tắt thông báo của cuộc  hội thoại
+     * phục vụ cho việc giao việc (giúp xếp giao việc)
+    */
+    muteConversation({ conversationID, userID, time }){
+
+    }
 }
 
 exports.MODEL = new Model;

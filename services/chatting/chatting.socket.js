@@ -242,9 +242,42 @@ exports.CHATTING_SOCKET = {
     },
 
     // Rời khỏi nhóm
+    [EVENT_SOCKET_CONSTANT_CHATTING.CSS_LEAVE_CONVERSATION]: async function(data, ack) { 
+      
+        let socket                      = this;
+        let listUserActive              = socket.$service.listUserConnected2;
+        let io                          = socket.$service.io;
+        let userID                      = socket.client.user;
+        let { conversationID, isMute, time } = data; 
 
+        let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+        
+        if(!infoAfterAdd.error){
+            let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+            let  arrReceiver            = infoConversation.data.members;
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { arrNewMember : members, conversationID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_LEAVE_CONVERSATION], io })
+        }
+    },
     // Xoá Nhóm
 
+    // Tắt Thông báo nhóm
+    [EVENT_SOCKET_CONSTANT_CHATTING.CSS_MUTE_CONVERSATION]: async function(data, ack) { 
+        let socket                      = this;
+        let listUserActive              = socket.$service.listUserConnected2;
+        let io                          = socket.$service.io;
+        let userID                      = socket.client.user;
+
+        let { conversationID, isMute, time } = data; 
+
+        let  infoConversation       = await CHATTING__CONVERSATION_MODEL.leaveByConversationID({ conversationID, userID });
+        
+        if(!infoConversation.error){
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { arrNewMember : members, conversationID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_MUTE_CONVERSATION], io })
+        }
+    },
+    
+    // Pin cuộc hội thoại 
+    
     //=================================================================MESSAGE===================================================================
    
     // Gửi tin nhắn  [done]
