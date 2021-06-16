@@ -65,6 +65,12 @@ module.exports = {
 		
 		[`PUT ${CF_ROUTINGS_PAYMENT.UPDATE_STATUS}`] : 
 		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.UPDATE_STATUS}`],
+
+		[`POST ${CF_ROUTINGS_PAYMENT.CREATE_URL_PAYMENT}`] : 
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.CREATE_URL_PAYMENT}`],
+
+		[`GET ${CF_ROUTINGS_PAYMENT.URL_RETURN_PAYMENT}`] : 
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],
 	},
 
 	
@@ -85,5 +91,17 @@ module.exports = {
 		}
 	},
 	// Enable/disable logging
-	logging: true
+	logging: true,
+
+	/**
+	 * ROUTE Hooks: cấu hình map từ req -> ctx
+	 */
+	 onBeforeCall(ctx, route, req, res) {
+		// Set request headers to context meta
+		ctx.meta.userAgent = req.headers["user-agent"];
+		ctx.meta.ipAddr    = req.headers['x-forwarded-for'] 	||
+								req.connection.remoteAddress 	||
+								req.socket.remoteAddress 		||
+								req.connection.socket.remoteAddress;
+	},
 };
