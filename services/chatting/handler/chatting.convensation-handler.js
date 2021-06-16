@@ -1,4 +1,6 @@
-let CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
+let CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
+let CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
+
 let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
 module.exports = {
 
@@ -90,6 +92,26 @@ module.exports = {
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListCoversationWithKey({ userID: CF_DATA_DEMO_CHATTING.userID_1, key });
                 console.log({resultAfterCallHandler})
                 return resultAfterCallHandler;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    // Lấy bản nháp đang soạn của user trong một cuộc hội thoại
+    getConversationDraftByUserID: {
+        params: {
+            conversationID  : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let { conversationID }        = ctx.params;
+                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+
+                // await this.validateEntity(name);
+
+                let infoConversationDraft = await CHATTING__CONVERSATION_DRAFT_MODEL.getInfoByUserID({ conversationID, userID: CF_DATA_DEMO_CHATTING.userID_1 });
+                return infoConversationDraft;
             } catch (error) {
                 return { error:  true, message: error.message };
             }

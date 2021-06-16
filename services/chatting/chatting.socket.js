@@ -6,9 +6,10 @@ const  { sendDataToMultilSocketsOfListUser } = require('../../tools/socket/index
 const  { getLinkFromStringV1 } = require('../../tools/utils/utils.js')
 
 // MODEL
-const  USER_MODEL                   = require('../../services/auth/model/auth.user-model').MODEL;
-const  CHATTING__MESSAGE_MODEL      = require('./model/chatting.message-model').MODEL;
-const  CHATTING__CONVERSATION_MODEL = require('./model/chatting.conversation-model').MODEL;
+const  USER_MODEL                               = require('../../services/auth/model/auth.user-model').MODEL;
+const  CHATTING__MESSAGE_MODEL                  = require('./model/chatting.message-model').MODEL;
+const  CHATTING__CONVERSATION_MODEL             = require('./model/chatting.conversation-model').MODEL;
+const  CHATTING__CONVERSATION_DRAFT_MODEL       = require('./model/chatting.coversation_draft-model').MODEL;
 
 
 exports.CHATTING_SOCKET = {
@@ -277,7 +278,7 @@ exports.CHATTING_SOCKET = {
     },
     
     // Pin cuộc hội thoại 
-    
+
     //=================================================================MESSAGE===================================================================
    
     // Gửi tin nhắn  [done]
@@ -379,20 +380,20 @@ exports.CHATTING_SOCKET = {
     },
 
     // Đang soạn tin  nhắn [done]
+    // update : lưu bản nháp vào  conversation_draft-coll
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_TYPING_MESAGE]: async function(data, ack) { 
         let socket                                          = this;
         let listUserActive                                  = socket.$service.listUserConnected2;
         let userID                                          = socket.client.user;
-        let { typing, receivers, conversationID }           = data;
+        let { typing, receivers, conversationID, content }           = data;
         let  io                                             = socket.$service.io;
 
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
         let  arrReceiver                = infoConversation.data.members;
         
-
+        let inforUpdateUserMissMess =  await CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true })
+        let infoUpdateTyping        =  await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: content });
         sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { typing, conversationID, user : userID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_TYPING_MESAGE], io})
-        // let inforUpdateUserMissMess =  await CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true })
-        // let infoUpdateTyping        =  await CHATTING__CONVERSATION_MODEL.updateMessageTyping({ conversationID, userID, content });
     },
 
     // Đã nhận tin nhắn [done]

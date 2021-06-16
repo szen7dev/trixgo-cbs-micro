@@ -1,15 +1,12 @@
 "use strict";
 
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.convensation-coll');
-const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
-// const FILE__REMOVED_MODEL                        = require('../../../models/core/file_removed').MODEL;
-// const FILE__FILE_COLL                            = require('../../../database/core/file-coll');
-const FILE__FILE_COLL                           = {};
-const FILE__REMOVED_MODEL                       = {};
-
-
 const BaseModel                                 = require('../../../tools/db/base_model');
 const ObjectID                                  = require('mongoose').Types.ObjectId;
+
+const CHATTING__CONVERSATION_COLL               = require('../database/chatting.convensation-coll');
+const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
+const FILE__FILE_COLL                           = {};
+const FILE__REMOVED_MODEL                       = {};
 
 const { checkObjectIDs }                            = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
@@ -622,7 +619,6 @@ class Model extends BaseModel {
     getListCoversationWithKey({ key, userID }) {
         return new Promise(async resolve => {
             try {
-                console.log({key, userID })
                 let listUsers = await CHATTING__CONVERSATION_COLL.find({
                         members: { $in: [userID]},
                         name: new RegExp(key, 'i')
@@ -875,9 +871,7 @@ class Model extends BaseModel {
     updateUserOffline({  userID, time }) {
         return new Promise(async resolve => {
             try {
-                let infoConversation = await CHATTING__CONVERSATION_COLL.find({
-                    members: { $in: [userID]}
-                    });
+                let infoConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [userID] } });
                 if(!infoConversation){
                     return resolve({ error: true, data: 'conversation_exits' }); 
                 }
