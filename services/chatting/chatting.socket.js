@@ -6,9 +6,12 @@ const  { sendDataToMultilSocketsOfListUser } = require('../../tools/socket/index
 const  { getLinkFromStringV1 } = require('../../tools/utils/utils.js')
 
 // MODEL
-const  USER_MODEL                   = require('../../services/auth/model/auth.user-model').MODEL;
-const  CHATTING__MESSAGE_MODEL      = require('./model/chatting.message-model').MODEL;
-const  CHATTING__CONVERSATION_MODEL = require('./model/chatting.conversation-model').MODEL;
+const  USER_MODEL                               = require('../../services/auth/model/auth.user-model').MODEL;
+const  CHATTING__MESSAGE_MODEL                  = require('./model/chatting.message-model').MODEL;
+const  CHATTING__CONVERSATION_MODEL             = require('./model/chatting.conversation-model').MODEL;
+const  CHATTING__CONVERSATION_DRAFT_MODEL       = require('./model/chatting.coversation_draft-model').MODEL;
+const  CHATTING__CONVERSATION_LINK_MODEL       = require('./model/chatring.conversation_link-model').MODEL;
+
 
 
 exports.CHATTING_SOCKET = {
@@ -242,8 +245,52 @@ exports.CHATTING_SOCKET = {
     },
 
     // Rời khỏi nhóm
+    [EVENT_SOCKET_CONSTANT_CHATTING.CSS_LEAVE_CONVERSATION]: async function(data, ack) { 
+      
+        let socket                      = this;
+        let listUserActive              = socket.$service.listUserConnected2;
+        let io                          = socket.$service.io;
+        let userID                      = socket.client.user;
+        let { conversationID, isMute, time } = data; 
 
+        let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+        
+        if(!infoAfterAdd.error){
+            let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+            let  arrReceiver            = infoConversation.data.members;
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { arrNewMember : members, conversationID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_LEAVE_CONVERSATION], io })
+        }
+    },
     // Xoá Nhóm
+
+    // Tắt Thông báo nhóm
+    [EVENT_SOCKET_CONSTANT_CHATTING.CSS_MUTE_CONVERSATION]: async function(data, ack) { 
+        let socket                      = this;
+        let listUserActive              = socket.$service.listUserConnected2;
+        let io                          = socket.$service.io;
+        let userID                      = socket.client.user;
+
+        let { conversationID, isMute, time } = data; 
+        let  updateConversation;
+
+        console.log({conversationID, isMute, time })
+
+        if(isMute){
+            updateConversation       = await CHATTING__CONVERSATION_MODEL.muteConversation({ conversationID, userID, time });
+        }else{
+            updateConversation       = await CHATTING__CONVERSATION_MODEL.unMuteConversation({ conversationID, userID });
+        }
+        
+        if(!updateConversation.error){
+            let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+            let  arrReceiver            = infoConversation.data.members;
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { isMute,updateConversation }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_MUTE_CONVERSATION], io })
+        }else{
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : { isMute, message : `update_fail :${updateConversation && updateConversation.message}` }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_MUTE_CONVERSATION], io })
+        }
+    },
+    
+    // Pin cuộc hội thoại 
 
     //=================================================================MESSAGE===================================================================
    
@@ -260,6 +307,8 @@ exports.CHATTING_SOCKET = {
         let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
         let  arrReceiver            = infoConversation.data.members;
 
+        
+        
         async function addMessage(){
             let infoMessageAfterInsert;
             if(!isLikeIcon){
@@ -284,15 +333,21 @@ exports.CHATTING_SOCKET = {
 
             // II.2.5 Tổng hợp link cuộc hội thoại nếu có gửi link
             if(links && links.length){
-                let infoConversationAfterInsertLinks = await CHATTING__CONVERSATION_MODEL.updateLinks({ conversationID, userID, links });
+                // let infoConversationAfterInsertLinks = await CHATTING__CONVERSATION_MODEL.updateLinks({ conversationID, userID, links });
+                let listPomiseSaveLink = [];
+                links && links.forEach(link=>{
+                    listPomiseSaveLink.push(CHATTING__CONVERSATION_LINK_MODEL.insert({ conversationID, userID, link }))
+                })
+
+                let infoConversationAfterInsertLinks = await Promise.all(listPomiseSaveLink) ;
             }
 
             // II.2.6 Nếu thành công gửi socket và clouding 
             if(!infoMessageAfterInsert.error) {
+                
                 let messageID = infoMessageAfterInsert.data._id;
                 let infoMessage = await CHATTING__MESSAGE_MODEL.getInfoByID({ messageID });
-                let objData = links && links.length ? { tempID, infoMessage, userID, infoConversation, isLikeIcon, arrReceiver, links } : { tempID, infoMessage, userID, infoConversation, isLikeIcon, receivers };
-                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : { infoConversation , infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEEN_MESSAGE], io})
+                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : {infoConversation :  this.infoConversation , infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEND_MESSAGE], io})
 
                 // if(infoConversation){
                 //     // GỬI TỚI NOTIFI TỚI MOBILE
@@ -316,11 +371,42 @@ exports.CHATTING_SOCKET = {
                 //     });
                 //     sendMessageMobile(arrReceiver, messageNoti, body, userID) 
                 // }
+
+                // I. Lưu trạng thái chưa đọc tin nhắn cho các thành viên trong nhóm
+                await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: '' });
+
+                let links = [];
+                let infoConversation;
+                let arrayPromiseUpdateUserMissMess = [];
+
+                // Lọc mãng lưu những user trong cuộc hội thoại là chưa xem tin nhắn
+                arrReceiver.forEach(reciver=>{
+                    if(reciver != userID.toString()){
+                        arrayPromiseUpdateUserMissMess = [...arrayPromiseUpdateUserMissMess, CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ sender : userID, conversationID, userID : reciver })]
+                    }
+                });
+
+                await Promise.all(arrayPromiseUpdateUserMissMess);
             }
         }
         //II.1 Gửi tin nhắn chứa file đínnh kèm
         if(messageID && messageID.length > 0){
             console.log("Coding")
+            // I. Lưu trạng thái chưa đọc tin nhắn cho các thành viên trong nhóm
+            // I. Lưu trạng thái chưa đọc tin nhắn cho các thành viên trong nhóm
+            await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: '' });                
+            let links = [];
+            let infoConversation;
+            let arrayPromiseUpdateUserMissMess = [];
+
+            // Lọc mãng lưu những user trong cuộc hội thoại là chưa xem tin nhắn
+            arrReceiver.forEach(reciver=>{
+                if(reciver != userID.toString()){
+                    arrayPromiseUpdateUserMissMess = [...arrayPromiseUpdateUserMissMess, DB_MESSAGE_CONVERSATION_MODEL.updateUserMissMessage({ sender : userID, conversationID, userID : reciver })]
+                }
+            });
+
+            await Promise.all(arrayPromiseUpdateUserMissMess);
             // addMesaageWithFile();
         }else{
         //II.2
@@ -346,20 +432,20 @@ exports.CHATTING_SOCKET = {
     },
 
     // Đang soạn tin  nhắn [done]
+    // update : lưu bản nháp vào  conversation_draft-coll
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_TYPING_MESAGE]: async function(data, ack) { 
         let socket                                          = this;
         let listUserActive                                  = socket.$service.listUserConnected2;
         let userID                                          = socket.client.user;
-        let { typing, receivers, conversationID }           = data;
+        let { typing, receivers, conversationID, content }           = data;
         let  io                                             = socket.$service.io;
 
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
         let  arrReceiver                = infoConversation.data.members;
         
-
+        let inforUpdateUserMissMess =  await CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true })
+        let infoUpdateTyping        =  await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: content });
         sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { typing, conversationID, user : userID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_TYPING_MESAGE], io})
-        // let inforUpdateUserMissMess =  await CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true })
-        // let infoUpdateTyping        =  await CHATTING__CONVERSATION_MODEL.updateMessageTyping({ conversationID, userID, content });
     },
 
     // Đã nhận tin nhắn [done]

@@ -178,7 +178,11 @@ exports.checkObjectIDs = (...params) => {
     return flag;
 }
 
-
+let stringDomain = [
+    '.com', '.vn', '.edu', '.net', '.org', '.gov', '.info', 
+    '.es', '.id', '.tel', '.tk', '.xyz', '.online', '.group',
+    '.live', '.link', '.me', '.pro', '.be'
+];
 /**
 */
 exports.getLinkFromStringV1 = (string)=>{
@@ -190,8 +194,8 @@ exports.getLinkFromStringV1 = (string)=>{
     let linkArr = string && string.match(regex);
     let newLinkArr = [];
     if(linkArr && linkArr.length){
-        linkArr.forEach( link => {
-            stringDomain.forEach(haLink =>{
+        linkArr && linkArr.forEach( link => {
+            stringDomain && stringDomain.forEach(haLink =>{
                 if(link.includes(haLink) && newLinkArr.indexOf(link) == -1){
                     newLinkArr.push(link)
                 }

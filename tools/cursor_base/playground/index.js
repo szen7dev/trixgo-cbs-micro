@@ -173,8 +173,8 @@ const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
 }
 
 // RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z`, keys: ['createAt__-1'] })
-RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
-  .then(result => console.log({ result }))
-  .catch(err => console.log({ err }))
+// RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
+//   .then(result => console.log({ result }))
+//   .catch(err => console.log({ err }))
 
 exports.RANGE_BASE_PAGINATION = RANGE_BASE_PAGINATION;

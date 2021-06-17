@@ -184,10 +184,10 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         default: 0
     }, 
     // //_______Cuộc hộp thoại bị mis tin nhắn
-    // converMiss:[{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'message_conversation'
-    // }],
+    converMiss:[{ 
+        type: Schema.Types.ObjectId,
+        ref: 'message_conversation'
+    }],
     //_______Code reset mật khẩu
     codeReset: String,
     /**
