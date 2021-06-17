@@ -127,7 +127,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let { conversationID }        = ctx.params;
+                let { conversationID, currentPage, nextInfo }        = ctx.params;
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
                 // await this.validateEntity(name);
                 let infoConversationDraft = await CHATTING__CONVERSATION_LINK_MODEL.getListWithPage({ conversationID, userID: CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo })

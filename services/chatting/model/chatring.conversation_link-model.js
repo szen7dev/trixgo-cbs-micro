@@ -18,6 +18,8 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             try {
+
+                console.log({conversationID, userID, link})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
 
@@ -28,9 +30,10 @@ class Model extends BaseModel {
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: 'Forbidden_exit_members', status : 403 });
+                
 
                 let infoConversationDraft = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link });
-                if(!infoConversationDraft)
+                if(infoConversationDraft)
                     return resolve({ error : true, message : 'exited_conversation_link' })
             
                 let infoConversationAfterInserted = await that.insertData({  conversationID, link  });
@@ -63,9 +66,6 @@ class Model extends BaseModel {
                 const page  = Number(currentPage) || 1;
                 let perPage = 20;
 
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
-                
                 let _sort = {
                     creatAt: -1
                 }

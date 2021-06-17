@@ -5,7 +5,7 @@ const Schema                = require('mongoose').Schema;
 /**
  * tách conversation_link: không dùng links trong conversation
  */
-module.exports  = DATABASE_MIDDLEWARE("conversation_link", {
+module.exports  = DATABASE_MIDDLEWARE("message_conversation_link", {
     // message_conversation
     conversation: {
         type    :  Schema.Types.ObjectId,

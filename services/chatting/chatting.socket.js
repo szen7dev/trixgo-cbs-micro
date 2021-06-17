@@ -10,6 +10,8 @@ const  USER_MODEL                               = require('../../services/auth/m
 const  CHATTING__MESSAGE_MODEL                  = require('./model/chatting.message-model').MODEL;
 const  CHATTING__CONVERSATION_MODEL             = require('./model/chatting.conversation-model').MODEL;
 const  CHATTING__CONVERSATION_DRAFT_MODEL       = require('./model/chatting.coversation_draft-model').MODEL;
+const  CHATTING__CONVERSATION_LINK_MODEL       = require('./model/chatring.conversation_link-model').MODEL;
+
 
 
 exports.CHATTING_SOCKET = {
@@ -306,7 +308,7 @@ exports.CHATTING_SOCKET = {
         let  arrReceiver            = infoConversation.data.members;
 
         
-
+        
         async function addMessage(){
             let infoMessageAfterInsert;
             if(!isLikeIcon){
@@ -331,7 +333,13 @@ exports.CHATTING_SOCKET = {
 
             // II.2.5 Tổng hợp link cuộc hội thoại nếu có gửi link
             if(links && links.length){
-                let infoConversationAfterInsertLinks = await CHATTING__CONVERSATION_MODEL.updateLinks({ conversationID, userID, links });
+                // let infoConversationAfterInsertLinks = await CHATTING__CONVERSATION_MODEL.updateLinks({ conversationID, userID, links });
+                let listPomiseSaveLink = [];
+                links && links.forEach(link=>{
+                    listPomiseSaveLink.push(CHATTING__CONVERSATION_LINK_MODEL.insert({ conversationID, userID, link }))
+                })
+
+                let infoConversationAfterInsertLinks = await Promise.all(listPomiseSaveLink) ;
             }
 
             // II.2.6 Nếu thành công gửi socket và clouding 
@@ -339,8 +347,7 @@ exports.CHATTING_SOCKET = {
                 
                 let messageID = infoMessageAfterInsert.data._id;
                 let infoMessage = await CHATTING__MESSAGE_MODEL.getInfoByID({ messageID });
-                let objData = links && links.length ? { tempID, infoMessage, userID, infoConversation, isLikeIcon, arrReceiver, links } : { tempID, infoMessage, userID, infoConversation, isLikeIcon, receivers };
-                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : { infoConversation , infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEEN_MESSAGE], io})
+                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : {infoConversation :  this.infoConversation , infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEND_MESSAGE], io})
 
                 // if(infoConversation){
                 //     // GỬI TỚI NOTIFI TỚI MOBILE
@@ -366,7 +373,8 @@ exports.CHATTING_SOCKET = {
                 // }
 
                 // I. Lưu trạng thái chưa đọc tin nhắn cho các thành viên trong nhóm
-                await DB_MESSAGE_CONVERSATION_MODEL.updateMessageTyping({ conversationID, userID , content :''})
+                await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: '' });
+
                 let links = [];
                 let infoConversation;
                 let arrayPromiseUpdateUserMissMess = [];
@@ -374,7 +382,7 @@ exports.CHATTING_SOCKET = {
                 // Lọc mãng lưu những user trong cuộc hội thoại là chưa xem tin nhắn
                 arrReceiver.forEach(reciver=>{
                     if(reciver != userID.toString()){
-                        arrayPromiseUpdateUserMissMess = [...arrayPromiseUpdateUserMissMess, DB_MESSAGE_CONVERSATION_MODEL.updateUserMissMessage({ sender : userID, conversationID, userID : reciver })]
+                        arrayPromiseUpdateUserMissMess = [...arrayPromiseUpdateUserMissMess, CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ sender : userID, conversationID, userID : reciver })]
                     }
                 });
 
@@ -385,19 +393,20 @@ exports.CHATTING_SOCKET = {
         if(messageID && messageID.length > 0){
             console.log("Coding")
             // I. Lưu trạng thái chưa đọc tin nhắn cho các thành viên trong nhóm
-                await DB_MESSAGE_CONVERSATION_MODEL.updateMessageTyping({ conversationID, userID , content :''})
-                let links = [];
-                let infoConversation;
-                let arrayPromiseUpdateUserMissMess = [];
+            // I. Lưu trạng thái chưa đọc tin nhắn cho các thành viên trong nhóm
+            await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: '' });                
+            let links = [];
+            let infoConversation;
+            let arrayPromiseUpdateUserMissMess = [];
 
-                // Lọc mãng lưu những user trong cuộc hội thoại là chưa xem tin nhắn
-                arrReceiver.forEach(reciver=>{
-                    if(reciver != userID.toString()){
-                        arrayPromiseUpdateUserMissMess = [...arrayPromiseUpdateUserMissMess, DB_MESSAGE_CONVERSATION_MODEL.updateUserMissMessage({ sender : userID, conversationID, userID : reciver })]
-                    }
-                });
+            // Lọc mãng lưu những user trong cuộc hội thoại là chưa xem tin nhắn
+            arrReceiver.forEach(reciver=>{
+                if(reciver != userID.toString()){
+                    arrayPromiseUpdateUserMissMess = [...arrayPromiseUpdateUserMissMess, DB_MESSAGE_CONVERSATION_MODEL.updateUserMissMessage({ sender : userID, conversationID, userID : reciver })]
+                }
+            });
 
-                await Promise.all(arrayPromiseUpdateUserMissMess);
+            await Promise.all(arrayPromiseUpdateUserMissMess);
             // addMesaageWithFile();
         }else{
         //II.2

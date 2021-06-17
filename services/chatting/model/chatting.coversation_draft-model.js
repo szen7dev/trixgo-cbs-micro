@@ -18,6 +18,7 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             try {
+                console.log({message, conversationID, userID})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
 
@@ -25,8 +26,8 @@ class Model extends BaseModel {
                 let _checkExistConversation =  CHATTING__CONVERSATION_COLL.find({ 
                     members: { $all: [userID] }
                 })
-                let _checkExistConversationDraft =  CHATTING__CONVERSATION_COLL.findOne({ 
-                    userID, conversationID
+                let _checkExistConversationDraft =  CHATTING__CONVERSATION_DRAFT_COLL.findOne({ 
+                    conversation : conversationID, user : userID 
                 })
 
                 let [ checkExistConversation, checkExistConversationDraft ] = await Promise.all([ _checkExistConversation, _checkExistConversationDraft])
@@ -35,10 +36,10 @@ class Model extends BaseModel {
                 
                 let infoConversationAfterInserted;
                 let messageError = '';
-                
+
                 if(!checkExistConversationDraft){
                     messageError = 'cant_insert'
-                    infoConversationAfterInserted = await that.insertData({ message, conversationID, userID  });
+                    infoConversationAfterInserted = await that.insertData({ message, conversation : conversationID, user : userID  });
                 }
 
                 if(checkExistConversationDraft && checkExistConversationDraft._id){

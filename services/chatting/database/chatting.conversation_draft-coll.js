@@ -5,7 +5,7 @@ const Schema                = require('mongoose').Schema;
 /**
  * tách conversation_link: không dùng links trong conversation
  */
-module.exports  = DATABASE_MIDDLEWARE("conversation_draft", {
+module.exports  = DATABASE_MIDDLEWARE("message_conversation_draft", {
     conversation: {
         type    :  Schema.Types.ObjectId,
         ref     : 'message_conversation'
