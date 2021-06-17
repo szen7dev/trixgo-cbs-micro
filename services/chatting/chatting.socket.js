@@ -339,7 +339,7 @@ exports.CHATTING_SOCKET = {
                     listPomiseSaveLink.push(CHATTING__CONVERSATION_LINK_MODEL.insert({ conversationID, userID, link }))
                 })
 
-                let infoConversationAfterInsertLinks = await Promise.all(listPomiseSaveLink) ;
+                let infoConversationAfterInsertLinks = await P(listPomiseSaveLink) ;
             }
 
             // II.2.6 Nếu thành công gửi socket và clouding 
@@ -347,7 +347,7 @@ exports.CHATTING_SOCKET = {
                 
                 let messageID = infoMessageAfterInsert.data._id;
                 let infoMessage = await CHATTING__MESSAGE_MODEL.getInfoByID({ messageID });
-                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : {infoConversation :  this.infoConversation , infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEND_MESSAGE], io})
+                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : {infoConversation :  this.infoConversation , infoMessage :  infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEND_MESSAGE], io})
 
                 // if(infoConversation){
                 //     // GỬI TỚI NOTIFI TỚI MOBILE
@@ -386,7 +386,7 @@ exports.CHATTING_SOCKET = {
                     }
                 });
 
-                await Promise.all(arrayPromiseUpdateUserMissMess);
+                await P(arrayPromiseUpdateUserMissMess);
             }
         }
         //II.1 Gửi tin nhắn chứa file đínnh kèm
@@ -406,7 +406,7 @@ exports.CHATTING_SOCKET = {
                 }
             });
 
-            await Promise.all(arrayPromiseUpdateUserMissMess);
+            await P(arrayPromiseUpdateUserMissMess);
             // addMesaageWithFile();
         }else{
         //II.2
@@ -452,7 +452,8 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_RECEIVED_MESSAGE]: async function(data, ack) { 
         let socket                                      = this;
         let listUserActive                              = socket.$service.listUserConnected2;
-        let { messageID  , conversationID, receivers }  = data;
+        let { messageID  , conversationID   }           = data;
+        let userID                                      = socket.client.user;
         let  io                                         = socket.$service.io;
 
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
@@ -471,6 +472,8 @@ exports.CHATTING_SOCKET = {
         let listUserActive                              = socket.$service.listUserConnected2;
         let  io                                         = socket.$service.io;
         let authorID                                    = socket.client.user;
+        let userID                                      = socket.client.user;
+        
         let { messageID  , conversationID  } = data;
 
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
@@ -478,8 +481,8 @@ exports.CHATTING_SOCKET = {
         
         let _inforUpdateMiss  =   CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true });
         let _infoMessage      =   CHATTING__MESSAGE_MODEL.getInfoByID({messageID})
-        let { inforUpdateMiss,  infoMessage } = await promise.all([ inforUpdateMiss, infoMessage ])
-        if(messageID && ! infoMessage.error)
+        let [ inforUpdateMiss,  infoMessage ] = await Promise.all([ _inforUpdateMiss, _infoMessage ])
+        if(messageID && infoMessage.error)
             return;
 
         let inforUpdate =  await CHATTING__MESSAGE_MODEL.seenMessageOneByOne({ messageID, userID :userID });
@@ -545,6 +548,8 @@ exports.CHATTING_SOCKET = {
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
         let infoLikeMessage             = await CHATTING__MESSAGE_MODEL.toggleLikeMessage({messageID, authorID : userID, type});
         let  arrReceiver                = infoConversation.data.members;
+
+        console.log({infoLikeMessage})
         if(infoLikeMessage.error)
             return
            
@@ -593,12 +598,12 @@ exports.CHATTING_SOCKET = {
 
         let inforUpdate 
         if(!deletePin){
-            inforUpdate = await DB_MESSAGE_CONVERSATION_MODEL.insertPinMessage({ messageID, conversationID, userID });
+            inforUpdate = await CHATTING__CONVERSATION_MODEL.insertPinMessage({ messageID, conversationID, userID });
         }else{
-            inforUpdate = await DB_MESSAGE_CONVERSATION_MODEL.deletePinMessage({ conversationID, userID });
+            inforUpdate = await CHATTING__CONVERSATION_MODEL.deletePinMessage({ conversationID, userID });
         }
         if(!inforUpdate.error){
-            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { conversationID, infoMessagePin : inforUpdate, deletePin }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { conversationID, infoMessage : inforUpdate, deletePin }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
         }
     },
 }
