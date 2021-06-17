@@ -102,63 +102,63 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 2: Là tính năng cần được cải thiện
      * 3: Là giao việc qua PCM
      */
-    bug: {
-        type   : Number,
-        default: 0
-    },
+    // bug: {
+    //     type   : Number,
+    //     default: 0
+    // },
 
-    //_______Liên quan tới ứng dụng nào
-    app: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'app'
-    },
+    // //_______Liên quan tới ứng dụng nào
+    // app: {
+    //     type    :  Schema.Types.ObjectId,
+    //     ref     : 'app'
+    // },
     
-    /**
-     * Số hiệu của Bug để dễ nhận biết sau này
-     * Được tính bằng giá trị lớn nhất hiện tại của hệ thống + 1
-     */
-    ticket: {
-        type   : Number,
-        default: 0
-    },
+    // /**
+    //  * Số hiệu của Bug để dễ nhận biết sau này
+    //  * Được tính bằng giá trị lớn nhất hiện tại của hệ thống + 1
+    //  */
+    // ticket: {
+    //     type   : Number,
+    //     default: 0
+    // },
 
-    /**
-     * Mức độ ưu tiên cần xử lý
-     * 1-Cao (Hotfix)
-     * 2-Bình thường
-     * 3-Thấp
-     */
-    priority: {
-        type   : Number,
-        default: 2
-    },
+    // /**
+    //  * Mức độ ưu tiên cần xử lý
+    //  * 1-Cao (Hotfix)
+    //  * 2-Bình thường
+    //  * 3-Thấp
+    //  */
+    // priority: {
+    //     type   : Number,
+    //     default: 2
+    // },
 
-    //_________Dự kiến thời gian hoàn tất fixBug
-    expiredTime: { type: Date, default: null },
+    // //_________Dự kiến thời gian hoàn tất fixBug
+    // expiredTime: { type: Date, default: null },
 
-    /**
-     * Trạng thái của bug
-     * 0: Chưa xử lý
-     * 1: Đã xử lý
-     */
-    fixedbug: {
-        type   : Number,
-        default: 0
-    },
+    // /**
+    //  * Trạng thái của bug
+    //  * 0: Chưa xử lý
+    //  * 1: Đã xử lý
+    //  */
+    // fixedbug: {
+    //     type   : Number,
+    //     default: 0
+    // },
 
-    /**
-     * Người dự kiến thực hiện fixbug (khi lập kế hoạch)
-     * Người đã fixbug: người tích hoàn tất (có thể là BA)
-     */
-    userFixedBug: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
-    },
+    // /**
+    //  * Người dự kiến thực hiện fixbug (khi lập kế hoạch)
+    //  * Người đã fixbug: người tích hoàn tất (có thể là BA)
+    //  */
+    // userFixedBug: {
+    //     type    :  Schema.Types.ObjectId,
+    //     ref     : 'user'
+    // },
 
-    //_________Thời gian xong fixbug
-    fixBugAt: {
-        type : Date
-    },
+    // //_________Thời gian xong fixbug
+    // fixBugAt: {
+    //     type : Date
+    // },
 
     /**
      * QUẢN LÝ GIAO VIỆC QUA PCM
@@ -170,5 +170,5 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     },
 
     //_________Các chi chú nếu có
-    noteBug: String
+    // noteBug: String
 })

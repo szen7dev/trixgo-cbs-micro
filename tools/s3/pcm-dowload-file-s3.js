@@ -3,7 +3,7 @@ const PCM_PLAN_TASK                 = require('../models/apps/pcm/pcm_plan_task'
 const FILE_COLL                     = require('../database/core/file-coll');
 const fs                            = require('fs');
 const path                          = require('path');
-let { CHECK_MIDDLE_UPLOAD, GENERATE_LINK_S3, CHECK_PERMISSION_GENERATE_LINK, DOWLOAD_ONE_FILE_S3, GENERATE_LINK_DOWLOAD_ONE_FILE_S3 } = require('../routing/role/_upload.check');
+let { CHECK_MIDDLE_UPLOAD, GENERATE_LINK_S3, CHECK_PERMISSION_GENERATE_LINK, DOWLOAD_ONE_FILE_S3, GENERATE_LINK_DOWLOAD_ONE_FILE_S3 } = require('./_upload.check');
 
 
 exports.dowloadAllFileAllTaskInGroup= function(stringifyStr){

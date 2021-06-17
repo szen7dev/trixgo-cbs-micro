@@ -18,7 +18,7 @@ Bổ sung status code response cho tất cả api
      - internal call: ctx.call("products.find", { populate: ["category"]});
      - external-service call: this.broker.call('products.find', { populate: ['category'] })
 
-- syntax file:
+- syntax file: 
      - database:
           [service_name].[collection_name]-coll.js
 - require file và đặt tên biến
