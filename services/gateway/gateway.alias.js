@@ -12,6 +12,7 @@ const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 /**
  * ------import route's Services---------
  */
+const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
@@ -19,6 +20,7 @@ const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-cons
 /**
  * ------import action's Services--------
  */
+ const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
  const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
  const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
  const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
@@ -26,7 +28,6 @@ const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-cons
 
 module.exports = {
 	path: 'api',
-
 	// authentication: true,
 	// authorization: true,
 
@@ -36,6 +37,13 @@ module.exports = {
 	],
 
 	aliases: {
+		//--------------------------aliases's GATEWAY service--------------------------//
+		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_HEALTH}`] : 
+		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_HEALTH}`],
+
+		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_VERSION}`] : 
+		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_VERSION}`],
+
 		//--------------------------aliases's AUTH service--------------------------//
 		[`GET ${CF_ROUTINGS_AUTH.INSERT_FAST}`] : 
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.INSERT_FAST}`],
