@@ -295,7 +295,7 @@ module.exports = {
         //  this.logger.info(`WWW server started on port ${this.settings.port}`);
         // });
         
-        server.listen(4000);
+        server.listen(3003);
     },
     /**
      * Service stopped lifecycle event handler

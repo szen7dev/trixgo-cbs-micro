@@ -64,18 +64,21 @@ class Model extends BaseModel {
         })
     }
 
-    getListByUserWithStatus({ userID, status=1 }) {
+    getListByUserWithStatus({ userID, status='all' }) {
         return new Promise(async resolve => {
             try {
-                console.log({  userID, status })
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
-                if(Number.isNaN(Number(status)))
-                    return resolve({ error: true, message: 'status_invalid' });
-                let listTransactionsOfUser = await PAYMENT__TRANSACTION_COLL.find({
-                    user: userID,
-                    status: status
-                }).sort({ createAt: -1 });
+
+                let conditionObj = {
+                    user: userID
+                };
+                if (status != 'all')
+                    conditionObj = {
+                        ...conditionObj, status: Number(status)
+                    }
+
+                let listTransactionsOfUser = await PAYMENT__TRANSACTION_COLL.find(conditionObj).sort({ createAt: -1 });
                 if (!listTransactionsOfUser)
                     return resolve({ error: true, message: 'cannot_find_list_transactions_of_user' });
 
@@ -89,7 +92,6 @@ class Model extends BaseModel {
     getListTransactions({ status='all' }) {
         return new Promise(async resolve => {
             try {
-                console.log({  status })
                 let conditionObj = {};
                 if (status != 'all')
                     conditionObj = {
