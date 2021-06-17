@@ -9,26 +9,17 @@ let { vnp_TmnCode, vnp_HashSecret, vnp_Url, vnp_ReturnUrl }
 let { sortObject }                              = require('../../../tools/utils/utils');
 
 module.exports = {
-    // Thêm cuộc hội thoại mới
-    insert: {
+    getListTransactions: {
         params: {
-            orderID         : { type: "string" },
-            orderInfo       : { type: "string" },
-            amount          : { type: "number" },
-            bankCode        : { type: "string" },
-            orderType       : { type: "string" },
-            locale          : { type: "string" },
-            userID          : { type: "string" },
+            status : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID, orderInfo, amount, bankCode, orderType, locale, userID }        = ctx.params;
-                // let { _id : userID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+                let { status }        = ctx.params;
 
-                let infoAfterInsert = await PAYMENT__TRANSACTION_MODEL.insert({ orderID, orderInfo, amount, bankCode, orderType, locale, userID });
-
-                return infoAfterInsert;
+                let listTransactions = await PAYMENT__TRANSACTION_MODEL.getListTransactions({ status });
+                return listTransactions;
             } catch (error) {
                 return { error:  true, message: error.message };
             }
@@ -38,7 +29,7 @@ module.exports = {
     getListTransactionsByUserWithStatus: {
         params: {
             userID  : { type: "string" },
-            status  : { type: "string" },
+            status  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -124,9 +115,16 @@ module.exports = {
                 vnp_Params['vnp_SecureHash']        = secureHash;
                 vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: true });
 
+                /**
+                 * DB TRANSACTION
+                 */
+                let USER_FAKE_ID = '5e60f58cf63b8a4e196a1942';
+                let infoTransactionAfterInsert = await PAYMENT__TRANSACTION_MODEL.insert({ orderID: orderId, orderInfo, amount, bankCode, orderType, locale, userID: USER_FAKE_ID, ipAddr });
+
                 return {
                     error: false, data: {
-                        vnpUrl
+                        url: vnpUrl,
+                        infoTransaction: infoTransactionAfterInsert
                     }
                 };
             } catch (error) {
@@ -155,7 +153,8 @@ module.exports = {
 
                 delete vnp_Params['vnp_SecureHash'];
                 delete vnp_Params['vnp_SecureHashType'];
-
+                let orderId         = vnp_Params['vnp_TxnRef'];
+                let rspCode         = vnp_Params['vnp_ResponseCode'];
                 vnp_Params          = sortObject(vnp_Params);
 
                 let tmnCode         = vnp_TmnCode;
@@ -165,17 +164,30 @@ module.exports = {
                 let checkSum        = sha256(signData);
 
                 if(secureHash === checkSum){
-                    let orderId = vnp_Params['vnp_TxnRef'];
-                    let rspCode = vnp_Params['vnp_ResponseCode'];
-                    //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua //*TODO
+                    //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua 
+                    const TRANSACTION_WITH_STATUS_SUCCESS = 1;
+                    let infoTransactionAfterUpdateStatus = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: TRANSACTION_WITH_STATUS_SUCCESS });
+
+                    if (infoTransactionAfterUpdateStatus.error)
+                        return {
+                            error: true, message: infoTransactionAfterUpdateStatus.message
+                        }
+
                     return {
                         error: false, data: {
                             code: '00',
-                            orderId, rspCode
+                            orderId, rspCode,
+                            infoTransaction: infoTransactionAfterUpdateStatus
                         }
                     }
                 } else{
-                    return { error:  true, message: 'signature_invalid' };
+                    const TRANSACTION_WITH_STATUS_FAIL      = 2;
+                    let infoTransactionAfterUpdateStatus    = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: TRANSACTION_WITH_STATUS_FAIL });
+
+                    return { 
+                        error:  true, message: 'signature_invalid', 
+                        infoTransaction: infoTransactionAfterUpdateStatus
+                    };
                 }
             } catch (error) {
                 return { error:  true, message: error.message };
