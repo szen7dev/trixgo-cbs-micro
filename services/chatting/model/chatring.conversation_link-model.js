@@ -36,7 +36,7 @@ class Model extends BaseModel {
                 if(infoConversationDraft)
                     return resolve({ error : true, message : 'exited_conversation_link' })
             
-                let infoConversationAfterInserted = await that.insertData({  conversationID, link  });
+                let infoConversationAfterInserted = await that.insertData({  conversation : conversationID, link  });
                 
                 if(!infoConversationAfterInserted)
                     return resolve({ error : true, message : 'cant_insert_conversation_link' })
@@ -64,7 +64,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Forbidden_is_not_members', status : 403 });
 
                 const page  = Number(currentPage) || 1;
-                let perPage = 20;
+                let perPage = 3;
 
                 let _sort = {
                     creatAt: -1
@@ -78,6 +78,9 @@ class Model extends BaseModel {
                     _sort                               =  dataPaggingAndSort.data.sort
                     ObjectSearch                        = dataPaggingAndSort.data.find;
                 }
+
+                // ObjectSearch.conversation = conversationID;
+                // console.log({ObjectSearch, 2 : ObjectSearch['$or'][1]._id})
 
                 let listConversation = await CHATTING__CONVERSATION_LINK_COLL.find(ObjectSearch)
                 .sort(

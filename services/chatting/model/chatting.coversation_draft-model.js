@@ -72,9 +72,9 @@ class Model extends BaseModel {
                 if(!checkExistConversation)
                     return resolve({ error: true, message: 'Forbidden_exit_members', status : 403 });
 
-                let infoConversationDraft = await CHATTING__CONVERSATION_DRAFT_COLL.findOne({ conversationID, userID });
+                let infoConversationDraft = await CHATTING__CONVERSATION_DRAFT_COLL.findOne({ conversation : conversationID, user: userID });
                 if(!infoConversationDraft)
-                    return resolve({ error : true, message : messageError })
+                    return resolve({ error : true, message : 'have_not_been_draft' })
 
                 return resolve({ error: false, data: infoConversationDraft });
             } catch (error) {
