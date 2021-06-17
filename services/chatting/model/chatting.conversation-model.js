@@ -266,7 +266,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const page  = Number(currentPage) || 1;
-                let perPage = 20;
+                let perPage = 3;
                 let listConversation;
 
                 if(!checkObjectIDs(authorID))
@@ -313,8 +313,7 @@ class Model extends BaseModel {
                 .sort(
                     _sort
                 )
-                .limit(perPage)
-               
+                .limit(perPage);
                 
                 let amoutConverMiss  = await CHATTING__CONVERSATION_COLL.count({ arrMissMessage :  { $elemMatch: { userID:authorID, amout: { $gte: 1} } } })
                 if (!listConversation)

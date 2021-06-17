@@ -11,8 +11,13 @@ module.exports = {
 	mixins: [
 		// DbService(CATEGORY_COLL), 
 		DbService('message_messages'),  
-		DbService('users'),  
+	
 		DbService('message_conversations'), 
+		DbService('message_conversation_drafts'),  
+		DbService('message_conversation_links'),  
+		
+		DbService('users'),  
+
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
     
