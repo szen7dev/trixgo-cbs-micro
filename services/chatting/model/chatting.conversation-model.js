@@ -289,6 +289,7 @@ class Model extends BaseModel {
                 }
 
                 ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
+                console.log({authorID, currentPage, nextInfo})
                 listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
                 // .populate({
                 //     path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
@@ -447,6 +448,7 @@ class Model extends BaseModel {
 
                 ObjectSearch._id        =   { $in: listConversationMiss };
                 ObjectSearch.members    =   { $in: [userID] };
+                
 
                 const conversations = await CHATTING__CONVERSATION_COLL.find(ObjectSearch).limit(perPage).sort(_sort);
                 return resolve({ error: false, data: conversations });

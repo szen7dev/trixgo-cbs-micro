@@ -37,16 +37,18 @@ module.exports = {
         params: {
             currentPage     : { type: "string" },
             nextInfo        : { type: "string" },
+            userID          : { type: "string" },
+
         },
         async handler(ctx) {
             try {
-                let {  currentPage, nextInfo }        = ctx.params;
+                let {  currentPage, nextInfo, userID }        = ctx.params;
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
                 // await this.validateEntity(name);
                 // if(!nextInfo){
                 //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
                 // }
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo });
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage, nextInfo });
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -68,7 +70,7 @@ module.exports = {
                 // id demo 
                 // conversationID = '602c7a51ea1d1274020b2e08'
 
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoByID({ userID: CF_DATA_DEMO_CHATTING.userID_1, conversationID });
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ userID: CF_DATA_DEMO_CHATTING.userID_1, conversationID });
                 console.log({resultAfterCallHandler})
                 return resultAfterCallHandler;
             } catch (error) {
