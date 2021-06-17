@@ -66,7 +66,7 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_WITH_KEY] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
 
 		// Lấy thông tin một cuộc hội thoại theo ID
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByID,
+		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByID,
 		
 		// Xem các tệp của cuộc hội thoại [****** để sau]
 
