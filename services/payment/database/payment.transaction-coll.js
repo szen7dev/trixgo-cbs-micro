@@ -28,7 +28,7 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
             message: '{VALUE} is not supported'
         }
     },
-
+    ipAddr: String,
     user: {
         type: Schema.Types.ObjectId,
         ref: 'user'

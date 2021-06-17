@@ -13,7 +13,7 @@ class Model extends BaseModel {
     }
 
     // tạo order transaction ngay lập tức khi user chọn thông tin thanh toán ngay màn hình CBS
-    insert({ orderID, orderInfo, amount, bankCode, orderType, locale, userID, status=0 }) {
+    insert({ orderID, orderInfo, amount, bankCode, orderType, locale, userID, status=0, ipAddr }) {
         //orderID: là ID random, ko phải là OBJECTID
         const that = this;
         return new Promise(async (resolve) => {
@@ -21,7 +21,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
 
-                let infoAfterInsert = await that.insertData({ orderID, orderInfo, amount, bankCode, orderType, locale, user: userID, status });
+                let infoAfterInsert = await that.insertData({ orderID, orderInfo, amount, bankCode, orderType, locale, user: userID, status, ipAddr });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
@@ -34,17 +34,24 @@ class Model extends BaseModel {
     }
 
     // cập nhật trạng thái thành công khi nhận được url return VNPAY
-    updateStatus({ transactionID, status }) {
+    updateStatus({ orderID, status }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(transactionID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
-
-                let isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findById(transactionID);
+                /**
+                 * chỉ cho phép cập nhật trạng thái 
+                 *  CHƯA THANH TOÁN -> THANH CÔNG/THẤT BẠI
+                 */
+                const TRANSACTION_WITH_STATUS_WAITING = 0;
+                let isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findOne({
+                    orderID
+                });
                 if (!isExistsTransaction)
                     return resolve({ error: true, message: 'transaction_not_exists' });
 
-                let infoAfterUpdateStatus = await PAYMENT__TRANSACTION_COLL.findByIdAndUpdate(transactionID, {
+                if (isExistsTransaction.status != TRANSACTION_WITH_STATUS_WAITING)
+                    return resolve({ error: true, message: 'transaction_not_equal_waiting' });
+
+                let infoAfterUpdateStatus = await PAYMENT__TRANSACTION_COLL.findOneAndUpdate({ orderID }, {
                     status: +status
                 }, { new: true });
                 if (!infoAfterUpdateStatus)
@@ -60,19 +67,44 @@ class Model extends BaseModel {
     getListByUserWithStatus({ userID, status=1 }) {
         return new Promise(async resolve => {
             try {
+                console.log({  userID, status })
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
                 if(Number.isNaN(Number(status)))
                     return resolve({ error: true, message: 'status_invalid' });
-                
                 let listTransactionsOfUser = await PAYMENT__TRANSACTION_COLL.find({
                     user: userID,
                     status: status
-                });
+                }).sort({ createAt: -1 });
                 if (!listTransactionsOfUser)
                     return resolve({ error: true, message: 'cannot_find_list_transactions_of_user' });
 
                 return resolve({ error: false, data: listTransactionsOfUser });
+            } catch (error) {
+                return resolve({ error: true, message: message });
+            }
+        })
+    }
+
+    getListTransactions({ status='all' }) {
+        return new Promise(async resolve => {
+            try {
+                console.log({  status })
+                let conditionObj = {};
+                if (status != 'all')
+                    conditionObj = {
+                        ...conditionObj, status: Number(status)
+                    }
+                let listTransactions = await PAYMENT__TRANSACTION_COLL.find(conditionObj).sort({ createAt: -1 })
+                    .lean()
+                    .populate({
+                        path: 'user',
+                        select: 'username fullname'
+                    });
+                if (!listTransactions)
+                    return resolve({ error: true, message: 'cannot_find_list_transactions' });
+
+                return resolve({ error: false, data: listTransactions });
             } catch (error) {
                 return resolve({ error: true, message: message });
             }
