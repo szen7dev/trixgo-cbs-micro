@@ -34,13 +34,16 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Forbidden_exit_members', status : 403 });
                 
                 let infoConversationAfterInserted;
-                let messageError = ''
+                let messageError = '';
+                
                 if(!checkExistConversationDraft){
                     messageError = 'cant_insert'
                     infoConversationAfterInserted = await that.insertData({ message, conversationID, userID  });
-                }else{
+                }
+
+                if(checkExistConversationDraft && checkExistConversationDraft._id){
                     messageError = 'cant_update'
-                    infoConversationAfterInserted = await that.insertData({ message, conversationID, userID  });
+                    infoConversationAfterInserted = await CHATTING__CONVERSATION_DRAFT_COLL.findByIdAndUpdate(checkExistConversationDraft._id, { message })
                 }
                 
                 if(!infoConversationAfterInserted)

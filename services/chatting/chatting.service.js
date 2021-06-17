@@ -57,7 +57,7 @@ module.exports = {
 		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
 
-		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc)
+		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_WITH_KEY] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
 
 		// Lấy thông tin một cuộc hội thoại theo ID
@@ -65,7 +65,17 @@ module.exports = {
 		
 		// Xem các tệp của cuộc hội thoại [****** để sau]
 
-		// Danh sách bạn bè để thêm vào cuộc hội thoại ----> lấy từ api lấy thông tin user 
+		// Danh sách cuộc hội thoại có tin nhắn chưa đọc
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getConversationsMissByUserID,
+
+		// Tìm kiếm cuộc hội thoại theo dự án [chưa có]
+
+		// Lấy danh sách link của cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
+		
+		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
+		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 		: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
+
 
 		//================================================================   	MESSAGE ACTIONS 		=================================================================
 

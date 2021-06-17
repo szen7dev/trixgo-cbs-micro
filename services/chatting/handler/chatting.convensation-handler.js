@@ -1,11 +1,11 @@
 let CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
 let CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
+let CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
 
 let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
 module.exports = {
 
     // AUTHOR : HUYNHVINH
-
     //================================================================ CONVERSATION  ============================================================
     // Thêm cuộc hội thoại mới
     insert: {
@@ -117,7 +117,45 @@ module.exports = {
             }
         }
     },
-    //================================================================ END CONVERSATION  ============================================================
 
+    // Lấy danh sách link trong một cuộc hội thoại
+    getLinkConversationByID: {
+        params: {
+            conversationID      : { type: "string" },
+            currentPage         : { type: "string" },
+            nextInfo            : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let { conversationID }        = ctx.params;
+                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+                // await this.validateEntity(name);
+                let infoConversationDraft = await CHATTING__CONVERSATION_LINK_MODEL.getListWithPage({ conversationID, userID: CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo })
+                return infoConversationDraft;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    // Lấy danh sách cuộc hội thoại chưa đọc
+    getConversationsMissByUserID: {
+        params: {
+            currentPage         : { type: "string" },
+            nextInfo            : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let { nextInfo, currentPage }        = ctx.params;
+                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+                // await this.validateEntity(name);
+                let infoConversationDraft = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ currentPage, nextInfo : '111', userID: CF_DATA_DEMO_CHATTING.userID_1})
+                return infoConversationDraft;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+    //================================================================ END CONVERSATION  ============================================================
 
 }

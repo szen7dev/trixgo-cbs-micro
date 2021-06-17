@@ -415,6 +415,49 @@ class Model extends BaseModel {
         })
     }
 
+    // Lấy thông tin cuộc hội thoại của user
+    getListConversationMissMessage({  userID, currentPage, nextInfo}){
+        return new Promise(async resolve => {
+            try {
+                let page    = Number(currentPage || 1) || 1;
+                let perPage = 3;
+                // Kiểm tra đầu vào
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'invalid_object_id' });
+
+                const infoConversation = await AUTH__USER_COLL.findById(userID)
+                if (!infoConversation) 
+                    return resolve({ error: true, message: 'cannot_get_info' });
+
+                let listConversationMiss =  infoConversation.converMiss || [];
+
+                // Thiết lập điều kiện tìm kiếm
+                let _sort = {
+                    modifyAt: -1,
+                    creatAt: -1
+                }
+                let ObjectSearch           = {};
+                if(page!=1){
+                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
+                    if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
+                        return resolve({ error: true, message: 'invalid_object_id_paggin'});
+
+                    _sort                               =  dataPaggingAndSort.data.sort
+                    ObjectSearch                        =  dataPaggingAndSort.data.find;
+                }
+
+                ObjectSearch._id        =   { $in: listConversationMiss };
+                ObjectSearch.members    =   { $in: [userID] };
+
+                const conversations = await CHATTING__CONVERSATION_COLL.find(ObjectSearch).limit(perPage).sort(_sort);
+                return resolve({ error: false, data: conversations });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+
     // Xóa cuộc hội thoại của author tạo ra, xóa luôn tất cả tin nhắn có trong message
     removeByID({ conversationID, authorID }){
         return new Promise(async resolve => {
@@ -855,7 +898,6 @@ class Model extends BaseModel {
                             arrMesageTypingUsers:  [ { userID , messageTyping : content } ]
                         });
                     }
-                 
                 }
         
                 if(!infoUpdate)
@@ -1281,10 +1323,92 @@ class Model extends BaseModel {
     /**
      * author : HuynhVinh
      * decription : chức năng Tắt thông báo của cuộc  hội thoại
-     * phục vụ cho việc giao việc (giúp xếp giao việc)
+     * 
     */
     muteConversation({ conversationID, userID, time }){
+        return new Promise(async(resolve)=>{
+            try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID) || !time)
+                    return resolve({ error: true, message: 'invalid_object_id' });
+                
+                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
+                    _id: conversationID ,
+                    members: { $in: [userID] }
+                });
 
+                if(!isMemberInConversation)
+                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                
+                let listMute =  isMemberInConversation.userMute;
+                let resultUpdate;
+                if(!listMute){
+                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : [{ user : userID, time }] })
+                }else{
+                    let newMuteUser = [];
+                    listMute.forEach(user=>{
+                        let _user = {};
+                        if(user.user && user.user.toString() ==  userID.toString()){
+                            _user.user = user.user;
+                            _user.time = user.time;
+                        }
+
+                        if(user.user  && user.user.toString() !=  userID.toString()){
+                            _user = user;
+                        }
+                        newMuteUser.push(_user);
+                    })
+                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
+                }
+                
+                if(!resultUpdate)
+                    return resolve({ error: true, message: error.message });
+
+                return resolve({ error: false, data :  resultUpdate });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // Mở lại thông báo của một cuộc hội thoại
+    unMuteConversation({ conversationID, userID }){
+        return new Promise(async(resolve)=>{
+            try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'invalid_object_id' });
+                
+                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
+                    _id: conversationID ,
+                    members: { $in: [userID] }
+                });
+
+                if(!isMemberInConversation)
+                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                
+                let listMute =  isMemberInConversation.usersMute;
+                let resultUpdate;
+                if(!listMute)
+                    return resolve({ error: false, message : 'unmute_success' });
+
+                let newMuteUser = [];
+                listMute.forEach(user=>{
+                    let _user = {};
+                    if(user.user && user.user.toString()!=  userID.toString()){
+                        newMuteUser.push(_user);
+                    }
+                });
+                resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
+                
+                if(!resultUpdate)
+                    return resolve({ error: true, message: error.message });
+
+                return resolve({ error: false, data :  resultUpdate });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 }
 

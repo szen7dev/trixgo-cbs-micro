@@ -82,9 +82,15 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Danh sách user ẩn thông báo cuộc hội thoại
      */
-    userMute : [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'user'
+    usersMute : [{
+        user : { 
+            type    : Schema.Types.ObjectId,
+            ref     : 'user'
+        },
+
+        time : {
+            type : Date
+        }
     }],
 
     // chatting.conversation_link-coll.js
