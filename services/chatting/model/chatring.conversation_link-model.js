@@ -70,17 +70,16 @@ class Model extends BaseModel {
                     creatAt: -1
                 }
                 let ObjectSearch            = {};
-                if(page!=1){
-                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo , keys: ['createAt__-1', '_id__-1'] })
-                    if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: 'invalid_object_id_paggin'});
 
-                    _sort                               =  dataPaggingAndSort.data.sort
-                    ObjectSearch                        = dataPaggingAndSort.data.find;
-                }
+                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo , keys: ['createAt__-1', '_id__-1'] })
+                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
+                    return resolve({ error: true, message: 'invalid_object_id_paggin'});
+
+                _sort                               =  dataPaggingAndSort.data.sort
+                ObjectSearch                        = dataPaggingAndSort.data.find;
 
                 // ObjectSearch.conversation = conversationID;
-                // console.log({ObjectSearch, 2 : ObjectSearch['$or'][1]._id})
+                // console.log({ObjectSearch, 2 : ObjectSearch['$or'][1]._id, 3 : ObjectSearch['$or'][0]})
 
                 let listConversation = await CHATTING__CONVERSATION_LINK_COLL.find(ObjectSearch)
                 .sort(
