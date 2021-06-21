@@ -291,6 +291,30 @@ exports.CHATTING_SOCKET = {
     },
     
     // Pin cuộc hội thoại 
+      // Tắt Thông báo nhóm
+      [EVENT_SOCKET_CONSTANT_CHATTING.CSS_PIN_CONVERSATION]: async function(data, ack) { 
+        let socket                      = this;
+        let listUserActive              = socket.$service.listUserConnected2;
+        let io                          = socket.$service.io;
+        let userID                      = socket.client.user;
+
+        let { conversationID, isPin } = data; 
+        let  updateConversation;
+
+        if(isPin){
+            updateConversation       = await CHATTING__CONVERSATION_MODEL.pinConversation({ conversationID, userID });
+        }else{
+            updateConversation       = await CHATTING__CONVERSATION_MODEL.unPinConversation({ conversationID, userID });
+        }
+        
+        if(!updateConversation.error){
+            let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+            let  arrReceiver            = infoConversation.data.members;
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { isPin,updateConversation }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_CONVERSATION], io })
+        }else{
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : { isPin, message : `update_fail :${updateConversation && updateConversation.message}` }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_CONVERSATION], io })
+        }
+    },
 
     //=================================================================MESSAGE===================================================================
    
