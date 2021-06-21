@@ -6,10 +6,13 @@ let	ApiGateway 				= require("moleculer-web"),
 	express         		= require('express'),
 	app               		= express(),
 	server            		= require('http').Server(app),
-	{ CF_DOMAIN_SERVICES } 		= require('./helper/domain.constant'),
+	{ CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant'),
 	apiV1 					= require("./gateway.alias"); // config api
  	// SocketService 			= require('./socket-io.service');			
 
+const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
+const GATEWAY__HANDLER      			= require('./handler/gateway.handler');
+	 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
@@ -57,6 +60,14 @@ module.exports = {
 			// Options to `server-static` module
 			options: {}
 		}
+	},
+
+	/**
+	* Actions HEALTH/VERSION
+	*/
+	actions: {	
+		[CF_ACTIONS_GATEWAY.CHECK_HEALTH					] 		: GATEWAY__HANDLER.checkHealth,
+		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 							: GATEWAY__HANDLER.checkVersion,
 	},
 
 	methods: {
