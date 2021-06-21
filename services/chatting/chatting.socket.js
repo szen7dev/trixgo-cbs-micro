@@ -339,7 +339,7 @@ exports.CHATTING_SOCKET = {
                     listPomiseSaveLink.push(CHATTING__CONVERSATION_LINK_MODEL.insert({ conversationID, userID, link }))
                 })
 
-                let infoConversationAfterInsertLinks = await P(listPomiseSaveLink) ;
+                let infoConversationAfterInsertLinks = await Promise.all(listPomiseSaveLink) ;
             }
 
             // II.2.6 Nếu thành công gửi socket và clouding 
@@ -386,7 +386,7 @@ exports.CHATTING_SOCKET = {
                     }
                 });
 
-                await P(arrayPromiseUpdateUserMissMess);
+                await Promise.all(arrayPromiseUpdateUserMissMess);
             }
         }
         //II.1 Gửi tin nhắn chứa file đínnh kèm
@@ -406,7 +406,7 @@ exports.CHATTING_SOCKET = {
                 }
             });
 
-            await P(arrayPromiseUpdateUserMissMess);
+            await Promise.all(arrayPromiseUpdateUserMissMess);
             // addMesaageWithFile();
         }else{
         //II.2
@@ -481,7 +481,7 @@ exports.CHATTING_SOCKET = {
         
         let _inforUpdateMiss  =   CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true });
         let _infoMessage      =   CHATTING__MESSAGE_MODEL.getInfoByID({messageID})
-        let [ inforUpdateMiss,  infoMessage ] = await Promise.all([ _inforUpdateMiss, _infoMessage ])
+        let [ inforUpdateMiss,  infoMessage ] = await Promise.allromise.all([ _inforUpdateMiss, _infoMessage ])
         if(messageID && infoMessage.error)
             return;
 
