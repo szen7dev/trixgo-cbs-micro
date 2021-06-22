@@ -291,6 +291,30 @@ exports.CHATTING_SOCKET = {
     },
     
     // Pin cuộc hội thoại 
+      // Tắt Thông báo nhóm
+      [EVENT_SOCKET_CONSTANT_CHATTING.CSS_PIN_CONVERSATION]: async function(data, ack) { 
+        let socket                      = this;
+        let listUserActive              = socket.$service.listUserConnected2;
+        let io                          = socket.$service.io;
+        let userID                      = socket.client.user;
+
+        let { conversationID, isPin } = data; 
+        let  updateConversation;
+
+        if(isPin){
+            updateConversation       = await CHATTING__CONVERSATION_MODEL.pinConversation({ conversationID, userID });
+        }else{
+            updateConversation       = await CHATTING__CONVERSATION_MODEL.unPinConversation({ conversationID, userID });
+        }
+        
+        if(!updateConversation.error){
+            let  infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
+            let  arrReceiver            = infoConversation.data.members;
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { isPin,updateConversation }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_CONVERSATION], io })
+        }else{
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : { isPin, message : `update_fail :${updateConversation && updateConversation.message}` }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_CONVERSATION], io })
+        }
+    },
 
     //=================================================================MESSAGE===================================================================
    
@@ -347,7 +371,7 @@ exports.CHATTING_SOCKET = {
                 
                 let messageID = infoMessageAfterInsert.data._id;
                 let infoMessage = await CHATTING__MESSAGE_MODEL.getInfoByID({ messageID });
-                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : {infoConversation :  this.infoConversation , infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEND_MESSAGE], io})
+                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : {infoConversation :  this.infoConversation , infoMessage :  infoMessageAfterInsert }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_SEND_MESSAGE], io})
 
                 // if(infoConversation){
                 //     // GỬI TỚI NOTIFI TỚI MOBILE
@@ -452,7 +476,8 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_RECEIVED_MESSAGE]: async function(data, ack) { 
         let socket                                      = this;
         let listUserActive                              = socket.$service.listUserConnected2;
-        let { messageID  , conversationID, receivers }  = data;
+        let { messageID  , conversationID   }           = data;
+        let userID                                      = socket.client.user;
         let  io                                         = socket.$service.io;
 
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
@@ -471,6 +496,8 @@ exports.CHATTING_SOCKET = {
         let listUserActive                              = socket.$service.listUserConnected2;
         let  io                                         = socket.$service.io;
         let authorID                                    = socket.client.user;
+        let userID                                      = socket.client.user;
+        
         let { messageID  , conversationID  } = data;
 
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
@@ -478,8 +505,8 @@ exports.CHATTING_SOCKET = {
         
         let _inforUpdateMiss  =   CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true });
         let _infoMessage      =   CHATTING__MESSAGE_MODEL.getInfoByID({messageID})
-        let { inforUpdateMiss,  infoMessage } = await promise.all([ inforUpdateMiss, infoMessage ])
-        if(messageID && ! infoMessage.error)
+        let [ inforUpdateMiss,  infoMessage ] = await Promise.allromise.all([ _inforUpdateMiss, _infoMessage ])
+        if(messageID && infoMessage.error)
             return;
 
         let inforUpdate =  await CHATTING__MESSAGE_MODEL.seenMessageOneByOne({ messageID, userID :userID });
@@ -545,6 +572,8 @@ exports.CHATTING_SOCKET = {
         let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
         let infoLikeMessage             = await CHATTING__MESSAGE_MODEL.toggleLikeMessage({messageID, authorID : userID, type});
         let  arrReceiver                = infoConversation.data.members;
+
+        console.log({infoLikeMessage})
         if(infoLikeMessage.error)
             return
            
@@ -593,12 +622,12 @@ exports.CHATTING_SOCKET = {
 
         let inforUpdate 
         if(!deletePin){
-            inforUpdate = await DB_MESSAGE_CONVERSATION_MODEL.insertPinMessage({ messageID, conversationID, userID });
+            inforUpdate = await CHATTING__CONVERSATION_MODEL.insertPinMessage({ messageID, conversationID, userID });
         }else{
-            inforUpdate = await DB_MESSAGE_CONVERSATION_MODEL.deletePinMessage({ conversationID, userID });
+            inforUpdate = await CHATTING__CONVERSATION_MODEL.deletePinMessage({ conversationID, userID });
         }
         if(!inforUpdate.error){
-            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { conversationID, infoMessagePin : inforUpdate, deletePin }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { conversationID, infoMessage : inforUpdate, deletePin }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
         }
     },
 }

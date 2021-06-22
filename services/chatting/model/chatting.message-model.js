@@ -350,9 +350,38 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'invalid_object_id_paggin'});
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
-                ObjectSearch.conversation   =  conversationID;
+                ObjectSearch.conversation   =  ObjectID(conversationID);
+                let _sort = dataPaggingAndSort.data.sort;
                 // console.log({ObjectSearch});
 
+                    // let listMessage = await CHATTING__MESSAGE_COLL.aggregate([
+                    //     {
+                    //         $match:  ObjectSearch
+                            
+                    //     }, 
+                    //     {
+                    //         $project : { 
+                    //             year : {$year : "$createAt" || "$createdAt"},
+                    //             month : {$month : "$createAt"|| "$createdAt"},
+                    //             day : {$dayOfMonth : "$createAt"|| "$createdAt"},
+                    //             content : 1,
+                    //             files : 1,
+                    //             receivers : 1,
+                    //             sender : 1,
+                    //             conversation : 1,
+                    //             parent : 1,
+                    //             status : 1,
+                    //             createAt : 1,
+                    //             createdAt : 1
+
+
+                    //         }
+                    //     },
+                    //     {
+                    //         $sort:{ createAt : -1 }
+                    //     },
+                    //     { $limit : perPage }
+                    // ])
                 let listMessage = await CHATTING__MESSAGE_COLL.find(ObjectSearch)
                     // .populate({ 
                     //     path: 'files',
@@ -380,8 +409,8 @@ class Model extends BaseModel {
                     //         select :'_id fullname image company' 
                     //     }
                     // })
-                    .limit(perPage)
-                    .sort( dataPaggingAndSort.data.sort );
+                .limit(perPage)
+                .sort( dataPaggingAndSort.data.sort );
 
 
                 if(!listMessage  || !Array.isArray(listMessage))

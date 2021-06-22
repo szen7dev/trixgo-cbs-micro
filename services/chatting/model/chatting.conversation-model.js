@@ -93,6 +93,9 @@ class Model extends BaseModel {
                 if(Number(arrReceiver.length) <= 1)
                     return resolve({ error: true, message: 'cannot_insert' });
 
+                if(Number(arrReceiver.length) >= 100)
+                    return resolve({ error: true, message: 'limmit_members_100' });
+
                 arrReceiver.forEach(reciver=>{
                     if(!checkObjectIDs(reciver))
                         return resolve({ error: true, message: 'invalid_object_id' });
@@ -289,7 +292,6 @@ class Model extends BaseModel {
                 }
 
                 ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
-                console.log({authorID, currentPage, nextInfo})
                 listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
                 // .populate({
                 //     path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
@@ -312,7 +314,11 @@ class Model extends BaseModel {
                 //     }
                 // })
                 .sort(
-                    _sort
+                   {
+                    modifyAt: -1,
+                    createAt: -1,
+                    updateAt: -1
+                   }
                 )
                 .limit(perPage);
                 
@@ -326,53 +332,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    // getListMessageByAuthorID({ authorID }){
-    //     console.log(`-----------------------------`)
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(authorID))
-    //                 return resolve({ error: true, message: 'invalid_object_id' });
-
-    //             const listConversation = await CHATTING__CONVERSATION_COLL.aggregate([
-    //                 {
-    //                     $match: {
-    //                     members: {
-    //                             $in: [ObjectID(authorID)]
-    //                         }
-    //                      }
-    //                  },
-    //                 {
-    //                    $lookup:
-    //                      {
-    //                        from: 'message_messages',
-    //                        localField: 'lastMessage',
-    //                        foreignField: '_id',
-    //                        as: 'lastMessage'
-    //                      }
-    //                 },
-    //                 {
-    //                         $unwind: '$lastMessage'
-    //                 },
-    //                 {
-    //                     $sort: {
-    //                             "lastMessage.createAt": -1
-    //                         }
-    //                 }
-    //             ])
-    //             console.log({ data : listConversation.data })
-                    
-    //             if (!listConversation) {
-    //                 return resolve({ error: true, message: 'cannot_get_list' });
-    //             } 
-    //             return resolve({ error: false, data: listConversation });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
-
-
 
     // Lấy thông tin cuộc hội thoại của user
     getInfoByUserID({ conversationID, userID }){
@@ -1411,6 +1370,96 @@ class Model extends BaseModel {
             }
         })
     }
+
+    // Pin một cuộc hội thoại
+    pinConversation({ conversationID, userID }){
+        return new Promise(async(resolve)=>{
+            try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'invalid_object_id' });
+                
+                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
+                    _id: conversationID ,
+                    members: { $in: [userID] }
+                });
+
+                if(!isMemberInConversation)
+                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                
+                let lisPin =  isMemberInConversation.usersPin;
+                
+                for(let i = 0; i<lisPin.length; i++){
+                    if(lisPin[i] && lisPin[i].toString() == userID.toString()){
+                        return resolve({ error: false, message:'coversation_pined'})
+                    }
+                }
+
+                let resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    $addToSet: {
+                        usersPin: [...userID]
+                    }
+                }); 
+                
+                if(!resultUpdate)
+                    return resolve({ error: true, message: error.message });
+
+                return resolve({ error: false, data :  resultUpdate });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    //Xoá Pin 1 cuộc hội thoại
+    pinConversation({ conversationID, userID }){
+        return new Promise(async(resolve)=>{
+            try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'invalid_object_id' });
+                
+                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
+                    _id: conversationID ,
+                    members: { $in: [userID] }
+                });
+
+                if(!isMemberInConversation)
+                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                
+                let lisPin =  isMemberInConversation.usersPin;
+                
+                let isNotePin = true;
+                for(let i = 0; i<lisPin.length; i++){
+                    if(lisPin[i] && lisPin[i].toString() == userID.toString()){
+                        isNotePin = false;
+                        break;
+                    }
+                }
+                if(!isNotePin)
+                    return resolve({ error: false, message:'removed_pin' })
+
+                let resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    $pull: {
+                        usersPin: userID
+                    }
+                }); 
+                
+                if(!resultUpdate)
+                    return resolve({ error: true, message: error.message });
+
+                return resolve({ error: false, data :  resultUpdate });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // Lấy danh sách pin các cuộc hội thoại
+    getListConversationPinByUser(userID){
+
+    }
+
 }
 
 exports.MODEL = new Model;

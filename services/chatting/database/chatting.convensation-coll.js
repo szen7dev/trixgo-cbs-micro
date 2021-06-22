@@ -93,9 +93,9 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
         }
     }],
 
-    /**
-     * Danh sách user ping cuộc hội thoại
-    */
+    // /**
+    //  * Danh sách user ping cuộc hội thoại
+    // */
     usersPin : [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
