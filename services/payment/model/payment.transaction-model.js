@@ -45,6 +45,7 @@ class Model extends BaseModel {
                 let isExistsTransaction = await PAYMENT__TRANSACTION_COLL.findOne({
                     orderID
                 });
+                console.log({ isExistsTransaction, orderID })
                 if (!isExistsTransaction)
                     return resolve({ error: true, message: 'transaction_not_exists' });
 

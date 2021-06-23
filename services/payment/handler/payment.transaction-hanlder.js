@@ -148,8 +148,9 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let vnp_Params = ctx.params;
-                let secureHash = vnp_Params['vnp_SecureHash'];
+                let vnp_Params          = ctx.params;
+                let secureHash          = vnp_Params['vnp_SecureHash'];
+                let transactionStatus   = vnp_Params['vnp_TransactionStatus'];
 
                 delete vnp_Params['vnp_SecureHash'];
                 delete vnp_Params['vnp_SecureHashType'];
@@ -161,9 +162,11 @@ module.exports = {
                 let secretKey       = vnp_HashSecret;
 
                 let signData        = secretKey + querystring.stringify(vnp_Params, { encode: false });
-                let checkSum        = sha256(signData);
+                let checkSum        = sha256(signData); 
 
-                if(secureHash === checkSum){
+                const VNPAY_TRANSACTION_WITH_STATUS_SUCCESS = '00';
+                console.log({ transactionStatus })
+                if(secureHash === checkSum && transactionStatus == VNPAY_TRANSACTION_WITH_STATUS_SUCCESS){
                     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua 
                     const TRANSACTION_WITH_STATUS_SUCCESS = 1;
                     let infoTransactionAfterUpdateStatus = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: TRANSACTION_WITH_STATUS_SUCCESS });
@@ -175,17 +178,16 @@ module.exports = {
 
                     return {
                         error: false, data: {
-                            code: '00',
+                            code: transactionStatus,
                             orderId, rspCode,
                             infoTransaction: infoTransactionAfterUpdateStatus
                         }
                     }
                 } else{
-                    const TRANSACTION_WITH_STATUS_FAIL      = 2;
-                    let infoTransactionAfterUpdateStatus    = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: TRANSACTION_WITH_STATUS_FAIL });
+                    let infoTransactionAfterUpdateStatus    = await PAYMENT__TRANSACTION_MODEL.updateStatus({ orderID: orderId, status: transactionStatus });
 
                     return { 
-                        error:  true, message: 'signature_invalid', 
+                        error:  true, message: 'signature_invalid', code: transactionStatus,
                         infoTransaction: infoTransactionAfterUpdateStatus
                     };
                 }
@@ -204,8 +206,9 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let vnp_Params = ctx.params;
-                let secureHash = vnp_Params['vnp_SecureHash'];
+                let vnp_Params          = ctx.params;
+                let secureHash          = vnp_Params['vnp_SecureHash'];
+                let transactionStatus   = vnp_Params['vnp_TransactionStatus'];
 
                 delete vnp_Params['vnp_SecureHash'];
                 delete vnp_Params['vnp_SecureHashType'];
@@ -215,7 +218,8 @@ module.exports = {
                 let signData    = secretKey + querystring.stringify(vnp_Params, { encode: false });
                 
                 let checkSum = sha256(signData);
-                if(secureHash === checkSum){
+                const VNPAY_TRANSACTION_WITH_STATUS_SUCCESS = '00';
+                if(secureHash === checkSum && transactionStatus == VNPAY_TRANSACTION_WITH_STATUS_SUCCESS){
                     let orderId = vnp_Params['vnp_TxnRef'];
                     let rspCode = vnp_Params['vnp_ResponseCode'];
                     //Kiem tra du lieu co hop le khong, cap nhat trang thai don hang va gui ket qua cho VNPAY theo dinh dang duoi
