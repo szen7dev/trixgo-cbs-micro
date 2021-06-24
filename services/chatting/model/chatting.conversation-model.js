@@ -664,7 +664,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, data: 'conversation_exits' }); 
 
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID)
-                .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
+                // .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
                 return resolve({ error: false, data: infoConversation })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -1299,17 +1299,22 @@ class Model extends BaseModel {
                 if(!isMemberInConversation)
                     return resolve({ error: true, message: 'You are not a member of the chat' });
                 
-                let listMute =  isMemberInConversation.userMute;
+                let listMute =  isMemberInConversation.usersMute;
                 let resultUpdate;
-                if(!listMute){
+                if(!listMute || (listMute && !listMute.length)){
                     resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : [{ user : userID, time }] })
-                }else{
+                }
+                if(listMute && listMute.length){
                     let newMuteUser = [];
+                    console.log({listMute})
+                    let isNewUser  = true;
                     listMute.forEach(user=>{
                         let _user = {};
                         if(user.user && user.user.toString() ==  userID.toString()){
                             _user.user = user.user;
-                            _user.time = user.time;
+                            _user.time = time;
+                            _user._id = user._id;
+                            isNewUser = false;
                         }
 
                         if(user.user  && user.user.toString() !=  userID.toString()){
@@ -1317,6 +1322,11 @@ class Model extends BaseModel {
                         }
                         newMuteUser.push(_user);
                     })
+
+                    if(isNewUser){
+                        newMuteUser.push({ user : userID, time })
+                    }
+
                     resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
                 }
                 
@@ -1353,9 +1363,8 @@ class Model extends BaseModel {
 
                 let newMuteUser = [];
                 listMute.forEach(user=>{
-                    let _user = {};
-                    if(user.user && user.user.toString()!=  userID.toString()){
-                        newMuteUser.push(_user);
+                    if(user.user && user.user.toString() !=  userID.toString()){
+                        newMuteUser.push(user);
                     }
                 });
                 resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
@@ -1375,6 +1384,7 @@ class Model extends BaseModel {
     pinConversation({ conversationID, userID }){
         return new Promise(async(resolve)=>{
             try {
+
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'invalid_object_id' });
                 
@@ -1386,22 +1396,30 @@ class Model extends BaseModel {
                 if(!isMemberInConversation)
                     return resolve({ error: true, message: 'You are not a member of the chat' });
                 
-                let lisPin =  isMemberInConversation.usersPin;
-                
+                let lisPin =  (isMemberInConversation && isMemberInConversation.usersPin ) ||  [];
                 for(let i = 0; i<lisPin.length; i++){
                     if(lisPin[i] && lisPin[i].toString() == userID.toString()){
                         return resolve({ error: false, message:'coversation_pined'})
                     }
                 }
 
-                let resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $addToSet: {
-                        usersPin: [...userID]
-                    }
-                }); 
-                
+                let resultUpdate;
+                if(lisPin && lisPin.length){
+
+                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                        $addToSet: {
+                            usersPin: [...userID]
+                        }
+                    }); 
+                }
+                if(!lisPin ||(lisPin && !lisPin.length)){
+                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                        usersPin: [userID]
+                    }); 
+                }
+
                 if(!resultUpdate)
-                    return resolve({ error: true, message: error.message });
+                    return resolve({ error: true, message: 'cant_pin_conversation' });
 
                 return resolve({ error: false, data :  resultUpdate });
 
@@ -1412,7 +1430,7 @@ class Model extends BaseModel {
     }
 
     //Xoá Pin 1 cuộc hội thoại
-    pinConversation({ conversationID, userID }){
+    unPinConversation({ conversationID, userID }){
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
@@ -1426,7 +1444,7 @@ class Model extends BaseModel {
                 if(!isMemberInConversation)
                     return resolve({ error: true, message: 'You are not a member of the chat' });
                 
-                let lisPin =  isMemberInConversation.usersPin;
+                let lisPin =  isMemberInConversation.usersPin || [];
                 
                 let isNotePin = true;
                 for(let i = 0; i<lisPin.length; i++){
@@ -1435,7 +1453,7 @@ class Model extends BaseModel {
                         break;
                     }
                 }
-                if(!isNotePin)
+                if(isNotePin)
                     return resolve({ error: false, message:'removed_pin' })
 
                 let resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -1445,7 +1463,7 @@ class Model extends BaseModel {
                 }); 
                 
                 if(!resultUpdate)
-                    return resolve({ error: true, message: error.message });
+                    return resolve({ error: true, message: 'cant_un_pin_conversation' });
 
                 return resolve({ error: false, data :  resultUpdate });
 
