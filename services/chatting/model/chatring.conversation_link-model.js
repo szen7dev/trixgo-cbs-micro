@@ -21,7 +21,8 @@ class Model extends BaseModel {
 
                 console.log({conversationID, userID, link})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 422 });
+
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại
                 let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
@@ -29,21 +30,21 @@ class Model extends BaseModel {
                 })
 
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Forbidden_exit_members', status : 403 });
+                    return resolve({ error: true, message: 'Permission denied', status : 403 });
                 
 
                 let infoConversationDraft = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link });
                 if(infoConversationDraft)
-                    return resolve({ error : true, message : 'exited_conversation_link' })
+                    return resolve({ error: false, message: "link exit", status : 200 });
             
                 let infoConversationAfterInserted = await that.insertData({  conversation : conversationID, link  });
                 
                 if(!infoConversationAfterInserted)
-                    return resolve({ error : true, message : 'cant_insert_conversation_link' })
+                    return resolve({ error: true, message: "Can't insert link", status : 403 });
         
                 return resolve({ error: false, data: infoConversationAfterInserted });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -52,16 +53,17 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             try {
+                console.log({conversationID, currentPage, nextInfo, userID })
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 422 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại
                 let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
-                    members: { $all: [userID] }
+                    _id     : conversationID,
+                    members : { $all: [userID] }
                 })
-
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Forbidden_is_not_members', status : 403 });
+                if(!checkExistConversation || (checkExistConversation && !checkExistConversation[0]))
+                    return resolve({ error: true, message: 'Permission denied', status : 403 });
 
                 const page  = Number(currentPage) || 1;
                 let perPage = 3;
@@ -73,7 +75,7 @@ class Model extends BaseModel {
 
                 let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo , keys: ['createAt__-1', '_id__-1'] })
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'invalid_object_id_paggin'});
+                    return resolve({ error: true, message: 'Parameter nextInfo  validation error! ', statusCode : 422 });
 
                 _sort                               =  dataPaggingAndSort.data.sort
                 ObjectSearch                        = dataPaggingAndSort.data.find;
@@ -87,9 +89,9 @@ class Model extends BaseModel {
                 )
                 .limit(perPage)
 
-                return resolve({ error : false ,  data : listConversation })
+                return resolve({ error : false ,  data : listConversation, status : 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }

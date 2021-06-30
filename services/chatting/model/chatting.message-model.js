@@ -36,7 +36,7 @@ class Model extends BaseModel {
                     status = 0;
                 }
                 if (!checkObjectIDs(senderID, conversationID)) 
-                    return resolve({ error: true, message: 'invalid_object_id_S' });
+                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
                 
                 let arrReceiver = receivers;
                 // if(receivers && receivers.includes(',')) {
@@ -46,11 +46,11 @@ class Model extends BaseModel {
                 // }
                 arrReceiver.forEach(receiver =>{
                     if(receiver && !checkObjectIDs(receiver))
-                        return resolve({ error: true, message: 'invalid_object_id1' });
+                        return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
                 })
                 
                 if(!Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'invalid_object_id2' });
+                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
 
                 
                 // kiểm tra các receivers có phải là members trong cuộc hội thoại
@@ -59,28 +59,29 @@ class Model extends BaseModel {
                         members: { $all: [senderID, ... arrReceiver] }
                 });
                 if(!Array.isArray(checkExistConversation) || checkExistConversation.length < 1)
-                    return resolve({ error: true, message: 'cannot_insert1' });
+                    return resolve({ error: true, message: 'You are not member', statusCode : 403 });
 
                 let infoMessageAfterInserted;
 
                 // Kiểm tra parentID => tính năng reply tin nhắn
-                if(parentID && !checkObjectIDs(parentID)) 
-                    return resolve({ error: true, message: 'invalid_object_id_P' });
-
                 if(parentID) {
+                    if(parentID && !checkObjectIDs(parentID)) 
+                        return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
+
                     infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
                     if(!infoMessageAfterInserted)
-                        return resolve({ error: true, message :'cannot_insert2' });
+                        return resolve({ error: true, message: 'Cant create message reply', statusCode : 403 });
 
                     let checkLastMessageAfterUpdatedR = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                         lastMessage: infoMessageAfterInserted._id, modifyAt: Date.now()
                     }, { new: true });
 
-                    return resolve({ error: false, data : infoMessageAfterInserted });
+                    return resolve({ error: false, data : infoMessageAfterInserted, statusCode : 200 });
                 }
+
                 infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
                 if(!infoMessageAfterInserted)
-                    return resolve({ error: true, message :'cannot_insert' });
+                    return resolve({ error: true, message: 'Cant create message ', statusCode : 403 });
 
                 let { _id: messageID } = infoMessageAfterInserted; 
                 let infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
@@ -90,16 +91,16 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoMessageAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'Cant create message ', statusCode : 403 });
 
                 let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: messageID, modifyAt: Date.now()
                 }, { new: true });
 
                 if(!checkLastMessageAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'Cant create message ', statusCode : 403 });
                 
-                return resolve({ error: false, data : infoMessageAfterUpdated });
+                return resolve({ error: false, data : infoMessageAfterUpdated, statusCode : 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -333,7 +334,7 @@ class Model extends BaseModel {
                 const page = Number(currentPage) || 1;
                 const perPage = 15;
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
                     _id: conversationID ,
@@ -341,13 +342,13 @@ class Model extends BaseModel {
                 });
 
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'permission_denied'});
+                    return resolve({ error: true, message: 'Permission denied', statusCode : 403 });
                 
                 
                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
                
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'invalid_object_id_paggin'});
+                    return resolve({ error: true, message: 'request params nextInfo invalid', statusCode : 400 });
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
                 ObjectSearch.conversation   =  ObjectID(conversationID);
@@ -412,13 +413,10 @@ class Model extends BaseModel {
                 .limit(perPage)
                 .sort( dataPaggingAndSort.data.sort );
 
-
-                if(!listMessage  || !Array.isArray(listMessage))
-                    return resolve({ error: true, message : 'cannot_get_all_message'});
                 
-                return resolve({ error: false, data : listMessage, page });
+                return resolve({ error: false, data : listMessage, page, statusCode: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }

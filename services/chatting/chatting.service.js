@@ -68,6 +68,9 @@ module.exports = {
 		// Lấy thông tin một cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByID,
 		
+		// Lấy danh sách thành viên cuộc hội thoại theo ID
+		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    : CHATTING__CONVERSATION_HANDLER.getListMemberByID,
+		
 		// Xem các tệp của cuộc hội thoại [****** để sau]
 
 		// Danh sách cuộc hội thoại có tin nhắn chưa đọc
