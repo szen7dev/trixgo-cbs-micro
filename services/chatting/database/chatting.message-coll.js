@@ -54,7 +54,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 
     /**
      * Trạng thái của tin nhắn
-     * 0 : chưa xem/ chưa nhận
+     * 0 : (chưa xem/ chưa nhận))   đã gửi
      * 1 : đã xem
      * 2 : đã nhận
      * 3 : tin nhắn được chia sẽ

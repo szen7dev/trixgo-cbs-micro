@@ -13,6 +13,7 @@ const CF_ROUTINGS_CHATTING = {
     INSERT_CONVERSATION                     : `${BASE_ROUTE}${CONVERSATION}`, //message/conversations
     GET_LIST_CONVERSATION_BY_USER_ID        : `${BASE_ROUTE}${CONVERSATION}/users/:userID`, //message/conversations/users/:userID
     GET_INFO_CONVERSATION_BY_ID             : `${BASE_ROUTE}${CONVERSATION}/:conversationID`, //messsage/conversation/:conversationID GET, PUT, DELETE
+    GET_LIST_MEMBER_CONVERSATION_BY_ID      : `${BASE_ROUTE}${CONVERSATION}/members/:conversationID`, //messsage/conversation/:conversationID GET, PUT, DELETE
     GET_LIST_CONVERSATION_BY_KEY            : `${BASE_ROUTE}${CONVERSATION}`, //messsage/conversation/?key=abc&key2=2
     GET_INFO_CONVERSATION_DRAFT             : `${BASE_ROUTE}${CONVERSATION}/draft/:conversationID`, //messsage/conversation/?key=abc&key2=2
     GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/link/:conversationID`, //messsage/conversation/?key=abc&key2=2

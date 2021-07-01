@@ -57,7 +57,7 @@ module.exports = {
     },
 
     // Lấy thông tin một cuộc hội thoại theo ID
-     getListConversationByID: {
+    getListConversationByID: {
         params: {
             conversationID  : { type: "string" },
         },
@@ -71,6 +71,29 @@ module.exports = {
                 // conversationID = '602c7a51ea1d1274020b2e08'
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ userID: CF_DATA_DEMO_CHATTING.userID_1, conversationID });
+                console.log({resultAfterCallHandler})
+                return resultAfterCallHandler;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    // Lấy thông tin một cuộc hội thoại theo ID
+    getListMemberByID: {
+        params: {
+            conversationID  : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let {  conversationID }        = ctx.params;
+                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+
+                // await this.validateEntity(name);
+                // id demo 
+                // conversationID = '602c7a51ea1d1274020b2e08'
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoMembersByID({ userID: CF_DATA_DEMO_CHATTING.userID_1, conversationID });
                 console.log({resultAfterCallHandler})
                 return resultAfterCallHandler;
             } catch (error) {
