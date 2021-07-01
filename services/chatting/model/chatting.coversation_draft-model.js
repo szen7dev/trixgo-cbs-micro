@@ -20,7 +20,7 @@ class Model extends BaseModel {
             try {
                 console.log({message, conversationID, userID})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 400 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
                 let _checkExistConversation =  CHATTING__CONVERSATION_COLL.find({ 
@@ -32,27 +32,27 @@ class Model extends BaseModel {
 
                 let [ checkExistConversation, checkExistConversationDraft ] = await Promise.all([ _checkExistConversation, _checkExistConversationDraft])
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Forbidden_exit_members', status : 403 });
+                    return resolve({ error: true, message: 'You are not member', status : 403 });
                 
                 let infoConversationAfterInserted;
                 let messageError = '';
 
                 if(!checkExistConversationDraft){
-                    messageError = 'cant_insert'
+                    messageError = "didn't create"
                     infoConversationAfterInserted = await that.insertData({ message, conversation : conversationID, user : userID  });
                 }
 
                 if(checkExistConversationDraft && checkExistConversationDraft._id){
-                    messageError = 'cant_update'
+                    messageError = "didn't update"
                     infoConversationAfterInserted = await CHATTING__CONVERSATION_DRAFT_COLL.findByIdAndUpdate(checkExistConversationDraft._id, { message })
                 }
                 
                 if(!infoConversationAfterInserted)
-                    return resolve({ error : true, message : messageError })
+                    return resolve({ error : true, message : messageError, statusCode : 403 })
 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -62,25 +62,31 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 400 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại
                 let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
+                    _id : conversationID,
                     members: { $all: [userID] }
                 })
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Forbidden_exit_members', status : 403 });
+                if(!checkExistConversation || (checkExistConversation && !checkExistConversation[0]))
+                    return resolve({ error: true, message: 'You are not member', status : 403 });
 
                 let infoConversationDraft = await CHATTING__CONVERSATION_DRAFT_COLL.findOne({ conversation : conversationID, user: userID });
-                if(!infoConversationDraft)
-                    return resolve({ error : true, message : 'have_not_been_draft' })
 
-                return resolve({ error: false, data: infoConversationDraft });
+                return resolve({ error: false, data: infoConversationDraft,  statusCode : 200  });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
 }
 exports.MODEL = new Model;
+
+
+
+// 400 : 'Parameters validation error!';
+// 403 : 'Access Denied';
+// 200 : 'success';
+// 500 : 'server error'; //try catch

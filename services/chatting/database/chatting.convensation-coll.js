@@ -8,7 +8,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Tên của cuộc hội thoại (Tên chat nhóm)
      */
-    name: {
+    m: {
         type: String
     },
 
@@ -105,14 +105,14 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
     /**
     * Các files được đính kèm trong cuộc hội thoại
     */
-   links: [{
-       type : String
-    }],
+//    links: [{
+//        type : String
+//     }],
 
    /*
    *Các task được chọn để giao checklist
    */
-    taskID : [{
+    tasks : [{
         task :{ 
             type    : Schema.Types.ObjectId,
             ref     : 'pcm_plan_task'
@@ -126,14 +126,14 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
 
     // chatting.conversation_draft-coll.js
     // lưu lại tin nhắn đang soạn dỡ
-    arrMesageTypingUsers : [{
-        userID :  {
-            type    : Schema.Types.ObjectId,
-            ref     : 'user'
-        },
+    // arrMesageTypingUsers : [{
+    //     userID :  {
+    //         type    : Schema.Types.ObjectId,
+    //         ref     : 'user'
+    //     },
         
-        messageTyping : {
-            type : String
-        }
-    }]
+    //     messageTyping : {
+    //         type : String
+    //     }
+    // }]
 });

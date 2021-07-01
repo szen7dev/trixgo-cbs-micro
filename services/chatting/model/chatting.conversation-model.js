@@ -28,7 +28,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(authorID) || !checkObjectIDs(receiverID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({ 
@@ -37,14 +37,15 @@ class Model extends BaseModel {
                 
                 for(let  i= 0; i< checkExistConversation.length; i++){
                     if(checkExistConversation[i].members.length == 2){
-                        return resolve({ error: false, data: checkExistConversation[i] });
+                        return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                     }
                 }
 
                 let infoConversationAfterInserted = await that.insertData({ name, description, author: authorID });
 
                 if(!infoConversationAfterInserted)
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: "Can't create", statusCode : 403 });
+
                 
                 let { _id: conversationID } = infoConversationAfterInserted;
 
@@ -58,7 +59,8 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: "Can't create", statusCode : 403 });
+
 
                 infoConversationAfterUpdated =  await CHATTING__CONVERSATION_COLL.findById(infoConversationAfterUpdated._id).populate({
                     path: 'members',
@@ -70,7 +72,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoConversationAfterUpdated });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -91,29 +93,30 @@ class Model extends BaseModel {
 
                 // KIỂM TRA ĐIỀU KIỆN HỢP LỆ
                 if(Number(arrReceiver.length) <= 1)
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 if(Number(arrReceiver.length) >= 100)
-                    return resolve({ error: true, message: 'limmit_members_100' });
+                        return resolve({ error: true, message: 'Members over 100', statusCode : 400 });
 
                 arrReceiver.forEach(reciver=>{
                     if(!checkObjectIDs(reciver))
-                        return resolve({ error: true, message: 'invalid_object_id' });
+                        return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 })
 
                 if(!checkObjectIDs(authorID)  || !Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
 
                 let exitsConversation = await CHATTING__CONVERSATION_COLL.find({ name, members : [...arrReceiver, authorID] });
 
                 // Kiểm tra xem có cuộc hội thoại nào trung tên chưa
                 if(exitsConversation.length > 0)
-                    return resolve({ error: true, message: 'conversation_exits' });
+                    return resolve({ error: true, message: 'Name conversation exited', statusCode : 400 });
 
                 let infoConversationAfterInserted = await that.insertData({ name, description, author: authorID });
 
                 if(!infoConversationAfterInserted)
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: 'Cant create', statusCode : 403 });
 
                 let { _id: conversationID } = infoConversationAfterInserted;
 
@@ -126,12 +129,12 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: 'Cant create', statusCode : 403 });
 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200 });
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -146,11 +149,12 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 let infoUpdateLinks;
                 let checkExits = await CHATTING__CONVERSATION_COLL.findOne({ _id : conversationID, members : {$in :[userID]}});
                 if(!checkExits)
-                    return resolve({ error: true, message: 'conversation_not_exist1' });
+                    return resolve({ error: true, message: 'You are not member', statusCode : 403 });
+                    
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
                 let oldLinks = infoConversation.links;
                 let newLinks = [...oldLinks];
@@ -165,10 +169,11 @@ class Model extends BaseModel {
                     links: newLinks
                 }, { new: true });
                 if(!infoUpdateLinks)
-                    return resolve({ error: true, message: 'conversation_not_exist2' });
-                return resolve({ error: false, data: infoUpdateLinks });
+                    return resolve({ error: true, message: 'Cant update', statusCode : 403 });
+
+                return resolve({ error: false, data: infoUpdateLinks, statusCode : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -183,22 +188,22 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 let infoUpdateMessage;
                 let checkExits = await CHATTING__CONVERSATION_COLL.findOne({ _id : conversationID, author : {$in :[userID]}});
                 if(!checkExits)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'You are not member', statusCode : 403 });
                 infoUpdateMessage =await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,{
                     logo: filesID
                 }, { new: true });
                 if(!infoUpdateMessage)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'You are not member', statusCode : 403 });
                 let infoFile = await FILE__FILE_COLL.findById(filesID);
                 let result = await FILE__REMOVED_MODEL.insert({name: infoFile.name, path: infoFile.path});
                 await FILE__FILE_COLL.removeByID(filesID);
                 return resolve({ error: false, data: infoUpdateMessage });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -209,38 +214,39 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
                 let dataUpdate = {};
                 let checkExistConversation;
                 if(name){
                     dataUpdate.name = name;
                     checkExistConversation = await CHATTING__CONVERSATION_COLL.find({name : name});
                     if(!checkExistConversation)
-                        return resolve({ error: true, message: 'conversation_not_exist' });
+                        return resolve({ error: true, message: 'New name Exits', statusCode : 403 });
                 }else{
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
                 }
                 if(description){
                     dataUpdate.description = description;
                 }
 
                 if(!dataUpdate)
-                    return resolve({ error: true, message: 'invalid_params' });
+                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
 
-                 checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+                checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID, 
                     members: { $in: [userID],
                      }
                 });
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'You are not member', statusCode : 403 });
+
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, dataUpdate, { new: true})
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'Cant update', statusCode : 403 });
     
-                return resolve({ error: false, data: infoConversationAfterUpdated, oldName : checkExistConversation.name });
+                return resolve({ error: false, data: infoConversationAfterUpdated, oldName : checkExistConversation.name, statusCode: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -269,11 +275,11 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 const page  = Number(currentPage) || 1;
-                let perPage = 3;
+                let perPage = 20;
                 let listConversation;
 
                 if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: '400 Bab request params invalid', statusCode : 400 });
                     
                 // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
                 
@@ -285,7 +291,7 @@ class Model extends BaseModel {
                 if(page!=1){
                     let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
                     if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: 'invalid_object_id_paggin'});
+                        return resolve({ error: true, message: '400 Bab request params invalid', statusCode : 400 });
 
                     _sort                               =  dataPaggingAndSort.data.sort
                     ObjectSearch                        = dataPaggingAndSort.data.find;
@@ -293,9 +299,9 @@ class Model extends BaseModel {
 
                 ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
                 listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
-                // .populate({
-                //     path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                // })
+                .populate({
+                    path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
+                })
                 // .populate({
                 //     path: 'members',
                 //     select: '_id fullname image company friends receiveFromFriends sendToFriends',
@@ -303,9 +309,9 @@ class Model extends BaseModel {
                 // .populate({
                 //     path: 'logo'
                 // })
-                // .populate({
-                //     path : 'pin', select : 'sender content status', populate :{ path : 'sender', select :'_id fullname image company' }
-                // })
+                .populate({
+                    path : 'pin', select : '_id sender content status' 
+                })
                 // .populate({
                 //     path: 'taskID',
                 //     select : 'task',
@@ -323,12 +329,10 @@ class Model extends BaseModel {
                 .limit(perPage);
                 
                 let amoutConverMiss  = await CHATTING__CONVERSATION_COLL.count({ arrMissMessage :  { $elemMatch: { userID:authorID, amout: { $gte: 1} } } })
-                if (!listConversation)
-                    return resolve({ error: true, message: 'cannot_get_list' });
-
+                
                 return resolve({ error: false, data: listConversation, amoutConverMiss });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -338,7 +342,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Bab request params invalid', statusCode : 400 });
 
                 const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
                     // .populate({
@@ -365,11 +369,101 @@ class Model extends BaseModel {
                     .lean();
                     
                 if (!infoConversation) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                    return resolve({ error: true, message: "You aren't in conversation", statusCode : 403 });
 
                 return resolve({ error: false, data: infoConversation });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
+            }
+        })
+    }
+
+    // Lấy danh sách thông tin thành viên trong cuộc hội thoại
+    getInfoMembersByID({ conversationID, userID }){
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
+                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
+                    // .populate({
+                    //     path: 'members',
+                    //     select: '_id fullname image company friends receiveFromFriends sendToFriends converMiss birthDay username phone email',
+                    //     populate: {
+                    //         path: "company"
+                    //     }
+                    // })
+                    // .populate('logo')
+                    // .populate({
+                    //     path: 'lastMessage'
+                    // })
+                    // .populate({
+                    //     path: 'taskID',
+                    //     select : 'task',
+                    //     populate : {
+                    //         path : 'task', select : '_id name'
+                    //     }
+                    // })
+                    // .populate({
+                    //     path : 'pin', populate :  'sender' 
+                    // })
+                    .lean();
+                    
+                if (!infoConversation) 
+                    return resolve({ error: true, message: "You aren't in conversation", statusCode : 403 });
+
+                let listMemebersID  = infoConversation.members;
+                let listMembers =  await  AUTH__USER_COLL.find({ _id : { $in: listMemebersID } }).select('_id fullname email image position sendToFriends receiveFromFriends recentlyFriends friends');
+
+                return resolve({ error: false, data: listMembers });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, statusCode : 500 });
+            }
+        })
+    }
+
+    // Tìm thành viên trong cuộc hội thoại
+    getInfoMembersWithKey({ conversationID, userID, key }){
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
+
+
+                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
+                    // .populate({
+                    //     path: 'members',
+                    //     select: '_id fullname image company friends receiveFromFriends sendToFriends converMiss birthDay username phone email',
+                    //     populate: {
+                    //         path: "company"
+                    //     }
+                    // })
+                    // .populate('logo')
+                    // .populate({
+                    //     path: 'lastMessage'
+                    // })
+                    // .populate({
+                    //     path: 'taskID',
+                    //     select : 'task',
+                    //     populate : {
+                    //         path : 'task', select : '_id name'
+                    //     }
+                    // })
+                    // .populate({
+                    //     path : 'pin', populate :  'sender' 
+                    // })
+                    .lean();
+                    
+                if (!infoConversation) 
+                    return resolve({ error: true, message: "You aren't in conversation", statusCode : 403 });
+
+
+                let listMemebersID  = infoConversation.members;
+                let listMembers =  await  AUTH__USER_COLL.find({ _id : { $in: listMemebersID }, fullname: new RegExp(key, 'i') }).select('_id fullname email image position sendToFriends receiveFromFriends recentlyFriends friends');
+
+                return resolve({ error: false, data: listMembers });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -382,11 +476,11 @@ class Model extends BaseModel {
                 let perPage = 3;
                 // Kiểm tra đầu vào
                 if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
-                const infoConversation = await AUTH__USER_COLL.findById(userID)
+                const infoConversation = await AUTH__USER_COLL.findById(userID);
                 if (!infoConversation) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                    return resolve({ error: true, message: "You aren't in conversation", statusCode : 403 });
 
                 let listConversationMiss =  infoConversation.converMiss || [];
 
@@ -399,7 +493,7 @@ class Model extends BaseModel {
                 if(page!=1){
                     let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
                     if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: 'invalid_object_id_paggin'});
+                        return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                     _sort                               =  dataPaggingAndSort.data.sort
                     ObjectSearch                        =  dataPaggingAndSort.data.find;
@@ -412,7 +506,7 @@ class Model extends BaseModel {
                 const conversations = await CHATTING__CONVERSATION_COLL.find(ObjectSearch).limit(perPage).sort(_sort);
                 return resolve({ error: false, data: conversations });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -423,19 +517,19 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [authorID] }});
                 if (!infoConversation)
-                    return resolve({ error: true, message: 'cannot_remove' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 let checkRemoveAllMessage = await CHATTING__MESSAGE_MODEL.removeAllByConversationID({ conversationID });
                 if (!checkRemoveAllMessage) 
-                    return resolve({ error: true, message: 'cannot_remove' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 return resolve({ error: false, data: infoConversation });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -445,7 +539,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(authorID) || !checkObjectIDs(conversationID)) 
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     $pull: {
@@ -454,11 +548,11 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_leave' });
+                    return resolve({ error: true, message: 'Cant leave', statusCode : 403 });
                 
                 return resolve({ error: false, data: infoConversationAfterUpdated });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -475,16 +569,16 @@ class Model extends BaseModel {
                 // }\
 
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID) || !Array.isArray(arrMember))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID, members: { $in: [...arrMember] }});
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: "You aren't permission", statusCode : 403 });
 
                 if(checkExistConversation.members.length <= 3){
                     // let resultDeleteConverSation = await CHATTING__CONVERSATION_COLL.findByIdAndDelete({ conversationID }); 
-                    return resolve({ error: false, data: checkExistConversation });
+                    return resolve({ error: false, data: checkExistConversation, statusCode : 200});
                 }
                 
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -494,11 +588,11 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_remove' });
+                    return resolve({ error: true, message: 'Cant remove', statusCode : 403 });
                 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -516,26 +610,25 @@ class Model extends BaseModel {
                 }
                 arrMember.forEach(member=>{
                     if(!checkObjectIDs(member)){
-                        return resolve({ error: true, message: 'invalid_object_id' });
+                        return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                     }
                 });
 
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !Array.isArray(arrMember))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 if(arrMember.includes(authorID))
-                    return resolve({ error: true, message: 'cannot_add' });
+                    return resolve({ error: true, message: 'Cant create', statusCode : 403 });
 
-                
                 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
-                
+                    return resolve({ error: true, message: "You aren't author", statusCode : 403 });
+
                 let listMembers = checkExistConversation.members;
                 for(let i=0;i < listMembers.length; i++){
                     if(arrMember.includes(listMembers[i].toString())){
-                        return resolve({ error: true, message: 'conversation_not_exist' });
+                        return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                     }
                 }
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -545,11 +638,11 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_add' }); 
+                    return resolve({ error: true, message: 'Cant create', statusCode : 403  }); 
                 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200  });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -559,11 +652,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !checkObjectIDs(member) )
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 member = [member]
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     $addToSet: {
@@ -572,11 +665,11 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_add' });
+                    return resolve({ error: true, message: 'Cant create', statusCode : 403  }); 
                 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -590,11 +683,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !checkObjectIDs(adminID) )
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 
                 let infoConversationAfterUpdated;
                 if(checkExistConversation.author[0].toString() != adminID.toString()){
@@ -605,15 +698,15 @@ class Model extends BaseModel {
                     }, { new: true });
     
                 }else{
-                    return resolve({ error: true, message: 'root_admin' });
+                    return resolve({ error: true, message:  'Permission denied', statusCode : 403  });
                 }   
                 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_add' });
+                    return resolve({ error: true, message: 'Cant Creata', statusCode :403 });
                 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -622,6 +715,9 @@ class Model extends BaseModel {
     getListCoversationWithKey({ key, userID }) {
         return new Promise(async resolve => {
             try {
+                if(!checkObjectIDs(userID) || !checkObjectIDs(key) )
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
                 let listUsers = await CHATTING__CONVERSATION_COLL.find({
                         members: { $in: [userID]},
                         name: new RegExp(key, 'i')
@@ -636,9 +732,9 @@ class Model extends BaseModel {
                     // })
                     .limit(30)
                     .sort({modifyAt: -1})
-                return resolve({ error: false, data: listUsers })
+                return resolve({ error: false, data: listUsers, statusCode : 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -648,12 +744,15 @@ class Model extends BaseModel {
     insertPinMessage({ messageID, conversationID, userID }) {
         return new Promise(async resolve => {
             try {
+                if(!checkObjectIDs(messageID) || !checkObjectIDs(conversationID) || !checkObjectIDs(userID) )
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
                 let exitCoversation = await CHATTING__CONVERSATION_COLL.find({
                     _id : conversationID , members: { $in: [userID]}
                 });
 
                 if(!exitCoversation){
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 }
 
                 let infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -661,13 +760,13 @@ class Model extends BaseModel {
                 })
 
                 if(!infoUpdate)
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
 
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID)
                 // .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
-                return resolve({ error: false, data: infoConversation })
+                return resolve({ error: false, data: infoConversation, statusCode : 200})
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -676,12 +775,15 @@ class Model extends BaseModel {
     deletePinMessage({ conversationID, userID }) {
         return new Promise(async resolve => {
             try {
+                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID) )
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
                 let exitCoversation = await CHATTING__CONVERSATION_COLL.find({
                     _id : conversationID , members: { $in: [userID]}
                 });
 
                 if(!exitCoversation){
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 }
 
                 let infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,
@@ -689,13 +791,14 @@ class Model extends BaseModel {
                         $unset : { pin :'' }
                     })
                 if(!infoUpdate)
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
 
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID)
                 .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
-                return resolve({ error: false, data: infoConversation })
+
+                return resolve({ error: false, data: infoConversation, statusCode :200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -708,7 +811,7 @@ class Model extends BaseModel {
                 });
                 let infoUser = await AUTH__USER_COLL.findById(userID);
                 if(!infoConversation){
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 }
                 let infoUpdate;
                 let arr = infoConversation[0].arrMissMessage;
@@ -790,11 +893,11 @@ class Model extends BaseModel {
                
                 }
                 if(!infoUpdate)
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
 
-                return resolve({ error: false, data: infoUpdate })
+                return resolve({ error: false, data: infoUpdate, statusCode : 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -807,7 +910,7 @@ class Model extends BaseModel {
                     });
                 let infoUser = await AUTH__USER_COLL.findById(userID);
                 if(!infoConversation){
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 }
                 content = content.trim()
                 let infoUpdate;
@@ -861,11 +964,11 @@ class Model extends BaseModel {
                 }
         
                 if(!infoUpdate)
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
 
-                return resolve({ error: false, data: infoUpdate })
+                return resolve({ error: false, data: infoUpdate, statusCode : 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -875,7 +978,7 @@ class Model extends BaseModel {
             try {
                 let infoConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [userID] } });
                 if(!infoConversation){
-                    return resolve({ error: true, data: 'conversation_exits' }); 
+                    return resolve({ error: true, message: 'Conversation exits', statusCode : 403  });
                 }
                 
                 let infoUpdate;
@@ -917,8 +1020,6 @@ class Model extends BaseModel {
                                     }   
                                 });
                         }
-                        if(!infoUpdate)
-                            return resolve({ error: true, data: 'conversation_exits' });
                         
                         newArr = [] 
                     }
@@ -926,9 +1027,9 @@ class Model extends BaseModel {
               
                 // Chưa tìm được câu query tốt nên xử lý theo luồng sau
                 // Lấy danh sách miss tin nhắn tìm user miss sau đó cập nhật mảng mới cho conversation
-                return resolve({ error: false, message:'update_success' })
+                return resolve({ error: false, message:'update_success', statusCode: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -955,7 +1056,7 @@ class Model extends BaseModel {
                }
                return resolve({ error: false, message: '=============DONE===========' });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -1027,7 +1128,7 @@ class Model extends BaseModel {
             }
                 return resolve({ error: false, message: '=============DONE===========' });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         });
     }
@@ -1048,7 +1149,7 @@ class Model extends BaseModel {
                 const page = Number(currentPage) || 1;
                 let perPage = 20;
                 if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
 
                 let listConversation;
                 if(!isMobile){
@@ -1096,12 +1197,10 @@ class Model extends BaseModel {
 
                 let infoUser = await AUTH__USER_COLL.findById(authorID);
                 let amountNotificationNotSeen = infoUser.converMiss &&  infoUser.converMiss.length;
-                if(!listConversation  || !Array.isArray(listConversation))
-                    return resolve({ error: true, message : 'cannot_get_all_conversation'});
                 
                 return resolve({ error: false, data: listConversation, page, amountNotificationNotSeen });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1111,7 +1210,8 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
                 const listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
                     .populate({
                         path: 'lastMessage'
@@ -1133,12 +1233,11 @@ class Model extends BaseModel {
                     })
 
 
-                if(!listConversation  || !Array.isArray(listConversation))
-                    return resolve({ error: true, message : 'cannot_get_all_conversation'});
+             
                 
-                return resolve({ error: false, data : listConversation });
+                return resolve({ error: false, data : listConversation, statusCode : 200});
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1148,7 +1247,8 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+
                 let  infoUser = await AUTH__USER_COLL.findById(authorID);
                 let lisConverMiss = infoUser.converMiss
                 if(lisConverMiss){
@@ -1157,12 +1257,12 @@ class Model extends BaseModel {
                         let lastMessage = converMis.lastMessage;
                         let infoAffterUpdate = await CHATTING__MESSAGE_MODEL.updateRecive({ messageID : lastMessage })
                     }
-                    return resolve({ error: false, message : 'updated_success' });
+                    return resolve({ error: false, message : 'updated_success', statusCode: 200 });
                 }else{
-                    return resolve({ error: false, message : 'nothing_update' });
+                    return resolve({ error: false, message : 'nothing_update', statusCode: 200 });
                 }
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1177,24 +1277,24 @@ class Model extends BaseModel {
             try {
 
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID) || !checkObjectIDs(memberID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 //  Kiểm tra người yêu cầu thông tin của thành viên trong cuộc hội thoại cả 2 có cùng cuộc hội thoại  không 
                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID ,
                     members: { $all: [authorID, memberID] }
                 });
                 if(!checkExistConversation || checkExistConversation.length == 0)
-                    return resolve({ error: true, message: 'cant_get_info_member' });
+                    return resolve({ error: true, message:  'Permission denied', statusCode : 403  });
 
                 let infoUser  =  await   AUTH__USER_COLL.findById(memberID).select('_id fullname image email username phone birthDay');
 
                 if(!infoUser)
-                    return resolve({ error: true,message :  'cant_get_info_member' });
+                    return resolve({ error: true, message:  'Permission denied', statusCode : 403  });
 
-                return resolve({ error: false, data :  infoUser });
+                return resolve({ error: false, data :  infoUser, statusCode : 200});
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1208,23 +1308,24 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 
                 let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.find({
-                        _id: conversationID ,
-                        members: { $in: [authorID] }
+                    _id: conversationID ,
+                    members: { $in: [authorID] }
                 });
 
                 if(!isMemberInConversation)
-                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                    return resolve({ error: true, message:  'You are not member', statusCode : 403  });
                 
                 let dataConversation = await CHATTING__CONVERSATION_COLL.find({ _id: conversationID});
                 if(dataConversation && dataConversation[0]){
                     let links = dataConversation[0].links;
-                    return resolve({ error: false, data : { links } });
-                }else return resolve({ error: false, data : { } });
+                    return resolve({ error: false, data : { links }, statusCode : 200 });
+                }
+                    return resolve({ error: false, data : { }, statusCode :200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1238,7 +1339,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 
                 let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.find({
                         _id: conversationID ,
@@ -1246,7 +1347,7 @@ class Model extends BaseModel {
                 });
 
                 if(!isMemberInConversation)
-                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                    return resolve({ error: true, message:  'You are not member', statusCode : 403  });
                 let listTaskID =  isMemberInConversation.taskID;
                 let newList = [];
                 if(!listTaskID){
@@ -1272,10 +1373,12 @@ class Model extends BaseModel {
                 let dataConversation = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,{
                     taskID : newList
                 });
-                if(!dataConversation) return resolve({ error: true, message: 'cant_update'})
+                if(!dataConversation) 
+                    return resolve({ error: true, message:  'Cant update', statusCode : 403  });
+
                 return resolve({ error: false, data:  dataConversation });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1289,7 +1392,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID) || !time)
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 
                 let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID ,
@@ -1297,7 +1400,7 @@ class Model extends BaseModel {
                 });
 
                 if(!isMemberInConversation)
-                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                    return resolve({ error: true, message:  'You are not member', statusCode : 403  });
                 
                 let listMute =  isMemberInConversation.usersMute;
                 let resultUpdate;
@@ -1306,7 +1409,6 @@ class Model extends BaseModel {
                 }
                 if(listMute && listMute.length){
                     let newMuteUser = [];
-                    console.log({listMute})
                     let isNewUser  = true;
                     listMute.forEach(user=>{
                         let _user = {};
@@ -1331,12 +1433,12 @@ class Model extends BaseModel {
                 }
                 
                 if(!resultUpdate)
-                    return resolve({ error: true, message: error.message });
+                    return resolve({ error: true, message:'Cant udpate',  statusCode : 403 });
 
-                return resolve({ error: false, data :  resultUpdate });
+                return resolve({ error: false, data :  resultUpdate, statusCode : 200 });
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1346,7 +1448,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 
                 let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID ,
@@ -1354,12 +1456,12 @@ class Model extends BaseModel {
                 });
 
                 if(!isMemberInConversation)
-                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                    return resolve({ error: true, message:  'You are not member', statusCode : 403  });
                 
                 let listMute =  isMemberInConversation.usersMute;
                 let resultUpdate;
                 if(!listMute)
-                    return resolve({ error: false, message : 'unmute_success' });
+                    return resolve({ error: false, message : 'UnMute success', statusCode: 200});
 
                 let newMuteUser = [];
                 listMute.forEach(user=>{
@@ -1370,12 +1472,12 @@ class Model extends BaseModel {
                 resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
                 
                 if(!resultUpdate)
-                    return resolve({ error: true, message: error.message });
+                    return resolve({ error: true, message:'Cant udpate',  statusCode : 403 });
 
                 return resolve({ error: false, data :  resultUpdate });
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1386,7 +1488,7 @@ class Model extends BaseModel {
             try {
 
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 
                 let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID ,
@@ -1394,12 +1496,12 @@ class Model extends BaseModel {
                 });
 
                 if(!isMemberInConversation)
-                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                    return resolve({ error: true, message:  'You are not member', statusCode : 403  });
                 
                 let lisPin =  (isMemberInConversation && isMemberInConversation.usersPin ) ||  [];
                 for(let i = 0; i<lisPin.length; i++){
                     if(lisPin[i] && lisPin[i].toString() == userID.toString()){
-                        return resolve({ error: false, message:'coversation_pined'})
+                        return resolve({ error: false, message:  'You pined', statusCode : 200  });
                     }
                 }
 
@@ -1419,12 +1521,12 @@ class Model extends BaseModel {
                 }
 
                 if(!resultUpdate)
-                    return resolve({ error: true, message: 'cant_pin_conversation' });
+                    return resolve({ error: true, message: 'Cant pin conversation', statusCode : 403 });
 
-                return resolve({ error: false, data :  resultUpdate });
+                return resolve({ error: false, data :  resultUpdate, statusCode : 200 });
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
@@ -1434,7 +1536,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
                 
                 let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID ,
@@ -1442,7 +1544,7 @@ class Model extends BaseModel {
                 });
 
                 if(!isMemberInConversation)
-                    return resolve({ error: true, message: 'You are not a member of the chat' });
+                    return resolve({ error: true, message:  'You are not member', statusCode : 403  });
                 
                 let lisPin =  isMemberInConversation.usersPin || [];
                 
@@ -1454,7 +1556,7 @@ class Model extends BaseModel {
                     }
                 }
                 if(isNotePin)
-                    return resolve({ error: false, message:'removed_pin' })
+                    return resolve({ error: false, message:'Removed pin', statusCode : 200 })
 
                 let resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     $pull: {
@@ -1463,12 +1565,12 @@ class Model extends BaseModel {
                 }); 
                 
                 if(!resultUpdate)
-                    return resolve({ error: true, message: 'cant_un_pin_conversation' });
+                    return resolve({ error: true, message: 'Cant unpin conversation', statusCode : 403 });
 
-                return resolve({ error: false, data :  resultUpdate });
+                return resolve({ error: false, data :  resultUpdate, statusCode : 200 });
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, statusCode : 500 });
             }
         })
     }
