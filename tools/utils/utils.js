@@ -1,6 +1,7 @@
 "use strict";
 const lodash                             = require("lodash");
-const ObjectID                                      = require('mongoose').Types.ObjectId;
+const ObjectID                           = require('mongoose').Types.ObjectId;
+exports.objectID                         = require('mongoose').Types.ObjectId;
 
 exports.isEmpty = function (value) {
     return typeof value == 'string'

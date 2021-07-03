@@ -330,7 +330,7 @@ class Model extends BaseModel {
                 
                 let amoutConverMiss  = await CHATTING__CONVERSATION_COLL.count({ arrMissMessage :  { $elemMatch: { userID:authorID, amout: { $gte: 1} } } })
                 
-                return resolve({ error: false, data: listConversation, amoutConverMiss });
+                return resolve({ error: false, data: listConversation, amoutConverMiss,  status : 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
@@ -377,7 +377,7 @@ class Model extends BaseModel {
                 if (!infoConversation) 
                     return resolve({ error: true, message: "You aren't in conversation", status : 403 });
 
-                return resolve({ error: false, data: infoConversation });
+                return resolve({ error: false, data: infoConversation,  status : 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
@@ -427,7 +427,7 @@ class Model extends BaseModel {
                 let listMemebersID  = infoConversation.members;
                 let listMembers =  await  AUTH__USER_COLL.find({ _id : { $in: listMemebersID } }).select('_id fullname email image position sendToFriends receiveFromFriends recentlyFriends friends');
 
-                return resolve({ error: false, data: listMembers });
+                return resolve({ error: false, data: listMembers, status : 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
@@ -522,7 +522,7 @@ class Model extends BaseModel {
                 
 
                 const conversations = await CHATTING__CONVERSATION_COLL.find(ObjectSearch).limit(perPage).sort(_sort);
-                return resolve({ error: false, data: conversations });
+                return resolve({ error: false, data: conversations, status : 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
@@ -733,7 +733,7 @@ class Model extends BaseModel {
     getListCoversationWithKey({ key, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(userID) || !checkObjectIDs(key) )
+                if(!checkObjectIDs(userID) || !key )
                     return resolve({ error: true, message: 'Request params invalid', status : 400 });
 
                 let listUsers = await CHATTING__CONVERSATION_COLL.find({

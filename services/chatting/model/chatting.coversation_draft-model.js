@@ -18,7 +18,6 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             try {
-                console.log({message, conversationID, userID})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Parameters validation error!', status : 400 });
 
@@ -61,6 +60,7 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             try {
+                console.log({ conversationID, userID })
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Parameters validation error!', status : 400 });
 

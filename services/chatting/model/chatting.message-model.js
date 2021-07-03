@@ -15,8 +15,8 @@ const FILE__REMOVED_MODEL                           = {}
 
 // Tools
 const BaseModel                                     = require('../../../tools/db/base_model');
-// const ObjectID                                      = require('mongoose').Types.ObjectId;
-const { checkObjectIDs }                            = require('../../../tools/utils/utils');
+const ObjectID                                      = require('mongoose').Types.ObjectId;
+const { checkObjectIDs, objectID }                            = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 
@@ -353,7 +353,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'request params nextInfo invalid', status : 400 });
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
-                ObjectSearch.conversation   =  ObjectID(conversationID);
+                ObjectSearch.conversation   =  objectID(conversationID);
                 let _sort = dataPaggingAndSort.data.sort;
                 // console.log({ObjectSearch});
 
