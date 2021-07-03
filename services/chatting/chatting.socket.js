@@ -102,7 +102,7 @@ exports.CHATTING_SOCKET = {
         let infoAfterUpdate = await CHATTING__CONVERSATION_MODEL.updateByID({ name, conversationID, userID});
         if(!infoAfterUpdate.error){
             let  arrReceiver    = infoAfterUpdate.data.members;
-            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data :{  name, userID, infoConversation : infoAfterUpdate }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_UPDATE_INFO_CONVERSATION], io})
+            sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data :{  name, userID, infoConversation : infoAfterUpdate, status : 200 }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_UPDATE_INFO_CONVERSATION], io})
             let content = `${name}`;
             let status  = 102;   // Trạng thái tin nhắn thông báo cho cả nhóm vd: user1 vừa bị xóa
             let infoMessageAfterInsert = await DB_CHATTING__MESSAGE_MODEL.insert(
@@ -477,7 +477,7 @@ exports.CHATTING_SOCKET = {
         
         let inforUpdateUserMissMess =  await CHATTING__CONVERSATION_MODEL.updateUserMissMessage({ conversationID, userID, isRep : true })
         let infoUpdateTyping        =  await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: content });
-        sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { typing, conversationID, user : userID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_TYPING_MESAGE], io})
+        sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { typing, conversationID, user : userID, status : 200  }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_TYPING_MESAGE], io})
     },
 
     // Đã nhận tin nhắn [done]
@@ -494,7 +494,7 @@ exports.CHATTING_SOCKET = {
         // Cập nhật trạng thái đã nhận tin nhắn.
         let infoUpdate = await CHATTING__MESSAGE_MODEL.updateRecive({ messageID });
         if(!infoUpdate.error){
-            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  {  messageID  , conversationID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_RECEIVED_MESSAGE], io})
+            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  {  messageID  , conversationID, status : 200  }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_RECEIVED_MESSAGE], io})
         }
         sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : infoUpdate , event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_RECEIVED_MESSAGE], io})
 
@@ -566,7 +566,7 @@ exports.CHATTING_SOCKET = {
 
         let infoMessage = await CHATTING__MESSAGE_MODEL.removebyID({ messageID, conversationID, senderID :userID });
         if(infoMessage) {
-            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { infoMessage }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_DELETE_MESSAGE], io})
+            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { infoMessage, status : 200  }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_DELETE_MESSAGE], io})
         }
         sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID] , data :  infoMessage, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_DELETE_MESSAGE], io})
     },
@@ -643,7 +643,7 @@ exports.CHATTING_SOCKET = {
             inforUpdate = await CHATTING__CONVERSATION_MODEL.deletePinMessage({ conversationID, userID });
         }
         if(!inforUpdate.error){
-            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { infoConversation : inforUpdate, deletePin }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
+            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { infoConversation : inforUpdate, deletePin, status : 200 }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
         }
         sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data : inforUpdate, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_PIN_MESSAAGE_CONVERSATION], io})
     },
