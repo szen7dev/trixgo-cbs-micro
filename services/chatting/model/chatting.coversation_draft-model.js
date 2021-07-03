@@ -20,7 +20,7 @@ class Model extends BaseModel {
             try {
                 console.log({message, conversationID, userID})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 400 });
+                    return resolve({ error: true, message: 'Parameters validation error!', status : 400 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
                 let _checkExistConversation =  CHATTING__CONVERSATION_COLL.find({ 
@@ -48,11 +48,11 @@ class Model extends BaseModel {
                 }
                 
                 if(!infoConversationAfterInserted)
-                    return resolve({ error : true, message : messageError, statusCode : 403 })
+                    return resolve({ error : true, message : messageError, status : 403 })
 
-                return resolve({ error: false, data: infoConversationAfterUpdated, statusCode : 200 });
+                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, statusCode : 500 });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -62,7 +62,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 400 });
+                    return resolve({ error: true, message: 'Parameters validation error!', status : 400 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại
                 let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
@@ -75,9 +75,9 @@ class Model extends BaseModel {
 
                 let infoConversationDraft = await CHATTING__CONVERSATION_DRAFT_COLL.findOne({ conversation : conversationID, user: userID });
 
-                return resolve({ error: false, data: infoConversationDraft,  statusCode : 200  });
+                return resolve({ error: false, data: infoConversationDraft,  status : 200  });
             } catch (error) {
-                return resolve({ error: true, message: error.message, statusCode : 500 });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }

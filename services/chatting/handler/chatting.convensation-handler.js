@@ -57,7 +57,7 @@ module.exports = {
     },
 
     // Lấy thông tin một cuộc hội thoại theo ID
-    getListConversationByID: {
+    getInfoConversationByID: {
         params: {
             conversationID  : { type: "string" },
         },
@@ -115,7 +115,7 @@ module.exports = {
                 // await this.validateEntity(name);
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListCoversationWithKey({ userID: CF_DATA_DEMO_CHATTING.userID_1, key });
-                console.log({resultAfterCallHandler})
+                // console.log({resultAfterCallHandler})
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };

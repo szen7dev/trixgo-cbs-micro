@@ -21,7 +21,7 @@ class Model extends BaseModel {
 
                 console.log({conversationID, userID, link})
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 422 });
+                    return resolve({ error: true, message: 'Parameters validation error!', status : 422 });
 
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại
@@ -44,7 +44,7 @@ class Model extends BaseModel {
         
                 return resolve({ error: false, data: infoConversationAfterInserted });
             } catch (error) {
-                return resolve({ error: true, message: error.message, statusCode : 500 });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -55,7 +55,7 @@ class Model extends BaseModel {
             try {
                 console.log({conversationID, currentPage, nextInfo, userID })
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Parameters validation error!', statusCode : 422 });
+                    return resolve({ error: true, message: 'Parameters validation error!', status : 422 });
 
                 // Kiểm tra nếu tồn tại cuộc hội thoại
                 let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
@@ -75,7 +75,7 @@ class Model extends BaseModel {
 
                 let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo , keys: ['createAt__-1', '_id__-1'] })
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'Parameter nextInfo  validation error! ', statusCode : 422 });
+                    return resolve({ error: true, message: 'Parameter nextInfo  validation error! ', status : 422 });
 
                 _sort                               =  dataPaggingAndSort.data.sort
                 ObjectSearch                        = dataPaggingAndSort.data.find;
@@ -91,7 +91,7 @@ class Model extends BaseModel {
 
                 return resolve({ error : false ,  data : listConversation, status : 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, statusCode : 500 });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }

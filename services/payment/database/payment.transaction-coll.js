@@ -36,7 +36,7 @@ module.exports  = DATABASE_MIDDLEWARE("payment_transactions", {
     /**
      * 0. chưa thanh toán
      * 1. đã thanh toán -> //* thành công
-     * 2. đã thanh toán -> //* thất bại -> những statuscode từ vnpay
+     * 2. đã thanh toán -> //* thất bại -> những status từ vnpay
      *  02
      *  03 
      */
