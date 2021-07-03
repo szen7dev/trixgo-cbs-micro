@@ -1,30 +1,35 @@
 exports.renderStatusCode = function ({resultAfterCallHandler, ctx }) {
+    let isError = false;
+    let error = {};
     if(!resultAfterCallHandler){
-        let error = {
+        error = {
             message: 'error_render_satus_code_miss_resultAfterCallHandler',
             keyError : 'resultAfterCallHandler'
         }
-        console.log(error);
-        return
+        isError = true
     }
+    
     if(!ctx){
-        let error = {
+        error = {
             message: 'error_render_satus_code_miss_ctx',
             keyError : 'ctx'
         }
-        console.log(error);
-        return
+        isError = true
+
     }
 
     if(ctx && !ctx.meta){
-        let error = {
+        error = {
             message: 'error_render_satus_code_miss_ctx.meta',
             keyError : 'ctx.meta'
         }
-        console.log(error);
-        return
+        isError = true
     }
 
+    if(isError){
+        console.log({error});
+        return
+    }
     ctx.meta.$statusCode    = resultAfterCallHandler.status || 500 ;
     ctx.meta.$statusMessage = resultAfterCallHandler.message || 'success';
 
