@@ -52,6 +52,8 @@ module.exports = {
                 //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
                 // }
                 let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ conversationID, userID : CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo });
+                ctx.meta.$statusCode    = resultAfterCallHandler.status || 500 ;
+                ctx.meta.$statusMessage = resultAfterCallHandler.message || 'success';
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };

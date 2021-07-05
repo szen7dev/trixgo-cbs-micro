@@ -15,8 +15,8 @@ const FILE__REMOVED_MODEL                           = {}
 
 // Tools
 const BaseModel                                     = require('../../../tools/db/base_model');
-// const ObjectID                                      = require('mongoose').Types.ObjectId;
-const { checkObjectIDs }                            = require('../../../tools/utils/utils');
+const ObjectID                                      = require('mongoose').Types.ObjectId;
+const { checkObjectIDs, objectID }                            = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 
@@ -36,7 +36,7 @@ class Model extends BaseModel {
                     status = 0;
                 }
                 if (!checkObjectIDs(senderID, conversationID)) 
-                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
                 
                 let arrReceiver = receivers;
                 // if(receivers && receivers.includes(',')) {
@@ -46,11 +46,11 @@ class Model extends BaseModel {
                 // }
                 arrReceiver.forEach(receiver =>{
                     if(receiver && !checkObjectIDs(receiver))
-                        return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
+                        return resolve({ error: true, message: 'Params invalid', status : 400 });
                 })
                 
                 if(!Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
 
                 
                 // kiểm tra các receivers có phải là members trong cuộc hội thoại
@@ -59,29 +59,29 @@ class Model extends BaseModel {
                         members: { $all: [senderID, ... arrReceiver] }
                 });
                 if(!Array.isArray(checkExistConversation) || checkExistConversation.length < 1)
-                    return resolve({ error: true, message: 'You are not member', statusCode : 403 });
+                    return resolve({ error: true, message: 'You are not member', status : 403 });
 
                 let infoMessageAfterInserted;
 
                 // Kiểm tra parentID => tính năng reply tin nhắn
                 if(parentID) {
                     if(parentID && !checkObjectIDs(parentID)) 
-                        return resolve({ error: true, message: 'Params invalid', statusCode : 400 });
+                        return resolve({ error: true, message: 'Params invalid', status : 400 });
 
                     infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
                     if(!infoMessageAfterInserted)
-                        return resolve({ error: true, message: 'Cant create message reply', statusCode : 403 });
+                        return resolve({ error: true, message: 'Cant create message reply', status : 403 });
 
                     let checkLastMessageAfterUpdatedR = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                         lastMessage: infoMessageAfterInserted._id, modifyAt: Date.now()
                     }, { new: true });
 
-                    return resolve({ error: false, data : infoMessageAfterInserted, statusCode : 200 });
+                    return resolve({ error: false, data : infoMessageAfterInserted, status : 200 });
                 }
 
                 infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
                 if(!infoMessageAfterInserted)
-                    return resolve({ error: true, message: 'Cant create message ', statusCode : 403 });
+                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
 
                 let { _id: messageID } = infoMessageAfterInserted; 
                 let infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
@@ -91,18 +91,18 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoMessageAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create message ', statusCode : 403 });
+                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
 
                 let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: messageID, modifyAt: Date.now()
                 }, { new: true });
 
                 if(!checkLastMessageAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create message ', statusCode : 403 });
+                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
                 
-                return resolve({ error: false, data : infoMessageAfterUpdated, statusCode : 200 });
+                return resolve({ error: false, data : infoMessageAfterUpdated, status : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -113,8 +113,8 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(senderID, conversationID)) 
-                    return resolve({ error: true, message: 'invalid_object_id_S' });
-                
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });    
+
                 let arrReceiver = receivers;
                 // if(receivers && receivers.includes(',')) {
                 //     arrReceiver = receivers.split(',');
@@ -123,10 +123,10 @@ class Model extends BaseModel {
                 // }
                 arrReceiver.forEach(receiver =>{
                     if(!checkObjectIDs(receiver))
-                        return resolve({ error: true, message: 'invalid_object_id' });
+                        return resolve({ error: true, message: 'Params invalid', status : 400 });
                 })
                 if(!Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
 
                 
                 // kiểm tra các receivers có phải là members trong cuộc hội thoại
@@ -135,7 +135,7 @@ class Model extends BaseModel {
                         members: { $all: [senderID, ... arrReceiver] }
                 });
                 if(!Array.isArray(checkExistConversation) || checkExistConversation.length < 1)
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: 'You are not member', status : 403 });
 
                 let infoMessageAfterInserted;
                 let infoMessageShare = await CHATTING__MESSAGE_COLL.findById(messageShareID);
@@ -151,7 +151,8 @@ class Model extends BaseModel {
                 _infoMessageShare.status     = 3;
                 infoMessageAfterInserted = await that.insertData(_infoMessageShare);
                 if(!infoMessageAfterInserted)
-                    return resolve({ error: true, message :'cannot_insert' });
+                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
+
                 let { _id: messageID } = infoMessageAfterInserted; 
                 let infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
                     $addToSet: {
@@ -160,18 +161,18 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoMessageAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
 
                 let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: messageID, modifyAt: Date.now()
                 }, { new: true });
 
                 if(!checkLastMessageAfterUpdated)
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'Cant update to last message ', status : 403 });
                 
-                return resolve({ error: false, data : infoMessageAfterUpdated });
+                return resolve({ error: false, data : infoMessageAfterUpdated, status : 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -182,7 +183,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(messageID) || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
 
                 let infoUpdateMessage;
                 
@@ -193,10 +194,11 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoUpdateMessage)
-                    return resolve({ error: true, message: 'conversation_not_exist' });
+                    return resolve({ error: true, message: 'Cant update message ', status : 403 });
+
                 return resolve({ error: false, data: infoUpdateMessage });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -208,7 +210,7 @@ class Model extends BaseModel {
                 const page = Number(currentPage) || 1;
                 const perPage = 5;
                 if(!checkObjectIDs(conversationID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
 
                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
                         _id: conversationID ,
@@ -235,12 +237,12 @@ class Model extends BaseModel {
                     let listZips = await FILE__FILE_COLL.find({ conversation: conversationID, type : 3 })
                         .sort({ createAt: -1 });
                         
-                    return resolve({ error: false, data : {listImage, listZips} });
+                    return resolve({ error: false, data : {listImage, listZips}, status : 200 });
 
                 }
             
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -295,7 +297,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
 
                 let infoMessageAfterRemoved = await CHATTING__MESSAGE_COLL.find({ conversation: conversationID});
                 if(!infoMessageAfterRemoved)
@@ -322,7 +324,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data : '' });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -334,7 +336,7 @@ class Model extends BaseModel {
                 const page = Number(currentPage) || 1;
                 const perPage = 15;
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', statusCode : 400 });
+                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
 
                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
                     _id: conversationID ,
@@ -342,16 +344,16 @@ class Model extends BaseModel {
                 });
 
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Permission denied', statusCode : 403 });
+                    return resolve({ error: true, message: 'Permission denied', status : 403 });
                 
                 
                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
                
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'request params nextInfo invalid', statusCode : 400 });
+                    return resolve({ error: true, message: 'request params nextInfo invalid', status : 400 });
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
-                ObjectSearch.conversation   =  ObjectID(conversationID);
+                ObjectSearch.conversation   =  objectID(conversationID);
                 let _sort = dataPaggingAndSort.data.sort;
                 // console.log({ObjectSearch});
 
@@ -414,9 +416,9 @@ class Model extends BaseModel {
                 .sort( dataPaggingAndSort.data.sort );
 
                 
-                return resolve({ error: false, data : listMessage, page, statusCode: 200 });
+                return resolve({ error: false, data : listMessage, page, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, statusCode : 500 });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -458,7 +460,7 @@ class Model extends BaseModel {
                
                 return resolve({ error: false, data : infoMessageAfterRemoved });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -495,7 +497,7 @@ class Model extends BaseModel {
                 //Chưa check xóa tin nhắn có files_ và tin nhắn có tin nhắn reply
                 return resolve({ error: false, data : infoMessage });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -538,7 +540,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data : infoMessage });
                 }
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -555,7 +557,7 @@ class Model extends BaseModel {
                 //Xóa files 
                 return resolve({ error: false, data : infoMessage });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -564,7 +566,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID) || !checkObjectIDs(authorID) )
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
                 let arrUser = [authorID]
                 let checkExistMessage = await CHATTING__MESSAGE_COLL.findOne({
                      _id : messageID,
@@ -572,7 +574,7 @@ class Model extends BaseModel {
                 let infoMessageAfterUpdated;
                 //Kiểm tra tin nhắn có tồn tại không
                 if(!checkExistMessage){
-                    return resolve({ error: true, message : 'message_is_exits'});
+                    return resolve({ error: true, message: 'Message is exits', status : 403 });
                 }
                 //Kiểm tra xem đã có bày tỏ cảm xúc về tin nhắn chưa
                 let checkExistReaction = await REACTION_COLL.findOne({
@@ -590,7 +592,8 @@ class Model extends BaseModel {
                             reactionID, { type : type }, { new: true }
                         );
                         if(!infoAction)
-                            return resolve({ error: true, message : 'cannot_update'});
+                            return resolve({ error: true, message: 'Cant update', status : 403 });
+
                         return resolve({ error: false, data : checkExistMessage });
                     }else
                     {
@@ -598,7 +601,8 @@ class Model extends BaseModel {
                     let reactionID = checkExistReaction._id;
                     let infoAction = await REACTION_MODEL.remove({reactionID});
                     if(!infoAction)
-                        return resolve({ error: true, message : 'cannot_update'});
+                        return resolve({ error: true, message: 'Cant update', status : 403 });
+
                     infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(
                         { _id : messageID }, {
                         $pull : {
@@ -606,7 +610,7 @@ class Model extends BaseModel {
                         }}, 
                         { new: true });
                     if(!infoMessageAfterUpdated)
-                        return resolve({ error: true, message : 'cannot_update'});
+                        return resolve({ error: true, message: 'Cant update', status : 403 });
 
                     return resolve({ error: false, data : infoMessageAfterUpdated })    
 
@@ -615,7 +619,8 @@ class Model extends BaseModel {
                 //Nếu chưa có
                     let infoActionAfterAdd = await REACTION_MODEL.insert({ author : authorID, type, message : messageID})
                     if(!infoActionAfterAdd)
-                        return resolve({ error: true, message : 'cannot_update'});
+                        return resolve({ error: true, message: 'Cant update', status : 403 });
+
                     let idReacion = infoActionAfterAdd.data._id;
                     infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(
                                 { _id : messageID }, {
@@ -624,7 +629,7 @@ class Model extends BaseModel {
                                 }}, 
                                 { new: true });
                     if(!infoMessageAfterUpdated)
-                        return resolve({ error: true, message : 'cannot_update'});
+                        return resolve({ error: true, message: 'Cant update', status : 403 });
 
                     return resolve({ error: false, data : infoMessageAfterUpdated });
                 }
@@ -649,7 +654,7 @@ class Model extends BaseModel {
                 //     return resolve({ error: true, message : 'cannot_update'});
                 // return resolve({ error: false, data : infoMessageAfterUpdated, isLike });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -724,7 +729,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: allMessageBugs });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -766,7 +771,7 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoMessageAfterUpdate });
 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -787,7 +792,7 @@ class Model extends BaseModel {
                 
                 return resolve({ error: false, data: infoMessageAfterUpdate });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -808,7 +813,7 @@ class Model extends BaseModel {
                 
                 return resolve({ error: false, data: infoMessageAfterUpdate });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -862,7 +867,7 @@ class Model extends BaseModel {
                 
                 return resolve({ error: false, data: infoMessageAfterUpdate });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -914,7 +919,7 @@ class Model extends BaseModel {
                 
                 return resolve({ error: false, data: listTicket });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -960,7 +965,7 @@ class Model extends BaseModel {
                 
                 return resolve({ error: false, data: listTicket });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -987,7 +992,7 @@ class Model extends BaseModel {
                 infoMessage = infoMessage[infoMessage.length -1]
                 return resolve({ error: false, data: infoMessage });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         });
     }
@@ -1002,23 +1007,23 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'Params invalid', status : 400 });
                 // status = 2 trạn thái đã nhận tin nhắn , tin nhắn đã gửi thành công
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!infoMessage)
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'Message is exits', status : 403 });
                 if(infoMessage.status < 100){
                     let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { status : 2 }, { new: true });
                     if(!infoMessageAfterUpdate)
-                        return resolve({ error: true, data: 'cant_get_message' });
+                        return resolve({ error: true, message: 'Message is exits', status : 403 });
 
-                    return resolve({ error: false, data: infoMessageAfterUpdate });
+                    return resolve({ error: false, data: infoMessageAfterUpdate, status : 200 });
                 }else{
-                    return resolve({ error: false, data: "message_status_greater_than_100" });
+                    return resolve({ error: false, data: "message_status_greater_than_100", message : 'message_status_greater_than_100',  status : 200 });
                 }
                 
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         });
     }
@@ -1113,7 +1118,7 @@ class Model extends BaseModel {
                 
                 return resolve({ error: false, data: listData });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         });
     }

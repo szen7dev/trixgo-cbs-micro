@@ -3,6 +3,10 @@ let CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting
 let CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
 
 let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
+
+//tools
+let { renderStatusCode }                 = require('../../../tools/utils/status_code');
+
 module.exports = {
 
     // AUTHOR : HUYNHVINH
@@ -24,7 +28,7 @@ module.exports = {
                 // await this.validateEntity(name);
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversationMoreTowMember({ name, description, authorID, receivers });
-
+                renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -49,6 +53,7 @@ module.exports = {
                 //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
                 // }
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage, nextInfo });
+                renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -57,7 +62,7 @@ module.exports = {
     },
 
     // Lấy thông tin một cuộc hội thoại theo ID
-    getListConversationByID: {
+    getInfoConversationByID: {
         params: {
             conversationID  : { type: "string" },
         },
@@ -71,7 +76,7 @@ module.exports = {
                 // conversationID = '602c7a51ea1d1274020b2e08'
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ userID: CF_DATA_DEMO_CHATTING.userID_1, conversationID });
-                console.log({resultAfterCallHandler})
+                renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -94,7 +99,7 @@ module.exports = {
                 // conversationID = '602c7a51ea1d1274020b2e08'
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoMembersByID({ userID: CF_DATA_DEMO_CHATTING.userID_1, conversationID });
-                console.log({resultAfterCallHandler})
+                renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -115,7 +120,8 @@ module.exports = {
                 // await this.validateEntity(name);
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListCoversationWithKey({ userID: CF_DATA_DEMO_CHATTING.userID_1, key });
-                console.log({resultAfterCallHandler})
+                // console.log({resultAfterCallHandler})
+                renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -136,6 +142,7 @@ module.exports = {
                 // await this.validateEntity(name);
 
                 let infoConversationDraft = await CHATTING__CONVERSATION_DRAFT_MODEL.getInfoByUserID({ conversationID, userID: CF_DATA_DEMO_CHATTING.userID_1 });
+                renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
                 return infoConversationDraft;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -156,6 +163,7 @@ module.exports = {
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
                 // await this.validateEntity(name);
                 let infoConversationDraft = await CHATTING__CONVERSATION_LINK_MODEL.getListWithPage({ conversationID, userID: CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo })
+                renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
                 return infoConversationDraft;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -175,6 +183,7 @@ module.exports = {
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
                 // await this.validateEntity(name);
                 let infoConversationDraft = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ currentPage, nextInfo : '111', userID: CF_DATA_DEMO_CHATTING.userID_1})
+                renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
                 return infoConversationDraft;
             } catch (error) {
                 return { error:  true, message: error.message };

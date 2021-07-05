@@ -8,7 +8,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Tên của cuộc hội thoại (Tên chat nhóm)
      */
-    m: {
+    name: {
         type: String
     },
 
