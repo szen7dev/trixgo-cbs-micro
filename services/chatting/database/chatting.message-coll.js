@@ -58,15 +58,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 1 : đã xem
      * 2 : đã nhận
      * 3 : tin nhắn được chia sẽ
-     * 100: Thêm người mới vào cuộc hội thoại
-     * 101: Xóa người khỏi cuộc hội thoại
-     * 102: Đổi tên cuộc hội thoại
-     * 103: Đổi logo cuộc hội thoại
-     * 104: Thêm admin mới cho cuộc hội thoại
-     * 105: Xóa cuộc hội thoại
-     * 106: Xóa admin
-     * 107: là gửi nút like
-     */
+    */
     status: {
         type   : Number,
         default: 0
