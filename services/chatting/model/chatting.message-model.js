@@ -28,12 +28,15 @@ class Model extends BaseModel {
     }
 
     // Thêm tin nhắn mới
-    insert({ senderID, content, parentID, receivers, conversationID, status }) { 
+    insert({ senderID, content, parentID, receivers, conversationID, status, type }) { 
         const that = this;
         return new Promise(async (resolve) => {
             try {
                 if(!status){
                     status = 0;
+                }
+                if(!type){
+                    type = 0;
                 }
                 if (!checkObjectIDs(senderID, conversationID)) 
                     return resolve({ error: true, message: 'Params invalid', status : 400 });
@@ -68,7 +71,7 @@ class Model extends BaseModel {
                     if(parentID && !checkObjectIDs(parentID)) 
                         return resolve({ error: true, message: 'Params invalid', status : 400 });
 
-                    infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
+                    infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status, type });
                     if(!infoMessageAfterInserted)
                         return resolve({ error: true, message: 'Cant create message reply', status : 403 });
 
@@ -79,7 +82,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data : infoMessageAfterInserted, status : 200 });
                 }
 
-                infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
+                infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status, type });
                 if(!infoMessageAfterInserted)
                     return resolve({ error: true, message: 'Cant create message ', status : 403 });
 

@@ -8,7 +8,7 @@ exports.renderStatusCode = function ({resultAfterCallHandler, ctx }) {
         }
         isError = true
     }
-    
+
     if(!ctx){
         error = {
             message: 'error_render_satus_code_miss_ctx',
@@ -30,7 +30,7 @@ exports.renderStatusCode = function ({resultAfterCallHandler, ctx }) {
         console.log({error});
         return
     }
-    ctx.meta.$statusCode    = resultAfterCallHandler.status || 500 ;
+    ctx.meta.$statusCode    = resultAfterCallHandler.status  || 500;
     ctx.meta.$statusMessage = resultAfterCallHandler.message || 'success';
 
 };
