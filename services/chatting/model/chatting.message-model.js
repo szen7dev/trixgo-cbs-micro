@@ -1125,6 +1125,9 @@ class Model extends BaseModel {
             }
         });
     }
+
+
+    // Xuất báo cáo từ cuộc hội thoại
 }
 
 exports.MODEL = new Model;

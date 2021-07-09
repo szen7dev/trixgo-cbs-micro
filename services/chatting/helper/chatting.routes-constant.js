@@ -18,6 +18,7 @@ const CF_ROUTINGS_CHATTING = {
     GET_INFO_CONVERSATION_DRAFT             : `${BASE_ROUTE}${CONVERSATION}/draft/:conversationID`, //messsage/conversation/?key=abc&key2=2
     GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/link/:conversationID`, //messsage/conversation/?key=abc&key2=2
     GET_LIST_CONVERSATION_MISS_BY_USER_ID   : `${BASE_ROUTE}${CONVERSATION}/miss`, //messsage/conversation/?key=abc&key2=2
+    GET_LIST_CONVERSATION_FILE_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/file/:conversationID`, //messsage/conversation/?key=abc&key2=2
 
 
     // MESSAGE
