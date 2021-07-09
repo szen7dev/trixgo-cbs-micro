@@ -16,9 +16,9 @@ const CF_ROUTINGS_CHATTING = {
     GET_LIST_MEMBER_CONVERSATION_BY_ID      : `${BASE_ROUTE}${CONVERSATION}/members/:conversationID`, //messsage/conversation/:conversationID GET, PUT, DELETE
     GET_LIST_CONVERSATION_BY_KEY            : `${BASE_ROUTE}${CONVERSATION}`, //messsage/conversation/?key=abc&key2=2
     GET_INFO_CONVERSATION_DRAFT             : `${BASE_ROUTE}${CONVERSATION}/draft/:conversationID`, //messsage/conversation/?key=abc&key2=2
-    GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/link/:conversationID`, //messsage/conversation/?key=abc&key2=2
+    GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/links/:conversationID`, //messsage/conversation/?key=abc&key2=2
     GET_LIST_CONVERSATION_MISS_BY_USER_ID   : `${BASE_ROUTE}${CONVERSATION}/miss`, //messsage/conversation/?key=abc&key2=2
-    GET_LIST_CONVERSATION_FILE_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/file/:conversationID`, //messsage/conversation/?key=abc&key2=2
+    GET_LIST_CONVERSATION_FILE_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/files/:conversationID`, //messsage/conversation/?key=abc&key2=2
 
 
     // MESSAGE

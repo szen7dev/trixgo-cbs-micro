@@ -1,9 +1,9 @@
 "use strict";
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
-const Schema    = require('mongoose').Schema;
+const Schema                = require('mongoose').Schema;
 
-module.exports  = BASE_COLL("file", {
+module.exports  = DATABASE_MIDDLEWARE("file", {
     app: {
         type: Schema.Types.ObjectId,
         ref: 'app'

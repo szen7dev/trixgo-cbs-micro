@@ -1,7 +1,7 @@
-exports.renderStatusCode = function ({resultAfterCallHandler, ctx }) {
+exports.renderStatusCode = function ({ resultAfterCallHandler, ctx }) {
     let isError = false;
     let error = {};
-    if(!resultAfterCallHandler){
+    if(!resultAfterCallHandler || (resultAfterCallHandler && resultAfterCallHandler.error)){
         error = {
             message: 'error_render_satus_code_miss_resultAfterCallHandler',
             keyError : 'resultAfterCallHandler'
@@ -25,8 +25,9 @@ exports.renderStatusCode = function ({resultAfterCallHandler, ctx }) {
         }
         isError = true
     }
-
     if(isError){
+        ctx.meta.$statusCode    = 500;
+        ctx.meta.$statusMessage = 'server error';
         console.log({error});
         return
     }
