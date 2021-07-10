@@ -55,7 +55,7 @@ module.exports = {
 	* Service started lifecycle event handler
 	*/
 	async started() {
-
+		// start begin script
 	},
 
 	/**
