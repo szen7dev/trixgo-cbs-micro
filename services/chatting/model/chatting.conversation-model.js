@@ -8,7 +8,7 @@ const AUTH__USER_COLL                           = require('../../auth/database/a
 const FILE__FILE_COLL                           = {};
 const FILE__REMOVED_MODEL                       = {};
 
-const { checkObjectIDs }                            = require('../../../tools/utils/utils');
+const { checkObjectIDs, checkParametersModel }                            = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 /**

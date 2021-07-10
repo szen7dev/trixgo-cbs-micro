@@ -169,7 +169,7 @@ exports._isValid = _isValid;
  *  ...
     }
  */
-exports.checkObjectIDs = (...params) => {
+function _checkObjectIDs(...params){
     let flag = true;
     let arrParams = lodash.flattenDeep(params);
     for(let i = 0; i < arrParams.length; i++) {
@@ -178,6 +178,8 @@ exports.checkObjectIDs = (...params) => {
     }
     return flag;
 }
+
+exports.checkObjectIDs = _checkObjectIDs
 
 let stringDomain = [
     '.com', '.vn', '.edu', '.net', '.org', '.gov', '.info', 
@@ -222,4 +224,36 @@ exports.sortObject = (o) => {
         sorted[a[key]] = o[a[key]];
     }
     return sorted;
+}
+
+
+exports.checkParametersModel = (data, checkValue)=>{
+    if(!data || !checkValue)
+        return { error: true, message: `Request params invalid` }
+    
+    switch (checkValue) {
+        case 'number':
+            for(let i = 0; i < data.length; i++){
+                let key = Object.keys(data[i])
+                console.log({1111 : isNaN(data[i][key[0]])})
+                if(isNaN(data[i][key[0]])){
+                    return { error: true, message:  `Request params ${key} invalid` }
+                }
+                if(typeof data[i][key[0]] != 'number')
+                    return { error: true, message:  `Request params ${key} invalid` }
+            }
+            return  { error: false }
+
+        case 'objectID':
+            for(let i = 0; i < data.length; i++){
+                let key = Object.keys(data[i])
+                if(!_checkObjectIDs(data[i][key[0]])){
+                    return { error: true, message: `Request params ${key} invalid` }
+                }
+            }
+            return  { error: false }
+        default:
+            return  { error: true, message: `Request params ${key} invalid` }
+    }
+   
 }
