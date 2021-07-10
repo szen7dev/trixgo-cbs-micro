@@ -16,7 +16,8 @@ const FILE__REMOVED_MODEL                           = {}
 // Tools
 const BaseModel                                     = require('../../../tools/db/base_model');
 const ObjectID                                      = require('mongoose').Types.ObjectId;
-const { checkObjectIDs, objectID }                            = require('../../../tools/utils/utils');
+const { checkObjectIDs, objectID, 
+    checkParametersModel }                          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 
@@ -28,15 +29,18 @@ class Model extends BaseModel {
     }
 
     // Thêm tin nhắn mới
-    insert({ senderID, content, parentID, receivers, conversationID, status }) { 
+    insert({ senderID, content, parentID, receivers, conversationID, status, type }) { 
         const that = this;
         return new Promise(async (resolve) => {
             try {
                 if(!status){
                     status = 0;
                 }
+                if(!type){
+                    type = 0;
+                }
                 if (!checkObjectIDs(senderID, conversationID)) 
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
                 
                 let arrReceiver = receivers;
                 // if(receivers && receivers.includes(',')) {
@@ -46,11 +50,11 @@ class Model extends BaseModel {
                 // }
                 arrReceiver.forEach(receiver =>{
                     if(receiver && !checkObjectIDs(receiver))
-                        return resolve({ error: true, message: 'Params invalid', status : 400 });
+                        return resolve({ error: true, message: 'Params invalid' });
                 })
                 
                 if(!Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
 
                 
                 // kiểm tra các receivers có phải là members trong cuộc hội thoại
@@ -66,9 +70,9 @@ class Model extends BaseModel {
                 // Kiểm tra parentID => tính năng reply tin nhắn
                 if(parentID) {
                     if(parentID && !checkObjectIDs(parentID)) 
-                        return resolve({ error: true, message: 'Params invalid', status : 400 });
+                        return resolve({ error: true, message: 'Params invalid' });
 
-                    infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
+                    infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status, type });
                     if(!infoMessageAfterInserted)
                         return resolve({ error: true, message: 'Cant create message reply', status : 403 });
 
@@ -79,7 +83,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data : infoMessageAfterInserted, status : 200 });
                 }
 
-                infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status });
+                infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status, type });
                 if(!infoMessageAfterInserted)
                     return resolve({ error: true, message: 'Cant create message ', status : 403 });
 
@@ -113,7 +117,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs(senderID, conversationID)) 
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });    
+                    return resolve({ error: true, message: 'Params invalid' });    
 
                 let arrReceiver = receivers;
                 // if(receivers && receivers.includes(',')) {
@@ -123,10 +127,10 @@ class Model extends BaseModel {
                 // }
                 arrReceiver.forEach(receiver =>{
                     if(!checkObjectIDs(receiver))
-                        return resolve({ error: true, message: 'Params invalid', status : 400 });
+                        return resolve({ error: true, message: 'Params invalid' });
                 })
                 if(!Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
 
                 
                 // kiểm tra các receivers có phải là members trong cuộc hội thoại
@@ -183,7 +187,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(messageID) || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
 
                 let infoUpdateMessage;
                 
@@ -210,7 +214,7 @@ class Model extends BaseModel {
                 const page = Number(currentPage) || 1;
                 const perPage = 5;
                 if(!checkObjectIDs(conversationID))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
 
                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
                         _id: conversationID ,
@@ -297,7 +301,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(conversationID))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
 
                 let infoMessageAfterRemoved = await CHATTING__MESSAGE_COLL.find({ conversation: conversationID});
                 if(!infoMessageAfterRemoved)
@@ -328,63 +332,66 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
+   
     // lấy toàn bộ các tin nhắn trong cuộc hội thoại phân trang
-    getMessageByConversationIDWithPage({ conversationID, currentPage, userID, nextInfo }){
+    getMessageByConversationIDWithPage({ conversationID, userID, currentPage, latestMessageID }){
         return new Promise(async(resolve)=>{
             try {
-                const page = Number(currentPage) || 1;
-                const perPage = 15;
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
+             
+                let checkParamsPage   =   checkParametersModel([{currentPage}], 'number');
+                if(checkParamsPage.error)
+                    return resolve(checkParamsPage)
 
-                let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
+                let page      = Number(currentPage) || 1;
+                const perPage   = 15;
+
+                if(latestMessageID && checkObjectIDs(latestMessageID)){
+                    page = 2;
+                }
+
+
+                let checkParamsObjectID;
+                // Nếu page =1  thì không cần kiểm tra latestMessageID
+                if(page == 1){
+                    checkParamsObjectID   =  checkParametersModel([{conversationID}, {userID} ], 'objectID');
+                    if(checkParamsObjectID.error)
+                        return resolve(checkParamsObjectID)
+                }
+
+                // Nếu page > 1  thì không cần latestMessageID để lấy thông tin tin nhắn
+                if(page > 1){
+                    checkParamsObjectID   =  checkParametersModel([{conversationID}, {userID}, {latestMessageID}], 'objectID');
+                    if(checkParamsObjectID.error)
+                        return resolve(checkParamsObjectID)
+                }
+
+                let checkExistConversation  =  await CHATTING__CONVERSATION_COLL.find({
                     _id: conversationID ,
                     members: { $all: [userID] }
                 });
-
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Permission denied', status : 403 });
+                    return resolve({ error: true, message: 'Permission denied' });
                 
-                
-               let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
+                let infoMessage;
+                if(page > 1){
+                    infoMessage             =  await CHATTING__MESSAGE_COLL.findById(latestMessageID);
+                    if(!infoMessage)
+                        return resolve({ error: true, message: 'info message exist denied' });
+                }
+                let nextInfo;
+                if(page > 1){
+                    nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+                }   
+
+                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
                
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'request params nextInfo invalid', status : 400 });
+                    return resolve({ error: true, message: 'request params nextInfo invalid' });
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
                 ObjectSearch.conversation   =  objectID(conversationID);
                 let _sort = dataPaggingAndSort.data.sort;
-                // console.log({ObjectSearch});
-
-                    // let listMessage = await CHATTING__MESSAGE_COLL.aggregate([
-                    //     {
-                    //         $match:  ObjectSearch
-                            
-                    //     }, 
-                    //     {
-                    //         $project : { 
-                    //             year : {$year : "$createAt" || "$createdAt"},
-                    //             month : {$month : "$createAt"|| "$createdAt"},
-                    //             day : {$dayOfMonth : "$createAt"|| "$createdAt"},
-                    //             content : 1,
-                    //             files : 1,
-                    //             receivers : 1,
-                    //             sender : 1,
-                    //             conversation : 1,
-                    //             parent : 1,
-                    //             status : 1,
-                    //             createAt : 1,
-                    //             createdAt : 1
-
-
-                    //         }
-                    //     },
-                    //     {
-                    //         $sort:{ createAt : -1 }
-                    //     },
-                    //     { $limit : perPage }
-                    // ])
                 let listMessage = await CHATTING__MESSAGE_COLL.find(ObjectSearch)
                     // .populate({ 
                     //     path: 'files',
@@ -415,10 +422,19 @@ class Model extends BaseModel {
                 .limit(perPage)
                 .sort( dataPaggingAndSort.data.sort );
 
-                
-                return resolve({ error: false, data : listMessage, page, status: 200 });
+
+                let _toltal            =  CHATTING__MESSAGE_COLL.count({ conversation : conversationID });
+                let _toltalCheckExPage =  CHATTING__MESSAGE_COLL.count(ObjectSearch);
+                let [ toltal , toltalCheckExPage ] = await Promise.all([ _toltal, _toltalCheckExPage ])
+                let currrentPageCheckEx = 0;
+                if(toltalCheckExPage && toltal){
+                    currrentPageCheckEx = (toltal-toltalCheckExPage)/perPage;
+                    currrentPageCheckEx = currrentPageCheckEx + 1;
+                }
+
+                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltal } });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message });
             }
         })
     }
@@ -566,7 +582,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID) || !checkObjectIDs(authorID) )
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
                 let arrUser = [authorID]
                 let checkExistMessage = await CHATTING__MESSAGE_COLL.findOne({
                      _id : messageID,
@@ -1007,7 +1023,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Params invalid' });
                 // status = 2 trạn thái đã nhận tin nhắn , tin nhắn đã gửi thành công
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!infoMessage)
@@ -1122,6 +1138,9 @@ class Model extends BaseModel {
             }
         });
     }
+
+
+    // Xuất báo cáo từ cuộc hội thoại
 }
 
 exports.MODEL = new Model;

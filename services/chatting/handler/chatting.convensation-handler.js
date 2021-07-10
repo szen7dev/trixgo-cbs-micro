@@ -1,11 +1,12 @@
 let CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
 let CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
 let CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
+let CHATTING__CONVERSATION_FILE_MODEL               = require('../model/chatting.conversation_file-model').MODEL;
 
-let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
+let { CF_DATA_DEMO_CHATTING }                       = require('../helper/chatting.data-demo-constant')
 
 //tools
-let { renderStatusCode }                 = require('../../../tools/utils/status_code');
+let { renderStatusCode }                            = require('../../../tools/utils/status_code');
 
 module.exports = {
 
@@ -31,6 +32,7 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -39,23 +41,23 @@ module.exports = {
     // Lấy danh sách cuộc hội thoại của một người dùng
     getListConversationByUserID: {
         params: {
-            currentPage     : { type: "string" },
-            nextInfo        : { type: "string" },
-            userID          : { type: "string" },
-
+            currentPage             : { type: "string" },
+            userID                  : { type: "string" },
+            lastestConversationID   : { type: "string" },
         },
         async handler(ctx) {
             try {
-                let {  currentPage, nextInfo, userID }        = ctx.params;
+                let {  currentPage, userID, lastestConversationID }        = ctx.params;
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
                 // await this.validateEntity(name);
                 // if(!nextInfo){
                 //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
                 // }
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage, nextInfo });
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage : Number(currentPage), lastestConversationID });
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -79,6 +81,7 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -102,6 +105,7 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -124,6 +128,7 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -145,6 +150,7 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
                 return infoConversationDraft;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -166,6 +172,7 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
                 return infoConversationDraft;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
@@ -186,10 +193,34 @@ module.exports = {
                 renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
                 return infoConversationDraft;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }
     },
+
+    // Lấy danh sách file trong một cuộc hội thoại
+    getFileConversationByID: {
+        params: {
+            conversationID      : { type: "string" },
+            currentPage         : { type: "string" },
+            nextInfo            : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let { conversationID, currentPage, nextInfo }        = ctx.params;
+                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+                // await this.validateEntity(name);
+                let infoConversationDraft = await CHATTING__CONVERSATION_FILE_MODEL.getListWithPage({ conversationID, userID: CF_DATA_DEMO_CHATTING.userID_1, currentPage, nextInfo })
+                renderStatusCode({ resultAfterCallHandler: infoConversationDraft, ctx })
+                return infoConversationDraft;
+            } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
     //================================================================ END CONVERSATION  ============================================================
 
 }
