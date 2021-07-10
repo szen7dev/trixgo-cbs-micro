@@ -269,18 +269,31 @@ class Model extends BaseModel {
 
     */
     // Lấy danh sách các cuộc hội thoại của một người dùng 
-    getListConversationByAuthorID({ authorID, currentPage, nextInfo }){
+    getListConversationByAuthorID({ authorID, currentPage, lastestConversationID }){
         const that = this;
 
         return new Promise(async resolve => {
             try {
-                const page  = Number(currentPage) || 1;
+                let checkParamsPage   =   checkParametersModel([{currentPage}], 'number');
+                if(checkParamsPage.error)
+                    return resolve(checkParamsPage)
+                    
+                let page    = Number(currentPage) || 1;
                 let perPage = 20;
                 let listConversation;
 
+                if(lastestConversationID && checkObjectIDs(lastestConversationID)){
+                    page = 2;
+                }
+
                 if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: '400 Bab request params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Request params authorID invalid'});
                     
+                if(page > 1){
+                    if(!checkObjectIDs(lastestConversationID)){
+                        return resolve({ error: true, message: 'Request params lastestConversationID invalid'});
+                    }
+                }
                 // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
                 
                 let _sort = {
@@ -288,10 +301,19 @@ class Model extends BaseModel {
                     creatAt: -1
                 }
                 let ObjectSearch            = {};
+
                 if(page!=1){
+                    let  conversationInfo      =  await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                    if(!conversationInfo)
+                        return resolve({ error: true, message: 'info last Conversation exits' });
+                    let nextInfo;
+                    if(page > 1){
+                        nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
+                    }   
+                    
                     let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
                     if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: '400 Bab request params invalid', status : 400 });
+                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
 
                     _sort                               =  dataPaggingAndSort.data.sort
                     ObjectSearch                        = dataPaggingAndSort.data.find;
@@ -328,11 +350,19 @@ class Model extends BaseModel {
                 )
                 .limit(perPage);
                 
-                let amoutConverMiss  = await CHATTING__CONVERSATION_COLL.count({ arrMissMessage :  { $elemMatch: { userID:authorID, amout: { $gte: 1} } } })
+                let _toltal            =  CHATTING__CONVERSATION_COLL.count({ members  : { $in: [ObjectID(authorID)] }});
+                let _toltalCheckExPage =  CHATTING__CONVERSATION_COLL.count(ObjectSearch);
+                let [ toltal , toltalCheckExPage ] = await Promise.all([ _toltal, _toltalCheckExPage ])
+                let currrentPageCheckEx = 0;
+                if(toltalCheckExPage && toltal){
+                    currrentPageCheckEx = (toltal-toltalCheckExPage)/perPage;
+                    currrentPageCheckEx = currrentPageCheckEx + 1;
+                }
+
                 
-                return resolve({ error: false, data: listConversation, amoutConverMiss,  status : 200 });
+                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltal } });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message });
             }
         })
     }

@@ -235,7 +235,6 @@ exports.checkParametersModel = (data, checkValue)=>{
         case 'number':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
-                console.log({1111 : isNaN(data[i][key[0]])})
                 if(isNaN(data[i][key[0]])){
                     return { error: true, message:  `Request params ${key} invalid` }
                 }

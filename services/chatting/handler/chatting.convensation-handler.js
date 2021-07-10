@@ -41,20 +41,19 @@ module.exports = {
     // Lấy danh sách cuộc hội thoại của một người dùng
     getListConversationByUserID: {
         params: {
-            currentPage     : { type: "string" },
-            nextInfo        : { type: "string" },
-            userID          : { type: "string" },
-
+            currentPage             : { type: "string" },
+            userID                  : { type: "string" },
+            lastestConversationID   : { type: "string" },
         },
         async handler(ctx) {
             try {
-                let {  currentPage, nextInfo, userID }        = ctx.params;
+                let {  currentPage, userID, lastestConversationID }        = ctx.params;
                 // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
                 // await this.validateEntity(name);
                 // if(!nextInfo){
                 //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
                 // }
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage, nextInfo });
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage : Number(currentPage), lastestConversationID });
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {

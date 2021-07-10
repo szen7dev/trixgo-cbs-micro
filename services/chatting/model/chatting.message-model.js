@@ -374,13 +374,13 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Permission denied' });
                 
                 let infoMessage;
-                if(page != 1){
+                if(page > 1){
                     infoMessage             =  await CHATTING__MESSAGE_COLL.findById(latestMessageID);
                     if(!infoMessage)
                         return resolve({ error: true, message: 'info message exist denied' });
                 }
                 let nextInfo;
-                if(page != 1){
+                if(page > 1){
                     nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
                 }   
 
@@ -432,8 +432,6 @@ class Model extends BaseModel {
                     currrentPageCheckEx = currrentPageCheckEx + 1;
                 }
 
-             
-                
                 return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltal } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
