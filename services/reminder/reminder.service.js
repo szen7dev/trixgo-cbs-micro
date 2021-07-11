@@ -80,12 +80,6 @@ module.exports = {
 			console.error({ runDefineTask_error: error });
 			process.exit(-1);
 		});
-
-		// ---------demo PRODUCER ---------//
-		// let timeScheduler = new Date(Date.now() + 10000);
-		// for(let i = 0; i<10; i++) {
-		// 	agenda.schedule(timeScheduler, 'reminder_birthday');
-		// }
 	},
 
 	/**
