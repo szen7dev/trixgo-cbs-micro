@@ -26,12 +26,14 @@ exports.renderStatusCode = function ({ resultAfterCallHandler, ctx }) {
         isError = true
     }
     if(isError){
-        ctx.meta.$statusCode    = 500;
+        ctx.meta.$statusCode    = resultAfterCallHandler && resultAfterCallHandler.status || 500;
         ctx.meta.$statusMessage = 'server error';
-        console.log({error});
+        // Log for dev
+        console.log({ errorRenderStatusCode:error });
         return
     }
-    ctx.meta.$statusCode    = resultAfterCallHandler.status  || 500;
+    // ctx.meta.$statusCode    = resultAfterCallHandler.status  || 500;
+    ctx.meta.$statusCode    = 200;
     ctx.meta.$statusMessage = resultAfterCallHandler.message || 'success';
 
 };

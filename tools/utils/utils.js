@@ -3,6 +3,8 @@ const lodash                             = require("lodash");
 const ObjectID                           = require('mongoose').Types.ObjectId;
 exports.objectID                         = require('mongoose').Types.ObjectId;
 
+const NUMBER_UTILS = require('./number_utils');
+
 exports.isEmpty = function (value) {
     return typeof value == 'string'
         && !value.trim()
@@ -226,8 +228,8 @@ exports.sortObject = (o) => {
     return sorted;
 }
 
-
-exports.checkParametersModel = (data, checkValue)=>{
+// HuynhVinh
+function _checkParametersModel(data, checkValue){
     if(!data || !checkValue)
         return { error: true, message: `Request params invalid` }
     
@@ -236,23 +238,47 @@ exports.checkParametersModel = (data, checkValue)=>{
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
                 if(isNaN(data[i][key[0]])){
-                    return { error: true, message:  `Request params ${key} invalid` }
+                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
                 }
                 if(typeof data[i][key[0]] != 'number')
-                    return { error: true, message:  `Request params ${key} invalid` }
+                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
             }
             return  { error: false }
-
+        case 'interger':
+            for(let i = 0; i < data.length; i++){
+                let key = Object.keys(data[i])
+                if(isNaN(data[i][key[0]])){
+                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
+                }
+                if(typeof data[i][key[0]] != 'number')
+                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
+                
+                if(!NUMBER_UTILS.isInt(data[i][key[0]]))
+                    return { error: true, message:  `Request params  key ${key} hadn't been interger` }
+            }
+            return  { error: false }
+    
         case 'objectID':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
                 if(!_checkObjectIDs(data[i][key[0]])){
-                    return { error: true, message: `Request params ${key} invalid` }
+                    return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
                 }
             }
             return  { error: false }
         default:
-            return  { error: true, message: `Request params ${key} invalid` }
+            return  { error: true, message: `Request params key ${key} invalid` }
     }
    
 }
+exports.checkParametersModel = _checkParametersModel;
+// HuynhVinh
+function _checkPointDotsAndRoundingNumberForPagingChatting(total, perPage){
+    let newToltalCheckPage = `${total/perPage }`;
+    if(newToltalCheckPage.includes('.')){
+        let numberBeforePoint = newToltalCheckPage.slice(0, newToltalCheckPage.includes('.')+1)
+        return Number(numberBeforePoint) + 1;
+    }
+    return Number(total/perPage) + 1;
+}
+exports.checkPointDotsAndRoundingNumberForPagingChatting = _checkPointDotsAndRoundingNumberForPagingChatting;

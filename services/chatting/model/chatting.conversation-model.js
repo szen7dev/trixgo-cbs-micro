@@ -8,7 +8,7 @@ const AUTH__USER_COLL                           = require('../../auth/database/a
 const FILE__FILE_COLL                           = {};
 const FILE__REMOVED_MODEL                       = {};
 
-const { checkObjectIDs, checkParametersModel }                            = require('../../../tools/utils/utils');
+const { checkObjectIDs, checkParametersModel, checkPointDotsAndRoundingNumberForPagingChatting }                            = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 /**
@@ -274,9 +274,10 @@ class Model extends BaseModel {
 
         return new Promise(async resolve => {
             try {
-                let checkParamsPage   =   checkParametersModel([{currentPage}], 'number');
-                if(checkParamsPage.error)
-                    return resolve(checkParamsPage)
+                let checkParamsPage   =   checkParametersModel([{currentPage : Number(currentPage)}], 'interger');
+                if(checkParamsPage.error  || Number(currentPage)<=0)
+                    return resolve({ error: true, message: 'Request params currentPage invalid'});
+
                     
                 let page    = Number(currentPage) || 1;
                 let perPage = 20;
@@ -349,21 +350,39 @@ class Model extends BaseModel {
                    }
                 )
                 .limit(perPage);
-                
-                let _toltal            =  CHATTING__CONVERSATION_COLL.count({ members  : { $in: [ObjectID(authorID)] }});
-                let _toltalCheckExPage =  CHATTING__CONVERSATION_COLL.count(ObjectSearch);
-                let [ toltal , toltalCheckExPage ] = await Promise.all([ _toltal, _toltalCheckExPage ])
-                let currrentPageCheckEx = 0;
-                if(toltalCheckExPage && toltal){
-                    currrentPageCheckEx = (toltal-toltalCheckExPage)/perPage;
-                    currrentPageCheckEx = currrentPageCheckEx + 1;
+
+                let toltalConversationPagePromise            =  CHATTING__CONVERSATION_COLL.count({ members  : { $in: [ObjectID(authorID)] }});
+                let toltalCheckExCunrrentPagePromise         =  CHATTING__CONVERSATION_COLL.count(ObjectSearch);
+                let [ toltalConversationPage , toltalCheckExCunrrentPage ] = await Promise.all([ toltalConversationPagePromise, toltalCheckExCunrrentPagePromise ])
+              
+                let currrentPageCheckEx     = 0;
+
+                // Kiểm tra hai kết quả count là number thì tiếp tục tính toán toltalPage và xác định current Page
+                // Xác định lại currentPage về khi nếu truyền current =3 mà req lấy lastestConversationID của page --> data đó của page
+                // Nên nếu req có sai currentPage thì vẫn trả về data và currentPage đúng cũng dữ liệu này
+                let checkParamsToltalPage   = checkParametersModel([{toltalCheckExCunrrentPage}, {currrentPageCheckEx}], 'number');
+                if(!checkParamsToltalPage.error){
+
+                    //Tính toán currentPage hiện tại chính xác (currentPageExcellent)
+                    let valueCurrentPage    = toltalConversationPage - toltalCheckExCunrrentPage;
+                    if(valueCurrentPage === 0){
+                        currrentPageCheckEx = 1;
+                    }
+                    if(valueCurrentPage!=0 && valueCurrentPage >0){
+                        currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
+                    }
+
+                    // Tính toán toltalPage
+                    toltalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(toltalConversationPage, perPage);
+
+                }else{
+
+                    // Nếu không phải là số có ---> các giá trị trả về là  1
+                    currrentPageCheckEx     = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
+                    toltalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
                 }
-                let newToltalCheckExPage = `${toltal/perPage }`;
-                if(newToltalCheckExPage.includes('.')){
-                    let numberBeforePoint = newToltalCheckExPage.slice(0, newToltalCheckExPage.includes('.')+1)
-                    toltal = Number(numberBeforePoint) + 1;
-                }
-                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltalPage : toltal  } });
+
+                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltalPage : toltalConversationPage  } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

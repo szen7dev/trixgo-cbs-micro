@@ -1,6 +1,7 @@
 let CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
 let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
 
+let { renderStatusCode }                            = require('../../../tools/utils/status_code');
 
 module.exports = {
     // EXAMPLE
@@ -40,22 +41,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 let {  currentPage, conversationID, userID, latestMessageID }        = ctx.params;
-
-                // if(!conversationID){
-                //     conversationID = '602c7a51ea1d1274020b2e08';
-                // }
-                // if(!currentPage){
-                //     currentPage = 1;
-                // }
-                //'5e60f58cf63b8a4e196a1942'
-                // if(!nextInfo){
-                //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
-                // }
-                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ latestMessageID, conversationID, userID, currentPage : Number(currentPage) });
-                ctx.meta.$statusCode    = resultAfterCallHandler.status     || 500 ;
-                ctx.meta.$statusMessage = resultAfterCallHandler.message    || 'success';
+                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ latestMessageID, conversationID, userID, currentPage });
+                renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
+                renderStatusCode({ resultAfterCallHandler: null, ctx })
                 return { error:  true, message: error.message };
             }
         }

@@ -16,8 +16,7 @@ const FILE__REMOVED_MODEL                           = {}
 // Tools
 const BaseModel                                     = require('../../../tools/db/base_model');
 const ObjectID                                      = require('mongoose').Types.ObjectId;
-const { checkObjectIDs, objectID, 
-    checkParametersModel }                          = require('../../../tools/utils/utils');
+const { checkObjectIDs, objectID, checkParametersModel, checkPointDotsAndRoundingNumberForPagingChatting }                          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 
 
@@ -338,18 +337,16 @@ class Model extends BaseModel {
     getMessageByConversationIDWithPage({ conversationID, userID, currentPage, latestMessageID }){
         return new Promise(async(resolve)=>{
             try {
+                let checkParamsPage   =   checkParametersModel([{currentPage : Number(currentPage)}], 'interger');
+                if(checkParamsPage.error || Number(currentPage)<=0)
+                    return resolve({ error: true, message: 'Request params currentPage invalid'});
              
-                let checkParamsPage   =   checkParametersModel([{currentPage}], 'number');
-                if(checkParamsPage.error)
-                    return resolve(checkParamsPage)
-
-                let page      = Number(currentPage) || 1;
+                let page        = Number(currentPage) || 1;
                 const perPage   = 15;
 
                 if(latestMessageID && checkObjectIDs(latestMessageID)){
                     page = 2;
                 }
-
 
                 let checkParamsObjectID;
                 // Nếu page =1  thì không cần kiểm tra latestMessageID
@@ -423,22 +420,34 @@ class Model extends BaseModel {
                 .sort( dataPaggingAndSort.data.sort );
 
 
-                let _toltal            =  CHATTING__MESSAGE_COLL.count({ conversation : conversationID });
-                let _toltalCheckExPage =  CHATTING__MESSAGE_COLL.count(ObjectSearch);
-                let [ toltal , toltalCheckExPage ] = await Promise.all([ _toltal, _toltalCheckExPage ])
-                let currrentPageCheckEx = 0;
-                if(toltalCheckExPage && toltal){
-                    currrentPageCheckEx = (toltal-toltalCheckExPage)/perPage;
-                    currrentPageCheckEx = currrentPageCheckEx + 1;
+                let toltalPagePromise               =  CHATTING__MESSAGE_COLL.count({ conversation : conversationID });
+                let toltalCheckExPagePromise        =  CHATTING__MESSAGE_COLL.count(ObjectSearch);
+                let [ toltalPageMessage , toltalCheckExCunrrentPage ] = await Promise.all([ toltalPagePromise, toltalCheckExPagePromise ]);
+
+                // Kiểm tra hai kết quả count là number thì tiếp tục tính toán toltalPage và xác định current Page
+                // Xác định lại currentPage về khi nếu truyền current =3 mà req lấy latestMessageID của page --> data đó của page
+                // Nên nếu req có sai currentPage thì vẫn trả về data và currentPage đúng cũng dữ liệu này
+                let currrentPageCheckEx     = 0;
+                let checkParamsToltalPage   = checkParametersModel([{toltalCheckExCunrrentPage}, {toltalPageMessage}], 'number');
+                if(!checkParamsToltalPage.error){
+
+                    //Tính toán currentPage hiện tại chính xác (currentPageExcellent)
+                    let valueCurrentPage    = toltalPageMessage - toltalCheckExCunrrentPage;
+                    if(valueCurrentPage === 0){
+                        currrentPageCheckEx = 1;
+                    }
+                    if(valueCurrentPage!=0 && valueCurrentPage >0){
+                        currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
+                    }
+                    
+                    // Tính toán toltalPage
+                    toltalPageMessage       = checkPointDotsAndRoundingNumberForPagingChatting(toltalPageMessage, perPage);
+                }else{
+                    currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
+                    toltalPageMessage   = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
                 }
 
-                let newToltalCheckExPage = `${toltalCheckExPage/perPage }`;
-                if(newToltalCheckExPage.includes('.')){
-                    let numberBeforePoint = newToltalCheckExPage.slice(0, newToltalCheckExPage.includes('.')+1)
-                    toltalCheckExPage = Number(numberBeforePoint) + 1;
-                }
-               
-                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltalPage : toltalCheckExPage } });
+                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltalPage : toltalPageMessage } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
