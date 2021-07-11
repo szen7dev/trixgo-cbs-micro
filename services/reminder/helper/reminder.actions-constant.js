@@ -6,8 +6,9 @@ const BASE_ACTIONS = 'ACT_EXAMPLE';
 const CASE_1      = 'CASE_1';
 const CASE_2      = 'CASE_2';
 
-const CF_ACTIONS_EXAMPLE = {
-    CASE_1_GET_LIST                        : `${BASE_ACTIONS}_${CASE_1}_CASE_1_GET_LIST`,
+const CF_ACTIONS_REMINDER = {
+    // CASE_1_GET_LIST                        : `${BASE_ACTIONS}_${CASE_1}_CASE_1_GET_LIST`,
+    ADD_JOB                        : `${BASE_ACTIONS}_ADD_JOB`,
 }
 
-exports.CF_ACTIONS_EXAMPLE = CF_ACTIONS_EXAMPLE;
+exports.CF_ACTIONS_REMINDER = CF_ACTIONS_REMINDER;

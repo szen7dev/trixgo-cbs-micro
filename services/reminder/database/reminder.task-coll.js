@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("reminder_core", {
+module.exports  = DATABASE_MIDDLEWARE("reminder_task", {
     /**
      * VÍ DỤ
      *  type: 'REMINDER_TASK': nhắc công việc

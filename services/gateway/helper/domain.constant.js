@@ -4,6 +4,7 @@ let CF_DOMAIN_SERVICES = {
     AUTH        : 'auth',
     CHATTING    : 'message',
     PAYMENT     : 'payment',
+    REMINDER    : 'reminder',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

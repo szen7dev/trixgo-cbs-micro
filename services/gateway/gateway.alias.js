@@ -16,6 +16,7 @@ const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
+const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -24,6 +25,7 @@ const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-cons
  const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
  const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
  const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
+ const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
  
 
 module.exports = {
@@ -93,7 +95,11 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.CREATE_URL_PAYMENT}`],
 
 		[`GET ${CF_ROUTINGS_PAYMENT.URL_RETURN_PAYMENT}`] : 
-		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`]
+		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],
+
+		//--------------------------aliases's REMINDER service--------------------------//
+		[`GET ${CF_ROUTINGS_REMINDER.ADD_JOB}`] : 
+		[`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB}`],
 	},
 
 	
