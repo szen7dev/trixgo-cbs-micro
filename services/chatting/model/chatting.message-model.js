@@ -432,7 +432,13 @@ class Model extends BaseModel {
                     currrentPageCheckEx = currrentPageCheckEx + 1;
                 }
 
-                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltal } });
+                let newToltalCheckExPage = `${toltalCheckExPage/perPage }`;
+                if(newToltalCheckExPage.includes('.')){
+                    let numberBeforePoint = newToltalCheckExPage.slice(0, newToltalCheckExPage.includes('.')+1)
+                    toltalCheckExPage = Number(numberBeforePoint) + 1;
+                }
+               
+                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltalPage : toltalCheckExPage } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

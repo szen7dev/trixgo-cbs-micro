@@ -358,9 +358,12 @@ class Model extends BaseModel {
                     currrentPageCheckEx = (toltal-toltalCheckExPage)/perPage;
                     currrentPageCheckEx = currrentPageCheckEx + 1;
                 }
-
-                
-                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltal } });
+                let newToltalCheckExPage = `${toltal/perPage }`;
+                if(newToltalCheckExPage.includes('.')){
+                    let numberBeforePoint = newToltalCheckExPage.slice(0, newToltalCheckExPage.includes('.')+1)
+                    toltal = Number(numberBeforePoint) + 1;
+                }
+                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltalPage : toltal  } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
