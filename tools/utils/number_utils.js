@@ -9,3 +9,12 @@ exports.priceFormat = function (num) {
 exports.baseFormatNumber = function (number, fixLength) {
     return utils.currencyFormat(number, fixLength);
 };
+
+//HuynhVinh
+exports.isInt = (value) => {
+    if (isNaN(value)) {
+      return false;
+    }
+    var x = parseFloat(value);
+    return (x | 0) === x;
+}

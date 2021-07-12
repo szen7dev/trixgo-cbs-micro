@@ -53,7 +53,7 @@ module.exports = {
                 // if(!nextInfo){
                 //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
                 // }
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage : Number(currentPage), lastestConversationID });
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ authorID: userID, currentPage, lastestConversationID });
                 renderStatusCode({ resultAfterCallHandler, ctx })
                 return resultAfterCallHandler;
             } catch (error) {
