@@ -230,8 +230,8 @@ exports.sortObject = (o) => {
 
 // HuynhVinh
 function _checkParametersModel(data, checkValue){
-    if(!data || !checkValue)
-        return { error: true, message: `Request params invalid` }
+    if(!data || !checkValue || !Array.isArray(data))
+        return { error: true, message: `  checkValue or data false when check Params ` }
     
     switch (checkValue) {
         case 'number':

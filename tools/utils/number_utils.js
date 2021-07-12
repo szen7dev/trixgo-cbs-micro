@@ -10,6 +10,7 @@ exports.baseFormatNumber = function (number, fixLength) {
     return utils.currencyFormat(number, fixLength);
 };
 
+//HuynhVinh
 exports.isInt = (value) => {
     if (isNaN(value)) {
       return false;

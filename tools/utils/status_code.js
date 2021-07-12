@@ -1,18 +1,19 @@
+//HuynhVinh 
 exports.renderStatusCode = function ({ resultAfterCallHandler, ctx }) {
     let isError = false;
-    let error = {};
+    let error   = {};
     if(!resultAfterCallHandler || (resultAfterCallHandler && resultAfterCallHandler.error)){
         error = {
-            message: 'error_render_satus_code_miss_resultAfterCallHandler',
-            keyError : 'resultAfterCallHandler'
+            message     : 'error_render_satus_code_miss_resultAfterCallHandler',
+            keyError    : 'resultAfterCallHandler'
         }
         isError = true
     }
 
     if(!ctx){
         error = {
-            message: 'error_render_satus_code_miss_ctx',
-            keyError : 'ctx'
+            message     : 'error_render_satus_code_miss_ctx',
+            keyError    : 'ctx'
         }
         isError = true
 
@@ -20,8 +21,8 @@ exports.renderStatusCode = function ({ resultAfterCallHandler, ctx }) {
 
     if(ctx && !ctx.meta){
         error = {
-            message: 'error_render_satus_code_miss_ctx.meta',
-            keyError : 'ctx.meta'
+            message     : 'error_render_satus_code_miss_ctx.meta',
+            keyError    : 'ctx.meta'
         }
         isError = true
     }
