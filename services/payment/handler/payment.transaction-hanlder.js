@@ -21,7 +21,7 @@ module.exports = {
                 let listTransactions = await PAYMENT__TRANSACTION_MODEL.getListTransactions({ status });
                 return listTransactions;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },

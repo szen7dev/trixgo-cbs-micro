@@ -1,7 +1,7 @@
 "use strict";
 const BaseModel                                 = require('../../../tools/db/base_model');
 const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.convensation-coll');
+const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
 const ObjectID                                  = require('mongoose').Types.ObjectId;
 

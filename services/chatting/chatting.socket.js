@@ -1,8 +1,7 @@
-//
-const { EVENT_SOCKET_CONSTANT_CHATTING } = require('./helper/chatting.events.socket-constant');
+const { EVENT_SOCKET_CONSTANT_CHATTING } = require('./helper/chatting.events-socket-constant');
 
 //TOOL
-const  { sendDataToMultilSocketsOfListUser } = require('../../tools/socket/index.js')
+const  { sendDataToMultilSocketsOfListUser } = require('../../tools/socket')
 const  { getLinkFromStringV1 } = require('../../tools/utils/utils.js')
 
 // MODEL
@@ -11,8 +10,6 @@ const  CHATTING__MESSAGE_MODEL                  = require('./model/chatting.mess
 const  CHATTING__CONVERSATION_MODEL             = require('./model/chatting.conversation-model').MODEL;
 const  CHATTING__CONVERSATION_DRAFT_MODEL       = require('./model/chatting.coversation_draft-model').MODEL;
 const  CHATTING__CONVERSATION_LINK_MODEL       = require('./model/chatring.conversation_link-model').MODEL;
-
-
 
 exports.CHATTING_SOCKET = {
 
@@ -60,8 +57,8 @@ exports.CHATTING_SOCKET = {
             let infoConversation    = await CHATTING__CONVERSATION_MODEL.insert({ name, description, receiverID, authorID });
             let infoUser            = await USER_MODEL.findById(userID);
             if(infoConversation.error){
-                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io})
-                return 
+                return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io})
+                 
             }
 
             sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io})
@@ -70,8 +67,7 @@ exports.CHATTING_SOCKET = {
         if(!chatPrivate){
             let infoConversation    = await CHATTING__CONVERSATION_MODEL.insertConversationMoreTowMember({ name, description, receivers, authorID });
             if(infoConversation.error){
-                sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID] , data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io})
-                return 
+                return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID] , data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io})
             }
 
             let infoUser            = await USER_MODEL.getDataById(userID);

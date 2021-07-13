@@ -16,7 +16,6 @@ exports.PAYMENT__TRANSACTION_SUCCESS    = `PAYMENT__TRANSACTION_SUCCESS`;
 exports.PAYMENT__TRANSACTION_FAIL       = `PAYMENT__TRANSACTION_FAIL`;
 
 // ----------------------------------------------------------------------------------------------- //
-
 /**
  * định nghĩa các EVENT mà SERVICE(PAYMENT) sẽ subscribe (nhận job từ các service khác)
  */

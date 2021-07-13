@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                                 = require('../../../tools/db/base_model');
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.convensation-coll');
+const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const CHATTING__CONVERSATION_DRAFT_COLL         = require('../database/chatting.conversation_draft-coll');
 const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 

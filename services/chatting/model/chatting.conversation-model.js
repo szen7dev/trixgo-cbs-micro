@@ -3,7 +3,7 @@
 const BaseModel                                 = require('../../../tools/db/base_model');
 const ObjectID                                  = require('mongoose').Types.ObjectId;
 
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.convensation-coll');
+const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 const FILE__FILE_COLL                           = {};
 const FILE__REMOVED_MODEL                       = {};
@@ -19,7 +19,7 @@ const CHATTING__MESSAGE_MODEL  = require('../model/chatting.message-model.js').M
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../database/chatting.convensation-coll'));
+        super(require('../database/chatting.conversation-coll'));
     }
 
     // Click vào một User trên danh sách => Tạo cuộc hội thoại riêng tư

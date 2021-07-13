@@ -4,8 +4,7 @@ const path 		= require("path");
 const mkdir 	= require("mkdirp").sync;
 
 const DbService	= require("moleculer-db");
-
-const { MONGODB_URL, DATABASE_MODE  } = require('../db/utils');
+const { MONGODB_URL, DATABASE_MODE } = require('../db/utils');
 
 module.exports = function(collection) {
 	const MongoAdapter = require("moleculer-db-adapter-mongoose");

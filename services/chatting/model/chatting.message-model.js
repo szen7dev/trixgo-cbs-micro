@@ -4,7 +4,7 @@ const path                                          = require('path');
 
 // Colls
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
-const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.convensation-coll');
+const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 const FILE__FILE_COLL                               = {}
 const REACTION_COLL                                 = {}
 

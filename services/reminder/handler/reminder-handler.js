@@ -9,7 +9,7 @@ let agenda;
     // Wait for agenda to connect. Should never fail since connection failures
     // should happen in the `await MongoClient.connect()` call.
     await new Promise(resolve => agenda.once('ready', resolve));
-})()
+})();
   
 module.exports = {
     addJob: {
