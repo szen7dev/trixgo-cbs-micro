@@ -260,7 +260,7 @@ class Model extends BaseModel {
     //                 const page = Number(currentPage) || 1;
     //                 const perPage = 5;
     //                 if(!checkObjectIDs(conversationID))
-    //                     return resolve({ error: true, message: 'invalid_object_id'});
+    //                     return resolve({ error: true, message: 'object_invalid'});
 
     //                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
     //                         _id: conversationID ,
@@ -463,7 +463,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID, conversationID, senderID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
 
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 
@@ -500,7 +500,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById( messageID )
                     // .populate({ 
                     //     path: 'files',
@@ -542,7 +542,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
 
                 let checkExitsMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!checkExitsMessage)
@@ -581,7 +581,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
                 let infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {content : 'Tin nhắn này đã được thu hồi'}, { new: true });
                 if(!infoMessage) 
                     return resolve({ error: true, message : 'cannot_update'});
@@ -776,7 +776,7 @@ class Model extends BaseModel {
                 }
 
                 if(!checkObjectIDs(messageID) || !checkObjectIDs(authorID)  )
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
 
                 let infoMessage = await CHATTING__MESSAGE_COLL.find({ _id : messageID });
                 if(infoMessage && infoMessage.length <1 ){
@@ -797,7 +797,7 @@ class Model extends BaseModel {
 
                 let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, dataUpdate, { new: true });
                 if(!infoMessageAfterUpdate)
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
 
                 return resolve({ error: false, data: infoMessageAfterUpdate });
 
@@ -811,7 +811,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID) || !checkObjectIDs(userID) )
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
                 
                 let exitMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!exitMessage)
@@ -832,7 +832,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
                 
                 let exitMessage = await CHATTING__MESSAGE_COLL.findOne({ _id : messageID, userFixedBug : userID });
                 if(!exitMessage)
@@ -861,7 +861,7 @@ class Model extends BaseModel {
         return new Promise(async(resolve)=>{
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
                 
                 let exitMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!exitMessage)
@@ -1066,7 +1066,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'invalid_object_id'});
+                    return resolve({ error: true, message: 'object_invalid'});
                 // status = 2 trạn thái đã nhận tin nhắn , tin nhắn đã gửi thành công
                 let infoMessage = await CHATTING__MESSAGE_COLL.find({ _id: messageID });
                 let conversationID = infoMessage[0].conversation;

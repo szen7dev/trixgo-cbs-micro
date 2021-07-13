@@ -6,7 +6,7 @@ const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_REMINDER } 	        = require('./helper/reminder.actions-constant');
-const REMINDER__CORE_HANLDER            = require('./handler/reminder-handler');
+const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.REMINDER,

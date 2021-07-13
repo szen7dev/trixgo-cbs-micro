@@ -6,10 +6,8 @@ let agenda;
     let client = await MongoClient.connect("mongodb://localhost:27017");
     agenda = new Agenda().mongo(client.db("agendatest"), "jobs");
   
-    // Wait for agenda to connect. Should never fail since connection failures
-    // should happen in the `await MongoClient.connect()` call.
     await new Promise(resolve => agenda.once('ready', resolve));
-})();
+})(); //IIFE func - run now
   
 module.exports = {
     addJob: {

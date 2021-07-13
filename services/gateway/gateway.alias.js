@@ -17,6 +17,7 @@ const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
 const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
+const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -26,6 +27,7 @@ const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-c
  const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
  const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
  const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
+ const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
  
 
 module.exports = {
@@ -98,8 +100,17 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.PAYMENT}.${CF_ACTIONS_PAYMENT.URL_RETURN_PAYMENT}`],
 
 		//--------------------------aliases's REMINDER service--------------------------//
-		[`GET ${CF_ROUTINGS_REMINDER.ADD_JOB}`] : 
+		[`GET ${CF_ROUTINGS_REMINDER.REMINDERS}`] : 
 		[`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB}`],
+
+		//--------------------------aliases's FILE service--------------------------//
+		[`POST ${CF_ROUTINGS_FILE.FILES}`] : 
+		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`],
+		[`PUT ${CF_ROUTINGS_FILE.FILES}`] : 
+		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`],
+
+		[`GET ${CF_ROUTINGS_FILE.GET_LIST_FILE_OF_USER_WITH_STATUS}`] : 
+		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_LIST_FILE_OF_USER_WITH_STATUS}`],
 	},
 
 	

@@ -5,6 +5,7 @@ let CF_DOMAIN_SERVICES = {
     CHATTING    : 'message',
     PAYMENT     : 'payment',
     REMINDER    : 'reminder',
+    FILE        : 'file',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

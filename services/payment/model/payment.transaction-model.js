@@ -19,7 +19,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'object_invalid' });
 
                 let infoAfterInsert = await that.insertData({ orderID, orderInfo, amount, bankCode, orderType, locale, user: userID, status, ipAddr });
 
@@ -69,7 +69,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'invalid_object_id' });
+                    return resolve({ error: true, message: 'object_invalid' });
 
                 let conditionObj = {
                     user: userID

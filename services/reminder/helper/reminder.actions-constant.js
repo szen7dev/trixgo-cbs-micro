@@ -1,5 +1,5 @@
 // liệt kê các actions của hệ thống
-const BASE_ACTIONS = 'ACT_EXAMPLE';
+const BASE_ACTIONS = 'ACT_REMINDER';
 /**
  * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
  */

@@ -39,6 +39,12 @@ const AUTH__USER_MODEL                          = require
     * Nếu sub-document được đảm bảo với số lượng ít, hoặc kiểm soát (VD: 1 category có tối đa 10 sản phẩm) -> việc phân trang dữ liệu sản phẩm thì cũng không có ý nghĩa -> không cần phân tách API (Chia để trị) => Có thể dùng phương án Populate Middleware
 
 - *[NodeJS]* Partioning: Handle Heavy Task (CPU-Intensive Task)
+- *[NodeJS]* CheckValid: 
+    * isEmptyObject
+    * isInt
+    * checkNumberIsValidWithRange: *ví dụ: status cần phải là number và valid với processing(0), success(1), error(-1)*
+    * checkDateValid
+    * _checkObjectIDs
 - *[NodeJS]* PromisePool: handle parallel task tốt hơn so với Promise.all
     * Error Hanler: Promise.all stop khi 1 trong các task error
     * Task Parallel: Khi Batch_1 done với task_1 -> tiếp tục run task_1 của Batch_2, **chứ không đợi Batch_1 done như Promise.all**
@@ -66,7 +72,8 @@ const AUTH__USER_MODEL                          = require
     currentKey = printStudents(currentKey, 10);
     }
 ```
-
+* *[NodeJS]* API lấy danh sách:
+    Trong quá trình triển khai, các **API GET_LIST** sẽ có thể lấy theo status, nên trong trường hợp này cần gửi yêu cầu status='all' để lấy list, còn lại ngoài giá trị all thì truyền các giá trị NUMBER để lấy theo status mong muốn
 * *[NodeJS]* Revoke Token:
     * Method 1: Gán Expired Time vào payload (jwt đã hỗ trợ)
     * Method 2: Tạo collection với 2 field: ***userID*** và ***jti(jwt id)***, Quản trị hệ thống có thể revoke theo device hoặc revoke all device(app, web) của user dựa vào bảng này

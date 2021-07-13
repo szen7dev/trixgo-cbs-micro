@@ -3,7 +3,7 @@ const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_CHATTING } 	        = require('./helper/chatting.actions-constant');
-const CHATTING__CONVERSATION_HANDLER    = require('./handler/chatting.convensation-handler');
+const CHATTING__CONVERSATION_HANDLER    = require('./handler/chatting.conversation-handler');
 const CHATTING__MESSAGE_HANDLER         = require('./handler/chatting.message-handler');
 
 module.exports = {
