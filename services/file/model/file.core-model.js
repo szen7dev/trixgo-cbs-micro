@@ -31,7 +31,7 @@ class Model extends BaseModel {
      *   lưu ý:
      *      app: là các name constant
      * */
-    insert({ app, name, status, url, size, userID }) {
+    insert({ app, name, url, size, userID }) {
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -55,7 +55,7 @@ class Model extends BaseModel {
                  */    
                 let userCreate = userID;
 
-                let infoAfterInsert = await that.insertData({ app, name, status, url, size, userCreate });
+                let infoAfterInsert = await that.insertData({ app, name, url, size, userCreate });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

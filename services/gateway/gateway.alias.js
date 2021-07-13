@@ -111,8 +111,9 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_FILE.GET_LIST_FILE_OF_USER_WITH_STATUS}`] : 
 		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_LIST_FILE_OF_USER_WITH_STATUS}`],
+		[`POST ${CF_ROUTINGS_FILE.GENERATE_LINK_S3}`] : 
+		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GENERATE_LINK_S3}`],
 	},
-
 	
 	// Disable to call not-mapped actions
 	mappingPolicy: "all", // Available values: "all", "restrict"

@@ -9,6 +9,8 @@ const CF_ROUTINGS_FILE = {
     FILES                                : `${BASE_ROUTE}`, //  GET, POST, PUT, DELETE /files
     FILE_DETAIL                          : `${BASE_ROUTE}/:fileID`, //  GET, POST, PUT, DELETE /files/:fileID
     GET_LIST_FILE_OF_USER_WITH_STATUS    : `${BASE_ROUTE}/users/:userID/status/:status`, // GET /files/users/:userID/status/:status
+
+    GENERATE_LINK_S3                     : `${BASE_ROUTE}/generate-link-s3`, // GET /files/generate-link-s3
 }
 
 exports.CF_ROUTINGS_FILE = CF_ROUTINGS_FILE;

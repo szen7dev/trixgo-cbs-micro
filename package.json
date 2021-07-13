@@ -27,6 +27,7 @@
   "dependencies": {
     "@supercharge/promise-pool": "^1.7.0",
     "agenda": "^4.1.3",
+    "aws-sdk": "^2.944.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "bootstrap": "^3.4.0",
@@ -91,7 +92,8 @@
     "swagger-moleculer": "github:devalexandre/swagger-moleculer",
     "swagger-parser": "^10.0.2",
     "swagger-stats": "^0.95.18",
-    "swagger-ui-dist": "^3.40.0"
+    "swagger-ui-dist": "^3.40.0",
+    "uuid": "^8.3.2"
   },
   "engines": {
     "node": ">= 10.x.x"

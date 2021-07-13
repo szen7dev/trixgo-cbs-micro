@@ -1,11 +1,12 @@
-let FILE__CORE_MODEL                  = require('../model/file.core-model').MODEL;
+const uuidv4                            = require('uuid').v4;
+let { GENERATE_LINK_S3 }                = require('../helper/s3');
+let FILE__CORE_MODEL                    = require('../model/file.core-model').MODEL;
 
 module.exports = {
     insert: {
         params: {
             app            : { type: "string" },
             name           : { type: "string" },
-            status         : { type: "string", optional: true },
             url            : { type: "string" },
             size           : { type: "string", optional: true },
 
@@ -14,9 +15,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { app, name, status, url, size, userID }        = ctx.params;
+                let { app, name, url, size, userID }        = ctx.params;
               
-                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, status, url, size, userID });
+                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -75,6 +76,34 @@ module.exports = {
               
                 let listFiles = await FILE__CORE_MODEL.getListFileWithStatus({ status, userID });
                 return listFiles;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    generateLinkS3: {
+        params: {
+            type           : { type: "string" },
+
+            app            : { type: "string" },
+            size           : { type: "string", optional: true },
+
+            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { type, app, size, userID }        = ctx.params;
+                let fileName = uuidv4();
+
+                //TODO kiểm tra lại fileName cần có thêm đuôi (.png, .jpg)
+              
+                let infoGenerateLink    = await GENERATE_LINK_S3(fileName, type);
+                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name: fileName, url: ``, size, userID });
+                return {
+                    infoGenerateLink, infoFileAfterInsert
+                };
             } catch (error) {
                 return { error:  true, message: error.message };
             }
