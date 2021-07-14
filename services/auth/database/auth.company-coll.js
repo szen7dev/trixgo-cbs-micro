@@ -7,7 +7,7 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     //_________Tên công ty
     name: String,
     /**
-     * xem thông tin file
+     * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
      */
     platform:{
         type: Number,

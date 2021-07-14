@@ -272,7 +272,7 @@ class Model extends BaseModel {
         });
     }
 
-    getList({show}){
+    getList({ show }){
         return new Promise(async (resolve) => {
             try {
                 let conditionObj;

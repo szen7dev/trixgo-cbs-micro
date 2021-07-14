@@ -6,7 +6,7 @@ const BASE_ROUTE = '/files'; //đối với những trường hợp service ch�
 const CF_ROUTINGS_FILE = {
     ORIGIN_APP: BASE_ROUTE,
 
-    FILES                                : `${BASE_ROUTE}`, //  GET, POST, PUT, DELETE /files
+    FILES                                : `${BASE_ROUTE}`, //  GET, POST /files
     FILE_DETAIL                          : `${BASE_ROUTE}/:fileID`, //  GET, POST, PUT, DELETE /files/:fileID
     GET_LIST_FILE_OF_USER_WITH_STATUS    : `${BASE_ROUTE}/users/:userID/status/:status`, // GET /files/users/:userID/status/:status
 

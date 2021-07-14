@@ -382,7 +382,6 @@ class Model extends BaseModel {
                 }   
 
                 let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
-               
                 if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
                     return resolve({ error: true, message: 'request params nextInfo invalid' });
 
