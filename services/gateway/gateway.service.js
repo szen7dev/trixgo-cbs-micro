@@ -122,32 +122,40 @@ module.exports = {
 			if(checkAuthorization.error){
 				return Promise.reject(checkAuthorization.message);
 			}
-			return console.log({ checkAuthorization, [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`]: `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}` })
+			let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
+			// exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
+			this.logger.info("Authenticated via JWT: ", infoUser.username);
+			// Reduce user fields (it will be transferred to other nodes)
+			ctx.meta.infoUser = infoUser;
+			ctx.meta.token 	  = token;
+			return infoUser;
 
-			return this.Promise.resolve(token)
-				.then(token => {
-					if (token) {
-						// Verify JWT token
-						return ctx.call("users.resolveToken", { token })
-							.then(user => {
-								if (user) {
-									this.logger.info("Authenticated via JWT: ", user.username);
-									// Reduce user fields (it will be transferred to other nodes)
-									ctx.meta.user = _.pick(user, ["_id", "username", "email", "image"]);
-									ctx.meta.token = token;
-								}
-								return user;
-							})
-							.catch(err => {
-								// Ignored because we continue processing if user is not exist
-								return null;
-							});
-					}
-				})
-				.then(user => {
-					if (req.$endpoint.action.auth == "required" && !user)
-						return this.Promise.reject(new UnAuthorizedError());
-				});
+			// return console.log({ checkAuthorization, [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`]: `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}` })
+
+			// return this.Promise.resolve(token)
+			// 	.then(token => {
+			// 		if (token) {
+			// 			// Verify JWT token
+			// 			return ctx.call("users.resolveToken", { token })
+			// 				.then(user => {
+			// 					if (user) {
+			// 						this.logger.info("Authenticated via JWT: ", user.username);
+			// 						// Reduce user fields (it will be transferred to other nodes)
+			// 						ctx.meta.user = _.pick(user, ["_id", "username", "email", "image"]);
+			// 						ctx.meta.token = token;
+			// 					}
+			// 					return user;
+			// 				})
+			// 				.catch(err => {
+			// 					// Ignored because we continue processing if user is not exist
+			// 					return null;
+			// 				});
+			// 		}
+			// 	})
+			// 	.then(user => {
+			// 		if (req.$endpoint.action.auth == "required" && !user)
+			// 			return this.Promise.reject(new UnAuthorizedError());
+			// 	});
 		},
 	},
 

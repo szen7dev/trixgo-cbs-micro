@@ -66,13 +66,9 @@ module.exports = {
 
     getInfo: { //(lấy thông tin chính user - owner) 
         auth: "required",
-        params: {
-            userID          : { type: "string" }, //TODO update userID fake
-        },
         async handler(ctx) {
             try {
-                await this.validateEntity(ctx.params);
-                let { userID }        = ctx.params;
+                let userID = ctx.meta.infoUser._id;
 
                 let infoUser = await AUTH__COMPANY_MODEL.getInfo({ userID });
                 return infoUser;

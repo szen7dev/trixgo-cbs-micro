@@ -9,7 +9,7 @@ const server                = require('http').Server(app);
 
 const  USER_MODEL           = require('../../services/auth/model/auth.user-model').MODEL;
 
-
+const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { sign , verify }     = require('../../tools/jwt');
 const { REDIS_SEPERATOR }   = require('../../tools/cache/cf_redis');
 /**
@@ -275,6 +275,9 @@ module.exports = {
 
         
     },
+    dependencies: [
+		CF_DOMAIN_SERVICES.AUTH
+	],
     /**
      * Service created lifecycle event handler
      */

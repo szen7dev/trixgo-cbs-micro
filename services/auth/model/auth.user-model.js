@@ -37,7 +37,6 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 // const XLSX      = require('xlsx');
 
 // const AUTH__COMPANY_COLL                  = require('../../database/core/company-coll');
-// const USER_COLL                     = require('../../database/core/user-coll');
 // const CONTACT_COLL                  = require('../../database/core/contact-coll');
 // const DEPARTMENT_COLL               = require('../../database/core/department-coll');
 // const POSITION_COLL                 = require('../../database/core/position-coll');
@@ -455,7 +454,7 @@ class Model extends BaseModel {
                 if (!userIDAfterDecoded) 
                     return resolve({ error: true, message: 'token_not_valid' });
 
-                let infoUserDB = await USER_COLL.findOne({ status: STATUS_ACTIVE, _id: userIDAfterDecoded });
+                let infoUserDB = await AUTH__USER_COLL.findOne({ status: STATUS_ACTIVE, _id: userIDAfterDecoded });
 
                 if (!infoUserDB) 
                     return resolve({ error: true, message: 'token_not_valid' });
