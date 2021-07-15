@@ -1,4 +1,4 @@
-let AUTH__COMPANY_MODEL                         = require('../model/auth.user-model').MODEL;
+let AUTH__USER_MODEL                         = require('../model/auth.user-model').MODEL;
 
 module.exports = {
     register: {
@@ -15,7 +15,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { email, fullname, username, level, companyID, platform }        = ctx.params;
 
-                let infoUser = await AUTH__COMPANY_MODEL.register({ email, fullname, username, level, companyID, platform });
+                let infoUser = await AUTH__USER_MODEL.register({ email, fullname, username, level, companyID, platform });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };
@@ -34,7 +34,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform }        = ctx.params;
 
-                let infoUser = await AUTH__COMPANY_MODEL.login({ email, password, platform });
+                let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 return infoUser;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -56,7 +56,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { userID, platform, deviceID, deviceName, registrationID }        = ctx.params;
 
-                let infoUser = await AUTH__COMPANY_MODEL.updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID });
+                let infoUser = await AUTH__USER_MODEL.updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID });
                 return infoUser;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -68,10 +68,13 @@ module.exports = {
         auth: "required",
         async handler(ctx) {
             try {
-                let userID = ctx.meta.infoUser._id;
+                let infoUser = ctx.meta.infoUser;
+                if (!infoUser) 
+                    return { error: true, message: 'cannot_get_info_from_token' }
 
-                let infoUser = await AUTH__COMPANY_MODEL.getInfo({ userID });
-                return infoUser;
+                let { _id: userID } = infoUser;
+                let infoUserAfterFind = await AUTH__USER_MODEL.getInfo({ userID });
+                return infoUserAfterFind;
             } catch (error) {
                 return { error:  true, message: error.message };
             }
@@ -95,11 +98,10 @@ module.exports = {
             token: "string"
         },
         async handler(ctx) {
-            console.log({ token: `-------------------------------------------` })
             await this.validateEntity(ctx.params);
             let { token }        = ctx.params;
 
-            let infoUser = await AUTH__COMPANY_MODEL.resolveToken({ token });
+            let infoUser = await AUTH__USER_MODEL.resolveToken({ token });
             return infoUser;
         }
     },

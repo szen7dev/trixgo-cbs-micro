@@ -7,7 +7,8 @@ let	ApiGateway 				= require("moleculer-web"),
 	app               		= express(),
 	server            		= require('http').Server(app),
 	{ CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant'),
-	apiV1 					= require("./gateway.alias"); // config api
+	apiV1 					= require("./auth.alias"), // config api
+	apiNonAuthV1 			= require("./non-auth.alias"); // config api
  	// SocketService 			= require('./socket-io.service');			
 
 const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
@@ -46,6 +47,7 @@ module.exports = {
 			// get routes from external file - merged with subproject if applicable
 			// sppf.subprojectMergeRoutes(apiV1, path.resolve(resourcesDirectory+"/routes/apiV1") ),
 			apiV1, // routing
+			apiNonAuthV1,
 		],
 
 		// Do not log client side errors (does not log an error response when the error.code is 400<=X<500)
@@ -112,13 +114,15 @@ module.exports = {
 		 */
 		async authorize(ctx, route, req) {
 			let token;
+			console.log(`--------------TOKEN: ----------`)
 			if (req.headers.authorization) {
 				let type = req.headers.authorization.split(" ")[0];
 				if (type === "Token" || type === "Bearer")
 					token = req.headers.authorization.split(" ")[1];
 			}
 
-			let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token }, null)
+			let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
+			console.log({ checkAuthorization, token })
 			if(checkAuthorization.error){
 				return Promise.reject(checkAuthorization.message);
 			}
