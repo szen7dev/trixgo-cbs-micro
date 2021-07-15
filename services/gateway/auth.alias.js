@@ -42,9 +42,6 @@ module.exports = {
 
 	aliases: {
 		//--------------------------aliases's GATEWAY service--------------------------//
-		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_HEALTH}`] : 
-		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_HEALTH}`],
-
 		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_VERSION}`] : 
 		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_VERSION}`],
 

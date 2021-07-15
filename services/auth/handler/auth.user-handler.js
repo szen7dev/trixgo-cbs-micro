@@ -33,7 +33,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform }        = ctx.params;
-
+                console.log({ email, password, platform })
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 return infoUser;
             } catch (error) {

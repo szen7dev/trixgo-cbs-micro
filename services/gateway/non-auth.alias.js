@@ -4,11 +4,13 @@ const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 /**
  * ------import route's Services---------
  */
+const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 
 /**
  * ------import action's Services--------
  */
+ const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
  const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
 
 
@@ -23,6 +25,10 @@ module.exports = {
 	],
 
 	aliases: {
+		//--------------------------aliases's GATEWAY service--------------------------//
+		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_HEALTH}`] : 
+		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_HEALTH}`],
+
 		//--------------------------aliases's AUTH service--------------------------//
 		[`POST ${CF_ROUTINGS_AUTH.USERS}`] : 
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER}`],
