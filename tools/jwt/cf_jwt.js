@@ -1,5 +1,5 @@
 "use strict";
 
 module.exports = {
-    secret: process.env.SECRET_KEY_JWT || 'asdasd12312312_M-book_hastCodesssa122#%$^&%____trixgo-micro____',
+    JWT_SECRET_KEY: process.env.JWT_SECRET_KEY || 'a#2!212122#%$^&%__cbs___'
 };

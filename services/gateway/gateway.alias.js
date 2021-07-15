@@ -2,10 +2,10 @@
 /**
  * MIDDLEWARE
  */
-const { 
-	CHECK_AUTHENCATION,
-	CHECK_AUTHORIZATION,
-} 								= require('./auth');
+// const { 
+// 	CHECK_AUTHENCATION,
+// 	CHECK_AUTHORIZATION,
+// } 								= require('./auth');
 
 const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 
@@ -33,7 +33,7 @@ const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 module.exports = {
 	path: 'api',
 	// authentication: true,
-	// authorization: true,
+	authorization: true,
 
 	// Cho phép truy cập tất cả các services
 	whitelist: [
@@ -55,8 +55,8 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.USER_DETAIL}`] : 
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO}`],
 
-		[`POST ${CF_ROUTINGS_AUTH.SIGN_IN}`] : 
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.SIGN_IN}`],
+		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.LOGIN}`],
 
 		[`POST ${CF_ROUTINGS_AUTH.UPDATE_DEVICE_WHEN_LOGIN_MOBILE}`] : 
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_DEVICE_WHEN_LOGIN_MOBILE}`],

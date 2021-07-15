@@ -4,6 +4,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
  * import inter-coll, exter-coll
  */
 const AUTH__USER_COLL                   = require('../database/auth.user-coll');
+const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
 
 /**
  * import inter-model, exter-model
@@ -16,14 +17,15 @@ const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 const { randomStringFixLengthCode } 
                                         = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
-const { sign }                          = require('../../../tools/jwt');
+const { sign, verify }                  = require('../../../tools/jwt');
 const { checkObjectIDs, checkNumberIsValidWithRange }                
                                         = require('../../../tools/utils/utils');
 const { 
     PLATFORM_TRIXGO, PLATFORM_WYNDIX,
     LEVEL_ADMIN, LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
-    STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK
+    STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK,
 }                                       = require('../helper/auth.keys-constant');
+const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 // const ObjectID                      = require('mongoose').Types.ObjectId;
 
@@ -34,7 +36,7 @@ const {
 // const { checkObjectIDs }            = require('../../utils/utils');
 // const XLSX      = require('xlsx');
 
-// const COMPANY_COLL                  = require('../../database/core/company-coll');
+// const AUTH__COMPANY_COLL                  = require('../../database/core/company-coll');
 // const USER_COLL                     = require('../../database/core/user-coll');
 // const CONTACT_COLL                  = require('../../database/core/contact-coll');
 // const DEPARTMENT_COLL               = require('../../database/core/department-coll');
@@ -116,7 +118,7 @@ class Model extends BaseModel {
                     objectExitsUser.$or.push({ email : emailValid });
                 }
                 
-                let isExistUser = await AUTH__AUTH__USER_COLL.findOne(objectExitsUser);
+                let isExistUser = await AUTH__USER_COLL.findOne(objectExitsUser);
                 // //________KIỂM TRA XEM  department, position, companyID CÓ HỢP LỆ HAY KHÔNG
                 // let checkIllegal = 0;
                 // if(department){
@@ -145,7 +147,7 @@ class Model extends BaseModel {
                 if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' });
 
                 // Lấy thông tin công ty để gán ký hiệu công ty
-                let infoCompany = await COMPANY_COLL.findById(companyID);
+                let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
 
                 let dataInsert = {
                     email: emailValid,
@@ -218,7 +220,7 @@ class Model extends BaseModel {
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
                     return resolve({ error: true, message: 'platform_invalid' });
 
-                let isExist         = await AUTH__AUTH__USER_COLL.findOne({ email: emailValid });
+                let isExist         = await AUTH__USER_COLL.findOne({ email: emailValid });
                 if (!isExist)
                     return resolve({ error: true, message: 'email_not_exist' });
                 
@@ -269,8 +271,7 @@ class Model extends BaseModel {
                     // config: isExist.config
                 }
 
-                const token = sign({ infoUser: newExist }, cfJws.secret);
-
+                const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
                 // update lastLog of user
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
@@ -301,13 +302,18 @@ class Model extends BaseModel {
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
                     return resolve({ error: true, message: 'platform_invalid' });
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'object_invalid' });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-               
+                let isExist = await AUTH__USER_COLL.findById(userID);
+                if (!isExist)
+                    return resolve({ error: true, message: 'user_not_exists' });
+                
                  /**
                  * UPDATE LAST DEVICE (cập nhật device cuối cùng login)
                  * Nếu DeviceID tồn tại => cập nhật deviceName + fcm_token
@@ -336,7 +342,7 @@ class Model extends BaseModel {
                     ]
                 }
 
-                let infoAfterUpdateWithRegistration = await AUTH__AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                let infoAfterUpdateWithRegistration = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                     devices :  newDevices, 
                     modifyAt: Date.now(),
                     lastLog: Date.now()
@@ -344,7 +350,7 @@ class Model extends BaseModel {
 
                 return resolve({
                     error: false,
-                    data : { user: isExist, token }
+                    data : infoAfterUpdateWithRegistration
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -416,6 +422,45 @@ class Model extends BaseModel {
                     // })
                 // console.log({ infoUser });
                 return resolve({ error: false, data: infoUser });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    resolveToken({ token }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                if(!token || token == '')
+                    return resolve({ error: true, message: 'token_invalid' });
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                   /**
+                 * LOGIC STEP (3)
+                 *  3.1: convert type + update name (ví dụ: string -> number)
+                 *  3.2: operation database
+                 */    
+              
+                let decoded = await verify(token, JWT_SECRET_KEY);
+                if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
+
+                const { infoUser: { _id: userIDAfterDecoded } } = decoded;
+                
+                if (!userIDAfterDecoded) 
+                    return resolve({ error: true, message: 'token_not_valid' });
+
+                let infoUserDB = await USER_COLL.findOne({ status: STATUS_ACTIVE, _id: userIDAfterDecoded });
+
+                if (!infoUserDB) 
+                    return resolve({ error: true, message: 'token_not_valid' });
+                    
+                return resolve({ error: false, data: decoded });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -1245,26 +1290,6 @@ class Model extends BaseModel {
     //             return resolve({ error: false, data: listMemberOfCompany })
     //         } catch (error) {
     //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // }
-
-    // checkAuth({ token }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             let decoded = await jwt.verify(token, cfJws.secret);
-    //             if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
-
-    //             const { infoUser: { _id: userIDSession } } = decoded;
-                
-    //             if (!userIDSession) return resolve({ error: true, message: 'token_not_valid' });
-    //             let infoUserDB = await AUTH__USER_COLL.findOne({ status: 1, _id: userIDSession });
-
-    //             if (!infoUserDB) 
-    //                 return resolve({ error: true, message: 'token_not_valid' });
-    //             return resolve({ error: false, data: decoded });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: 'token_not_valid' });
     //         }
     //     })
     // }

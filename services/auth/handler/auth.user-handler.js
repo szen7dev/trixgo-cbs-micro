@@ -44,9 +44,12 @@ module.exports = {
 
     updateDeviceLogin: {
         params: {
-            email           : { type: "string" },
-            password        : { type: "string" },
-            platform        : { type: "string" },
+            platform            : { type: "string" },
+            deviceID            : { type: "string" },
+            deviceName          : { type: "string" },
+            registrationID      : { type: "string" },
+
+            userID          : { type: "string" }, //TODO update userID fake
         },
         async handler(ctx) {
             try {
@@ -62,16 +65,46 @@ module.exports = {
     },
 
     getInfo: { //(lấy thông tin chính user - owner) 
+        auth: "required",
+        params: {
+            userID          : { type: "string" }, //TODO update userID fake
+        },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { userID, status }        = ctx.params;
+                let { userID }        = ctx.params;
 
-                let infoUser = await AUTH__COMPANY_MODEL.getInfo({ userID, status });
+                let infoUser = await AUTH__COMPANY_MODEL.getInfo({ userID });
                 return infoUser;
             } catch (error) {
                 return { error:  true, message: error.message };
             }
+        }
+    },
+
+    /**
+     * Get user by JWT token (for API GW authentication)
+     * 
+     * @actions
+     * @param {String} token - JWT token
+     * 
+     * @returns {Object} Resolved user
+     */
+    resolveToken: {
+        cache: {
+            keys: ["token"],
+            ttl: 60 * 60 //1 hour
+        },			
+        params: {
+            token: "string"
+        },
+        async handler(ctx) {
+            console.log({ token: `-------------------------------------------` })
+            await this.validateEntity(ctx.params);
+            let { token }        = ctx.params;
+
+            let infoUser = await AUTH__COMPANY_MODEL.resolveToken({ token });
+            return infoUser;
         }
     },
 }

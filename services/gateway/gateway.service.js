@@ -11,6 +11,7 @@ let	ApiGateway 				= require("moleculer-web"),
  	// SocketService 			= require('./socket-io.service');			
 
 const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
+const { CF_ACTIONS_AUTH } 	        	= require('../auth/helper/auth.actions-constant');
 const GATEWAY__HANDLER      			= require('./handler/gateway.handler');
 	 
 module.exports = {
@@ -62,6 +63,10 @@ module.exports = {
 		}
 	},
 
+	dependencies: [
+		CF_DOMAIN_SERVICES.AUTH
+	],
+
 	/**
 	* Actions HEALTH/VERSION
 	*/
@@ -77,33 +82,72 @@ module.exports = {
 			});
 		},
 
-		async authenticate(ctx, route, req, res) {
-			try {
-				let accessToken = req.headers[ 'x-access-token' ] || req.headers.token || null;
-				if(accessToken){
+		// async authenticate(ctx, route, req, res) {
+		// 	try {
+		// 		let accessToken = req.headers[ 'x-access-token' ] || req.headers.token || null;
+		// 		if(accessToken){
 
-					let resolveToken = null;
-					// let resolveToken = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
-					if(resolveToken.error){
-						return Promise.reject(resolveToken.message);
-					}	
-					return Promise.resolve(null)
-				}
-				else{
-					return Promise.reject('redirect_url_clear_session');
-				}
-			} catch (error) {
-				return Promise.reject(error);
+		// 			let resolveToken = null;
+		// 			// let resolveToken = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
+		// 			if(resolveToken.error){
+		// 				return Promise.reject(resolveToken.message);
+		// 			}	
+		// 			return Promise.resolve(null)
+		// 		}
+		// 		else{
+		// 			return Promise.reject('redirect_url_clear_session');
+		// 		}
+		// 	} catch (error) {
+		// 		return Promise.reject(error);
+		// 	}
+        // },
+
+		/**
+		 * Authorize the request
+		 *
+		 * @param {Context} ctx
+		 * @param {Object} route
+		 * @param {IncomingRequest} req
+		 * @returns {Promise}
+		 */
+		async authorize(ctx, route, req) {
+			let token;
+			if (req.headers.authorization) {
+				let type = req.headers.authorization.split(" ")[0];
+				if (type === "Token" || type === "Bearer")
+					token = req.headers.authorization.split(" ")[1];
 			}
-        },
 
-		async authorize(ctx, route, req, res) {
-			let checkAuthorization = null;
-			// let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CHECK_AUTHORIZATION}`, {originalUrl: req.originalUrl})
+			let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token }, null)
 			if(checkAuthorization.error){
 				return Promise.reject(checkAuthorization.message);
 			}
-			return Promise.resolve(null)
+			return console.log({ checkAuthorization, [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`]: `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}` })
+
+			return this.Promise.resolve(token)
+				.then(token => {
+					if (token) {
+						// Verify JWT token
+						return ctx.call("users.resolveToken", { token })
+							.then(user => {
+								if (user) {
+									this.logger.info("Authenticated via JWT: ", user.username);
+									// Reduce user fields (it will be transferred to other nodes)
+									ctx.meta.user = _.pick(user, ["_id", "username", "email", "image"]);
+									ctx.meta.token = token;
+								}
+								return user;
+							})
+							.catch(err => {
+								// Ignored because we continue processing if user is not exist
+								return null;
+							});
+					}
+				})
+				.then(user => {
+					if (req.$endpoint.action.auth == "required" && !user)
+						return this.Promise.reject(new UnAuthorizedError());
+				});
 		},
 	},
 

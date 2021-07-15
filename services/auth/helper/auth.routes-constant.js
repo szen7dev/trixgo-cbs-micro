@@ -14,7 +14,7 @@ const CF_ROUTINGS_AUTH = {
     USERS                               : `${BASE_ROUTE}${USER}`, // GET, POST /auth/users
     USER_DETAIL                         : `${BASE_ROUTE}${USER}/:userID`, //GET, PUT, DELETE /auth/users/:userID
     
-    SIGN_IN                             : `${BASE_ROUTE}${USER}/login`,
+    LOGIN                               : `${BASE_ROUTE}${USER}/login`,
     UPDATE_DEVICE_WHEN_LOGIN_MOBILE     : `${BASE_ROUTE}${USER}/update-device`,
 }
 

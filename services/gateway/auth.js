@@ -100,8 +100,6 @@ const checkAuthorizationAdmin = async (req, res, next) => {
     }
 }
 
-
-
 exports.CHECK_AUTHENCATION              = checkAuthencation;
 exports.CHECK_AUTHORIZATION             = checkAuthorization;
 exports.CHECK_AUTHORIZATION_ADMIN       = checkAuthorizationAdmin;

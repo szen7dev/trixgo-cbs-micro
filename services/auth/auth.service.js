@@ -47,9 +47,10 @@ module.exports = {
 	actions: {
 		//============================   AUTH: USER   ==========================//
 		[CF_ACTIONS_AUTH.REGISTER] 									: AUTH__USER_HANDLER.register,
-		[CF_ACTIONS_AUTH.SIGN_IN] 									: AUTH__USER_HANDLER.login,
+		[CF_ACTIONS_AUTH.LOGIN] 									: AUTH__USER_HANDLER.login,
 		[CF_ACTIONS_AUTH.GET_INFO] 									: AUTH__USER_HANDLER.getInfo,
 		[CF_ACTIONS_AUTH.UPDATE_DEVICE_WHEN_LOGIN_MOBILE] 			: AUTH__USER_HANDLER.updateDeviceLogin,
+		[CF_ACTIONS_AUTH.RESOLVE_TOKEN] 							: AUTH__USER_HANDLER.resolveToken,
 	},
 
 	/**
