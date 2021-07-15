@@ -24,6 +24,9 @@ module.exports = {
 
 	aliases: {
 		//--------------------------aliases's AUTH service--------------------------//
+		[`POST ${CF_ROUTINGS_AUTH.USERS}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER}`],
+
 		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] : 
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.LOGIN}`],
 	},

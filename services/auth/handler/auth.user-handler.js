@@ -105,4 +105,59 @@ module.exports = {
             return infoUser;
         }
     },
+
+    /**
+     * Perform a textual search with 'find' method
+     *  phương án này chỉ dùng cho các trường hợp đơn giản (ko có tìm kiếm+phân trang)
+     *  -> tối ưu: cần dùng text search riêng
+     * 
+     *  db.message_messages.find(
+            { $text: { $search: "TRX Khánh Duy" } },
+            { score: { $meta: "textScore" } }
+            ).sort( { score: { $meta: "textScore" } } )
+
+            .projection({
+                content: 1
+        })
+     */
+    searchWithFind: {
+        cache: {
+            keys: ["key"],
+            ttl: 60 * 60 //1 hour
+        },			
+        params: {
+            key: { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            await this.validateEntity(ctx.params);
+            let { key }        = ctx.params;
+        
+            return ctx.call("auth.list", {
+                search: key,
+                searchFields: ["fullname"],
+                fields: ["fullname", "username"],
+                page: 1,
+                limit: 10,
+            });
+        }
+    },
+
+    searchWithFullText: {
+        cache: {
+            keys: ["key"],
+            ttl: 60 * 60 //1 hour
+        },			
+        params: {
+            key: { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            await this.validateEntity(ctx.params);
+            let { key }        = ctx.params;
+            /**
+             * TODO cấu hình 1 function như list (mongoose adapter)
+             */
+            let listUsers = await AUTH__USER_MODEL.searchWithFullText({ fullnameKey: key })
+            return listUsers;
+        }
+    }
 }

@@ -465,6 +465,36 @@ class Model extends BaseModel {
             }
         })
     }
+
+    searchWithFullText({ fullnameKey }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                   /**
+                 * LOGIC STEP (3)
+                 *  3.1: convert type + update name (ví dụ: string -> number)
+                 *  3.2: operation database
+                 */    
+                let listUsers = await AUTH__USER_COLL.find(
+                    { $text: { $search: fullnameKey } },
+                    { score: { $meta: "textScore" } },
+                ).sort( { score: { $meta: "textScore" } } )
+                .limit(10)
+                .select('fullname')
+                
+                return resolve({ error: false, data: listUsers });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
     // /**5t
     //  * Name: Cập nhật avatar
     //  * Author: Depv
