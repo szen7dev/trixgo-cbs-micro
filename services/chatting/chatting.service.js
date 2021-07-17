@@ -1,4 +1,5 @@
 "use strict";
+
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
@@ -9,18 +10,14 @@ const CHATTING__MESSAGE_HANDLER         = require('./handler/chatting.message-ha
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CHATTING,
 	mixins: [
-		// DbService(CATEGORY_COLL), 
-		DbService('message_messages'),  
-	
-		DbService('message_conversations'), 
-		DbService('message_conversation_drafts'),  
-		DbService('message_conversation_links'),  
-		
+		DbService('message_messages'),
+		DbService('message_conversations'),
+		DbService('message_conversation_drafts'),
+		DbService('message_conversation_links'),
 		DbService('users'),  
-
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
-    
+
 	/**
 	 	* Service settings
 	*/
@@ -38,24 +35,23 @@ module.exports = {
 	// },
 
 	/**
-	 	* Service metadata
+	* Service metadata
 	*/
 	metadata: {
 
 	},
 
 	/**
-		* Service dependencies
+	* Service dependencies
 	*/
 	dependencies: [],
 
 	/**
- 		* Actions
+	* Actions
 	*/
-	actions: {	
+	actions: {
+		//==============  CONVERSATION ACTIONS  ====================
 
-		//================================================================   CONVERSATION ACTIONS   =================================================================
-		
 		// Thêm cuộc hội thoại mới
 		[CF_ACTIONS_CHATTING.INSERT_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.insert,
 		
@@ -79,33 +75,33 @@ module.exports = {
 		// Tìm kiếm cuộc hội thoại theo dự án [chưa có]
 
 		// Lấy danh sách link của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
+		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
 		
 		// Lấy danh sách file của cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
 		
 		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 		: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
+		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
 		
 
-		//================================================================   	MESSAGE ACTIONS 		=================================================================
+		// ===========  MESSAGE ACTIONS  ================
 
 		// Lây tin nhắn của cuộc hội thoại phân trang 30 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID] 	: CHATTING__MESSAGE_HANDLER.getListMessageByConversationID,
 
-		// Tìm kiếm tinh nhắn trong một cuộc hội thoại [******** để sau]
-
+		// Tìm kiếm tin nhắn trong một cuộc hội thoại [******** để sau]
 
 	},
 
 	/**
-	 	* Events
+	* Events
 	*/
 	events: {
+
 	},
 
 	/**
-	 	* Methods
+	* Methods
 	*/
 	methods: {
 
@@ -126,7 +122,7 @@ module.exports = {
 	},
 
 	/**
-	 	* Service stopped lifecycle event handler
+	* Service stopped lifecycle event handler
 	*/
 	async stopped() {
 

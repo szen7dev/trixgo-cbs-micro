@@ -2,7 +2,8 @@
 exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     HELLO_WORLD                     : 'HELLO_WORLD',
 
-    //================================================================ CLIENT SEND TO SERVER ================================================================
+    //========================== CLIENT SEND TO SERVER =============================
+
     // CONVERSATION
     CSS_KICK_MEMBER_CONVERSATION    : 'CSS_KICK_MEMBER_CONVERSATION',
     CSS_ADD_MEMBER_CONVERSATION     : 'CSS_ADD_MEMBER_CONVERSATION',
@@ -14,7 +15,6 @@ exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     CSS_MUTE_CONVERSATION           : 'CSS_MUTE_CONVERSATION',
     CSS_PIN_CONVERSATION            : 'CSS_PIN_CONVERSATION',
     CSS_LEAVE_CONVERSATION          : 'CSS_LEAVE_CONVERSATION',
-
 
     // MESSAGE
     CSS_SEND_MESSAGE                : 'CSS_SEND_MESSAGE',
@@ -33,8 +33,8 @@ exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     CSS_REMOVE_ADMIN_MESSAGE        : 'CSS_REMOVE_ADMIN_MESSAGE',
     CSS_STATUS_MESSAGE              : 'CSS_STATUS_MESSAGE',
 
-    //================================================================ SERVER SEND TO CLIENT ================================================================
-    
+    //======================== SERVER SEND TO CLIENT ===========================
+
     // CONVERSATION
     SSC_KICK_MEMBER_CONVERSATION    : 'SSC_KICK_MEMBER_CONVERSATION',
     SSC_ADD_MEMBER_CONVERSATION     : 'SSC_ADD_MEMBER_CONVERSATION',

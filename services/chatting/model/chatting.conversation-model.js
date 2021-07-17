@@ -234,8 +234,7 @@ class Model extends BaseModel {
 
                 checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
                     _id: conversationID, 
-                    members: { $in: [userID],
-                     }
+                    members: { $in: [userID] }
                 });
                 if(!checkExistConversation)
                     return resolve({ error: true, message: 'You are not member', status : 403 });
@@ -252,79 +251,74 @@ class Model extends BaseModel {
     }
 
     /**
-
-    * Name: Cập nhật thông tin công việc
-
+    * Name: Lấy danh sách các cuộc hội thoại của một người dùng
     * Author: VinhNH 
-
-    * Updated:
-   
-    * - 12/10/2020-VinhNH: Cập nhật lại populate cho mobiles
-
-    * Usage:
-
-    * - Web: Cập nhật thông tin công việc 
-
-    * - Mobile:  Cập nhật lại populate cho mobiles : cập  nhật  ngày gửi tin , ngày tương tác tin nhắn
-
+    * Formated: 16/07/2021 - MinhVH
     */
-    // Lấy danh sách các cuộc hội thoại của một người dùng 
-    getListConversationByAuthorID({ authorID, currentPage, lastestConversationID }){
-        const that = this;
-
+    getListConversationByAuthorID({ authorID, page, lastestConversationID }){
         return new Promise(async resolve => {
             try {
-                let checkParamsPage   =   checkParametersModel([{currentPage : Number(currentPage)}], 'interger');
-                if(checkParamsPage.error  || Number(currentPage)<=0)
-                    return resolve({ error: true, message: 'Request params currentPage invalid'});
+                // let checkParamsPage = checkParametersModel([{ currentPage: Number(page) }], 'interger');
 
-                    
-                let page    = Number(currentPage) || 1;
-                let perPage = 20;
-                let listConversation;
+                // if(checkParamsPage.error  || Number(page) <= 0)
+                //     return resolve({ error: true, message: 'Request params page invalid'});
+
+				if(!checkObjectIDs(authorID))
+                    return resolve({ error: true, message: 'Request params authorID invalid'});
+
+                let currentPage = Number(page) || 1;
+                let perPage 	= 20;
+                let listConversation = null;
 
                 if(lastestConversationID && checkObjectIDs(lastestConversationID)){
-                    page = 2;
+                    currentPage = 2;
                 }
 
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params authorID invalid'});
-                    
-                if(page > 1){
+                if(currentPage > 1){
                     if(!checkObjectIDs(lastestConversationID)){
                         return resolve({ error: true, message: 'Request params lastestConversationID invalid'});
                     }
                 }
-                // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
-                
+
                 let _sort = {
                     modifyAt: -1,
                     creatAt: -1
                 }
-                let ObjectSearch            = {};
+                let ObjectSearch = {};
 
-                if(page!=1){
-                    let  conversationInfo      =  await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                if(currentPage !== 1){
+                    let conversationInfo = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
                     if(!conversationInfo)
                         return resolve({ error: true, message: 'info last Conversation exits' });
-                    let nextInfo;
-                    if(page > 1){
-                        nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
-                    }   
-                    
-                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
-                    if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
 
-                    _sort                               =  dataPaggingAndSort.data.sort
-                    ObjectSearch                        = dataPaggingAndSort.data.find;
+                    let nextInfo;
+                    if(currentPage > 1){
+                        nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
+                    }
+
+                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo: nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
+
+                    if(!dataPaggingAndSort || dataPaggingAndSort.error)
+                        return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                    _sort         = dataPaggingAndSort.data.sort;
+                    ObjectSearch  = dataPaggingAndSort.data.find;
                 }
 
-                ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
+                ObjectSearch.members = { $in: [ObjectID(authorID)] };
                 listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
-                .populate({
-                    path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                })
+					.populate({
+						path: 'lastMessage', 
+						select: 'modifyAt  createAt sender content status', 
+						populate: { 
+							path: 'sender', 
+							select: '_id fullname image company'
+						}
+					})
+					.populate({
+						path: 'pin', 
+						select: '_id sender content status' 
+					})
                 // .populate({
                 //     path: 'members',
                 //     select: '_id fullname image company friends receiveFromFriends sendToFriends',
@@ -332,9 +326,7 @@ class Model extends BaseModel {
                 // .populate({
                 //     path: 'logo'
                 // })
-                .populate({
-                    path : 'pin', select : '_id sender content status' 
-                })
+					
                 // .populate({
                 //     path: 'taskID',
                 //     select : 'task',
@@ -342,47 +334,52 @@ class Model extends BaseModel {
                 //         path : 'task', select : '_id name'
                 //     }
                 // })
-                .sort(
-                   {
-                    modifyAt: -1,
-                    createAt: -1,
-                    updateAt: -1
-                   }
-                )
-                .limit(perPage);
+					.sort({
+						modifyAt: -1,
+						createAt: -1,
+						updateAt: -1
+					})
+					.limit(perPage);
 
-                let toltalConversationPagePromise            =  CHATTING__CONVERSATION_COLL.count({ members  : { $in: [ObjectID(authorID)] }});
-                let toltalCheckExCunrrentPagePromise         =  CHATTING__CONVERSATION_COLL.count(ObjectSearch);
-                let [ toltalConversationPage , toltalCheckExCunrrentPage ] = await Promise.all([ toltalConversationPagePromise, toltalCheckExCunrrentPagePromise ])
-              
-                let currrentPageCheckEx     = 0;
+                let totalConversationPagePromise    = CHATTING__CONVERSATION_COLL.count({ members: { $in: [ObjectID(authorID)] } });
+                let totalCheckExCurrentPagePromise  = CHATTING__CONVERSATION_COLL.count(ObjectSearch);
+
+                let [totalConversationPage, totalCheckExCurrentPage] = await Promise.all([
+					totalConversationPagePromise, totalCheckExCurrentPagePromise
+				])
+
+                let currentPageCheckEx = 0;
 
                 // Kiểm tra hai kết quả count là number thì tiếp tục tính toán toltalPage và xác định current Page
                 // Xác định lại currentPage về khi nếu truyền current =3 mà req lấy lastestConversationID của page --> data đó của page
                 // Nên nếu req có sai currentPage thì vẫn trả về data và currentPage đúng cũng dữ liệu này
-                let checkParamsToltalPage   = checkParametersModel([{toltalCheckExCunrrentPage}, {currrentPageCheckEx}], 'number');
-                if(!checkParamsToltalPage.error){
-
+                let checkParamsTotalPage = checkParametersModel([{totalCheckExCurrentPage}, {currentPageCheckEx}], 'number');
+                if(!checkParamsTotalPage.error){
                     //Tính toán currentPage hiện tại chính xác (currentPageExcellent)
-                    let valueCurrentPage    = toltalConversationPage - toltalCheckExCunrrentPage;
+                    let valueCurrentPage = totalConversationPage - totalCheckExCurrentPage;
                     if(valueCurrentPage === 0){
-                        currrentPageCheckEx = 1;
+                        currentPageCheckEx = 1;
                     }
-                    if(valueCurrentPage!=0 && valueCurrentPage >0){
-                        currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
+                    if(valueCurrentPage !== 0 && valueCurrentPage > 0){
+                        currentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
                     }
 
-                    // Tính toán toltalPage
-                    toltalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(toltalConversationPage, perPage);
-
-                }else{
-
-                    // Nếu không phải là số có ---> các giá trị trả về là  1
-                    currrentPageCheckEx     = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                    toltalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
+                    // Tính toán total page
+                    totalConversationPage = checkPointDotsAndRoundingNumberForPagingChatting(totalConversationPage, perPage);
+                } else{
+                    // Nếu không phải là số ---> các giá trị trả về là 1
+                    currentPageCheckEx     = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
+                    totalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
                 }
 
-                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltalPage : toltalConversationPage  } });
+                return resolve({ 
+					error: false, 
+					data: { 
+						listConversation, 
+						currentPage: currentPageCheckEx, 
+						totalPage: totalConversationPage
+					}
+				});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -394,9 +391,12 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Bab request params invalid', status : 400 });
+                    return resolve({ error: true, message: 'Bab request params invalid', status: 400 });
 
-                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
+                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID, 
+					members: { $in: [userID]}
+				})
                     // .populate({
                     //     path: 'members',
                     //     select: '_id fullname image company friends receiveFromFriends sendToFriends converMiss birthDay username phone email',
@@ -419,19 +419,25 @@ class Model extends BaseModel {
                     //     path : 'pin', populate :  'sender' 
                     // })
                     .populate({
-                        path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
+                        path: 'lastMessage',
+						select: 'modifyAt  createAt sender content status', 
+						populate: { 
+							path: 'sender', 
+							select: '_id fullname image company'
+						}
                     })
                     .populate({
-                        path : 'pin', select : '_id sender content status' 
+                        path: 'pin', 
+						select: '_id sender content status' 
                     })
                     .lean();
                     
                 if (!infoConversation) 
-                    return resolve({ error: true, message: "You aren't in conversation", status : 403 });
+                    return resolve({ error: true, message: "You aren't in conversation", status: 403 });
 
-                return resolve({ error: false, data: infoConversation,  status : 200 });
+                return resolve({ error: false, data: infoConversation,  status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -873,101 +879,98 @@ class Model extends BaseModel {
         });
     }
 
-    updateUserMissMessage({ conversationID, userID, isRep, sender }) {
+    updateUserMissMessage({ conversationID, userID, isRep }) {
         return new Promise(async resolve => {
             try {
                 let infoConversation = await CHATTING__CONVERSATION_COLL.find({
-                    _id : conversationID , members: { $in: [userID] }
-                });
+                    _id: conversationID, members: { $in: [userID] }
+                }).lean();
+
                 let infoUser = await AUTH__USER_COLL.findById(userID);
-                if(!infoConversation){
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                }
-                let infoUpdate;
-                let arr = infoConversation[0].arrMissMessage;
-                let newArr = [];
+                if(!infoConversation)
+                    return resolve({ error: true, message: 'Conversation exits', status: 403 });
+
+                let infoUpdate 	= null;
+                let arr 		= infoConversation[0].arrMissMessage;
+                let newArr 		= [];
 
                 // Kiểm  miss cuojc hội thoại là miss lần đầu hay đã miss rồi
-                let isMiss = false;
+                let isMiss 		= false;
 
                 // Chưa tìm được câu query tốt nên xử lý theo luồng sau
                 // Lấy danh sách miss tin nhắn tìm user miss sau đó cập nhật mảng mới cho conversation
                 if(isRep){
                     if(infoConversation[0].arrMissMessage){
-                        for(let i=0; i < arr.length; i++){
-                            // console.log({id  : arr[i].userID});
+                        for(let i = 0; i < arr.length; i++){
                             if(arr[i].userID.toString() == userID.toString()){
                               
-                            }else{
+                            } else{
                                 newArr.push(arr[i]);
                             }
                         }
                     }
-                    infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                        conversationID
-                    ,
-                    {
-                        arrMissMessage:  newArr
+
+                    infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                        arrMissMessage: newArr
                     });
-                 
-                    if(infoUser.converMiss.length > 0){
-                        await AUTH__USER_COLL.findByIdAndUpdate(
-                            userID,{
-                                $pull: {
-                                    converMiss: conversationID
-                                }
+
+                    if(infoUser.converMiss.length){
+                        await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+							$pull: {
+								converMiss: conversationID
+							}
                         })
                     }
-                }else{
+                } else{
                     if(!infoUser.converMiss.includes(conversationID)){
                         conversationID = [conversationID]
-                       let result= await AUTH__USER_COLL.findByIdAndUpdate(
-                            userID,{
-                                $addToSet: {
-                                    converMiss: [...conversationID]
-                                }
+						await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+							$addToSet: {
+								converMiss: [...conversationID]
+							}
                         })
                     }
-                   
+
                     if(infoConversation[0].arrMissMessage){
-                        for(let i=0; i < arr.length; i++){
+                        for(let i = 0; i < arr.length; i++){
                             if(arr[i].userID.toString() == userID.toString()){
-                                let newAmout = Number(arr[i].amout) + 1;
-                                let newItem = { _id : arr[i]._id, userID : userID, amout : newAmout }
+								let itemMiss = arr[i];
+
+                                let newAmout = Number(itemMiss.amout) + 1;
+                                let newItem  = { _id: itemMiss._id, userID: userID, amout: newAmout };
+
                                 newArr.push(newItem);
                                 isMiss = true;
-                            }else{
-                                newArr.push(arr[i]);
+                            } else{
+                                newArr.push(itemMiss);
                             }
                         }
                     }
-                    
+
                     if(isMiss){
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                            conversationID
-                        ,
-                        {
-                            arrMissMessage:  newArr
+                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                            arrMissMessage: newArr
                         });
-                    }else{
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,
-                        {
+                    } else{
+                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                             $addToSet: {
-                                arrMissMessage:[ {
-                                 userID : userID,  amout : 1
+                                arrMissMessage: [{
+									userID: userID,
+									amout: 1
                                 }]
                             }   
                         });
                       
                     }
-               
-                }
-                if(!infoUpdate)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
 
-                return resolve({ error: false, data: infoUpdate, status : 200 })
+                }
+
+                if(!infoUpdate)
+                    return resolve({ error: true, message: 'Conversation exits', status: 403 });
+
+                return resolve({ error: false, data: infoUpdate, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         });
     }
@@ -1312,7 +1315,6 @@ class Model extends BaseModel {
         })
     }
 
-    //
     updateStatusMessageMiss({ authorID }){
         return new Promise(async(resolve)=>{
             try {
@@ -1325,7 +1327,7 @@ class Model extends BaseModel {
                     for(const conver of lisConverMiss){
                         let converMis =  await CHATTING__CONVERSATION_COLL.findById(conver)
                         let lastMessage = converMis.lastMessage;
-                        let infoAffterUpdate = await CHATTING__MESSAGE_MODEL.updateRecive({ messageID : lastMessage })
+                        let infoAffterUpdate = await CHATTING__MESSAGE_MODEL.updateReceive({ messageID : lastMessage })
                     }
                     return resolve({ error: false, message : 'updated_success', status: 200 });
                 }else{

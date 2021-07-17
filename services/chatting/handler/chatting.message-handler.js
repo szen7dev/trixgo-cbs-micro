@@ -1,7 +1,13 @@
+/**
+ * MODELS
+ */
 let CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
-let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
 
-let { renderStatusCode }                            = require('../../../tools/utils/status_code');
+/**
+ * UTILS
+ */
+let { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+
 
 module.exports = {
     // EXAMPLE
@@ -25,12 +31,13 @@ module.exports = {
     //     }
     // },
 
-    // AUTHOR : HUYNHVINH
+    //==============================  MESSAGE  ================================
 
-   
-    //================================================================  MESAGE  ============================================================
-
-    // Lấy danh sách tin nhắn của cuộc hội thoại
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách tin nhắn của cuộc hội thoại
+	 * Date: ...
+	 */
     getListMessageByConversationID: {
         params: {
             currentPage     : { type: "string" },
@@ -40,15 +47,17 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let {  currentPage, conversationID, userID, latestMessageID }        = ctx.params;
-                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ latestMessageID, conversationID, userID, currentPage });
-                renderStatusCode({ resultAfterCallHandler, ctx })
-                return resultAfterCallHandler;
+                let { currentPage, conversationID, userID, latestMessageID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({
+					latestMessageID, conversationID, userID, currentPage 
+				});
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                renderStatusCode({ resultAfterCallHandler: null, ctx })
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     }
-    //================================================================ END MESAGE  ============================================================
+
+    //============================ END MESSAGE  ============================
 }

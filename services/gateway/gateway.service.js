@@ -12,7 +12,7 @@ let	ApiGateway 				= require("moleculer-web"),
 
 const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
 const GATEWAY__HANDLER      			= require('./handler/gateway.handler');
-	 
+
 module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
@@ -66,8 +66,8 @@ module.exports = {
 	* Actions HEALTH/VERSION
 	*/
 	actions: {	
-		[CF_ACTIONS_GATEWAY.CHECK_HEALTH					] 		: GATEWAY__HANDLER.checkHealth,
-		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 							: GATEWAY__HANDLER.checkVersion,
+		[CF_ACTIONS_GATEWAY.CHECK_HEALTH] 		: GATEWAY__HANDLER.checkHealth,
+		[CF_ACTIONS_GATEWAY.CHECK_VERSION] 		: GATEWAY__HANDLER.checkVersion,
 	},
 
 	methods: {

@@ -22,12 +22,12 @@ const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 /**
  * ------import action's Services--------
  */
- const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
- const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
- const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
- const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
- const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
- const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
+const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
+const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
+const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
+const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
+const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
  
 
 module.exports = {

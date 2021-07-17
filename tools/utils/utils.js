@@ -96,33 +96,32 @@ exports.sortObject = (o) => {
 
 function _checkParametersModel(data, checkValue){
     if(!data || !checkValue || !Array.isArray(data))
-        return { error: true, message: `  checkValue or data false when check Params ` }
-    
+        return { error: true, message: `checkValue or data false when check Params` }
+
     switch (checkValue) {
         case 'number':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
                 if(isNaN(data[i][key[0]])){
-                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
+                    return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
                 }
                 if(typeof data[i][key[0]] != 'number')
-                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
+                    return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
             }
             return  { error: false }
         case 'interger':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
                 if(isNaN(data[i][key[0]])){
-                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
+                    return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
                 }
                 if(typeof data[i][key[0]] != 'number')
-                    return { error: true, message:  `Request params key ${key} invalid type ${checkValue}` }
+                    return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
                 
                 if(!NUMBER_UTILS.isInt(data[i][key[0]]))
-                    return { error: true, message:  `Request params  key ${key} hadn't been interger` }
+                    return { error: true, message: `Request params  key ${key} hadn't been interger` }
             }
             return  { error: false }
-    
         case 'objectID':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
