@@ -2,7 +2,7 @@ let CF_DOMAIN_SERVICES = {
     API         : 'api', //bỏ api -> gateway
     GATEWAY     : 'gateway',
     AUTH        : 'auth',
-    CHATTING    : 'message',
+    CHATTING    : 'chatting',
     PAYMENT     : 'payment',
     REMINDER    : 'reminder',
     FILE        : 'file',

@@ -2,10 +2,10 @@
 /**
  * MIDDLEWARE
  */
-const { 
-	CHECK_AUTHENCATION,
-	CHECK_AUTHORIZATION,
-} 								= require('./auth');
+// const { 
+// 	CHECK_AUTHENCATION,
+// 	CHECK_AUTHORIZATION,
+// } 								= require('./auth');
 
 const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 
@@ -33,7 +33,7 @@ const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
 module.exports = {
 	path: 'api',
 	// authentication: true,
-	// authorization: true,
+	authorization: true,
 
 	// Cho phép truy cập tất cả các services
 	whitelist: [
@@ -42,15 +42,21 @@ module.exports = {
 
 	aliases: {
 		//--------------------------aliases's GATEWAY service--------------------------//
-		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_HEALTH}`] : 
-		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_HEALTH}`],
-
 		[`GET ${CF_ROUTINGS_GATEWAY.CHECK_VERSION}`] : 
 		[`${CF_DOMAIN_SERVICES.GATEWAY}.${CF_ACTIONS_GATEWAY.CHECK_VERSION}`],
 
 		//--------------------------aliases's AUTH service--------------------------//
-		[`GET ${CF_ROUTINGS_AUTH.INSERT_FAST}`] : 
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.INSERT_FAST}`],
+		[`GET ${CF_ROUTINGS_AUTH.ME}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO}`],
+
+		[`POST ${CF_ROUTINGS_AUTH.UPDATE_DEVICE_WHEN_LOGIN_MOBILE}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_DEVICE_WHEN_LOGIN_MOBILE}`],
+
+		[`GET ${CF_ROUTINGS_AUTH.SEARCH_WITH_FIND}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.SEARCH_WITH_FIND}`],
+
+		[`GET ${CF_ROUTINGS_AUTH.SEARCH_WITH_FULL_TEXT}`] : 
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.SEARCH_WITH_FULL_TEXT}`],
 
 		//--------------------------aliases's CHATTING service--------------------------//
 		[`GET ${CF_ROUTINGS_CHATTING.INSERT_CONVERSATION}`] : 

@@ -116,20 +116,20 @@ module.exports = {
 	requestTimeout: 10 * 1000,
 
 	// Retry policy settings. More info: https://moleculer.services/docs/0.14/fault-tolerance.html#Retry
-	retryPolicy: {
-		// Enable feature
-		enabled: false,
-		// Count of retries
-		retries: 5,
-		// First delay in milliseconds.
-		delay: 100,
-		// Maximum delay in milliseconds.
-		maxDelay: 1000,
-		// Backoff factor for delay. 2 means exponential backoff.
-		factor: 2,
-		// A function to check failed requests.
-		check: err => err && !!err.retryable
-	},
+	// retryPolicy: {
+	// 	// Enable feature
+	// 	enabled: false,
+	// 	// Count of retries
+	// 	retries: 3,
+	// 	// First delay in milliseconds.
+	// 	delay: 100,
+	// 	// Maximum delay in milliseconds.
+	// 	maxDelay: 1000,
+	// 	// Backoff factor for delay. 2 means exponential backoff.
+	// 	factor: 2,
+	// 	// A function to check failed requests.
+	// 	check: err => err && !!err.retryable
+	// },
 
 	// Limit of calling level. If it reaches the limit, broker will throw an MaxCallLevelError error. (Infinite loop protection)
 	maxCallLevel: 100,

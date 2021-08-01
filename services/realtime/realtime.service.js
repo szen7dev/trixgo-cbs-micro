@@ -19,6 +19,7 @@ const USER_MODEL           	= require('../../services/auth/model/auth.user-model
 const { verify }     						= require('../../tools/jwt');
 const { REDIS_SEPERATOR }   				= require('../../tools/cache/cf_redis');
 const { sendDataToMultilSocketsOfListUser } = require('../../tools/socket/index');
+const { CF_DOMAIN_SERVICES } 		    	= require('../gateway/helper/domain.constant');
 
 /**
  * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
@@ -302,6 +303,9 @@ module.exports = {
             }
         }
     },
+    dependencies: [
+		CF_DOMAIN_SERVICES.AUTH
+	],
     /**
      * Service created lifecycle event handler
      */

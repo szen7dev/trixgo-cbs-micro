@@ -2,9 +2,10 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
-
-
 module.exports  = DATABASE_MIDDLEWARE("user", {
+    /**
+     * index: {fullname: text}
+     */
     //_______Công ty
     company: {
         type: Schema.Types.ObjectId,
@@ -18,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         require: true
     },
      /**
-     * xem thông tin file
+     * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
      */
     platform:{
         type: Number,
@@ -71,8 +72,8 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * Trạng thái hoạt động.
      * 1. Hoạt động
-     * 0. Khóa
      * -1: Chưa xác thực mail
+     * 0. Khóa
      */
     status: {
         type: Number,
@@ -121,52 +122,52 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
      * 1: Văn hoá doanh nghiệp
      * 2: Báo cáo quản trị theo phân quyền truy cập
      */
-    displayHomeConfig: {
-        type   : Number,
-        default: 1
-    },
+    // displayHomeConfig: {
+    //     type   : Number,
+    //     default: 1
+    // },
     /**
      * Cấu hình giao diện chi tiết công việc
      * 1: Giao diện đơn giản
      * 2: Giao diện đầy đủ
      */
-    displayPcmConfig: {
-        type   : Number,
-        default: 1
-    },
+    // displayPcmConfig: {
+    //     type   : Number,
+    //     default: 1
+    // },
     //_______Ngôn ngữ hiển thị (đồng bộ với moment.js)
     lang: {
         type   : String,
         default: "vi"
     },
     //_______Ghi chú
-    note: String,
+    // note: String,
     //_______Các link thường xuyên truy cập
-    bookmarks: [
-        { 
-            type: String 
-        }
-    ],
+    // bookmarks: [
+    //     { 
+    //         type: String 
+    //     }
+    // ],
     //_______Yêu cầu gửi đi tới người khác
-    sendToFriends: [{ 
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
+    // sendToFriends: [{ 
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'user'
+    // }],
     //_______Yêu cầu nhận được từ người khác gửi đến
-    receiveFromFriends: [{ 
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
+    // receiveFromFriends: [{ 
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'user'
+    // }],
     //_______Danh sách bạn bè
-    friends: [{ 
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
+    // friends: [{ 
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'user'
+    // }],
     //_______Bạn bè liên lạc gần đây
-    recentlyFriends: [{ 
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
+    // recentlyFriends: [{ 
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'user'
+    // }],
     /**
      * Số lượng app user được dùng
      * khi record user_app insert -> amountAppUse ++ (increment)
@@ -179,17 +180,17 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
      * Dung lượng sử dụng trong tất cả các ứng dụng
      * khi record của các ứng dụng insert file thì sẽ ++ (increment)
      */
-    storageUse: {
-        type: Number,
-        default: 0
-    }, 
+    // storageUse: {
+    //     type: Number,
+    //     default: 0
+    // }, 
     // //_______Cuộc hộp thoại bị mis tin nhắn
-    converMiss:[{ 
-        type: Schema.Types.ObjectId,
-        ref: 'message_conversation'
-    }],
+    // converMiss:[{ 
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'message_conversation'
+    // }],
     //_______Code reset mật khẩu
-    codeReset: String,
+    // codeReset: String,
     /**
      * Quản lý thông tin Device Mobile
      */
