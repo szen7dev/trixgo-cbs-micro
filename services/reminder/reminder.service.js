@@ -33,7 +33,7 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		[CF_ACTIONS_REMINDER.ADD_JOB					] 		: REMINDER__CORE_HANLDER.addJob,
+		[CF_ACTIONS_REMINDER.ADD_JOB] 		: REMINDER__CORE_HANLDER.addJob,
 	},
 
 	/**
