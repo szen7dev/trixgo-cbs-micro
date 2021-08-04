@@ -55,24 +55,27 @@ module.exports = {
 		//==============  CONVERSATION ACTIONS  ====================
 
 		// Thêm cuộc hội thoại mới
-		[CF_ACTIONS_CHATTING.INSERT_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.insert,
-		
+		[CF_ACTIONS_CHATTING.INSERT_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.insertConversation,
+
+		// Cập nhật cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.updateConversation,
+
+		// Lấy thông tin một cuộc hội thoại theo ID
+		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,
+
 		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
 
 		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_WITH_KEY] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
 
-		// Lấy thông tin một cuộc hội thoại theo ID
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,
-		
 		// Lấy danh sách thành viên cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    : CHATTING__CONVERSATION_HANDLER.getListMemberByID,
 		
 		// Xem các tệp của cuộc hội thoại [****** để sau]
 
 		// Danh sách cuộc hội thoại có tin nhắn chưa đọc
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getConversationsMissByUserID,
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
 
 		// Tìm kiếm cuộc hội thoại theo dự án [chưa có]
 
@@ -88,10 +91,8 @@ module.exports = {
 
 		// ===========  MESSAGE ACTIONS  ================
 
-		// Lây tin nhắn của cuộc hội thoại phân trang 30 mẫu tin
+		// Lây tin nhắn của cuộc hội thoại phân trang 15 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID] 	: CHATTING__MESSAGE_HANDLER.getListMessageByConversationID,
-
-		// Tìm kiếm tin nhắn trong một cuộc hội thoại [******** để sau]
 
 	},
 

@@ -108,7 +108,7 @@ function _checkParametersModel(data, checkValue){
                 if(typeof data[i][key[0]] != 'number')
                     return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
             }
-            return  { error: false }
+            return { error: false }
         case 'interger':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
@@ -121,7 +121,7 @@ function _checkParametersModel(data, checkValue){
                 if(!NUMBER_UTILS.isInt(data[i][key[0]]))
                     return { error: true, message: `Request params  key ${key} hadn't been interger` }
             }
-            return  { error: false }
+            return { error: false }
         case 'objectID':
             for(let i = 0; i < data.length; i++){
                 let key = Object.keys(data[i])
@@ -129,12 +129,12 @@ function _checkParametersModel(data, checkValue){
                     return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
                 }
             }
-            return  { error: false }
+            return { error: false };
         default:
-            return  { error: true, message: `Request params key ${key} invalid` }
+            return { error: true, message: `Request params key ${key} invalid` }
     }
-   
 }
+
 function _checkPointDotsAndRoundingNumberForPagingChatting(total, perPage){
     let newToltalCheckPage = `${total/perPage }`;
     if(newToltalCheckPage.includes('.')){

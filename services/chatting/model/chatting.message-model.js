@@ -5,7 +5,6 @@
  */
 const fs                                            = require('fs');
 const path                                          = require('path');
-const ObjectID                                      = require('mongoose').Types.ObjectId;
 
 /**
  * BASE
@@ -30,6 +29,7 @@ const FILE__REMOVED_MODEL                           = {};
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
+const { calculateCurrentPage } 						= require('../../../tools/utils/calculate_current_page');
 const { 
 	checkObjectIDs, 
 	objectID, 
@@ -41,7 +41,7 @@ const {
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../database/chatting.message-coll'));
+        super(CHATTING__MESSAGE_COLL);
     }
 
     // Thêm tin nhắn mới
@@ -137,6 +137,119 @@ class Model extends BaseModel {
             }
         })
     }
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy toàn bộ các tin nhắn trong cuộc hội thoại (phân trang)
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
+    getMessageByConversationIDWithPage({ conversationID, userID, latestMessageID }){
+        return new Promise(async resolve => {
+            try {
+                let page 	= 1;
+                let perPage = 15;
+
+                if(latestMessageID && checkObjectIDs(latestMessageID)){
+                    page = 2;
+                }
+
+				// Check params
+                if(page === 1 && !checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+                if(page === 2 && !checkObjectIDs([conversationID, userID, latestMessageID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+                    _id: conversationID,
+                    members: { $all: [userID] }
+                }).lean();
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "Can't get list message in conversation", status: 403 });
+
+				// Get info last message in conversation (limit 15 per list message)
+                let conditionObj = {};
+				let _sort = {
+					modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+				};
+
+                if(page === 2){
+                    let infoMessage = await CHATTING__MESSAGE_COLL.findById(latestMessageID);
+                    if(!infoMessage)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] });
+					if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error) )
+						return resolve({ error: true, message: "Request params nextInfo invalid", status: 400 });
+
+					conditionObj   = dataPagingAndSort.data.find;
+					_sort          = dataPagingAndSort.data.sort;
+                }
+				conditionObj.conversation = objectID(conversationID);
+
+                let listMessage = await CHATTING__MESSAGE_COLL.find(conditionObj)
+                    // .populate({ 
+                    //     path: 'files',
+                    // })
+                    // .populate(
+                    // {
+                    //     path : 'sender', select :'_id fullname image company ' 
+                    // })
+                    // .populate({
+                    //     path: 'parent',
+                    //     populate: {
+                    //         path: "files sender",
+                    //         select :'_id fullname image company path name type size author conversation' 
+                    //     }
+                    // })
+                    // .populate(
+                    // {
+                    //     path : 'likedUsers', select :'_id fullname image company ' 
+                    // })
+                    // .populate({path : 'listSeen', select :  '_id fullname  image' })
+                    // .populate({
+                    //     path: 'reactions',
+                    //     populate: {
+                    //         path: "author",
+                    //         select :'_id fullname image company' 
+                    //     }
+                    // })
+					.limit(perPage)
+					.sort(_sort)
+					.lean();
+
+                let totalPagePromise         = CHATTING__MESSAGE_COLL.count({ conversation: conversationID });
+                let totalCheckExPagePromise  = CHATTING__MESSAGE_COLL.count(conditionObj);
+
+				const { currentPage, totalPage } = await calculateCurrentPage({
+					totalPagePromise: totalPagePromise,
+					totalCurrentPagePromise: totalCheckExPagePromise,
+					perPage
+				})
+
+                return resolve({ 
+					error: false,
+					status: 200,
+					data: { 
+						listMessage,
+						perPage,
+						currentPage,
+						totalPage
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
     // coppy tin nhắn
     copyMessage({ senderID, receivers, conversationID, messageShareID }) { 
@@ -356,127 +469,6 @@ class Model extends BaseModel {
                 return resolve({ error: false, data : '' });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-   
-    // lấy toàn bộ các tin nhắn trong cuộc hội thoại phân trang
-    getMessageByConversationIDWithPage({ conversationID, userID, currentPage, latestMessageID }){
-        return new Promise(async(resolve)=>{
-            try {
-                let checkParamsPage   =   checkParametersModel([{currentPage : Number(currentPage)}], 'interger');
-                if(checkParamsPage.error || Number(currentPage)<=0)
-                    return resolve({ error: true, message: 'Request params currentPage invalid'});
-             
-                let page        = Number(currentPage) || 1;
-                const perPage   = 15;
-
-                if(latestMessageID && checkObjectIDs(latestMessageID)){
-                    page = 2;
-                }
-
-                let checkParamsObjectID;
-                // Nếu page =1  thì không cần kiểm tra latestMessageID
-                if(page == 1){
-                    checkParamsObjectID   =  checkParametersModel([{conversationID}, {userID} ], 'objectID');
-                    if(checkParamsObjectID.error)
-                        return resolve(checkParamsObjectID)
-                }
-
-                // Nếu page > 1  thì không cần latestMessageID để lấy thông tin tin nhắn
-                if(page > 1){
-                    checkParamsObjectID   =  checkParametersModel([{conversationID}, {userID}, {latestMessageID}], 'objectID');
-                    if(checkParamsObjectID.error)
-                        return resolve(checkParamsObjectID)
-                }
-
-                let checkExistConversation  =  await CHATTING__CONVERSATION_COLL.find({
-                    _id: conversationID ,
-                    members: { $all: [userID] }
-                });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Permission denied' });
-                
-                let infoMessage;
-                if(page > 1){
-                    infoMessage             =  await CHATTING__MESSAGE_COLL.findById(latestMessageID);
-                    if(!infoMessage)
-                        return resolve({ error: true, message: 'info message exist denied' });
-                }
-                let nextInfo;
-                if(page > 1){
-                    nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
-                }   
-
-                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
-                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'request params nextInfo invalid' });
-
-                let ObjectSearch            = dataPaggingAndSort.data.find;
-                ObjectSearch.conversation   =  objectID(conversationID);
-                let _sort = dataPaggingAndSort.data.sort;
-                let listMessage = await CHATTING__MESSAGE_COLL.find(ObjectSearch)
-                    // .populate({ 
-                    //     path: 'files',
-                    // })
-                    // .populate(
-                    // {
-                    //     path : 'sender', select :'_id fullname image company ' 
-                    // })
-                    // .populate({
-                    //     path: 'parent',
-                    //     populate: {
-                    //         path: "files sender",
-                    //         select :'_id fullname image company path name type size author conversation' 
-                    //     }
-                    // })
-                    // .populate(
-                    // {
-                    //     path : 'likedUsers', select :'_id fullname image company ' 
-                    // })
-                    // .populate({path : 'listSeen', select :  '_id fullname  image' })
-                    // .populate({
-                    //     path: 'reactions',
-                    //     populate: {
-                    //         path: "author",
-                    //         select :'_id fullname image company' 
-                    //     }
-                    // })
-                .limit(perPage)
-                .sort( dataPaggingAndSort.data.sort );
-
-
-                let toltalPagePromise               =  CHATTING__MESSAGE_COLL.count({ conversation : conversationID });
-                let toltalCheckExPagePromise        =  CHATTING__MESSAGE_COLL.count(ObjectSearch);
-                let [ toltalPageMessage , toltalCheckExCunrrentPage ] = await Promise.all([ toltalPagePromise, toltalCheckExPagePromise ]);
-
-                // Kiểm tra hai kết quả count là number thì tiếp tục tính toán toltalPage và xác định current Page
-                // Xác định lại currentPage về khi nếu truyền current =3 mà req lấy latestMessageID của page --> data đó của page
-                // Nên nếu req có sai currentPage thì vẫn trả về data và currentPage đúng cũng dữ liệu này
-                let currrentPageCheckEx     = 0;
-                let checkParamsToltalPage   = checkParametersModel([{toltalCheckExCunrrentPage}, {toltalPageMessage}], 'number');
-                if(!checkParamsToltalPage.error){
-
-                    //Tính toán currentPage hiện tại chính xác (currentPageExcellent)
-                    let valueCurrentPage    = toltalPageMessage - toltalCheckExCunrrentPage;
-                    if(valueCurrentPage === 0){
-                        currrentPageCheckEx = 1;
-                    }
-                    if(valueCurrentPage!=0 && valueCurrentPage >0){
-                        currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
-                    }
-                    
-                    // Tính toán toltalPage
-                    toltalPageMessage       = checkPointDotsAndRoundingNumberForPagingChatting(toltalPageMessage, perPage);
-                }else{
-                    currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                    toltalPageMessage   = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                }
-
-                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltalPage : toltalPageMessage } });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
             }
         })
     }

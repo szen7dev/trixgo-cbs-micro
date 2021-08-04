@@ -1,8 +1,8 @@
 "use strict";
 
 let mongoose            = require('mongoose');
-var Schema              = require('mongoose').Schema;
-var random              = require('mongoose-simple-random');
+let Schema              = require('mongoose').Schema;
+let random              = require('mongoose-simple-random');
 
 module.exports = function (dbName, dbOb) {
     dbOb.createAt = Date;

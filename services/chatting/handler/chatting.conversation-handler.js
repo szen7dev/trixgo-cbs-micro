@@ -1,47 +1,52 @@
 /**
- * MODELS
- */
-let CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
-let CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
-let CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
-let CHATTING__CONVERSATION_FILE_MODEL               = require('../model/chatting.conversation_file-model').MODEL;
-
-/**
  * CONSTANTS
  */
-let { CF_DATA_DEMO_CHATTING }                       = require('../helper/chatting.data-demo-constant')
+const { CF_DATA_DEMO_CHATTING }                       = require('../helper/chatting.data-demo-constant');
 
 /**
  * TOOLS
  */
-let { renderStatusCodeAndResponse }                 = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }                 = require('../../../tools/utils/status_code');
+
+/**
+ * MODELS
+ */
+const CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
+const CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
+const CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
+const CHATTING__CONVERSATION_FILE_MODEL               = require('../model/chatting.conversation_file-model').MODEL;
+
 
 module.exports = {
 
-	//============================== CONVERSATION ====================================
+	/**
+	 * ============================ ********************* ===============================
+	 * ============================ 	CONVERSATION  	  ===============================
+	 * ============================ ********************* ===============================
+	 */
 
     /**
 	 * Dev: VinhHV
 	 * Func: Thêm cuộc hội thoại mới
 	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
 	 */
-    insert: {
+    insertConversation: {
         params: {
             name        : { type: "string" },
-            description : { type: "string" },
+            description : { type: "string", optional: true },
             authorID    : { type: "string" },
-            receivers   : { type: "string" }
+            isPrivate   : { type: "boolean" }
         },
         async handler(ctx) {
             try {
-                let { name, description, authorID, receivers } = ctx.params;
+				await this.validateEntity(ctx.params);
+                const { name, description, authorID, membersID, isPrivate } = ctx.params;
 
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversationMoreTowMember({ 
-					name, description, authorID, receivers
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversation({
+					name, description, authorID, membersID, isPrivate
 				});
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -50,30 +55,26 @@ module.exports = {
     },
 
 	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách cuộc hội thoại của một người dùng
-	 * Date: ...
+	 * Dev: MinhVH
+	 * Func: Cập nhật cuộc hội thoại
+	 * Date: 04/08/2021
 	 */
-    getListConversationByUserID: {
+	 updateConversation: {
         params: {
-            userID: { type: "string" },
+            conversationID  : { type: "string" },
+            userID        	: { type: "string" },
+            name        	: { type: "string", optional: true },
+            description 	: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                let { userID, lastestConversationID } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
-                // if(!nextInfo){
-                //     nextInfo =  `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
-                // }
+				await this.validateEntity(ctx.params);
+                const { conversationID, userID, name, description } = ctx.params;
 
-				// this.logger.info({
-				// 	userID, lastestConversationID
-				// });
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByAuthorID({ 
-					authorID: userID, lastestConversationID 
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConversation({
+					conversationID, userID, name, description
 				});
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -85,24 +86,103 @@ module.exports = {
 	 * Dev: VinhHV
 	 * Func: Lấy thông tin một cuộc hội thoại theo ID
 	 * Date: ...
+	 * Updated: MinhVH - 04/08/2021
 	 */
-    getInfoConversationByID: {
+	 getInfoConversationByID: {
         params: {
-            conversationID  : { type: "string" },
+            conversationID	: { type: "string" },
+            userID			: { type: "string" },
         },
         async handler(ctx) {
             try {
-                let { conversationID } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+				await this.validateEntity(ctx.params);
+                let { conversationID, userID } = ctx.params;
 
-                // await this.validateEntity(name);
-                // id demo 
-                // conversationID = '602c7a51ea1d1274020b2e08'
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ 
-					userID: CF_DATA_DEMO_CHATTING.userID_1, 
-					conversationID
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoConversationByID({ 
+					conversationID, userID
 				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm theo key)
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
+	 getListConversationByKey: {
+        params: {
+            userID	: { type: "string" },
+            key		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { userID, key } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByKey({
+					userID, key
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách cuộc hội thoại của một người dùng
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
+    getListConversationByUserID: {
+        params: {
+            userID					: { type: "string" },
+			lastestConversationID 	: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { userID, lastestConversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationByUserID({ 
+					authorID: userID, lastestConversationID 
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
+	 getListConversationMissMessageByUserID: {
+        params: {
+            userID       			: { type: "string" },
+            lastestConversationID 	: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { userID, lastestConversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
+					userID, lastestConversationID
+				})
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -135,32 +215,6 @@ module.exports = {
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
 				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
-	 * Dev: VinhHV
-	 * Func: Tìm cuộc hội thoại 
-	 * Date: ...
-	 */
-    getListConversationByKey: {
-        params: {
-            key: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let { key } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListCoversationWithKey({ 
-					userID: CF_DATA_DEMO_CHATTING.userID_1, 
-					key 
-				});
-				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
@@ -212,34 +266,6 @@ module.exports = {
 					userID: CF_DATA_DEMO_CHATTING.userID_1, 
 					currentPage, 
 					nextInfo 
-				})
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
-	 * Date: ...
-	 */
-    getConversationsMissByUserID: {
-        params: {
-            currentPage         : { type: "string" },
-            nextInfo            : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let { nextInfo, currentPage } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
-					currentPage, 
-					nextInfo : '111', 
-					userID: CF_DATA_DEMO_CHATTING.userID_1
 				})
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

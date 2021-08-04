@@ -1,9 +1,6 @@
 // implemention -> LIST (LPUSH, LRANGE, LTRIM, LREM)
-const REDIS                 = require('redis');
-const { REDIS_SEPERATOR }   = require('../config/cf_redis');
-
 const { promisify }         = require('util'); // promisify -> convert cb to promise
-const { CLIENT_REDIS }      = require('../config/cf_redis');
+const { CLIENT_REDIS }      = require('./cf_redis');
 
 const LPUSH_PROMISIFY   = promisify(CLIENT_REDIS.LPUSH).bind(CLIENT_REDIS);
 const RPUSH_PROMISIFY   = promisify(CLIENT_REDIS.RPUSH).bind(CLIENT_REDIS);

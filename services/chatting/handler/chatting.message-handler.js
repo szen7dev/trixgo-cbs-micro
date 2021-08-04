@@ -1,12 +1,12 @@
 /**
- * MODELS
+ * TOOLS
  */
-let CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
 /**
- * UTILS
+ * MODELS
  */
-let { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
 
 
 module.exports = {
@@ -31,27 +31,33 @@ module.exports = {
     //     }
     // },
 
-    //==============================  MESSAGE  ================================
+    /**
+	 * ============================ ****************** ===============================
+	 * ============================ 	 MESSAGE  	   ===============================
+	 * ============================ ****************** ===============================
+	 */
 
 	/**
 	 * Dev: VinhHV
 	 * Func: Lấy danh sách tin nhắn của cuộc hội thoại
 	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
 	 */
     getListMessageByConversationID: {
         params: {
-            currentPage     : { type: "string" },
-            conversationID  : { type: "string" },
+			conversationID  : { type: "string" },
             userID          : { type: "string" },
-            latestMessageID : { type: "string" },
+            latestMessageID : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                let { currentPage, conversationID, userID, latestMessageID } = ctx.params;
+				await this.validateEntity(ctx.params);
+                const { conversationID, userID, latestMessageID } = ctx.params;
 
-                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({
-					latestMessageID, conversationID, userID, currentPage 
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({
+					conversationID, userID, latestMessageID
 				});
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -59,5 +65,4 @@ module.exports = {
         }
     }
 
-    //============================ END MESSAGE  ============================
 }
