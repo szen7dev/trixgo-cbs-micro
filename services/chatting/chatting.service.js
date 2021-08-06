@@ -60,6 +60,12 @@ module.exports = {
 		// Cập nhật cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.updateConversation,
 
+		// Thêm thành viên cuộc hội thoại
+		[CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION] 		    	: CHATTING__CONVERSATION_HANDLER.addMembersToConversation,
+
+		// Xoá thành viên cuộc hội thoại
+		[CF_ACTIONS_CHATTING.REMOVE_MEMBER_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.removeMembersInConversation,
+
 		// Lấy thông tin một cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,
 
@@ -67,7 +73,7 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
 
 		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
 
 		// Lấy danh sách thành viên cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    : CHATTING__CONVERSATION_HANDLER.getListMemberByID,

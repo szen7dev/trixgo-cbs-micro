@@ -16,7 +16,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     /**
      * Người nhận tin nhắn
      */
-    receivers:[{
+    receivers: [{
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     }],

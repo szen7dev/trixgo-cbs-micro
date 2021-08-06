@@ -13,6 +13,7 @@ const { getLinkFromStringV1 } 					= require('../../tools/utils/utils.js')
  * COLLECTIONS
  */
 const CHATTING__CONVERSATION_COLL 				= require('./database/chatting.conversation-coll');
+const AUTH__USER_COLL							= require('../auth/database/auth.user-coll');
 
 /**
  * MODELS
@@ -76,12 +77,15 @@ exports.CHATTING_SOCKET = {
 			listUserConnected: listUserActive, 
 			arrReceiver,
 			data: {
-				infoConversation,
-				infoAuthor: { 
-					_id      : authors[0]._id,
-					fullname : authors[0].fullname,
-					image    : authors[0].image,
-				} 
+				error: false,
+				data: {
+					infoConversation,
+					infoAuthor: { 
+						_id      : authors[0]._id,
+						fullname : authors[0].fullname,
+						image    : authors[0].image,
+					} 
+				}
 			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io
 		});
 
@@ -213,7 +217,7 @@ exports.CHATTING_SOCKET = {
         let userID                                          = socket.client.user;
         let  io                                             = socket.$service.io;
 
-        let {  adminID, conversationID } = data;
+        let { adminID, conversationID }  = data;
         let  infoConversation            = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
         let  arrReceiver                 = infoConversation.data.members;
         
@@ -234,88 +238,81 @@ exports.CHATTING_SOCKET = {
         return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data :  resultUpdateAdmin, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_REMOVE_ADMIN_MESSAGE], io})
     },
     
-    // Thêm người vào cuộc hội [done]
+    // Thêm thành viên vào cuộc hội thoại
     [EVENT_SOCKET_CONSTANT_CHATTING.CSS_ADD_MEMBER_CONVERSATION]: async function(data, ack) { 
-        let socket                      = this;
-        let listUserActive              = socket.$service.listUserConnected2;
-        let io                          = socket.$service.io;
-        let userID                      = socket.client.user;
+        let socket                      	= this;
+        let listUserActive              	= socket.$service.listUserConnected2;
+        let io                          	= socket.$service.io;
+        let userID                      	= socket.client.user;
+        let { conversationID, membersID } 	= data;
 
-        let { members, conversationID, receivers } = data; 
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
-        let authorID     = userID;
-        let infoAfterAdd = await CHATTING__CONVERSATION_MODEL.addMembersToConversionByID({ members, conversationID, authorID  });
-   
-        let arrReceiver = [];
-        if(receivers && receivers.includes(',')) {
-            arrReceiver = receivers.split(',');
-        } else {
-            arrReceiver.push(receivers);
-        };
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.SSC_ADD_MEMBER_CONVERSATION], io
+			});
+		}
 
-        let arrNewMember = [];
-        if(members && members.includes(',')) {
-            arrNewMember = members.split(',');
-        } else {
-            arrNewMember.push(members);
-        };
-        arrReceiver = [...arrReceiver, ...arrNewMember];
+		const infoSender = await AUTH__USER_COLL.findById(userID);
 
-        if(!infoAfterAdd.error){
-            let arrInforMember = [];
-            let infoConversation = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID : authorID  });
-            infoConversation && infoConversation.data &&  infoConversation.data.members.forEach(member=>{
-                arrNewMember.forEach(async newMember=>{
-                    if(member._id == newMember){
-                        let infoMember =  await  USER_MODEL.getInfoByID()
-                        let content = `${infoMember.fullname}`;
-                        nameMember  = `${infoMember.fullname}`;
-                        let type    = 1;// trạng thái tin nhắn thông báo cho cả nhốm vf: user1 vừa dooc them vao nhom
-                        // Thêm tin  nội dung tin nhắn thông báo trong nhóm
-                        let infoMessageAfterInsert = await DB_MESSAGE_MESSAGE_MODEL.insert({ senderID: userID ,
-                        content, receivers , conversationID, type });
-                    }
-                })
-            });
-            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { arrNewMember : members, conversationID }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_ADD_MEMBER_CONVERSATION], io })
-            
-        }
+		const { members } 	= infoConversation;
+		const arrReceiver 	= members.filter(memberID => memberID.toString() !== userID.toString());
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver,
+			data: {
+				error: false,
+				data: {
+					infoConversation,
+					infoSender,
+					addedMembersID: membersID,
+				}
+			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.SSC_ADD_MEMBER_CONVERSATION], io
+		});
+
     },
 
-    // Xoá thành viên khỏi cuộc hội thoại(chỉ áp dụng cho cuộc hội thoại hai người) [done]
-    [EVENT_SOCKET_CONSTANT_CHATTING.CSS_KICK_MEMBER_CONVERSATION]: async function(data, ack) { 
-        let socket                      = this;
-        let socketID                    = socket.id;
-        let listUserActive              = socket.$service.listUserConnected2;
-        let io                          = socket.$service.io;
-        let userID                      = socket.client.user;
+    // Xoá thành viên khỏi cuộc hội thoại
+    [EVENT_SOCKET_CONSTANT_CHATTING.CSS_REMOVE_MEMBER_CONVERSATION]: async function(data, ack) { 
+        let socket                      	= this;
+        let listUserActive              	= socket.$service.listUserConnected2;
+        let io                          	= socket.$service.io;
+        let userID                      	= socket.client.user;
+		let { conversationID, membersID } 	= data;
 
-        let {  memberID, conversationID, receivers, nameMemberDelete } = data;
-        let arrReceiver = [];
-        if(receivers && receivers.includes(',')) {
-            arrReceiver = receivers.split(',');
-        } else {
-            arrReceiver.push(receivers);
-        }
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
-        if(!nameMemberDelete){
-            let _infoUser =  await USER_MODEL.getDataById(memberID)
-            nameMemberDelete = `${_infoUser.fullname}`
-        }
-        let newArrReceiver = [...arrReceiver];
-        let indexUserDelete = newArrReceiver.indexOf(memberID);
-        newArrReceiver.splice(indexUserDelete, 1)
-        let newStringReceiver = newArrReceiver.toString();
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.SSC_REMOVE_MEMBER_CONVERSATION], io
+			});
+		}
 
-        let resulKickMember = await CHATTING__CONVERSATION_MODEL.removeMembersFromConversionByID({ members : memberID, conversationID, authorID : userID });
-        if(!resulKickMember.error){
-            let content = `${nameMemberDelete}`;
-            let type    = 2;// trạng thái tin nhắn thông báo cho cả nhốm vf: user1 vừa bị xóa
-            let infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insert( { senderID: userID , content, receivers: newStringReceiver , conversationID, type });
+		const infoSender = await AUTH__USER_COLL.findById(userID);
 
-            return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { infoMessageDeleUser : infoMessageAfterInsert, infoConversation : resulKickMember.data  }, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_KICK_MEMBER_CONVERSATION], io})
-        }
-        sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID] , data : resulKickMember, event :[EVENT_SOCKET_CONSTANT_CHATTING.SSC_NEW_CONVERSATION], io})
+		const { members } 	= infoConversation;
+		const arrReceiver 	= members.filter(memberID => memberID.toString() !== userID.toString());
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver,
+			data: {
+				error: false,
+				data: {
+					infoConversation,
+					infoSender,
+					removedMembersID: membersID,
+				}
+			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.SSC_REMOVE_MEMBER_CONVERSATION], io
+		});
 
     },
 

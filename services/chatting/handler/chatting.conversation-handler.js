@@ -83,6 +83,58 @@ module.exports = {
     },
 
 	/**
+	 * Dev: MinhVH
+	 * Func: Thêm thành viên cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+	 addMembersToConversation: {
+        params: {
+            conversationID  : { type: "string" },
+            authorID        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { conversationID, authorID, membersID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.addMembersToConversationByID({
+					conversationID, authorID, membersID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm thành viên cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+	 removeMembersInConversation: {
+        params: {
+            conversationID  : { type: "string" },
+            authorID        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { conversationID, authorID, membersID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.removeMembersInConversation({
+					conversationID, authorID, membersID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
 	 * Dev: VinhHV
 	 * Func: Lấy thông tin một cuộc hội thoại theo ID
 	 * Date: ...

@@ -24,7 +24,7 @@ const FILE__REMOVED_MODEL                       = {};
 /**
  * MODELS
  */
-const CHATTING__MESSAGE_MODEL  = require('../model/chatting.message-model').MODEL;
+const CHATTING__MESSAGE_MODEL  					= require('../model/chatting.message-model').MODEL;
 
 
 class Model extends BaseModel {
@@ -138,6 +138,105 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
+	 * Func: Thêm thành viên cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+	 addMembersToConversationByID({ conversationID, authorID, membersID }) {
+        return new Promise(async (resolve) => {
+            try {
+                console.log({ membersID, conversationID, authorID })
+
+                if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length)
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID, 
+					author: { $in: [authorID] }
+				}).populate('members');
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author", status: 403 });
+
+                let listMembersInConversation = checkExistConversation.members;
+
+				for (const member of listMembersInConversation) {
+					if(membersID.includes(member._id.toString())){
+						return resolve({ error: true, message: `Member ${member.fullname} is existed in conversation`, status: 403 });
+					}
+				}
+
+                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    $addToSet: {
+                        members: { $each: membersID }
+                    }
+                }, { new: true });
+
+                if(!infoConversationAfterUpdated)
+                    return resolve({ error: true, message: "Can't add member to conversation", status: 403 });
+
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					senderID: authorID, 
+					content: '', 
+					receiversID: infoConversationAfterUpdated.members,
+					conversationID, 
+					type: 1
+				})
+
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xóa thành viên khỏi cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+    removeMembersInConversation({ conversationID, authorID, membersID }) {
+        return new Promise(async (resolve) => {
+            try {
+				console.log({ membersID, conversationID, authorID })
+
+                if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length)
+					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(membersID.includes(authorID))
+					return resolve({ error: true, message: "You can't remove you from conversation", status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID, 
+					author: { $in: [authorID] }, 
+					members: { $in: membersID }
+				});
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author or member don't belong to chat group", status: 403 });
+
+                // if(checkExistConversation.members.length <= 2){
+                    // let resultDeleteConverSation = await CHATTING__CONVERSATION_COLL.findByIdAndDelete({ conversationID }); 
+                    // return resolve({ error: false, data: checkExistConversation, status: 200});
+                // }
+
+                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    $pullAll: {
+                        members: membersID
+                    }
+                }, { new: true });
+
+                if(!infoConversationAfterUpdated)
+                    return resolve({ error: true, message: "Can't remove members in conversation", status: 403 });
+
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
 	 * Func: Lấy thông tin cuộc hội thoại của user
 	 * Date: 04/08/2021
 	 */
@@ -156,18 +255,6 @@ class Model extends BaseModel {
                         path: 'members authors',
                         select: '_id fullname image company friends birthDay username phone email',
                     })
-                    // .populate({
-                    //     path: 'lastMessage',
-					// 	select: 'modifyAt  createAt sender content status', 
-					// 	populate: { 
-					// 		path: 'sender', 
-					// 		select: '_id fullname image company'
-					// 	}
-                    // })
-                    // .populate({
-                    //     path: 'pin', 
-					// 	select: '_id sender content status' 
-                    // })
                     .lean();
 
                 if (!infoConversation) 
@@ -629,96 +716,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Cant leave', status : 403 });
                 
                 return resolve({ error: false, data: infoConversationAfterUpdated });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Xóa một user khỏi cuộc hội thoại (nhóm chat)
-    removeMembersFromConversionByID({ members, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                let arrMember = [...members.split(',')];
-                // if(members.includes(',')) {
-                //     arrMember = members.split(',');
-                // } else {
-                //     arrMember.push(members);
-                // }\
-
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID) || !Array.isArray(arrMember))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID, members: { $in: [...arrMember] }});
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't permission", status : 403 });
-
-                if(checkExistConversation.members.length <= 3){
-                    // let resultDeleteConverSation = await CHATTING__CONVERSATION_COLL.findByIdAndDelete({ conversationID }); 
-                    return resolve({ error: false, data: checkExistConversation, status : 200});
-                }
-                
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $pullAll: {
-                        members: [...arrMember]
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant remove', status : 403 });
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Thêm các member vào cuộc hội thoại
-    addMembersToConversionByID({ members, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                let arrMember = [];
-                // console.log({ members, conversationID, authorID })
-                if(members.includes(',')) {
-                    arrMember = members.split(',');
-                } else {
-                    arrMember.push(members);
-                }
-                arrMember.forEach(member=>{
-                    if(!checkObjectIDs(member)){
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                    }
-                });
-
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !Array.isArray(arrMember))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                if(arrMember.includes(authorID))
-                    return resolve({ error: true, message: 'Cant create', status : 403 });
-
-                
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author", status : 403 });
-
-                let listMembers = checkExistConversation.members;
-                for(let i=0;i < listMembers.length; i++){
-                    if(arrMember.includes(listMembers[i].toString())){
-                        return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                    }
-                }
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $push: {
-                        members : {$each  : arrMember }
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create', status : 403  }); 
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200  });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }

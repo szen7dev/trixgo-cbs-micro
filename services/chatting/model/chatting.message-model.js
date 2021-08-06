@@ -30,12 +30,7 @@ const FILE__REMOVED_MODEL                           = {};
  */
 const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
 const { calculateCurrentPage } 						= require('../../../tools/utils/calculate_current_page');
-const { 
-	checkObjectIDs, 
-	objectID, 
-	checkParametersModel, 
-	checkPointDotsAndRoundingNumberForPagingChatting 
-} = require('../../../tools/utils/utils');
+const { checkObjectIDs, objectID } 					= require('../../../tools/utils/utils');
 
 
 class Model extends BaseModel {
@@ -44,7 +39,7 @@ class Model extends BaseModel {
         super(CHATTING__MESSAGE_COLL);
     }
 
-    // Thêm tin nhắn mới
+    // Thêm tin nhắn mới (cũ -> dùng hàm bên dưới để insert message)
     insert({ senderID, content, parentID, receivers, conversationID, status = 0, type = 0 }) { 
         const that = this;
         return new Promise(async (resolve) => {
@@ -130,6 +125,64 @@ class Model extends BaseModel {
 
                 if(!checkLastMessageAfterUpdated)
                     return resolve({ error: true, message: 'Cant create message', status: 403 });
+
+                return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn mới
+	 * Date: 06/08/2021
+	 */
+    insertMessage({ senderID, content, receiversID, conversationID, type = 0 }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (!checkObjectIDs([...receiversID, senderID, conversationID]) || !receiversID.length) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK RECEIVERS IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+					_id: conversationID,
+					members: { $all: [senderID, ...receiversID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				// INSERT MESSAGE
+                let infoMessageAfterInserted = await this.insertData({
+					listSeen: [senderID], 
+					sender: senderID, 
+					content, 
+					conversation: conversationID,
+					type
+				});
+
+                if(!infoMessageAfterInserted)
+                    return resolve({ error: true, message: "Can't create message", status: 403 });
+
+				// UPDATE RECEIVERS MESSAGE
+                let { _id: messageID } = infoMessageAfterInserted; 
+                let infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+                    $addToSet: {
+                        receivers: receiversID
+                    }
+                }, { new: true });
+
+                if(!infoMessageAfterUpdated)
+                    return resolve({ error: true, message: "Can't update receiversID message", status: 403 });
+
+				// UPDATE LAST MESSAGE
+                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: messageID, modifyAt: Date.now()
+                }, { new: true });
+
+                if(!checkLastMessageAfterUpdated)
+                    return resolve({ error: true, message: "Can't update last message", status: 403 });
 
                 return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
             } catch (error) {
@@ -321,7 +374,6 @@ class Model extends BaseModel {
         })
     }
 
-    //
     updateByID({ messageID, filesID }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -447,7 +499,7 @@ class Model extends BaseModel {
                 if(!infoMessageAfterRemoved)
                     return resolve({ error: true, message : 'cannot_remove'});
                 
-                await infoMessageAfterRemoved.forEach(async  message=>{
+                infoMessageAfterRemoved.forEach(async message=>{
                     let infoMessage = await CHATTING__MESSAGE_COLL.findById(message._id);
                     let infoMessageAfterRemoved = await CHATTING__MESSAGE_COLL.findOneAndRemove({ _id: message._id, conversation: conversationID });
                     if(!infoMessageAfterRemoved)
