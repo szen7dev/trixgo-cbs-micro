@@ -16,6 +16,9 @@ const CF_ROUTINGS_CHATTING = {
     UPDATE_CONVERSATION                     : `${BASE_ROUTE}${CONVERSATION}/update-conversation`,
     ADD_MEMBER_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/add-member-conversation`,
     REMOVE_MEMBER_CONVERSATION              : `${BASE_ROUTE}${CONVERSATION}/remove-member-conversation`,
+	UPDATE_ADMIN_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/update-admin-conversation`,
+	UPDATE_CONFIG_CONVERSATION              : `${BASE_ROUTE}${CONVERSATION}/update-config-conversation`,
+
     GET_LIST_CONVERSATION_BY_USER_ID        : `${BASE_ROUTE}${CONVERSATION}/users/:userID`,
     GET_INFO_CONVERSATION_BY_ID             : `${BASE_ROUTE}${CONVERSATION}/:conversationID`,
     GET_LIST_MEMBER_CONVERSATION_BY_ID      : `${BASE_ROUTE}${CONVERSATION}/members/:conversationID`,

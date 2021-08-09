@@ -6,6 +6,12 @@
 const ObjectID                                  = require('mongoose').Types.ObjectId;
 
 /**
+ * ACTIONS CONSTANTS
+ */
+const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
+
+/**
  * TOOLS
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
@@ -17,6 +23,7 @@ const { checkObjectIDs } 						= require('../../../tools/utils/utils');
  * COLLECTIONS
  */
 const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
+const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
 const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 const FILE__FILE_COLL                           = {};
 const FILE__REMOVED_MODEL                       = {};
@@ -109,7 +116,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật thông tin cuộc hội thoại
 	 * Date: 04/08/2021
 	 */
-	updateConversation({ conversationID, userID, name, description }) {
+	updateConversation({ conversationID, userID, name, description, avatar, ctx }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -118,6 +125,26 @@ class Model extends BaseModel {
 				let dataUpdate = {};
 				name 		&& (dataUpdate.name 		= name);
 				description && (dataUpdate.description 	= description);
+
+				// Cập nhật avatar cuộc hội thoại
+				if(avatar){
+					let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
+						app: 'chatting',
+						name: avatar.name,
+						url: avatar.url,
+						size: avatar.size,
+						userID,
+					});
+					if(infoAvatarConversation.error){
+						return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
+					}
+
+					let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
+						conversation: conversationID,
+						file: infoAvatarConversation.data._id
+					});
+					dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
+				}
 
 				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 					_id: conversationID,
@@ -151,7 +178,7 @@ class Model extends BaseModel {
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
 					_id: conversationID, 
-					author: { $in: [authorID] }
+					authors: { $in: [authorID] }
 				}).populate('members');
 
                 if(!checkExistConversation)
@@ -175,8 +202,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't add member to conversation", status: 403 });
 
 				await CHATTING__MESSAGE_MODEL.insertMessage({
-					senderID: authorID, 
-					content: '', 
+					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
 					conversationID, 
 					type: 1
@@ -207,7 +233,7 @@ class Model extends BaseModel {
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
 					_id: conversationID, 
-					author: { $in: [authorID] }, 
+					authors: { $in: [authorID] }, 
 					members: { $in: membersID }
 				});
 
@@ -228,9 +254,148 @@ class Model extends BaseModel {
                 if(!infoConversationAfterUpdated)
                     return resolve({ error: true, message: "Can't remove members in conversation", status: 403 });
 
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					senderID: authorID,
+					receiversID: infoConversationAfterUpdated.members,
+					conversationID, 
+					type: 2
+				})
+
                 return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Set member thành admin cho cuộc hội thoại (hoặc ngược lại)
+	 * Date: 07/08/2021
+	 */
+	 updateAdminConversation({ conversationID, authorID, memberID, isSetAdmin }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([conversationID, authorID, memberID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [authorID] }
+				});
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author", status: 403 });
+
+				let infoConversationAfterUpdated = null, typeMessage = 0;
+				// Cập nhật member thành admin
+				if(isSetAdmin){
+					if(checkExistConversation.authors.includes(memberID))
+						return resolve({ error: true, message: "Member is already an author", status: 403 });
+
+					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$addToSet: {
+							authors: memberID
+						}
+					}, { new: true });
+
+					typeMessage = 5;
+
+				} else{ // Cập nhật admin thành member
+					if(checkExistConversation.authors[0].toString() === memberID.toString())
+						return resolve({ error: true, message: "Can't remove author root", status: 403 });
+
+					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$pull: {
+							authors: memberID
+						}, 
+					}, { new: true });
+
+					typeMessage = 6;
+				}
+
+                if(!infoConversationAfterUpdated)
+                    return resolve({ error: true, message: "Can't update author for conversation", status: 403 });
+
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, 
+					senderID: authorID,
+					type: typeMessage,
+					receiversID: checkExistConversation.members,
+				})
+
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status : 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cài đặt cuộc hội thoại (group chat)
+	 * Date: 09/08/2021
+	 */
+	 updateConfigConversation({ conversationID, authorID, typeConfig, valueConfig }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([conversationID, authorID]) || ![0,1].includes(+valueConfig))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [authorID] }
+				});
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author", status: 403 });
+
+				let dataUpdate = { };
+				/**
+				 * 1: Làm nổi bật tin của Admin
+				 * 2: Member mới được xem tin nhắn cũ
+				 * 3: Members được sửa thông tin nhóm
+				 * 4: Members được tạo ghi chú, nhắc hẹn
+				 * 5: Members được tạo bình chọn
+				 * 6: Members được ghim tin nhắn
+				 * 7: Members được gửi tin nhắn
+				 */
+				switch (+typeConfig) {
+					case 1:
+						dataUpdate.config = { configHighlight: +valueConfig };
+						break;
+					case 2:
+						dataUpdate.config = { configSeeOldMessage: +valueConfig };
+						break;
+					case 3:
+						dataUpdate.config = { configEditInfo: +valueConfig };
+						break;
+					case 4:
+						dataUpdate.config = { configCreateNote: +valueConfig };
+						break;
+					case 5:
+						dataUpdate.config = { configCreatePoll: +valueConfig };
+						break;
+					case 6:
+						dataUpdate.config = { configPinMessage: +valueConfig };
+						break;
+					case 7:
+						dataUpdate.config = { configSendMessage: +valueConfig };
+						break;
+					default:
+						break;
+				}
+
+				let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$set: dataUpdate
+				}, { new: true });
+
+                if(!infoConversationAfterUpdated)
+                    return resolve({ error: true, message: "Can't update config conversation", status: 403 });
+
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
@@ -255,6 +420,10 @@ class Model extends BaseModel {
                         path: 'members authors',
                         select: '_id fullname image company friends birthDay username phone email',
                     })
+					.populate({
+						path: 'avatar',
+						populate: 'file'
+					})
                     .lean();
 
                 if (!infoConversation) 
@@ -721,72 +890,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    // Set admin mới cho nhóm
-    insertNewAdmin({ member, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !checkObjectIDs(member) )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                member = [member]
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $addToSet: {
-                        author: [...member]
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create', status : 403  }); 
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // xoá admin 
-    /* Author: Vinh
-    * Update: Hoang - Date: 21/10/2010 
-    * fix "infoConversationAfterUpdated is not defined"
-    */
-    removeAdmin({ adminID, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !checkObjectIDs(adminID) )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                
-                let infoConversationAfterUpdated;
-                if(checkExistConversation.author[0].toString() != adminID.toString()){
-                    infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                        $pull : {
-                            author: adminID
-                        }, 
-                    }, { new: true });
-    
-                }else{
-                    return resolve({ error: true, message:  'Permission denied', status : 403  });
-                }   
-                
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant Creata', status :403 });
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    
 
     // Thêm tin nhắn ghim
     // Tìm kiếm cuộc hội thoại

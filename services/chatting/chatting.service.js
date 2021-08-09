@@ -2,8 +2,16 @@
 
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+
+/**
+ * CONSTANTS
+ */
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_CHATTING } 	        = require('./helper/chatting.actions-constant');
+
+/**
+ * HANDLERS
+ */
 const CHATTING__CONVERSATION_HANDLER    = require('./handler/chatting.conversation-handler');
 const CHATTING__MESSAGE_HANDLER         = require('./handler/chatting.message-handler');
 
@@ -12,7 +20,6 @@ module.exports = {
 	mixins: [
 		DbService('message_messages'),
 		DbService('message_conversations'),
-		DbService('message_conversation_drafts'),
 		DbService('message_conversation_links'),
 		DbService('users'),  
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
@@ -65,6 +72,14 @@ module.exports = {
 
 		// Xoá thành viên cuộc hội thoại
 		[CF_ACTIONS_CHATTING.REMOVE_MEMBER_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.removeMembersInConversation,
+
+		// Cập nhật admin cho cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_ADMIN_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.updateAdminConversation,
+
+		// Cập nhật cài đặt cho cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_CONFIG_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.updateConfigConversation,
+
+
 
 		// Lấy thông tin một cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,

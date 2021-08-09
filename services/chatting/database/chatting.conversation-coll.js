@@ -39,11 +39,11 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         ref     : 'message_message'
     },
     /**
-     * Logo Nhóm chat
+     * Avatar Nhóm chat
      */
-    logo: {
+    avatar: {
         type    : Schema.Types.ObjectId,
-        ref     : 'file'
+        ref     : 'message_conversation_file'
     },
     /**
      * Tin nhắn được ghim
@@ -81,12 +81,53 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         }
     }],
     /**
-     * Danh sách user ping cuộc hội thoại
+     * Danh sách user pin cuộc hội thoại
     */
     usersPin: [{
         type: Schema.Types.ObjectId,
         ref: 'user'
     }],
+
+	/**
+     * Cấu hình admin cuộc hội thoại
+    */
+	config: {
+		// Làm nổi bật tin của Admin
+		configHighlight: {
+			type: Number,
+			default: 0
+		},
+		// Member mới được xem tin nhắn cũ
+		configSeeOldMessage: {
+			type: Number,
+			default: 1
+		},
+		// Members được sửa thông tin nhóm
+		configEditInfo: {
+			type: Number,
+			default: 1
+		},
+		// Members được tạo ghi chú, nhắc hẹn
+		configCreateNote: {
+			type: Number,
+			default: 1
+		},
+		// Members được tạo bình chọn
+		configCreatePoll: {
+			type: Number,
+			default: 1
+		},
+		// Members được ghim tin nhắn
+		configPinMessage: {
+			type: Number,
+			default: 1
+		},
+		// Members được gửi tin nhắn
+		configSendMessage: {
+			type: Number,
+			default: 1
+		},
+	}
 
     /**
 	 * Các files được đính kèm trong cuộc hội thoại

@@ -25,7 +25,8 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * Nội dung của tin nhắn
      */
     content: {
-        type: String
+        type: String,
+		default: ''
     },
     
     /**
@@ -66,13 +67,13 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
    /**
      * Loại tin nhắn
      * 0: tin nhắn thông thường 
-     * 1: Thêm người mới vào cuộc hội thoại
-     * 2: Xóa người khỏi cuộc hội thoại
+     * 1: Thêm thành viên vào cuộc hội thoại
+     * 2: Xóa thành viên khỏi cuộc hội thoại
      * 3: Đổi tên cuộc hội thoại
      * 4: Đổi logo cuộc hội thoại
-     * 5: Thêm admin mới cho cuộc hội thoại
-     * 6: Xóa cuộc hội thoại
-     * 7: Xóa admin
+     * 5: Thêm admin mới vào cuộc hội thoại
+     * 6: Xoá bỏ quyền admin của member trong cuộc hội thoại
+     * 7: Xóa cuộc hội thoại
      * 8: là gửi nút like
      */
     type: {
@@ -81,7 +82,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     },
 
     /**
-     * vinhnh
      * Đã xem
      * Danh sách user đã xem tinh nhắn này
      * xác định đã xem thông qua số lượng listSeen

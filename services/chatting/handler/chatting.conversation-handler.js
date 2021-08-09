@@ -69,10 +69,10 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { conversationID, userID, name, description } = ctx.params;
+                const { conversationID, userID, name, description, avatar } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConversation({
-					conversationID, userID, name, description
+					conversationID, userID, name, description, avatar, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -125,6 +125,62 @@ module.exports = {
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.removeMembersInConversation({
 					conversationID, authorID, membersID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật admin cho cuộc hội thoại
+	 * Date: 07/08/2021
+	 */
+	updateAdminConversation: {
+        params: {
+            conversationID  : { type: "string" },
+            authorID        : { type: "string" },
+            memberID        : { type: "string" },
+            isSetAdmin      : { type: "boolean" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { conversationID, authorID, memberID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertNewAdmin({
+					conversationID, authorID, memberID, isSetAdmin
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật cài đặt cho cuộc hội thoại (group chat)
+	 * Date: 09/08/2021
+	 */
+	updateConfigConversation: {
+        params: {
+            conversationID  : { type: "string" },
+            authorID        : { type: "string" },
+            typeConfig      : { type: "string" },
+            valueConfig     : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { conversationID, authorID, typeConfig, valueConfig } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConfigConversation({
+					conversationID, authorID, typeConfig, valueConfig
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

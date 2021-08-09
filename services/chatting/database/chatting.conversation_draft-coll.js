@@ -2,8 +2,9 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
+
 /**
- * tách conversation_link: không dùng links trong conversation
+ * message draft: đang soạn nhưng chưa gửi
  */
 module.exports  = DATABASE_MIDDLEWARE("message_conversation_draft", {
     conversation: {
@@ -14,8 +15,5 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_draft", {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
-    // message draft: đang soạn nhưng chưa gửi
-    message : {
-        type : String
-    }
+    message: String
 })
