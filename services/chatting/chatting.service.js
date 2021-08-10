@@ -71,7 +71,7 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION] 		    	: CHATTING__CONVERSATION_HANDLER.addMembersToConversation,
 
 		// Xoá thành viên cuộc hội thoại
-		[CF_ACTIONS_CHATTING.REMOVE_MEMBER_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.removeMembersInConversation,
+		[CF_ACTIONS_CHATTING.REMOVE_MEMBER_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.removeMemberInConversation,
 
 		// Cập nhật admin cho cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_ADMIN_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.updateAdminConversation,
@@ -79,10 +79,17 @@ module.exports = {
 		// Cập nhật cài đặt cho cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_CONFIG_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.updateConfigConversation,
 
+		// Cập nhật pin cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_PIN_CONVERSATION] 		    	: CHATTING__CONVERSATION_HANDLER.updatePinConversation,
 
+		// Lấy danh sách thành viên cuộc hội thoại theo ID
+		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    : CHATTING__CONVERSATION_HANDLER.getListMembersConversationByID,
 
 		// Lấy thông tin một cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,
+
+
+
 
 		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
@@ -90,9 +97,6 @@ module.exports = {
 		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
 
-		// Lấy danh sách thành viên cuộc hội thoại theo ID
-		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    : CHATTING__CONVERSATION_HANDLER.getListMemberByID,
-		
 		// Xem các tệp của cuộc hội thoại [****** để sau]
 
 		// Danh sách cuộc hội thoại có tin nhắn chưa đọc

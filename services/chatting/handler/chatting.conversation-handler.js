@@ -26,22 +26,21 @@ module.exports = {
 	 */
 
     /**
-	 * Dev: VinhHV
+	 * Dev: MinhVH
 	 * Func: Thêm cuộc hội thoại mới
-	 * Date: ...
-	 * Updated: MinhVH - 03/08/2021
+	 * Date: 03/08/2021
 	 */
     insertConversation: {
         params: {
             name        : { type: "string" },
             description : { type: "string", optional: true },
-            authorID    : { type: "string" },
             isPrivate   : { type: "boolean" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { name, description, authorID, membersID, isPrivate } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { name, description, membersID, isPrivate } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversation({
 					name, description, authorID, membersID, isPrivate
@@ -59,17 +58,17 @@ module.exports = {
 	 * Func: Cập nhật cuộc hội thoại
 	 * Date: 04/08/2021
 	 */
-	 updateConversation: {
+	updateConversation: {
         params: {
             conversationID  : { type: "string" },
-            userID        	: { type: "string" },
             name        	: { type: "string", optional: true },
             description 	: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { conversationID, userID, name, description, avatar } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, name, description, avatar } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConversation({
 					conversationID, userID, name, description, avatar, ctx
@@ -87,15 +86,15 @@ module.exports = {
 	 * Func: Thêm thành viên cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-	 addMembersToConversation: {
+	addMembersToConversation: {
         params: {
-            conversationID  : { type: "string" },
-            authorID        : { type: "string" },
+            conversationID: { type: "string" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { conversationID, authorID, membersID } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { conversationID, membersID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.addMembersToConversationByID({
 					conversationID, authorID, membersID
@@ -113,18 +112,19 @@ module.exports = {
 	 * Func: Thêm thành viên cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-	 removeMembersInConversation: {
+	removeMemberInConversation: {
         params: {
             conversationID  : { type: "string" },
-            authorID        : { type: "string" },
+            memberID        : { type: "string" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { conversationID, authorID, membersID } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { conversationID, memberID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.removeMembersInConversation({
-					conversationID, authorID, membersID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.removeMemberInConversation({
+					conversationID, authorID, memberID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -142,14 +142,14 @@ module.exports = {
 	updateAdminConversation: {
         params: {
             conversationID  : { type: "string" },
-            authorID        : { type: "string" },
             memberID        : { type: "string" },
             isSetAdmin      : { type: "boolean" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { conversationID, authorID, memberID } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { conversationID, memberID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertNewAdmin({
 					conversationID, authorID, memberID, isSetAdmin
@@ -170,17 +170,44 @@ module.exports = {
 	updateConfigConversation: {
         params: {
             conversationID  : { type: "string" },
-            authorID        : { type: "string" },
-            typeConfig      : { type: "string" },
-            valueConfig     : { type: "string" },
+            typeConfig      : { type: "number" },
+            valueConfig     : { type: "number" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { conversationID, authorID, typeConfig, valueConfig } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { conversationID, typeConfig, valueConfig } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConfigConversation({
 					conversationID, authorID, typeConfig, valueConfig
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật pin cuộc hội thoại
+	 * Date: 09/08/2021
+	 */
+	updatePinConversation: {
+        params: {
+            conversationID  : { type: "string" },
+            isPin        	: { type: "boolean" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, isPin } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updatePinConversation({
+					conversationID, userID, isPin
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -198,13 +225,13 @@ module.exports = {
 	 */
 	 getInfoConversationByID: {
         params: {
-            conversationID	: { type: "string" },
-            userID			: { type: "string" },
+            conversationID: { type: "string" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                let { conversationID, userID } = ctx.params;
+				let { _id: userID }  	= ctx.meta.infoUser;
+                let { conversationID } 	= ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoConversationByID({ 
 					conversationID, userID
@@ -213,6 +240,33 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách member cuộc hội thoại
+	 * Date: ...
+	 * Updated: 10/08/2021 - MinhVH
+	 */
+	getListMembersConversationByID: {
+        params: {
+            conversationID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID }  	= ctx.meta.infoUser;
+                let { conversationID } 	= ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMembersConversationByID({ 
+					conversationID, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
@@ -294,35 +348,6 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách member theo ID
-	 * Date: ...
-	 */
-    getListMemberByID: {
-        params: {
-            conversationID  : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let { conversationID } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-
-                // await this.validateEntity(name);
-                // id demo 
-                // conversationID = '602c7a51ea1d1274020b2e08'
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoMembersByID({ 
-					userID: CF_DATA_DEMO_CHATTING.userID_1, 
-					conversationID 
-				});
-				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },

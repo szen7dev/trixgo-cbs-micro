@@ -74,7 +74,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 5: Thêm admin mới vào cuộc hội thoại
      * 6: Xoá bỏ quyền admin của member trong cuộc hội thoại
      * 7: Xóa cuộc hội thoại
-     * 8: là gửi nút like
      */
     type: {
         type   : Number,

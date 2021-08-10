@@ -80,13 +80,6 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
             type: Date
         }
     }],
-    /**
-     * Danh sách user pin cuộc hội thoại
-    */
-    usersPin: [{
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
 
 	/**
      * Cấu hình admin cuộc hội thoại

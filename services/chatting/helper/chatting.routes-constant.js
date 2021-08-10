@@ -18,10 +18,12 @@ const CF_ROUTINGS_CHATTING = {
     REMOVE_MEMBER_CONVERSATION              : `${BASE_ROUTE}${CONVERSATION}/remove-member-conversation`,
 	UPDATE_ADMIN_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/update-admin-conversation`,
 	UPDATE_CONFIG_CONVERSATION              : `${BASE_ROUTE}${CONVERSATION}/update-config-conversation`,
+	UPDATE_PIN_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/update-pin-conversation`,
+
+    GET_INFO_CONVERSATION_BY_ID             : `${BASE_ROUTE}${CONVERSATION}/info-conversation/:conversationID`,
+    GET_LIST_MEMBER_CONVERSATION_BY_ID      : `${BASE_ROUTE}${CONVERSATION}/list-members-conversation`,
 
     GET_LIST_CONVERSATION_BY_USER_ID        : `${BASE_ROUTE}${CONVERSATION}/users/:userID`,
-    GET_INFO_CONVERSATION_BY_ID             : `${BASE_ROUTE}${CONVERSATION}/:conversationID`,
-    GET_LIST_MEMBER_CONVERSATION_BY_ID      : `${BASE_ROUTE}${CONVERSATION}/members/:conversationID`,
     GET_LIST_CONVERSATION_BY_KEY            : `${BASE_ROUTE}${CONVERSATION}`,
     GET_INFO_CONVERSATION_DRAFT             : `${BASE_ROUTE}${CONVERSATION}/draft/:conversationID`,
     GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/links/:conversationID`,
