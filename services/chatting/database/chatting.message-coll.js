@@ -28,13 +28,13 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
         type: String,
 		default: ''
     },
-    
+
     /**
      * Các files được đính kèm trong cuộc hội thoại
      */
     files: [{
         type    : Schema.Types.ObjectId,
-        ref     : 'file'
+        ref     : 'message_conversation_file'
     }],
 
     /**
@@ -55,10 +55,9 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 
     /**
      * Trạng thái của tin nhắn
-     * 0 : đã gửi nhưng chưa xem/ chưa nhận))  
-     * 1 : đã xem
-     * 2 : đã nhận
-     * 3 : tin nhắn được chia sẽ
+     * 0: đã gửi nhưng chưa xem/ chưa nhận))
+     * 1: đã nhận
+     * 2: đã xem
     */
     status: {
         type   : Number,
@@ -67,13 +66,21 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
    /**
      * Loại tin nhắn
      * 0: tin nhắn thông thường 
-     * 1: Thêm thành viên vào cuộc hội thoại
-     * 2: Xóa thành viên khỏi cuộc hội thoại
-     * 3: Đổi tên cuộc hội thoại
-     * 4: Đổi logo cuộc hội thoại
-     * 5: Thêm admin mới vào cuộc hội thoại
-     * 6: Xoá bỏ quyền admin của member trong cuộc hội thoại
-     * 7: Xóa cuộc hội thoại
+	 * 1: tin nhắn ảnh
+	 * 2: tin nhắn file
+	 * 3: tin nhắn link
+	 * 4: tin nhắn reminder
+	 * 5: tin nhắn poll
+	 * 6: tin nhắn share location
+	 * 7: tin nhắn share contact
+	 * 
+     * 8: Thêm thành viên vào cuộc hội thoại
+     * 9: Xóa thành viên khỏi cuộc hội thoại
+     * 10: Đổi tên cuộc hội thoại
+     * 11: Đổi logo cuộc hội thoại
+     * 12: Xét thêm admin cuộc hội thoại
+     * 13: Xoá bỏ quyền admin của member trong cuộc hội thoại
+     * 14: Xóa cuộc hội thoại
      */
     type: {
         type   : Number,
@@ -171,10 +178,10 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * QUẢN LÝ GIAO VIỆC QUA PCM
      * Sử dụng để get link tới công việc bên PCM
      */
-    task: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'pcm_plan_task'
-    },
+    // task: {
+    //     type    : Schema.Types.ObjectId,
+    //     ref     : 'pcm_plan_task'
+    // },
 
     //_________Các chi chú nếu có
     // noteBug: String

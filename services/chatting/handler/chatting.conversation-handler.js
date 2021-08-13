@@ -151,7 +151,7 @@ module.exports = {
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { conversationID, memberID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertNewAdmin({
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateAdminConversation({
 					conversationID, authorID, memberID, isSetAdmin
 				});
 
@@ -245,6 +245,32 @@ module.exports = {
     },
 
 	/**
+	 * Dev: MinhVH
+	 * Func: Xem các nhóm chung với 1 thành viên
+	 * Date: 11/08/2021
+	 */
+	getInfoGeneralGroupsByMember: {
+        params: {
+            memberID: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				let { _id: userID } = ctx.meta.infoUser;
+                let { memberID } 	= ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoGeneralGroupsByMember({ 
+					userID, memberID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
 	 * Dev: VinhHV
 	 * Func: Lấy danh sách member cuộc hội thoại
 	 * Date: ...
@@ -261,6 +287,94 @@ module.exports = {
                 let { conversationID } 	= ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMembersConversationByID({ 
+					conversationID, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách tin nhắn cuộc hội thoại ( phân trang)
+	 * Date: 11/08/2021
+	 */
+	 getListMessagesConversationWithPage: {
+        params: {
+            conversationID	: { type: "string" },
+			latestMessageID : { type: "string", optional: true },
+            key				: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID }  		= ctx.meta.infoUser;
+                let { conversationID, latestMessageID, key } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
+					conversationID, latestMessageID, userID, key
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách tin nhắn media cuộc hội thoại
+	 * Date: 12/08/2021
+	 */
+	 getListMessagesMediaConversation: {
+        params: {
+            conversationID	: { type: "string" },
+            typeMessage		: { type: "string" },
+            senderID		: { type: "string", optional: true },
+            dateCreate		: { type: "string", optional: true },
+            fromDate		: { type: "string", optional: true },
+            toDate			: { type: "string", optional: true },
+            isLoadAll		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { 
+					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll 
+				} = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesMediaConversation({ 
+					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
+	 * Date: 13/08/2021
+	 */
+	 getListMemberSendMessagesMediaConversation: {
+        params: {
+            conversationID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMemberSendMessagesMediaConversation({ 
 					conversationID, userID
 				});
 

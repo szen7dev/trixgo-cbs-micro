@@ -12,16 +12,20 @@ const CF_ROUTINGS_CHATTING = {
 	// ======================== ROUTE - API ===============================
 
     // CONVERSATION
-    INSERT_CONVERSATION                     : `${BASE_ROUTE}${CONVERSATION}/create-conversation`,
-    UPDATE_CONVERSATION                     : `${BASE_ROUTE}${CONVERSATION}/update-conversation`,
-    ADD_MEMBER_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/add-member-conversation`,
-    REMOVE_MEMBER_CONVERSATION              : `${BASE_ROUTE}${CONVERSATION}/remove-member-conversation`,
-	UPDATE_ADMIN_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/update-admin-conversation`,
-	UPDATE_CONFIG_CONVERSATION              : `${BASE_ROUTE}${CONVERSATION}/update-config-conversation`,
-	UPDATE_PIN_CONVERSATION              	: `${BASE_ROUTE}${CONVERSATION}/update-pin-conversation`,
+    INSERT_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/create-conversation`,
+    UPDATE_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/update-conversation`,
+    ADD_MEMBER_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/add-member-conversation`,
+    REMOVE_MEMBER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/remove-member-conversation`,
+	UPDATE_ADMIN_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-admin-conversation`,
+	UPDATE_CONFIG_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/update-config-conversation`,
+	UPDATE_PIN_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-pin-conversation`,
 
-    GET_INFO_CONVERSATION_BY_ID             : `${BASE_ROUTE}${CONVERSATION}/info-conversation/:conversationID`,
-    GET_LIST_MEMBER_CONVERSATION_BY_ID      : `${BASE_ROUTE}${CONVERSATION}/list-members-conversation`,
+    GET_INFO_CONVERSATION_BY_ID             		: `${BASE_ROUTE}${CONVERSATION}/info-conversation/:conversationID`,
+    GET_INFO_GENERAL_GROUP_BY_MEMBER      			: `${BASE_ROUTE}${CONVERSATION}/info-general-group-by-member`,
+    GET_LIST_MEMBER_CONVERSATION_BY_ID      		: `${BASE_ROUTE}${CONVERSATION}/list-members-conversation`,
+    GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE 		: `${BASE_ROUTE}${CONVERSATION}/list-message-conversation-with-page`,
+    GET_LIST_MESSAGE_MEDIA_CONVERSATION 			: `${BASE_ROUTE}${CONVERSATION}/list-message-media-conversation`,
+    GET_LIST_MEMBER_SEND_MESSAGE_MEDIA_CONVERSATION : `${BASE_ROUTE}${CONVERSATION}/list-member-send-message-media-conversation`,
 
     GET_LIST_CONVERSATION_BY_USER_ID        : `${BASE_ROUTE}${CONVERSATION}/users/:userID`,
     GET_LIST_CONVERSATION_BY_KEY            : `${BASE_ROUTE}${CONVERSATION}`,

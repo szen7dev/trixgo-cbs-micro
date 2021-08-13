@@ -62,34 +62,46 @@ module.exports = {
 		//==============  CONVERSATION ACTIONS  ====================
 
 		// Thêm cuộc hội thoại mới
-		[CF_ACTIONS_CHATTING.INSERT_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.insertConversation,
+		[CF_ACTIONS_CHATTING.INSERT_CONVERSATION] 		            			: CHATTING__CONVERSATION_HANDLER.insertConversation,
 
 		// Cập nhật cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION] 		            : CHATTING__CONVERSATION_HANDLER.updateConversation,
+		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION] 		            			: CHATTING__CONVERSATION_HANDLER.updateConversation,
 
 		// Thêm thành viên cuộc hội thoại
-		[CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION] 		    	: CHATTING__CONVERSATION_HANDLER.addMembersToConversation,
+		[CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION] 		    				: CHATTING__CONVERSATION_HANDLER.addMembersToConversation,
 
 		// Xoá thành viên cuộc hội thoại
-		[CF_ACTIONS_CHATTING.REMOVE_MEMBER_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.removeMemberInConversation,
+		[CF_ACTIONS_CHATTING.REMOVE_MEMBER_CONVERSATION] 		    			: CHATTING__CONVERSATION_HANDLER.removeMemberInConversation,
 
 		// Cập nhật admin cho cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_ADMIN_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.updateAdminConversation,
+		[CF_ACTIONS_CHATTING.UPDATE_ADMIN_CONVERSATION] 		    			: CHATTING__CONVERSATION_HANDLER.updateAdminConversation,
 
 		// Cập nhật cài đặt cho cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_CONFIG_CONVERSATION] 		    : CHATTING__CONVERSATION_HANDLER.updateConfigConversation,
+		[CF_ACTIONS_CHATTING.UPDATE_CONFIG_CONVERSATION] 		    			: CHATTING__CONVERSATION_HANDLER.updateConfigConversation,
 
 		// Cập nhật pin cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_PIN_CONVERSATION] 		    	: CHATTING__CONVERSATION_HANDLER.updatePinConversation,
+		[CF_ACTIONS_CHATTING.UPDATE_PIN_CONVERSATION] 		    				: CHATTING__CONVERSATION_HANDLER.updatePinConversation,
 
 		// Lấy danh sách thành viên cuộc hội thoại theo ID
-		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    : CHATTING__CONVERSATION_HANDLER.getListMembersConversationByID,
+		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    			: CHATTING__CONVERSATION_HANDLER.getListMembersConversationByID,
 
 		// Lấy thông tin một cuộc hội thoại theo ID
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,
+		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 						: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,
+
+		// Xem các nhóm chung với 1 thành viên
+		[CF_ACTIONS_CHATTING.GET_INFO_GENERAL_GROUP_BY_MEMBER] 					: CHATTING__CONVERSATION_HANDLER.getInfoGeneralGroupsByMember,
+
+		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
+
+		// Lấy danh sách tin nhắn media cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_MEDIA_CONVERSATION] 				: CHATTING__CONVERSATION_HANDLER.getListMessagesMediaConversation,
+
+		// Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_SEND_MESSAGE_MEDIA_CONVERSATION] 	: CHATTING__CONVERSATION_HANDLER.getListMemberSendMessagesMediaConversation,
 
 
-
+		
 
 		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
