@@ -34,7 +34,7 @@ module.exports = {
         params: {
             name        : { type: "string" },
             description : { type: "string", optional: true },
-            isPrivate   : { type: "boolean" }
+            isPrivate   : { type: "string" }
         },
         async handler(ctx) {
             try {
@@ -143,7 +143,7 @@ module.exports = {
         params: {
             conversationID  : { type: "string" },
             memberID        : { type: "string" },
-            isSetAdmin      : { type: "boolean" },
+            isSetAdmin      : { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -170,8 +170,8 @@ module.exports = {
 	updateConfigConversation: {
         params: {
             conversationID  : { type: "string" },
-            typeConfig      : { type: "number" },
-            valueConfig     : { type: "number" },
+            typeConfig      : { type: "string" },
+            valueConfig     : { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -198,7 +198,7 @@ module.exports = {
 	updatePinConversation: {
         params: {
             conversationID  : { type: "string" },
-            isPin        	: { type: "boolean" }
+            isPin        	: { type: "string" }
         },
         async handler(ctx) {
             try {
@@ -207,7 +207,7 @@ module.exports = {
                 const { conversationID, isPin } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updatePinConversation({
-					conversationID, userID, isPin
+					conversationID, userID, isPin, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -302,7 +302,7 @@ module.exports = {
 	 * Func: Lấy danh sách tin nhắn cuộc hội thoại ( phân trang)
 	 * Date: 11/08/2021
 	 */
-	 getListMessagesConversationWithPage: {
+	getListMessagesConversationWithPage: {
         params: {
             conversationID	: { type: "string" },
 			latestMessageID : { type: "string", optional: true },
@@ -330,7 +330,7 @@ module.exports = {
 	 * Func: Lấy danh sách tin nhắn media cuộc hội thoại
 	 * Date: 12/08/2021
 	 */
-	 getListMessagesMediaConversation: {
+	getListMessagesMediaConversation: {
         params: {
             conversationID	: { type: "string" },
             typeMessage		: { type: "string" },
@@ -364,15 +364,15 @@ module.exports = {
 	 * Func: Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
 	 * Date: 13/08/2021
 	 */
-	 getListMemberSendMessagesMediaConversation: {
+	getListMemberSendMessagesMediaConversation: {
         params: {
             conversationID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID } = ctx.params;
+                let { _id: userID } 	= ctx.meta.infoUser;
+                let { conversationID } 	= ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMemberSendMessagesMediaConversation({ 
 					conversationID, userID
@@ -385,6 +385,168 @@ module.exports = {
         }
     },
 
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật trạng thái ẩn cuộc hội thoại của 1 user
+	 * Date: 14/08/2021
+	 */
+	updateHideConversation: {
+        params: {
+            conversationID	: { type: "string" },
+            isHide			: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID, isHide } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateHideConversation({ 
+					conversationID, userID, isHide
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
+	 * Date: 14/08/2021
+	 */
+	updateMuteConversation: {
+        params: {
+            conversationID	: { type: "string" },
+            isMute			: { type: "string" },
+            timeMute		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID, isMute, timeMute } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateMuteConversation({ 
+					conversationID, userID, isMute, timeMute
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Đánh dấu đã đọc cuộc hội thoại của 1 user
+	 * Date: 14/08/2021
+	 */
+	markReadConversation: {
+        params: {
+            conversationID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.markReadConversation({ 
+					conversationID, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Member rời khỏi cuộc hội thoại
+	 * Date: 14/08/2021
+	 */
+	memberLeaveConversation: {
+        params: {
+            conversationID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.memberLeaveConversation({ 
+					conversationID, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Giải tán cuộc hội thoại (xóa nhóm)
+	 * Date: 14/08/2021
+	 */
+	deleteConversation: {
+        params: {
+            conversationID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.deleteConversation({ 
+					conversationID, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá lịch sử cuộc hội thoại
+	 * Date: 15/08/2021
+	 */
+	deleteHistoryConversation: {
+        params: {
+            conversationID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.deleteHistoryConversation({ 
+					conversationID, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+
+	
 	/**
 	 * Dev: VinhHV
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm theo key)

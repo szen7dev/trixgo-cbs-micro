@@ -19,6 +19,12 @@ const CF_ROUTINGS_CHATTING = {
 	UPDATE_ADMIN_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-admin-conversation`,
 	UPDATE_CONFIG_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/update-config-conversation`,
 	UPDATE_PIN_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-pin-conversation`,
+	UPDATE_HIDE_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-hide-conversation`,
+	UPDATE_MUTE_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-mute-conversation`,
+	MARK_READ_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/mark-read-conversation`,
+	MEMBER_LEAVE_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/member-leave-conversation`,
+	DELETE_CONVERSATION              				: `${BASE_ROUTE}${CONVERSATION}/delete-conversation`,
+	DELETE_HISTORY_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-history-conversation`,
 
     GET_INFO_CONVERSATION_BY_ID             		: `${BASE_ROUTE}${CONVERSATION}/info-conversation/:conversationID`,
     GET_INFO_GENERAL_GROUP_BY_MEMBER      			: `${BASE_ROUTE}${CONVERSATION}/info-general-group-by-member`,

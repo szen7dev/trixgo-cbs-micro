@@ -24,8 +24,7 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         ref     : 'user'
     }],
     /**
-     * Chủ của cuộc hội thoại (người gửi, nếu là chat nhóm thì là chủ nhóm)
-     * - Author đầu tiên trong mảng chính là root Author (người tạo ra nhóm chát)
+     * Author đầu tiên trong mảng chính là root Author (người tạo ra nhóm chát)
      */
     authors: [{
         type    : Schema.Types.ObjectId,
@@ -48,14 +47,15 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Tin nhắn được ghim
      */
-    pin: {
+    messagePin: {
         type    : Schema.Types.ObjectId,
         ref     : 'message_message'
     },
     /**
      * Danh sách user bỏ lở tin nhắn
      */
-    arrMissMessage : [{
+    usersMissMessage: [{
+		_id: false,
         userID: {
             type: Schema.Types.ObjectId,
             ref: 'user'
@@ -68,11 +68,28 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
             type: Date
         }
     }],
+	/**
+     * Danh sách user xoá lịch sử
+     */
+	usersDeleteHistory: [{
+        userID: {
+            type: Schema.Types.ObjectId,
+            ref: 'user'
+        },
+        lastMessage: {
+			type: Schema.Types.ObjectId,
+            ref: 'message_message'
+        },
+        time: {
+            type: Date
+        }
+    }],
     /**
-     * Danh sách user ẩn thông báo cuộc hội thoại
+     * Danh sách user tắt thông báo cuộc hội thoại
      */
     usersMute: [{
-        user: { 
+		_id: false,
+        userID: { 
             type: Schema.Types.ObjectId,
             ref: 'user'
         },
@@ -80,6 +97,14 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
             type: Date
         }
     }],
+
+	/**
+     * Danh sách user ẩn cuộc hội thoại
+     */
+	usersHide: [{ 
+		type: Schema.Types.ObjectId,
+		ref: 'user'
+	}],
 
 	/**
      * Cấu hình admin cuộc hội thoại

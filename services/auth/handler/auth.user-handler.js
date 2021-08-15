@@ -1,4 +1,12 @@
-let AUTH__USER_MODEL                         = require('../model/auth.user-model').MODEL;
+/**
+ * TOOLS
+ */
+const { renderStatusCodeAndResponse } 			= require('../../../tools/utils/status_code')
+
+/**
+ * MODEL
+ */
+const AUTH__USER_MODEL                         	= require('../model/auth.user-model').MODEL;
 
 module.exports = {
     register: {
@@ -158,6 +166,28 @@ module.exports = {
              */
             let listUsers = await AUTH__USER_MODEL.searchWithFullText({ fullnameKey: key })
             return listUsers;
+        }
+    },
+
+	updatePinConversation: {			
+        params: {
+            conversationID	: { type: "string" },
+            userID			: { type: "string" },
+            isPin			: { type: "string" }
+        },
+        async handler(ctx) {
+			try {
+                await this.validateEntity(ctx.params);
+                let { conversationID, userID, isPin } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.updatePinConversation({ 
+					conversationID, userID, isPin
+				});
+
+				return resultAfterCallHandler;
+            } catch (error) {
+				return { error: true, message: error.message };
+            }
         }
     }
 }

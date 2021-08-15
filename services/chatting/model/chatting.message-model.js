@@ -138,7 +138,7 @@ class Model extends BaseModel {
 	 * Func: Thêm tin nhắn mới
 	 * Date: 06/08/2021
 	 */
-    insertMessage({ senderID, content, receiversID, conversationID, type = 0 }) {
+    insertMessage({ senderID, content, receiversID, conversationID, membersAssigned, type = 0 }) {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs([...receiversID, senderID, conversationID]) || !receiversID.length) 
@@ -147,20 +147,26 @@ class Model extends BaseModel {
 				// CHECK RECEIVERS IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
 					_id: conversationID,
-					members: { $all: [senderID, ...receiversID] }
+					members: { $all: [...receiversID, senderID] }
                 });
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
-				// INSERT MESSAGE
-                let infoMessageAfterInserted = await this.insertData({
+				let dataInsertMessage = {
 					listSeen: [senderID], 
 					sender: senderID, 
 					content, 
 					conversation: conversationID,
 					type
-				});
+				}
+
+				if(membersAssigned && membersAssigned.length && checkObjectIDs(membersAssigned)){
+					dataInsertMessage.membersAssigned = membersAssigned;
+				}
+
+				// INSERT MESSAGE
+                let infoMessageAfterInserted = await this.insertData(dataInsertMessage);
 
                 if(!infoMessageAfterInserted)
                     return resolve({ error: true, message: "Can't create message", status: 403 });

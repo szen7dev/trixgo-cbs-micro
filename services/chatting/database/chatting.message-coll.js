@@ -4,7 +4,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("message_message", {
-
     /**
      *  Người gửi tin nhắn
      */
@@ -58,6 +57,8 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 0: đã gửi nhưng chưa xem/ chưa nhận))
      * 1: đã nhận
      * 2: đã xem
+	 * 3: đã thu hồi
+	 * 4: đã xoá
     */
     status: {
         type   : Number,
@@ -74,26 +75,32 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	 * 6: tin nhắn share location
 	 * 7: tin nhắn share contact
 	 * 
-     * 8: Thêm thành viên vào cuộc hội thoại
-     * 9: Xóa thành viên khỏi cuộc hội thoại
-     * 10: Đổi tên cuộc hội thoại
-     * 11: Đổi logo cuộc hội thoại
-     * 12: Xét thêm admin cuộc hội thoại
-     * 13: Xoá bỏ quyền admin của member trong cuộc hội thoại
-     * 14: Xóa cuộc hội thoại
+     * 101: Thêm thành viên vào cuộc hội thoại
+     * 102: Xóa thành viên khỏi cuộc hội thoại
+     * 103: Đổi tên cuộc hội thoại
+     * 104: Đổi logo cuộc hội thoại
+     * 105: Xét thêm admin cuộc hội thoại
+     * 106: Xoá bỏ quyền admin của member trong cuộc hội thoại
+     * 107: Xóa cuộc hội thoại
+     * 108: Thành viên rời khỏi cuộc hội thoại 
      */
     type: {
-        type   : Number,
+        type: Number,
         default: 0
     },
 
     /**
-     * Đã xem
-     * Danh sách user đã xem tinh nhắn này
-     * xác định đã xem thông qua số lượng listSeen
-     * không cần dùng đến trường status
+     * Danh sách user đã xem tin nhắn này
      */
-    listSeen : [{
+    listSeen: [{
+        type    : Schema.Types.ObjectId,
+        ref     : 'user'
+    }],
+
+	/**
+     * users được chỉ định (thêm/xoá thành viên, xét/bỏ admin)
+     */
+	membersAssigned: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
@@ -101,10 +108,10 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     /**
      * Thông tin về reaction
      */
-    reactions : [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'reaction'
-    }],
+    // reactions: [{
+    //     type    : Schema.Types.ObjectId,
+    //     ref     : 'reaction'
+    // }],
 
     /**
      * QUẢN LÝ TICKET/BUG

@@ -100,8 +100,31 @@ module.exports = {
 		// Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_SEND_MESSAGE_MEDIA_CONVERSATION] 	: CHATTING__CONVERSATION_HANDLER.getListMemberSendMessagesMediaConversation,
 
+		// Cập nhật trạng thái ẩn cuộc hội thoại của 1 user
+		[CF_ACTIONS_CHATTING.UPDATE_HIDE_CONVERSATION] 							: CHATTING__CONVERSATION_HANDLER.updateHideConversation,
+
+		// Cập nhật on/off thông báo cuộc hội thoại của 1 user
+		[CF_ACTIONS_CHATTING.UPDATE_MUTE_CONVERSATION] 							: CHATTING__CONVERSATION_HANDLER.updateMuteConversation,
+
+		// Đánh dấu đã đọc cuộc hội thoại của 1 user
+		[CF_ACTIONS_CHATTING.MARK_READ_CONVERSATION] 							: CHATTING__CONVERSATION_HANDLER.markReadConversation,
+
+		// Member rời khỏi cuộc hội thoại
+		[CF_ACTIONS_CHATTING.MEMBER_LEAVE_CONVERSATION] 						: CHATTING__CONVERSATION_HANDLER.memberLeaveConversation,
+
+		// Giải tán cuộc hội thoại (xóa nhóm)
+		[CF_ACTIONS_CHATTING.DELETE_CONVERSATION] 								: CHATTING__CONVERSATION_HANDLER.deleteConversation,
+
+		// Xoá lịch sử cuộc hội thoại
+		[CF_ACTIONS_CHATTING.DELETE_HISTORY_CONVERSATION] 						: CHATTING__CONVERSATION_HANDLER.deleteHistoryConversation,
+
 
 		
+
+
+
+
+		// AUTHOR: VinhVH
 
 		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,

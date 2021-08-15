@@ -14,15 +14,20 @@ const CF_ACTIONS_AUTH = {
     /**
      * USER
      */
-    REGISTER        : `${BASE_ACTIONS}_${USER}_REGISTER`,
-    LOGIN           : `${BASE_ACTIONS}_${USER}_LOGIN`,
-    GET_INFO        : `${BASE_ACTIONS}_${USER}_GET_INFO`,
+    REGISTER        					: `${BASE_ACTIONS}_${USER}_REGISTER`,
+    LOGIN           					: `${BASE_ACTIONS}_${USER}_LOGIN`,
+    GET_INFO        					: `${BASE_ACTIONS}_${USER}_GET_INFO`,
 
     UPDATE_DEVICE_WHEN_LOGIN_MOBILE     : `${BASE_ACTIONS}_${USER}_UPDATE_DEVICE_WHEN_LOGIN_MOBILE`,
     RESOLVE_TOKEN                       : `${BASE_ACTIONS}_${USER}_RESOLVE_TOKEN`,
 
-    SEARCH_WITH_FIND                       : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FIND`,
-    SEARCH_WITH_FULL_TEXT                  : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FULL_TEXT`,
+    SEARCH_WITH_FIND                    : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FIND`,
+    SEARCH_WITH_FULL_TEXT               : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FULL_TEXT`,
+
+	/**
+	 * CHATTING
+	 */
+    UPDATE_PIN_CONVERSATION            	: `${BASE_ACTIONS}_${USER}_UPDATE_PIN_CONVERSATION`,
 }
 
 exports.CF_ACTIONS_AUTH = CF_ACTIONS_AUTH;
