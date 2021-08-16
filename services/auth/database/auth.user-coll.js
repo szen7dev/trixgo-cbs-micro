@@ -65,7 +65,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_______Ảnh đại diện ***
+    //_______Ảnh đại diện
     image: {
         type: String,
         default: 'user_default.png'
@@ -123,37 +123,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Number,
         default: 1
     },
-    /**
-     * Cấu hình hiển thị view mặc định ở trang chủ
-     * 1: Văn hoá doanh nghiệp
-     * 2: Báo cáo quản trị theo phân quyền truy cập
-     */
-    // displayHomeConfig: {
-    //     type   : Number,
-    //     default: 1
-    // },
-    /**
-     * Cấu hình giao diện chi tiết công việc
-     * 1: Giao diện đơn giản
-     * 2: Giao diện đầy đủ
-     */
-    // displayPcmConfig: {
-    //     type   : Number,
-    //     default: 1
-    // },
     //_______Ngôn ngữ hiển thị (đồng bộ với moment.js)
     lang: {
         type   : String,
         default: "vi"
     },
-    //_______Ghi chú
-    // note: String,
-    //_______Các link thường xuyên truy cập
-    // bookmarks: [
-    //     { 
-    //         type: String 
-    //     }
-    // ],
     //_______Yêu cầu gửi đi tới người khác
     // sendToFriends: [{ 
     //     type: Schema.Types.ObjectId,
@@ -217,24 +191,4 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    // //________Các trường sau này config mặc định.
-    // config: {
-    //     groupTask: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'pcm_plan_group'
-    //     },
-    //     // Phục vụ để hiển thị trên mobile
-    //     nameGroup: String,
-    // },
-    // //________dùng để lấy thông tin user trong dự án
-    // departmentContacts: [{
-    //     department: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'department'
-    //     },
-    //     departmentContact:  {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'department_contact'
-    //     },
-    // }]
 })

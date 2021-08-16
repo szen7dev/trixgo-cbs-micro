@@ -4,7 +4,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
-
     /**
      * Tên của cuộc hội thoại (Tên chat nhóm)
      */
@@ -100,15 +99,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
-
-    // chatting.conversation_link-coll.js
-    /**
-    * Các files được đính kèm trong cuộc hội thoại
-    */
-//    links: [{
-//        type : String
-//     }],
-
    /*
    *Các task được chọn để giao checklist
    */
@@ -122,18 +112,5 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
             type    : Schema.Types.ObjectId,
             ref     : 'user'
         }
-    }],
-
-    // chatting.conversation_draft-coll.js
-    // lưu lại tin nhắn đang soạn dỡ
-    // arrMesageTypingUsers : [{
-    //     userID :  {
-    //         type    : Schema.Types.ObjectId,
-    //         ref     : 'user'
-    //     },
-        
-    //     messageTyping : {
-    //         type : String
-    //     }
-    // }]
+    }]
 });
