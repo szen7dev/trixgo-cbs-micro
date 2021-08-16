@@ -11,7 +11,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : 'company' 
     },
-    //_______Username
+    //_______Username: sử dụng cho chatting slash
     username: {
         type: String,
         trim: true,
@@ -37,8 +37,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     phone   : String,
     //_______Tên
     name: String,
+    //_______Tên
+    firstname: String,
+    //_______Họ
+    lastname: String,
     //_______Họ và tên
     fullname: String,
+    //_______Mã hiệu công ty
+    companysign: String,  
     //_______Ngày sinh
     birthDay: {
         type   : Date,
@@ -59,7 +65,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_______Ảnh đại diện
+    //_______Ảnh đại diện ***
     image: {
         type: String,
         default: 'user_default.png'
