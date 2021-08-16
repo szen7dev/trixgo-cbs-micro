@@ -7,6 +7,7 @@ let CF_DOMAIN_SERVICES = {
     REMINDER    : 'reminder',
     FILE        : 'file',
     ITEM        : 'item',
+    REACTION    : 'reaction',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;
