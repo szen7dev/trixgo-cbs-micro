@@ -10,27 +10,6 @@ const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.mes
 
 
 module.exports = {
-    // EXAMPLE
-    // insertFast: {
-    //     params: {
-    //         name: { type: "string" }
-    //     },
-    //     async handler(ctx) {
-    //         try {
-    //             let { name }        = ctx.params;
-    //             // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-
-	// 			await this.validateEntity(name);
-
-    //             let resultAfterCallHandler = await AUTH__COMPANY_MODEL.insertFast({ name });
-
-    //             return resultAfterCallHandler;
-    //         } catch (error) {
-    //             return error;
-    //         }
-    //     }
-    // },
-
     /**
 	 * ============================ ****************** ===============================
 	 * ============================ 	 MESSAGE  	   ===============================
@@ -63,6 +42,92 @@ module.exports = {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
-    }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+	 * Date: 17/08/2021
+	 */
+	insertMessage: {
+        params: {
+			conversationID  : { type: "string" },
+            type 			: { type: "string" },
+            content 		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: senderID } = ctx.meta.infoUser;
+                const { conversationID, content, type, files } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, senderID, content, type, files, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 16/08/2021
+	 */
+	deleteMessage: {
+        params: {
+			conversationID  : { type: "string" },
+            typeMessage 	: { type: "string" },
+            messageID 		: { type: "string" },
+            filesID 		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID, typeMessage, filesID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.deleteMessage({
+					conversationID, userID, messageID, typeMessage, filesID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 16/08/2021
+	 */
+	revokeMessage: {
+        params: {
+			conversationID  : { type: "string" },
+			typeMessage 	: { type: "string" },
+			messageID 		: { type: "string" },
+            filesID 		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID, typeMessage, filesID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.revokeMessage({
+					conversationID, userID, messageID, typeMessage, filesID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
 }

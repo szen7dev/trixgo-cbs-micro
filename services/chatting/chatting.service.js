@@ -59,7 +59,7 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
-		//==============  CONVERSATION ACTIONS  ====================
+		// ======================  CONVERSATION ===========================
 
 		// Thêm cuộc hội thoại mới
 		[CF_ACTIONS_CHATTING.INSERT_CONVERSATION] 		            			: CHATTING__CONVERSATION_HANDLER.insertConversation,
@@ -91,9 +91,6 @@ module.exports = {
 		// Xem các nhóm chung với 1 thành viên
 		[CF_ACTIONS_CHATTING.GET_INFO_GENERAL_GROUP_BY_MEMBER] 					: CHATTING__CONVERSATION_HANDLER.getInfoGeneralGroupsByMember,
 
-		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
-
 		// Lấy danh sách tin nhắn media cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_MEDIA_CONVERSATION] 				: CHATTING__CONVERSATION_HANDLER.getListMessagesMediaConversation,
 
@@ -119,7 +116,21 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.DELETE_HISTORY_CONVERSATION] 						: CHATTING__CONVERSATION_HANDLER.deleteHistoryConversation,
 
 
-		
+
+		// =========================  MESSAGE  ============================
+
+		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
+
+		// Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.insertMessage,
+
+		// Xoá tin nhắn của cuộc hội thoại (media, text)
+		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.deleteMessage,
+
+		// Thu hồi tin nhắn của cuộc hội thoại (media, text)
+		[CF_ACTIONS_CHATTING.REVOKE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.revokeMessage,
+
 
 
 

@@ -430,7 +430,7 @@ module.exports = {
                 let { conversationID, isMute, timeMute } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateMuteConversation({ 
-					conversationID, userID, isMute, timeMute
+					conversationID, userID, isMute, timeMute, ctx
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

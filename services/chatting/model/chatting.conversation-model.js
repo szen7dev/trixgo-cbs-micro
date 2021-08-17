@@ -12,6 +12,7 @@ const moment									= require('moment');
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_REMINDER } 					= require('../../reminder/helper/reminder.actions-constant');
 
 /**
  * TOOLS
@@ -87,24 +88,9 @@ class Model extends BaseModel {
                 if(!infoConversationAfterInserted)
                     return resolve({ error: true, message: "Can't create conversation", status: 403 });
 
-                // let { _id: conversationID } = infoConversationAfterInserted;
-                // let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                //     $addToSet: {
-                //         members: {
-                //             $each: [...membersID, authorID]
-                //         }
-                //     }
-                // }, { new: true });
-
-                // if(!infoConversationAfterUpdated)
-                //     return resolve({ error: true, message: "Can't update member of conversation", status: 403 });
-
                 // infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findById(infoConversationAfterUpdated._id).populate({
                 //     path: 'members',
                 //     select: '_id fullname image company friends receiveFromFriends sendToFriends ',
-                //     populate: {
-                //         path: "company"
-                //     }
                 // })
 
                 return resolve({ error: false, data: infoConversationAfterInserted, status: 200 });
@@ -132,7 +118,7 @@ class Model extends BaseModel {
 				// Cập nhật avatar cuộc hội thoại
 				if(avatar){
 					let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-						app: 'chatting',
+						app: CF_DOMAIN_SERVICES.CHATTING,
 						name: avatar.name,
 						url: avatar.url,
 						size: avatar.size,
@@ -915,7 +901,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
 	 * Date: 14/08/2021
 	 */
-	updateMuteConversation({ conversationID, userID, isMute, timeMute }){
+	updateMuteConversation({ conversationID, userID, isMute, timeMute, ctx }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -935,14 +921,15 @@ class Model extends BaseModel {
 					usersMute: { userID }
 				};
 
-				if(timeMute && moment(timeMute).isValid()){
-					dataAddToSet = {
-						usersMute: {
-							userID,
-							time: new Date(timeMute)
-						}
-					}
-				}
+				// if(timeMute && moment(timeMute).isValid()){
+				// 	dataAddToSet = {
+				// 		usersMute: {
+				// 			userID,
+				// 			time: new Date(timeMute)
+				// 		}
+				// 	}
+				// }
+				// console.log({ dataAddToSet })
 
 				if(isMute === "true"){
 					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
@@ -964,6 +951,14 @@ class Model extends BaseModel {
 
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't update mute conversation or user existed in users mute", status: 403 });
+
+				if(isMute === "true" && timeMute){
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
+						conversationID: infoAfterUpdated._id.toString(),
+						timeMute,
+						userID,
+					});
+				}
 
 				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
 			} catch(error){
@@ -1083,7 +1078,14 @@ class Model extends BaseModel {
 				if(!infoAfterDelete)
 					return resolve({ error: true, message: "Can't delete conversation", status: 403 });
 
-				return resolve({ error: false, data: infoAfterDelete, status: 200 })
+				return resolve({ 
+					error: false, 
+					data: { 
+						infoAfterDelete, 
+						infoConversation: checkExistConversation
+					}, 
+					status: 200
+				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
@@ -1383,51 +1385,6 @@ class Model extends BaseModel {
         })
     }
 
-    // Xóa cuộc hội thoại của author tạo ra, xóa luôn tất cả tin nhắn có trong message
-    removeByID({ conversationID, authorID }){
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [authorID] }});
-                if (!infoConversation)
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let checkRemoveAllMessage = await CHATTING__MESSAGE_MODEL.removeAllByConversationID({ conversationID });
-                if (!checkRemoveAllMessage) 
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                return resolve({ error: false, data: infoConversation });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Rời khỏi cuộc hội thoại (nhóm chat)
-    leaveByConversationID({ userID, conversationID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if (!checkObjectIDs(authorID) || !checkObjectIDs(conversationID)) 
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-               
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $pull: {
-                        members: userID
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant leave', status : 403 });
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
     // Thêm tin nhắn ghim
     // Tìm kiếm cuộc hội thoại
     insertPinMessage({ messageID, conversationID, userID }) {
@@ -1488,102 +1445,6 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoConversation, status :200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    updateUserMissMessage({ conversationID, userID, isRep }) {
-        return new Promise(async resolve => {
-            try {
-                let infoConversation = await CHATTING__CONVERSATION_COLL.find({
-                    _id: conversationID, members: { $in: [userID] }
-                }).lean();
-
-                let infoUser = await AUTH__USER_COLL.findById(userID);
-                if(!infoConversation)
-                    return resolve({ error: true, message: 'Conversation exits', status: 403 });
-
-                let infoUpdate 	= null;
-                let arr 		= infoConversation[0].arrMissMessage;
-                let newArr 		= [];
-
-                // Kiểm  miss cuojc hội thoại là miss lần đầu hay đã miss rồi
-                let isMiss 		= false;
-
-                // Chưa tìm được câu query tốt nên xử lý theo luồng sau
-                // Lấy danh sách miss tin nhắn tìm user miss sau đó cập nhật mảng mới cho conversation
-                if(isRep){
-                    if(infoConversation[0].arrMissMessage){
-                        for(let i = 0; i < arr.length; i++){
-                            if(arr[i].userID.toString() == userID.toString()){
-                              
-                            } else{
-                                newArr.push(arr[i]);
-                            }
-                        }
-                    }
-
-                    infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                        arrMissMessage: newArr
-                    });
-
-                    if(infoUser.converMiss.length){
-                        await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-							$pull: {
-								converMiss: conversationID
-							}
-                        })
-                    }
-                } else{
-                    if(!infoUser.converMiss.includes(conversationID)){
-                        conversationID = [conversationID]
-						await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-							$addToSet: {
-								converMiss: [...conversationID]
-							}
-                        })
-                    }
-
-                    if(infoConversation[0].arrMissMessage){
-                        for(let i = 0; i < arr.length; i++){
-                            if(arr[i].userID.toString() == userID.toString()){
-								let itemMiss = arr[i];
-
-                                let newAmout = Number(itemMiss.amout) + 1;
-                                let newItem  = { _id: itemMiss._id, userID: userID, amout: newAmout };
-
-                                newArr.push(newItem);
-                                isMiss = true;
-                            } else{
-                                newArr.push(itemMiss);
-                            }
-                        }
-                    }
-
-                    if(isMiss){
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                            arrMissMessage: newArr
-                        });
-                    } else{
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                            $addToSet: {
-                                arrMissMessage: [{
-									userID: userID,
-									amout: 1
-                                }]
-                            }   
-                        });
-                      
-                    }
-
-                }
-
-                if(!infoUpdate)
-                    return resolve({ error: true, message: 'Conversation exits', status: 403 });
-
-                return resolve({ error: false, data: infoUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
             }
         });
     }

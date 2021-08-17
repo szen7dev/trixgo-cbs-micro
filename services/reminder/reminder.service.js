@@ -1,4 +1,5 @@
 "use strict";
+
 const Agenda            				= require('agenda');
 const { MongoClient }   				= require('mongodb');
 
@@ -6,6 +7,9 @@ const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_REMINDER } 	        = require('./helper/reminder.actions-constant');
+const { CF_ACTIONS_CHATTING } 	        = require('../chatting/helper/chatting.actions-constant');
+
+
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
 
 module.exports = {
@@ -33,13 +37,16 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		[CF_ACTIONS_REMINDER.ADD_JOB] 		: REMINDER__CORE_HANLDER.addJob,
+		[CF_ACTIONS_REMINDER.ADD_JOB] 							: REMINDER__CORE_HANLDER.addJob,
+		[CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobMuteConversation,
+		[CF_ACTIONS_REMINDER.REMOVE_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.removeJobMuteConversation,
 	},
 
 	/**
 	* Events
 	*/
 	events: {
+
 	},
 
 	/**
@@ -69,6 +76,31 @@ module.exports = {
 				console.log(`defined birthday`);
 			});
 
+			agenda.define('update_mute_conversation', async (job, done) => {
+				// console.log(`========================================`);
+				// console.log(`done update mute conversation!!!!`);
+				// console.log({ __JOB: job.attrs.data });
+
+				await this.broker.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_MUTE_CONVERSATION}`, job.attrs.data, {
+					meta: {
+						infoUser: { _id: job.attrs.data.userID }
+					}
+				});
+
+				done();
+			});
+
+			agenda.on("success:update_mute_conversation", (job) => {
+				console.log({ __SUCCESS_UPDATE_MUTE_CONVERSATION: job.attrs });;
+			});
+
+			agenda.on("fail:update_mute_conversation", (err, job) => {
+				console.log({ __FAILED_UPDATE_MUTE_CONVERSATION: err.message });
+			});
+
+			agenda.on("complete", (job) => {
+				console.log({ __COMPLETED_JOB: job.attrs.name });
+			});
 
 			await new Promise(resolve => agenda.once('ready', resolve));
 			agenda.start();

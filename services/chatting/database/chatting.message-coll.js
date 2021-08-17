@@ -32,8 +32,24 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * Các files được đính kèm trong cuộc hội thoại
      */
     files: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation_file'
+        file: {
+			type: Schema.Types.ObjectId,
+			ref: 'message_conversation_file'
+		},
+		/**
+		 * Trạng thái media file
+		 * 1: Hiển thị
+		 * 2: Đã thu hồi (tất cả mọi người đều không thấy)
+		*/
+		status: {
+			type: Number,
+			default: 1
+		},
+		// Danh sách user đã xoá tin nhắn media (xoá chỉ mình tôi)
+		usersDelete: [{
+			type: Schema.Types.ObjectId,
+			ref: 'user'
+		}]
     }],
 
     /**
@@ -57,8 +73,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 0: đã gửi nhưng chưa xem/ chưa nhận))
      * 1: đã nhận
      * 2: đã xem
-	 * 3: đã thu hồi
-	 * 4: đã xoá
+	 * 3: đã thu hồi (tất cả mọi người đều không thấy)
     */
     status: {
         type   : Number,
@@ -98,9 +113,17 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     }],
 
 	/**
-     * users được chỉ định (thêm/xoá thành viên, xét/bỏ admin)
+     * Danh sách users đã xoá tin nhắn (xoá chỉ mình tôi)
      */
-	membersAssigned: [{
+	usersDelete: [{
+        type    : Schema.Types.ObjectId,
+        ref     : 'user'
+    }],
+
+	/**
+     * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin)
+     */
+	 membersAssigned: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
