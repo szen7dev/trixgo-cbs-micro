@@ -78,7 +78,7 @@
    * @returns { find: findObject, sort: sortObject }
    */
 const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
-  console.log({ nextInfo, keys })
+//   console.log({ nextInfo, keys })
   return new Promise(async resolve => {
     let find = {};
     let sort = {};
@@ -114,7 +114,7 @@ const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
             key: keysParse[index].prop, value: itemValue
           }
         });
-        console.log({ listParmsAssignWithKey })
+        // console.log({ listParmsAssignWithKey })
         /**
          * expected result: 
          *  listParmsAssignWithKey:

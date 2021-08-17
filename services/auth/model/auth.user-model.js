@@ -495,6 +495,69 @@ class Model extends BaseModel {
             }
         })
     }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật pin cuộc hội thoại
+	 * Date: 10/08/2021
+	 */
+	updatePinConversation({ conversationID, userID, isPin }) {
+        return new Promise(async (resolve) => {
+            try {
+				if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let infoUser = await AUTH__USER_COLL.findById(userID);
+				if(!infoUser)
+					return resolve({ error: true, message: "User is not exist", status: 403 });
+
+				let infoUserAfterUpdated = null;
+				if(isPin === "true"){ // Pin cuộc hội thoại
+
+					if(infoUser.conversationsPin.includes(conversationID))
+						return resolve({ error: true, message: "Conversation is pined", status: 400 });
+
+					// Pin tối đa 5 cuộc hội thoại (pull last, push first)
+					if(infoUser.conversationsPin.length >= 5){
+						infoUserAfterUpdated = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+							$push: {
+								conversationsPin: {
+									$each: [conversationID],
+									$position: 0,
+									$slice: 5
+								}
+							}
+						}, { new: true });
+					} else{
+						infoUserAfterUpdated = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+							$push: {
+								conversationsPin: {
+									$each: [conversationID],
+									$position: 0
+								}
+							}
+						}, { new: true });
+					}
+
+				} else{ // Bỏ Pin cuộc hội thoại
+					infoUserAfterUpdated = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+						$pull: { conversationsPin: conversationID }
+					}, { new: true });
+				}
+
+				if(!infoUserAfterUpdated)
+					return resolve({ error: true, message: "Can't update pin conversation", status: 403 });
+
+				return resolve({ error: false, data: infoUserAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+
+
+
     // /**5t
     //  * Name: Cập nhật avatar
     //  * Author: Depv

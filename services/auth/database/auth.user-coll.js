@@ -2,6 +2,7 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
+
 module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}
@@ -21,12 +22,12 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
      /**
      * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
      */
-    platform:{
+    platform: {
         type: Number,
         enum: [1, 2]
     },
     //_______Email
-    email : {
+    email: {
         type   : String,
         require:  true,
         unique : true
@@ -34,7 +35,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Mật khẩu
     password: String,
     //_______Điện thoại
-    phone   : String,
+    phone: String,
     //_______Tên
     name: String,
     //_______Tên
@@ -123,6 +124,31 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Number,
         default: 1
     },
+	/**
+     * Danh sách pin cuộc hội thoại
+    */
+	conversationsPin: [{
+        type: Schema.Types.ObjectId,
+        ref: 'message_conversation'
+    }],
+    /**
+     * Cấu hình hiển thị view mặc định ở trang chủ
+     * 1: Văn hoá doanh nghiệp
+     * 2: Báo cáo quản trị theo phân quyền truy cập
+     */
+    // displayHomeConfig: {
+    //     type   : Number,
+    //     default: 1
+    // },
+    /**
+     * Cấu hình giao diện chi tiết công việc
+     * 1: Giao diện đơn giản
+     * 2: Giao diện đầy đủ
+     */
+    // displayPcmConfig: {
+    //     type   : Number,
+    //     default: 1
+    // },
     //_______Ngôn ngữ hiển thị (đồng bộ với moment.js)
     lang: {
         type   : String,

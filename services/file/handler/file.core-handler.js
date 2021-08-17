@@ -15,8 +15,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { app, name, url, size, userID }        = ctx.params;
-              
+                let { app, name, url, size, userID } = ctx.params;
+
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {
@@ -77,7 +77,7 @@ module.exports = {
                 let listFiles = await FILE__CORE_MODEL.getListFileWithStatus({ status, userID });
                 return listFiles;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
