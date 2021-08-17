@@ -40,19 +40,22 @@
   */
 //  const CHATTING__CONVERSATION_FILE_MODEL				= require('../model/chatting.conversation_file-model').MODEL;
 
- /**
+// Nguyên tắc viết hàm
+/**
  * DECALARTION VARIABLE (1)
  */
+
 /** 
  * VALIDATION STEP (2)
- *  - kiểm tra valid từ các input
- *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+ *  - Kiểm tra valid từ các input
+ *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
  */
+
 /**
  * LOGIC STEP (3)
- *  3.1: convert type + update name (ví dụ: string -> number)
- *  3.2: operation database
- */    
+ *  3.1: Convert type + update name (ví dụ: string -> number)
+ *  3.2: Operation database
+ */   
 
  class Model extends BaseModel {
 
@@ -60,16 +63,31 @@
         super(CHATTING__MESSAGE_COLL);
     }
 
- 
-        insert({ }) { 
-            const that = this;
-            return new Promise(async (resolve) => {
-                try {
-                    
-                } catch (error) {
-                    return resolve({ error: true, message: error.message, status: 500 });
-                }
-            })
-        }
+    insert({ }) { 
+        const that = this;
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
  }
