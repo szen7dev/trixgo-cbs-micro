@@ -12,13 +12,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : 'company' 
     },
-    //_______Username: sử dụng cho chatting slash
-    username: {
-        type: String,
-        trim: true,
-        unique : true,
-        require: true
-    },
      /**
      * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
      */
@@ -36,16 +29,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     password: String,
     //_______Điện thoại
     phone: String,
-    //_______Tên
-    name: String,
-    //_______Tên
+    //_______Tên (vd: Nam)
     firstname: String,
-    //_______Họ
+    //_______Họ (vd: Nguyễn Văn)
     lastname: String,
-    //_______Họ và tên
+    //_______Họ và tên (vd: Nguyễn Văn Nam)
     fullname: String,
-    //_______Mã hiệu công ty
-    companysign: String,  
+    //_______Họ và tên (vd: Nguyễn Văn Nam-TRX)
+    bizname: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,
