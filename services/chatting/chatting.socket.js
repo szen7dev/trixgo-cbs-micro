@@ -21,7 +21,7 @@ const AUTH__USER_COLL							= require('../auth/database/auth.user-coll');
 const USER_MODEL                               	= require('../../services/auth/model/auth.user-model').MODEL;
 const CHATTING__MESSAGE_MODEL                  	= require('./model/chatting.message-model').MODEL;
 const CHATTING__CONVERSATION_MODEL             	= require('./model/chatting.conversation-model').MODEL;
-const CHATTING__CONVERSATION_DRAFT_MODEL       	= require('./model/chatting.coversation_draft-model').MODEL;
+// const CHATTING__CONVERSATION_DRAFT_MODEL       	= require('./model/chatting.coversation_draft-model').MODEL;
 const CHATTING__CONVERSATION_LINK_MODEL       	= require('./model/chatring.conversation_link-model').MODEL;
 
 

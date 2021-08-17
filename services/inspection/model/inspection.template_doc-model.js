@@ -1,89 +1,63 @@
- "use strict";
-
- /**
-  * EXTERNAL PACKAGE
-  */
- const fs                                            = require('fs');
- const path                                          = require('path');
- const PromisePool									= require('@supercharge/promise-pool');
- 
- /**
-  * CONSTANTS
-  */
- const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
- const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
- 
- /**
-  * TOOLS
-  */
- const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
- const { calculateCurrentPage } 						= require('../../../tools/utils/calculate_current_page');
- const { 
-     objectID, 
-     checkObjectIDs, 
-     checkNumberIsValidWithRange 
- } = require('../../../tools/utils/utils');
- 
- /**
-  * BASE
-  */
- const BaseModel                                     = require('../../../tools/db/base_model');
- 
- /**
-  * COLLECTIONS
-  */
+"use strict";
+const BaseModel                         = require('../../../tools/db/base_model');
+/**
+ * import inter-coll, exter-coll
+ */
  const INSPECTION__TEMPLATE_DOC_COLL                 = require('../database/inspection.template_doc-coll');
- const FILE__FILE_COLL                               = {};
+
+/**
+ * import inter-model, exter-model
+ */
+
+/**
+ * import util files
+ */
  
- /**
-  * MODELS
-  */
-//  const CHATTING__CONVERSATION_FILE_MODEL				= require('../model/chatting.conversation_file-model').MODEL;
-
-// Nguyên tắc viết hàm
-/**
- * DECALARTION VARIABLE (1)
- */
-
-/** 
- * VALIDATION STEP (2)
- *  - Kiểm tra valid từ các input
- *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
- */
-
-/**
- * LOGIC STEP (3)
- *  3.1: Convert type + update name (ví dụ: string -> number)
- *  3.2: Operation database
- */   
-
  class Model extends BaseModel {
 
     constructor() {
-        super(CHATTING__MESSAGE_COLL);
+        super(INSPECTION__TEMPLATE_DOC_COLL);
     }
 
-    insert({ }) { 
-        const that = this;
+    // Thêm mẩu tin: HiepNH ✅
+    insert({ name, sign, authorID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                // let name;
+                // let sign;
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(!checkObjectIDs(authorID))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if (!name || name == '')
+                    return resolve({ error: true, message: 'name_invalid', status: 400 });
+
+                if (!sign || sign == '')
+                    return resolve({ error: true, message: 'sign_invalid', status: 400 });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                
-                
+                 let infoDataAfterInserted = await this.insertData({ 
+					name, 
+					sign, 
+					userCreate: authorID,
+				});
+                if(!infoDataAfterInserted)
+                    return resolve({ error: true, message: "Can't create conversation", status: 403 });
+
+
+                return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -91,3 +65,5 @@
     }
 
  }
+
+ exports.MODEL = new Model;

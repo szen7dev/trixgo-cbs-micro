@@ -2,14 +2,16 @@
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_EXAMPLE } 	        = require('./helper/example.actions-constant');
-const EXAMPLE__CASE1_HANLDER            = require('./handler/example.case1-hanlder');
+const { CF_ACTIONS_INSPECTION } 	    = require('./helper/inspection.actions-constant');
+const INSPECTION__TEMPLATE_DOC_HANLDER  = require('./handler/inspection.template_doc-hanlder');
+const INSPECTION__TEMPLATE_DOC_COLL     = require('./database/inspection.template_doc-coll');
 
 module.exports = {
-	name: CF_DOMAIN_SERVICES.EXAMPLE,
+	name: CF_DOMAIN_SERVICES.INSPECTION,
 	mixins: [
-		DbService('example_case1'),  
-		CacheCleaner([CF_DOMAIN_SERVICES.EXAMPLE])
+		//DbService('inspection_template_docs'),  
+		DbService(INSPECTION__TEMPLATE_DOC_COLL),  
+		CacheCleaner([CF_DOMAIN_SERVICES.INSPECTION])
     ],
 
 	/**
@@ -28,7 +30,8 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		[CF_ACTIONS_EXAMPLE.CASE_1_GET_LIST					] 		: EXAMPLE__CASE1_HANLDER.getList,
+		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_GET_LIST				] 		: INSPECTION__TEMPLATE_DOC_HANLDER.getList,
+		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_INSERT					] 		: INSPECTION__TEMPLATE_DOC_HANLDER.insertDoc,
 	},
 
 	/**

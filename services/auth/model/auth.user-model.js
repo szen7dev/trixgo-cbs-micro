@@ -69,14 +69,14 @@ class Model extends BaseModel {
     }
     
     // implement by: KHANHNEY✅ 
-    register({ email, fullname, username, level, department, position, companyID, platform }) {
+    register({ email, fullname, level, department, position, companyID, platform }) {
         return new Promise(async resolve => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                  let emailValid      = email.toLowerCase().trim();
-                 let usernameValid   = username.toLowerCase().trim();
+                 //let usernameValid   = username.toLowerCase().trim();
                  let objectExitsUser = {};
 
                  let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX]; 
@@ -89,8 +89,8 @@ class Model extends BaseModel {
                 if (!email || email == '')
                     return resolve({ error: true, message: 'mail_invalid' });
 
-                if (!username || username == '')
-                    return resolve({ error: true, message: 'username_invalid' });
+                // if (!username || username == '')
+                    // return resolve({ error: true, message: 'username_invalid' });
 
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'compnay_invalid' });
@@ -109,9 +109,9 @@ class Model extends BaseModel {
                 objectExitsUser.$or = []
 
                 // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
-                if(usernameValid && usernameValid!=''){
-                    objectExitsUser.$or.push({ username : usernameValid } );
-                }
+                // if(usernameValid && usernameValid!=''){
+                //     objectExitsUser.$or.push({ username : usernameValid } );
+                // }
 
                 if(email && email!=''){
                     objectExitsUser.$or.push({ email : emailValid });
@@ -156,10 +156,11 @@ class Model extends BaseModel {
                 }
                 if(fullname) {
                     dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
+                    // dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
                 }
-                if(usernameValid) {
-                    dataInsert.username = `${usernameValid}.${infoCompany.sign}`;
-                }
+                // if(usernameValid) {
+                //     dataInsert.username = `${usernameValid}.${infoCompany.sign}`;
+                // }
                 // if(department && ObjectID.isValid(department)){
                 //     dataInsert.department = department;
                 // }

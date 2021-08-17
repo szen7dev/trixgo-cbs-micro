@@ -12,7 +12,7 @@ const { renderStatusCodeAndResponse }                 = require('../../../tools/
  * MODELS
  */
 const CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
-const CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
+// const CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
 const CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
 const CHATTING__CONVERSATION_FILE_MODEL               = require('../model/chatting.conversation_file-model').MODEL;
 
@@ -633,26 +633,26 @@ module.exports = {
 	 * Func: Lấy bản nháp đang soạn của user trong một cuộc hội thoại
 	 * Date: ...
 	 */
-    getConversationDraftByUserID: {
-        params: {
-            conversationID: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let { conversationID } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
+    // getConversationDraftByUserID: {
+    //     params: {
+    //         conversationID: { type: "string" },
+    //     },
+    //     async handler(ctx) {
+    //         try {
+    //             let { conversationID } = ctx.params;
+    //             // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+    //             // await this.validateEntity(name);
 
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_DRAFT_MODEL.getInfoByUserID({ 
-					conversationID, 
-					userID: CF_DATA_DEMO_CHATTING.userID_1 
-				});
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
+    //             let resultAfterCallHandler = await CHATTING__CONVERSATION_DRAFT_MODEL.getInfoByUserID({ 
+	// 				conversationID, 
+	// 				userID: CF_DATA_DEMO_CHATTING.userID_1 
+	// 			});
+    //             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+    //         } catch (error) {
+    //             return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+    //         }
+    //     }
+    // },
 
 	/**
 	 * Dev: VinhHV

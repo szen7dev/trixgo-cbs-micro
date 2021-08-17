@@ -97,31 +97,6 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
             type: Date
         }
     }],
-
-<<<<<<< HEAD
-    // /**
-    //  * Danh sách user ping cuộc hội thoại
-    // */
-    usersPin : [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'user'
-    }],
-   /*
-   *Các task được chọn để giao checklist
-   */
-    tasks : [{
-        task :{ 
-            type    : Schema.Types.ObjectId,
-            ref     : 'pcm_plan_task'
-        },
-
-        userCreate :{ 
-            type    : Schema.Types.ObjectId,
-            ref     : 'user'
-        }
-    }]
-});
-=======
 	/**
      * Danh sách user ẩn cuộc hội thoại
      */
@@ -170,26 +145,4 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
 			default: 1
 		},
 	}
-
-    /**
-	 * Các files được đính kèm trong cuộc hội thoại
-	 * chatting.conversation_link-coll.js
-     */
-   	// links: [{
-    //    type : String
-    // }],
-
-    // chatting.conversation_draft-coll.js
-    // lưu lại tin nhắn đang soạn dỡ
-    // arrMesageTypingUsers : [{
-    //     userID :  {
-    //         type    : Schema.Types.ObjectId,
-    //         ref     : 'user'
-    //     },
-        
-    //     messageTyping : {
-    //         type : String
-    //     }
-    // }]
 });
->>>>>>> c09e2911ff85b7819d61e471795a2f2d0e565b39

@@ -8,6 +8,7 @@ let CF_DOMAIN_SERVICES = {
     FILE        : 'file',
     ITEM        : 'item',
     REACTION    : 'reaction',
+    INSPECTION  : 'inspection',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

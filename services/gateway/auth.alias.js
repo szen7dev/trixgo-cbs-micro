@@ -18,6 +18,7 @@ const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-c
 const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
+const { CF_ROUTINGS_INSPECTION } 	= require('../inspection/helper/inspection.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -28,6 +29,7 @@ const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-c
 const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
+const { CF_ACTIONS_INSPECTION } 	= require('../inspection/helper/inspection.actions-constant');
  
 
 module.exports = {
@@ -181,6 +183,10 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_FILE.GENERATE_LINK_S3}`] : 
 		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GENERATE_LINK_S3}`],
+
+		//--------------------------aliases's S021.INSPECTION service--------------------------//
+		[`POST ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_INSERT}`] : 
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_INSERT}`],
 	},
 	
 	// Disable to call not-mapped actions
