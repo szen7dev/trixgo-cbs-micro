@@ -901,7 +901,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
 	 * Date: 14/08/2021
 	 */
-	updateMuteConversation({ conversationID, userID, isMute, timeMute, ctx }){
+	updateMuteConversation({ conversationID, userID, isMute, timeMute, jobID, ctx }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -954,9 +954,14 @@ class Model extends BaseModel {
 
 				if(isMute === "true" && timeMute){
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
-						conversationID: infoAfterUpdated._id.toString(),
+						conversationID,
 						timeMute,
 						userID,
+					});
+				} else{
+					console.log('REMOVE JOB MUTE CONVERSATION', jobID);
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.REMOVE_JOB_MUTE_CONVERSATION}`, {
+						jobID
 					});
 				}
 

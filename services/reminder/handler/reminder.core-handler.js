@@ -1,4 +1,5 @@
 const Agenda            = require('agenda');
+const ObjectID 			= require('mongodb').ObjectID;
 const { MongoClient }   = require('mongodb');
 let agenda;
 
@@ -40,7 +41,7 @@ module.exports = {
             try {
 				// await this.validateEntity(ctx.params);
                 let { conversationID, userID, timeMute } = ctx.params;
-                let timeScheduler = new Date(Date.now() + 5000);
+                let timeScheduler = new Date(Date.now() + 10000);
 
 				// const { setTimeZone } 	= require('../../../tools/utils/time_utils')
 				// const moment = require('moment');
@@ -48,19 +49,20 @@ module.exports = {
 				// console.log(setTimeZone("2021-08-16T16:30:24Z").format());
 				// let timeScheduler2 = new Date(timeMute).toUTCString();
 
-				switch (+timeMute) {
-					case 1:
-						timeScheduler = "one hours";
-						break;
-					case 4:
-						timeScheduler = "four hours";
-						break;
-					case 8:
-						timeScheduler = "tomorrow at 8am";
-						break;
-					default:
-						break;
-				}
+				// switch (+timeMute) {
+				// 	case 1:
+				// 		timeScheduler = "one hours";
+				// 		break;
+				// 	case 4:
+				// 		timeScheduler = "four hours";
+				// 		break;
+				// 	case 8:
+				// 		timeScheduler = "tomorrow at 8am";
+				// 		break;
+				// 	default:
+				// 		timeScheduler = `${timeMute} hours`;
+				// 		break;
+				// }
 
 				// 3:30pm
 				agenda.schedule(timeScheduler, 'update_mute_conversation', { conversationID, userID, isMute: "false" });
@@ -74,14 +76,31 @@ module.exports = {
     },
 
 	removeJobMuteConversation: {
-        params: { },
+        params: {
+			jobID: { type: "string", optional: true },
+		},
         async handler(ctx) {
             try {
-                const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
-				console.log({ __REMOVE_JOB: removeJobMuteConversation })
+				let { jobID } = ctx.params;
+				// name: "update_mute_conversation"
 
-                return { error: false, data: removeJobMuteConversation };
+				if(jobID){
+					// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
+					// console.log({ infoJobMute, jobID })
+					agenda.jobs(
+						{ _id: ObjectID(jobID) },
+						(err, num) => console.log(err, num) // output: null 1
+					);
+				}
+
+				console.log({ jobID })
+
+                // const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
+				// console.log({ __REMOVE_JOB: removeJobMuteConversation })
+
+                return { error: false, data: jobID };
             } catch (error) {
+				console.error(error);
                 return { error: true, message: error.message };
             }
         }

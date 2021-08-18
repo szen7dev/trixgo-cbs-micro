@@ -77,13 +77,13 @@ module.exports = {
 			});
 
 			agenda.define('update_mute_conversation', async (job, done) => {
-				// console.log(`========================================`);
-				// console.log(`done update mute conversation!!!!`);
-				// console.log({ __JOB: job.attrs.data });
+				console.log(`========================================`);
+				console.log(`done update mute conversation!!!!`);
+				console.log({ __JOB: job.attrs });
 
 				await this.broker.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_MUTE_CONVERSATION}`, job.attrs.data, {
 					meta: {
-						infoUser: { _id: job.attrs.data.userID }
+						infoUser: { _id: job.attrs.data.userID, jobID: job.attrs._id }
 					}
 				});
 
