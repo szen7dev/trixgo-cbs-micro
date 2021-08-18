@@ -4,13 +4,15 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("inspection_template_checklist", {
-    //_________Tên
-    name: String,
-    //_________Template
-    inspectionTemplate: {
+    //_________Thuộc biên bản
+    inspection: {
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_template_doc'
     },
+    //_________Tên checklist kiểm tra
+    name: String,
+    //_________Mô tả
+    description: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

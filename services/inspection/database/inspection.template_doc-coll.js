@@ -13,6 +13,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
         unique : true,
         require: true
     },
+    //_________Mô tả hồ sơ
+    description: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
