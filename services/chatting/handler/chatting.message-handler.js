@@ -46,7 +46,7 @@ module.exports = {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 17/08/2021
 	 */
 	insertMessage: {
@@ -59,10 +59,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: senderID } = ctx.meta.infoUser;
-                const { conversationID, content, type, files } = ctx.params;
+                const { conversationID, content, type, files, membersAssigned } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, senderID, content, type, files, ctx
+					conversationID, senderID, content, type, files, membersAssigned, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

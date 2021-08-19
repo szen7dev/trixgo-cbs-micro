@@ -144,12 +144,13 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
     insertMessage({ senderID, content, receiversID, conversationID, membersAssigned, files, type = 0, ctx }) {
         return new Promise(async (resolve) => {
             try {
+				console.log({ senderID, content, receiversID, conversationID, membersAssigned })
                 if (!checkObjectIDs([senderID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
@@ -241,8 +242,32 @@ class Model extends BaseModel {
 					}
 				}
 
-				// INSERT MESSAGE
-                let infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+				let infoMessageAfterInserted = null;
+
+				// MESSAGE SHARE CONTACT
+				if(+type === 7){
+					if(!membersAssigned || !membersAssigned.length || !checkObjectIDs(membersAssigned))
+						return resolve({ error: true, message: "Request Params membersAssigned invalid", status: 400 });
+
+					let listMessageShareContact = membersAssigned.map(memberID => ({
+						listSeen: [senderID],
+						sender: senderID, 
+						receivers: receiversID,
+						conversation: conversationID,
+						membersAssigned: [memberID],
+						type: 7
+					}))
+
+					const { results } = await PromisePool
+						.for(listMessageShareContact)
+						.withConcurrency(2)
+						.process(async message => this.insertData(message))
+
+					infoMessageAfterInserted = results[results.length - 1];
+				} else{
+					// INSERT MESSAGE
+					infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+				}
 
                 if(!infoMessageAfterInserted)
                     return resolve({ error: true, message: "Can't create message", status: 403 });

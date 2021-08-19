@@ -37,7 +37,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 			ref: 'message_conversation_file'
 		},
 		/**
-		 * Trạng thái media file
+		 * Trạng thái file
 		 * 1: Hiển thị
 		 * 2: Đã thu hồi (tất cả mọi người đều không thấy)
 		*/
@@ -45,7 +45,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 			type: Number,
 			default: 1
 		},
-		// Danh sách user đã xoá tin nhắn media (xoá chỉ mình tôi)
+		// Danh sách user đã xoá tin nhắn file (xoá chỉ mình tôi)
 		usersDelete: [{
 			type: Schema.Types.ObjectId,
 			ref: 'user'
@@ -121,9 +121,9 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     }],
 
 	/**
-     * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin)
+     * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin) (Contact bạn bè - tin nhắn chia sẻ danh bạ)
      */
-	 membersAssigned: [{
+	membersAssigned: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
@@ -136,36 +136,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     //     ref     : 'reaction'
     // }],
 
-    /**
-     * QUẢN LÝ TICKET/BUG
-     */
-    /**
-     * Phân loại Bug/Ticket cần support
-     * 0: Không phải là bug
-     * 1: Là bug cần được TrixGo xử lý/Support ticket
-     * 2: Là tính năng cần được cải thiện
-     * 3: Là giao việc qua PCM
-     */
-    // bug: {
-    //     type   : Number,
-    //     default: 0
-    // },
-
-    // //_______Liên quan tới ứng dụng nào
-    // app: {
-    //     type    :  Schema.Types.ObjectId,
-    //     ref     : 'app'
-    // },
-    
-    // /**
-    //  * Số hiệu của Bug để dễ nhận biết sau này
-    //  * Được tính bằng giá trị lớn nhất hiện tại của hệ thống + 1
-    //  */
-    // ticket: {
-    //     type   : Number,
-    //     default: 0
-    // },
-
     // /**
     //  * Mức độ ưu tiên cần xử lý
     //  * 1-Cao (Hotfix)
@@ -177,42 +147,4 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     //     default: 2
     // },
 
-    // //_________Dự kiến thời gian hoàn tất fixBug
-    // expiredTime: { type: Date, default: null },
-
-    // /**
-    //  * Trạng thái của bug
-    //  * 0: Chưa xử lý
-    //  * 1: Đã xử lý
-    //  */
-    // fixedbug: {
-    //     type   : Number,
-    //     default: 0
-    // },
-
-    // /**
-    //  * Người dự kiến thực hiện fixbug (khi lập kế hoạch)
-    //  * Người đã fixbug: người tích hoàn tất (có thể là BA)
-    //  */
-    // userFixedBug: {
-    //     type    :  Schema.Types.ObjectId,
-    //     ref     : 'user'
-    // },
-
-    // //_________Thời gian xong fixbug
-    // fixBugAt: {
-    //     type : Date
-    // },
-
-    /**
-     * QUẢN LÝ GIAO VIỆC QUA PCM
-     * Sử dụng để get link tới công việc bên PCM
-     */
-    // task: {
-    //     type    : Schema.Types.ObjectId,
-    //     ref     : 'pcm_plan_task'
-    // },
-
-    //_________Các chi chú nếu có
-    // noteBug: String
 })

@@ -357,7 +357,7 @@ class Model extends BaseModel {
 	updateConfigConversation({ conversationID, authorID, typeConfig, valueConfig }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, authorID]) || !['0','1'].includes(valueConfig))
+                if(!checkObjectIDs([conversationID, authorID]) || !['1','2'].includes(valueConfig))
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
