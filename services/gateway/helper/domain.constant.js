@@ -6,6 +6,8 @@ let CF_DOMAIN_SERVICES = {
     PAYMENT     : 'payment',
     REMINDER    : 'reminder',
     FILE        : 'file',
+    ITEM        : 'item',
+    REACTION    : 'reaction',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

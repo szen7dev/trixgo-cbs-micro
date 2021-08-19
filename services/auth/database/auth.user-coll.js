@@ -66,7 +66,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_______Ảnh đại diện
+    //_______Ảnh đại diện ***
     image: {
         type: String,
         default: 'user_default.png'
