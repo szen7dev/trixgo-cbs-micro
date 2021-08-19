@@ -46,7 +46,7 @@ module.exports = {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 17/08/2021
 	 */
 	insertMessage: {
@@ -59,10 +59,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: senderID } = ctx.meta.infoUser;
-                const { conversationID, content, type, files } = ctx.params;
+                const { conversationID, content, type, files, membersAssigned } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, senderID, content, type, files, ctx
+					conversationID, senderID, content, type, files, membersAssigned, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -81,17 +81,15 @@ module.exports = {
         params: {
 			conversationID  : { type: "string" },
             typeMessage 	: { type: "string" },
-            messageID 		: { type: "string" },
-            filesID 		: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, messageID, typeMessage, filesID } = ctx.params;
+                const { conversationID, messagesID, typeMessage, filesID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.deleteMessage({
-					conversationID, userID, messageID, typeMessage, filesID
+					conversationID, userID, messagesID, typeMessage, filesID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -110,17 +108,15 @@ module.exports = {
         params: {
 			conversationID  : { type: "string" },
 			typeMessage 	: { type: "string" },
-			messageID 		: { type: "string" },
-            filesID 		: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, messageID, typeMessage, filesID } = ctx.params;
+                const { conversationID, messagesID, typeMessage, filesID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.revokeMessage({
-					conversationID, userID, messageID, typeMessage, filesID
+					conversationID, userID, messagesID, typeMessage, filesID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -144,12 +144,13 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
     insertMessage({ senderID, content, receiversID, conversationID, membersAssigned, files, type = 0, ctx }) {
         return new Promise(async (resolve) => {
             try {
+				console.log({ senderID, content, receiversID, conversationID, membersAssigned })
                 if (!checkObjectIDs([senderID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
@@ -241,8 +242,32 @@ class Model extends BaseModel {
 					}
 				}
 
-				// INSERT MESSAGE
-                let infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+				let infoMessageAfterInserted = null;
+
+				// MESSAGE SHARE CONTACT
+				if(+type === 7){
+					if(!membersAssigned || !membersAssigned.length || !checkObjectIDs(membersAssigned))
+						return resolve({ error: true, message: "Request Params membersAssigned invalid", status: 400 });
+
+					let listMessageShareContact = membersAssigned.map(memberID => ({
+						listSeen: [senderID],
+						sender: senderID, 
+						receivers: receiversID,
+						conversation: conversationID,
+						membersAssigned: [memberID],
+						type: 7
+					}))
+
+					const { results } = await PromisePool
+						.for(listMessageShareContact)
+						.withConcurrency(2)
+						.process(async message => this.insertData(message))
+
+					infoMessageAfterInserted = results[results.length - 1];
+				} else{
+					// INSERT MESSAGE
+					infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+				}
 
                 if(!infoMessageAfterInserted)
                     return resolve({ error: true, message: "Can't create message", status: 403 });
@@ -269,13 +294,13 @@ class Model extends BaseModel {
 	 * Func: Xoá tin nhắn của cuộc hội thoại (media, text)
 	 * Date: 16/08/2021
 	 */
-	deleteMessage({ conversationID, userID, messageID, typeMessage, filesID }) {
+	deleteMessage({ conversationID, userID, messagesID, typeMessage, filesID }) {
         return new Promise(async (resolve) => {
             try {
 				if(!typeMessage || isNaN(typeMessage))
 					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-                if (!checkObjectIDs([messageID, userID, conversationID])) 
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USERID IS MEMBER OF CONVERSATION
@@ -292,16 +317,17 @@ class Model extends BaseModel {
 					case 0: // Xoá tin nhắn thông thường (text message)
 
 						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: messageID,
+							_id: { $in: messagesID },
 							conversation: conversationID
 						}, {
-							$addToSet: {
-								usersDelete: { userID }
+							$push: {
+								usersDelete: userID
 							}
 						}, { new: true });
 
 						break;
-					case 1: // Xoá tin nhắn ảnh (media message)
+					case 1: // Xoá tin nhắn image, file (media message)
+					case 2:
 
 						if(!filesID || !filesID.length)
 							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
@@ -310,19 +336,16 @@ class Model extends BaseModel {
 							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
 
 						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: messageID,
+							_id: { $in: messagesID },
 							conversation: conversationID,
-							"files.$.file": {
-								$in: filesID
+							files: {
+								$elemMatch: {
+									file: { $in: filesID }
+								}
 							}
 						}, {
-							// $push: {
-							// 	"files.$.usersDelete": userID
-							// }
 							$addToSet: {
-								files: { 
-									usersDelete: { userID }
-								}
+								"files.$.usersDelete": userID
 							}
 						}, { new: true });
 
@@ -346,13 +369,13 @@ class Model extends BaseModel {
 	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
 	 * Date: 16/08/2021
 	 */
-	revokeMessage({ conversationID, userID, messageID, typeMessage, filesID }) {
+	revokeMessage({ conversationID, userID, messagesID, typeMessage, filesID }) {
         return new Promise(async (resolve) => {
             try {
 				if(!typeMessage || isNaN(typeMessage))
 					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-                if (!checkObjectIDs([messageID, userID, conversationID])) 
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USERID IS MEMBER OF CONVERSATION
@@ -369,7 +392,7 @@ class Model extends BaseModel {
 					case 0: // Thu hồi tin nhắn thông thường (text message)
 
 						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: messageID,
+							_id: { $in: messagesID },
 							conversation: conversationID,
 							sender: userID
 						}, {
@@ -378,6 +401,7 @@ class Model extends BaseModel {
 
 						break;
 					case 1: // Thu hồi tin nhắn ảnh (media message)
+					case 2:
 
 						if(!filesID || !filesID.length)
 							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
@@ -386,11 +410,13 @@ class Model extends BaseModel {
 							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
 
 						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: messageID,
+							_id: { $in: messagesID },
 							conversation: conversationID,
 							sender: userID,
-							"files.$.file": {
-								$in: filesID
+							files: {
+								$elemMatch: {
+									file: { $in: filesID }
+								}
 							}
 						}, {
 							$set: {

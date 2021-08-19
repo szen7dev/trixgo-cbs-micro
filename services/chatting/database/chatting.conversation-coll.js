@@ -107,12 +107,14 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
 
 	/**
      * Cấu hình admin cuộc hội thoại
+	 * 1: Kích hoạt
+	 * 2: Không kích hoạt
     */
 	config: {
 		// Làm nổi bật tin của Admin
 		configHighlight: {
 			type: Number,
-			default: 0
+			default: 2
 		},
 		// Member mới được xem tin nhắn cũ
 		configSeeOldMessage: {
