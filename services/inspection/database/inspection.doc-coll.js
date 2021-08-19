@@ -31,6 +31,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     numComment: Number,
     //_________Số lượng share
     numShare: Number,
+    //_________Số lượng view
+    numView: Number,
     //_________Ngày hồ sơ
     date: {
         type : Date
