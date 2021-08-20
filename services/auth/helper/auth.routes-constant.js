@@ -22,7 +22,7 @@ const CF_ROUTINGS_AUTH = {
     UPDATE_PASSWORD             : `${BASE_ROUTE}${USER}/update-password`,
     UPDATE_FULLNAME             : `${BASE_ROUTE}${USER}/update-fullname`,
     UPDATE_EMAIL                : `${BASE_ROUTE}${USER}/update-email`,
-    UPDATE_PHONE                : `${BASE_ROUTE}${USER}/update-phone`,
+    UPDATE_LANGUAGE             : `${BASE_ROUTE}${USER}/update-language`,
 }
 
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

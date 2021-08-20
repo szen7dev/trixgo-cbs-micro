@@ -27,6 +27,7 @@ const CF_ACTIONS_AUTH = {
     UPDATE_FULLNAME                        : `${BASE_ACTIONS}_${USER}_UPDATE_FULLNAME`,
     UPDATE_EMAIL                           : `${BASE_ACTIONS}_${USER}_UPDATE_EMAIL`,
     UPDATE_PHONE                           : `${BASE_ACTIONS}_${USER}_UPDATE_PHONE`,
+    UPDATE_LANGUAGE                        : `${BASE_ACTIONS}_${USER}_UPDATE_LANGUAGE`,
 }
 
 exports.CF_ACTIONS_AUTH = CF_ACTIONS_AUTH;

@@ -61,6 +61,7 @@ module.exports = {
 		[CF_ACTIONS_AUTH.UPDATE_FULLNAME] 							: AUTH__USER_HANDLER.changeFullname,
 		[CF_ACTIONS_AUTH.UPDATE_EMAIL] 								: AUTH__USER_HANDLER.changeEmail,
 		[CF_ACTIONS_AUTH.UPDATE_PHONE] 								: AUTH__USER_HANDLER.changePhone,
+		[CF_ACTIONS_AUTH.UPDATE_LANGUAGE] 							: AUTH__USER_HANDLER.changeLanguage,
 	},
 
 	/**

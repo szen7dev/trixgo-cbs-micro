@@ -157,7 +157,7 @@ module.exports = {
     },
 
       /**
-     * Name: Cập nhật email
+     * Name: Cập nhật phone
      * Author: Depv
      * Date: 19/08/2021
      */
@@ -173,6 +173,30 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { phone }        = ctx.params;
                 let infoUserAfterUpdate = await AUTH__USER_MODEL.updatePhone({ userID, phone });
+                return infoUserAfterUpdate;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+     /**
+     * Name: Cập nhật language
+     * Author: Depv
+     * Date: 19/08/2021
+     */
+    changeLanguage: {
+        auth: "required",
+        params: {
+            lang : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let infoUser = ctx.meta.infoUser;
+                let { _id: userID } = infoUser;
+                await this.validateEntity(ctx.params);
+                let { lang }        = ctx.params;
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateLanguage({ userID, lang });
                 return infoUserAfterUpdate;
             } catch (error) {
                 return { error:  true, message: error.message };

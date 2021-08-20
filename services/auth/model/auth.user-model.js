@@ -385,7 +385,7 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 let infoUser = await AUTH__USER_COLL.findById(userID)
-                    .select("birthDay gender image signature lastLog email company fullname phone username config" )
+                    .select("birthDay gender image signature lastLog email company fullname phone username config lang" )
                     .populate({
                         path: "company",
                         select: "name sign address"
@@ -755,29 +755,27 @@ class Model extends BaseModel {
             }
         })
     }
-    // /**
-    //  * Cập nhật ngôn ngữ(lang)
-    //  * Đệ
-    //  */
-    // updateLanguage({ userID, lang, session }){
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!ObjectID.isValid(userID))
-    //                 return resolve({ error: true, message: "param_not_valid" });
-    //             let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-    //                 lang
-    //             }, { new: true})
-    //             if(!infoUserAfterUpdate)
-    //                 return resolve({ error: true, message: "cannot_update" });
+    /**
+     * Cập nhật ngôn ngữ(lang)
+     * Đệ
+     */
+    updateLanguage({ userID, lang }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    lang
+                }, { new: true})
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
 
-    //             await cachingInfoUser(userID, session);
-
-    //             return resolve({ error: false, data: infoUserAfterUpdate });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // }
+                return resolve({ error: false, message: "update_language_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
 
     // //_______Cấu hình hiển thị view mặc định ở trang chủ
     // updateDisplayHomeConfig({ userID, displayHomeConfig, session }){
