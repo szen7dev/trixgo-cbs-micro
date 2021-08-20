@@ -22,7 +22,7 @@ module.exports = {
             }
         }
     },
-
+    
     login: {
         params: {
             email           : { type: "string" },
@@ -33,7 +33,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform }        = ctx.params;
-                console.log({ email, password, platform })
+                // console.log({ email, password, platform })
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 return infoUser;
             } catch (error) {
@@ -74,7 +74,106 @@ module.exports = {
 
                 let { _id: userID } = infoUser;
                 let infoUserAfterFind = await AUTH__USER_MODEL.getInfo({ userID });
+                console.log({ infoUserAfterFind });
                 return infoUserAfterFind;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+    /**
+     * Name: Cập nhật mật khẩu
+     * Author: Depv
+     * Date: 19/08/2021
+     */
+    changePassword: {
+        auth: "required",
+        params: {
+            currentPass        : { type: "string" },
+            newPass            : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let infoUser = ctx.meta.infoUser;
+                let { _id: userID } = infoUser;
+
+                await this.validateEntity(ctx.params);
+                let { currentPass, newPass }        = ctx.params;
+                // console.log({ email, password, platform })
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updatePassword({ userID, currentPass, newPass});
+                return infoUserAfterUpdate;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+     /**
+     * Name: Cập nhật họ và tên
+     * Author: Depv
+     * Date: 19/08/2021
+     */
+    changeFullname: {
+        auth: "required",
+        params: {
+            fullname : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let infoUser = ctx.meta.infoUser;
+                let { _id: userID } = infoUser;
+                await this.validateEntity(ctx.params);
+                let { fullname }        = ctx.params;
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateFullname({ userID, fullname });
+                return infoUserAfterUpdate;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+      /**
+     * Name: Cập nhật email
+     * Author: Depv
+     * Date: 19/08/2021
+     */
+    changeEmail: {
+        auth: "required",
+        params: {
+            email : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let infoUser = ctx.meta.infoUser;
+                let { _id: userID } = infoUser;
+                await this.validateEntity(ctx.params);
+                let { email }        = ctx.params;
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateEmail({ userID, email });
+                return infoUserAfterUpdate;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+      /**
+     * Name: Cập nhật email
+     * Author: Depv
+     * Date: 19/08/2021
+     */
+    changePhone: {
+        auth: "required",
+        params: {
+            phone : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let infoUser = ctx.meta.infoUser;
+                let { _id: userID } = infoUser;
+                await this.validateEntity(ctx.params);
+                let { phone }        = ctx.params;
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updatePhone({ userID, phone });
+                return infoUserAfterUpdate;
             } catch (error) {
                 return { error:  true, message: error.message };
             }

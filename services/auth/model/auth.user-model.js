@@ -1,5 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
+const ObjectID                          = require("mongoose").Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
@@ -275,7 +276,15 @@ class Model extends BaseModel {
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
                 });
-
+                // Xóa những trường không cần thiết
+                delete isExist._doc.friends;
+                delete isExist._doc.password;
+                delete isExist._doc.recentlyFriends;
+                delete isExist._doc.devices;
+                delete isExist._doc.updatedAt;
+                delete isExist._doc.modifyAt;
+                delete isExist._doc.createAt;
+                
                 return resolve({
                     error: false,
                     data : { user: isExist, token }
@@ -375,13 +384,19 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-              
                 let infoUser = await AUTH__USER_COLL.findById(userID)
-                    .populate('company position')
-                    .populate('department')
+                    .select("birthDay gender image signature lastLog email company fullname phone username config" )
+                    .populate({
+                        path: "company",
+                        select: "name sign address"
+                    }) // position Không populate được position
+                    .populate({
+                        path: "department",
+                        select: "name sign address"
+                    })
                     // .populate({
                     //     path: 'sendToFriends',
-                    //     select: '_id fullname image company',
+                    //     select: '_id fullname image comp any',
                     //     populate: {
                     //         path: 'company',
                     //         select: '_id name',
@@ -617,34 +632,129 @@ class Model extends BaseModel {
     //     })
     // }
 
-    // /**
-    //  * Cập nhật mật khẩu
-    //  * Đệ
-    //  */
-    // updatePassword({ userID, password, currentPass, newPass, session }) {
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!ObjectID.isValid(userID))
-    //                 return resolve({ error: true, message: "param_not_valid" });
-    //             let checkCurrentPass = await compare( currentPass, password);
-    //             if(!checkCurrentPass)
-    //                 return resolve({ error: true, message: "current_password_faild" });
-    //             let hashpass = await hash(newPass, 8);
-    //             let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-    //                 password: hashpass
-    //             }, { new: true })
-    //             if(!infoUserAfterUpdate)
-    //                 return resolve({ error: true, message: "cannot_update" });
+    /**
+     * Cập nhật mật khẩu
+     * Đệ
+     * 19/08/2021
+     */
+    updatePassword({ userID, currentPass, newPass, session }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
 
-    //             await cachingInfoUser(userID, session);
+                let { password } = await AUTH__USER_COLL.findById(userID);
+                let checkCurrentPass = await compare( currentPass, password);
+                if(!checkCurrentPass)
+                    return resolve({ error: true, message: "current_password_faild" });
+                let hashpass = await hash(newPass, 8);
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    password: hashpass
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+                // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
+                return resolve({ error: false, message: "update_password_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
 
-    //             return resolve({ error: false, data: infoUserAfterUpdate });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // }
+    /**
+     * Cập nhật họ và tên
+     * Đệ
+     * 19/08/2021
+     */
+    updateFullname({ userID, fullname }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    fullname
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
 
+                // Xóa những trường không cần thiết
+                delete infoUserAfterUpdate._doc.friends;
+                delete infoUserAfterUpdate._doc.password;
+                delete infoUserAfterUpdate._doc.recentlyFriends;
+                delete infoUserAfterUpdate._doc.devices;
+                delete infoUserAfterUpdate._doc.updatedAt;
+                delete infoUserAfterUpdate._doc.modifyAt;
+                delete infoUserAfterUpdate._doc.createAt;
+                return resolve({ error: false, data: infoUserAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+
+     /**
+     * Cập nhật email
+     * Đệ
+     * 19/08/2021
+     */
+    updateEmail({ userID, email }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    email
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+                    
+                // Xóa những trường không cần thiết
+                delete infoUserAfterUpdate._doc.friends;
+                delete infoUserAfterUpdate._doc.password;
+                delete infoUserAfterUpdate._doc.recentlyFriends;
+                delete infoUserAfterUpdate._doc.devices;
+                delete infoUserAfterUpdate._doc.updatedAt;
+                delete infoUserAfterUpdate._doc.modifyAt;
+                delete infoUserAfterUpdate._doc.createAt;
+                return resolve({ error: false, data: infoUserAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+
+    /**
+     * Cập nhật email
+     * Đệ
+     * 19/08/2021
+     */
+    updatePhone({ userID, phone }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    phone
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+                    
+                // Xóa những trường không cần thiết
+                delete infoUserAfterUpdate._doc.friends;
+                delete infoUserAfterUpdate._doc.password;
+                delete infoUserAfterUpdate._doc.recentlyFriends;
+                delete infoUserAfterUpdate._doc.devices;
+                delete infoUserAfterUpdate._doc.updatedAt;
+                delete infoUserAfterUpdate._doc.modifyAt;
+                delete infoUserAfterUpdate._doc.createAt;
+                return resolve({ error: false, data: infoUserAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
     // /**
     //  * Cập nhật ngôn ngữ(lang)
     //  * Đệ

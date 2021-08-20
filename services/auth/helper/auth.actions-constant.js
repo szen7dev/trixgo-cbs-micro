@@ -23,6 +23,10 @@ const CF_ACTIONS_AUTH = {
 
     SEARCH_WITH_FIND                       : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FIND`,
     SEARCH_WITH_FULL_TEXT                  : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FULL_TEXT`,
+    UPDATE_PASSWORD                        : `${BASE_ACTIONS}_${USER}_UPDATE_PASSWORD`,
+    UPDATE_FULLNAME                        : `${BASE_ACTIONS}_${USER}_UPDATE_FULLNAME`,
+    UPDATE_EMAIL                           : `${BASE_ACTIONS}_${USER}_UPDATE_EMAIL`,
+    UPDATE_PHONE                           : `${BASE_ACTIONS}_${USER}_UPDATE_PHONE`,
 }
 
 exports.CF_ACTIONS_AUTH = CF_ACTIONS_AUTH;
