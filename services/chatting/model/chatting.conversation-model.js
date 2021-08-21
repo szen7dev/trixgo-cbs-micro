@@ -204,6 +204,13 @@ class Model extends BaseModel {
                 if(!infoConversationAfterUpdated)
                     return resolve({ error: true, message: "Can't add member to conversation", status: 403 });
 
+				// INSERT USER MISS MESSAGE (DEFAULT 0)
+				let usersMissMessage = membersID.map(memberID => ({ userID: memberID, amount: 0 }))
+				await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$addToSet: { usersMissMessage }
+				}, { new: true });
+
+				// INSERT MESSAGE ADD MEMBER TO CONVERSATION
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
@@ -264,12 +271,16 @@ class Model extends BaseModel {
 				}
 
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $pullAll: pullMemberObj
+                    $pullAll: pullMemberObj,
+					$pull: {
+						usersMissMessage: { userID: memberID }
+					}
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
                     return resolve({ error: true, message: "Can't remove members in conversation", status: 403 });
 
+				// INSERT MESSAGE REMOVE MEMBER TO CONVERSATION
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
@@ -357,7 +368,7 @@ class Model extends BaseModel {
 	updateConfigConversation({ conversationID, authorID, typeConfig, valueConfig }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, authorID]) || !['1','2'].includes(valueConfig))
+                if(!checkObjectIDs([conversationID, authorID]) || ![1,2].includes(+valueConfig))
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -609,7 +620,7 @@ class Model extends BaseModel {
 		return new Promise(async resolve => {
 			try {
 				let page 	= 1;
-				let perPage = 15;
+				let perPage = 10;
 
 				if(latestMessageID && checkObjectIDs(latestMessageID)){
 					page = 2;
@@ -629,7 +640,7 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!checkExistConversation)
-					return resolve({ error: true, message: "Can't get info conversation", status: 403 });
+					return resolve({ error: true, message: "You aren't member", status: 403 });
 
 				// Get info last message in conversation (limit 15 per list message)
 				let conditionObj = {};
@@ -653,26 +664,20 @@ class Model extends BaseModel {
 					conditionObj   = dataPagingAndSort.data.find;
 					_sort          = dataPagingAndSort.data.sort;
 				}
-				conditionObj.conversation = objectID(conversationID);
+				conditionObj.conversation = conversationID;
 
-				let listMessage = await CHATTING__MESSAGE_COLL.find(conditionObj)
-					// .populate({ 
-					//     path: 'files',
-					// })
-					// .populate(
-					// {
-					//     path : 'sender', select :'_id fullname image company ' 
-					// })
+				// CHECK USER DELETE HISTORY
+				if(checkExistConversation.usersDeleteHistory && checkExistConversation.usersDeleteHistory.length){
+					let checkExistInUserDeleteHistory = checkExistConversation.usersDeleteHistory.find(user => user.userID.toString() === userID)
+
+					if(checkExistInUserDeleteHistory){
+						conditionObj._id = { $gt: checkExistInUserDeleteHistory.lastMessage };
+					}
+				}
+
+				let listMessages = await CHATTING__MESSAGE_COLL.find(conditionObj)
 					// .populate({
-					//     path: 'parent',
-					//     populate: {
-					//         path: "files sender",
-					//         select :'_id fullname image company path name type size author conversation' 
-					//     }
-					// })
-					// .populate(
-					// {
-					//     path : 'likedUsers', select :'_id fullname image company ' 
+					//     path : 'sender', select :'_id fullname image company ' 
 					// })
 					// .populate({path : 'listSeen', select :  '_id fullname  image' })
 					// .populate({
@@ -699,7 +704,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: { 
-						listMessage,
+						listMessages,
 						perPage,
 						currentPage,
 						totalPage
@@ -921,20 +926,9 @@ class Model extends BaseModel {
 					usersMute: { userID }
 				};
 
-				// if(timeMute && moment(timeMute).isValid()){
-				// 	dataAddToSet = {
-				// 		usersMute: {
-				// 			userID,
-				// 			time: new Date(timeMute)
-				// 		}
-				// 	}
-				// }
-				// console.log({ dataAddToSet })
-
 				if(isMute === "true"){
 					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 						_id: conversationID,
-						// "usersMute.user": userID,
 						usersMute: {
 							$not: {
 								$elemMatch: { userID }
@@ -974,10 +968,10 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
+	 * Func: Đánh dấu đã đọc cuộc hội thoại của 1 user
 	 * Date: 14/08/2021
 	 */
-	markReadConversation({ conversationID, userID }){
+ 	markReadConversation({ conversationID, userID }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -992,9 +986,14 @@ class Model extends BaseModel {
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
 
-				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-					$pull: {
-						usersMissMessage: { userID }
+				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
+					_id: conversationID,
+					usersMissMessage: {
+						$elemMatch: { userID }
+					}
+				}, {
+					$set: {
+						"usersMissMessage.$.amount": 0
 					}
 				}, { new: true })
 
@@ -1117,7 +1116,7 @@ class Model extends BaseModel {
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
 
-				// Pull current user in array usersDeleteHistory if exists
+				// Pull current user in array usersDeleteHistory if usersDeleteHistory.length > 0
 				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 					_id: conversationID,
 					usersDeleteHistory: {
@@ -1352,10 +1351,6 @@ class Model extends BaseModel {
     }
 
     // Cập nhật Link
-    /* Author: Hoang
-    * Date: 31/10/2010 - 4:10 PM.
-    * Usage: save links.
-    */
     updateLinks({ conversationID, userID, links }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -1391,7 +1386,6 @@ class Model extends BaseModel {
     }
 
     // Thêm tin nhắn ghim
-    // Tìm kiếm cuộc hội thoại
     insertPinMessage({ messageID, conversationID, userID }) {
         return new Promise(async resolve => {
             try {
@@ -1452,237 +1446,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
         });
-    }
-
-    updateMessageTyping({ conversationID, userID, content }) {
-        return new Promise(async resolve => {
-            try {
-                let infoConversation = await CHATTING__CONVERSATION_COLL.find({
-                    _id : conversationID , members: { $in: [userID]}
-                    });
-                let infoUser = await AUTH__USER_COLL.findById(userID);
-                if(!infoConversation){
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                }
-                content = content.trim()
-                let infoUpdate;
-                let arr = infoConversation[0].arrMesageTypingUsers;
-                let newArr = [];
-                // Kiểm  typing cuojc hội thoại là miss lần đầu hay đã typing rồi
-                let isTyping = false;
-                // Chưa tìm được câu query tốt nên xử lý theo luồng sau
-                // Lấy danh sách miss tin nhắn tìm user miss sau đó cập nhật mảng mới cho conversation
-                   
-                if(infoConversation[0].arrMesageTypingUsers){
-                    if(arr.length > 0){
-                        for(let i=0; i < arr.length; i++){
-                            if(arr[i].userID.toString() === userID.toString()){
-                                isTyping = false;   // nếu có rồi;
-                                break;
-                            }else{
-                                isTyping = true;// nếu chưa có trong mãng
-                            }
-                        }
-                        if(isTyping){
-                            let newItem = { userID : userID, messageTyping : content  }
-                            newArr.push(newItem);
-                            newArr = newArr.concat(arr);
-                        }else{
-                            for(let i=0; i < arr.length; i++){
-                                if(arr[i].userID.toString() == userID.toString()){
-                                    let newItem = { _id : arr[i]._id, userID : userID, messageTyping : content }
-                                    newArr.push(newItem);
-                                }else{
-                                    newArr.push(arr[i]);
-
-                                }
-                            }
-                        }
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                            conversationID
-                        ,
-                        {
-                            arrMesageTypingUsers:  newArr
-                        });
-                    
-                    }else{
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                            conversationID
-                        ,
-                        {
-                            arrMesageTypingUsers:  [ { userID , messageTyping : content } ]
-                        });
-                    }
-                }
-        
-                if(!infoUpdate)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-
-                return resolve({ error: false, data: infoUpdate, status : 200 })
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    updateUserOffline({  userID, time }) {
-        return new Promise(async resolve => {
-            try {
-                let infoConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [userID] } });
-                if(!infoConversation){
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                }
-                
-                let infoUpdate;
-                let arr;
-                let newArr = [];
-                let conversationID ;
-
-                for(let i=0; i< infoConversation.length; i++){
-                    if(infoConversation[i].members.length ==2){
-                        arr = infoConversation[i].arrMissMessage;
-                        conversationID   = infoConversation[i]._id;
-                        let hadArrMiss = false;
-
-                        if(arr){
-                            for(let i=0; i < arr.length; i++){
-                                if(arr[i].userID.toString() == userID.toString()){
-                                    let newItem = { _id : arr[i]._id, userID : userID, amout :  arr[i].amout, timeOffline : time }
-                                    newArr.push(newItem);
-                                    hadArrMiss = true;
-                                }else{
-                                    newArr.push(arr[i]);
-                                }
-                            }
-                        }
-                        if(hadArrMiss){
-                            infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                                    conversationID
-                                ,
-                                {
-                                    arrMissMessage:  newArr
-                                });
-                        }else{
-                            infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,
-                                {
-                                    $addToSet: {
-                                        arrMissMessage:[ {
-                                            userID : userID,  amout : 0,  timeOffline : time
-                                        }]
-                                    }   
-                                });
-                        }
-                        
-                        newArr = [] 
-                    }
-                }
-              
-                // Chưa tìm được câu query tốt nên xử lý theo luồng sau
-                // Lấy danh sách miss tin nhắn tìm user miss sau đó cập nhật mảng mới cho conversation
-                return resolve({ error: false, message:'update_success', status: 200 })
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    /**
-     * author : HuynhVinh
-     * decription : chức năng Tắt thông báo của cuộc  hội thoại
-     * 
-    */
-    muteConversation({ conversationID, userID, time }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID) || !time)
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                
-                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
-                    _id: conversationID ,
-                    members: { $in: [userID] }
-                });
-
-                if(!isMemberInConversation)
-                    return resolve({ error: true, message:  'You are not member', status : 403  });
-                
-                let listMute =  isMemberInConversation.usersMute;
-                let resultUpdate;
-                if(!listMute || (listMute && !listMute.length)){
-                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : [{ user : userID, time }] })
-                }
-                if(listMute && listMute.length){
-                    let newMuteUser = [];
-                    let isNewUser  = true;
-                    listMute.forEach(user=>{
-                        let _user = {};
-                        if(user.user && user.user.toString() ==  userID.toString()){
-                            _user.user = user.user;
-                            _user.time = time;
-                            _user._id = user._id;
-                            isNewUser = false;
-                        }
-
-                        if(user.user  && user.user.toString() !=  userID.toString()){
-                            _user = user;
-                        }
-                        newMuteUser.push(_user);
-                    })
-
-                    if(isNewUser){
-                        newMuteUser.push({ user : userID, time })
-                    }
-
-                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
-                }
-                
-                if(!resultUpdate)
-                    return resolve({ error: true, message:'Cant udpate',  status : 403 });
-
-                return resolve({ error: false, data :  resultUpdate, status : 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Mở lại thông báo của một cuộc hội thoại
-    unMuteConversation({ conversationID, userID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                
-                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
-                    _id: conversationID ,
-                    members: { $in: [userID] }
-                });
-
-                if(!isMemberInConversation)
-                    return resolve({ error: true, message:  'You are not member', status : 403  });
-                
-                let listMute =  isMemberInConversation.usersMute;
-                let resultUpdate;
-                if(!listMute)
-                    return resolve({ error: false, message : 'UnMute success', status: 200});
-
-                let newMuteUser = [];
-                listMute.forEach(user=>{
-                    if(user.user && user.user.toString() !=  userID.toString()){
-                        newMuteUser.push(user);
-                    }
-                });
-                resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, { usersMute : newMuteUser })
-                
-                if(!resultUpdate)
-                    return resolve({ error: true, message:'Cant udpate',  status : 403 });
-
-                return resolve({ error: false, data :  resultUpdate });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
     }
 
 }

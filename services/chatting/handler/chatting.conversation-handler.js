@@ -299,7 +299,7 @@ module.exports = {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Lấy danh sách tin nhắn cuộc hội thoại ( phân trang)
+	 * Func: Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
 	 * Date: 11/08/2021
 	 */
 	getListMessagesConversationWithPage: {
@@ -311,7 +311,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID }  		= ctx.meta.infoUser;
+                let { _id: userID } = ctx.meta.infoUser;
                 let { conversationID, latestMessageID, key } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
@@ -630,32 +630,6 @@ module.exports = {
 
 	/**
 	 * Dev: VinhHV
-	 * Func: Lấy bản nháp đang soạn của user trong một cuộc hội thoại
-	 * Date: ...
-	 */
-    getConversationDraftByUserID: {
-        params: {
-            conversationID: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let { conversationID } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_DRAFT_MODEL.getInfoByUserID({ 
-					conversationID, 
-					userID: CF_DATA_DEMO_CHATTING.userID_1 
-				});
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
-	 * Dev: VinhHV
 	 * Func: Lấy danh sách link trong một cuộc hội thoại
 	 * Date: ...
 	 */
@@ -677,36 +651,6 @@ module.exports = {
 					nextInfo 
 				})
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách file trong một cuộc hội thoại
-	 * Date: ...
-	 */
-    getFileConversationByID: {
-        params: {
-            conversationID      : { type: "string" },
-            currentPage         : { type: "string" },
-            nextInfo            : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let { conversationID, currentPage, nextInfo } = ctx.params;
-                // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
-                // await this.validateEntity(name);
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_FILE_MODEL.getListWithPage({ 
-					conversationID, 
-					userID: CF_DATA_DEMO_CHATTING.userID_1, 
-					currentPage, 
-					nextInfo 
-				})
-				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }

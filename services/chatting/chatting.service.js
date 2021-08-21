@@ -137,33 +137,27 @@ module.exports = {
 
 		// AUTHOR: VinhVH
 
-		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
+		// // Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
+		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
 
-		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
+		// // Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
+		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
 
-		// Xem các tệp của cuộc hội thoại [****** để sau]
+		// // Xem các tệp của cuộc hội thoại [****** để sau]
 
-		// Danh sách cuộc hội thoại có tin nhắn chưa đọc
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
+		// // Danh sách cuộc hội thoại có tin nhắn chưa đọc
+		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
 
-		// Tìm kiếm cuộc hội thoại theo dự án [chưa có]
+		// // Tìm kiếm cuộc hội thoại theo dự án [chưa có]
 
-		// Lấy danh sách link của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
+		// // Lấy danh sách link của cuộc hội thoại
+		// [CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
 		
-		// Lấy danh sách file của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
+		// // Lấy danh sách file của cuộc hội thoại
+		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
 		
-		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
-		
-
-		// ===========  MESSAGE ACTIONS  ================
-
-		// Lây tin nhắn của cuộc hội thoại phân trang 15 mẫu tin
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID] 	: CHATTING__MESSAGE_HANDLER.getListMessageByConversationID,
+		// // Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
+		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
 
 	},
 

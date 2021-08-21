@@ -17,34 +17,6 @@ module.exports = {
 	 */
 
 	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách tin nhắn của cuộc hội thoại
-	 * Date: ...
-	 * Updated: MinhVH - 03/08/2021
-	 */
-    getListMessageByConversationID: {
-        params: {
-			conversationID  : { type: "string" },
-            userID          : { type: "string" },
-            latestMessageID : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-                const { conversationID, userID, latestMessageID } = ctx.params;
-
-                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({
-					conversationID, userID, latestMessageID
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
 	 * Dev: MinhVH
 	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 17/08/2021
