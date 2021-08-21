@@ -33,7 +33,9 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     numShare: Number,
     //_________Số lượng view
     numView: Number,
-    //_________Ngày hồ sơ
+    //_________Kế hoạch hoàn thành
+    expiredTime: { type: Date, default: null },
+    //_________Ngày hồ sơ hoàn thành thực tế
     date: {
         type : Date
     },
