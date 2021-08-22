@@ -4,38 +4,34 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("company", {
-    //_________Tên công ty
-    name: String,
-    /**
-     * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
-     */
+    //_________Thuộc nền tảng
     platform:{
         type: Number,
         enum: [1, 2]
     },
-    //_________Ký hiệu công ty không được bỏ trống, không được trùng
+    //_________Tên công ty
+    name: String,
+    //_________Mã hiệu
     sign: {
-        type   : String,
+        type: String,
+        trim: true,
+        unique : true,
+        require: true
     },
-    //_________Mã số thuế công ty
+    //_________Mã số thuế
     taxid: String,
-    //_________Sử dụng để gửi tin nhắn
+    //_________Điện thoại
     phone: String,
     //_________Email
     email: String,
-    //_________Lĩnh vực hoạt động (SẼ BỎ KHÔNG DÙNG)
+    //_________Lĩnh vực hoạt động
     field: {
         type   : Number,
         default: 1 //ko thuộc lĩnh vực nào
     },
-    //_________Lĩnh vực hoạt động (NEW)
-    type: [{
-        type: Schema.Types.ObjectId,
-        ref : "doctype"
-    }],
     //_________Quy mô hoạt động
     scale: { type   : Number, default: 1 },
-    //_________Địa chỉ công ty
+    //_________Địa chỉ
     address: String,
     //_________Khu vực (Tỉnh thành/Quận huyện/Phường xã)
     area: {
@@ -46,11 +42,11 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     slogan: String,
     //_________Mô tả
     description: String,
-    //_________Giới thiệu về công ty
+    //_________Giới thiệu về công ty (xem xét bỏ => Datahub)
     intro: String,
     //_________Website
     website: String,
-    //_________Ảnh bìa
+    //_________Ảnh bìa (xem xét bỏ => Datahub)
     cover: {
         type: String,
         defautl: 'cover_default.png'
