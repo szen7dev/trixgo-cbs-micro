@@ -96,8 +96,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 104: Đổi logo cuộc hội thoại
      * 105: Xét thêm admin cuộc hội thoại
      * 106: Xoá bỏ quyền admin của member trong cuộc hội thoại
-     * 107: Xóa cuộc hội thoại
-     * 108: Thành viên rời khỏi cuộc hội thoại 
+     * 107: Thành viên rời khỏi cuộc hội thoại 
      */
     type: {
         type: Number,

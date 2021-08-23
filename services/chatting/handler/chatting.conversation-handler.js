@@ -142,7 +142,7 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { conversationID, memberID } = ctx.params;
+                const { conversationID, memberID, isSetAdmin } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateAdminConversation({
 					conversationID, authorID, memberID, isSetAdmin

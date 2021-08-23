@@ -681,9 +681,11 @@ class Model extends BaseModel {
 				}
 
 				let listMessages = await CHATTING__MESSAGE_COLL.find(conditionObj, objSort)
-					// .populate({
-					//     path: 'sender', select: '_id fullname image company' 
-					// })
+					.populate({
+					    path: 'sender listSeen receivers membersAssigned files.file', 
+						select: '_id fullname image',
+						populate: 'parent file',
+					})
 					// .select('sender content status type createAt')
 					.sort(sortBy)
 					.limit(perPage)
@@ -1095,20 +1097,20 @@ class Model extends BaseModel {
 					pullObj.authors = userID;
 				}
 
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, 
+					senderID: userID,
+					type: 107,
+					membersAssigned: [userID],
+					receiversID: checkExistConversation.members,
+				})
+
 				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$pull: pullObj
 				}, { new: true })
 
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
-
-				await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, 
-					senderID: userID,
-					type: 108,
-					membersAssigned: [userID],
-					receiversID: checkExistConversation.members,
-				})
 
 				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
 			} catch(error){
