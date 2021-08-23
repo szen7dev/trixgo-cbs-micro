@@ -7,7 +7,6 @@ const { EVENT_SOCKET_CONSTANT_CHATTING } 		= require('./helper/chatting.events-s
  * TOOLS
  */
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket')
-const { getLinkFromStringV1 } 					= require('../../tools/utils/utils.js')
 
 /**
  * COLLECTIONS
@@ -21,7 +20,6 @@ const AUTH__USER_COLL							= require('../auth/database/auth.user-coll');
 const USER_MODEL                               	= require('../../services/auth/model/auth.user-model').MODEL;
 const CHATTING__MESSAGE_MODEL                  	= require('./model/chatting.message-model').MODEL;
 const CHATTING__CONVERSATION_MODEL             	= require('./model/chatting.conversation-model').MODEL;
-const CHATTING__CONVERSATION_DRAFT_MODEL       	= require('./model/chatting.coversation_draft-model').MODEL;
 const CHATTING__CONVERSATION_LINK_MODEL       	= require('./model/chatring.conversation_link-model').MODEL;
 
 
@@ -429,39 +427,6 @@ exports.CHATTING_SOCKET = {
 
 
 
-
-
-	/**
-	 * Dev: VinhHV
-	 * Func: Đang soạn tin  nhắn
-	 * Date: ...
-	 * Updated: lưu bản nháp vào conversation_draft-coll
-	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_TYPING_MESAGE]: async function(data, ack) { 
-        let socket                                          = this;
-        let listUserActive                                  = socket.$service.listUserConnected2;
-        let userID                                          = socket.client.user;
-        let { typing, conversationID, content }           	= data;
-        let io                                             	= socket.$service.io;
-
-        let infoConversation       = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
-        let arrReceiver            = infoConversation.data.members;
-
-        await CHATTING__CONVERSATION_DRAFT_MODEL.insertOrUpdate({ conversationID, userID, message: content });
-
-        sendDataToMultilSocketsOfListUser({ 
-			io,
-			arrReceiver,
-			listUserConnected: listUserActive,
-			data: { 
-				typing, 
-				conversationID, 
-				user: userID, 
-				status: 200  
-			}, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_TYPING_MESAGE]
-		})
-    },
 
 	/**
 	 * Dev: VinhHV

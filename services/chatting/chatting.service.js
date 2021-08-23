@@ -122,6 +122,9 @@ module.exports = {
 		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
 
+		// Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
+		[CF_ACTIONS_CHATTING.SEARCH_MESSAGE_CONVERSATION_BY_ID] 				: CHATTING__CONVERSATION_HANDLER.searchMessageConversationById,
+
 		// Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
 		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.insertMessage,
 
@@ -152,12 +155,6 @@ module.exports = {
 
 		// // Lấy danh sách link của cuộc hội thoại
 		// [CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
-		
-		// // Lấy danh sách file của cuộc hội thoại
-		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
-		
-		// // Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
-		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
 
 	},
 

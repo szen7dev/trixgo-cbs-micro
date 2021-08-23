@@ -642,9 +642,10 @@ class Model extends BaseModel {
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You aren't member", status: 403 });
 
-				// Get info last message in conversation (limit 15 per list message)
-				let conditionObj = {};
-				let _sort = {
+				// Init condition object
+				let conditionObj = { conversation: conversationID };
+				let objSort 	 = {};
+				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
 					updateAt: -1
@@ -662,9 +663,8 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Request params nextInfo invalid", status: 400 });
 
 					conditionObj   = dataPagingAndSort.data.find;
-					_sort          = dataPagingAndSort.data.sort;
+					// sortBy          = dataPagingAndSort.data.sort;
 				}
-				conditionObj.conversation = conversationID;
 
 				// CHECK USER DELETE HISTORY
 				if(checkExistConversation.usersDeleteHistory && checkExistConversation.usersDeleteHistory.length){
@@ -675,40 +675,104 @@ class Model extends BaseModel {
 					}
 				}
 
-				let listMessages = await CHATTING__MESSAGE_COLL.find(conditionObj)
+				if(key){
+					conditionObj.$text = { $search: key };
+					objSort.score = { $meta: "textScore" };
+					sortBy.score = { $meta: "textScore" };
+				}
+
+				let listMessages = await CHATTING__MESSAGE_COLL.find(conditionObj, objSort)
 					// .populate({
-					//     path : 'sender', select :'_id fullname image company ' 
+					//     path: 'sender', select: '_id fullname image company' 
 					// })
-					// .populate({path : 'listSeen', select :  '_id fullname  image' })
-					// .populate({
-					//     path: 'reactions',
-					//     populate: {
-					//         path: "author",
-					//         select :'_id fullname image company' 
-					//     }
-					// })
+					// .select('sender content status type createAt')
+					.sort(sortBy)
 					.limit(perPage)
-					.sort(_sort)
 					.lean();
 
-				let totalPagePromise         = CHATTING__MESSAGE_COLL.count({ conversation: conversationID });
-				let totalCheckExPagePromise  = CHATTING__MESSAGE_COLL.count(conditionObj);
-
-				const { currentPage, totalPage } = await calculateCurrentPage({
-					totalPagePromise: totalPagePromise,
-					totalCurrentPagePromise: totalCheckExPagePromise,
-					perPage
-				})
+				if(!key){
+					listMessages = listMessages.reverse();
+				}
 
 				return resolve({ 
 					error: false,
 					status: 200,
-					data: { 
-						listMessages,
-						perPage,
-						currentPage,
-						totalPage
+					data: listMessages
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
+	 * Date: 23/08/2021
+	 */
+	searchMessageConversationById({ conversationID, userID, messageID }){
+		return new Promise(async resolve => {
+			try {
+				// Check params
+				if(!checkObjectIDs([conversationID, messageID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $all: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				let conditionObjFrontList 		= { _id: { $lt: messageID }, conversation: conversationID };
+				let conditionObjBackList 		= { _id: { $gt: messageID }, conversation: conversationID };
+				let conditionObjSearchMessage 	= { _id: { $in: [messageID] }, conversation: conversationID };
+				let _sort = {
+					modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+				};
+
+				// CHECK USER DELETE HISTORY
+				if(checkExistConversation.usersDeleteHistory && checkExistConversation.usersDeleteHistory.length){
+					let checkExistInUserDeleteHistory = checkExistConversation.usersDeleteHistory.find(user => user.userID.toString() === userID)
+
+					if(checkExistInUserDeleteHistory){
+						conditionObjSearchMessage._id.$gt = checkExistInUserDeleteHistory.lastMessage;
+						conditionObjFrontList._id.$gt = checkExistInUserDeleteHistory.lastMessage;
 					}
+				}
+
+				let infoMessage = await CHATTING__MESSAGE_COLL.findOne(conditionObjSearchMessage);
+				if(!infoMessage)
+					return resolve({ error: true, message: "Can't get info message", status: 400 });
+
+				let listMessagesFront = await CHATTING__MESSAGE_COLL.find(conditionObjFrontList)
+					// .populate({
+					//     path: 'sender', select:'_id fullname image company' 
+					// })
+					// .select('sender content status type createAt')
+					.sort(_sort)
+					.limit(5)
+					.lean();
+
+				let listMessagesBack = await CHATTING__MESSAGE_COLL.find(conditionObjBackList)
+					// .populate({
+					//     path: 'sender', select: '_id fullname image company' 
+					// })
+					// .select('sender content status type createAt')
+					.sort(_sort)
+					.limit(5)
+					.lean();
+
+				let listMessages = [...listMessagesFront.reverse(), infoMessage, ...listMessagesBack.reverse()];
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: listMessages
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });

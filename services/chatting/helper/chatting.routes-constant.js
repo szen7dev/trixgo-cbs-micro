@@ -37,7 +37,6 @@ const CF_ROUTINGS_CHATTING = {
 	// Author VINHVH
     GET_LIST_CONVERSATION_BY_USER_ID        : `${BASE_ROUTE}${CONVERSATION}/users/:userID`,
     GET_LIST_CONVERSATION_BY_KEY            : `${BASE_ROUTE}${CONVERSATION}`,
-    GET_INFO_CONVERSATION_DRAFT             : `${BASE_ROUTE}${CONVERSATION}/draft/:conversationID`,
     GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/links/:conversationID`,
     GET_LIST_CONVERSATION_MISS_BY_USER_ID   : `${BASE_ROUTE}${CONVERSATION}/miss`,
     GET_LIST_CONVERSATION_FILE_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/files/:conversationID`,
@@ -46,6 +45,7 @@ const CF_ROUTINGS_CHATTING = {
 	INSERT_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/insert-message-conversation`,
 	DELETE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-message-conversation`,
 	REVOKE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/revoke-message-conversation`,
+    SEARCH_MESSAGE_CONVERSATION_BY_ID 				: `${BASE_ROUTE}${CONVERSATION}/search-message-conversation-by-id`,
 
 
     GET_LIST_MESSAGE_BY_CONVERSATION_ID : `${BASE_ROUTE}${MESSAGE}/conversations/:conversationID`,

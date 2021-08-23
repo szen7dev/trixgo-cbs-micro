@@ -3,7 +3,6 @@
 /**
  * EXTERNAL PACKAGE
  */
-const lodash										= require('lodash');
 const PromisePool									= require('@supercharge/promise-pool');
 
 /**
@@ -35,6 +34,7 @@ const CHATTING__CONVERSATION_COLL                   = require('../database/chatt
  * MODELS
  */
 const CHATTING__CONVERSATION_FILE_MODEL				= require('../model/chatting.conversation_file-model').MODEL;
+const CHATTING__CONVERSATION_LINK_MODEL				= require('../model/chatring.conversation_link-model').MODEL;
 
 
 class Model extends BaseModel {
@@ -127,18 +127,15 @@ class Model extends BaseModel {
 
 					if(allLinks && allLinks.length){
 						let listMessageLinks = allLinks.map(link => ({
-							listSeen: [senderID],
-							sender: senderID, 
-							receivers: receiversID,
-							content: link, 
-							conversation: conversationID,
-							type: 3
+							conversationID, 
+							userID: senderID,
+							link
 						}))
 
 						await PromisePool
 							.for(listMessageLinks)
 							.withConcurrency(2)
-							.process(async message => this.insertData(message))
+							.process(async message => CHATTING__CONVERSATION_LINK_MODEL.insert(message))
 					}
 				}
 
@@ -167,7 +164,7 @@ class Model extends BaseModel {
 					numberMissMessage 		 = results.length;
 					infoMessageAfterInserted = results[results.length - 1];
 				} else{
-					// INSERT MESSAGE NORMAL
+					// MESSAGE NORMAL
 					infoMessageAfterInserted = await this.insertData(dataInsertMessage);
 				}
 

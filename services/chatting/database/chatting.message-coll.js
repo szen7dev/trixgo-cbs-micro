@@ -84,7 +84,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 0: tin nhắn thông thường 
 	 * 1: tin nhắn ảnh
 	 * 2: tin nhắn file
-	 * 3: tin nhắn link
+	 * 3: tin nhắn link (bỏ => sử dụng coll chatting.conversation_link-model)
 	 * 4: tin nhắn reminder
 	 * 5: tin nhắn poll
 	 * 6: tin nhắn share location

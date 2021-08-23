@@ -12,9 +12,7 @@ const { renderStatusCodeAndResponse }                 = require('../../../tools/
  * MODELS
  */
 const CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
-const CHATTING__CONVERSATION_DRAFT_MODEL              = require('../model/chatting.coversation_draft-model').MODEL;
 const CHATTING__CONVERSATION_LINK_MODEL               = require('../model/chatring.conversation_link-model').MODEL;
-const CHATTING__CONVERSATION_FILE_MODEL               = require('../model/chatting.conversation_file-model').MODEL;
 
 
 module.exports = {
@@ -306,7 +304,7 @@ module.exports = {
         params: {
             conversationID	: { type: "string" },
 			latestMessageID : { type: "string", optional: true },
-            key				: { type: "string", optional: true },
+			key 			: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -315,7 +313,34 @@ module.exports = {
                 let { conversationID, latestMessageID, key } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
-					conversationID, latestMessageID, userID, key
+					conversationID, latestMessageID, key, userID
+				});
+
+				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
+	 * Date: 23/08/2021
+	 */
+	searchMessageConversationById: {
+        params: {
+            conversationID	: { type: "string" },
+            messageID		: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID, messageID } = ctx.params;
+
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.searchMessageConversationById({ 
+					conversationID, userID, messageID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
