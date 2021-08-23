@@ -115,6 +115,8 @@ module.exports = {
 		// Xoá lịch sử cuộc hội thoại
 		[CF_ACTIONS_CHATTING.DELETE_HISTORY_CONVERSATION] 						: CHATTING__CONVERSATION_HANDLER.deleteHistoryConversation,
 
+		// Danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_WITH_PAGE]					: CHATTING__CONVERSATION_HANDLER.getListConversationWithPage,
 
 
 		// =========================  MESSAGE  ============================
@@ -134,6 +136,9 @@ module.exports = {
 		// Thu hồi tin nhắn của cuộc hội thoại (media, text)
 		[CF_ACTIONS_CHATTING.REVOKE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.revokeMessage,
 
+		// Chia sẻ tin nhắn đến các cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
+
 
 
 
@@ -143,15 +148,12 @@ module.exports = {
 		// // Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
 		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
 
-		// // Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
-		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
+		
 
 		// // Xem các tệp của cuộc hội thoại [****** để sau]
 
 		// // Danh sách cuộc hội thoại có tin nhắn chưa đọc
 		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
-
-		// // Tìm kiếm cuộc hội thoại theo dự án [chưa có]
 
 		// // Lấy danh sách link của cuộc hội thoại
 		// [CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,

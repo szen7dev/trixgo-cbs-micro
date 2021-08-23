@@ -48,11 +48,11 @@ class Model extends BaseModel {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-    insertMessage({ senderID, content, receiversID, conversationID, membersAssigned, files, type = 0, ctx }) {
+    insertMessage({ conversationID, senderID, content, receiversID, parentID, membersAssigned, files, type = 0, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs([senderID, conversationID])) 
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request Params senderID or conversationID invalid', status: 400 });
 
 				// CHECK SENDER IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -67,8 +67,11 @@ class Model extends BaseModel {
 					receiversID = checkExistConversation.members;
 				} else{
 					if (!checkObjectIDs(receiversID)) 
-                    	return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                    	return resolve({ error: true, message: 'Request Params receiversID invalid', status: 400 });
 				}
+
+				if(parentID && !checkObjectIDs(parentID))
+					return resolve({ error: true, message: 'Request Param parentID invalid', status: 400 });
 
 				let dataInsertMessage = {
 					listSeen: [senderID], 
@@ -78,6 +81,7 @@ class Model extends BaseModel {
 					receivers: receiversID,
 					type
 				}
+				parentID && (dataInsertMessage.parent = parentID);
 
 				if(membersAssigned && membersAssigned.length && checkObjectIDs(membersAssigned)){
 					dataInsertMessage.membersAssigned = membersAssigned;
@@ -385,6 +389,25 @@ class Model extends BaseModel {
 		})
 	}
 
+	/**
+	 * Dev: MinhVH
+	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại 
+	 * Date: 23/08/2021
+	 */
+	shareMessageConversation({ conversationsID, messagesID, userID }){
+		return new Promise(async resolve => {
+			try {
+				if (!checkObjectIDs([...conversationsID, ...messagesID, userID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+
+
+
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
 
 
 
@@ -459,6 +482,8 @@ class Model extends BaseModel {
         })
     }
 
+
+	
     //cập nhật trạng thái tin nhắn đã xem
     seenMessageOneByOne({ messageID, userID }){
         return new Promise(async(resolve) => {
@@ -501,100 +526,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
-    }
-
-    // db.products.find({_id: {$gt: ObjectId("4fdbaf608b446b0477000142") }}).limit(1)
-    // lấy tin nhắn trước và sau tin nhắn hiện tại ví dụ  [ tn1  tn2 tn3 tn4 tn5] truyền vào tìm tn2 sẽ lấy ra tn1 tn2 tn3
-    getMessagefromAPoint({ messageID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid'});
-                // status = 2 trạn thái đã nhận tin nhắn , tin nhắn đã gửi thành công
-                let infoMessage = await CHATTING__MESSAGE_COLL.find({ _id: messageID });
-                let conversationID = infoMessage[0].conversation;
-                //.sort({createAt: -1})
-                let listData  =  [];
-            
-                let infoMessage1 = await CHATTING__MESSAGE_COLL.find({_id: { $lte: messageID }, conversation : conversationID})
-                    .populate({
-                        path : 'sender',
-                        populate : {
-                            path : 'company'
-                        }
-                    })
-                    .populate({
-                        path : 'userFixedBug',
-                        populate : {
-                        path : 'company'
-                        }
-                    })
-                    .populate({
-                        path : 'conversation',
-                        select :  '_id name' 
-                    })
-                    .populate({
-                        path : 'files',
-                        select :  'path _id type' 
-                    })
-                    .populate({
-                        path : 'listSeen',
-                        select :  'fullname _id email image' 
-                    })
-                    .populate({
-                        path : 'app',
-                        select :  '_id name' 
-                    }).limit(3).sort({createAt: -1})
-
-                let infoMessage2 = await CHATTING__MESSAGE_COLL.find({ _id: { $gte: messageID }, conversation : conversationID})
-                    .populate({
-                        path : 'sender',
-                        populate : {
-                            path : 'company'
-                        }
-                    })
-                    .populate({
-                        path : 'userFixedBug',
-                        populate : {
-                        path : 'company'
-                        }
-                    })
-                    .populate({
-                        path : 'conversation',
-                        select :  '_id name' 
-                    })
-                    .populate({
-                        path : 'files',
-                        select :  'path _id type' 
-                    })
-                    .populate({
-                        path : 'listSeen',
-                        select :  'fullname _id email image' 
-                    })
-                    .populate({
-                        path : 'app',
-                        select :  '_id name' 
-                    }).limit(3)
-
-                if(!infoMessage2 && !infoMessage1)
-                    return resolve({ error: true, data: 'cant_get_message' });
-
-                if(infoMessage1){
-                    infoMessage1.reverse();
-                    listData = listData.concat(infoMessage1)
-                }
-
-                if(infoMessage2){
-                    listData = listData.concat(infoMessage2)
-                }
-                listData = [...new Set(listData)];
-
-                
-                return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
     }
 
 }
