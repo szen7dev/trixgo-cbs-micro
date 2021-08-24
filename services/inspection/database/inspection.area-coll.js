@@ -17,6 +17,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_area", {
     },
     //_________Tên checklist kiểm tra
     name: String,
+    //_________Mã hiệu
+    sign: String,
     //_________Mô tả
     description: String,
     /**
