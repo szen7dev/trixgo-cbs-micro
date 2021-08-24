@@ -61,7 +61,6 @@ class BaseModel {
             //     data.userCreate = authorID;
 
             (new coll(data)).save(function (error, result) {
-                console.log({ error, result })
                 return resolve(result, error);
             });
         });

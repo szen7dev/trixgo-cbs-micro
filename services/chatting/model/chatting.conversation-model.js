@@ -1,140 +1,1352 @@
 "use strict";
 
-const BaseModel                                 = require('../../../tools/db/base_model');
+/**
+ * EXTERNAL PACKAGE
+ */
 const ObjectID                                  = require('mongoose').Types.ObjectId;
+const moment									= require('moment');
 
+/**
+ * CONSTANTS
+ */
+const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_REMINDER } 					= require('../../reminder/helper/reminder.actions-constant');
+
+/**
+ * TOOLS
+ */
+const BaseModel                                 = require('../../../tools/db/base_model');
+const { RANGE_BASE_PAGINATION } 				= require('../../../tools/cursor_base/playground/index');
+const { calculateCurrentPage } 					= require('../../../tools/utils/calculate_current_page');
+const { checkObjectIDs } 						= require('../../../tools/utils/utils');
+
+/**
+ * COLLECTIONS
+ */
+const CHATTING__MESSAGE_COLL					= require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
+const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
 const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 const FILE__FILE_COLL                           = {};
 const FILE__REMOVED_MODEL                       = {};
 
-const { checkObjectIDs, checkParametersModel, checkPointDotsAndRoundingNumberForPagingChatting }                            = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
-
 /**
- * MODEL
+ * MODELS
  */
-const CHATTING__MESSAGE_MODEL  = require('../model/chatting.message-model.js').MODEL;
+const CHATTING__MESSAGE_MODEL  					= require('../model/chatting.message-model').MODEL;
+
 
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../database/chatting.conversation-coll'));
+        super(CHATTING__CONVERSATION_COLL);
     }
 
-    // Click vào một User trên danh sách => Tạo cuộc hội thoại riêng tư
-    insert({ name, description, authorID, receiverID }) {
-        const that = this;
+	/**
+	 * Dev: VinhHV
+	 * Func: Tạo cuộc hội thoại
+	 * Date: ...
+	 * Updated: MinhVH - 04/08/2021
+	 */
+	insertConversation({ name, description, authorID, membersID, isPrivate }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(authorID) || !checkObjectIDs(receiverID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
+				if(!checkObjectIDs([authorID, ...membersID]) || !membersID || !membersID.length)
+                    return resolve({ error: true, message: 'Request params authorID or membersID invalid', status: 400 });
 
-                // Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({ 
-                    members: { $all: [authorID, receiverID] }
-                })
-                
-                for(let  i= 0; i< checkExistConversation.length; i++){
-                    if(checkExistConversation[i].members.length == 2){
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                    }
-                }
+				// Tạo cuộc hội thoại 2 người
+				if(isPrivate === "true"){
+					if(membersID.length > 1)
+						return resolve({ error: true, message: 'Number of membersID must equal 1', status: 400 });
 
-                let infoConversationAfterInserted = await that.insertData({ name, description, author: authorID });
+					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
+					let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({ 
+						members: { $all: [authorID, ...membersID] }
+					}).lean()
 
+					for(let i = 0; i < checkExistConversation.length; i++){
+						if(checkExistConversation[i].members.length === 2){
+							return resolve({ error: true, message: 'Conversation already exists', status: 403 });
+						}
+					}
+				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
+					if(membersID.length <= 1)
+						return resolve({ error: true, message: 'Number of membersID must more than 1', status: 400 });
+
+					if(membersID.length >= 100)
+						return resolve({ error: true, message: 'Number of membersID over 100', status: 400 });
+				}
+
+                let infoConversationAfterInserted = await this.insertData({ 
+					name, 
+					description, 
+					authors: [authorID],
+					members: [...membersID, authorID]
+				});
                 if(!infoConversationAfterInserted)
-                    return resolve({ error: true, message: "Can't create", status : 403 });
+                    return resolve({ error: true, message: "Can't create conversation", status: 403 });
 
-                
-                let { _id: conversationID } = infoConversationAfterInserted;
+                // infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findById(infoConversationAfterUpdated._id).populate({
+                //     path: 'members',
+                //     select: '_id fullname image company friends receiveFromFriends sendToFriends ',
+                // })
+
+                return resolve({ error: false, data: infoConversationAfterInserted, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật thông tin cuộc hội thoại
+	 * Date: 04/08/2021
+	 */
+	updateConversation({ conversationID, userID, name, description, avatar, ctx }) {
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request params conversationID or userID invalid', status: 400 });
+
+				let dataUpdate 	= {};
+				name 		&& (dataUpdate.name 		= name);
+				description && (dataUpdate.description 	= description);
+
+				// Cập nhật avatar cuộc hội thoại
+				if(avatar){
+					let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
+						app: CF_DOMAIN_SERVICES.CHATTING,
+						name: avatar.name,
+						url: avatar.url,
+						size: avatar.size,
+						userID,
+					});
+					
+					if(infoAvatarConversation.error)
+						return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
+
+					let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
+						conversation: conversationID,
+						file: infoAvatarConversation.data._id
+					});
+					dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
+				}
+
+				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
+					_id: conversationID,
+					members: { $in: [userID] }
+				}, {
+					$set: dataUpdate
+				}, { new: true });
+
+				if(!infoAfterUpdate)
+					return resolve({ error: true, message: "Can't update conversation", status: 403 });
+
+				if(name){
+					await CHATTING__MESSAGE_MODEL.insertMessage({
+						senderID: userID,
+						receiversID: infoAfterUpdate.members,
+						conversationID, 
+						type: 103
+					})
+				}
+
+				if(avatar){
+					await CHATTING__MESSAGE_MODEL.insertMessage({
+						senderID: userID,
+						receiversID: infoAfterUpdate.members,
+						conversationID, 
+						type: 104
+					})
+				}
+
+				return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm thành viên cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+	addMembersToConversationByID({ conversationID, authorID, membersID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length)
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID, 
+					authors: { $in: [authorID] }
+				}).populate('members');
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author", status: 403 });
+
+				for (const member of checkExistConversation.members) {
+					if(membersID.includes(member._id.toString())){
+						return resolve({ error: true, message: `Member ${member.fullname} is existed in conversation`, status: 403 });
+					}
+				}
 
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    // members: [receiverID, authorID], // Tham khảo phương thức này
                     $addToSet: {
-                        members: {
-                            $each: [receiverID, authorID]
-                        }
+                        members: { $each: membersID }
                     }
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: "Can't create", status : 403 });
+                    return resolve({ error: true, message: "Can't add member to conversation", status: 403 });
 
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					senderID: authorID,
+					receiversID: infoConversationAfterUpdated.members,
+					membersAssigned: membersID,
+					conversationID, 
+					type: 101
+				})
 
-                infoConversationAfterUpdated =  await CHATTING__CONVERSATION_COLL.findById(infoConversationAfterUpdated._id).populate({
-                    path: 'members',
-                    select: '_id fullname image company friends receiveFromFriends sendToFriends ',
-                    populate: {
-                        path: "company"
-                    }
-                })
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
-                return resolve({ error: false, data: infoConversationAfterUpdated });
+	/**
+	 * Dev: MinhVH
+	 * Func: Xóa thành viên khỏi cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+	removeMemberInConversation({ conversationID, authorID, memberID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([conversationID, authorID, memberID]))
+					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(memberID === authorID)
+					return resolve({ error: true, message: "You can't remove you from conversation", status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID, 
+					authors: { $in: [authorID] }, 
+					members: { $in: [memberID] }
+				});
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author or member don't belong to chat group", status: 403 });
+
+                // if(checkExistConversation.members.length <= 2){
+                    // let resultDeleteConverSation = await CHATTING__CONVERSATION_COLL.findByIdAndDelete({ conversationID }); 
+                    // return resolve({ error: false, data: checkExistConversation, status: 200});
+                // }
+
+				let pullMemberObj = {};
+
+				if(checkExistConversation.authors.includes(memberID)){
+
+					// Nếu là root author -> dc xoá các author khác
+					if(checkExistConversation.authors[0].toString() === authorID){
+						pullMemberObj.authors = [memberID];
+						pullMemberObj.members = [memberID];
+					} else{
+						return resolve({ error: true, message: "You don't have permission remove author", status: 403 });
+					}
+
+				} else{
+					pullMemberObj.members = [memberID];
+				}
+
+                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    $pullAll: pullMemberObj
+                }, { new: true });
+
+                if(!infoConversationAfterUpdated)
+                    return resolve({ error: true, message: "Can't remove members in conversation", status: 403 });
+
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					senderID: authorID,
+					receiversID: infoConversationAfterUpdated.members,
+					membersAssigned: [memberID],
+					conversationID, 
+					type: 102
+				})
+
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Set member thành admin cho cuộc hội thoại (hoặc ngược lại)
+	 * Date: 07/08/2021
+	 */
+	updateAdminConversation({ conversationID, authorID, memberID, isSetAdmin }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([conversationID, authorID, memberID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [authorID] }
+				});
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author", status: 403 });
+
+				let infoConversationAfterUpdated = null, typeMessage = 0;
+				// Cập nhật member thành admin
+				if(isSetAdmin === "true"){
+					if(checkExistConversation.authors.includes(memberID))
+						return resolve({ error: true, message: "Member is already an author", status: 403 });
+
+					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$addToSet: {
+							authors: memberID
+						}
+					}, { new: true });
+
+					typeMessage = 105;
+
+				} else{ // Cập nhật admin thành member
+					if(checkExistConversation.authors[0].toString() === memberID.toString())
+						return resolve({ error: true, message: "Can't remove author root", status: 403 });
+
+					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$pull: {
+							authors: memberID
+						}, 
+					}, { new: true });
+
+					typeMessage = 106;
+				}
+
+                if(!infoConversationAfterUpdated)
+                    return resolve({ error: true, message: "Can't update author for conversation", status: 403 });
+
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, 
+					senderID: authorID,
+					type: typeMessage,
+					membersAssigned: [memberID],
+					receiversID: checkExistConversation.members,
+				})
+
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
         })
     }
 
-    // Tạo cuộc hội thoại nhiều hơn hai thành viên ( Nhóm chat )
-    insertConversationMoreTowMember({ name, description, authorID, receivers }) {
-        const that = this;
+	/**
+	 * Dev: MinhVH
+	 * Func: Cài đặt cuộc hội thoại (group chat)
+	 * Date: 09/08/2021
+	 */
+	updateConfigConversation({ conversationID, authorID, typeConfig, valueConfig }) {
         return new Promise(async (resolve) => {
             try {
-                // await that.insertData({ name : 'tesst', description : 'tesst', author: authorID });
-                // return resolve({ errror : false, message : 'scueess' })
-                let arrReceiver = [];
-                if(receivers.includes(',')) {
-                    arrReceiver = receivers.split(',');
-                } else {
-                    arrReceiver.push(receivers);
-                }
+                if(!checkObjectIDs([conversationID, authorID]) || !['1','2'].includes(valueConfig))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-                // KIỂM TRA ĐIỀU KIỆN HỢP LỆ
-                if(Number(arrReceiver.length) <= 1)
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [authorID] }
+				});
 
-                if(Number(arrReceiver.length) >= 100)
-                        return resolve({ error: true, message: 'Members over 100', status : 400 });
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author", status: 403 });
 
-                arrReceiver.forEach(reciver=>{
-                    if(!checkObjectIDs(reciver))
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                })
+				let dataUpdate = {};
+				/**
+				 * 1: Làm nổi bật tin của Admin
+				 * 2: Member mới được xem tin nhắn cũ
+				 * 3: Members được sửa thông tin nhóm
+				 * 4: Members được tạo ghi chú, nhắc hẹn
+				 * 5: Members được tạo bình chọn
+				 * 6: Members được ghim tin nhắn
+				 * 7: Members được gửi tin nhắn
+				 */
+				switch (+typeConfig) {
+					case 1:
+						dataUpdate.config = { configHighlight: +valueConfig };
+						break;
+					case 2:
+						dataUpdate.config = { configSeeOldMessage: +valueConfig };
+						break;
+					case 3:
+						dataUpdate.config = { configEditInfo: +valueConfig };
+						break;
+					case 4:
+						dataUpdate.config = { configCreateNote: +valueConfig };
+						break;
+					case 5:
+						dataUpdate.config = { configCreatePoll: +valueConfig };
+						break;
+					case 6:
+						dataUpdate.config = { configPinMessage: +valueConfig };
+						break;
+					case 7:
+						dataUpdate.config = { configSendMessage: +valueConfig };
+						break;
+					default:
+						break;
+				}
 
-                if(!checkObjectIDs(authorID)  || !Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-
-                let exitsConversation = await CHATTING__CONVERSATION_COLL.find({ name, members : [...arrReceiver, authorID] });
-
-                // Kiểm tra xem có cuộc hội thoại nào trung tên chưa
-                if(exitsConversation.length > 0)
-                    return resolve({ error: true, message: 'Name conversation exited', status : 400 });
-
-                let infoConversationAfterInserted = await that.insertData({ name, description, author: authorID });
-
-                if(!infoConversationAfterInserted)
-                    return resolve({ error: true, message: 'Cant create', status : 403 });
-
-                let { _id: conversationID } = infoConversationAfterInserted;
-
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $addToSet: {
-                        members: {
-                            $each: [...arrReceiver, authorID]
-                        }
-                    }
-                }, { new: true });
+				let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$set: dataUpdate
+				}, { new: true });
 
                 if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create', status : 403 });
+                    return resolve({ error: true, message: "Can't update config conversation", status: 403 });
 
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-
+                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật pin cuộc hội thoại
+	 * Date: 10/08/2021
+	 */
+	updatePinConversation({ conversationID, userID, isPin, ctx }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				});
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+
+				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_CONVERSATION}`, {
+					conversationID, userID, isPin
+				});
+				if(infoUserAfterUpdated.error)
+					return resolve({ ...infoUserAfterUpdated, status: 403 });
+
+				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy thông tin cuộc hội thoại của user
+	 * Date: 04/08/2021
+	 */
+    getInfoConversationByID({ conversationID, userID }){
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                const infoConversation = await CHATTING__CONVERSATION_COLL
+					.findOne({ 
+						_id: conversationID, 
+						members: { $in: [userID] }
+					})
+                    .populate({
+                        path: 'members authors',
+                        select: '_id fullname image company friends birthDay username phone email',
+                    })
+					.populate({
+						path: 'avatar',
+						populate: 'file'
+					})
+                    .lean();
+
+                if (!infoConversation) 
+                    return resolve({ error: true, message: "Can't get info conversation", status: 403 });
+
+                return resolve({ error: false, data: infoConversation, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xem các nhóm chung với 1 thành viên
+	 * Date: 11/08/2021
+	 */
+	getInfoGeneralGroupsByMember({ userID, memberID }){
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([userID, memberID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				const listGroupConversationsOfUser = await CHATTING__CONVERSATION_COLL
+					.find({ 
+						members: { $in: [userID] }, 
+						$nor: [
+							{members: {$exists: false}},
+							{members: {$size: 0}},
+							{members: {$size: 2}}
+						]	
+					})
+					.select('_id name description authors avatar')
+					.populate({
+						path: 'avatar authors',
+						select: '_id fullname username',
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
+					})
+					.lean();
+
+				const listGroupConversationsOfMember = await CHATTING__CONVERSATION_COLL
+					.find({ 
+						members: { $in: [memberID] },
+						$nor: [
+							{members: {$exists: false}},
+							{members: {$size: 0}},
+							{members: {$size: 2}}
+						]
+					})
+					.select('_id name description authors avatar')
+					.populate({
+						path: 'avatar authors',
+						select: '_id fullname username',
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
+					})
+					.lean();
+
+				let listGeneralConversation = [];
+
+				listGroupConversationsOfUser.map(conversationOfUser => {
+					listGroupConversationsOfMember.map(conversationOfMember => {
+						// Kiểm tra chung nhóm hội thoại
+						if(conversationOfUser._id.toString() === conversationOfMember._id.toString()){
+
+							listGeneralConversation[listGeneralConversation.length] = {
+								name: conversationOfMember.name,
+								description: conversationOfMember.description,
+								infoOwner: conversationOfMember.authors && conversationOfMember.authors[0],
+								avatar: (conversationOfMember.avatar && conversationOfMember.avatar.file) && conversationOfMember.avatar.file.url
+							};
+
+						}
+					})
+				})
+
+                return resolve({ error: false, data: listGeneralConversation, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách member cuộc hội thoại
+	 * Date: ...
+	 * Updated: 10/08/2021 - MinhVH
+	 */
+	getListMembersConversationByID({ conversationID, userID }){
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                const infoConversation = await CHATTING__CONVERSATION_COLL
+					.findOne({ 
+						_id: conversationID, 
+						members: { $in: [userID] }
+					})
+                    .populate({
+                        path: 'members',
+                        select: '_id fullname image birthDay username phone email',
+                    })
+                    .lean();
+
+                if (!infoConversation) 
+                    return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+
+                // let listMembers = await AUTH__USER_COLL
+				// 	.find({ _id: { $in: infoConversation.members } })
+				// 	.select('_id fullname email image position sendToFriends receiveFromFriends recentlyFriends friends')
+				// 	.lean();
+
+                return resolve({ error: false, data: infoConversation.members, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách tin nhắn cuộc hội thoại ( phân trang)
+	 * Date: ...
+	 * Updated: MinhVH - 11/08/2021
+	 */
+	getListMessagesConversationWithPage({ conversationID, latestMessageID, userID, key }){
+		return new Promise(async resolve => {
+			try {
+				let page 	= 1;
+				let perPage = 15;
+
+				if(latestMessageID && checkObjectIDs(latestMessageID)){
+					page = 2;
+				}
+
+				// Check params
+				if(page === 1 && !checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				if(page === 2 && !checkObjectIDs([conversationID, userID, latestMessageID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $all: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "Can't get info conversation", status: 403 });
+
+				// Get info last message in conversation (limit 15 per list message)
+				let conditionObj = {};
+				let _sort = {
+					modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+				};
+
+				if(page === 2){
+					let infoMessage = await CHATTING__MESSAGE_COLL.findById(latestMessageID);
+					if(!infoMessage)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] });
+					if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error) )
+						return resolve({ error: true, message: "Request params nextInfo invalid", status: 400 });
+
+					conditionObj   = dataPagingAndSort.data.find;
+					_sort          = dataPagingAndSort.data.sort;
+				}
+				conditionObj.conversation = objectID(conversationID);
+
+				let listMessage = await CHATTING__MESSAGE_COLL.find(conditionObj)
+					// .populate({ 
+					//     path: 'files',
+					// })
+					// .populate(
+					// {
+					//     path : 'sender', select :'_id fullname image company ' 
+					// })
+					// .populate({
+					//     path: 'parent',
+					//     populate: {
+					//         path: "files sender",
+					//         select :'_id fullname image company path name type size author conversation' 
+					//     }
+					// })
+					// .populate(
+					// {
+					//     path : 'likedUsers', select :'_id fullname image company ' 
+					// })
+					// .populate({path : 'listSeen', select :  '_id fullname  image' })
+					// .populate({
+					//     path: 'reactions',
+					//     populate: {
+					//         path: "author",
+					//         select :'_id fullname image company' 
+					//     }
+					// })
+					.limit(perPage)
+					.sort(_sort)
+					.lean();
+
+				let totalPagePromise         = CHATTING__MESSAGE_COLL.count({ conversation: conversationID });
+				let totalCheckExPagePromise  = CHATTING__MESSAGE_COLL.count(conditionObj);
+
+				const { currentPage, totalPage } = await calculateCurrentPage({
+					totalPagePromise: totalPagePromise,
+					totalCurrentPagePromise: totalCheckExPagePromise,
+					perPage
+				})
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: { 
+						listMessage,
+						perPage,
+						currentPage,
+						totalPage
+					}
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách tin nhắn media cuộc hội thoại
+	 * Date: 12/08/2021
+	 */
+	getListMessagesMediaConversation({ 
+		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll 
+	}){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $all: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				let conditionObj = { 
+					conversation: ObjectID(conversationID), 
+					type: +typeMessage
+				};
+
+				if(senderID && checkObjectIDs([senderID])){
+					conditionObj.sender = ObjectID(senderID);
+				}
+
+				if(dateCreate){
+					conditionObj.createAt = {
+						$gte: new Date(moment(dateCreate).startOf('day').format()),
+						$lt: new Date(moment(dateCreate).endOf('day').format())
+					};
+				}
+
+				if(fromDate && toDate){
+					conditionObj.createAt = {
+						$gte: new Date(moment(fromDate).startOf('day').format()),
+						$lte: new Date(moment(toDate).endOf('day').format())
+					}
+				}
+
+				let groupObj = {
+					_id: { $dateToString: { format: "%Y-%m-%d", date: "$createAt" } },
+					dataFormat: { 
+						$first: { 
+							$dateToString: { format: "%d/%m/%Y", date: "$createAt" }
+						}
+					},
+					// _id: { month: { $month: "$createAt" }, day: { $dayOfMonth: "$createAt" }, year: { $year: "$createAt" } },
+					listMessage: { 
+						$push: {
+							_id: "$_id",
+							senderID: "$sender._id",
+							senderName: "$sender.fullname",
+							content: "$content",
+							status: "$status",
+							type: "$type",
+							files: "$files",
+							modifyAt: "$modifyAt",
+							createAt: "$createAt",
+						}
+					},
+					count: { $sum: 1 }
+				};
+
+				let pipeline = [
+					{ $match: conditionObj },
+					{
+						$lookup: {
+							from: 'users',
+							localField: 'sender',
+							foreignField: '_id',
+							as: 'sender'
+						}
+					},
+					{
+						$unwind: {
+							path: "$sender",
+							preserveNullAndEmptyArrays: true
+						}
+					},
+					{ $group: groupObj },
+					{ $sort: { "_id": -1 } }
+				]
+
+				if(!isLoadAll){
+					pipeline.push({ $limit: 10 });
+				}
+
+				let listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
+
+				return resolve({ error: false, data: listMedia, status: 200 })
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
+	 * Date: 13/08/2021
+	 */
+	getListMemberSendMessagesMediaConversation({ conversationID, userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $all: [userID] }
+				}).populate('members').lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				let listMemberSendMediaInConversation = checkExistConversation.members.map(async member => {
+					let condition = { conversation: conversationID, sender: member._id };
+					let totalImagePromise = CHATTING__MESSAGE_COLL.countDocuments({ ...condition, type: 1 });
+					let totalFilePromise = CHATTING__MESSAGE_COLL.countDocuments({ ...condition, type: 2 });
+					let totalLinkPromise = CHATTING__MESSAGE_COLL.countDocuments({ ...condition, type: 3 });
+
+					let [totalImage, totalFile, totalLink] = await Promise.all([totalImagePromise, totalFilePromise, totalLinkPromise])
+
+					if(totalImage || totalFile || totalLink){
+						return { infoMember: member, totalImage, totalFile, totalLink };
+					}
+				});
+
+				listMemberSendMediaInConversation = (await Promise.all(listMemberSendMediaInConversation)).filter(Boolean);
+
+				return resolve({ error: false, data: listMemberSendMediaInConversation, status: 200 })
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật trạng thái ẩn cuộc hội thoại của 1 user
+	 * Date: 14/08/2021
+	 */
+	updateHideConversation({ conversationID, userID, isHide }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				let infoAfterUpdated = null;
+				if(isHide === "true"){
+					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$addToSet: { usersHide: userID }
+					}, { new: true })
+				} else{
+					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$pull: { usersHide: userID }
+					}, { new: true })
+				}
+
+				if(!infoAfterUpdated)
+					return resolve({ error: true, message: "Can't update hide conversation", status: 403 });
+
+				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
+	 * Date: 14/08/2021
+	 */
+	updateMuteConversation({ conversationID, userID, isMute, timeMute, jobID, ctx }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				let infoAfterUpdated = null;
+				let dataAddToSet = {
+					usersMute: { userID }
+				};
+
+				// if(timeMute && moment(timeMute).isValid()){
+				// 	dataAddToSet = {
+				// 		usersMute: {
+				// 			userID,
+				// 			time: new Date(timeMute)
+				// 		}
+				// 	}
+				// }
+				// console.log({ dataAddToSet })
+
+				if(isMute === "true"){
+					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
+						_id: conversationID,
+						// "usersMute.user": userID,
+						usersMute: {
+							$not: {
+								$elemMatch: { userID }
+							}
+						}
+					}, {
+						$addToSet: dataAddToSet
+					}, { new: true })
+				} else{
+					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({ _id: conversationID }, {
+						$pull: { usersMute: { userID } }
+					}, { new: true })
+				}
+
+				if(!infoAfterUpdated)
+					return resolve({ error: true, message: "Can't update mute conversation or user existed in users mute", status: 403 });
+
+				if(isMute === "true" && timeMute){
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
+						conversationID,
+						timeMute,
+						userID,
+					});
+				} else{
+					console.log('REMOVE JOB MUTE CONVERSATION', jobID);
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.REMOVE_JOB_MUTE_CONVERSATION}`, {
+						jobID
+					});
+				}
+
+				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
+	 * Date: 14/08/2021
+	 */
+	markReadConversation({ conversationID, userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$pull: {
+						usersMissMessage: { userID }
+					}
+				}, { new: true })
+
+				if(!infoAfterUpdated)
+					return resolve({ error: true, message: "Can't mark read conversation", status: 403 });
+
+				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Member rời khỏi cuộc hội thoại
+	 * Date: 14/08/2021
+	 */
+	memberLeaveConversation({ conversationID, userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				let pullObj = { members: userID };
+				if(checkExistConversation.authors.includes(userID)){
+					pullObj.authors = userID;
+				}
+
+				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$pull: pullObj
+				}, { new: true })
+
+				if(!infoAfterUpdated)
+					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
+
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, 
+					senderID: userID,
+					type: 108,
+					membersAssigned: [userID],
+					receiversID: checkExistConversation.members,
+				})
+
+				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Giải tán cuộc hội thoại (xóa nhóm)
+	 * Date: 14/08/2021
+	 */
+	deleteConversation({ conversationID, userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't author of conversation", status: 403 });
+
+				if(checkExistConversation.authors[0].toString() !== userID.toString())
+					return resolve({ error: true, message: "You are't root author of conversation (can't delete conversation)", status: 403 });
+
+				let infoAfterDelete = await CHATTING__CONVERSATION_COLL.findByIdAndDelete(conversationID);
+
+				if(!infoAfterDelete)
+					return resolve({ error: true, message: "Can't delete conversation", status: 403 });
+
+				return resolve({ 
+					error: false, 
+					data: { 
+						infoAfterDelete, 
+						infoConversation: checkExistConversation
+					}, 
+					status: 200
+				})
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá lịch sử cuộc hội thoại
+	 * Date: 15/08/2021
+	 */
+	deleteHistoryConversation({ conversationID, userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				}).lean();
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+
+				// Pull current user in array usersDeleteHistory if exists
+				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
+					_id: conversationID,
+					usersDeleteHistory: {
+						$exists: true,
+						$not: { $size: 0 }
+					}
+				}, {
+					$pull: {
+						usersDeleteHistory: { userID } 
+					}
+				})
+
+				// Push current user into array usersDeleteHistory
+				let infoAfterDelete = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$push: {
+						usersDeleteHistory: {
+							userID,
+							lastMessage: checkExistConversation.lastMessage,
+							time: Date.now()
+						}
+					}
+				}, { new: true });
+
+				if(!infoAfterDelete)
+					return resolve({ error: true, message: "Can't delete history conversation", status: 403 });
+
+				return resolve({ error: false, data: infoAfterDelete, status: 200 })
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+
+
+	
+	/**
+	 * Dev: VinhHV
+	 * Func: Tìm kiếm cuộc hội thoại theo tên
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
+	getListConversationByKey({ userID, key }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				let conditionObj = { members: { $in: [userID] } };
+
+				if(key){
+					conditionObj.name = new RegExp(key, 'i');
+				}
+
+                let listConversationByKey = await CHATTING__CONVERSATION_COLL.find(conditionObj)
+					.populate({
+						path: 'members',
+						select: '_id fullname image company friends receiveFromFriends sendToFriends'
+					})
+					// .limit(30)
+					.sort({ modifyAt: -1 })
+					.lean();
+
+				if(!listConversationByKey)
+					return resolve({ error: true, message: "Can't get list conversation", status: 403 });
+
+                return resolve({ error: false, data: listConversationByKey, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        });
+    }
+
+	/**
+	 * Dev: VinhNH 
+     * Func: Lấy danh sách các cuộc hội thoại của một người dùng
+	 * Date: ...
+     * Formated: MinhVH - 16/07/2021
+	 * Updated: MinhVH - 03/08/2021
+     */
+	getListConversationByUserID({ authorID, lastestConversationID }){
+        return new Promise(async resolve => {
+            try {
+				// Check params
+				if(!checkObjectIDs(authorID))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+				if(lastestConversationID && !checkObjectIDs(lastestConversationID))
+					return resolve({ error: true, message: 'Request params lastestConversationID invalid', status: 400 });
+
+                let page 	= 1;
+                let perPage = 20;
+
+                if(lastestConversationID && checkObjectIDs(lastestConversationID)){
+                    page = 2;
+                }
+
+				let conditionObj = {};
+                let _sort = {
+                    modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+                }
+
+				// Get info last conversation (limit 20 per list message)
+                if(page === 2){
+                    let conversationInfo = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                    if(!conversationInfo)
+                        return resolve({ error: true, message: "Can't get info last conversation", status: 403 });
+
+                    let nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: 'Request params nextInfo invalid', status: 400 });
+
+                    // _sort         = dataPagingAndSort.data.sort;
+                    conditionObj = dataPagingAndSort.data.find;
+                }
+                conditionObj.members = { $in: [ObjectID(authorID)] };
+
+                let listConversation = await CHATTING__CONVERSATION_COLL.find(conditionObj)
+					.populate({
+						path: 'lastMessage', 
+						select: 'modifyAt  createAt sender content status', 
+						populate: { 
+							path: 'sender', 
+							select: '_id fullname image company'
+						}
+					})
+					.populate({
+						path: 'pin', 
+						select: '_id sender content status' 
+					})
+					.limit(perPage)
+					.sort(_sort)
+					.lean();
+
+                let totalConversationPagePromise    = CHATTING__CONVERSATION_COLL.count({ members: { $in: [ObjectID(authorID)] } });
+                let totalCheckExCurrentPagePromise  = CHATTING__CONVERSATION_COLL.count(conditionObj);
+
+				const { currentPage, totalPage } = await calculateCurrentPage({
+					totalPagePromise: totalConversationPagePromise,
+					totalCurrentPagePromise: totalCheckExCurrentPagePromise,
+					perPage
+				})
+
+                return resolve({ 
+					error: false,
+					status: 200,
+					data: { 
+						listConversation, 
+						perPage,
+						currentPage,
+						totalPage
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: VinhNH 
+     * Func: Lấy danh sách cuộc hội thoại có tin nhắn chưa đọc
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+     */
+    getListConversationMissMessage({ userID, lastestConversationID }){
+        return new Promise(async resolve => {
+            try {
+                // Check params
+				if(!checkObjectIDs(userID))
+					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				if(lastestConversationID && !checkObjectIDs(lastestConversationID))
+					return resolve({ error: true, message: 'Request params lastestConversationID invalid', status: 400 });
+
+				let page = 1;
+				let perPage 	= 20;
+
+				if(lastestConversationID && checkObjectIDs(lastestConversationID)){
+					page = 2;
+				}
+
+                const infoConversation = await AUTH__USER_COLL.findById(userID);
+                if (!infoConversation) 
+                    return resolve({ error: true, message: "You aren't in conversation", status: 403 });
+
+                let listConversationMiss = infoConversation.converMiss || [];
+				let conditionObj = {};
+                let _sort = {
+                    modifyAt: -1,
+                    creatAt: -1
+                }
+
+                if(page === 2){
+					let conversationInfo = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                    if(!conversationInfo)
+                        return resolve({ error: true, message: "Can't get info last conversation", status: 403 });
+
+                    let nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
+                    if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error))
+                        return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                    _sort        =  dataPagingAndSort.data.sort
+                    conditionObj =  dataPagingAndSort.data.find;
+                }
+                conditionObj._id     = { $in: listConversationMiss };
+                conditionObj.members = { $in: [userID] };
+
+                const listConversationMissMessage = await CHATTING__CONVERSATION_COLL
+					.find(conditionObj)
+					.limit(perPage)
+					.sort(_sort);
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: { 
+						listConversationMissMessage, 
+						perPage,
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -176,637 +1388,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
         })
-    }
-
-    // Cập nhật logo
-    /* Author: Hoang
-    * Date: 18/10/2010 
-    * Update: save file logo change.(remove S3 rontab)
-    */
-    updateLogo({ conversationID, userID, filesID }) {
-        const that = this;
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                let infoUpdateMessage;
-                let checkExits = await CHATTING__CONVERSATION_COLL.findOne({ _id : conversationID, author : {$in :[userID]}});
-                if(!checkExits)
-                    return resolve({ error: true, message: 'You are not member', status : 403 });
-                infoUpdateMessage =await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,{
-                    logo: filesID
-                }, { new: true });
-                if(!infoUpdateMessage)
-                    return resolve({ error: true, message: 'You are not member', status : 403 });
-                let infoFile = await FILE__FILE_COLL.findById(filesID);
-                let result = await FILE__REMOVED_MODEL.insert({name: infoFile.name, path: infoFile.path});
-                await FILE__FILE_COLL.removeByID(filesID);
-                return resolve({ error: false, data: infoUpdateMessage });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Cập nhật cuộc tên và mô tả hội thoại
-    updateByID({ name, description, conversationID, userID }) {
-        const that = this;
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
-                let dataUpdate = {};
-                let checkExistConversation;
-                if(name){
-                    dataUpdate.name = name;
-                    checkExistConversation = await CHATTING__CONVERSATION_COLL.find({name : name});
-                    if(!checkExistConversation)
-                        return resolve({ error: true, message: 'New name Exits', status : 403 });
-                }else{
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
-                }
-                if(description){
-                    dataUpdate.description = description;
-                }
-
-                if(!dataUpdate)
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
-
-                checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
-                    _id: conversationID, 
-                    members: { $in: [userID],
-                     }
-                });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'You are not member', status : 403 });
-
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, dataUpdate, { new: true})
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant update', status : 403 });
-    
-                return resolve({ error: false, data: infoConversationAfterUpdated, oldName : checkExistConversation.name, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    /**
-
-    * Name: Cập nhật thông tin công việc
-
-    * Author: VinhNH 
-
-    * Updated:
-   
-    * - 12/10/2020-VinhNH: Cập nhật lại populate cho mobiles
-
-    * Usage:
-
-    * - Web: Cập nhật thông tin công việc 
-
-    * - Mobile:  Cập nhật lại populate cho mobiles : cập  nhật  ngày gửi tin , ngày tương tác tin nhắn
-
-    */
-    // Lấy danh sách các cuộc hội thoại của một người dùng 
-    getListConversationByAuthorID({ authorID, currentPage, lastestConversationID }){
-        const that = this;
-
-        return new Promise(async resolve => {
-            try {
-                let checkParamsPage   =   checkParametersModel([{currentPage : Number(currentPage)}], 'interger');
-                if(checkParamsPage.error  || Number(currentPage)<=0)
-                    return resolve({ error: true, message: 'Request params currentPage invalid'});
-
-                    
-                let page    = Number(currentPage) || 1;
-                let perPage = 20;
-                let listConversation;
-
-                if(lastestConversationID && checkObjectIDs(lastestConversationID)){
-                    page = 2;
-                }
-
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params authorID invalid'});
-                    
-                if(page > 1){
-                    if(!checkObjectIDs(lastestConversationID)){
-                        return resolve({ error: true, message: 'Request params lastestConversationID invalid'});
-                    }
-                }
-                // listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
-                
-                let _sort = {
-                    modifyAt: -1,
-                    creatAt: -1
-                }
-                let ObjectSearch            = {};
-
-                if(page!=1){
-                    let  conversationInfo      =  await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
-                    if(!conversationInfo)
-                        return resolve({ error: true, message: 'info last Conversation exits' });
-                    let nextInfo;
-                    if(page > 1){
-                        nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
-                    }   
-                    
-                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
-                    if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                    _sort                               =  dataPaggingAndSort.data.sort
-                    ObjectSearch                        = dataPaggingAndSort.data.find;
-                }
-
-                ObjectSearch.members        =   { $in: [ObjectID(authorID)] };
-                listConversation = await CHATTING__CONVERSATION_COLL.find(ObjectSearch)
-                .populate({
-                    path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                })
-                // .populate({
-                //     path: 'members',
-                //     select: '_id fullname image company friends receiveFromFriends sendToFriends',
-                // })
-                // .populate({
-                //     path: 'logo'
-                // })
-                .populate({
-                    path : 'pin', select : '_id sender content status' 
-                })
-                // .populate({
-                //     path: 'taskID',
-                //     select : 'task',
-                //     populate : {
-                //         path : 'task', select : '_id name'
-                //     }
-                // })
-                .sort(
-                   {
-                    modifyAt: -1,
-                    createAt: -1,
-                    updateAt: -1
-                   }
-                )
-                .limit(perPage);
-
-                let toltalConversationPagePromise            =  CHATTING__CONVERSATION_COLL.count({ members  : { $in: [ObjectID(authorID)] }});
-                let toltalCheckExCunrrentPagePromise         =  CHATTING__CONVERSATION_COLL.count(ObjectSearch);
-                let [ toltalConversationPage , toltalCheckExCunrrentPage ] = await Promise.all([ toltalConversationPagePromise, toltalCheckExCunrrentPagePromise ])
-              
-                let currrentPageCheckEx     = 0;
-
-                // Kiểm tra hai kết quả count là number thì tiếp tục tính toán toltalPage và xác định current Page
-                // Xác định lại currentPage về khi nếu truyền current =3 mà req lấy lastestConversationID của page --> data đó của page
-                // Nên nếu req có sai currentPage thì vẫn trả về data và currentPage đúng cũng dữ liệu này
-                let checkParamsToltalPage   = checkParametersModel([{toltalCheckExCunrrentPage}, {currrentPageCheckEx}], 'number');
-                if(!checkParamsToltalPage.error){
-
-                    //Tính toán currentPage hiện tại chính xác (currentPageExcellent)
-                    let valueCurrentPage    = toltalConversationPage - toltalCheckExCunrrentPage;
-                    if(valueCurrentPage === 0){
-                        currrentPageCheckEx = 1;
-                    }
-                    if(valueCurrentPage!=0 && valueCurrentPage >0){
-                        currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
-                    }
-
-                    // Tính toán toltalPage
-                    toltalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(toltalConversationPage, perPage);
-
-                }else{
-
-                    // Nếu không phải là số có ---> các giá trị trả về là  1
-                    currrentPageCheckEx     = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                    toltalConversationPage  = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                }
-
-                return resolve({ error: false, data: { listConversation, currentPage : currrentPageCheckEx, toltalPage : toltalConversationPage  } });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    // Lấy thông tin cuộc hội thoại của user
-    getInfoByUserID({ conversationID, userID }){
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Bab request params invalid', status : 400 });
-
-                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
-                    // .populate({
-                    //     path: 'members',
-                    //     select: '_id fullname image company friends receiveFromFriends sendToFriends converMiss birthDay username phone email',
-                    //     populate: {
-                    //         path: "company"
-                    //     }
-                    // })
-                    // .populate('logo')
-                    // .populate({
-                    //     path: 'lastMessage'
-                    // })
-                    // .populate({
-                    //     path: 'taskID',
-                    //     select : 'task',
-                    //     populate : {
-                    //         path : 'task', select : '_id name'
-                    //     }
-                    // })
-                    // .populate({
-                    //     path : 'pin', populate :  'sender' 
-                    // })
-                    .populate({
-                        path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .populate({
-                        path : 'pin', select : '_id sender content status' 
-                    })
-                    .lean();
-                    
-                if (!infoConversation) 
-                    return resolve({ error: true, message: "You aren't in conversation", status : 403 });
-
-                return resolve({ error: false, data: infoConversation,  status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Lấy danh sách thông tin thành viên trong cuộc hội thoại
-    getInfoMembersByID({ conversationID, userID }){
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
-                    // .populate({
-                    //     path: 'members',
-                    //     select: '_id fullname image company friends receiveFromFriends sendToFriends converMiss birthDay username phone email',
-                    //     populate: {
-                    //         path: "company"
-                    //     }
-                    // })
-                    // .populate('logo')
-                    // .populate({
-                    //     path: 'lastMessage'
-                    // })
-                    // .populate({
-                    //     path: 'taskID',
-                    //     select : 'task',
-                    //     populate : {
-                    //         path : 'task', select : '_id name'
-                    //     }
-                    // })
-                    // .populate({
-                    //     path : 'pin' 
-                    // })
-                    .populate({
-                        path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .populate({
-                        path : 'pin', select : '_id sender content status' 
-                    })
-                    .lean();
-                    
-                if (!infoConversation) 
-                    return resolve({ error: true, message: "You aren't in conversation", status : 403 });
-
-                let listMemebersID  = infoConversation.members;
-                let listMembers =  await  AUTH__USER_COLL.find({ _id : { $in: listMemebersID } }).select('_id fullname email image position sendToFriends receiveFromFriends recentlyFriends friends');
-
-                return resolve({ error: false, data: listMembers, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Tìm thành viên trong cuộc hội thoại
-    getInfoMembersWithKey({ conversationID, userID, key }){
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Params invalid', status : 400 });
-
-
-                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [userID]} })
-                    // .populate({
-                    //     path: 'members',
-                    //     select: '_id fullname image company friends receiveFromFriends sendToFriends converMiss birthDay username phone email',
-                    //     populate: {
-                    //         path: "company"
-                    //     }
-                    // })
-                    // .populate('logo')
-                    // .populate({
-                    //     path: 'lastMessage'
-                    // })
-                    // .populate({
-                    //     path: 'taskID',
-                    //     select : 'task',
-                    //     populate : {
-                    //         path : 'task', select : '_id name'
-                    //     }
-                    // })
-                    // .populate({
-                    //     path : 'pin' 
-                    // })
-                    .populate({
-                        path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .populate({
-                        path : 'pin', select : '_id sender content status' 
-                    })
-                    .lean();
-                    
-                if (!infoConversation) 
-                    return resolve({ error: true, message: "You aren't in conversation", status : 403 });
-
-
-                let listMemebersID  = infoConversation.members;
-                let listMembers =  await  AUTH__USER_COLL.find({ _id : { $in: listMemebersID }, fullname: new RegExp(key, 'i') }).select('_id fullname email image position sendToFriends receiveFromFriends recentlyFriends friends');
-
-                return resolve({ error: false, data: listMembers });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Lấy thông tin cuộc hội thoại của user
-    getListConversationMissMessage({  userID, currentPage, nextInfo}){
-        return new Promise(async resolve => {
-            try {
-                let page    = Number(currentPage || 1) || 1;
-                let perPage = 3;
-                // Kiểm tra đầu vào
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                const infoConversation = await AUTH__USER_COLL.findById(userID);
-                if (!infoConversation) 
-                    return resolve({ error: true, message: "You aren't in conversation", status : 403 });
-
-                let listConversationMiss =  infoConversation.converMiss || [];
-
-                // Thiết lập điều kiện tìm kiếm
-                let _sort = {
-                    modifyAt: -1,
-                    creatAt: -1
-                }
-                let ObjectSearch           = {};
-                if(page!=1){
-                    let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo : nextInfo, keys: ['modifyAt__-1', '_id__-1'] })
-                    if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                    _sort                               =  dataPaggingAndSort.data.sort
-                    ObjectSearch                        =  dataPaggingAndSort.data.find;
-                }
-
-                ObjectSearch._id        =   { $in: listConversationMiss };
-                ObjectSearch.members    =   { $in: [userID] };
-                
-
-                const conversations = await CHATTING__CONVERSATION_COLL.find(ObjectSearch).limit(perPage).sort(_sort);
-                return resolve({ error: false, data: conversations, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-
-    // Xóa cuộc hội thoại của author tạo ra, xóa luôn tất cả tin nhắn có trong message
-    removeByID({ conversationID, authorID }){
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                const infoConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, members: { $in: [authorID] }});
-                if (!infoConversation)
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let checkRemoveAllMessage = await CHATTING__MESSAGE_MODEL.removeAllByConversationID({ conversationID });
-                if (!checkRemoveAllMessage) 
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                return resolve({ error: false, data: infoConversation });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Rời khỏi cuộc hội thoại (nhóm chat)
-    leaveByConversationID({ userID, conversationID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if (!checkObjectIDs(authorID) || !checkObjectIDs(conversationID)) 
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-               
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $pull: {
-                        members: userID
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant leave', status : 403 });
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Xóa một user khỏi cuộc hội thoại (nhóm chat)
-    removeMembersFromConversionByID({ members, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                let arrMember = [...members.split(',')];
-                // if(members.includes(',')) {
-                //     arrMember = members.split(',');
-                // } else {
-                //     arrMember.push(members);
-                // }\
-
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID) || !Array.isArray(arrMember))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID, members: { $in: [...arrMember] }});
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't permission", status : 403 });
-
-                if(checkExistConversation.members.length <= 3){
-                    // let resultDeleteConverSation = await CHATTING__CONVERSATION_COLL.findByIdAndDelete({ conversationID }); 
-                    return resolve({ error: false, data: checkExistConversation, status : 200});
-                }
-                
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $pullAll: {
-                        members: [...arrMember]
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant remove', status : 403 });
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Thêm các member vào cuộc hội thoại
-    addMembersToConversionByID({ members, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                let arrMember = [];
-                // console.log({ members, conversationID, authorID })
-                if(members.includes(',')) {
-                    arrMember = members.split(',');
-                } else {
-                    arrMember.push(members);
-                }
-                arrMember.forEach(member=>{
-                    if(!checkObjectIDs(member)){
-                        return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                    }
-                });
-
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !Array.isArray(arrMember))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                if(arrMember.includes(authorID))
-                    return resolve({ error: true, message: 'Cant create', status : 403 });
-
-                
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author", status : 403 });
-
-                let listMembers = checkExistConversation.members;
-                for(let i=0;i < listMembers.length; i++){
-                    if(arrMember.includes(listMembers[i].toString())){
-                        return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                    }
-                }
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $push: {
-                        members : {$each  : arrMember }
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create', status : 403  }); 
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200  });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Set admin mới cho nhóm
-    insertNewAdmin({ member, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !checkObjectIDs(member) )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                member = [member]
-                let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $addToSet: {
-                        author: [...member]
-                    }
-                }, { new: true });
-
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create', status : 403  }); 
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // xoá admin 
-    /* Author: Vinh
-    * Update: Hoang - Date: 21/10/2010 
-    * fix "infoConversationAfterUpdated is not defined"
-    */
-    removeAdmin({ adminID, conversationID, authorID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID)  || !checkObjectIDs(adminID) )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ _id: conversationID, author: authorID });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                
-                let infoConversationAfterUpdated;
-                if(checkExistConversation.author[0].toString() != adminID.toString()){
-                    infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                        $pull : {
-                            author: adminID
-                        }, 
-                    }, { new: true });
-    
-                }else{
-                    return resolve({ error: true, message:  'Permission denied', status : 403  });
-                }   
-                
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: 'Cant Creata', status :403 });
-                
-                return resolve({ error: false, data: infoConversationAfterUpdated, status : 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Tìm kiếm cuộc hội thoại  theo tên
-    getListCoversationWithKey({ key, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(userID) || !key )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let listUsers = await CHATTING__CONVERSATION_COLL.find({
-                        members: { $in: [userID]},
-                        name: new RegExp(key, 'i')
-                    })
-                    // .populate({
-                    // path : 'members',
-                    // select: '_id fullname image company friends receiveFromFriends sendToFriends'
-                    // })
-                    // .populate('logo')
-                    // .populate({
-                    //     path: 'lastMessage'
-                    // })
-                    .limit(30)
-                    .sort({modifyAt: -1})
-                return resolve({ error: false, data: listUsers, status : 200 })
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
     }
 
     // Thêm tin nhắn ghim
@@ -867,105 +1448,6 @@ class Model extends BaseModel {
                 .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
 
                 return resolve({ error: false, data: infoConversation, status :200 })
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    updateUserMissMessage({ conversationID, userID, isRep, sender }) {
-        return new Promise(async resolve => {
-            try {
-                let infoConversation = await CHATTING__CONVERSATION_COLL.find({
-                    _id : conversationID , members: { $in: [userID] }
-                });
-                let infoUser = await AUTH__USER_COLL.findById(userID);
-                if(!infoConversation){
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                }
-                let infoUpdate;
-                let arr = infoConversation[0].arrMissMessage;
-                let newArr = [];
-
-                // Kiểm  miss cuojc hội thoại là miss lần đầu hay đã miss rồi
-                let isMiss = false;
-
-                // Chưa tìm được câu query tốt nên xử lý theo luồng sau
-                // Lấy danh sách miss tin nhắn tìm user miss sau đó cập nhật mảng mới cho conversation
-                if(isRep){
-                    if(infoConversation[0].arrMissMessage){
-                        for(let i=0; i < arr.length; i++){
-                            // console.log({id  : arr[i].userID});
-                            if(arr[i].userID.toString() == userID.toString()){
-                              
-                            }else{
-                                newArr.push(arr[i]);
-                            }
-                        }
-                    }
-                    infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                        conversationID
-                    ,
-                    {
-                        arrMissMessage:  newArr
-                    });
-                 
-                    if(infoUser.converMiss.length > 0){
-                        await AUTH__USER_COLL.findByIdAndUpdate(
-                            userID,{
-                                $pull: {
-                                    converMiss: conversationID
-                                }
-                        })
-                    }
-                }else{
-                    if(!infoUser.converMiss.includes(conversationID)){
-                        conversationID = [conversationID]
-                       let result= await AUTH__USER_COLL.findByIdAndUpdate(
-                            userID,{
-                                $addToSet: {
-                                    converMiss: [...conversationID]
-                                }
-                        })
-                    }
-                   
-                    if(infoConversation[0].arrMissMessage){
-                        for(let i=0; i < arr.length; i++){
-                            if(arr[i].userID.toString() == userID.toString()){
-                                let newAmout = Number(arr[i].amout) + 1;
-                                let newItem = { _id : arr[i]._id, userID : userID, amout : newAmout }
-                                newArr.push(newItem);
-                                isMiss = true;
-                            }else{
-                                newArr.push(arr[i]);
-                            }
-                        }
-                    }
-                    
-                    if(isMiss){
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(
-                            conversationID
-                        ,
-                        {
-                            arrMissMessage:  newArr
-                        });
-                    }else{
-                        infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,
-                        {
-                            $addToSet: {
-                                arrMissMessage:[ {
-                                 userID : userID,  amout : 1
-                                }]
-                            }   
-                        });
-                      
-                    }
-               
-                }
-                if(!infoUpdate)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-
-                return resolve({ error: false, data: infoUpdate, status : 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
@@ -1104,355 +1586,6 @@ class Model extends BaseModel {
         });
     }
 
-    // Cập nhật tên các cuộc hội thoại riêng tư để phục vụ tìm kiếm cho dễ dàng
-    updatePrivateName() {
-        return new Promise(async resolve => {
-            try {
-               let allConversationPrivate = await CHATTING__CONVERSATION_COLL.find({
-                members: { $size: 2 }
-               }).populate({
-                   select :'fullname',
-                   path :'members'
-               })
-
-               for (const  conversation of allConversationPrivate){
-                    let newName ='';
-                    conversation.members.forEach(member=>{
-                        newName += ` ${member.fullname}`;
-                    });
-                    let result = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversation._id,{
-                        name : newName
-                    });
-               }
-               return resolve({ error: false, message: '=============DONE===========' });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    // Xóa các cuộc hội thoại riêng tư do tạo trùng nhiều lần
-    RemovePrivateCoincide() {
-        return new Promise(async resolve => {
-            try {
-               let allConversationPravite = await CHATTING__CONVERSATION_COLL.find({
-                members: { $size: 2 }
-               }).populate({
-                   select :'_id',
-                   path :'members'
-               });
-
-               let arrRemove =[];
-               let arrRoot = [];
-
-               for(let i =0; i< allConversationPravite.length ; i++){
-                    let _members = allConversationPravite[i].members;
-                    if(!arrRemove.includes( allConversationPravite[i]._id)){
-                        arrRoot.push(allConversationPravite[i]._id);
-                        for(let y =0; y< allConversationPravite.length; y++){
-                            let isCoincide = true;
-                            allConversationPravite[y].members.forEach(member=>{
-                                if(!_members.includes(member)){
-                                    isCoincide = false;
-                                }
-                            })
-                            if(isCoincide){
-                                if(!allConversationPravite[y].lastMessage && !arrRemove.includes(allConversationPravite[y]._id) &&!arrRoot.includes(allConversationPravite[y]._id)){
-                                    arrRemove.push(allConversationPravite[y]._id);
-                                }
-                            }
-                        }
-                    }
-                  
-               }
-               
-               for (const  itemRemove of arrRemove){
-                   let resultDelete  = await CHATTING__CONVERSATION_COLL.findOneAndRemove({ _id: `${itemRemove}`});
-               }
-
-                let _arrRemove =[];
-                let _arrRoot = [];
-                for(let i = allConversationPravite.length -1; i>=0; i--){
-                    let _members = allConversationPravite[i].members;
-                    if(!_arrRemove.includes( allConversationPravite[i]._id)){
-                        _arrRoot.push(allConversationPravite[i]._id);
-                        for(let y =allConversationPravite.length -1; y>=0; y--){
-                            let isCoincide = true;
-                            allConversationPravite[y].members.forEach(member=>{
-                                if(!_members.includes(member)){
-                                    isCoincide = false;
-                                }
-                            })
-                            if(isCoincide){
-                                if(!allConversationPravite[y].lastMessage && !_arrRemove.includes(allConversationPravite[y]._id) &&!_arrRoot.includes(allConversationPravite[y]._id)){
-                                    _arrRemove.push(allConversationPravite[y]._id);
-                                }
-                            }
-                        }
-                    }
-                
-            }
-            
-            for (const  itemRemove of _arrRemove){
-                let resultDelete  = await CHATTING__CONVERSATION_COLL.findOneAndRemove({ _id: `${itemRemove}`});
-            }
-                return resolve({ error: false, message: '=============DONE===========' });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    /**
-    * Name: Cập nhật thông tin công việc
-    * Author: VinhNH 
-    * Updated:
-    * - 12/10/2020-VinhNH: Cập nhật lại populate cho mobiles
-    * Usage:
-    * - Web: Cập nhật thông tin công việc
-    * - Mobile:  Cập nhật lại populate cho mobiles : ngày gửi tin, ngày tương tác tin nhăn
-    */
-    // lấy  các cuộc hội thoại phân trang
-    getConversationWithPage({ authorID, currentPage, isMobile }){
-        return new Promise(async(resolve)=>{
-            try {
-                const page = Number(currentPage) || 1;
-                let perPage = 20;
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let listConversation;
-                if(!isMobile){
-                    listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
-                    .populate({
-                        path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .populate({
-                        path: 'members',
-                        select: '_id fullname image company friends receiveFromFriends sendToFriends',
-                    })
-                    .populate({
-                        path: 'logo'
-                    })
-                    .populate({
-                        path : 'pin', select : 'sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .sort({
-                        modifyAt: -1,
-                        creatAt: -1
-                    }).skip((page * perPage) - perPage)
-                    .limit(perPage)
-                }else{
-                    perPage = 12;
-                    listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
-                    .populate({
-                        path : 'lastMessage', select : 'modifyAt  createAt sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .populate({
-                        path: 'members',
-                        select: '_id fullname image company ',
-                    })
-                    .populate({
-                        path: 'logo'
-                    })
-                    .populate({
-                        path : 'pin', select : 'sender content status', populate :{ path : 'sender', select :'_id fullname image company ' }
-                    })
-                    .sort({
-                        modifyAt: -1,
-                        creatAt: -1
-                    }).skip((page * perPage) - perPage)
-                    .limit(perPage)
-                }
-
-                let infoUser = await AUTH__USER_COLL.findById(authorID);
-                let amountNotificationNotSeen = infoUser.converMiss &&  infoUser.converMiss.length;
-                
-                return resolve({ error: false, data: listConversation, page, amountNotificationNotSeen });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // lấy  các cuộc hội thoại
-    getAllConversation({ authorID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                const listConversation = await CHATTING__CONVERSATION_COLL.find({ members: { $in: [ObjectID(authorID)] } })
-                    .populate({
-                        path: 'lastMessage'
-                    })
-                    .populate({
-                        path: 'members',
-                        select: '_id fullname image company friends receiveFromFriends sendToFriends',
-                    })
-                    .populate({
-                        path: 'logo',
-                        select: 'path'
-                    })
-                    .populate({
-                        path : 'pin', populate :  'sender' 
-                    })
-                    .sort({
-                        modifyAt: -1,
-                        creatAt: -1
-                    })
-
-
-             
-                
-                return resolve({ error: false, data : listConversation, status : 200});
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    //
-    updateStatusMessageMiss({ authorID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let  infoUser = await AUTH__USER_COLL.findById(authorID);
-                let lisConverMiss = infoUser.converMiss
-                if(lisConverMiss){
-                    for(const conver of lisConverMiss){
-                        let converMis =  await CHATTING__CONVERSATION_COLL.findById(conver)
-                        let lastMessage = converMis.lastMessage;
-                        let infoAffterUpdate = await CHATTING__MESSAGE_MODEL.updateRecive({ messageID : lastMessage })
-                    }
-                    return resolve({ error: false, message : 'updated_success', status: 200 });
-                }else{
-                    return resolve({ error: false, message : 'nothing_update', status: 200 });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Author  : VinhNh
-    // 16/10/2020
-    // Lấy thông tin của một thành viên trong cuộc hội thoaij
-    //
-    // getInfoOneMembersInConversation()
-    getInfoOneMembersInConversation({ conversationID, authorID, memberID }){
-        return new Promise(async(resolve)=>{
-            try {
-
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID) || !checkObjectIDs(memberID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                //  Kiểm tra người yêu cầu thông tin của thành viên trong cuộc hội thoại cả 2 có cùng cuộc hội thoại  không 
-                let checkExistConversation  = await CHATTING__CONVERSATION_COLL.findOne({
-                    _id: conversationID ,
-                    members: { $all: [authorID, memberID] }
-                });
-                if(!checkExistConversation || checkExistConversation.length == 0)
-                    return resolve({ error: true, message:  'Permission denied', status : 403  });
-
-                let infoUser  =  await   AUTH__USER_COLL.findById(memberID).select('_id fullname image email username phone birthDay');
-
-                if(!infoUser)
-                    return resolve({ error: true, message:  'Permission denied', status : 403  });
-
-                return resolve({ error: false, data :  infoUser, status : 200});
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    /**
-     * 
-     * @param {conversationID} ID of groupchat
-     * @param {conversationID} authorID of user 
-     */
-    getLinks({ conversationID, authorID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                
-                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.find({
-                    _id: conversationID ,
-                    members: { $in: [authorID] }
-                });
-
-                if(!isMemberInConversation)
-                    return resolve({ error: true, message:  'You are not member', status : 403  });
-                
-                let dataConversation = await CHATTING__CONVERSATION_COLL.find({ _id: conversationID});
-                if(dataConversation && dataConversation[0]){
-                    let links = dataConversation[0].links;
-                    return resolve({ error: false, data : { links }, status : 200 });
-                }
-                    return resolve({ error: false, data : { }, status :200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    /**
-     * author : HuynhVinh
-     * decription : chức năng gắn taskID mặt định cho các cuộc hội thoại
-     * phục vụ cho việc giao việc (giúp xếp giao việc)
-     */
-    configTaskDefaults({ conversationID, authorID, taskID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                
-                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.find({
-                        _id: conversationID ,
-                        members: { $in: [authorID] }
-                });
-
-                if(!isMemberInConversation)
-                    return resolve({ error: true, message:  'You are not member', status : 403  });
-                let listTaskID =  isMemberInConversation.taskID;
-                let newList = [];
-                if(!listTaskID){
-                    newList = [{
-                        task  : taskID, 
-                        userCreate : authorID
-                    }]
-                }else{
-                    listTaskID.forEach(item=>{
-                        if(item.userCreate.toString() == authorID.toString() ){
-                            newList.push({
-                                task  : taskID, 
-                                userCreate : authorID
-                            })
-                        }else{
-                            newList.push({
-                                task  : taskID, 
-                                userCreate : authorID
-                            })
-                        }
-                    })
-                }
-                let dataConversation = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,{
-                    taskID : newList
-                });
-                if(!dataConversation) 
-                    return resolve({ error: true, message:  'Cant update', status : 403  });
-
-                return resolve({ error: false, data:  dataConversation });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
     /**
      * author : HuynhVinh
      * decription : chức năng Tắt thông báo của cuộc  hội thoại
@@ -1550,104 +1683,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status : 500 });
             }
         })
-    }
-
-    // Pin một cuộc hội thoại
-    pinConversation({ conversationID, userID }){
-        return new Promise(async(resolve)=>{
-            try {
-
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                
-                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
-                    _id: conversationID ,
-                    members: { $in: [userID] }
-                });
-
-                if(!isMemberInConversation)
-                    return resolve({ error: true, message:  'You are not member', status : 403  });
-                
-                let lisPin =  (isMemberInConversation && isMemberInConversation.usersPin ) ||  [];
-                for(let i = 0; i<lisPin.length; i++){
-                    if(lisPin[i] && lisPin[i].toString() == userID.toString()){
-                        return resolve({ error: false, message:  'You pined', status : 200  });
-                    }
-                }
-
-                let resultUpdate;
-                if(lisPin && lisPin.length){
-
-                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                        $addToSet: {
-                            usersPin: [...userID]
-                        }
-                    }); 
-                }
-                if(!lisPin ||(lisPin && !lisPin.length)){
-                    resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                        usersPin: [userID]
-                    }); 
-                }
-
-                if(!resultUpdate)
-                    return resolve({ error: true, message: 'Cant pin conversation', status : 403 });
-
-                return resolve({ error: false, data :  resultUpdate, status : 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    //Xoá Pin 1 cuộc hội thoại
-    unPinConversation({ conversationID, userID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-                
-                let isMemberInConversation  = await CHATTING__CONVERSATION_COLL.findOne({
-                    _id: conversationID ,
-                    members: { $in: [userID] }
-                });
-
-                if(!isMemberInConversation)
-                    return resolve({ error: true, message:  'You are not member', status : 403  });
-                
-                let lisPin =  isMemberInConversation.usersPin || [];
-                
-                let isNotePin = true;
-                for(let i = 0; i<lisPin.length; i++){
-                    if(lisPin[i] && lisPin[i].toString() == userID.toString()){
-                        isNotePin = false;
-                        break;
-                    }
-                }
-                if(isNotePin)
-                    return resolve({ error: false, message:'Removed pin', status : 200 })
-
-                let resultUpdate  = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    $pull: {
-                        usersPin: userID
-                    }
-                }); 
-                
-                if(!resultUpdate)
-                    return resolve({ error: true, message: 'Cant unpin conversation', status : 403 });
-
-                return resolve({ error: false, data :  resultUpdate, status : 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Lấy danh sách pin các cuộc hội thoại
-    getListConversationPinByUser(userID){
-
     }
 
 }

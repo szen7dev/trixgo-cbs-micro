@@ -1,46 +1,61 @@
 "use strict";
+
+/**
+ * EXTERNAL PACKAGE
+ */
 const fs                                            = require('fs');
 const path                                          = require('path');
+const PromisePool									= require('@supercharge/promise-pool');
 
-// Colls
+/**
+ * CONSTANTS
+ */
+const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
+
+/**
+ * TOOLS
+ */
+const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
+const { calculateCurrentPage } 						= require('../../../tools/utils/calculate_current_page');
+const { 
+	objectID, 
+	checkObjectIDs, 
+	checkNumberIsValidWithRange 
+} = require('../../../tools/utils/utils');
+
+/**
+ * BASE
+ */
+const BaseModel                                     = require('../../../tools/db/base_model');
+
+/**
+ * COLLECTIONS
+ */
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
-const FILE__FILE_COLL                               = {}
-const REACTION_COLL                                 = {}
+const FILE__FILE_COLL                               = {};
 
-// Models  || actions
-const REACTION_MODEL                                = {}
-const FILE__REMOVED_MODEL                           = {}
-
-
-// Tools
-const BaseModel                                     = require('../../../tools/db/base_model');
-const ObjectID                                      = require('mongoose').Types.ObjectId;
-const { checkObjectIDs, objectID, checkParametersModel, checkPointDotsAndRoundingNumberForPagingChatting }                          = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION }                     = require('../../../tools/cursor_base/playground/index');
-
+/**
+ * MODELS
+ */
+const CHATTING__CONVERSATION_FILE_MODEL				= require('../model/chatting.conversation_file-model').MODEL;
 
 
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../database/chatting.message-coll'));
+        super(CHATTING__MESSAGE_COLL);
     }
 
-    // Thêm tin nhắn mới
-    insert({ senderID, content, parentID, receivers, conversationID, status, type }) { 
+    // Thêm tin nhắn mới (cũ -> dùng hàm bên dưới để insert message)
+    insert({ senderID, content, parentID, receivers, conversationID, status = 0, type = 0 }) { 
         const that = this;
         return new Promise(async (resolve) => {
             try {
-                if(!status){
-                    status = 0;
-                }
-                if(!type){
-                    type = 0;
-                }
                 if (!checkObjectIDs(senderID, conversationID)) 
                     return resolve({ error: true, message: 'Params invalid' });
-                
+
                 let arrReceiver = receivers;
                 // if(receivers && receivers.includes(',')) {
                 //     arrReceiver = receivers.split(',');
@@ -51,40 +66,57 @@ class Model extends BaseModel {
                     if(receiver && !checkObjectIDs(receiver))
                         return resolve({ error: true, message: 'Params invalid' });
                 })
-                
+
                 if(!Array.isArray(arrReceiver))
                     return resolve({ error: true, message: 'Params invalid' });
 
-                
                 // kiểm tra các receivers có phải là members trong cuộc hội thoại
-                let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
-                        _id: conversationID ,
-                        members: { $all: [senderID, ... arrReceiver] }
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+					_id: conversationID,
+					members: { $all: [senderID, ...arrReceiver] }
                 });
                 if(!Array.isArray(checkExistConversation) || checkExistConversation.length < 1)
-                    return resolve({ error: true, message: 'You are not member', status : 403 });
+                    return resolve({ error: true, message: 'You are not member', status: 403 });
 
-                let infoMessageAfterInserted;
+                let infoMessageAfterInserted = null;
 
                 // Kiểm tra parentID => tính năng reply tin nhắn
                 if(parentID) {
                     if(parentID && !checkObjectIDs(parentID)) 
                         return resolve({ error: true, message: 'Params invalid' });
 
-                    infoMessageAfterInserted = await that.insertData({ listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status, type });
-                    if(!infoMessageAfterInserted)
-                        return resolve({ error: true, message: 'Cant create message reply', status : 403 });
+                    infoMessageAfterInserted = await that.insertData({ 
+						listSeen: [senderID], 
+						sender: senderID, 
+						content, 
+						conversation: conversationID, 
+						parent: parentID, 
+						status, 
+						type
+					});
 
-                    let checkLastMessageAfterUpdatedR = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    if(!infoMessageAfterInserted)
+                        return resolve({ error: true, message: 'Cant create message reply', status: 403 });
+
+                    await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                         lastMessage: infoMessageAfterInserted._id, modifyAt: Date.now()
                     }, { new: true });
 
-                    return resolve({ error: false, data : infoMessageAfterInserted, status : 200 });
+                    return resolve({ error: false, data: infoMessageAfterInserted, status: 200 });
                 }
 
-                infoMessageAfterInserted = await that.insertData({listSeen: [senderID], sender: senderID, content, conversation: conversationID, parent: parentID, status, type });
+                infoMessageAfterInserted = await that.insertData({
+					listSeen: [senderID], 
+					sender: senderID, 
+					content, 
+					conversation: conversationID, 
+					parent: parentID, 
+					status, 
+					type
+				});
+
                 if(!infoMessageAfterInserted)
-                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
+                    return resolve({ error: true, message: 'Cant create message ', status: 403 });
 
                 let { _id: messageID } = infoMessageAfterInserted; 
                 let infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
@@ -94,21 +126,433 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoMessageAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
+                    return resolve({ error: true, message: 'Cant create message ', status: 403 });
 
                 let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: messageID, modifyAt: Date.now()
                 }, { new: true });
 
                 if(!checkLastMessageAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
-                
-                return resolve({ error: false, data : infoMessageAfterUpdated, status : 200 });
+                    return resolve({ error: true, message: 'Cant create message', status: 403 });
+
+                return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn trong cuộc hội thoại
+	 * Date: 06/08/2021
+	 */
+    insertMessage({ senderID, content, receiversID, conversationID, membersAssigned, files, type = 0, ctx }) {
+        return new Promise(async (resolve) => {
+            try {
+				console.log({ senderID, content, receiversID, conversationID, membersAssigned })
+                if (!checkObjectIDs([senderID, conversationID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK SENDER IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [senderID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				if(!receiversID){
+					receiversID = checkExistConversation.members;
+				} else{
+					if (!checkObjectIDs(receiversID)) 
+                    	return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+				}
+
+				let dataInsertMessage = {
+					listSeen: [senderID], 
+					sender: senderID, 
+					content, 
+					conversation: conversationID,
+					receivers: receiversID,
+					type
+				}
+
+				if(membersAssigned && membersAssigned.length && checkObjectIDs(membersAssigned)){
+					dataInsertMessage.membersAssigned = membersAssigned;
+				}
+
+				// MESSAGE IMAGES, FILES
+				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
+
+					let listFilesMessage = files.map(file => ({
+						app: CF_DOMAIN_SERVICES.CHATTING,
+						name: file.name,
+						url: file.url,
+						size: file.size,
+						userID: senderID,
+					}))
+
+					const { results } = await PromisePool
+						.for(listFilesMessage)
+						.withConcurrency(2)
+						.process(async file => {
+							// Insert file core collection
+							let infoFile = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, file);
+
+							// Update status file core collection
+							await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`, {
+								fileID: infoFile.data && infoFile.data._id.toString(),
+								status: "1",
+								userID: senderID,
+							});
+
+							// Insert conversation file collection
+							let infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
+								conversationID,
+								fileID: infoFile.data && infoFile.data._id
+							});
+
+							return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+						})
+
+					dataInsertMessage.files = results;
+				}
+
+				// MESSAGE LINK
+				if(content){
+					let urlRegex = /((((https|http|HTTP|HTTPS|ftp)?:\/\/)|(www\.))[^\s]+)/g;
+					let allLinks = content.match(urlRegex);
+
+					if(allLinks && allLinks.length){
+						let listMessageLinks = allLinks.map(link => ({
+							listSeen: [senderID],
+							sender: senderID, 
+							receivers: receiversID,
+							content: link, 
+							conversation: conversationID,
+							type: 3
+						}))
+
+						await PromisePool
+							.for(listMessageLinks)
+							.withConcurrency(2)
+							.process(async message => this.insertData(message))
+					}
+				}
+
+				let infoMessageAfterInserted = null;
+
+				// MESSAGE SHARE CONTACT
+				if(+type === 7){
+					if(!membersAssigned || !membersAssigned.length || !checkObjectIDs(membersAssigned))
+						return resolve({ error: true, message: "Request Params membersAssigned invalid", status: 400 });
+
+					let listMessageShareContact = membersAssigned.map(memberID => ({
+						listSeen: [senderID],
+						sender: senderID, 
+						receivers: receiversID,
+						conversation: conversationID,
+						membersAssigned: [memberID],
+						type: 7
+					}))
+
+					const { results } = await PromisePool
+						.for(listMessageShareContact)
+						.withConcurrency(2)
+						.process(async message => this.insertData(message))
+
+					infoMessageAfterInserted = results[results.length - 1];
+				} else{
+					// INSERT MESSAGE
+					infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+				}
+
+                if(!infoMessageAfterInserted)
+                    return resolve({ error: true, message: "Can't create message", status: 403 });
+
+				let { _id: messageID } = infoMessageAfterInserted; 
+
+				// UPDATE LAST MESSAGE
+                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: messageID, modifyAt: Date.now()
+                }, { new: true });
+
+                if(!checkLastMessageAfterUpdated)
+                    return resolve({ error: true, message: "Can't update last message", status: 403 });
+
+                return resolve({ error: false, data: infoMessageAfterInserted, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 16/08/2021
+	 */
+	deleteMessage({ conversationID, userID, messagesID, typeMessage, filesID }) {
+        return new Promise(async (resolve) => {
+            try {
+				if(!typeMessage || isNaN(typeMessage))
+					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK USERID IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+					_id: conversationID,
+					members: { $all: [userID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				let infoMessageAfterUpdated = null;
+				switch (+typeMessage) {
+					case 0: // Xoá tin nhắn thông thường (text message)
+
+						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+							_id: { $in: messagesID },
+							conversation: conversationID
+						}, {
+							$push: {
+								usersDelete: userID
+							}
+						}, { new: true });
+
+						break;
+					case 1: // Xoá tin nhắn image, file (media message)
+					case 2:
+
+						if(!filesID || !filesID.length)
+							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+
+						if(!checkObjectIDs(filesID))
+							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+
+						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+							_id: { $in: messagesID },
+							conversation: conversationID,
+							files: {
+								$elemMatch: {
+									file: { $in: filesID }
+								}
+							}
+						}, {
+							$addToSet: {
+								"files.$.usersDelete": userID
+							}
+						}, { new: true });
+
+						break;
+					default:
+						break;
+				}
+
+				if(!infoMessageAfterUpdated)
+					return resolve({ error: true, message: "Can't delete message", status: 403 });
+
+				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 16/08/2021
+	 */
+	revokeMessage({ conversationID, userID, messagesID, typeMessage, filesID }) {
+        return new Promise(async (resolve) => {
+            try {
+				if(!typeMessage || isNaN(typeMessage))
+					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK USERID IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+					_id: conversationID,
+					members: { $all: [userID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				let infoMessageAfterUpdated = null;
+				switch (+typeMessage) {
+					case 0: // Thu hồi tin nhắn thông thường (text message)
+
+						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+							_id: { $in: messagesID },
+							conversation: conversationID,
+							sender: userID
+						}, {
+							$set: { status: 3 }
+						}, { new: true });
+
+						break;
+					case 1: // Thu hồi tin nhắn ảnh (media message)
+					case 2:
+
+						if(!filesID || !filesID.length)
+							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+
+						if(!checkObjectIDs(filesID))
+							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+
+						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+							_id: { $in: messagesID },
+							conversation: conversationID,
+							sender: userID,
+							files: {
+								$elemMatch: {
+									file: { $in: filesID }
+								}
+							}
+						}, {
+							$set: {
+								"files.$.status": 2
+							}
+						}, { new: true });
+
+						break;
+					default:
+						break;
+				}
+
+				if(!infoMessageAfterUpdated)
+					return resolve({ error: true, message: "Can't revoke message", status: 403 });
+
+				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+
+
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy toàn bộ các tin nhắn trong cuộc hội thoại (phân trang)
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
+    getMessageByConversationIDWithPage({ conversationID, userID, latestMessageID }){
+        return new Promise(async resolve => {
+            try {
+                let page 	= 1;
+                let perPage = 15;
+
+                if(latestMessageID && checkObjectIDs(latestMessageID)){
+                    page = 2;
+                }
+
+				// Check params
+                if(page === 1 && !checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+                if(page === 2 && !checkObjectIDs([conversationID, userID, latestMessageID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				// Check user exist in conversation
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+                    _id: conversationID,
+                    members: { $all: [userID] }
+                }).lean();
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "Can't get list message in conversation", status: 403 });
+
+				// Get info last message in conversation (limit 15 per list message)
+                let conditionObj = {};
+				let _sort = {
+					modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+				};
+
+                if(page === 2){
+                    let infoMessage = await CHATTING__MESSAGE_COLL.findById(latestMessageID);
+                    if(!infoMessage)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] });
+					if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error) )
+						return resolve({ error: true, message: "Request params nextInfo invalid", status: 400 });
+
+					conditionObj   = dataPagingAndSort.data.find;
+					_sort          = dataPagingAndSort.data.sort;
+                }
+				conditionObj.conversation = objectID(conversationID);
+
+                let listMessage = await CHATTING__MESSAGE_COLL.find(conditionObj)
+                    // .populate({ 
+                    //     path: 'files',
+                    // })
+                    // .populate(
+                    // {
+                    //     path : 'sender', select :'_id fullname image company ' 
+                    // })
+                    // .populate({
+                    //     path: 'parent',
+                    //     populate: {
+                    //         path: "files sender",
+                    //         select :'_id fullname image company path name type size author conversation' 
+                    //     }
+                    // })
+                    // .populate(
+                    // {
+                    //     path : 'likedUsers', select :'_id fullname image company ' 
+                    // })
+                    // .populate({path : 'listSeen', select :  '_id fullname  image' })
+                    // .populate({
+                    //     path: 'reactions',
+                    //     populate: {
+                    //         path: "author",
+                    //         select :'_id fullname image company' 
+                    //     }
+                    // })
+					.limit(perPage)
+					.sort(_sort)
+					.lean();
+
+                let totalPagePromise         = CHATTING__MESSAGE_COLL.count({ conversation: conversationID });
+                let totalCheckExPagePromise  = CHATTING__MESSAGE_COLL.count(conditionObj);
+
+				const { currentPage, totalPage } = await calculateCurrentPage({
+					totalPagePromise: totalPagePromise,
+					totalCurrentPagePromise: totalCheckExPagePromise,
+					perPage
+				})
+
+                return resolve({ 
+					error: false,
+					status: 200,
+					data: { 
+						listMessage,
+						perPage,
+						currentPage,
+						totalPage
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
     // coppy tin nhắn
     copyMessage({ senderID, receivers, conversationID, messageShareID }) { 
@@ -180,33 +624,7 @@ class Model extends BaseModel {
         })
     }
 
-    //
-    updateByID({ messageID, filesID }) {
-        const that = this;
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(messageID) || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'Params invalid' });
-
-                let infoUpdateMessage;
-                
-                infoUpdateMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID,{
-                    $addToSet: {
-                        files: filesID
-                    }
-                }, { new: true });
-
-                if(!infoUpdateMessage)
-                    return resolve({ error: true, message: 'Cant update message ', status : 403 });
-
-                return resolve({ error: false, data: infoUpdateMessage });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    //GetFiles
+    // GetFiles
     getFiles({ conversationID, currentPage, userID }){
         return new Promise(async(resolve)=>{
             try {
@@ -250,51 +668,6 @@ class Model extends BaseModel {
         })
     }
 
-    // author : VinhNh
-    // 16/10/2020
-    // Lấy tất cả các link của cuộc hội thoại
-
-    //   getAllLink({ conversationID, currentPage, userID }){
-    //     return new Promise(async(resolve)=>{
-    //         try {
-    //                 const page = Number(currentPage) || 1;
-    //                 const perPage = 5;
-    //                 if(!checkObjectIDs(conversationID))
-    //                     return resolve({ error: true, message: 'object_invalid'});
-
-    //                 let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
-    //                         _id: conversationID ,
-    //                         members: { $all: [userID] }
-    //                 });
-
-    //                 if(currentPage ==1){
-    //                     let listImage = await m.find({ conversation: conversationID, type : 1 })
-    //                     .skip((page * perPage) - perPage)
-    //                     .limit(perPage)
-    //                     .sort({ createAt: -1 });
-                    
-    //                     let listZips = await FILE__FILE_COLL.find({ conversation: conversationID, type : 3 })
-    //                         .skip((page * perPage) - perPage)
-    //                         .limit(perPage)
-    //                         .sort({ createAt: -1 });
-    //                     return resolve({ error: false, data : {listImage, listZips}, page });
-    //                 }else{
-
-    //                     let listImage = await FILE__FILE_COLL.find({ conversation: conversationID, type : 1 })
-    //                         .sort({ createAt: -1 });
-                    
-    //                     let listZips = await FILE__FILE_COLL.find({ conversation: conversationID, type : 3 })
-    //                         .sort({ createAt: -1 });
-                            
-    //                     return resolve({ error: false, data : {listImage, listZips} });
-
-    //                 }
-                
-    //             } catch (error) {
-    //                 return resolve({ error: true, message: error.message });
-    //             }
-    //         })
-    //     }
     // xóa toàn bộ các tin nhắn trong cuộc hội thoại
     removeAllByConversationID({ conversationID }){
         return new Promise(async(resolve)=>{
@@ -306,7 +679,7 @@ class Model extends BaseModel {
                 if(!infoMessageAfterRemoved)
                     return resolve({ error: true, message : 'cannot_remove'});
                 
-                await infoMessageAfterRemoved.forEach(async  message=>{
+                infoMessageAfterRemoved.forEach(async message=>{
                     let infoMessage = await CHATTING__MESSAGE_COLL.findById(message._id);
                     let infoMessageAfterRemoved = await CHATTING__MESSAGE_COLL.findOneAndRemove({ _id: message._id, conversation: conversationID });
                     if(!infoMessageAfterRemoved)
@@ -332,175 +705,14 @@ class Model extends BaseModel {
         })
     }
 
-   
-    // lấy toàn bộ các tin nhắn trong cuộc hội thoại phân trang
-    getMessageByConversationIDWithPage({ conversationID, userID, currentPage, latestMessageID }){
-        return new Promise(async(resolve)=>{
-            try {
-                let checkParamsPage   =   checkParametersModel([{currentPage : Number(currentPage)}], 'interger');
-                if(checkParamsPage.error || Number(currentPage)<=0)
-                    return resolve({ error: true, message: 'Request params currentPage invalid'});
-             
-                let page        = Number(currentPage) || 1;
-                const perPage   = 15;
-
-                if(latestMessageID && checkObjectIDs(latestMessageID)){
-                    page = 2;
-                }
-
-                let checkParamsObjectID;
-                // Nếu page =1  thì không cần kiểm tra latestMessageID
-                if(page == 1){
-                    checkParamsObjectID   =  checkParametersModel([{conversationID}, {userID} ], 'objectID');
-                    if(checkParamsObjectID.error)
-                        return resolve(checkParamsObjectID)
-                }
-
-                // Nếu page > 1  thì không cần latestMessageID để lấy thông tin tin nhắn
-                if(page > 1){
-                    checkParamsObjectID   =  checkParametersModel([{conversationID}, {userID}, {latestMessageID}], 'objectID');
-                    if(checkParamsObjectID.error)
-                        return resolve(checkParamsObjectID)
-                }
-
-                let checkExistConversation  =  await CHATTING__CONVERSATION_COLL.find({
-                    _id: conversationID ,
-                    members: { $all: [userID] }
-                });
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Permission denied' });
-                
-                let infoMessage;
-                if(page > 1){
-                    infoMessage             =  await CHATTING__MESSAGE_COLL.findById(latestMessageID);
-                    if(!infoMessage)
-                        return resolve({ error: true, message: 'info message exist denied' });
-                }
-                let nextInfo;
-                if(page > 1){
-                    nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
-                }   
-
-                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] })
-                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'request params nextInfo invalid' });
-
-                let ObjectSearch            = dataPaggingAndSort.data.find;
-                ObjectSearch.conversation   =  objectID(conversationID);
-                let _sort = dataPaggingAndSort.data.sort;
-                let listMessage = await CHATTING__MESSAGE_COLL.find(ObjectSearch)
-                    // .populate({ 
-                    //     path: 'files',
-                    // })
-                    // .populate(
-                    // {
-                    //     path : 'sender', select :'_id fullname image company ' 
-                    // })
-                    // .populate({
-                    //     path: 'parent',
-                    //     populate: {
-                    //         path: "files sender",
-                    //         select :'_id fullname image company path name type size author conversation' 
-                    //     }
-                    // })
-                    // .populate(
-                    // {
-                    //     path : 'likedUsers', select :'_id fullname image company ' 
-                    // })
-                    // .populate({path : 'listSeen', select :  '_id fullname  image' })
-                    // .populate({
-                    //     path: 'reactions',
-                    //     populate: {
-                    //         path: "author",
-                    //         select :'_id fullname image company' 
-                    //     }
-                    // })
-                .limit(perPage)
-                .sort( dataPaggingAndSort.data.sort );
-
-
-                let toltalPagePromise               =  CHATTING__MESSAGE_COLL.count({ conversation : conversationID });
-                let toltalCheckExPagePromise        =  CHATTING__MESSAGE_COLL.count(ObjectSearch);
-                let [ toltalPageMessage , toltalCheckExCunrrentPage ] = await Promise.all([ toltalPagePromise, toltalCheckExPagePromise ]);
-
-                // Kiểm tra hai kết quả count là number thì tiếp tục tính toán toltalPage và xác định current Page
-                // Xác định lại currentPage về khi nếu truyền current =3 mà req lấy latestMessageID của page --> data đó của page
-                // Nên nếu req có sai currentPage thì vẫn trả về data và currentPage đúng cũng dữ liệu này
-                let currrentPageCheckEx     = 0;
-                let checkParamsToltalPage   = checkParametersModel([{toltalCheckExCunrrentPage}, {toltalPageMessage}], 'number');
-                if(!checkParamsToltalPage.error){
-
-                    //Tính toán currentPage hiện tại chính xác (currentPageExcellent)
-                    let valueCurrentPage    = toltalPageMessage - toltalCheckExCunrrentPage;
-                    if(valueCurrentPage === 0){
-                        currrentPageCheckEx = 1;
-                    }
-                    if(valueCurrentPage!=0 && valueCurrentPage >0){
-                        currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(valueCurrentPage, perPage);
-                    }
-                    
-                    // Tính toán toltalPage
-                    toltalPageMessage       = checkPointDotsAndRoundingNumberForPagingChatting(toltalPageMessage, perPage);
-                }else{
-                    currrentPageCheckEx = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                    toltalPageMessage   = checkPointDotsAndRoundingNumberForPagingChatting(0, perPage);
-                }
-
-                return resolve({ error: false, data : { listMessage, currentPage : currrentPageCheckEx , toltalPage : toltalPageMessage } });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    // xóa tin nhắn trong cuộc hội thoại => gỡ tin nhắn
-    /* Author: Hoang
-    * Date: 18/10/2010 
-    * Update: save file removed.(remove S3 rontab)
-    */
-    removebyID({ messageID, conversationID, senderID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(messageID, conversationID, senderID))
-                    return resolve({ error: true, message: 'object_invalid'});
-
-                let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-                
-                // kiểm tra thời gian hiện tại nếu quá 1h không cho xoá tin 
-                let currentDate     = new Date();
-                let createMessage   =   infoMessage.createdAt
-                console.log({ currentDate, messageDate : infoMessage.createdAt })
-                // return resolve({ error: false, data : 'okkk' });
-
-                let infoMessageAfterRemoved = await CHATTING__MESSAGE_COLL.findOneAndRemove({ _id: messageID, conversation: conversationID, sender: senderID });
-                if(!infoMessageAfterRemoved)
-                    return resolve({ error: true, message : 'cannot_remove' });
-
-                // await infoMessage.files.forEach(async file=>{
-                //     let info = await FILE__FILE_COLL.findById(file);
-                //     await FILE__FILE_COLL.findByIdAndDelete(file)
-                //     await FILE__REMOVED_MODEL.insert({name: info.name, path: info.path});
-                //     // fs.unlink(`${pathFileMessage}${info.url}`, (err) => {
-                //     //     if (err) {
-                //     //         console.error(err)
-                //     //         return
-                //     //     }
-                //     // })
-                // })
-               
-                return resolve({ error: false, data : infoMessageAfterRemoved });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
 
     getInfoByID({ messageID }){
-        return new Promise(async(resolve)=>{
+        return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid'});
-                let infoMessage = await CHATTING__MESSAGE_COLL.findById( messageID )
+                    return resolve({ error: true, message: 'object_invalid' });
+
+                let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                     // .populate({ 
                     //     path: 'files',
                     // })
@@ -523,11 +735,12 @@ class Model extends BaseModel {
                     // });
 
                 if(!infoMessage)
-                    return resolve({ error: true, message : 'cannot_find'});
+                    return resolve({ error: true, message: 'cannot_find' });
+
                 //Chưa check xóa tin nhắn có files_ và tin nhắn có tin nhắn reply
-                return resolve({ error: false, data : infoMessage });
+                return resolve({ error: false, data: infoMessage });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -538,464 +751,44 @@ class Model extends BaseModel {
      * add seen for like (status = 107)
      */
     seenMessageOneByOne({ messageID, userID }){
-        return new Promise(async(resolve)=>{
+        return new Promise(async(resolve) => {
             try {
                 if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid'});
+                    return resolve({ error: true, message: 'object_invalid', status: 400 });
 
                 let checkExitsMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!checkExitsMessage)
-                    return resolve({ error: true, message : 'cannot_update'});
+                    return resolve({ error: true, message: 'message_is_not_exists', status: 403 });
 
                 if(checkExitsMessage.status >= 100)
-                    return resolve({ error: true, message : 'cannot_update'});  
-                    //listSeen
-                let infoMessage;
+                    return resolve({ error: true, message: 'status_greater_than_100', status: 403 });
+
+				let infoMessage = null;
                 if(checkExitsMessage.listSeen){
                     let listSeen = checkExitsMessage.listSeen;
+
                     if(!listSeen.includes(userID)){
                         listSeen = listSeen.concat([userID]);
-                        infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {status : 1, listSeen}, { new: true });
+                        infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { status: 1, listSeen }, { new: true });
+
                         if(!infoMessage)
-                            return resolve({ error: true, message : 'cannot_update'});
-                        return resolve({ error: false, data : infoMessage });
-                    }else{
-                        return resolve({ error: false, data : checkExitsMessage });  
+                            return resolve({ error: true, message: 'cannot_update', status: 403 });
+
+                        return resolve({ error: false, data: infoMessage, status: 200 });
+                    } else{
+                        return resolve({ error: false, data: checkExitsMessage, status: 200 });
                     }
-                }else{
-                    let listSeen = [userID]
-                    infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {status : 1, listSeen}, { new: true });
+                } else{
+                    let listSeen = [userID];
+                    infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { status: 1, listSeen }, { new: true });
+
                     if(!infoMessage)
-                        return resolve({ error: true, message : 'cannot_update'});
-                    return resolve({ error: false, data : infoMessage });
+                        return resolve({ error: true, message: 'cannot_update', status: 400 });
+
+                    return resolve({ error: false, data: infoMessage, status: 200 });
                 }
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    //Thu hồi tin nhắn
-    revokeMessage({ messageID }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid'});
-                let infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {content : 'Tin nhắn này đã được thu hồi'}, { new: true });
-                if(!infoMessage) 
-                    return resolve({ error: true, message : 'cannot_update'});
-                //Xóa files 
-                return resolve({ error: false, data : infoMessage });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    toggleLikeMessage({ messageID, authorID, type }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(messageID) || !checkObjectIDs(authorID) )
-                    return resolve({ error: true, message: 'Params invalid' });
-                let arrUser = [authorID]
-                let checkExistMessage = await CHATTING__MESSAGE_COLL.findOne({
-                     _id : messageID,
-                });
-                let infoMessageAfterUpdated;
-                //Kiểm tra tin nhắn có tồn tại không
-                if(!checkExistMessage){
-                    return resolve({ error: true, message: 'Message is exits', status : 403 });
-                }
-                //Kiểm tra xem đã có bày tỏ cảm xúc về tin nhắn chưa
-                let checkExistReaction = await REACTION_COLL.findOne({
-                    message : messageID, author : authorID
-                })
-                let infoMessageAterUpdate;
-
-                //Nếu có rồi
-                if(checkExistReaction){
-                    //Kiểm tra xem đang muốn chuyển thành action mới hay hủy bỏ action
-                    //Chuyển sang action khác VD : tù like đổi sang phẫn nộ
-                    if(checkExistReaction.type != type){
-                        let reactionID = checkExistMessage.reactions;
-                        let infoAction = await REACTION_COLL.findByIdAndUpdate(
-                            reactionID, { type : type }, { new: true }
-                        );
-                        if(!infoAction)
-                            return resolve({ error: true, message: 'Cant update', status : 403 });
-
-                        return resolve({ error: false, data : checkExistMessage });
-                    }else
-                    {
-                    //Hủy bỏ action 
-                    let reactionID = checkExistReaction._id;
-                    let infoAction = await REACTION_MODEL.remove({reactionID});
-                    if(!infoAction)
-                        return resolve({ error: true, message: 'Cant update', status : 403 });
-
-                    infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(
-                        { _id : messageID }, {
-                        $pull : {
-                            reactions: reactionID
-                        }}, 
-                        { new: true });
-                    if(!infoMessageAfterUpdated)
-                        return resolve({ error: true, message: 'Cant update', status : 403 });
-
-                    return resolve({ error: false, data : infoMessageAfterUpdated })    
-
-                    }
-                }else{
-                //Nếu chưa có
-                    let infoActionAfterAdd = await REACTION_MODEL.insert({ author : authorID, type, message : messageID})
-                    if(!infoActionAfterAdd)
-                        return resolve({ error: true, message: 'Cant update', status : 403 });
-
-                    let idReacion = infoActionAfterAdd.data._id;
-                    infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(
-                                { _id : messageID }, {
-                                $addToSet : {
-                                    reactions: idReacion
-                                }}, 
-                                { new: true });
-                    if(!infoMessageAfterUpdated)
-                        return resolve({ error: true, message: 'Cant update', status : 403 });
-
-                    return resolve({ error: false, data : infoMessageAfterUpdated });
-                }
-                // // Nếu đã like rồi chuyển sang unlike
-                // if(checkExistLikeMessage){
-                //      infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(
-                //         { _id : messageID }, {
-                //         $pull : {
-                //             reaction: authorID
-                //         }}, 
-                //         { new: true });
-                //         isLike = false;
-                //     return resolve({ error: false, data : infoMessageAfterUpdated, isLike });
-                // }
-                // infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(
-                //         { _id : messageID }, {
-                //         $addToSet : {
-                //             reaction: [...arrUser]
-                //         }}, 
-                //         { new: true });
-                // if(!infoMessageAfterUpdated)
-                //     return resolve({ error: true, message : 'cannot_update'});
-                // return resolve({ error: false, data : infoMessageAfterUpdated, isLike });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    // Danh sách các Bug/Tickets cần support cho khách hàng
-    getAllMessageBugInSystem({ userID, tab, isSupporter }){
-        return new Promise(async(resolve)=>{
-            try {
-
-                let conditionObj
-                let conditionSort = {createAt : -1}
-                if(isSupporter){
-                    conditionObj = { bug : 1 }
-                }else{
-                    conditionObj = { 
-                        bug      : 1,
-                        sender   : userID
-                    }
-                }
-
-                if(tab == 1 || tab ==2){
-                    conditionObj.fixedbug = 0
-                }
-
-                if(tab == 3){
-                    conditionObj.fixedbug = 1
-                    conditionSort = {fixBugAt: -1}
-                }
-
-                if(tab==4){
-                    conditionObj = { 
-                        bug         : 1,
-                        userFixedBug: userID
-                    }
-                }
-
-                let allMessageBugs = await CHATTING__MESSAGE_COLL.find(conditionObj)
-                    .populate({
-                        path        : 'sender',
-                        select      : 'company _id fullname image email',
-                        populate    : {
-                            path : 'company'
-                        }
-                    })
-                    .populate({
-                        path     : 'userFixedBug',
-                        select   : 'company _id fullname image email',
-                        populate : {
-                            path     : 'company'
-                        }
-                    })
-                    .populate({
-                        path    : 'conversation',
-                        select  :  '_id name' 
-                    })
-                    .populate({
-                        path    : 'files',
-                        select  :  'path _id type' 
-                    })
-                    .populate({
-                        path    : 'listSeen',
-                        select  :  'fullname _id email image' 
-                    })
-                    .populate({
-                        path    : 'app',
-                        select  :  '_id name' 
-                    })
-                    .sort(conditionSort)
-
-                if(!allMessageBugs)
-                    return resolve({ error: true, message: 'cant_get_list' });
-
-                return resolve({ error: false, data: allMessageBugs });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-    
-    updateStatusMessageBug({ messageID, authorID, bug, appID }){
-        return new Promise(async(resolve)=>{
-            try {
-                let isBug = 1;
-                let newTicket;
-
-                if(bug == 'false' || bug == false){
-                    isBug = 0;
-                }
-
-                if(!checkObjectIDs(messageID) || !checkObjectIDs(authorID)  )
-                    return resolve({ error: true, message: 'object_invalid'});
-
-                let infoMessage = await CHATTING__MESSAGE_COLL.find({ _id : messageID });
-                if(infoMessage && infoMessage.length <1 ){
-                    return resolve({ error: true, message: 'message_exits'});
-                }
-
-                let infoMessageMaxTickit = await  CHATTING__MESSAGE_COLL.find().sort({ ticket: -1 }).limit(1);
-                newTicket = Number(infoMessageMaxTickit[0].ticket);
-                if(infoMessageMaxTickit && infoMessageMaxTickit.length > 0 && isBug!=0){
-                    newTicket = Number(infoMessageMaxTickit[0].ticket) + 1;
-                }
-
-                let dataUpdate =  { bug : isBug, ticket : newTicket }
-                if(appID && checkObjectIDs(appID)){
-                    dataUpdate.app  = appID
-
-                }
-
-                let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, dataUpdate, { new: true });
-                if(!infoMessageAfterUpdate)
-                    return resolve({ error: true, message: 'object_invalid'});
-
-                return resolve({ error: false, data: infoMessageAfterUpdate });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    updateUserWorkingBug({ messageID, userID, fixBugAt, noteBug }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(messageID) || !checkObjectIDs(userID) )
-                    return resolve({ error: true, message: 'object_invalid'});
-                
-                let exitMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-                if(!exitMessage)
-                    return resolve({ error: true, message: 'message_exits'});
-
-                let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { userFixedBug : userID, fixBugAt, noteBug, fixedbug : 1 }, { new: true });
-                if(!infoMessageAfterUpdate)
-                    return resolve({ error: true, message: 'canT_update'});
-                
-                return resolve({ error: false, data: infoMessageAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    updateNoteBug({messageID, noteBug, userID}){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid'});
-                
-                let exitMessage = await CHATTING__MESSAGE_COLL.findOne({ _id : messageID, userFixedBug : userID });
-                if(!exitMessage)
-                    return resolve({ error: true, message: 'message_exits'});
-
-                let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { noteBug }, { new: true });
-                if(!infoMessageAfterUpdate)
-                    return resolve({ error: true, message: 'cant_update'});
-                
-                return resolve({ error: false, data: infoMessageAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    /**
-     * Name: Cập nhật message ticket
-     * Author: Dattv (12/12/2020)
-     * Updated:
-     * -12/10/2020 - Dattv: Populate userFixedBug & app
-     * Usage:
-     * Web: Cập nhật thông tin message ticket
-     */
-    updateAppIDTicket({ messageID, appID, noteBugEdit, expiredTime, priority, userFixBugs }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid'});
-                
-                let exitMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-                if(!exitMessage)
-                    return resolve({ error: true, message: 'message_exits'});
-
-                let ObjectUpdate = {} ;
-                if(!noteBugEdit){
-                    noteBugEdit = '';
-                }
-                ObjectUpdate.noteBug = noteBugEdit;
-
-
-                if(appID){
-                    ObjectUpdate.app = appID;
-                }
-
-                if(expiredTime){
-                    ObjectUpdate.expiredTime = expiredTime;
-                }
-
-                if(priority){
-                    ObjectUpdate.priority = Number(priority);
-                }
-
-                if(userFixBugs){
-                    ObjectUpdate.userFixedBug = userFixBugs;
-                }
-
-                let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, ObjectUpdate, { new: true })
-                    .populate("userFixedBug app");
-
-                if(!infoMessageAfterUpdate)
-                    return resolve({ error: true, message: 'cant_update'});
-                
-                return resolve({ error: false, data: infoMessageAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    /**
-     * Lấy danh sách ticket của app
-     * Depv
-     */
-    getListTicketOfApp({ appID, fixedbug }){
-        return new Promise(async(resolve)=>{
-            try {
-                if(!checkObjectIDs(appID))
-                    return resolve({ error: true, message: 'params_invalid'});
-                
-                let listTicket = await CHATTING__MESSAGE_COLL.find({  app: appID, fixedbug })
-                                 .populate({
-                    path : 'sender',
-                    select : 'company _id fullname image email',
-                    populate : {
-                        path : 'company'
-                    }
-                })
-                .populate({
-                    path : 'userFixedBug',
-                    select : 'company _id fullname image email',
-                    populate : {
-                    path : 'company'
-                    }
-                })
-                .populate({
-                    path : 'conversation',
-                    select :  '_id name' 
-                })
-                .populate({
-                    path : 'files',
-                    select :  'path _id type' 
-                })
-                .populate({
-                    path : 'listSeen',
-                    select :  'fullname _id email image' 
-                })
-                .populate({
-                    path : 'app',
-                    select :  '_id name' 
-                })
-                .sort({createAt : -1})
-                if(!listTicket)
-                    return resolve({ error: true, message: 'cant_update'});
-                
-                return resolve({ error: false, data: listTicket });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
-
-    getListTicketNoApp({  fixedbug }){
-        return new Promise(async(resolve)=>{
-            try {
-                let listTicket = await CHATTING__MESSAGE_COLL.find({ app : { $exists: false }, ticket :{ $ne : 0 }, fixedbug , bug: 1 })
-                    .populate({
-                        path : 'sender',
-                        select : 'company _id fullname image email',
-                        populate : {
-                            path : 'company'
-                        }
-                    })
-                    .populate({
-                        path : 'userFixedBug',
-                        select : 'company _id fullname image email',
-                        populate : {
-                        path : 'company'
-                        }
-                    })
-                    .populate({
-                        path : 'conversation',
-                        select :  '_id name' 
-                    })
-                    .populate({
-                        path : 'files',
-                        select :  'path _id type' 
-                    })
-                    .populate({
-                        path : 'listSeen',
-                        select :  'fullname _id email image' 
-                    })
-                    .populate({
-                        path : 'app',
-                        select :  '_id name' 
-                    })
-                    .sort({createAt : -1})
-
-                if(!listTicket)
-                    return resolve({ error: true, message: 'cant_update'});
-                
-                return resolve({ error: false, data: listTicket });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -1033,31 +826,39 @@ class Model extends BaseModel {
      * Update: Hoang - 2:55PM 22/10/2020 
      * check message.status < 100 to set status again. 
      */
-    updateRecive({ messageID }) {
+    updateReceive({ messageID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(messageID))
                     return resolve({ error: true, message: 'Params invalid' });
-                // status = 2 trạn thái đã nhận tin nhắn , tin nhắn đã gửi thành công
+
+                // status = 2 trạng thái đã nhận tin nhắn, tin nhắn đã gửi thành công
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
                 if(!infoMessage)
-                    return resolve({ error: true, message: 'Message is exits', status : 403 });
-                if(infoMessage.status < 100){
-                    let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { status : 2 }, { new: true });
-                    if(!infoMessageAfterUpdate)
-                        return resolve({ error: true, message: 'Message is exits', status : 403 });
+                    return resolve({ error: true, message: 'Message is exits', status: 403 });
 
-                    return resolve({ error: false, data: infoMessageAfterUpdate, status : 200 });
-                }else{
-                    return resolve({ error: false, data: "message_status_greater_than_100", message : 'message_status_greater_than_100',  status : 200 });
+                if(infoMessage.status < 100){
+                    let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, 
+						{ status: 2 }, { new: true }
+					);
+
+                    if(!infoMessageAfterUpdate)
+                        return resolve({ error: true, message: 'Message is exits', status: 403 });
+
+                    return resolve({ error: false, data: infoMessageAfterUpdate, status: 200 });
                 }
-                
+
+				return resolve({ 
+					error: false, 
+					data: "message_status_greater_than_100", 
+					message: 'message_status_greater_than_100', 
+					status: 200 
+				});
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         });
     }
-
 
     // db.products.find({_id: {$gt: ObjectId("4fdbaf608b446b0477000142") }}).limit(1)
     // lấy tin nhắn trước và sau tin nhắn hiện tại ví dụ  [ tn1  tn2 tn3 tn4 tn5] truyền vào tìm tn2 sẽ lấy ra tn1 tn2 tn3

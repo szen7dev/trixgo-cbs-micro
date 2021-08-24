@@ -2,6 +2,7 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
+
 module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}
@@ -11,22 +12,15 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : 'company' 
     },
-    //_______Username: sử dụng cho chatting slash
-    username: {
-        type: String,
-        trim: true,
-        unique : true,
-        require: true
-    },
      /**
      * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
      */
-    platform:{
+    platform: {
         type: Number,
         enum: [1, 2]
     },
     //_______Email
-    email : {
+    email: {
         type   : String,
         require:  true,
         unique : true
@@ -34,17 +28,15 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_______Mật khẩu
     password: String,
     //_______Điện thoại
-    phone   : String,
-    //_______Tên
-    name: String,
-    //_______Tên
+    phone: String,
+    //_______Tên (vd: Nam)
     firstname: String,
-    //_______Họ
+    //_______Họ (vd: Nguyễn Văn)
     lastname: String,
-    //_______Họ và tên
+    //_______Họ và tên (vd: Nguyễn Văn Nam)
     fullname: String,
-    //_______Mã hiệu công ty
-    companysign: String,  
+    //_______Họ và tên (vd: Nguyễn Văn Nam-TRX)
+    bizname: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,
@@ -65,11 +57,12 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_______Ảnh đại diện ***
+    //_______Ảnh đại diện
     image: {
         type: String,
         default: 'user_default.png'
     },
+    
     //_______Ảnh chữ ký tay
     signature: {
         type: String,
@@ -123,6 +116,13 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Number,
         default: 1
     },
+	/**
+     * Danh sách pin cuộc hội thoại
+    */
+	conversationsPin: [{
+        type: Schema.Types.ObjectId,
+        ref: 'message_conversation'
+    }],
     /**
      * Cấu hình hiển thị view mặc định ở trang chủ
      * 1: Văn hoá doanh nghiệp
@@ -146,14 +146,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : String,
         default: "vi"
     },
-    //_______Ghi chú
-    // note: String,
-    //_______Các link thường xuyên truy cập
-    // bookmarks: [
-    //     { 
-    //         type: String 
-    //     }
-    // ],
     //_______Yêu cầu gửi đi tới người khác
     // sendToFriends: [{ 
     //     type: Schema.Types.ObjectId,
@@ -196,7 +188,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //     ref: 'message_conversation'
     // }],
     //_______Code reset mật khẩu
-    // codeReset: String,
+    codeReset: String,
     /**
      * Quản lý thông tin Device Mobile
      */
@@ -217,24 +209,4 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    // //________Các trường sau này config mặc định.
-    // config: {
-    //     groupTask: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'pcm_plan_group'
-    //     },
-    //     // Phục vụ để hiển thị trên mobile
-    //     nameGroup: String,
-    // },
-    // //________dùng để lấy thông tin user trong dự án
-    // departmentContacts: [{
-    //     department: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'department'
-    //     },
-    //     departmentContact:  {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'department_contact'
-    //     },
-    // }]
 })

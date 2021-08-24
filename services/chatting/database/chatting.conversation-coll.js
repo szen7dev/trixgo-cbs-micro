@@ -3,22 +3,19 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
-
+module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Tên của cuộc hội thoại (Tên chat nhóm)
      */
     name: {
         type: String
     },
-
     /**
      * Mô tả của cuộc hội thoại (Mô tả chat nhóm)
      */
     description: {
         type: String
     },
-
     /**
      * Số lượng người tham gia cuộc hội thoại
      */
@@ -26,16 +23,13 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
-
     /**
-     * Chủ của cuộc hội thoại (người gửi, nếu là chat nhóm thì là chủ nhóm)
-     * - Author đầu tiên trong mảng chính là root Author (người tạo ra nhóm chát)
+     * Author đầu tiên trong mảng chính là root Author (người tạo ra nhóm chát)
      */
-    author: [{
+    authors: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
-
     /**
      * Tin nhắn cuối cùng trong cuộc hội thoại
      */
@@ -43,97 +37,114 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'message_message'
     },
-
     /**
-     * Logo Nhóm chat
+     * Avatar Nhóm chat
      */
-    logo: {
+    avatar: {
         type    : Schema.Types.ObjectId,
-        ref     : 'file'
+        ref     : 'message_conversation_file'
     },
-    
     /**
      * Tin nhắn được ghim
      */
-    pin :  {
-        type    :     Schema.Types.ObjectId,
+    messagePin: {
+        type    : Schema.Types.ObjectId,
         ref     : 'message_message'
     },
-
     /**
      * Danh sách user bỏ lở tin nhắn
      */
-    arrMissMessage : [{
-        userID :  {
-            type    : Schema.Types.ObjectId,
-            ref     : 'user'
+    usersMissMessage: [{
+		_id: false,
+        userID: {
+            type: Schema.Types.ObjectId,
+            ref: 'user'
         },
-
-        amout : {
-            type    : Number,
-            default : 0
+        amount: {
+            type: Number,
+            default: 0
         },
-        
-        timeOffline : {
-            type : Date
+        timeOffline: {
+            type: Date
         }
     }],
-
-    /**
-     * Danh sách user ẩn thông báo cuộc hội thoại
+	/**
+     * Danh sách user xoá lịch sử
      */
-    usersMute : [{
-        user : { 
-            type    : Schema.Types.ObjectId,
-            ref     : 'user'
+	usersDeleteHistory: [{
+        userID: {
+            type: Schema.Types.ObjectId,
+            ref: 'user'
         },
-
-        time : {
-            type : Date
+        lastMessage: {
+			type: Schema.Types.ObjectId,
+            ref: 'message_message'
+        },
+        time: {
+            type: Date
         }
     }],
-
-    // /**
-    //  * Danh sách user ping cuộc hội thoại
-    // */
-    usersPin : [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'user'
-    }],
-
-    // chatting.conversation_link-coll.js
     /**
-    * Các files được đính kèm trong cuộc hội thoại
-    */
-//    links: [{
-//        type : String
-//     }],
-
-   /*
-   *Các task được chọn để giao checklist
-   */
-    tasks : [{
-        task :{ 
-            type    : Schema.Types.ObjectId,
-            ref     : 'pcm_plan_task'
+     * Danh sách user tắt thông báo cuộc hội thoại
+     */
+    usersMute: [{
+		_id: false,
+        userID: { 
+            type: Schema.Types.ObjectId,
+            ref: 'user'
         },
-
-        userCreate :{ 
-            type    : Schema.Types.ObjectId,
-            ref     : 'user'
+        time: {
+            type: Date
         }
     }],
+	/**
+     * Danh sách user ẩn cuộc hội thoại
+     */
+	usersHide: [{ 
+		type: Schema.Types.ObjectId,
+		ref: 'user'
+	}],
 
-    // chatting.conversation_draft-coll.js
-    // lưu lại tin nhắn đang soạn dỡ
-    // arrMesageTypingUsers : [{
-    //     userID :  {
-    //         type    : Schema.Types.ObjectId,
-    //         ref     : 'user'
-    //     },
-        
-    //     messageTyping : {
-    //         type : String
-    //     }
-    // }]
+	/**
+     * Cấu hình admin cuộc hội thoại
+	 * 1: Kích hoạt
+	 * 2: Không kích hoạt
+    */
+	config: {
+		// Làm nổi bật tin của Admin
+		configHighlight: {
+			type: Number,
+			default: 2
+		},
+		// Member mới được xem tin nhắn cũ
+		configSeeOldMessage: {
+			type: Number,
+			default: 1
+		},
+		// Members được sửa thông tin nhóm
+		configEditInfo: {
+			type: Number,
+			default: 1
+		},
+		// Members được tạo ghi chú, nhắc hẹn
+		configCreateNote: {
+			type: Number,
+			default: 1
+		},
+		// Members được tạo bình chọn
+		configCreatePoll: {
+			type: Number,
+			default: 1
+		},
+		// Members được ghim tin nhắn
+		configPinMessage: {
+			type: Number,
+			default: 1
+		},
+		// Members được gửi tin nhắn
+		configSendMessage: {
+			type: Number,
+			default: 1
+		},
+	}
 });

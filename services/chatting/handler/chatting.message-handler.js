@@ -1,54 +1,129 @@
-let CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
-let { CF_DATA_DEMO_CHATTING }                 = require('../helper/chatting.data-demo-constant')
+/**
+ * TOOLS
+ */
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
-let { renderStatusCode }                            = require('../../../tools/utils/status_code');
+/**
+ * MODELS
+ */
+const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
+
 
 module.exports = {
-    // EXAMPLE
-    // insertFast: {
-    //     params: {
-    //         name: { type: "string" }
-    //     },
-    //     async handler(ctx) {
-    //         try {
-    //             let { name }        = ctx.params;
-    //             // let { _id : authorID }  = ctx.meta.infoUser; //lấy giá trị gán từ request = ctx.meta (gán tại 2auth gateway.service)
+    /**
+	 * ============================ ****************** ===============================
+	 * ============================ 	 MESSAGE  	   ===============================
+	 * ============================ ****************** ===============================
+	 */
 
-	// 			await this.validateEntity(name);
-
-    //             let resultAfterCallHandler = await AUTH__COMPANY_MODEL.insertFast({ name });
-
-    //             return resultAfterCallHandler;
-    //         } catch (error) {
-    //             return error;
-    //         }
-    //     }
-    // },
-
-    // AUTHOR : HUYNHVINH
-
-   
-    //================================================================  MESAGE  ============================================================
-
-    // Lấy danh sách tin nhắn của cuộc hội thoại
+	/**
+	 * Dev: VinhHV
+	 * Func: Lấy danh sách tin nhắn của cuộc hội thoại
+	 * Date: ...
+	 * Updated: MinhVH - 03/08/2021
+	 */
     getListMessageByConversationID: {
         params: {
-            currentPage     : { type: "string" },
-            conversationID  : { type: "string" },
+			conversationID  : { type: "string" },
             userID          : { type: "string" },
-            latestMessageID : { type: "string" },
+            latestMessageID : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                let {  currentPage, conversationID, userID, latestMessageID }        = ctx.params;
-                let resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({ latestMessageID, conversationID, userID, currentPage });
-                renderStatusCode({ resultAfterCallHandler, ctx })
-                return resultAfterCallHandler;
+				await this.validateEntity(ctx.params);
+                const { conversationID, userID, latestMessageID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({
+					conversationID, userID, latestMessageID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                renderStatusCode({ resultAfterCallHandler: null, ctx })
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
-    }
-    //================================================================ END MESAGE  ============================================================
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn trong cuộc hội thoại
+	 * Date: 17/08/2021
+	 */
+	insertMessage: {
+        params: {
+			conversationID  : { type: "string" },
+            type 			: { type: "string" },
+            content 		: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: senderID } = ctx.meta.infoUser;
+                const { conversationID, content, type, files, membersAssigned } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, senderID, content, type, files, membersAssigned, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 16/08/2021
+	 */
+	deleteMessage: {
+        params: {
+			conversationID  : { type: "string" },
+            typeMessage 	: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messagesID, typeMessage, filesID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.deleteMessage({
+					conversationID, userID, messagesID, typeMessage, filesID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 16/08/2021
+	 */
+	revokeMessage: {
+        params: {
+			conversationID  : { type: "string" },
+			typeMessage 	: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messagesID, typeMessage, filesID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.revokeMessage({
+					conversationID, userID, messagesID, typeMessage, filesID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
 }

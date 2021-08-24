@@ -23,6 +23,11 @@ const CF_ROUTINGS_AUTH = {
     UPDATE_FULLNAME             : `${BASE_ROUTE}${USER}/update-fullname`,
     UPDATE_EMAIL                : `${BASE_ROUTE}${USER}/update-email`,
     UPDATE_LANGUAGE             : `${BASE_ROUTE}${USER}/update-language`,
+    UPDATE_BIRTHDAY             : `${BASE_ROUTE}${USER}/update-birthday`,
+    SEND_OPT_RESET_PASSWORD     : `${BASE_ROUTE}${USER}/send-opt-reset-password`,
+    CONFIRM_CODE_RESET_PASSWORD : `${BASE_ROUTE}${USER}/confirm-code-reset-password`,
+    UPDATE_PASSWORD_AFTER_FORGET: `${BASE_ROUTE}${USER}/update-password-after-forget`,
+    // UPDATE_PASSWORD_AFTER_FORGET: `${BASE_ROUTE}${USER}/update-password-after-forget`,
 }
 
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;
