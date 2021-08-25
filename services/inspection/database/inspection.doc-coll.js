@@ -51,7 +51,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Công tác trong biểu khối lượng hợp đồng/gói thầu
     job: {
         type    : Schema.Types.ObjectId,
-        ref     : 'contract'
+        ref     : 'contract_bill_job'
     },
     //_________Liên quan tới các khu vực
     areas: [{
