@@ -4,10 +4,10 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
-    //_________Phân loại (kết cấu, kiến trúc,...)
+    //_________Phân loại (kết cấu, kiến trúc,...) cf_constant
     type: {
         type: Number,
-        default: 1
+        default: 1   
     },
     //_________Tên
     name: String,

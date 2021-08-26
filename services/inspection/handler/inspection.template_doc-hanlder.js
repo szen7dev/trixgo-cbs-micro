@@ -15,7 +15,7 @@ module.exports = {
 	 * Func: Thêm template hồ sơ/biên bản
 	 * Date: 17/08/2021
 	 */
-     insertDoc: {
+    insertDoc: {
         auth: "required",
         params: {
 			name  : { type: "string" },

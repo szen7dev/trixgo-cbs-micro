@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     },
     //_________Ngày hồ sơ đã điều chỉnh
     modifiedDate: {
-        type : Date
+        type : Date 
     },
     //_________Trạng thái (1-Đang triển khai/2-Đã hoàn thành)
     status: {
@@ -49,11 +49,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         default: 1
     },
     //_________Công tác trong biểu khối lượng hợp đồng/gói thầu
-    job: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'contract'
-    },
-    //_________Liên quan tới các khu vực
+         
+    //_________Liên quan tới các khu vực     
     areas: [{
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_area'
@@ -61,7 +58,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Bình luận cuối cùng của hồ sơ
     lastComment: {
         type    : Schema.Types.ObjectId,
-        ref     : 'comment'
+        ref     : 'comment'   
     }, 
     //_________Người thực hiện
     assignee: {
@@ -72,8 +69,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     members: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
-    }],  
-    //_________Chữ ký xác nhận
+    }],             
+    //_________Chữ ký xác nhận 
     signatures: [{
         type    : Schema.Types.ObjectId,
         ref     : 'signature'

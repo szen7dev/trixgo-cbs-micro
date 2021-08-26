@@ -21,7 +21,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_area", {
     sign: String,
     //_________Mô tả
     description: String,
-    /**
+    /**          
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {
