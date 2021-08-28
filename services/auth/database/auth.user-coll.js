@@ -7,24 +7,15 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}
      */
+    //_________Thuộc nền tảng
+    platform:{
+        type: Number,
+        enum: [1, 2]
+    },
     //_______Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : 'company' 
-    },
-    //_______Username: sử dụng cho chatting slash
-    username: {
-        type: String,
-        trim: true,
-        unique : true,
-        require: true
-    },
-     /**
-     * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
-     */
-    platform: {
-        type: Number,
-        enum: [1, 2]
     },
     //_______Email
     email: {
@@ -36,16 +27,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     password: String,
     //_______Điện thoại
     phone: String,
-    //_______Tên
-    name: String,
-    //_______Tên
+    //_______Tên (vd: Nam)
     firstname: String,
-    //_______Họ
+    //_______Họ (vd: Nguyễn Văn)
     lastname: String,
-    //_______Họ và tên
+    //_______Họ và tên (vd: Nguyễn Văn Nam)
     fullname: String,
-    //_______Mã hiệu công ty
-    companysign: String,  
+    //_______Họ và tên (vd: Nguyễn Văn Nam-TRX)
+    bizname: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,
@@ -66,12 +55,12 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_______Ảnh đại diện ***
+    //_______Ảnh đại diện
     image: {
         type: String,
         default: 'user_default.png'
     },
-    //_______Ảnh chữ ký tay
+    //_______Ảnh chữ ký
     signature: {
         type: String,
         default: 'signature_default.png'
@@ -87,10 +76,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         default: 1
     },
     /**
-     * Dùng để phân biệt Admin công ty/thành viên thông thường
+     * (Xem xét đưa hết về 1 level, bổ sung app quản trị và phân quyền)
      * 0: Admin công ty  (Owner Company)
      * 1: Thành viên Thường (User)
-     * 100: Supper Admin (Hiệp vs Khánh) 
+     * 50: Supporter
+     * 100: Supper Admin
      */
     level: {
         type: Number,
@@ -154,14 +144,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : String,
         default: "vi"
     },
-    //_______Ghi chú
-    // note: String,
-    //_______Các link thường xuyên truy cập
-    // bookmarks: [
-    //     { 
-    //         type: String 
-    //     }
-    // ],
     //_______Yêu cầu gửi đi tới người khác
     // sendToFriends: [{ 
     //     type: Schema.Types.ObjectId,
@@ -225,24 +207,4 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    // //________Các trường sau này config mặc định.
-    // config: {
-    //     groupTask: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'pcm_plan_group'
-    //     },
-    //     // Phục vụ để hiển thị trên mobile
-    //     nameGroup: String,
-    // },
-    // //________dùng để lấy thông tin user trong dự án
-    // departmentContacts: [{
-    //     department: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'department'
-    //     },
-    //     departmentContact:  {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'department_contact'
-    //     },
-    // }]
 })

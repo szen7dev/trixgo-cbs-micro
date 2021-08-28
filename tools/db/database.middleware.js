@@ -7,13 +7,17 @@ let random              = require('mongoose-simple-random');
 module.exports = function (dbName, dbOb) {
     dbOb.createAt = Date;
     dbOb.modifyAt = Date;
+    /**
+     * 1-Đang tồn tại
+     * 2-Xóa
+     */
+    dbOb.state = {
+        type: Number,
+        default: 1,
+    };
     let s = new Schema(dbOb, {
         timestamps: true
     });
-    // s.set('timestamps', {
-    //     createAt: 'crdAt',
-    //     modifyAt: 'updAt',
-    // })
     s.plugin(random);
     return mongoose.model(dbName, s);
 };

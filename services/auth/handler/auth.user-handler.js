@@ -13,7 +13,7 @@ module.exports = {
         params: {
             email           : { type: "string" },
             fullname        : { type: "string" },
-            username        : { type: "string" },
+            //username        : { type: "string" },
             level           : { type: "string" },
             companyID       : { type: "string" },
             platform        : { type: "string" },
@@ -21,9 +21,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { email, fullname, username, level, companyID, platform }        = ctx.params;
+                let { email, fullname, level, companyID, platform }        = ctx.params;
+                console.log({ email, fullname, level, companyID, platform } )
 
-                let infoUser = await AUTH__USER_MODEL.register({ email, fullname, username, level, companyID, platform });
+                let infoUser = await AUTH__USER_MODEL.register({ email, fullname, level, companyID, platform });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };

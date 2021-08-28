@@ -104,7 +104,6 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
             type: Date
         }
     }],
-
 	/**
      * Danh sách user ẩn cuộc hội thoại
      */
@@ -155,25 +154,4 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
 			default: 1
 		},
 	}
-
-    /**
-	 * Các files được đính kèm trong cuộc hội thoại
-	 * chatting.conversation_link-coll.js
-     */
-   	// links: [{
-    //    type : String
-    // }],
-
-    // chatting.conversation_draft-coll.js
-    // lưu lại tin nhắn đang soạn dỡ
-    // arrMesageTypingUsers : [{
-    //     userID :  {
-    //         type    : Schema.Types.ObjectId,
-    //         ref     : 'user'
-    //     },
-        
-    //     messageTyping : {
-    //         type : String
-    //     }
-    // }]
 });
