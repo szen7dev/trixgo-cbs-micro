@@ -84,7 +84,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 0: tin nhắn thông thường 
 	 * 1: tin nhắn ảnh
 	 * 2: tin nhắn file
-	 * 3: tin nhắn link
+	 * 3: tin nhắn link (bỏ => sử dụng coll chatting.conversation_link-model)
 	 * 4: tin nhắn reminder
 	 * 5: tin nhắn poll
 	 * 6: tin nhắn share location
@@ -96,8 +96,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 104: Đổi logo cuộc hội thoại
      * 105: Xét thêm admin cuộc hội thoại
      * 106: Xoá bỏ quyền admin của member trong cuộc hội thoại
-     * 107: Xóa cuộc hội thoại
-     * 108: Thành viên rời khỏi cuộc hội thoại 
+     * 107: Thành viên rời khỏi cuộc hội thoại 
      */
     type: {
         type: Number,

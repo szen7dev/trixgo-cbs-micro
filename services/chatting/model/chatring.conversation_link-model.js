@@ -1,50 +1,55 @@
 "use strict";
-const BaseModel                                 = require('../../../tools/db/base_model');
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
-const CHATTING__CONVERSATION_LINK_COLL          = require('../database/chatting.conversation_link-coll');
-const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 
+/**
+ * BASE
+ */
+const BaseModel   								= require('../../../tools/db/base_model');
+
+/**
+ * TOOLS
+ */
 const { checkObjectIDs }                        = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION }                 = require('../../../tools/cursor_base/playground/index');
+
+/**
+ * COLLECTIONS
+ */
+const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
+const CHATTING__CONVERSATION_LINK_COLL          = require('../database/chatting.conversation_link-coll');
 
 
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../database/chatting.conversation_link-coll'));
+        super(CHATTING__CONVERSATION_LINK_COLL);
     }
 
     insert({ conversationID, userID, link }){
-        const that = this;
         return new Promise(async (resolve) => {
             try {
+                if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-                console.log({conversationID, userID, link})
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Parameters validation error!', status : 422 });
-
-
-                // Kiểm tra nếu tồn tại cuộc hội thoại
-                let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
+                let checkExistConversation =  await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID,
                     members: { $all: [userID] }
                 })
 
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: 'Permission denied', status : 403 });
-                
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
 
-                let infoConversationDraft = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link });
-                if(infoConversationDraft)
-                    return resolve({ error: false, message: "link exit", status : 200 });
-            
-                let infoConversationAfterInserted = await that.insertData({  conversation : conversationID, link  });
-                
-                if(!infoConversationAfterInserted)
-                    return resolve({ error: true, message: "Can't insert link", status : 403 });
-        
-                return resolve({ error: false, data: infoConversationAfterInserted });
+                let checkLinkExist = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link });
+                if(checkLinkExist)
+                    return resolve({ error: false, message: "Link is exist", status: 200 });
+
+                let infoAfterInserted = await this.insertData({ conversation: conversationID, link });
+
+                if(!infoAfterInserted)
+                    return resolve({ error: true, message: "Can't create link", status: 403 });
+
+                return resolve({ error: false, data: infoAfterInserted, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

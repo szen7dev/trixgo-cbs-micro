@@ -17,34 +17,6 @@ module.exports = {
 	 */
 
 	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách tin nhắn của cuộc hội thoại
-	 * Date: ...
-	 * Updated: MinhVH - 03/08/2021
-	 */
-    getListMessageByConversationID: {
-        params: {
-			conversationID  : { type: "string" },
-            userID          : { type: "string" },
-            latestMessageID : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-                const { conversationID, userID, latestMessageID } = ctx.params;
-
-                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getMessageByConversationIDWithPage({
-					conversationID, userID, latestMessageID
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
 	 * Dev: MinhVH
 	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 17/08/2021
@@ -52,6 +24,7 @@ module.exports = {
 	insertMessage: {
         params: {
 			conversationID  : { type: "string" },
+            parentID		: { type: "string", optional: true },
             type 			: { type: "string" },
             content 		: { type: "string", optional: true },
         },
@@ -59,10 +32,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: senderID } = ctx.meta.infoUser;
-                const { conversationID, content, type, files, membersAssigned } = ctx.params;
+                const { conversationID, parentID, content, type, files, membersAssigned } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, senderID, content, type, files, membersAssigned, ctx
+					conversationID, senderID, parentID, content, type, files, membersAssigned, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -117,6 +90,29 @@ module.exports = {
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.revokeMessage({
 					conversationID, userID, messagesID, typeMessage, filesID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại 
+	 * Date: 23/08/2021
+	 */
+	shareMessageConversation: {
+        params: {},
+        async handler(ctx) {
+            try {
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationsID, messagesID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.shareMessageConversation({
+					conversationsID, messagesID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
