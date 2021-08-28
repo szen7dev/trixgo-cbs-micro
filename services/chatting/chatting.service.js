@@ -139,16 +139,23 @@ module.exports = {
 		// Chia sẻ tin nhắn đến các cuộc hội thoại 
 		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
 
+		// Pin 1 tin nhắn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_PIN_MESSAGE_CONVERSATION] 					: CHATTING__MESSAGE_HANDLER.updatePinMessageConversation,
+
+		// Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_PIN_CONVERSATION_WITH_PAGE]		: CHATTING__MESSAGE_HANDLER.getListMessagePinConversation,
+
+		// Thêm tin nhắn bình chọn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.insertMessagePoll,
+
+		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateMessagePoll,
+
 
 
 
 
 		// AUTHOR: VinhVH
-
-		// // Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
-		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
-
-		
 
 		// // Xem các tệp của cuộc hội thoại [****** để sau]
 

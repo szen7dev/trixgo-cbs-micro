@@ -53,10 +53,10 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Tin nhắn được ghim
      */
-    messagePin: {
+    messagesPin: [{
         type    : Schema.Types.ObjectId,
         ref     : 'message_message'
-    },
+    }],
 
     /**
      * Danh sách user bỏ lở tin nhắn

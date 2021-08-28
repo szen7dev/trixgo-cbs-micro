@@ -15,6 +15,7 @@ const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-const
  * TOOLS
  */
 const { 
+	isTrue,
 	checkObjectIDs, 
 	checkNumberIsValidWithRange 
 } = require('../../../tools/utils/utils');
@@ -28,6 +29,7 @@ const BaseModel                                     = require('../../../tools/db
  * COLLECTIONS
  */
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
+const CHATTING__MESSAGE_POLL_COLL                   = require('../database/chatting.message_poll-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 
 /**
@@ -244,12 +246,9 @@ class Model extends BaseModel {
 	 * Func: Xoá tin nhắn của cuộc hội thoại (media, text)
 	 * Date: 16/08/2021
 	 */
-	deleteMessage({ conversationID, userID, messagesID, typeMessage, filesID }) {
+	deleteMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
-				if(!typeMessage || isNaN(typeMessage))
-					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
-
                 if (!checkObjectIDs([...messagesID, userID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
@@ -258,51 +257,59 @@ class Model extends BaseModel {
 					_id: conversationID,
 					members: { $all: [userID] }
                 });
-
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
-				let infoMessageAfterUpdated = null;
-				switch (+typeMessage) {
-					case 0: // Xoá tin nhắn thông thường (text message)
+				if(filesID && !checkObjectIDs(filesID))
+					return resolve({ error: true, message: "Request Params Invalid", status: 400 });
 
-						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: { $in: messagesID },
-							conversation: conversationID
-						}, {
-							$push: {
-								usersDelete: userID
-							}
-						}, { new: true });
+				// Get list message will delete
+				let listMessages = await CHATTING__MESSAGE_COLL.find({
+					_id: { $in: messagesID },
+					conversation: conversationID
+				})
+				.select('_id type')
+				.lean();
 
-						break;
-					case 1: // Xoá tin nhắn image, file (media message)
-					case 2:
+				const { results: infoMessageAfterUpdated } = await PromisePool
+					.for(listMessages)
+					.withConcurrency(2)
+					.process(async message => {
+						let infoMessageAfterUpdated = null;
 
-						if(!filesID || !filesID.length)
-							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+						switch (message.type) {
+							case 0: // Xoá tin nhắn thông thường (text message)
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+									_id: message._id,
+									conversation: conversationID
+								}, {
+									$addToSet: {
+										usersDelete: userID
+									}
+								}, { new: true });
+								break;
+							case 1: // Xoá tin nhắn image, file (media message)
+							case 2:
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+									_id: message._id,
+									conversation: conversationID,
+									files: {
+										$elemMatch: {
+											file: { $in: filesID }
+										}
+									}
+								}, {
+									$addToSet: {
+										"files.$.usersDelete": userID
+									}
+								}, { new: true });
+								break;
+							default:
+								break;
+						}
 
-						if(!checkObjectIDs(filesID))
-							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
-
-						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: { $in: messagesID },
-							conversation: conversationID,
-							files: {
-								$elemMatch: {
-									file: { $in: filesID }
-								}
-							}
-						}, {
-							$addToSet: {
-								"files.$.usersDelete": userID
-							}
-						}, { new: true });
-
-						break;
-					default:
-						break;
-				}
+						return infoMessageAfterUpdated;
+					})
 
 				if(!infoMessageAfterUpdated)
 					return resolve({ error: true, message: "Can't delete message", status: 403 });
@@ -319,12 +326,9 @@ class Model extends BaseModel {
 	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
 	 * Date: 16/08/2021
 	 */
-	revokeMessage({ conversationID, userID, messagesID, typeMessage, filesID }) {
+	revokeMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
-				if(!typeMessage || isNaN(typeMessage))
-					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
-
                 if (!checkObjectIDs([...messagesID, userID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
@@ -337,47 +341,56 @@ class Model extends BaseModel {
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
-				let infoMessageAfterUpdated = null;
-				switch (+typeMessage) {
-					case 0: // Thu hồi tin nhắn thông thường (text message)
+				if(filesID && !checkObjectIDs(filesID))
+					return resolve({ error: true, message: "Request Params filesID Invalid", status: 400 });
 
-						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: { $in: messagesID },
-							conversation: conversationID,
-							sender: userID
-						}, {
-							$set: { status: 3 }
-						}, { new: true });
+				// Get list message will delete
+				let listMessages = await CHATTING__MESSAGE_COLL.find({
+					_id: { $in: messagesID },
+					conversation: conversationID
+				})
+				.select('_id type')
+				.lean();
 
-						break;
-					case 1: // Thu hồi tin nhắn ảnh (media message)
-					case 2:
+				const { results: infoMessageAfterUpdated } = await PromisePool
+					.for(listMessages)
+					.withConcurrency(2)
+					.process(async message => {
+						let infoMessageAfterUpdated = null;
 
-						if(!filesID || !filesID.length)
-							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+						switch (message.type) {
+							case 0: // Thu hồi tin nhắn thông thường (text message)
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+									_id: message._id,
+									conversation: conversationID,
+									sender: userID
+								}, {
+									$set: { status: 3 }
+								}, { new: true });
+								break;
+							case 1: // Thu hồi tin nhắn ảnh (media message)
+							case 2:
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+									_id: message._id,
+									conversation: conversationID,
+									sender: userID,
+									files: {
+										$elemMatch: {
+											file: { $in: filesID }
+										}
+									}
+								}, {
+									$set: {
+										"files.$.status": 2
+									}
+								}, { new: true });
+								break;
+							default:
+								break;
+						}
 
-						if(!checkObjectIDs(filesID))
-							return resolve({ error: true, message: "Request Params Invalid", status: 400 });
-
-						infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-							_id: { $in: messagesID },
-							conversation: conversationID,
-							sender: userID,
-							files: {
-								$elemMatch: {
-									file: { $in: filesID }
-								}
-							}
-						}, {
-							$set: {
-								"files.$.status": 2
-							}
-						}, { new: true });
-
-						break;
-					default:
-						break;
-				}
+						return infoMessageAfterUpdated;
+					})
 
 				if(!infoMessageAfterUpdated)
 					return resolve({ error: true, message: "Can't revoke message", status: 403 });
@@ -392,7 +405,7 @@ class Model extends BaseModel {
 	/**
 	 * Dev: MinhVH
 	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại 
-	 * Date: 23/08/2021
+	 * Date: 25/08/2021
 	 */
 	shareMessageConversation({ conversationsID, messagesID, userID }){
 		return new Promise(async resolve => {
@@ -400,89 +413,325 @@ class Model extends BaseModel {
 				if (!checkObjectIDs([...conversationsID, ...messagesID, userID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
+				// CHECK USER ID IS MEMBER OF CONVERSATION
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+					_id: { $in: conversationsID },
+					members: { $all: [userID] }
+				}).lean();
 
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member of conversations", status: 403 });
 
+				const { results } = await PromisePool
+					.for(checkExistConversation)
+					.withConcurrency(2)
+					.process(async conversation => {
 
+						const values = await PromisePool
+							.for(messagesID)
+							.withConcurrency(2)
+							.process(async messageID => {
+								// get info share message
+								let infoMessageShare = await CHATTING__MESSAGE_COLL.findById(messageID);
+								let { content, files, type } = infoMessageShare;
+
+								// Insert message to conversation
+								let infoAfterInserted = await this.insertData({
+									conversation: conversation._id,
+									sender: userID,
+									listSeen: [userID],
+									receivers: conversation.members,
+									content,
+									files,
+									type
+								});
+
+								// Update last message
+								await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversation._id, {
+									lastMessage: infoAfterInserted._id, modifyAt: Date.now()
+								}, { new: true });
+
+								return infoAfterInserted;
+							})
+
+						return values;
+					})
+
+				return resolve({ error: false, data: results, status: 200 });
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
 	}
 
-
-
-
-    // copy tin nhắn
-    copyMessage({ senderID, receivers, conversationID, messageShareID }) { 
-        const that = this;
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật pin tin nhắn
+	 * Date: 28/08/2021
+	 */
+	updatePinMessageConversation({ conversationID, messageID, userID, isPin }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs(senderID, conversationID)) 
-                    return resolve({ error: true, message: 'Params invalid' });    
+				if(!checkObjectIDs([conversationID, messageID, userID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-                let arrReceiver = receivers;
-                // if(receivers && receivers.includes(',')) {
-                //     arrReceiver = receivers.split(',');
-                // } else {
-                //     arrReceiver.push(receivers);
-                // }
-                arrReceiver.forEach(receiver =>{
-                    if(!checkObjectIDs(receiver))
-                        return resolve({ error: true, message: 'Params invalid' });
-                })
-                if(!Array.isArray(arrReceiver))
-                    return resolve({ error: true, message: 'Params invalid' });
+                let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				});
+				if(!infoConversation)
+					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
 
-                
-                // kiểm tra các receivers có phải là members trong cuộc hội thoại
-                let checkExistConversation  = await CHATTING__CONVERSATION_COLL.find({
-                        _id: conversationID ,
-                        members: { $all: [senderID, ... arrReceiver] }
-                });
-                if(!Array.isArray(checkExistConversation) || checkExistConversation.length < 1)
-                    return resolve({ error: true, message: 'You are not member', status : 403 });
+				let infoConversationAfterUpdate = null;
+				let typeMessage = 108;
 
-                let infoMessageAfterInserted;
-                let infoMessageShare = await CHATTING__MESSAGE_COLL.findById(messageShareID);
-            
-                let _infoMessageShare = {};
-                _infoMessageShare.files         = infoMessageShare.files
-                _infoMessageShare.content       = infoMessageShare.content
-                _infoMessageShare.conversation  = conversationID;
-                _infoMessageShare.sender        = senderID;
-                _infoMessageShare.receivers     = arrReceiver;
+				if(isTrue(isPin)){ // Pin tin nhắn
 
+					if(infoConversation.messagesPin.includes(messageID))
+						return resolve({ error: true, message: "Message is pined", status: 400 });
 
-                _infoMessageShare.status     = 3;
-                infoMessageAfterInserted = await that.insertData(_infoMessageShare);
-                if(!infoMessageAfterInserted)
-                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
+					// Pin tối đa 20 tin nhắn (pull last, push first)
+					if(infoConversation.messagesPin.length >= 20){
+						infoConversationAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+							$push: {
+								messagesPin: {
+									$each: [messageID],
+									$position: 0,
+									$slice: 20
+								}
+							}
+						}, { new: true });
+					} else{
+						infoConversationAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+							$push: {
+								messagesPin: {
+									$each: [messageID],
+									$position: 0
+								}
+							}
+						}, { new: true });
+					}
 
-                let { _id: messageID } = infoMessageAfterInserted; 
-                let infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-                    $addToSet: {
-                        receivers: [...arrReceiver]
-                    }
-                }, { new: true });
+				} else{ // Bỏ Pin tin nhắn
+					infoConversationAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$pull: { messagesPin: messageID }
+					}, { new: true });
 
-                if(!infoMessageAfterUpdated)
-                    return resolve({ error: true, message: 'Cant create message ', status : 403 });
+					typeMessage = 109;
+				}
 
-                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: messageID, modifyAt: Date.now()
-                }, { new: true });
+				if(!infoConversationAfterUpdate)
+					return resolve({ error: true, message: "Can't update pin message", status: 403 });
 
-                if(!checkLastMessageAfterUpdated)
-                    return resolve({ error: true, message: 'Cant update to last message ', status : 403 });
-                
-                return resolve({ error: false, data : infoMessageAfterUpdated, status : 200 });
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, 
+					senderID: userID,
+					type: typeMessage,
+					receiversID: infoConversation.members,
+				})
+
+				return resolve({ error: false, data: infoConversationAfterUpdate, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
-        })
-    }
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
+	 * Date: 28/08/2021
+	 */
+	getListMessagePinConversation({ conversationID, page, limit, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+				if(!checkObjectIDs([conversationID, userID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				});
+				if(!infoConversation)
+					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
+
+				if(!page || isNaN(page))
+					page = 1;
+
+				if(!limit || isNaN(limit))
+					limit = 10;
+
+				page  = +page;
+				limit = +limit;
+
+				let	listMessagesPined = await CHATTING__MESSAGE_COLL
+					.find({
+						_id: { $in: infoConversation.messagesPin },
+						conversation: conversationID
+					})
+					.select('_id sender content status type poll files')
+					.populate({
+						path: 'sender poll',
+						select: '_id name fullname companysign'
+					})
+					.populate({
+						path: 'files.file',
+						select: '_id',
+						populate: {
+							path: 'file',
+							select: '_id name url status'
+						},
+					})
+					.limit(limit)
+					.skip((page * limit) - limit)
+					.lean();
+
+				if(!listMessagesPined)
+					return resolve({ error: true, message: "Can't get list message pin", status: 403 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						listMessagesPined,
+						perPage: limit,
+						currentPage: page,
+						totalRecord: infoConversation.messagesPin.length
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn bình chọn trong cuộc hội thoại 
+	 * Date: 25/08/2021
+	 */
+	insertMessagePoll({ conversationID, name, options, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (!checkObjectIDs([userID, conversationID]) || !name || !options.length) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK USER IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				// INSERT MESSAGE POLL
+				let infoPollAfterInsert = await CHATTING__MESSAGE_POLL_COLL.create({
+					name,
+					options
+				})
+
+				if(!infoPollAfterInsert)
+					return resolve({ error: true, message: "Can't create poll", status: 403 });
+
+				let dataInsertMessage = {
+					listSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+				}
+
+				// INSERT MESSAGE NOTIFY CREATE POLL
+				let infoMessageNotifyCreatePoll = await this.insertData({
+					...dataInsertMessage,
+					type: 110
+				})
+
+				// INSERT MESSAGE POLL
+				let infoMessagePoll = await this.insertData({
+					...dataInsertMessage,
+					poll: infoPollAfterInsert._id,
+					type: 5
+				})
+
+				if(!infoMessagePoll)
+					return resolve({ error: true, message: "Can't create message poll", status: 403 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						infoMessageNotifyCreatePoll,
+						infoMessagePoll
+					}, 
+				});
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật bình chọn của 1 user trong cuộc hội thoại 
+	 * Date: 25/08/2021
+	 */
+	updateMessagePoll({ conversationID, name, options, userVote, userID }) {
+		return new Promise(async (resolve) => {
+			try {
+				if (!checkObjectIDs([userID, conversationID])) 
+					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK USER IS MEMBER OF CONVERSATION
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				});
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				// INSERT MESSAGE POLL
+				let infoPollAfterInsert = await CHATTING__MESSAGE_POLL_COLL.create({
+					name,
+					options
+				})
+
+				if(!infoPollAfterInsert)
+					return resolve({ error: true, message: "Can't create poll", status: 403 });
+
+				let dataInsertMessage = {
+					listSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+				}
+
+				// INSERT MESSAGE NOTIFY CHANGE POLL
+				let infoMessageNotifyCreatePoll = await this.insertData({
+					...dataInsertMessage,
+					type: 111
+				})
+
+				if(!infoMessagePoll)
+					return resolve({ error: true, message: "Can't create message poll", status: 403 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						infoMessageNotifyCreatePoll,
+						infoMessagePoll
+					}, 
+				});
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
 
 
+	
 	
     //cập nhật trạng thái tin nhắn đã xem
     seenMessageOneByOne({ messageID, userID }){

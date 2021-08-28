@@ -1,9 +1,21 @@
 "use strict";
 const lodash                             = require("lodash");
 const ObjectID                           = require('mongoose').Types.ObjectId;
-exports.objectID                         = require('mongoose').Types.ObjectId;
+const NUMBER_UTILS 						 = require('./number_utils');
 
-const NUMBER_UTILS = require('./number_utils');
+exports.objectID = require('mongoose').Types.ObjectId;
+
+exports.isBoolean = val => {
+    return val !== undefined && typeof val == "boolean";
+}
+
+exports.isTrue = val => {
+    return val && val !== '' && val !== undefined && val === 'true';
+}
+
+exports.isFalse = val => {
+    return val && val !== '' && val !== undefined && val === 'false';
+}
 
 exports.isEmpty = function (value) {
     return typeof value == 'string'

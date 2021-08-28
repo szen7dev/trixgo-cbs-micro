@@ -1232,7 +1232,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: 'Request params lastestConversationID invalid', status: 400 });
 
                 let page 	= 1;
-                let perPage = 5;
+                let perPage = 20;
 
                 if(lastestConversationID && checkObjectIDs(lastestConversationID)){
                     page = 2;
@@ -1377,70 +1377,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
-    }
-
-
-    // Thêm tin nhắn ghim
-    insertPinMessage({ messageID, conversationID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(messageID) || !checkObjectIDs(conversationID) || !checkObjectIDs(userID) )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let exitCoversation = await CHATTING__CONVERSATION_COLL.find({
-                    _id : conversationID , members: { $in: [userID]}
-                });
-
-                if(!exitCoversation){
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                }
-
-                let infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    pin : messageID
-                })
-
-                if(!infoUpdate)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-
-                let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID)
-                // .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
-                return resolve({ error: false, data: infoConversation, status : 200})
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
-    }
-
-    // xóa ghim của cuộc hội thoại
-    deletePinMessage({ conversationID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID) )
-                    return resolve({ error: true, message: 'Request params invalid', status : 400 });
-
-                let exitCoversation = await CHATTING__CONVERSATION_COLL.find({
-                    _id : conversationID , members: { $in: [userID]}
-                });
-
-                if(!exitCoversation){
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-                }
-
-                let infoUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID,
-                    {
-                        $unset : { pin :'' }
-                    })
-                if(!infoUpdate)
-                    return resolve({ error: true, message: 'Conversation exits', status : 403  });
-
-                let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID)
-                .populate({ path : 'pin', populate :  { path : 'sender', select :'_id fullname  image'  }});
-
-                return resolve({ error: false, data: infoConversation, status :200 })
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        });
     }
 
 }
