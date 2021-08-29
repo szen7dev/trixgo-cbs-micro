@@ -28,6 +28,22 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 		default: ''
     },
 
+	/**
+     * Tin nhắn thuộc cuộc hội thoại
+     */
+	conversation: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'message_conversation'
+    },
+
+    /**
+     * Tin nhắn được trích dẫn
+     */
+    parent: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'message_message'
+    },
+
     /**
      * Các files được đính kèm trong cuộc hội thoại
      */
@@ -53,22 +69,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     }],
 
     /**
-     * Tin nhắn thuộc cuộc hội thoại
-     */
-    conversation: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation'
-    },
-
-    /**
-     * Tin nhắn được trích dẫn
-     */
-    parent: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'message_message'
-    },
-
-    /**
      * Trạng thái của tin nhắn
      * 0: đã gửi nhưng chưa xem/ chưa nhận))
      * 1: đã nhận
@@ -79,12 +79,13 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
         type   : Number,
         default: 0
     },
-   /**
+
+	/**
      * Loại tin nhắn
      * 0: tin nhắn thông thường 
 	 * 1: tin nhắn ảnh
 	 * 2: tin nhắn file
-	 * 3: tin nhắn link
+	 * 3: tin nhắn link (bỏ => sử dụng coll chatting.conversation_link-model)
 	 * 4: tin nhắn reminder
 	 * 5: tin nhắn poll
 	 * 6: tin nhắn share location
@@ -96,9 +97,13 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 104: Đổi logo cuộc hội thoại
      * 105: Xét thêm admin cuộc hội thoại
      * 106: Xoá bỏ quyền admin của member trong cuộc hội thoại
-     * 107: Xóa cuộc hội thoại
-     * 108: Thành viên rời khỏi cuộc hội thoại 
-     */
+     * 107: Thành viên rời khỏi cuộc hội thoại 
+     * 108: Pin 1 tin nhắn trong cuộc hội thoại 
+     * 109: Bỏ Pin 1 tin nhắn trong cuộc hội thoại 
+     * 110: Tạo cuộc bình chọn trong cuộc hội thoại 
+     * 111: Bình chọn trong cuộc hội thoại 
+     * 112: Thay đổi bình chọn trong cuộc hội thoại 
+	 */
     type: {
         type: Number,
         default: 0
@@ -127,6 +132,22 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
+
+	/**
+     * Tin nhắn bình chọn
+     */
+	poll: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'message_message_poll'
+    },
+
+	/**
+     * Tin nhắn lời nhắc
+     */
+	reminder: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'message_message_reminder'
+    },
 
     /**
      * Thông tin về reaction

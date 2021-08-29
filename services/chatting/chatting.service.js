@@ -115,12 +115,17 @@ module.exports = {
 		// Xoá lịch sử cuộc hội thoại
 		[CF_ACTIONS_CHATTING.DELETE_HISTORY_CONVERSATION] 						: CHATTING__CONVERSATION_HANDLER.deleteHistoryConversation,
 
+		// Danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_WITH_PAGE]					: CHATTING__CONVERSATION_HANDLER.getListConversationWithPage,
 
 
 		// =========================  MESSAGE  ============================
 
 		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
+
+		// Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
+		[CF_ACTIONS_CHATTING.SEARCH_MESSAGE_CONVERSATION_BY_ID] 				: CHATTING__CONVERSATION_HANDLER.searchMessageConversationById,
 
 		// Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
 		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.insertMessage,
@@ -131,39 +136,34 @@ module.exports = {
 		// Thu hồi tin nhắn của cuộc hội thoại (media, text)
 		[CF_ACTIONS_CHATTING.REVOKE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.revokeMessage,
 
+		// Chia sẻ tin nhắn đến các cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
+
+		// Pin 1 tin nhắn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_PIN_MESSAGE_CONVERSATION] 					: CHATTING__MESSAGE_HANDLER.updatePinMessageConversation,
+
+		// Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_PIN_CONVERSATION_WITH_PAGE]		: CHATTING__MESSAGE_HANDLER.getListMessagePinConversation,
+
+		// Thêm tin nhắn bình chọn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.insertMessagePoll,
+
+		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateMessagePoll,
+
 
 
 
 
 		// AUTHOR: VinhVH
 
-		// Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
+		// // Xem các tệp của cuộc hội thoại [****** để sau]
 
-		// Tìm kiếm cuộc hội thoại theo tên + Api tìm kiếm  bạn bè (bạn bè cũng là 1 liên lạc) 
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_KEY] 			: CHATTING__CONVERSATION_HANDLER.getListConversationByKey,
+		// // Danh sách cuộc hội thoại có tin nhắn chưa đọc
+		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
 
-		// Xem các tệp của cuộc hội thoại [****** để sau]
-
-		// Danh sách cuộc hội thoại có tin nhắn chưa đọc
-		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
-
-		// Tìm kiếm cuộc hội thoại theo dự án [chưa có]
-
-		// Lấy danh sách link của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
-		
-		// Lấy danh sách file của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
-		
-		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
-		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
-		
-
-		// ===========  MESSAGE ACTIONS  ================
-
-		// Lây tin nhắn của cuộc hội thoại phân trang 15 mẫu tin
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_BY_CONVERSATION_ID] 	: CHATTING__MESSAGE_HANDLER.getListMessageByConversationID,
+		// // Lấy danh sách link của cuộc hội thoại
+		// [CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
 
 	},
 

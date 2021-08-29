@@ -10,12 +10,14 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     name: {
         type: String
     },
+
     /**
      * Mô tả của cuộc hội thoại (Mô tả chat nhóm)
      */
     description: {
         type: String
     },
+
     /**
      * Số lượng người tham gia cuộc hội thoại
      */
@@ -23,6 +25,7 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
+
     /**
      * Author đầu tiên trong mảng chính là root Author (người tạo ra nhóm chát)
      */
@@ -30,6 +33,7 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
+
     /**
      * Tin nhắn cuối cùng trong cuộc hội thoại
      */
@@ -37,6 +41,7 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'message_message'
     },
+
     /**
      * Avatar Nhóm chat
      */
@@ -44,13 +49,15 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'message_conversation_file'
     },
+
     /**
      * Tin nhắn được ghim
      */
-    messagePin: {
+    messagesPin: [{
         type    : Schema.Types.ObjectId,
         ref     : 'message_message'
-    },
+    }],
+
     /**
      * Danh sách user bỏ lở tin nhắn
      */
@@ -63,15 +70,14 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         amount: {
             type: Number,
             default: 0
-        },
-        timeOffline: {
-            type: Date
         }
     }],
+
 	/**
      * Danh sách user xoá lịch sử
      */
 	usersDeleteHistory: [{
+		_id: false,
         userID: {
             type: Schema.Types.ObjectId,
             ref: 'user'
@@ -84,6 +90,7 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
             type: Date
         }
     }],
+
     /**
      * Danh sách user tắt thông báo cuộc hội thoại
      */
