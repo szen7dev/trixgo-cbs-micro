@@ -87,7 +87,7 @@ class Model extends BaseModel {
                 // {
                 //     path : 'likedUsers', select :'_id fullname image company ' 
                 // })
-                // .populate({path : 'listSeen', select :  '_id fullname  image' })
+                // .populate({path: 'usersSeen', select :  '_id fullname  image' })
                 // .populate({
                 //     path: 'reactions',
                 //     populate: {

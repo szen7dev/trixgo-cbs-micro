@@ -93,16 +93,27 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	 * 
      * 101: Thêm thành viên vào cuộc hội thoại
      * 102: Xóa thành viên khỏi cuộc hội thoại
+	 * 
      * 103: Đổi tên cuộc hội thoại
      * 104: Đổi logo cuộc hội thoại
+	 * 
      * 105: Xét thêm admin cuộc hội thoại
      * 106: Xoá bỏ quyền admin của member trong cuộc hội thoại
      * 107: Thành viên rời khỏi cuộc hội thoại 
+	 * 
      * 108: Pin 1 tin nhắn trong cuộc hội thoại 
      * 109: Bỏ Pin 1 tin nhắn trong cuộc hội thoại 
+	 * 
      * 110: Tạo cuộc bình chọn trong cuộc hội thoại 
-     * 111: Bình chọn trong cuộc hội thoại 
+     * 111: Tham gia bình chọn trong cuộc hội thoại 
      * 112: Thay đổi bình chọn trong cuộc hội thoại 
+     * 113: Đóng bình chọn trong cuộc hội thoại 
+	 * 
+     * 114: Tạo nhắc hẹn trong cuộc hội thoại 
+     * 115: Cập nhật nhắc hẹn trong cuộc hội thoại 
+     * 116: Xác nhận tham gia nhắc hẹn trong cuộc hội thoại 
+     * 117: Xác nhận không tham gia nhắc hẹn trong cuộc hội thoại 
+     * 118: Xoá nhắc hẹn trong cuộc hội thoại 
 	 */
     type: {
         type: Number,
@@ -112,7 +123,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     /**
      * Danh sách user đã xem tin nhắn này
      */
-    listSeen: [{
+    usersSeen: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],
@@ -128,7 +139,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	/**
      * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin) (Contact bạn bè - tin nhắn chia sẻ danh bạ)
      */
-	membersAssigned: [{
+	usersAssigned: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],

@@ -32,10 +32,37 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: senderID } = ctx.meta.infoUser;
-                const { conversationID, parentID, content, type, files, membersAssigned } = ctx.params;
+                const { conversationID, parentID, content, type, files, usersAssigned } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, senderID, parentID, content, type, files, membersAssigned, ctx
+					conversationID, senderID, parentID, content, type, files, usersAssigned, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật Danh sách đã xem tin nhắn trong cuộc hội thoại
+	 * Date: 30/08/2021
+	 */
+	updateSeenMessage: {
+        params: {
+			conversationID  : { type: "string" },
+            messageID		: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.updateSeenMessage({
+					conversationID, messageID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -213,17 +240,16 @@ module.exports = {
 	updateMessagePoll: {
         params: {
 			conversationID	: { type: 'string' },
-			pollID			: { type: 'string' },
-			name			: { type: 'string' },
+			messageID		: { type: 'string' },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, pollID, name, options, userVote } = ctx.params;
+                const { conversationID, messageID, newVotes, votesCancel, newOptions } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.updateMessagePoll({
-					conversationID, pollID, name, options, userVote, userID
+					conversationID, messageID, newVotes, votesCancel, newOptions, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -232,5 +258,60 @@ module.exports = {
             }
         }
     },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Đóng tin nhắn bình chọn trong cuộc hội thoại
+	 * Date: 29/08/2021
+	 */
+	closeMessagePoll: {
+        params: {
+			conversationID	: { type: 'string' },
+			messageID		: { type: 'string' },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.closeMessagePoll({
+					conversationID, messageID, userID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách tin nhắn bình chọn trong cuộc hội thoại
+	 * Date: 30/08/2021
+	 */
+	getListMessagePoll: {
+        params: {
+			conversationID		: { type: "string" },
+            lastestMessageID 	: { type: "string", optional: true }
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, lastestMessageID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessagePoll({
+					conversationID, lastestMessageID, userID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+	
 
 }

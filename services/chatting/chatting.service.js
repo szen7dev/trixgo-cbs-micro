@@ -151,7 +151,14 @@ module.exports = {
 		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại 
 		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateMessagePoll,
 
+		// Đóng tin nhắn bình chọn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.CLOSE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.closeMessagePoll,
 
+		// Danh sách tin nhắn bình chọn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_POLL_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.getListMessagePoll,
+
+		// Cập nhật Danh sách đã xem tin nhắn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_SEEN_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateSeenMessage,
 
 
 

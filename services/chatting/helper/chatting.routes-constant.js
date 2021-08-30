@@ -42,8 +42,12 @@ const CF_ROUTINGS_CHATTING = {
 
     // MESSAGE
 	INSERT_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/insert-message-conversation`,
+    UPDATE_SEEN_MESSAGE_CONVERSATION           		: `${BASE_ROUTE}${CONVERSATION}/update-seen-message-conversation`,
     INSERT_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/insert-message-poll-conversation`,
     UPDATE_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/update-message-poll-conversation`,
+    CLOSE_MESSAGE_POLL_CONVERSATION            		: `${BASE_ROUTE}${CONVERSATION}/close-message-poll-conversation`,
+    GET_LIST_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/list-message-poll-conversation`,
+
 	DELETE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-message-conversation`,
 	REVOKE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/revoke-message-conversation`,
     SEARCH_MESSAGE_CONVERSATION_BY_ID 				: `${BASE_ROUTE}${CONVERSATION}/search-message-conversation-by-id`,

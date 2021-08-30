@@ -212,7 +212,7 @@ class Model extends BaseModel {
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
-					membersAssigned: membersID,
+					usersAssigned: membersID,
 					conversationID, 
 					type: 101
 				})
@@ -282,7 +282,7 @@ class Model extends BaseModel {
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
-					membersAssigned: [memberID],
+					usersAssigned: [memberID],
 					conversationID, 
 					type: 102
 				})
@@ -347,7 +347,7 @@ class Model extends BaseModel {
 					conversationID, 
 					senderID: authorID,
 					type: typeMessage,
-					membersAssigned: [memberID],
+					usersAssigned: [memberID],
 					receiversID: checkExistConversation.members,
 				})
 
@@ -682,10 +682,11 @@ class Model extends BaseModel {
 
 				let listMessages = await CHATTING__MESSAGE_COLL.find(conditionObj, objSort)
 					.populate({
-					    path: 'sender listSeen receivers membersAssigned files.file', 
+					    path: 'sender usersSeen receivers usersAssigned files.file', 
 						select: '_id fullname image',
-						populate: 'parent file',
+						populate: 'file',
 					})
+					.populate('parent poll reminder')
 					// .select('sender content status type createAt')
 					.sort(sortBy)
 					.limit(perPage)
@@ -1101,7 +1102,7 @@ class Model extends BaseModel {
 					conversationID, 
 					senderID: userID,
 					type: 107,
-					membersAssigned: [userID],
+					usersAssigned: [userID],
 					receiversID: checkExistConversation.members,
 				})
 
