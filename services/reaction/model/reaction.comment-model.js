@@ -17,7 +17,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F0271
      */
-    insert({ content, images, parentID, inspectionTemplateDocID, userID }) {
+    insert({ content, images, parentID, inspectionTemplateDocID, userID, ctx }) {
         const that = this;
         return new Promise(async (resolve) => {
              try {

@@ -409,9 +409,6 @@ class Model extends BaseModel {
 		})
 	}
 
-
-
-
     // copy tin nhắn
     copyMessage({ senderID, receivers, conversationID, messageShareID }) { 
         const that = this;

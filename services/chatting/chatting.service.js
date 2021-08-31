@@ -152,7 +152,7 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
 		
 		// Lấy danh sách file của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
+		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
 		
 		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
 		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
