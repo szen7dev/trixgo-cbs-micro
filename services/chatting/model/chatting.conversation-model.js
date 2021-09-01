@@ -19,8 +19,7 @@ const { CF_ACTIONS_REMINDER } 					= require('../../reminder/helper/reminder.act
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { RANGE_BASE_PAGINATION } 				= require('../../../tools/cursor_base/playground/index');
-const { calculateCurrentPage } 					= require('../../../tools/utils/calculate_current_page');
-const { checkObjectIDs } 						= require('../../../tools/utils/utils');
+const { checkObjectIDs, isTrue }				= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
@@ -992,7 +991,7 @@ class Model extends BaseModel {
 					usersMute: { userID }
 				};
 
-				if(isMute === "true"){
+				if(isTrue(isMute)){
 					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 						_id: conversationID,
 						usersMute: {
@@ -1012,7 +1011,7 @@ class Model extends BaseModel {
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't update mute conversation or user existed in users mute", status: 403 });
 
-				if(isMute === "true" && timeMute){
+				if(isTrue(isMute) && timeMute){
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
 						conversationID,
 						timeMute,
@@ -1020,7 +1019,7 @@ class Model extends BaseModel {
 					});
 				} else{
 					console.log('REMOVE JOB MUTE CONVERSATION', jobID);
-					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.REMOVE_JOB_MUTE_CONVERSATION}`, {
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION}`, {
 						jobID
 					});
 				}

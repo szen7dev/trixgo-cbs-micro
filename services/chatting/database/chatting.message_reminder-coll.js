@@ -13,6 +13,15 @@ module.exports = DATABASE_MIDDLEWARE("message_message_reminder", {
     },
 
 	/**
+     * Thông báo đến (tất cả thành viên hay chỉ mình tôi)
+     */
+	notifyFor: {
+        type: String,
+		required: true,
+		emum: ["all", "onlyme"]
+    },
+
+	/**
      * Thời gian nhắc hẹn
      */
 	remindTime: {
@@ -26,7 +35,7 @@ module.exports = DATABASE_MIDDLEWARE("message_message_reminder", {
 	repeat: {
 		type: String,
 		default: "once",
-		enum: ["once", "daily", "weekly", "monthly"]
+		enum: ["once", "daily", "weekly", "monthly", "yearly"]
 	},
 
 	/**

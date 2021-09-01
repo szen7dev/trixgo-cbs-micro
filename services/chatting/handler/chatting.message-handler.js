@@ -312,6 +312,120 @@ module.exports = {
             }
         }
     },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	insertMessageReminder: {
+        params: {
+			conversationID	: { type: 'string' },
+			content			: { type: 'string' },
+			notifyFor		: { type: 'string' },
+			remindTime		: { type: 'string' },
+			repeat			: { type: 'string', optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, content, notifyFor, remindTime, repeat } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessageReminder({
+					conversationID, content, notifyFor, remindTime, repeat, userID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	updateMessageReminder: {
+        params: {
+			conversationID	: { type: 'string' },
+			messageID		: { type: 'string' },
+			content			: { type: 'string' },
+			remindTime		: { type: 'string' },
+			repeat			: { type: 'string', optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID, content, remindTime, repeat } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.updateMessageReminder({
+					conversationID, messageID, content, remindTime, repeat, userID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật thành viên tham gia nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	updateUsersJoinReminder: {
+        params: {
+			conversationID	: { type: 'string' },
+			messageID		: { type: 'string' },
+			isJoin			: { type: 'string' },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID, isJoin } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.updateUsersJoinReminder({
+					conversationID, messageID, isJoin, userID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 	
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	deleteReminder: {
+        params: {
+			conversationID	: { type: 'string' },
+			messageID		: { type: 'string' },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.deleteReminder({
+					conversationID, messageID, userID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
 }

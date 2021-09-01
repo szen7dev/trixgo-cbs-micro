@@ -39,7 +39,8 @@ module.exports = {
 	actions: {	
 		[CF_ACTIONS_REMINDER.ADD_JOB] 							: REMINDER__CORE_HANLDER.addJob,
 		[CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobMuteConversation,
-		[CF_ACTIONS_REMINDER.REMOVE_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.removeJobMuteConversation,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.deleteJobMuteConversation,
+		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION] 	: REMINDER__CORE_HANLDER.addJobReminderConversation,
 	},
 
 	/**
@@ -90,17 +91,25 @@ module.exports = {
 				done();
 			});
 
-			agenda.on("success:update_mute_conversation", (job) => {
-				console.log({ __SUCCESS_UPDATE_MUTE_CONVERSATION: job.attrs });;
+			agenda.define('add_reminder_conversation', async (job, done) => {
+				console.log(`========================================`);
+				console.log(`done add reminder conversation!!!!`);
+				console.log({ __JOB: job.attrs });
+
+				done();
 			});
 
-			agenda.on("fail:update_mute_conversation", (err, job) => {
-				console.log({ __FAILED_UPDATE_MUTE_CONVERSATION: err.message });
-			});
+			// agenda.on("success:update_mute_conversation", (job) => {
+			// 	console.log({ __SUCCESS_UPDATE_MUTE_CONVERSATION: job.attrs });;
+			// });
 
-			agenda.on("complete", (job) => {
-				console.log({ __COMPLETED_JOB: job.attrs.name });
-			});
+			// agenda.on("fail:update_mute_conversation", (err, job) => {
+			// 	console.log({ __FAILED_UPDATE_MUTE_CONVERSATION: err.message });
+			// });
+
+			// agenda.on("complete", (job) => {
+			// 	console.log({ __COMPLETED_JOB: job.attrs.name });
+			// });
 
 			await new Promise(resolve => agenda.once('ready', resolve));
 			agenda.start();

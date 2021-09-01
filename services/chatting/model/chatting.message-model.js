@@ -4,12 +4,15 @@
  * EXTERNAL PACKAGE
  */
 const PromisePool									= require('@supercharge/promise-pool');
+const moment										= require('moment');
 
 /**
  * CONSTANTS
  */
+const { REMINDER_NOTIFY_FOR, REMINDER_REPEAT }		= require('../helper/chatting.keys-constant');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
 
 /**
  * TOOLS
@@ -31,6 +34,7 @@ const BaseModel                                     = require('../../../tools/db
  */
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__MESSAGE_POLL_COLL                   = require('../database/chatting.message_poll-coll');
+const CHATTING__MESSAGE_REMINDER_COLL               = require('../database/chatting.message_reminder-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 
 /**
@@ -635,7 +639,7 @@ class Model extends BaseModel {
 				if(!infoConversationAfterUpdate)
 					return resolve({ error: true, message: "Can't update pin message", status: 403 });
 
-				await CHATTING__MESSAGE_MODEL.insertMessage({
+				await this.insertMessage({
 					conversationID, 
 					senderID: userID,
 					type: typeMessage,
@@ -751,6 +755,7 @@ class Model extends BaseModel {
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
+					poll: infoPollAfterInsert._id,
 				}
 
 				// INSERT MESSAGE NOTIFY CREATE POLL
@@ -762,7 +767,6 @@ class Model extends BaseModel {
 				// INSERT MESSAGE POLL
 				let infoMessagePoll = await this.insertData({
 					...dataInsertMessage,
-					poll: infoPollAfterInsert._id,
 					type: 5
 				})
 
@@ -823,12 +827,6 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't get info message poll", status: 403 });
 
 				let { poll } = infoMessagePoll;
-				let dataInsertMessage = {
-					usersSeen: [userID], 
-					sender: userID,
-					conversation: conversationID,
-					receivers: checkExistConversation.members,
-				}
 
 				// Check the user who vote for the first time, Then create message notify
 				let isFirstTimeVote = true;
@@ -882,12 +880,18 @@ class Model extends BaseModel {
 
 				let lastMessage = null;
 				let numberMissMessage = 0;
+				let dataInsertMessage = {
+					usersSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+					poll: poll._id,
+				}
 
 				// INSERT MESSAGE NOTIFY JOIN VOTE POLL
 				if(isFirstTimeVote){
 					lastMessage = await this.insertData({
 						...dataInsertMessage,
-						poll: poll._id,
 						type: 111
 					})
 					numberMissMessage++;
@@ -897,7 +901,6 @@ class Model extends BaseModel {
 				if((votesCancel.length || newVotes.length || newOptions.length) && !isFirstTimeVote){
 					lastMessage = await this.insertData({
 						...dataInsertMessage,
-						poll: poll._id,
 						type: 112
 					})
 					numberMissMessage++;
@@ -916,7 +919,7 @@ class Model extends BaseModel {
 					let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						lastMessage: lastMessage._id, modifyAt: Date.now()
 					}, { new: true });
-	
+
 					if(!checkLastMessageAfterUpdated)
 						return resolve({ error: true, message: "Can't update last message", status: 403 });
 				}
@@ -1100,54 +1103,362 @@ class Model extends BaseModel {
 		})
 	}
 
-
-
-
-	
-	
-    //cập nhật trạng thái tin nhắn đã xem
-    seenMessageOneByOne({ messageID, userID }){
-        return new Promise(async(resolve) => {
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	insertMessageReminder({ conversationID, content, notifyFor, remindTime, repeat, userID, ctx }) {
+        return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(messageID))
-                    return resolve({ error: true, message: 'object_invalid', status: 400 });
+                if (!checkObjectIDs([userID, conversationID]))
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-                let checkExitsMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-                if(!checkExitsMessage)
-                    return resolve({ error: true, message: 'message_is_not_exists', status: 403 });
+				if(!REMINDER_NOTIFY_FOR.includes(notifyFor))
+					return resolve({ error: true, message: 'Request Params Notify For invalid', status: 400 });
 
-                if(checkExitsMessage.status >= 100)
-                    return resolve({ error: true, message: 'status_greater_than_100', status: 403 });
+				if(!REMINDER_REPEAT.includes(repeat))
+					return resolve({ error: true, message: 'Request Params Repeat invalid', status: 400 });
 
-				let infoMessage = null;
-                if(checkExitsMessage.listSeen){
-                    let listSeen = checkExitsMessage.listSeen;
+				if(!moment(remindTime).isValid())
+					return resolve({ error: true, message: 'Request Params Remind Time invalid', status: 400 });
 
-                    if(!listSeen.includes(userID)){
-                        listSeen = listSeen.concat([userID]);
-                        infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { status: 1, listSeen }, { new: true });
+				// CHECK USER IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+                });
 
-                        if(!infoMessage)
-                            return resolve({ error: true, message: 'cannot_update', status: 403 });
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
 
-                        return resolve({ error: false, data: infoMessage, status: 200 });
-                    } else{
-                        return resolve({ error: false, data: checkExitsMessage, status: 200 });
-                    }
-                } else{
-                    let listSeen = [userID];
-                    infoMessage = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { status: 1, listSeen }, { new: true });
+				// const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
+				// 	conversationID,
+				// 	userID,
+				// 	remindTime,
+				// 	repeat,
+				// 	notifyFor
+				// });
+				// return resolve({ error: false, message: 'Yaa!!! Tada', data: responseAgenda, status: 200 });
 
-                    if(!infoMessage)
-                        return resolve({ error: true, message: 'cannot_update', status: 400 });
+				// INSERT MESSAGE REMINDER
+				let infoReminderAfterInsert = await CHATTING__MESSAGE_REMINDER_COLL.create({
+					content, 
+					notifyFor, 
+					remindTime: new Date(remindTime), 
+					repeat
+				})
 
-                    return resolve({ error: false, data: infoMessage, status: 200 });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+				if(!infoReminderAfterInsert)
+					return resolve({ error: true, message: "Can't create reminder", status: 403 });
+
+				let dataInsertMessage = {
+					usersSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+					reminder: infoReminderAfterInsert._id
+				}
+
+				// INSERT MESSAGE NOTIFY CREATE REMINDER
+				let infoMessageNotifyCreateReminder = await this.insertData({
+					...dataInsertMessage,
+					type: 114
+				})
+
+				// INSERT MESSAGE REMINDER
+				let infoMessageReminder = await this.insertData({
+					...dataInsertMessage,
+					type: 4
+				})
+
+				if(!infoMessageReminder)
+					return resolve({ error: true, message: "Can't create message reminder", status: 403 });
+
+				// UPDATE LAST MESSAGE
+                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: infoMessageReminder._id, modifyAt: Date.now()
+                }, { new: true });
+
+				if(!checkLastMessageAfterUpdated)
+					return resolve({ error: true, message: "Can't update last message", status: 403 });
+
+				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 2 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						infoMessageNotifyCreateReminder,
+						infoMessageReminder
+					}, 
+				});
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	updateMessageReminder({ conversationID, messageID, content, remindTime, repeat, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (!checkObjectIDs([userID, conversationID, messageID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				if(!REMINDER_REPEAT.includes(repeat))
+					return resolve({ error: true, message: 'Request Params Repeat invalid', status: 400 });
+
+				if(!moment(remindTime).isValid())
+					return resolve({ error: true, message: 'Request Params Remind Time invalid', status: 400 });
+
+				// CHECK USER IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				let infoMessageReminder = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.populate('reminder');
+
+				if(!infoMessageReminder || !infoMessageReminder.reminder)
+					return resolve({ error: true, message: "Can't get info message reminder", status: 403 });
+
+				let { reminder } = infoMessageReminder;
+
+				// UPDATE MESSAGE REMINDER
+				let infoReminderAfterUpdate = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
+					$set: {
+						content, 
+						remindTime: new Date(remindTime),
+						repeat
+					}
+				}, { new: true })
+
+				if(!infoReminderAfterUpdate)
+					return resolve({ error: true, message: "Can't update reminder", status: 403 });
+
+				// INSERT MESSAGE NOTIFY UPDATE REMINDER
+				let infoMessageNotifyUpdateReminder = await this.insertData({
+					usersSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+					reminder: reminder._id,
+					type: 115
+				})
+
+				if(!infoMessageNotifyUpdateReminder)
+					return resolve({ error: true, message: "Can't update message reminder", status: 403 });
+
+				// UPDATE LAST MESSAGE
+                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: infoMessageNotifyUpdateReminder._id, modifyAt: Date.now()
+                }, { new: true });
+
+				if(!checkLastMessageAfterUpdated)
+					return resolve({ error: true, message: "Can't update last message", status: 403 });
+
+				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						infoMessageNotifyUpdateReminder,
+						infoReminderAfterUpdate
+					}, 
+				});
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	updateUsersJoinReminder({ conversationID, messageID, isJoin, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (!checkObjectIDs([userID, conversationID, messageID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK USER IS MEMBER OF CONVERSATION
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+                });
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				let infoMessageReminder = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.populate('reminder');
+
+				if(!infoMessageReminder || !infoMessageReminder.reminder)
+					return resolve({ error: true, message: "Can't get info message reminder", status: 403 });
+
+				let { reminder } 			= infoMessageReminder;
+				let infoReminderAfterUpdate = null;
+				let typeMessage 			= 117; // Xác nhận không tham gia nhắc hẹn
+
+				// USER JOIN REMINDER
+				if(isTrue(isJoin)){
+					infoReminderAfterUpdate = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
+						$addToSet: {
+							accepts: userID
+						},
+						$pull: {
+							rejects: userID
+						}
+					}, { new: true })
+
+					typeMessage = 116; // Xác nhận tham gia nhắc hẹn
+
+				} else{ // USER NOT JOIN REMINDER
+					infoReminderAfterUpdate = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
+						$addToSet: {
+							rejects: userID
+						},
+						$pull: {
+							accepts: userID
+						}
+					}, { new: true })
+				}
+
+				if(!infoReminderAfterUpdate)
+					return resolve({ error: true, message: "Can't update user join reminder", status: 403 });
+
+				// INSERT MESSAGE NOTIFY UPDATE USER JOIN REMINDER
+				let infoMessageNotifyUserJoinReminder = await this.insertData({
+					usersSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+					reminder: reminder._id,
+					type: typeMessage
+				})
+
+				if(!infoMessageNotifyUserJoinReminder)
+					return resolve({ error: true, message: "Can't update message reminder", status: 403 });
+
+				// UPDATE LAST MESSAGE
+                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: infoMessageNotifyUserJoinReminder._id, modifyAt: Date.now()
+                }, { new: true });
+
+				if(!checkLastMessageAfterUpdated)
+					return resolve({ error: true, message: "Can't update last message", status: 403 });
+
+				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						infoMessageNotifyUserJoinReminder,
+						infoReminderAfterUpdate
+					}, 
+				});
+			} catch(error){
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Xoá nhắc hẹn trong cuộc hội thoại
+	 * Date: 01/09/2021
+	 */
+	deleteReminder({ conversationID, messageID, userID }) {
+		return new Promise(async resolve => {
+			try {
+				if (!checkObjectIDs([messageID, userID, conversationID])) 
+					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+				// CHECK USER IS MEMBER OF CONVERSATION
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				});
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				let infoMessageReminder = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.select('_id reminder')
+					.populate('reminder');
+
+				if(!infoMessageReminder || !infoMessageReminder.reminder)
+					return resolve({ error: true, message: "Can't get info message reminder", status: 403 });
+
+				let { reminder } = infoMessageReminder;
+
+				if(reminder.status === 2)
+					return resolve({ error: true, message: "Reminder is deleted", status: 403 });
+
+				const infoReminderAfterDelete = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
+					$set: {
+						status: 2
+					}
+				}, { new: true });
+
+				if(!infoReminderAfterDelete)
+					return resolve({ error: true, message: "Can't update status reminder", status: 403 });
+
+				// INSERT MESSAGE NOTIFY DELETE REMINDER
+				const infoMessageNotify = await this.insertData({
+					usersSeen: [userID], 
+					sender: userID,
+					conversation: conversationID,
+					receivers: checkExistConversation.members,
+					reminder: reminder._id,
+					type: 118 // Xoá nhắc hẹn
+				})
+
+				// UPDATE LAST MESSAGE
+				if(infoMessageNotify){
+					let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
+					}, { new: true });
+	
+					if(!checkLastMessageAfterUpdated)
+						return resolve({ error: true, message: "Can't update last message", status: 403 });
+				}
+
+				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						infoMessageNotify,
+						infoReminderAfterDelete,
+					}
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
 
 }
 

@@ -160,6 +160,17 @@ module.exports = {
 		// Cập nhật Danh sách đã xem tin nhắn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_SEEN_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateSeenMessage,
 
+		// Thêm tin nhắn nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.insertMessageReminder,
+
+		// Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.updateMessageReminder,
+
+		// Cập nhật thành viên tham gia nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_USER_JOIN_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.updateUsersJoinReminder,
+
+		// Xoá nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.deleteReminder,
 
 
 		// AUTHOR: VinhVH

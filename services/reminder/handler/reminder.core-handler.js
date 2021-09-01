@@ -75,7 +75,7 @@ module.exports = {
         }
     },
 
-	removeJobMuteConversation: {
+	deleteJobMuteConversation: {
         params: {
 			jobID: { type: "string", optional: true },
 		},
@@ -102,6 +102,52 @@ module.exports = {
             } catch (error) {
 				console.error(error);
                 return { error: true, message: error.message };
+            }
+        }
+    },
+
+	addJobReminderConversation: {
+        params: {
+            conversationID	: { type: "string" },
+            userID			: { type: "string" },
+            remindTime		: { type: "string" },
+            repeat			: { type: "string" },
+            notifyFor		: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { conversationID, userID, remindTime, repeat, notifyFor } = ctx.params;
+                let timeScheduler = new Date(remindTime).getTime();
+
+				// const { setTimeZone } 	= require('../../../tools/utils/time_utils')
+				// const moment = require('moment');
+				// let date = moment("2021-08-16T16:30:24Z").format();
+				// console.log(setTimeZone("2021-08-16T16:30:24Z").format());
+				// let timeScheduler2 = new Date(timeMute).toUTCString();
+
+				// switch (+timeMute) {
+				// 	case 1:
+				// 		timeScheduler = "one hours";
+				// 		break;
+				// 	case 4:
+				// 		timeScheduler = "four hours";
+				// 		break;
+				// 	case 8:
+				// 		timeScheduler = "tomorrow at 8am";
+				// 		break;
+				// 	default:
+				// 		timeScheduler = `${timeMute} hours`;
+				// 		break;
+				// }
+
+				// 3:30pm
+				agenda.schedule(timeScheduler, 'add_reminder_conversation', { conversationID, userID });
+				console.log(`agenda: add_reminder_conversation added - ${timeScheduler}`);
+
+                return { error: false, data: { conversationID, userID, remindTime, timeScheduler }, status: 200 }
+            } catch (error) {
+                return { error: true, message: error.message, status: 500 };
             }
         }
     },
