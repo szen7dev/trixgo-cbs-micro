@@ -653,8 +653,9 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
 					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+					let keys	 = ['createAt__-1', '_id__-1'];
 
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['createAt__-1', '_id__-1'] });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error) )
 						return resolve({ error: true, message: "Request params nextInfo invalid", status: 400 });
 
