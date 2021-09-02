@@ -19,8 +19,7 @@ const { CF_ACTIONS_REMINDER } 					= require('../../reminder/helper/reminder.act
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { RANGE_BASE_PAGINATION } 				= require('../../../tools/cursor_base/playground/index');
-const { calculateCurrentPage } 					= require('../../../tools/utils/calculate_current_page');
-const { checkObjectIDs } 						= require('../../../tools/utils/utils');
+const { checkObjectIDs, isTrue }				= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
@@ -212,7 +211,7 @@ class Model extends BaseModel {
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
-					membersAssigned: membersID,
+					usersAssigned: membersID,
 					conversationID, 
 					type: 101
 				})
@@ -282,7 +281,7 @@ class Model extends BaseModel {
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
-					membersAssigned: [memberID],
+					usersAssigned: [memberID],
 					conversationID, 
 					type: 102
 				})
@@ -347,7 +346,7 @@ class Model extends BaseModel {
 					conversationID, 
 					senderID: authorID,
 					type: typeMessage,
-					membersAssigned: [memberID],
+					usersAssigned: [memberID],
 					receiversID: checkExistConversation.members,
 				})
 
@@ -682,10 +681,11 @@ class Model extends BaseModel {
 
 				let listMessages = await CHATTING__MESSAGE_COLL.find(conditionObj, objSort)
 					.populate({
-					    path: 'sender listSeen receivers membersAssigned files.file', 
+					    path: 'sender usersSeen receivers usersAssigned files.file', 
 						select: '_id fullname image',
-						populate: 'parent file',
+						populate: 'file',
 					})
+					.populate('parent poll reminder')
 					// .select('sender content status type createAt')
 					.sort(sortBy)
 					.limit(perPage)
@@ -991,7 +991,7 @@ class Model extends BaseModel {
 					usersMute: { userID }
 				};
 
-				if(isMute === "true"){
+				if(isTrue(isMute)){
 					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 						_id: conversationID,
 						usersMute: {
@@ -1011,7 +1011,7 @@ class Model extends BaseModel {
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't update mute conversation or user existed in users mute", status: 403 });
 
-				if(isMute === "true" && timeMute){
+				if(isTrue(isMute) && timeMute){
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
 						conversationID,
 						timeMute,
@@ -1019,7 +1019,7 @@ class Model extends BaseModel {
 					});
 				} else{
 					console.log('REMOVE JOB MUTE CONVERSATION', jobID);
-					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.REMOVE_JOB_MUTE_CONVERSATION}`, {
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION}`, {
 						jobID
 					});
 				}
@@ -1101,7 +1101,7 @@ class Model extends BaseModel {
 					conversationID, 
 					senderID: userID,
 					type: 107,
-					membersAssigned: [userID],
+					usersAssigned: [userID],
 					receiversID: checkExistConversation.members,
 				})
 
