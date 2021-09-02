@@ -24,6 +24,19 @@ const AUTH__USER_COLL                           = require
  */
 const AUTH__USER_MODEL                          = require
 
+/**
+ * Nguyên tắc hiển thị mẩu tin: lấy ví dụ cho Bài viết và comment
+ * Bước 1: Lấy API danh sách các bài viết (Post): 10 bài viết/1 trang (Data1)
+ * Bước 2: Lấy API danh sách các comment của 10 bài viết đó (Data2)
+ * Bước 3: Client (mobile, web reactJS) sẽ xử lý logic để convert Data2 về dạng mảng mới
+ * có key là các postID, value: các comment của postID đó, dạng:
+ * [
+ *  {postID1: [{},{},{},{}]},
+ *  {postID2: [{},{},{},{}]},
+ *  {postID3: [{},{},{},{}]},
+ * [
+ */
+
 ```
 
 ## **Best Use-Cases:**
