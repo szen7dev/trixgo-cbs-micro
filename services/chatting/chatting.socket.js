@@ -24,24 +24,22 @@ const CHATTING__CONVERSATION_MODEL             	= require('./model/chatting.conv
 
 exports.CHATTING_SOCKET = {
 
-    [EVENT_SOCKET_CONSTANT_CHATTING.HELLO_WORLD]: async function(data, ack) { 
+    'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
         let socket                      = this;
         let userID                      = socket.client.user;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
-        let { receivers }               = data;
-        
-        let arrReceiver = [];
-        if(receivers && receivers.includes(',')) {
-            arrReceiver = receivers.split(',');
-        } else {
-            arrReceiver.push(receivers);
-        }  
-        arrReceiver.push(userID)
 
-        // author : HUYNHVINH
-        // FUNCTION MAP DATA TO SEND SOCKET: SERVER SEND TO CLIENT
-        sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : { message  : 'hello'}, event :'LOGIN_SUCCESS', io})
+        sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver: [userID], 
+			data: {
+				message: 'hello',
+				userID,
+				listUserActive
+			}, 
+			event: 'SERVER_SEND_CHATTING_TEST', io
+		})
     },
 
     // =============================== CONVERSATION ==================================
@@ -90,47 +88,6 @@ exports.CHATTING_SOCKET = {
 				}
 			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io
 		});
-
-        // let { name, description, receiversID, chatPrivate } = data;
-
-        // let arrReceiver = [];
-        // if(receivers && receivers.includes(',')) {
-        //     arrReceiver = receivers.split(',');
-        // } else {
-        //     arrReceiver.push(receivers);
-        // }   
-        // arrReceiver.push(userID);
-
-        // let authorID = userID;
-
-        // if(chatPrivate){
-        //     let infoConversation    = await CHATTING__CONVERSATION_MODEL.insert({ name, description, receiverID, authorID });
-        //     let infoUser            = await USER_MODEL.findById(userID);
-        //     if(infoConversation.error){
-        //         return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io})
-                 
-        //     }
-
-        //     sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io})
-        // }
-
-        // if(!chatPrivate){
-        //     let infoConversation    = await CHATTING__CONVERSATION_MODEL.insertConversationMoreTowMember({ name, description, receivers, authorID });
-        //     if(infoConversation.error){
-        //         return sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID] , data : infoConversation, event :[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io})
-        //     }
-
-        //     let infoUser            = await USER_MODEL.getDataById(userID);
-        //     sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver , 
-        //         data : {
-        //             infoConversation,
-        //             infoUser : { 
-        //                 _id         : infoUser._id,
-        //                 fullname    : infoUser.fullname,
-        //                 image       : infoUser.image,
-        //             } 
-        //     }, event :[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io })
-        // }
     },
 
 	/**

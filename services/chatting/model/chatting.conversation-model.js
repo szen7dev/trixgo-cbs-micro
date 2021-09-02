@@ -613,22 +613,21 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: MinhVH - 11/08/2021
 	 */
-	getListMessagesConversationWithPage({ conversationID, latestMessageID, userID, key }){
+	getListMessagesConversationWithPage({ conversationID, latestMessageID, userID, key, limit = 15 }){
 		return new Promise(async resolve => {
 			try {
-				let page 	= 1;
-				let perPage = 10;
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				if(isNaN(limit))
+					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+
+				let nextPage = false;
+				let perPage  = +limit;
 
 				if(latestMessageID && checkObjectIDs(latestMessageID)){
-					page = 2;
+					nextPage = true;
 				}
-
-				// Check params
-				if(page === 1 && !checkObjectIDs([conversationID, userID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
-
-				if(page === 2 && !checkObjectIDs([conversationID, userID, latestMessageID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -640,7 +639,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "You aren't member", status: 403 });
 
 				// Init condition object
-				let conditionObj = { conversation: conversationID };
+				let conditionObj = {};
 				let objSort 	 = {};
 				let sortBy = {
 					modifyAt: -1,
@@ -648,7 +647,7 @@ class Model extends BaseModel {
 					updateAt: -1
 				};
 
-				if(page === 2){
+				if(nextPage){
 					let infoMessage = await CHATTING__MESSAGE_COLL.findById(latestMessageID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
@@ -659,9 +658,9 @@ class Model extends BaseModel {
 					if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error) )
 						return resolve({ error: true, message: "Request params nextInfo invalid", status: 400 });
 
-					conditionObj   = dataPagingAndSort.data.find;
-					// sortBy          = dataPagingAndSort.data.sort;
+					conditionObj = dataPagingAndSort.data.find;
 				}
+				conditionObj.conversation = conversationID;
 
 				// CHECK USER DELETE HISTORY
 				if(checkExistConversation.usersDeleteHistory && checkExistConversation.usersDeleteHistory.length){

@@ -171,6 +171,9 @@ module.exports = {
 
 		// Xoá nhắc hẹn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.deleteReminder,
+		
+		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListMessageReminder,
 
 
 		// AUTHOR: VinhVH

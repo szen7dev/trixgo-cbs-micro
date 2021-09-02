@@ -118,36 +118,79 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
                 let { conversationID, userID, remindTime, repeat, notifyFor } = ctx.params;
-                let timeScheduler = new Date(remindTime).getTime();
+				let humanTime = '';
 
-				// const { setTimeZone } 	= require('../../../tools/utils/time_utils')
-				// const moment = require('moment');
-				// let date = moment("2021-08-16T16:30:24Z").format();
-				// console.log(setTimeZone("2021-08-16T16:30:24Z").format());
-				// let timeScheduler2 = new Date(timeMute).toUTCString();
+				// ["once", "daily", "weekly", "monthly", "yearly"]
+				switch (repeat) {
+					case 'daily':
+						humanTime = '1 day';
+						break;
+					case 'weekly':
+						humanTime = '1 week';
+						break;
+					case 'monthly':
+						humanTime = '1 month';
+						break;
+					case 'yearly':
+						humanTime = '1 year';
+						break;
+					default:
+						break;
+				}
 
-				// switch (+timeMute) {
-				// 	case 1:
-				// 		timeScheduler = "one hours";
-				// 		break;
-				// 	case 4:
-				// 		timeScheduler = "four hours";
-				// 		break;
-				// 	case 8:
-				// 		timeScheduler = "tomorrow at 8am";
-				// 		break;
-				// 	default:
-				// 		timeScheduler = `${timeMute} hours`;
-				// 		break;
-				// }
+				if(humanTime){
+					const reminder = agenda.create('add_reminder_conversation', {
+						conversationID, userID, remindTime, repeat, notifyFor 
+					});
+					await agenda.start();
+					await reminder.repeatEvery(humanTime, {
+						skipImmediate: true
+					}).save();
+				}
 
-				// 3:30pm
-				agenda.schedule(timeScheduler, 'add_reminder_conversation', { conversationID, userID });
-				console.log(`agenda: add_reminder_conversation added - ${timeScheduler}`);
+				if(remindTime && repeat === 'once'){
+					let timeScheduler = new Date(remindTime).getTime();
 
-                return { error: false, data: { conversationID, userID, remindTime, timeScheduler }, status: 200 }
+					agenda.schedule(timeScheduler, 'add_reminder_conversation', {
+						conversationID, userID, remindTime, repeat, notifyFor 
+					});
+					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${repeat}`);
+				}
+
+                return { error: false, message: 'success', status: 200 }
             } catch (error) {
                 return { error: true, message: error.message, status: 500 };
+            }
+        }
+    },
+
+	deleteJobReminderConversation: {
+        params: {
+			jobID: { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				let { jobID } = ctx.params;
+				// name: "update_mute_conversation"
+
+				// if(jobID){
+				// 	// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
+				// 	// console.log({ infoJobMute, jobID })
+				// 	agenda.jobs(
+				// 		{ _id: ObjectID(jobID) },
+				// 		(err, num) => console.log(err, num) // output: null 1
+				// 	);
+				// }
+
+				// console.log({ jobID })
+
+                const removeJobReminderConversation = await agenda.cancel({ name: "add_reminder_conversation" });
+				console.log({ __REMOVE_JOB: removeJobReminderConversation })
+
+                return { error: false, data: jobID };
+            } catch (error) {
+				console.error(error);
+                return { error: true, message: error.message };
             }
         }
     },
