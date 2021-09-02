@@ -35,7 +35,16 @@ const AUTH__USER_MODEL                          = require
  *  {postID2: [{},{},{},{}]},
  *  {postID3: [{},{},{},{}]},
  * [
+ * 
  */
+// let arrCommentConvert = []
+// listComment.forEach(element=>{
+//     let key = element.post
+//     if (!Array.isArray(arrCommentConvert[key])) {
+//         arrCommentConvert[key] = []
+//     }
+//     arrCommentConvert[key].push(element)
+// })
 
 ```
 
