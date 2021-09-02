@@ -35,7 +35,7 @@ const AUTH__USER_MODEL                          = require
  *  {postID2: [{},{},{},{}]},
  *  {postID3: [{},{},{},{}]},
  * [
- * 
+ * ===> Hoặc có thể dùng lodash group cho tiện (KhanhNEY)
  */
 // let arrCommentConvert = []
 // listComment.forEach(element=>{
