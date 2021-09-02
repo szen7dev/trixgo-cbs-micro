@@ -46,6 +46,13 @@ const AUTH__USER_MODEL                          = require
 //     arrCommentConvert[key].push(element)
 // })
 
+
+/**
+ * Nguyên tắc get data của API
+ * Bước 1: Kiểm tra quyền truy cập dữ liệu (từ 1 action hoặc 1 API khác liên quan phân quyền)
+ * Bước 2: Sau khi có quyền hợp lệ => mới cho phép getListData
+ */
+
 ```
 
 ## **Best Use-Cases:**
