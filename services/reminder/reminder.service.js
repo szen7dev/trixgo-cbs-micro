@@ -9,8 +9,8 @@ const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant'
 const { CF_ACTIONS_REMINDER } 	        = require('./helper/reminder.actions-constant');
 const { CF_ACTIONS_CHATTING } 	        = require('../chatting/helper/chatting.actions-constant');
 
-
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
+
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.REMINDER,
@@ -41,6 +41,7 @@ module.exports = {
 		[CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobMuteConversation,
 		[CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.deleteJobMuteConversation,
 		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION] 	: REMINDER__CORE_HANLDER.addJobReminderConversation,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION] 	: REMINDER__CORE_HANLDER.deleteJobReminderConversation,
 	},
 
 	/**

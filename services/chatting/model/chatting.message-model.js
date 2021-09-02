@@ -1038,7 +1038,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: 'Request params lastestMessageID invalid', status: 400 });
 
 				let nextPage = false;
-				let perPage  = 15;
+				let perPage  = 10;
 
 				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
 					nextPage = true;
@@ -1139,7 +1139,10 @@ class Model extends BaseModel {
 				// 	repeat,
 				// 	notifyFor
 				// });
-				// return resolve({ error: false, message: 'Yaa!!! Tada', data: responseAgenda, status: 200 });
+
+				// await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`);
+
+				// return resolve({ error: false, message: 'Yaa!!! Tada', status: 200 });
 
 				// INSERT MESSAGE REMINDER
 				let infoReminderAfterInsert = await CHATTING__MESSAGE_REMINDER_COLL.create({
@@ -1185,6 +1188,15 @@ class Model extends BaseModel {
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 2 });
+
+				// ADD JOB FOR REMINDER
+				await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
+					conversationID,
+					userID,
+					remindTime,
+					repeat,
+					notifyFor
+				})
 
 				return resolve({ 
 					error: false, 
@@ -1456,6 +1468,93 @@ class Model extends BaseModel {
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 02/09/2021
+	 */
+	getListMessageReminder({ conversationID, lastestMessageID, userID, limit = 10 }) {
+		return new Promise(async (resolve) => {
+			try {
+				if(!checkObjectIDs([conversationID, userID]))
+					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [userID] }
+				});
+				if(!infoConversation)
+					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
+
+				if(lastestMessageID && !checkObjectIDs(lastestMessageID))
+					return resolve({ error: true, message: 'Request params lastestMessageID invalid', status: 400 });
+
+				let nextPage = false;
+				let perPage  = +limit;
+
+				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
+					nextPage = true;
+				}
+
+				let conditionObj = {};
+				let sortBy = {
+					modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+				}
+
+				// Get info last message (limit 10 per list message)
+				if(nextPage){
+					let messageInfo = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
+					if(!messageInfo)
+						return resolve({ error: true, message: "Can't get info last message", status: 403 });
+
+					let nextInfo = `${messageInfo.modifyAt}_${messageInfo._id}`;
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: 'Request params nextInfo invalid', status: 400 });
+
+					conditionObj = dataPagingAndSort.data.find;
+				}
+				conditionObj.conversation 	= conversationID;
+				conditionObj.type 			= 4;
+
+				let	listMessagesReminder = await CHATTING__MESSAGE_COLL
+					.find(conditionObj)
+					.select('_id sender status type reminder')
+					.populate({
+						path: 'sender',
+						select: '_id name fullname companysign image'
+					})
+					.populate({
+						path: 'reminder',
+						populate: {
+							path: 'accepts rejects',
+							select: '_id name fullname companysign image'
+						},
+					})
+					.limit(perPage)
+					.sort(sortBy)
+					.lean();
+
+				if(!listMessagesReminder)
+					return resolve({ error: true, message: "Can't get list message reminder", status: 403 });
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						listMessagesReminder,
+						perPage
+					}
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 })
 			}
 		})
 	}

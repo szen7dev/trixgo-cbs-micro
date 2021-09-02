@@ -54,51 +54,5 @@ class Model extends BaseModel {
         })
     }
 
-    getListWithPage({ conversationID, currentPage, nextInfo, userID }){
-        const that = this;
-        return new Promise(async (resolve) => {
-            try {
-                console.log({conversationID, currentPage, nextInfo, userID })
-                if(!checkObjectIDs(conversationID) || !checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Parameters validation error!', status : 422 });
-
-                // Kiểm tra nếu tồn tại cuộc hội thoại
-                let checkExistConversation =  await CHATTING__CONVERSATION_COLL.find({ 
-                    _id     : conversationID,
-                    members : { $all: [userID] }
-                })
-                if(!checkExistConversation || (checkExistConversation && !checkExistConversation[0]))
-                    return resolve({ error: true, message: 'Permission denied', status : 403 });
-
-                const page  = Number(currentPage) || 1;
-                let perPage = 3;
-
-                let _sort = {
-                    creatAt: -1
-                }
-                let ObjectSearch            = {};
-
-                let dataPaggingAndSort = await RANGE_BASE_PAGINATION({ nextInfo , keys: ['createAt__-1', '_id__-1'] })
-                if(!dataPaggingAndSort || (dataPaggingAndSort && dataPaggingAndSort.error) )
-                    return resolve({ error: true, message: 'Parameter nextInfo  validation error! ', status : 422 });
-
-                _sort                               =  dataPaggingAndSort.data.sort
-                ObjectSearch                        = dataPaggingAndSort.data.find;
-
-                // ObjectSearch.conversation = conversationID;
-                // console.log({ObjectSearch, 2 : ObjectSearch['$or'][1]._id, 3 : ObjectSearch['$or'][0]})
-
-                let listConversation = await CHATTING__CONVERSATION_LINK_COLL.find(ObjectSearch)
-                .sort(
-                    _sort
-                )
-                .limit(perPage)
-
-                return resolve({ error : false ,  data : listConversation, status : 200 })
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
-            }
-        })
-    }
 }
 exports.MODEL = new Model;

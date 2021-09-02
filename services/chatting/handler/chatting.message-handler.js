@@ -428,4 +428,32 @@ module.exports = {
         }
     },
 
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
+	 * Date: 02/09/2021
+	 */
+	getListMessageReminder: {
+        params: {
+			conversationID		: { type: "string" },
+            lastestMessageID 	: { type: "string", optional: true },
+            limit				: { type: 'string', optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, lastestMessageID, limit } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessageReminder({
+					conversationID, lastestMessageID, userID, limit
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
 }
