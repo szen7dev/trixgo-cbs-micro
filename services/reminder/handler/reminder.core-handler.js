@@ -49,20 +49,20 @@ module.exports = {
 				// console.log(setTimeZone("2021-08-16T16:30:24Z").format());
 				// let timeScheduler2 = new Date(timeMute).toUTCString();
 
-				// switch (+timeMute) {
-				// 	case 1:
-				// 		timeScheduler = "one hours";
-				// 		break;
-				// 	case 4:
-				// 		timeScheduler = "four hours";
-				// 		break;
-				// 	case 8:
-				// 		timeScheduler = "tomorrow at 8am";
-				// 		break;
-				// 	default:
-				// 		timeScheduler = `${timeMute} hours`;
-				// 		break;
-				// }
+				switch (+timeMute) {
+					case 1:
+						timeScheduler = "one hours";
+						break;
+					case 4:
+						timeScheduler = "four hours";
+						break;
+					case 8:
+						timeScheduler = "tomorrow at 8am";
+						break;
+					default:
+						timeScheduler = `${timeMute} hours`;
+						break;
+				}
 
 				// 3:30pm
 				agenda.schedule(timeScheduler, 'update_mute_conversation', { conversationID, userID, isMute: "false" });

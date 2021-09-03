@@ -80,7 +80,7 @@ module.exports = {
 	 */
 	deleteMessage: {
         params: {
-			conversationID  : { type: "string" },
+			conversationID : { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -102,12 +102,11 @@ module.exports = {
 	/**
 	 * Dev: MinhVH
 	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
-	 * Date: 16/08/2021
-	 * Updated: 28/08/2021 - MinhVH
+	 * Date: 28/08/2021
 	 */
 	revokeMessage: {
         params: {
-			conversationID  : { type: "string" },
+			conversationID : { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -294,16 +293,17 @@ module.exports = {
 	getListMessagePoll: {
         params: {
 			conversationID		: { type: "string" },
-            lastestMessageID 	: { type: "string", optional: true }
+            lastestMessageID 	: { type: "string", optional: true },
+            limit 				: { type: "string", optional: true }
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, lastestMessageID } = ctx.params;
+                const { conversationID, lastestMessageID, limit } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessagePoll({
-					conversationID, lastestMessageID, userID
+					conversationID, lastestMessageID, userID, limit
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

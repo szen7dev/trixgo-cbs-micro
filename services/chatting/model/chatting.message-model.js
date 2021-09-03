@@ -23,6 +23,7 @@ const {
 	checkObjectIDs, 
 	checkNumberIsValidWithRange 
 } = require('../../../tools/utils/utils');
+const { getTimeBetween, compareTwoTime } = require('../../../tools/utils/time_utils');
 
 /**
  * BASE
@@ -463,13 +464,31 @@ class Model extends BaseModel {
 				// Get list message will delete
 				let listMessages = await CHATTING__MESSAGE_COLL.find({
 					_id: { $in: messagesID },
-					conversation: conversationID
+					conversation: conversationID,
 				})
-				.select('_id type')
+				.select('_id type createAt')
 				.lean();
 
+				// Get list message not expire recall
+				let listMessagesNotExpire = [];
+				listMessages.map(message => {
+					const expireTime = new Date(message.createAt).addHours(1);
+					const now 		 = new Date(Date.now());
+
+					// const getTime = getTimeBetween(expireTime, now);
+					// console.log({ createAt: message.createAt, expireTime, now, getTime, compare: expireTime > now })
+
+					if(expireTime > now){
+						listMessagesNotExpire[listMessagesNotExpire.length] = message;
+					}
+				})
+
+				// Recall 1 message and message is expired recall
+				if(messagesID.length === 1 && !listMessagesNotExpire.length)
+					return resolve({ error: true, message: "Time to recall messages has expired (1 hour)", status: 403 });
+
 				const { results: infoMessageAfterUpdated } = await PromisePool
-					.for(listMessages)
+					.for(listMessagesNotExpire)
 					.withConcurrency(2)
 					.process(async message => {
 						let infoMessageAfterUpdated = null;
@@ -669,7 +688,7 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				});
 				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
+					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
 				if(!page || isNaN(page))
 					page = 1;
@@ -709,8 +728,8 @@ class Model extends BaseModel {
 					error: false, 
 					status: 200,
 					data: {
-						listMessagesPined,
-						perPage: limit,
+						listRecords: listMessagesPined,
+						limit,
 						currentPage: page,
 						totalRecord: infoConversation.messagesPin.length
 					}
@@ -1021,11 +1040,15 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn bình chọn trong cuộc hội thoại
 	 * Date: 30/08/2021
 	 */
-	getListMessagePoll({ conversationID, lastestMessageID, userID }) {
+	getListMessagePoll({ conversationID, lastestMessageID, userID, limit = 10 }) {
 		return new Promise(async (resolve) => {
 			try {
+				// Check params
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(isNaN(limit))
+					return resolve({ error: true, message: 'Request params limit invalid', status: 400 });
 
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -1034,42 +1057,35 @@ class Model extends BaseModel {
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
 
-				if(lastestMessageID && !checkObjectIDs(lastestMessageID))
-					return resolve({ error: true, message: 'Request params lastestMessageID invalid', status: 400 });
-
-				let nextPage = false;
-				let perPage  = 10;
-
-				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
-					nextPage = true;
-				}
-
-				let conditionObj = {};
+				let conditionFind = {};
+				let conditionObj  = { 
+					conversation: conversationID, 
+					type: 5 
+				};
 				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
 					updateAt: -1
 				}
 
-				// Get info last message (limit 20 per list message)
-				if(nextPage){
-					let messageInfo = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
-					if(!messageInfo)
+				// GET CONDITION PAGINATION
+				if(lastestMessageID && !checkObjectIDs(lastestMessageID)){
+					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
+					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 403 });
 
-					let nextInfo = `${messageInfo.modifyAt}_${messageInfo._id}`;
+					let nextInfo = `${infoMessage.modifyAt}_${infoMessage._id}`;
+					let keys	 = ['modifyAt__-1', '_id__-1'];
 
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: 'Request params nextInfo invalid', status: 400 });
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-					conditionObj = dataPagingAndSort.data.find;
+					conditionFind = dataPagingAndSort.data.find;
 				}
-				conditionObj.conversation 	= conversationID;
-				conditionObj.type 			= 5;
 
 				let	listMessagesPoll = await CHATTING__MESSAGE_COLL
-					.find(conditionObj)
+					.find({ ...conditionObj, ...conditionFind })
 					.select('_id sender status type poll')
 					.populate({
 						path: 'sender',
@@ -1082,19 +1098,23 @@ class Model extends BaseModel {
 							select: '_id name fullname image'
 						},
 					})
-					.limit(perPage)
+					.limit(+limit)
 					.sort(sortBy)
 					.lean();
 
 				if(!listMessagesPoll)
 					return resolve({ error: true, message: "Can't get list message poll", status: 403 });
 
+				// GET TOTAL RECORD
+				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
+
 				return resolve({ 
 					error: false, 
 					status: 200,
 					data: {
-						listMessagesPoll,
-						perPage
+						listRecords: listMessagesPoll,
+						limit: +limit,
+						totalRecord
 					}
 				});
 			} catch (error) {
@@ -1480,8 +1500,12 @@ class Model extends BaseModel {
 	getListMessageReminder({ conversationID, lastestMessageID, userID, limit = 10 }) {
 		return new Promise(async (resolve) => {
 			try {
+				// Check params
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(isNaN(limit))
+					return resolve({ error: true, message: 'Request params limit invalid', status: 400 });
 
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -1490,42 +1514,35 @@ class Model extends BaseModel {
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
 
-				if(lastestMessageID && !checkObjectIDs(lastestMessageID))
-					return resolve({ error: true, message: 'Request params lastestMessageID invalid', status: 400 });
-
-				let nextPage = false;
-				let perPage  = +limit;
-
-				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
-					nextPage = true;
-				}
-
-				let conditionObj = {};
+				let conditionFind = {};
+				let conditionObj  = { 
+					conversation: conversationID, 
+					type: 4 
+				};
 				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
 					updateAt: -1
 				}
 
-				// Get info last message (limit 10 per list message)
-				if(nextPage){
-					let messageInfo = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
-					if(!messageInfo)
+				// GET CONDITION PAGINATION
+				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
+					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
+					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 403 });
 
-					let nextInfo = `${messageInfo.modifyAt}_${messageInfo._id}`;
+					let nextInfo = `${infoMessage.modifyAt}_${infoMessage._id}`;
+					let keys	 = ['modifyAt__-1', '_id__-1'];
 
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: 'Request params nextInfo invalid', status: 400 });
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-					conditionObj = dataPagingAndSort.data.find;
+					conditionFind = dataPagingAndSort.data.find;
 				}
-				conditionObj.conversation 	= conversationID;
-				conditionObj.type 			= 4;
 
 				let	listMessagesReminder = await CHATTING__MESSAGE_COLL
-					.find(conditionObj)
+					.find({ ...conditionObj, ...conditionFind })
 					.select('_id sender status type reminder')
 					.populate({
 						path: 'sender',
@@ -1538,19 +1555,23 @@ class Model extends BaseModel {
 							select: '_id name fullname companysign image'
 						},
 					})
-					.limit(perPage)
+					.limit(+limit)
 					.sort(sortBy)
 					.lean();
 
 				if(!listMessagesReminder)
 					return resolve({ error: true, message: "Can't get list message reminder", status: 403 });
 
+				// GET TOTAL RECORD
+				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
+
 				return resolve({ 
 					error: false, 
 					status: 200,
 					data: {
-						listMessagesReminder,
-						perPage
+						listRecords: listMessagesReminder,
+						limit: +limit,
+						totalRecord
 					}
 				});
 			} catch (error) {

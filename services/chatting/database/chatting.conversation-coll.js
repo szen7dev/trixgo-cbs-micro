@@ -94,16 +94,11 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Danh sách user tắt thông báo cuộc hội thoại
      */
-    usersMute: [{
-		_id: false,
-        userID: { 
-            type: Schema.Types.ObjectId,
-            ref: 'user'
-        },
-        time: {
-            type: Date
-        }
-    }],
+    usersMute: [{ 
+		type: Schema.Types.ObjectId,
+		ref: 'user'
+	}],
+
 	/**
      * Danh sách user ẩn cuộc hội thoại
      */

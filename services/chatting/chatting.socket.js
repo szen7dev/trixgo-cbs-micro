@@ -58,7 +58,10 @@ exports.CHATTING_SOCKET = {
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL
 			.findById(conversationID)
-			.populate('authors')
+			.populate({
+				path: 'authors',
+				select: '_id fullname bizname image'
+			})
 			.lean();
 
 		if(!infoConversation){
@@ -115,8 +118,17 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		// Không gửi đến user hiện tại
-		const arrReceiver = infoConversation.members.filter(memberID => memberID.toString() !== userID.toString());
+		let listMemberMuteConversation = infoConversation.usersMute.map(userID => userID.toString());
+
+		let arrReceiver = infoConversation.members.filter(memberID => {
+			return memberID.toString() !== userID.toString() && !listMemberMuteConversation.includes(memberID.toString())
+		});
+		console.log({
+			listMemberMuteConversation,
+			arrReceiver
+		})
+
+		// Không gửi đến user tắt thông báo cuộc hội thoại
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 

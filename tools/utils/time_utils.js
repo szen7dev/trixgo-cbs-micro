@@ -71,3 +71,13 @@ exports.addMinuteToDate = function (dateAdded, minute) {
 exports.subMinuteToDate = function (subAdded, minute) {
     return new Date((new Date(subAdded)).getTime() - minute * 60000);
 };
+
+Date.prototype.addHours = function(h) {
+	this.setTime(this.getTime() + (h*60*60*1000));
+	return this;
+}
+
+Date.prototype.addMinutes = function(m) {
+	this.setTime(this.getTime() + (m * 60 * 1000));
+	return this;
+}

@@ -269,19 +269,19 @@ module.exports = {
 	 */
 	getListMessagesConversationWithPage: {
         params: {
-            conversationID	: { type: "string" },
-			latestMessageID : { type: "string", optional: true },
-			key 			: { type: "string", optional: true },
-			limit 			: { type: "string", optional: true },
+            conversationID	 : { type: "string" },
+			lastestMessageID : { type: "string", optional: true },
+			keyword 		 : { type: "string", optional: true },
+			limit 			 : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, latestMessageID, limit, key } = ctx.params;
+                let { conversationID, lastestMessageID, limit, keyword } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
-					conversationID, latestMessageID, limit, key, userID
+					conversationID, lastestMessageID, limit, keyword, userID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -331,6 +331,7 @@ module.exports = {
             dateCreate		: { type: "string", optional: true },
             fromDate		: { type: "string", optional: true },
             toDate			: { type: "string", optional: true },
+            limit			: { type: "string", optional: true },
             isLoadAll		: { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -338,11 +339,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
                 let { 
-					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll 
+					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, limit, isLoadAll 
 				} = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesMediaConversation({ 
-					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll
+					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, limit, isLoadAll
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -573,16 +574,17 @@ module.exports = {
 	getListConversationWithPage: {
         params: {
             lastestConversationID 	: { type: "string", optional: true },
-            key						: { type: "string", optional: true },
+            keyword					: { type: "string", optional: true },
+            limit					: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID }  					= ctx.meta.infoUser;
-                const { lastestConversationID, key } 	= ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestConversationID, keyword, limit } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-					lastestConversationID, userID, key
+					lastestConversationID, userID, keyword, limit
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
