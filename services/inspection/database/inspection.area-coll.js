@@ -4,6 +4,8 @@
  * KHU VỰC/CẤU KIỆN TRONG DỰ ÁN
  * - Do Admin dự án tạo ra
  * - Sử dụng chung cho tất cả các gói thầu
+ * - Cấu trúc gồm 2 cấp: cấp 1, cấp 2
+ * - Các hồ sơ sẽ được gán kèm area cấp 2
  */
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
@@ -14,6 +16,10 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_area", {
     project: {
         type    : Schema.Types.ObjectId,
         ref     : 'department'
+    },
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "inspection_area"
     },
     //_________Tên checklist kiểm tra
     name: String,
