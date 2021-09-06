@@ -118,6 +118,12 @@ module.exports = {
 		// Danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_WITH_PAGE]					: CHATTING__CONVERSATION_HANDLER.getListConversationWithPage,
 
+		// Danh sách cuộc hội thoại đã pin
+		[CF_ACTIONS_CHATTING.GET_LIST_PIN_CONVERSATION]							: CHATTING__CONVERSATION_HANDLER.getListPinConversation,
+
+		// Danh sách cuộc hội thoại chưa đọc
+		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_MESSAGE]				: CHATTING__CONVERSATION_HANDLER.getListConversationMissMessage,
+
 
 		// =========================  MESSAGE  ============================
 

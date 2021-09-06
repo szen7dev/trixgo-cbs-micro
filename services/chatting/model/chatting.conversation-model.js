@@ -27,7 +27,6 @@ const { checkObjectIDs, isTrue }				= require('../../../tools/utils/utils');
 const CHATTING__MESSAGE_COLL					= require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
-const AUTH__USER_COLL                           = require('../../auth/database/auth.user-coll');
 
 /**
  * MODELS
@@ -966,6 +965,7 @@ class Model extends BaseModel {
 	updateMuteConversation({ conversationID, userID, isMute, timeMute, jobID, ctx }){
 		return new Promise(async resolve => {
 			try {
+				userID = "5e60dffc2c43a444c5f8e239";
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
@@ -994,7 +994,7 @@ class Model extends BaseModel {
 						}
 					}, { new: true })
 				} else{
-					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({ _id: conversationID }, {
+					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pull: { 
 							usersMute: userID
 						}
@@ -1002,7 +1002,7 @@ class Model extends BaseModel {
 				}
 
 				if(!infoAfterUpdated)
-					return resolve({ error: true, message: "Can't update mute conversation or user existed in users mute", status: 403 });
+					return resolve({ error: true, message: "Can't update mute conversation", status: 403 });
 
 				if(isTrue(isMute) && timeMute){
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
@@ -1133,7 +1133,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "You are't author of conversation", status: 403 });
 
 				if(checkExistConversation.authors[0].toString() !== userID.toString())
-					return resolve({ error: true, message: "You are't root author of conversation (can't delete conversation)", status: 403 });
+					return resolve({ error: true, message: "You are't root author of conversation (access denined)", status: 403 });
 
 				let infoAfterDelete = await CHATTING__CONVERSATION_COLL.findByIdAndDelete(conversationID);
 
@@ -1142,11 +1142,11 @@ class Model extends BaseModel {
 
 				return resolve({ 
 					error: false, 
+					status: 200,
 					data: { 
 						infoAfterDelete, 
 						infoConversation: checkExistConversation
 					}, 
-					status: 200
 				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1209,10 +1209,9 @@ class Model extends BaseModel {
 	}
 
 	/**
-	 * Dev: VinhHV
+	 * Dev: MinhVH
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
-	 * Date: ...
-	 * Updated: MinhVH - 23/08/2021
+	 * Date: 23/08/2021
 	 */
 	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20 }){
         return new Promise(async resolve => {
@@ -1287,71 +1286,97 @@ class Model extends BaseModel {
         })
     }
 
+	/**
+	 * Dev: MinhVH 
+     * Func: Danh sách cuộc hội thoại đã pin
+	 * Date: 06/09/2021
+     */
+	getListPinConversation({ userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([userID]))
+					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
+				let listPinConversation = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
+					userID,
+				});
+				console.log({ listPinConversation })
 
+				if(listPinConversation.error)
+					return resolve(listPinConversation);
+
+				return resolve({ error: false, data: listPinConversation.data, status: 500 });
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
 
 	/**
 	 * Dev: VinhNH 
      * Func: Lấy danh sách cuộc hội thoại có tin nhắn chưa đọc
 	 * Date: ...
-	 * Updated: MinhVH - 03/08/2021
      */
-    getListConversationMissMessage({ userID, lastestConversationID }){
+    getListConversationMissMessage({ userID, lastestConversationID, limit = 20 }){
         return new Promise(async resolve => {
             try {
-                // Check params
 				if(!checkObjectIDs(userID))
 					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(lastestConversationID && !checkObjectIDs(lastestConversationID))
-					return resolve({ error: true, message: 'Request params lastestConversationID invalid', status: 400 });
+				if(isNaN(limit))
+					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
 
-				let page = 1;
-				let perPage 	= 20;
+                // Check user exist in conversation
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $all: [userID] }
+				}).lean();
 
-				if(lastestConversationID && checkObjectIDs(lastestConversationID)){
-					page = 2;
-				}
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member", status: 403 });
 
-                const infoConversation = await AUTH__USER_COLL.findById(userID);
-                if (!infoConversation) 
-                    return resolve({ error: true, message: "You aren't in conversation", status: 403 });
-
-                let listConversationMiss = infoConversation.converMiss || [];
-				let conditionObj = {};
-                let _sort = {
-                    modifyAt: -1,
-                    creatAt: -1
+                let listConversationMiss = checkExistConversation.converMiss || [];
+				let conditionFind = {};
+				let conditionObj  = { 
+					_id: { $in: listConversationMiss },
+					members: { $in: [userID] }
+				};
+                let sortBy = {
+					modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
                 }
 
-                if(page === 2){
-					let conversationInfo = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
-                    if(!conversationInfo)
+                if(lastestConversationID && checkObjectIDs(lastestConversationID)){
+					let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                    if(!infoConversation)
                         return resolve({ error: true, message: "Can't get info last conversation", status: 403 });
 
-                    let nextInfo = `${conversationInfo.modifyAt}_${conversationInfo._id}`;
+                    let nextInfo = `${infoConversation.modifyAt}_${infoConversation._id}`;
+					let keys	 = ['modifyAt__-1', '_id__-1'];
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys: ['modifyAt__-1', '_id__-1'] });
-                    if(!dataPagingAndSort || (dataPagingAndSort && dataPagingAndSort.error))
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
                         return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-                    _sort        =  dataPagingAndSort.data.sort
-                    conditionObj =  dataPagingAndSort.data.find;
+					conditionFind = dataPagingAndSort.data.find;
                 }
-                conditionObj._id     = { $in: listConversationMiss };
-                conditionObj.members = { $in: [userID] };
 
-                const listConversationMissMessage = await CHATTING__CONVERSATION_COLL
-					.find(conditionObj)
-					.limit(perPage)
-					.sort(_sort);
+                let listConversationMissMessage = await CHATTING__CONVERSATION_COLL
+					.find([ ...conditionObj, ...conditionFind ])
+					.limit(+limit)
+					.sort(sortBy);
+
+				// GET TOTAL RECORD
+				let totalRecord = await CHATTING__CONVERSATION_COLL.countDocuments(conditionObj);
 
 				return resolve({ 
 					error: false,
 					status: 200,
 					data: { 
-						listConversationMissMessage, 
-						perPage,
+						listRecords: listConversationMissMessage, 
+						limit: +limit,
+						totalRecord,
 					}
 				});
             } catch (error) {

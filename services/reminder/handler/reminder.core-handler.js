@@ -84,19 +84,19 @@ module.exports = {
 				let { jobID } = ctx.params;
 				// name: "update_mute_conversation"
 
-				if(jobID){
-					// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
-					// console.log({ infoJobMute, jobID })
-					agenda.jobs(
-						{ _id: ObjectID(jobID) },
-						(err, num) => console.log(err, num) // output: null 1
-					);
-				}
+				// if(jobID){
+				// 	// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
+				// 	// console.log({ infoJobMute, jobID })
+				// 	agenda.jobs(
+				// 		{ _id: ObjectID(jobID) },
+				// 		(err, num) => console.log(err, num) // output: null 1
+				// 	);
+				// }
 
 				console.log({ jobID })
 
-                // const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
-				// console.log({ __REMOVE_JOB: removeJobMuteConversation })
+                const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
+				console.log({ __REMOVE_JOB: removeJobMuteConversation })
 
                 return { error: false, data: jobID };
             } catch (error) {

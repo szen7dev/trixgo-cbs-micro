@@ -594,32 +594,46 @@ module.exports = {
         }
     },
 
-
-
-
-
-
-	
-
-
 	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
-	 * Date: ...
-	 * Updated: MinhVH - 03/08/2021
+	 * Dev: MinhVH
+	 * Func: Danh sách cuộc hội thoại đã pin
+	 * Date: 06/09/2021
 	 */
-	 getListConversationMissMessageByUserID: {
-        params: {
-            userID       			: { type: "string" },
-            lastestConversationID 	: { type: "string", optional: true },
-        },
+	getListPinConversation: {
+        params: {},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                let { userID, lastestConversationID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
-					userID, lastestConversationID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListPinConversation({ 
+					userID
+				})
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
+	 * Date: 06/09/2021
+	 */
+	getListConversationMissMessage: {
+        params: {
+			lastestConversationID 	: { type: "string", optional: true },
+            limit					: { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
+					userID, lastestConversationID, limit
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

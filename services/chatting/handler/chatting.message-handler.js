@@ -382,7 +382,7 @@ module.exports = {
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
-			isJoin			: { type: 'string' },
+			isJoin			: { type: 'string', optional: true },
 		},
         async handler(ctx) {
             try {
