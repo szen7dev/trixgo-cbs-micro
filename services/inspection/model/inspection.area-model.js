@@ -26,7 +26,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * DECALARTION VARIABLE STEP (1)
                  */
                 // let name;
                 // let sign;

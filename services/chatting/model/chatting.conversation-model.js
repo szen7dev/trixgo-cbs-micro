@@ -602,10 +602,10 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: VinhHV
+	 * Dev: MinhVH
 	 * Func: Lấy danh sách tin nhắn cuộc hội thoại (tìm kiếm tin nhắn, phân trang)
-	 * Date: ...
-	 * Updated: MinhVH - 11/08/2021
+	 * Date: 11/08/2021
+	 * Hàm chuẩn về lấy danh sách mẩu tin
 	 */
 	getListMessagesConversationWithPage({ conversationID, lastestMessageID, userID, keyword, limit = 15 }){
 		return new Promise(async resolve => {

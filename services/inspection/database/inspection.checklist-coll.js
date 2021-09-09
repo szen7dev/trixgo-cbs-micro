@@ -9,6 +9,11 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_checklist", {
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_doc'
     },
+    //_________Template
+    template: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'inspection_template_checklist'
+    },
     //_________Tên checklist kiểm tra
     name: String,
     //_________Trạng thái (1-Đang triển khai/2-Đã hoàn thành)
