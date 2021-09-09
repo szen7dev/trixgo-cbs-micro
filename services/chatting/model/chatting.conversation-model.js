@@ -53,20 +53,23 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params authorID or membersID invalid', status: 400 });
 
 				// Tạo cuộc hội thoại 2 người
-				if(isTrue(isPrivate)){
+				if(isPrivate){
 					if(membersID.length > 1)
 						return resolve({ error: true, message: 'Number of membersID must equal 1', status: 400 });
 
 					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
-					let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({ 
-						members: { $all: [authorID, ...membersID] }
-					}).lean()
+					let checkExistConversation = await CHATTING__CONVERSATION_COLL
+						.findOne({ 
+							members: { 
+								$all: [authorID, ...membersID],
+								$size: 2
+							},
+						})
+						.lean()
 
-					for(let i = 0; i < checkExistConversation.length; i++){
-						if(checkExistConversation[i].members.length === 2){
-							return resolve({ error: true, message: 'Conversation already exists', status: 403 });
-						}
-					}
+					if(checkExistConversation)
+						return resolve({ error: false, data: checkExistConversation, status: 200 });
+
 				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
 					if(membersID.length <= 1)
 						return resolve({ error: true, message: 'Number of membersID must more than 1', status: 400 });
@@ -306,9 +309,11 @@ class Model extends BaseModel {
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't author", status: 403 });
 
-				let infoConversationAfterUpdated = null, typeMessage = 0;
+				let infoConversationAfterUpdated = null;
+				let typeMessage = 0;
+
 				// Cập nhật member thành admin
-				if(isTrue(isSetAdmin)){
+				if(isSetAdmin){
 					if(checkExistConversation.authors.includes(memberID))
 						return resolve({ error: true, message: "Member is already an author", status: 403 });
 
@@ -318,7 +323,7 @@ class Model extends BaseModel {
 						}
 					}, { new: true });
 
-					typeMessage = 105;
+					typeMessage = 105; // Xét thêm admin cuộc hội thoại
 
 				} else{ // Cập nhật admin thành member
 					if(checkExistConversation.authors[0].toString() === memberID.toString())
@@ -330,7 +335,7 @@ class Model extends BaseModel {
 						}, 
 					}, { new: true });
 
-					typeMessage = 106;
+					typeMessage = 106; // Xoá bỏ quyền admin của member trong cuộc hội thoại
 				}
 
                 if(!infoConversationAfterUpdated)
@@ -346,7 +351,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status : 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -442,7 +447,7 @@ class Model extends BaseModel {
 					conversationID, userID, isPin
 				});
 				if(infoUserAfterUpdated.error)
-					return resolve({ ...infoUserAfterUpdated, status: 403 });
+					return resolve(infoUserAfterUpdated);
 
 				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
 			} catch (error) {
@@ -937,7 +942,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
 
 				let infoAfterUpdated = null;
-				if(isTrue(isHide)){
+				if(isHide){
 					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$addToSet: { usersHide: userID }
 					}, { new: true })
@@ -965,7 +970,7 @@ class Model extends BaseModel {
 	updateMuteConversation({ conversationID, userID, isMute, timeMute, jobID, ctx }){
 		return new Promise(async resolve => {
 			try {
-				userID = "5e60dffc2c43a444c5f8e239";
+				// userID = "5e60dffc2c43a444c5f8e239";
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
@@ -980,15 +985,8 @@ class Model extends BaseModel {
 
 				let infoAfterUpdated = null;
 
-				if(isTrue(isMute)){
-					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
-						_id: conversationID,
-						// usersMute: {
-						// 	$not: {
-						// 		$elemMatch: { userID }
-						// 	}
-						// }
-					}, {
+				if(isMute){
+					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$addToSet: {
 							usersMute: userID
 						}
@@ -1004,7 +1002,7 @@ class Model extends BaseModel {
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't update mute conversation", status: 403 });
 
-				if(isTrue(isMute) && timeMute){
+				if(isMute && timeMute){
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
 						conversationID,
 						timeMute,
@@ -1287,65 +1285,34 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH 
-     * Func: Danh sách cuộc hội thoại đã pin
-	 * Date: 06/09/2021
-     */
-	getListPinConversation({ userID }){
-		return new Promise(async resolve => {
-			try {
-				if(!checkObjectIDs([userID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
-
-				let listPinConversation = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
-					userID,
-				});
-				console.log({ listPinConversation })
-
-				if(listPinConversation.error)
-					return resolve(listPinConversation);
-
-				return resolve({ error: false, data: listPinConversation.data, status: 500 });
-			} catch (error) {
-				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
-	}
-
-	/**
-	 * Dev: VinhNH 
-     * Func: Lấy danh sách cuộc hội thoại có tin nhắn chưa đọc
-	 * Date: ...
-     */
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
+	 * Date: 09/09/2021
+	 */
     getListConversationMissMessage({ userID, lastestConversationID, limit = 20 }){
         return new Promise(async resolve => {
             try {
-				if(!checkObjectIDs(userID))
-					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+				if(!checkObjectIDs([userID]))
+					return resolve({ error: true, message: 'Request param userID invalid', status: 400 });
 
 				if(isNaN(limit))
 					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
 
-                // Check user exist in conversation
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $all: [userID] }
-				}).lean();
-
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
-
-                let listConversationMiss = checkExistConversation.converMiss || [];
 				let conditionFind = {};
 				let conditionObj  = { 
-					_id: { $in: listConversationMiss },
-					members: { $in: [userID] }
+					members: { $in: [userID] },
+					usersMissMessage: {
+						$elemMatch: {
+							userID,
+							amount: { $gt: 0 }
+						}
+					}
 				};
                 let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
 					updateAt: -1
-                }
+                };
 
                 if(lastestConversationID && checkObjectIDs(lastestConversationID)){
 					let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
@@ -1357,13 +1324,13 @@ class Model extends BaseModel {
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
                     if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: 'Request params invalid', status: 400 });
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
 					conditionFind = dataPagingAndSort.data.find;
                 }
 
                 let listConversationMissMessage = await CHATTING__CONVERSATION_COLL
-					.find([ ...conditionObj, ...conditionFind ])
+					.find({ ...conditionObj, ...conditionFind })
 					.limit(+limit)
 					.sort(sortBy);
 

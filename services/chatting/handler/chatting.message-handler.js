@@ -157,7 +157,7 @@ module.exports = {
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
-			isPin			: { type: 'string' },
+			isPin			: { type: 'boolean' },
 		},
         async handler(ctx) {
             try {
@@ -382,7 +382,7 @@ module.exports = {
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
-			isJoin			: { type: 'string', optional: true },
+			isJoin			: { type: 'boolean' },
 		},
         async handler(ctx) {
             try {

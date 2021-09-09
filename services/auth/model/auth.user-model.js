@@ -560,7 +560,8 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "User is not exist", status: 403 });
 
 				let infoUserAfterUpdated = null;
-				if(isPin === "true"){ // Pin cuộc hội thoại
+
+				if(isPin){ // Pin cuộc hội thoại
 
 					if(infoUser.conversationsPin.includes(conversationID))
 						return resolve({ error: true, message: "Conversation is pined", status: 400 });
@@ -611,9 +612,6 @@ class Model extends BaseModel {
 	getListPinConversation({ userID }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
@@ -622,20 +620,21 @@ class Model extends BaseModel {
 				 if(!checkObjectIDs([userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-				let infoUser = await AUTH__USER_COLL.findById(userID);
-				if(!infoUser)
-					return resolve({ error: true, message: "User is not exist", status: 403 });
-  
-                let infoUser = await AUTH__USER_COLL
+				let infoUser = await AUTH__USER_COLL
 					.findById(userID)
+					.select('conversationsPin')
 					.populate({
 						path: 'conversationsPin',
 						populate: 'lastMessage'
-					});
+					})
+					.lean();
 
-                return resolve({ error: false, data: infoUser.conversationsPin });
+				if(!infoUser)
+					return resolve({ error: true, message: "User is not exist", status: 403 });
+
+                return resolve({ error: false, data: infoUser.conversationsPin, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }

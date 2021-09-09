@@ -213,7 +213,7 @@ module.exports = {
         params: {
             conversationID	: { type: "string" },
             userID			: { type: "string" },
-            isPin			: { type: "string" }
+            isPin			: { type: "boolean" }
         },
         async handler(ctx) {
 			try {
@@ -226,7 +226,7 @@ module.exports = {
 
 				return resultAfterCallHandler;
             } catch (error) {
-				return { error: true, message: error.message };
+				return { error: true, message: error.message, status: 500 };
             }
         }
     },
@@ -246,8 +246,9 @@ module.exports = {
 
 				return resultAfterCallHandler;
             } catch (error) {
-				return { error: true, message: error.message };
+				return { error: true, message: error.message, status: 500 };
             }
         }
     }
+
 }

@@ -615,12 +615,12 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				});
 				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
+					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
 				let infoConversationAfterUpdate = null;
-				let typeMessage = 108;
+				let typeMessage = 108; // Pin 1 tin nhắn trong cuộc hội thoại 
 
-				if(isTrue(isPin)){ // Pin tin nhắn
+				if(isPin){ // Pin tin nhắn
 
 					if(infoConversation.messagesPin.includes(messageID))
 						return resolve({ error: true, message: "Message is pined", status: 400 });
@@ -652,7 +652,7 @@ class Model extends BaseModel {
 						$pull: { messagesPin: messageID }
 					}, { new: true });
 
-					typeMessage = 109;
+					typeMessage = 109; // Bỏ Pin 1 tin nhắn trong cuộc hội thoại 
 				}
 
 				if(!infoConversationAfterUpdate)
@@ -911,7 +911,7 @@ class Model extends BaseModel {
 				if(isFirstTimeVote){
 					lastMessage = await this.insertData({
 						...dataInsertMessage,
-						type: 111
+						type: 111 // Tham gia bình chọn trong cuộc hội thoại
 					})
 					numberMissMessage++;
 				}
@@ -920,7 +920,7 @@ class Model extends BaseModel {
 				if((votesCancel.length || newVotes.length || newOptions.length) && !isFirstTimeVote){
 					lastMessage = await this.insertData({
 						...dataInsertMessage,
-						type: 112
+						type: 112 // Thay đổi bình chọn trong cuộc hội thoại 
 					})
 					numberMissMessage++;
 				}
@@ -1346,10 +1346,10 @@ class Model extends BaseModel {
 
 				let { reminder } 			= infoMessageReminder;
 				let infoReminderAfterUpdate = null;
-				let typeMessage 			= 117; // Xác nhận không tham gia nhắc hẹn
+				let typeMessage 			= 0;
 
 				// USER JOIN REMINDER
-				if(isTrue(isJoin)){
+				if(isJoin){
 					infoReminderAfterUpdate = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
 						$addToSet: {
 							accepts: userID
@@ -1370,6 +1370,8 @@ class Model extends BaseModel {
 							accepts: userID
 						}
 					}, { new: true })
+
+					typeMessage = 117; // Xác nhận không tham gia nhắc hẹn
 				}
 
 				if(!infoReminderAfterUpdate)
@@ -1402,10 +1404,7 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false, 
 					status: 200,
-					data: {
-						infoMessageNotifyUserJoinReminder,
-						infoReminderAfterUpdate
-					}, 
+					data: infoReminderAfterUpdate 
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });

@@ -1,12 +1,18 @@
 /**
+ * CONSTATNS
+ */
+const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+
+/**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }                 = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
+const CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
 
 
 module.exports = {
@@ -26,7 +32,7 @@ module.exports = {
         params: {
             name        : { type: "string" },
             description : { type: "string", optional: true },
-            isPrivate   : { type: "string" }
+            isPrivate   : { type: "boolean" }
         },
         async handler(ctx) {
             try {
@@ -135,7 +141,7 @@ module.exports = {
         params: {
             conversationID  : { type: "string" },
             memberID        : { type: "string" },
-            isSetAdmin      : { type: "string" },
+            isSetAdmin      : { type: "boolean" },
         },
         async handler(ctx) {
             try {
@@ -162,8 +168,8 @@ module.exports = {
 	updateConfigConversation: {
         params: {
             conversationID  : { type: "string" },
-            typeConfig      : { type: "string" },
-            valueConfig     : { type: "string" },
+            typeConfig      : { type: "number" },
+            valueConfig     : { type: "number" },
         },
         async handler(ctx) {
             try {
@@ -190,7 +196,7 @@ module.exports = {
 	updatePinConversation: {
         params: {
             conversationID  : { type: "string" },
-            isPin        	: { type: "string" }
+            isPin        	: { type: "boolean" }
         },
         async handler(ctx) {
             try {
@@ -387,7 +393,7 @@ module.exports = {
 	updateHideConversation: {
         params: {
             conversationID	: { type: "string" },
-            isHide			: { type: "string" },
+            isHide			: { type: "boolean" },
         },
         async handler(ctx) {
             try {
@@ -414,7 +420,7 @@ module.exports = {
 	updateMuteConversation: {
         params: {
             conversationID	: { type: "string" },
-            isMute			: { type: "string" },
+            isMute			: { type: "boolean" },
             timeMute		: { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -603,12 +609,11 @@ module.exports = {
         params: {},
         async handler(ctx) {
             try {
-				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListPinConversation({ 
-					userID
-				})
+				const resultAfterCallHandler = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
+					userID,
+				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -620,7 +625,7 @@ module.exports = {
 	/**
 	 * Dev: MinhVH
 	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
-	 * Date: 06/09/2021
+	 * Date: 09/09/2021
 	 */
 	getListConversationMissMessage: {
         params: {
@@ -631,6 +636,7 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestConversationID, limit } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
 					userID, lastestConversationID, limit
