@@ -94,7 +94,7 @@ module.exports = {
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { conversationID, membersID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.addMembersToConversationByID({
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.addMembersToConversation({
 					conversationID, authorID, membersID
 				});
 

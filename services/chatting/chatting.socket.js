@@ -901,44 +901,6 @@ exports.CHATTING_SOCKET = {
 
 
 
-	
-
-	// Đã nhận tin nhắn
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_RECEIVED_MESSAGE]: async function(data, ack) { 
-        let socket                                      = this;
-        let listUserActive                              = socket.$service.listUserConnected2;
-        let { messageID, conversationID }           	= data;
-        let userID                                      = socket.client.user;
-        let io                                         	= socket.$service.io;
-
-        let infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
-        let arrReceiver                = infoConversation.data.members;
-
-        // Cập nhật trạng thái đã nhận tin nhắn.
-        let infoUpdate = await CHATTING__MESSAGE_MODEL.updateReceive({ messageID });
-        if(!infoUpdate.error){
-            return sendDataToMultilSocketsOfListUser({ 
-				io,
-				arrReceiver,
-				listUserConnected: listUserActive, 
-				data: {
-					messageID, 
-					conversationID,
-					status: 200
-				},
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVED_MESSAGE]
-			})
-        }
-
-        sendDataToMultilSocketsOfListUser({ 
-			io,
-			arrReceiver: [userID], 
-			listUserConnected: listUserActive,
-			data: infoUpdate, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVED_MESSAGE]
-		})
-    },
-
     // Đã xem tin nhắn [done]
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEEN_MESSAGE]: async function(data, ack) { 
         let socket                                      = this;
@@ -982,36 +944,6 @@ exports.CHATTING_SOCKET = {
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEEN_MESSAGE]
 		})
-    },
-
-    // Phản hồi tin nhắn [done]
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_RELY_MESSAGE]: async function(data, ack) { 
-        let socket                                      = this;
-        let listUserActive                              = socket.$service.listUserConnected2;
-        let  io                                         = socket.$service.io;
-        let userID                                      = socket.client.user;
-
-        let {   content, conversationID, parentID } = data;
-
-        let  infoConversation           = await CHATTING__CONVERSATION_MODEL.getInfoByUserID({ conversationID, userID });
-        let  arrReceiver                = infoConversation.data.members;
-
-        let infoMessageAfterInsert      = await CHATTING__MESSAGE_MODEL.insert({ senderID: userID , content, receivers: arrReceiver , conversationID, parentID });
-
-        if(infoMessageAfterInsert.error){
-            return  sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver : [userID], data :  { userID, conversationID, messsage :`cant_reply : ${infoMessageAfterInsert.message}` }, event :[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RELY_MESSAGE], io})
-        }
-          
-        let messageID = infoMessageAfterInsert.data._id;
-        let  infoMessage                = await CHATTING__MESSAGE_MODEL.getInfoByID({ messageID });
-
-        // Tên sự kiện ở server  : CSS_RELY_MESSAGE
-        // Đầu vào :  {  tempID, content,  reciverID, conversationID, parentID, oldContent } 
-
-        // Tên sự kiện trả về : SSC_RELY_MESSAGE
-        // Nội dung trả về client :  { tempID, infoMessage, userID, oldContent 
-
-        sendDataToMultilSocketsOfListUser({ listUserConnected : listUserActive, arrReceiver, data :  { userID, conversationID, infoMesage : infoMessage }, event :[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RELY_MESSAGE], io})
     },
 
 }

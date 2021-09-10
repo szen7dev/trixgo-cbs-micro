@@ -62,7 +62,7 @@ class Model extends BaseModel {
                 if (!checkObjectIDs([conversationID, userID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-				// CHECK SENDER IS MEMBER OF CONVERSATION
+				// CHECK USER IS MEMBER OF CONVERSATION
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
@@ -138,6 +138,13 @@ class Model extends BaseModel {
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
+				// Check config admin conversation
+				if(checkExistConversation.config && checkExistConversation.config.configSendMessage === 2){
+					// User is not author of conversation
+					if(!checkExistConversation.authors.includes(senderID))
+						return resolve({ error: true, message: "You don't have permission to send message", status: 403 });
+				}
+
 				if(!receiversID){
 					receiversID = checkExistConversation.members;
 				} else{
@@ -148,6 +155,9 @@ class Model extends BaseModel {
 				if(parentID && !checkObjectIDs(parentID))
 					return resolve({ error: true, message: 'Request Param parentID invalid', status: 400 });
 
+				if(usersAssigned && usersAssigned.length && !checkObjectIDs(usersAssigned))
+					return resolve({ error: true, message: 'Request Param usersAssigned invalid', status: 400 });
+
 				let dataInsertMessage = {
 					usersSeen: [senderID], 
 					sender: senderID, 
@@ -156,11 +166,8 @@ class Model extends BaseModel {
 					receivers: receiversID,
 					type
 				}
-				parentID && (dataInsertMessage.parent = parentID);
-
-				if(usersAssigned && usersAssigned.length && checkObjectIDs(usersAssigned)){
-					dataInsertMessage.usersAssigned = usersAssigned;
-				}
+				parentID 		&& (dataInsertMessage.parent 		= parentID);
+				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
 				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
@@ -218,8 +225,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let infoMessageAfterInserted 	= null;
-				let numberMissMessage 			= 1;
+				let infoMessageAfterInserted = null;
 
 				// MESSAGE SHARE CONTACT
 				if(+type === 7){
@@ -250,62 +256,16 @@ class Model extends BaseModel {
                 if(!infoMessageAfterInserted)
                     return resolve({ error: true, message: "Can't create message", status: 403 });
 
-				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
-				if(infoMessageAfterInserted.type < 100){
-
-					// If usersMissMessage not exist or [] then add members conversation into usersMissMessage
-					if(!checkExistConversation.usersMissMessage || !checkExistConversation.usersMissMessage.length){
-
-						let usersMissMessage = [];
-						checkExistConversation.members.filter(memberID => {
-							if(memberID.toString() === senderID.toString()){
-								usersMissMessage = [...usersMissMessage, {
-									userID: memberID,
-									amount: 0
-								}];
-							} else{
-								usersMissMessage = [...usersMissMessage, {
-									userID: memberID,
-									amount: numberMissMessage
-								}];
-							}
-						})
-
-						await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-							$addToSet: { usersMissMessage }
-						});
-					} else{
-						// Update miss message except current user
-						await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-							$inc: {
-								"usersMissMessage.$[elem].amount": numberMissMessage
-							}
-						}, {
-							arrayFilters: [{ 
-								"elem.userID": { $nin: [senderID] }
-							}]
-						})
-
-						// Update miss message my self
-						await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
-							_id: conversationID,
-							"usersMissMessage.userID": senderID
-						}, {
-							$set: { "usersMissMessage.$.amount": 0 }
-						});
-					}
-
-				}
-
-				let { _id: messageID } = infoMessageAfterInserted; 
-
 				// UPDATE LAST MESSAGE
-                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: messageID, modifyAt: Date.now()
+                let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: infoMessageAfterInserted._id, modifyAt: Date.now()
                 }, { new: true });
 
-                if(!checkLastMessageAfterUpdated)
+                if(!infoUpdateLastMessage)
                     return resolve({ error: true, message: "Can't update last message", status: 403 });
+
+				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				await this.updateUserMissMessage({ conversationID, userID: senderID, numberMissMessage: 1 });
 
                 return resolve({ error: false, data: infoMessageAfterInserted, status: 200 });
             } catch (error) {
@@ -566,7 +526,7 @@ class Model extends BaseModel {
 							.for(messagesID)
 							.withConcurrency(2)
 							.process(async messageID => {
-								// get info share message
+								// Get info message share
 								let infoMessageShare = await CHATTING__MESSAGE_COLL.findById(messageID);
 								let { content, files, type } = infoMessageShare;
 
@@ -585,6 +545,9 @@ class Model extends BaseModel {
 								await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversation._id, {
 									lastMessage: infoAfterInserted._id, modifyAt: Date.now()
 								}, { new: true });
+
+								// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+								await this.updateUserMissMessage({ conversationID: conversation._id, userID, numberMissMessage: 1 });
 
 								return infoAfterInserted;
 							})
@@ -617,10 +580,17 @@ class Model extends BaseModel {
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
-				let infoConversationAfterUpdate = null;
-				let typeMessage = 108; // Pin 1 tin nhắn trong cuộc hội thoại 
+				// Check config admin conversation
+				if(infoConversation.config && infoConversation.config.configPinMessage === 2){
+					// User is not author of conversation
+					if(!infoConversation.authors.includes(userID))
+						return resolve({ error: true, message: "You don't have permission to pin message", status: 403 });
+				}
 
-				if(isPin){ // Pin tin nhắn
+				let infoConversationAfterUpdate = null;
+				let typeMessage = 0;
+
+				if(isPin){
 
 					if(infoConversation.messagesPin.includes(messageID))
 						return resolve({ error: true, message: "Message is pined", status: 400 });
@@ -647,7 +617,9 @@ class Model extends BaseModel {
 						}, { new: true });
 					}
 
-				} else{ // Bỏ Pin tin nhắn
+					typeMessage = 108; // Pin 1 tin nhắn trong cuộc hội thoại
+
+				} else{
 					infoConversationAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pull: { messagesPin: messageID }
 					}, { new: true });
@@ -658,12 +630,15 @@ class Model extends BaseModel {
 				if(!infoConversationAfterUpdate)
 					return resolve({ error: true, message: "Can't update pin message", status: 403 });
 
-				await this.insertMessage({
-					conversationID, 
-					senderID: userID,
+				await this.insertData({
+					conversation: conversationID, 
+					sender: userID,
 					type: typeMessage,
-					receiversID: infoConversation.members,
+					receivers: infoConversation.members,
 				})
+
+				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
+				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
 				return resolve({ error: false, data: infoConversationAfterUpdate, status: 200 });
             } catch (error) {
@@ -759,6 +734,13 @@ class Model extends BaseModel {
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
+
+				// Check config admin conversation
+				if(checkExistConversation.config && checkExistConversation.config.configCreatePoll === 2){
+					// User is not author of conversation
+					if(!checkExistConversation.authors.includes(userID))
+						return resolve({ error: true, message: "You don't have permission to create poll conversation", status: 403 });
+				}
 
 				// INSERT MESSAGE POLL
 				let infoPollAfterInsert = await CHATTING__MESSAGE_POLL_COLL.create({
@@ -1152,6 +1134,13 @@ class Model extends BaseModel {
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
+				// Check config admin conversation
+				if(checkExistConversation.config && checkExistConversation.config.configCreateNote === 2){
+					// User is not author of conversation
+					if(!checkExistConversation.authors.includes(userID))
+						return resolve({ error: true, message: "You don't have permission to create note or reminder conversation", status: 403 });
+				}
+
 				// const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
 				// 	conversationID,
 				// 	userID,
@@ -1184,7 +1173,7 @@ class Model extends BaseModel {
 				}
 
 				// INSERT MESSAGE NOTIFY CREATE REMINDER
-				let infoMessageNotifyCreateReminder = await this.insertData({
+				await this.insertData({
 					...dataInsertMessage,
 					type: 114
 				})
@@ -1199,11 +1188,11 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't create message reminder", status: 403 });
 
 				// UPDATE LAST MESSAGE
-                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: infoMessageReminder._id, modifyAt: Date.now()
                 }, { new: true });
 
-				if(!checkLastMessageAfterUpdated)
+				if(!infoUpdateLastMessage)
 					return resolve({ error: true, message: "Can't update last message", status: 403 });
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -1221,10 +1210,7 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false, 
 					status: 200,
-					data: {
-						infoMessageNotifyCreateReminder,
-						infoMessageReminder
-					}, 
+					data: infoMessageReminder
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });

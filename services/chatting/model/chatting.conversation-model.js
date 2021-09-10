@@ -27,6 +27,7 @@ const { checkObjectIDs, isTrue }				= require('../../../tools/utils/utils');
 const CHATTING__MESSAGE_COLL					= require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
+const CHATTING__CONVERSATION_LINK_COLL          = require('../database/chatting.conversation_link-coll');
 
 /**
  * MODELS
@@ -105,6 +106,21 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
                     return resolve({ error: true, message: 'Request params conversationID or userID invalid', status: 400 });
 
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
+					_id: conversationID, 
+					members: { $in: [userID] }
+				});
+
+				if(!checkExistConversation)
+					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+
+				// Check cấu hình admin cuộc hội thoại
+				if(checkExistConversation.config && checkExistConversation.config.configEditInfo === 2){
+					// User is not author of conversation
+					if(!checkExistConversation.authors.includes(userID))
+						return resolve({ error: true, message: "You don't have permission to edit conversation", status: 403 });
+				}
+
 				let dataUpdate 	= {};
 				name 		&& (dataUpdate.name 		= name);
 				description && (dataUpdate.description 	= description);
@@ -169,7 +185,7 @@ class Model extends BaseModel {
 	 * Func: Thêm thành viên cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-	addMembersToConversationByID({ conversationID, authorID, membersID }) {
+	addMembersToConversation({ conversationID, authorID, membersID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length)
