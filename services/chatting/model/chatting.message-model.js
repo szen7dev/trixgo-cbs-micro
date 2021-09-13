@@ -50,7 +50,7 @@ class Model extends BaseModel {
     constructor() {
         super(CHATTING__MESSAGE_COLL);
     }
-	
+
 	/**
 	 * Dev: MinhVH
 	 * Func: Cập nhật user miss tin nhắn của cuộc hội thoại
@@ -1141,17 +1141,18 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "You don't have permission to create note or reminder conversation", status: 403 });
 				}
 
-				// const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
-				// 	conversationID,
-				// 	userID,
-				// 	remindTime,
-				// 	repeat,
-				// 	notifyFor
-				// });
+				const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
+					conversationID,
+					messageID: '612f466299d3042d09ed4503',
+					userID,
+					remindTime,
+					repeat,
+					notifyFor
+				});
 
 				// await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`);
 
-				// return resolve({ error: false, message: 'Yaa!!! Tada', status: 200 });
+				return resolve({ error: false, message: 'Yaa!!! Tada', status: 200 });
 
 				// INSERT MESSAGE REMINDER
 				let infoReminderAfterInsert = await CHATTING__MESSAGE_REMINDER_COLL.create({
@@ -1200,6 +1201,7 @@ class Model extends BaseModel {
 
 				// ADD JOB FOR REMINDER
 				await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
+					messageID: infoMessageReminder._id,
 					conversationID,
 					userID,
 					remindTime,
@@ -1266,7 +1268,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't update reminder", status: 403 });
 
 				// INSERT MESSAGE NOTIFY UPDATE REMINDER
-				let infoMessageNotifyUpdateReminder = await this.insertData({
+				let infoMessageNotify = await this.insertData({
 					usersSeen: [userID], 
 					sender: userID,
 					conversation: conversationID,
@@ -1275,12 +1277,12 @@ class Model extends BaseModel {
 					type: 115
 				})
 
-				if(!infoMessageNotifyUpdateReminder)
-					return resolve({ error: true, message: "Can't update message reminder", status: 403 });
+				if(!infoMessageNotify)
+					return resolve({ error: true, message: "Can't insert message notify update reminder", status: 403 });
 
 				// UPDATE LAST MESSAGE
                 let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: infoMessageNotifyUpdateReminder._id, modifyAt: Date.now()
+                    lastMessage: infoMessageNotify._id, modifyAt: Date.now()
                 }, { new: true });
 
 				if(!checkLastMessageAfterUpdated)
@@ -1292,10 +1294,7 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false, 
 					status: 200,
-					data: {
-						infoMessageNotifyUpdateReminder,
-						infoReminderAfterUpdate
-					}, 
+					data: infoReminderAfterUpdate, 
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1364,7 +1363,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't update user join reminder", status: 403 });
 
 				// INSERT MESSAGE NOTIFY UPDATE USER JOIN REMINDER
-				let infoMessageNotifyUserJoinReminder = await this.insertData({
+				let infoMessageNotify = await this.insertData({
 					usersSeen: [userID], 
 					sender: userID,
 					conversation: conversationID,
@@ -1373,15 +1372,15 @@ class Model extends BaseModel {
 					type: typeMessage
 				})
 
-				if(!infoMessageNotifyUserJoinReminder)
-					return resolve({ error: true, message: "Can't update message reminder", status: 403 });
+				if(!infoMessageNotify)
+					return resolve({ error: true, message: "Can't insert message notify user join reminder", status: 403 });
 
 				// UPDATE LAST MESSAGE
-                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: infoMessageNotifyUserJoinReminder._id, modifyAt: Date.now()
+                let updateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+                    lastMessage: infoMessageNotify._id, modifyAt: Date.now()
                 }, { new: true });
 
-				if(!checkLastMessageAfterUpdated)
+				if(!updateLastMessage)
 					return resolve({ error: true, message: "Can't update last message", status: 403 });
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -1466,10 +1465,7 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false, 
 					status: 200,
-					data: {
-						infoMessageNotify,
-						infoReminderAfterDelete,
-					}
+					data: infoReminderAfterDelete
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1531,13 +1527,13 @@ class Model extends BaseModel {
 					.select('_id sender status type reminder')
 					.populate({
 						path: 'sender',
-						select: '_id name fullname companysign image'
+						select: '_id name fullname image'
 					})
 					.populate({
 						path: 'reminder',
 						populate: {
 							path: 'accepts rejects',
-							select: '_id name fullname companysign image'
+							select: '_id name bizname fullname image'
 						},
 					})
 					.limit(+limit)

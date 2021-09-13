@@ -65,7 +65,7 @@ module.exports = {
 				}
 
 				// 3:30pm
-				agenda.schedule(timeScheduler, 'update_mute_conversation', { conversationID, userID, isMute: "false" });
+				agenda.schedule(timeScheduler, 'update_mute_conversation', { conversationID, userID, isMute: false });
 				console.log(`agenda: update_mute_conversation added - ${timeScheduler}`);
 
                 return { error: false, data: { conversationID, userID, timeMute, timeScheduler }, status: 200 }
@@ -93,7 +93,7 @@ module.exports = {
 				// 	);
 				// }
 
-				console.log({ jobID })
+				// console.log({ jobID })
 
                 const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
 				console.log({ __REMOVE_JOB: removeJobMuteConversation })
@@ -109,6 +109,7 @@ module.exports = {
 	addJobReminderConversation: {
         params: {
             conversationID	: { type: "string" },
+            messageID		: { type: "string" },
             userID			: { type: "string" },
             remindTime		: { type: "string" },
             repeat			: { type: "string" },
@@ -117,10 +118,9 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                let { conversationID, userID, remindTime, repeat, notifyFor } = ctx.params;
+                let { conversationID, messageID, userID, remindTime, repeat, notifyFor } = ctx.params;
 				let humanTime = '';
 
-				// ["once", "daily", "weekly", "monthly", "yearly"]
 				switch (repeat) {
 					case 'daily':
 						humanTime = '1 day';
@@ -140,24 +140,25 @@ module.exports = {
 
 				if(humanTime){
 					const reminder = agenda.create('add_reminder_conversation', {
-						conversationID, userID, remindTime, repeat, notifyFor 
+						conversationID, messageID, userID 
 					});
 					await agenda.start();
 					await reminder.repeatEvery(humanTime, {
 						skipImmediate: true
 					}).save();
+					console.log(`agenda: add_reminder_conversation added - ${humanTime} - ${repeat} - ${notifyFor}`);
 				}
 
 				if(remindTime && repeat === 'once'){
 					let timeScheduler = new Date(remindTime).getTime();
 
 					agenda.schedule(timeScheduler, 'add_reminder_conversation', {
-						conversationID, userID, remindTime, repeat, notifyFor 
+						conversationID, messageID, userID 
 					});
-					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${repeat}`);
+					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${repeat} - ${notifyFor}`);
 				}
 
-                return { error: false, message: 'success', status: 200 }
+                return { error: false, message: 'success add job reminder', status: 200 }
             } catch (error) {
                 return { error: true, message: error.message, status: 500 };
             }

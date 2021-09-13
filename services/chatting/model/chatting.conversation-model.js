@@ -145,10 +145,7 @@ class Model extends BaseModel {
 					dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
 				}
 
-				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
-					_id: conversationID,
-					members: { $in: [userID] }
-				}, {
+				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$set: dataUpdate
 				}, { new: true });
 
@@ -201,7 +198,11 @@ class Model extends BaseModel {
 
 				for (const member of checkExistConversation.members) {
 					if(membersID.includes(member._id.toString())){
-						return resolve({ error: true, message: `Member ${member.fullname} is existed in conversation`, status: 403 });
+						return resolve({ 
+							error: true, 
+							message: `Member ${member.bizname || member.fullname} is existed in conversation`, 
+							status: 403
+						});
 					}
 				}
 
@@ -215,10 +216,11 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't add member to conversation", status: 403 });
 
 				// INSERT USER MISS MESSAGE (DEFAULT 0)
-				let usersMissMessage = membersID.map(memberID => ({ userID: memberID, amount: 0 }))
+				let usersMissMessage = membersID.map(memberID => ({ userID: memberID, amount: 0 }));
+
 				await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$addToSet: { usersMissMessage }
-				}, { new: true });
+				});
 
 				// INSERT MESSAGE ADD MEMBER TO CONVERSATION
 				await CHATTING__MESSAGE_MODEL.insertMessage({
@@ -258,11 +260,6 @@ class Model extends BaseModel {
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't author or member don't belong to chat group", status: 403 });
-
-                // if(checkExistConversation.members.length <= 2){
-                    // let resultDeleteConverSation = await CHATTING__CONVERSATION_COLL.findByIdAndDelete({ conversationID }); 
-                    // return resolve({ error: false, data: checkExistConversation, status: 200});
-                // }
 
 				let pullMemberObj = {};
 
@@ -323,7 +320,7 @@ class Model extends BaseModel {
 				});
 
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author", status: 403 });
+                    return resolve({ error: true, message: "You aren't author conversation", status: 403 });
 
 				let infoConversationAfterUpdated = null;
 				let typeMessage = 0;
@@ -389,7 +386,7 @@ class Model extends BaseModel {
 				});
 
                 if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author", status: 403 });
+                    return resolve({ error: true, message: "You aren't author conversation", status: 403 });
 
 				let dataUpdate = {};
 				/**
@@ -490,11 +487,18 @@ class Model extends BaseModel {
 					})
                     .populate({
                         path: 'members authors',
-                        select: '_id fullname image company friends birthDay username phone email',
+                        select: '_id bizname fullname gender image company birthDay username phone email',
+                    })
+					.populate({
+                        path: 'lastMessage messagesPin',
+                        // select: '_id content sender type status usersSeen receivers parent',
                     })
 					.populate({
 						path: 'avatar',
-						populate: 'file'
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
 					})
                     .lean();
 
@@ -758,23 +762,38 @@ class Model extends BaseModel {
 					}
 				}
 
-				let infoMessage = await CHATTING__MESSAGE_COLL.findOne(conditionObjSearchMessage);
+				let infoMessage = await CHATTING__MESSAGE_COLL
+					.findOne(conditionObjSearchMessage)
+					.populate({
+						path: 'sender usersSeen receivers usersAssigned files.file', 
+						select: '_id bizname fullname image',
+						populate: 'file',
+					})
+					.populate('parent poll reminder')
+					.lean();
+
 				if(!infoMessage)
 					return resolve({ error: true, message: "Can't get info message", status: 400 });
 
 				let listMessagesFront = await CHATTING__MESSAGE_COLL.find(conditionObjFrontList)
-					// .populate({
-					//     path: 'sender', select:'_id fullname image company' 
-					// })
+					.populate({
+						path: 'sender usersSeen receivers usersAssigned files.file', 
+						select: '_id bizname fullname image',
+						populate: 'file',
+					})
+					.populate('parent poll reminder')
 					// .select('sender content status type createAt')
 					.sort(_sort)
 					.limit(5)
 					.lean();
 
 				let listMessagesBack = await CHATTING__MESSAGE_COLL.find(conditionObjBackList)
-					// .populate({
-					//     path: 'sender', select: '_id fullname image company' 
-					// })
+					.populate({
+						path: 'sender usersSeen receivers usersAssigned files.file', 
+						select: '_id bizname fullname image',
+						populate: 'file',
+					})
+					.populate('parent poll reminder')
 					// .select('sender content status type createAt')
 					.sort(_sort)
 					.limit(5)

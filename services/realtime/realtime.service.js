@@ -100,9 +100,8 @@ module.exports = {
                          *  passing all event of all services
                          */
                         ...CHATTING_SOCKET,
-                        'test1': function(data, ack) {
-							// console.log({ data, ack })
-							this.emit('LOGIN_SUCCESS', data);
+                        'testing': function(data, ack) {
+							this.emit('HELLO_WORLD', data);
 						},
 
                         'connect': async function(data, ack) { // write your handler function here.
@@ -190,7 +189,7 @@ module.exports = {
             return listUserAfterInsertNewUserConnect;
         },
 
-        addNewUserIntoListConnectedV2( socketID){
+        addNewUserIntoListConnectedV2(socketID){
             let listUserConnected2 	= this.listUserConnected2;
             let _userID 			= this.userID.toString();
             socketID 				= socketID.toString();

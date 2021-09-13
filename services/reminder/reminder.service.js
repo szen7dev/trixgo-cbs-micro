@@ -97,6 +97,21 @@ module.exports = {
 				console.log(`done add reminder conversation!!!!`);
 				console.log({ __JOB: job.attrs });
 
+				if(job.attrs.data && job.attrs.data.userID){
+					const socket = require('socket.io-client')(`http://localhost:4000?token=${job.attrs.data.userID}`);
+	
+					socket.on("connect", () => {
+						// console.log({ 
+						// 	__MESSAGE: "Connection with the Gateway established", 
+						// 	__SOCKETID: socket.id, 
+						// 	__CONNECTED: socket.connected, 
+						// 	__DISCONNECTED: socket.disconnected 
+						// });
+						socket.emit('CHATTING_CSS_NOTIFYCATION_REMINDER', job.attrs.data);
+						socket.disconnect();
+					});
+				}
+
 				done();
 			});
 
