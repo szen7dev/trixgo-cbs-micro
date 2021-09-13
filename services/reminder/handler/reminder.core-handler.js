@@ -75,7 +75,7 @@ module.exports = {
         }
     },
 
-	removeJobMuteConversation: {
+	deleteJobMuteConversation: {
         params: {
 			jobID: { type: "string", optional: true },
 		},
@@ -97,6 +97,95 @@ module.exports = {
 
                 // const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
 				// console.log({ __REMOVE_JOB: removeJobMuteConversation })
+
+                return { error: false, data: jobID };
+            } catch (error) {
+				console.error(error);
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+	addJobReminderConversation: {
+        params: {
+            conversationID	: { type: "string" },
+            userID			: { type: "string" },
+            remindTime		: { type: "string" },
+            repeat			: { type: "string" },
+            notifyFor		: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { conversationID, userID, remindTime, repeat, notifyFor } = ctx.params;
+				let humanTime = '';
+
+				// ["once", "daily", "weekly", "monthly", "yearly"]
+				switch (repeat) {
+					case 'daily':
+						humanTime = '1 day';
+						break;
+					case 'weekly':
+						humanTime = '1 week';
+						break;
+					case 'monthly':
+						humanTime = '1 month';
+						break;
+					case 'yearly':
+						humanTime = '1 year';
+						break;
+					default:
+						break;
+				}
+
+				if(humanTime){
+					const reminder = agenda.create('add_reminder_conversation', {
+						conversationID, userID, remindTime, repeat, notifyFor 
+					});
+					await agenda.start();
+					await reminder.repeatEvery(humanTime, {
+						skipImmediate: true
+					}).save();
+				}
+
+				if(remindTime && repeat === 'once'){
+					let timeScheduler = new Date(remindTime).getTime();
+
+					agenda.schedule(timeScheduler, 'add_reminder_conversation', {
+						conversationID, userID, remindTime, repeat, notifyFor 
+					});
+					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${repeat}`);
+				}
+
+                return { error: false, message: 'success', status: 200 }
+            } catch (error) {
+                return { error: true, message: error.message, status: 500 };
+            }
+        }
+    },
+
+	deleteJobReminderConversation: {
+        params: {
+			jobID: { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				let { jobID } = ctx.params;
+				// name: "update_mute_conversation"
+
+				// if(jobID){
+				// 	// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
+				// 	// console.log({ infoJobMute, jobID })
+				// 	agenda.jobs(
+				// 		{ _id: ObjectID(jobID) },
+				// 		(err, num) => console.log(err, num) // output: null 1
+				// 	);
+				// }
+
+				// console.log({ jobID })
+
+                const removeJobReminderConversation = await agenda.cancel({ name: "add_reminder_conversation" });
+				console.log({ __REMOVE_JOB: removeJobReminderConversation })
 
                 return { error: false, data: jobID };
             } catch (error) {

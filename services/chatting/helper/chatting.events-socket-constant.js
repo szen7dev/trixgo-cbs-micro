@@ -2,7 +2,6 @@ const CHATTING = 'CHATTING';
 
 // danh sách events socket
 exports.EVENT_SOCKET_CONSTANT_CHATTING = {
-    HELLO_WORLD                     : 'HELLO_WORLD',
 
     //========================== CLIENT SEND TO SERVER =============================
 
@@ -19,6 +18,7 @@ exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     CHATTING_CSS_SEND_MESSAGE                : `${CHATTING}_CSS_SEND_MESSAGE`,
     CHATTING_CSS_SHARE_MESSAGE               : `${CHATTING}_CSS_SHARE_MESSAGE`,
 
+	
 	// NOT USE
     CHATTING_CSS_RECEIVED_MESSAGE            : `${CHATTING}_CSS_RECEIVED_MESSAGE`,
     CHATTING_CSS_SEEN_MESSAGE                : `${CHATTING}_CSS_SEEN_MESSAGE`,
@@ -48,6 +48,8 @@ exports.EVENT_SOCKET_CONSTANT_CHATTING = {
     // MESSAGE
     CHATTING_SSC_SEND_MESSAGE                : `${CHATTING}_SSC_SEND_MESSAGE`,
     CHATTING_SSC_SHARE_MESSAGE               : `${CHATTING}_SSC_SHARE_MESSAGE`,
+
+
 
 	// NOT USE
     CHATTING_SSC_RECEIVED_MESSAGE            : `${CHATTING}_SSC_RECEIVED_MESSAGE`,

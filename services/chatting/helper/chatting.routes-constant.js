@@ -11,22 +11,24 @@ const CF_ROUTINGS_CHATTING = {
 
 	// ======================== ROUTE - API ===============================
 
-    // CONVERSATION
+    /// CONVERSATION
     INSERT_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/create-conversation`,
     UPDATE_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/update-conversation`,
     ADD_MEMBER_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/add-member-conversation`,
     REMOVE_MEMBER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/remove-member-conversation`,
+
 	UPDATE_ADMIN_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-admin-conversation`,
 	UPDATE_CONFIG_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/update-config-conversation`,
 	UPDATE_PIN_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-pin-conversation`,
 	UPDATE_HIDE_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-hide-conversation`,
 	UPDATE_MUTE_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/update-mute-conversation`,
+
 	MARK_READ_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/mark-read-conversation`,
 	MEMBER_LEAVE_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/member-leave-conversation`,
 	DELETE_CONVERSATION              				: `${BASE_ROUTE}${CONVERSATION}/delete-conversation`,
 	DELETE_HISTORY_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-history-conversation`,
-    GET_LIST_CONVERSATION_WITH_PAGE            		: `${BASE_ROUTE}${CONVERSATION}/list-conversation-with-page`,
 
+    GET_LIST_CONVERSATION_WITH_PAGE            		: `${BASE_ROUTE}${CONVERSATION}/list-conversation-with-page`,
     GET_INFO_CONVERSATION_BY_ID             		: `${BASE_ROUTE}${CONVERSATION}/info-conversation/:conversationID`,
     GET_INFO_GENERAL_GROUP_BY_MEMBER      			: `${BASE_ROUTE}${CONVERSATION}/info-general-group-by-member`,
     GET_LIST_MEMBER_CONVERSATION_BY_ID      		: `${BASE_ROUTE}${CONVERSATION}/list-members-conversation`,
@@ -35,17 +37,23 @@ const CF_ROUTINGS_CHATTING = {
     GET_LIST_MEMBER_SEND_MESSAGE_MEDIA_CONVERSATION : `${BASE_ROUTE}${CONVERSATION}/list-member-send-message-media-conversation`,
 
 
-	// Author VINHVH
-    GET_LIST_CONVERSATION_LINK_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/links/:conversationID`,
-    GET_LIST_CONVERSATION_MISS_BY_USER_ID   : `${BASE_ROUTE}${CONVERSATION}/miss`,
-    GET_LIST_CONVERSATION_FILE_BY_ID        : `${BASE_ROUTE}${CONVERSATION}/files/:conversationID`,
-
-    // MESSAGE
+    /// MESSAGE
 	INSERT_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/insert-message-conversation`,
-    INSERT_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/insert-message-poll-conversation`,
-    UPDATE_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/update-message-poll-conversation`,
+    UPDATE_SEEN_MESSAGE_CONVERSATION           		: `${BASE_ROUTE}${CONVERSATION}/update-seen-message-conversation`,
 	DELETE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-message-conversation`,
 	REVOKE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/revoke-message-conversation`,
+
+    INSERT_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/insert-message-poll-conversation`,
+    UPDATE_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/update-message-poll-conversation`,
+    CLOSE_MESSAGE_POLL_CONVERSATION            		: `${BASE_ROUTE}${CONVERSATION}/close-message-poll-conversation`,
+    GET_LIST_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/list-message-poll-conversation`,
+
+	INSERT_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/insert-message-reminder-conversation`,
+    UPDATE_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/update-message-reminder-conversation`,
+    UPDATE_USER_JOIN_REMINDER_CONVERSATION          : `${BASE_ROUTE}${CONVERSATION}/update-user-join-message-reminder-conversation`,
+	DELETE_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/delete-message-reminder-conversation`,
+    GET_LIST_MESSAGE_REMINDER_CONVERSATION          : `${BASE_ROUTE}${CONVERSATION}/list-message-reminder-conversation`,
+
     SEARCH_MESSAGE_CONVERSATION_BY_ID 				: `${BASE_ROUTE}${CONVERSATION}/search-message-conversation-by-id`,
     SHARE_MESSAGE_CONVERSATION            			: `${BASE_ROUTE}${CONVERSATION}/share-message-conversation`,
     UPDATE_PIN_MESSAGE_CONVERSATION					: `${BASE_ROUTE}${CONVERSATION}/update-pin-message-conversation`,
