@@ -3,13 +3,20 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("inspection_doc_comment", {
-    inspection: {
+module.exports  = DATABASE_MIDDLEWARE("message_conversation_department", {
+    // message_conversation
+    conversation: {
         type    :  Schema.Types.ObjectId,
         ref     : 'inspection_doc'
     },
-    comment: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'reaction_comment'
+
+    department: {
+        type: Schema.Types.ObjectId,
+        ref: "department"
     },
+
+    author : {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }
 })

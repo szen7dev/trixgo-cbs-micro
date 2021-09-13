@@ -7,17 +7,15 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}
      */
+    //_________Thuộc nền tảng
+    platform:{
+        type: Number,
+        enum: [1, 2]
+    },
     //_______Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : 'company' 
-    },
-     /**
-     * xem thông tin file https://docs.google.com/spreadsheets/d/1jIOpvNxEaVx1kuKIkgQ9BRrex_3m6CIa31X2TPUkvM8/edit#gid=1029627505&range=D15
-     */
-    platform: {
-        type: Number,
-        enum: [1, 2]
     },
     //_______Email
     email: {
@@ -62,8 +60,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: String,
         default: 'user_default.png'
     },
-    
-    //_______Ảnh chữ ký tay
+    //_______Ảnh chữ ký
     signature: {
         type: String,
         default: 'signature_default.png'
@@ -79,10 +76,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         default: 1
     },
     /**
-     * Dùng để phân biệt Admin công ty/thành viên thông thường
+     * (Xem xét đưa hết về 1 level, bổ sung app quản trị và phân quyền)
      * 0: Admin công ty  (Owner Company)
      * 1: Thành viên Thường (User)
-     * 100: Supper Admin (Hiệp vs Khánh) 
+     * 50: Supporter
+     * 100: Supper Admin
      */
     level: {
         type: Number,

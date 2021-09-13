@@ -20,16 +20,14 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
     },
     //_________Mô tả hồ sơ
     description: String,
-
-     /**
-     * Trạng thái hoạt động
-     * 1: Hoạt động
-     * 2: Đã xóa
-     */
-    stage: {
-        type: Number,
-        default: 1
-    },
+    //_________Số lượng tương tác
+    numLike: Number,
+    //_________Số lượng comment
+    numComment: Number,
+    //_________Số lượng share
+    numShare: Number,
+    //_________Số lượng view
+    numView: Number,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
