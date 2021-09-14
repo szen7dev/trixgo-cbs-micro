@@ -133,7 +133,7 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [senderID] }
-                });
+                }).lean();
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -226,6 +226,7 @@ class Model extends BaseModel {
 				}
 
 				let infoMessageAfterInserted = null;
+				let numberMissMessage		 = 1;
 
 				// MESSAGE SHARE CONTACT
 				if(+type === 7){
@@ -265,7 +266,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't update last message", status: 403 });
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
-				await this.updateUserMissMessage({ conversationID, userID: senderID, numberMissMessage: 1 });
+				await this.updateUserMissMessage({ conversationID, userID: senderID, numberMissMessage });
 
                 return resolve({ error: false, data: infoMessageAfterInserted, status: 200 });
             } catch (error) {
@@ -289,7 +290,7 @@ class Model extends BaseModel {
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
 
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
@@ -333,20 +334,22 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
 					_id: conversationID,
 					members: { $all: [userID] }
-                });
+                }).lean();
+
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
 				if(filesID && !checkObjectIDs(filesID))
-					return resolve({ error: true, message: "Request Params Invalid", status: 400 });
+					return resolve({ error: true, message: "Request Params filesID Invalid", status: 400 });
 
 				// Get list message will delete
-				let listMessages = await CHATTING__MESSAGE_COLL.find({
-					_id: { $in: messagesID },
-					conversation: conversationID
-				})
-				.select('_id type')
-				.lean();
+				let listMessages = await CHATTING__MESSAGE_COLL
+					.find({
+						_id: { $in: messagesID },
+						conversation: conversationID
+					})
+					.select('_id type')
+					.lean();
 
 				const { results: infoMessageAfterUpdated } = await PromisePool
 					.for(listMessages)
@@ -355,7 +358,7 @@ class Model extends BaseModel {
 						let infoMessageAfterUpdated = null;
 
 						switch (message.type) {
-							case 0: // Xoá tin nhắn thông thường (text message)
+							case 0: // Delete message normal (text message)
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
 									conversation: conversationID
@@ -365,7 +368,7 @@ class Model extends BaseModel {
 									}
 								}, { new: true });
 								break;
-							case 1: // Xoá tin nhắn image, file (media message)
+							case 1: // Delete message image, file (media message)
 							case 2:
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
@@ -413,7 +416,7 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
 					_id: conversationID,
 					members: { $all: [userID] }
-                });
+                }).lean();
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -435,9 +438,6 @@ class Model extends BaseModel {
 					const expireTime = new Date(message.createAt).addHours(1);
 					const now 		 = new Date(Date.now());
 
-					// const getTime = getTimeBetween(expireTime, now);
-					// console.log({ createAt: message.createAt, expireTime, now, getTime, compare: expireTime > now })
-
 					if(expireTime > now){
 						listMessagesNotExpire[listMessagesNotExpire.length] = message;
 					}
@@ -454,7 +454,7 @@ class Model extends BaseModel {
 						let infoMessageAfterUpdated = null;
 
 						switch (message.type) {
-							case 0: // Thu hồi tin nhắn thông thường (text message)
+							case 0: // Recall message normal (text message)
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
 									conversation: conversationID,
@@ -463,7 +463,7 @@ class Model extends BaseModel {
 									$set: { status: 3 }
 								}, { new: true });
 								break;
-							case 1: // Thu hồi tin nhắn ảnh (media message)
+							case 1: // Recall message images, files (media message)
 							case 2:
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
@@ -509,10 +509,13 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER ID IS MEMBER OF CONVERSATION
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
-					_id: { $in: conversationsID },
-					members: { $all: [userID] }
-				}).lean();
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL
+					.find({
+						_id: { $in: conversationsID },
+						members: { $all: [userID] }
+					})
+					.select('_id members')
+					.lean();
 
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You aren't member of conversations", status: 403 });
@@ -576,7 +579,8 @@ class Model extends BaseModel {
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
+
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
@@ -661,7 +665,8 @@ class Model extends BaseModel {
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
+
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
@@ -704,8 +709,8 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listMessagesPined,
-						limit,
 						currentPage: page,
+						limit,
 						totalRecord: infoConversation.messagesPin.length
 					}
 				});
@@ -730,7 +735,7 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-                });
+                }).lean();
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -760,7 +765,7 @@ class Model extends BaseModel {
 				}
 
 				// INSERT MESSAGE NOTIFY CREATE POLL
-				let infoMessageNotifyCreatePoll = await this.insertData({
+				await this.insertData({
 					...dataInsertMessage,
 					type: 110
 				})
@@ -788,10 +793,7 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false, 
 					status: 200,
-					data: {
-						infoMessageNotifyCreatePoll,
-						infoMessagePoll
-					}, 
+					data: infoMessagePoll, 
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -814,7 +816,7 @@ class Model extends BaseModel {
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
 
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -954,7 +956,7 @@ class Model extends BaseModel {
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
 
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -981,6 +983,7 @@ class Model extends BaseModel {
 				if(!infoPoll)
 					return resolve({ error: true, message: "Can't update status poll", status: 403 });
 
+				// INSERT MESSAGE NOTIFY CLOSE POLL
 				const infoMessageNotify = await this.insertData({
 					usersSeen: [userID], 
 					sender: userID,
@@ -1035,7 +1038,8 @@ class Model extends BaseModel {
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
+
 				if(!infoConversation)
 					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
 
@@ -1129,7 +1133,7 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-                });
+                }).lean();
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -1141,18 +1145,18 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "You don't have permission to create note or reminder conversation", status: 403 });
 				}
 
-				const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
-					conversationID,
-					messageID: '612f466299d3042d09ed4503',
-					userID,
-					remindTime,
-					repeat,
-					notifyFor
-				});
+				// const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
+				// 	conversationID,
+				// 	messageID: '612f466299d3042d09ed4503',
+				// 	userID,
+				// 	remindTime,
+				// 	repeat,
+				// 	notifyFor
+				// });
 
-				// await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`);
+				// // await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`);
 
-				return resolve({ error: false, message: 'Yaa!!! Tada', status: 200 });
+				// return resolve({ error: false, message: 'Yaa!!! Tada', status: 200 });
 
 				// INSERT MESSAGE REMINDER
 				let infoReminderAfterInsert = await CHATTING__MESSAGE_REMINDER_COLL.create({
@@ -1241,7 +1245,7 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-                });
+                }).lean();
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -1291,6 +1295,17 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
+				if(remindTime){
+					// ADD JOB FOR REMINDER
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
+						messageID: infoReminderAfterUpdate._id,
+						conversationID,
+						userID,
+						remindTime,
+						repeat
+					})
+				}
+
 				return resolve({ 
 					error: false, 
 					status: 200,
@@ -1317,7 +1332,7 @@ class Model extends BaseModel {
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-                });
+                }).lean();
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -1412,7 +1427,7 @@ class Model extends BaseModel {
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
 
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You aren't member", status: 403 });
@@ -1446,7 +1461,7 @@ class Model extends BaseModel {
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
 					reminder: reminder._id,
-					type: 118 // Xoá nhắc hẹn
+					type: 118
 				})
 
 				// UPDATE LAST MESSAGE
@@ -1491,9 +1506,10 @@ class Model extends BaseModel {
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				});
+				}).lean();
+
 				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
+					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
 				let conditionFind = {};
 				let conditionObj  = { 

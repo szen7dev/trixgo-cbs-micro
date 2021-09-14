@@ -1005,7 +1005,6 @@ class Model extends BaseModel {
 	updateMuteConversation({ conversationID, userID, isMute, timeMute, jobID, ctx }){
 		return new Promise(async resolve => {
 			try {
-				// userID = "5e60dffc2c43a444c5f8e239";
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
@@ -1123,6 +1122,13 @@ class Model extends BaseModel {
 					pullObj.authors = userID;
 				}
 
+				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$pull: pullObj
+				}, { new: true })
+
+				if(!infoAfterUpdated)
+					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
+
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					conversationID, 
 					senderID: userID,
@@ -1130,13 +1136,6 @@ class Model extends BaseModel {
 					usersAssigned: [userID],
 					receiversID: checkExistConversation.members,
 				})
-
-				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-					$pull: pullObj
-				}, { new: true })
-
-				if(!infoAfterUpdated)
-					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
 
 				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
 			} catch(error){
@@ -1290,11 +1289,18 @@ class Model extends BaseModel {
 
                 let listConversation = await CHATTING__CONVERSATION_COLL.find({ ...conditionObj, ...conditionFind }, objSort)
 					.populate({
-						path: 'lastMessage', 
-						select: 'modifyAt  createAt sender content status', 
+						path: 'lastMessage',
+						select: '_id content type status usersSeen sender',
 						populate: { 
 							path: 'sender', 
-							select: '_id fullname image company'
+							select: '_id bizname fullname image company'
+						}
+					})
+					.populate({
+						path: 'avatar',
+						populate: {
+							path: 'file',
+							select: 'url'
 						}
 					})
 					.limit(+limit)
@@ -1366,6 +1372,21 @@ class Model extends BaseModel {
 
                 let listConversationMissMessage = await CHATTING__CONVERSATION_COLL
 					.find({ ...conditionObj, ...conditionFind })
+					.populate({
+						path: 'lastMessage',
+						select: '_id content type status usersSeen sender',
+						populate: { 
+							path: 'sender', 
+							select: '_id bizname fullname image company'
+						}
+					})
+					.populate({
+						path: 'avatar',
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
+					})
 					.limit(+limit)
 					.sort(sortBy);
 
