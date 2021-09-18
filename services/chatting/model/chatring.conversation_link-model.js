@@ -24,25 +24,25 @@ class Model extends BaseModel {
         super(CHATTING__CONVERSATION_LINK_COLL);
     }
 
-    insert({ conversationID, userID, link }){
+    insert({ conversationID, link, senderID }){
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, userID]))
+                if(!checkObjectIDs([conversationID, senderID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
                 let checkExistConversation =  await CHATTING__CONVERSATION_COLL.findOne({ 
 					_id: conversationID,
-                    members: { $all: [userID] }
+                    members: { $all: [senderID] }
                 })
 
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't member", status: 403 });
 
-                let checkLinkExist = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link });
-                if(checkLinkExist)
-                    return resolve({ error: false, message: "Link is exist", status: 200 });
+                // let checkLinkExist = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link, senderID });
+                // if(checkLinkExist)
+                //     return resolve({ error: false, message: "Link is exist", status: 200 });
 
-                let infoAfterInserted = await this.insertData({ conversation: conversationID, link });
+                let infoAfterInserted = await this.insertData({ conversation: conversationID, sender: senderID, link });
 
                 if(!infoAfterInserted)
                     return resolve({ error: true, message: "Can't create link", status: 403 });

@@ -140,8 +140,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configSendMessage === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(senderID))
+					if(!listAuthorsID.includes(senderID))
 						return resolve({ error: true, message: "You don't have permission to send message", status: 403 });
 				}
 
@@ -214,7 +215,7 @@ class Model extends BaseModel {
 					if(allLinks && allLinks.length){
 						let listMessageLinks = allLinks.map(link => ({
 							conversationID, 
-							userID: senderID,
+							senderID,
 							link
 						}))
 
@@ -586,8 +587,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(infoConversation.config && infoConversation.config.configPinMessage === 2){
+					const listAuthorsID = infoConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!infoConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to pin message", status: 403 });
 				}
 
@@ -742,8 +744,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configCreatePoll === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to create poll conversation", status: 403 });
 				}
 
@@ -1140,8 +1143,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configCreateNote === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to create note or reminder conversation", status: 403 });
 				}
 
