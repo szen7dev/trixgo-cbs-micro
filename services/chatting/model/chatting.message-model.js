@@ -121,7 +121,9 @@ class Model extends BaseModel {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-    insertMessage({ conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx }) {
+    insertMessage({ 
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx 
+	}) {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs([senderID, conversationID])) 

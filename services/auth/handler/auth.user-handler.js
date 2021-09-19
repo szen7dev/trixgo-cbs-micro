@@ -179,7 +179,7 @@ module.exports = {
         async handler(ctx) {
             await this.validateEntity(ctx.params);
             let { key }        = ctx.params;
-        
+			
             return ctx.call("auth.list", {
                 search: key,
                 searchFields: ["fullname"],

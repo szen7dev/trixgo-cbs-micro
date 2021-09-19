@@ -894,7 +894,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Thông báo nhắc hẹn
 	 * Date: 13/09/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFYCATION_REMINDER]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER]: async function(data, ack) { 
         let socket               					= this;
         let listUserActive       					= socket.$service.listUserConnected2;
         let io                   					= socket.$service.io;
@@ -910,7 +910,7 @@ exports.CHATTING_SOCKET = {
 				listUserConnected: listUserActive, 
 				arrReceiver: [userID],
 				data: { error: true, message: "Can't get info conversation or message" }, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFYCATION_REMINDER], io
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER], io
 			});
 		}
 
@@ -925,7 +925,7 @@ exports.CHATTING_SOCKET = {
 				listUserConnected: listUserActive, 
 				arrReceiver: [userID],
 				data: { error: false, data: infoMessage }, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFYCATION_REMINDER], io
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER], io
 			});
 		}
 
