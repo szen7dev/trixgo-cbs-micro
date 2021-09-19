@@ -443,6 +443,53 @@ class Model extends BaseModel {
         })
     }
 
+	// implement by: MINHVH ✅ 
+	getInfoById({ userID, select }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'userID_invalid' });
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                   /**
+                 * LOGIC STEP (3)
+                 *  3.1: convert type + update name (ví dụ: string -> number)
+                 *  3.2: operation database
+                 */    
+              
+                let infoUser = await AUTH__USER_COLL.findById(userID)
+					.select(select)
+					.lean();
+
+                return resolve({ error: false, data: infoUser });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+	// implement by: MINHVH ✅ 
+	getListUserWithCondition({ condition, select }) {
+        return new Promise(async (resolve) => {
+            try {
+				const listUsers = await AUTH__USER_COLL
+					.find(condition)
+					.select(select)
+					.lean();
+
+                return resolve({ error: false, data: listUsers });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
     resolveToken({ token }) {
         return new Promise(async (resolve) => {
             try {
@@ -528,7 +575,8 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "User is not exist", status: 403 });
 
 				let infoUserAfterUpdated = null;
-				if(isPin === "true"){ // Pin cuộc hội thoại
+
+				if(isPin){ // Pin cuộc hội thoại
 
 					if(infoUser.conversationsPin.includes(conversationID))
 						return resolve({ error: true, message: "Conversation is pined", status: 400 });
@@ -571,7 +619,40 @@ class Model extends BaseModel {
         })
     }
 
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách pin cuộc hội thoại
+	 * Date: 06/09/2021
+	 */
+	getListPinConversation({ userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+				 if(!checkObjectIDs([userID]))
+					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
+				let infoUser = await AUTH__USER_COLL
+					.findById(userID)
+					.select('conversationsPin')
+					.populate({
+						path: 'conversationsPin',
+						populate: 'lastMessage'
+					})
+					.lean();
+
+				if(!infoUser)
+					return resolve({ error: true, message: "User is not exist", status: 403 });
+
+                return resolve({ error: false, data: infoUser.conversationsPin, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
 
 
     // /**5t

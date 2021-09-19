@@ -29,6 +29,8 @@ const CF_ROUTINGS_CHATTING = {
 	DELETE_HISTORY_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-history-conversation`,
 
     GET_LIST_CONVERSATION_WITH_PAGE            		: `${BASE_ROUTE}${CONVERSATION}/list-conversation-with-page`,
+    GET_LIST_PIN_CONVERSATION	            		: `${BASE_ROUTE}${CONVERSATION}/list-pin-conversation`,
+    GET_LIST_CONVERSATION_MISS_MESSAGE         		: `${BASE_ROUTE}${CONVERSATION}/list-conversation-miss-message`,
     GET_INFO_CONVERSATION_BY_ID             		: `${BASE_ROUTE}${CONVERSATION}/info-conversation/:conversationID`,
     GET_INFO_GENERAL_GROUP_BY_MEMBER      			: `${BASE_ROUTE}${CONVERSATION}/info-general-group-by-member`,
     GET_LIST_MEMBER_CONVERSATION_BY_ID      		: `${BASE_ROUTE}${CONVERSATION}/list-members-conversation`,

@@ -180,17 +180,12 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //     type: Number,
     //     default: 0
     // }, 
-    // //_______Cuộc hộp thoại bị mis tin nhắn
-    // converMiss:[{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'message_conversation'
-    // }],
     //_______Code reset mật khẩu
     codeReset: String,
     /**
      * Quản lý thông tin Device Mobile
      */
-    devices : [{
+    devices: [{
         deviceName      :{ type : String }, 
         deviceID        :{ type : String },
         registrationID  :{ type : String }

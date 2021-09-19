@@ -110,6 +110,45 @@ module.exports = {
         }
     },
 
+	getInfoById: {
+        auth: "required",
+		params: {
+			userID: { type: "string" },
+			select: { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { userID, select } = ctx.params;
+
+                let infoUserAfterFind = await AUTH__USER_MODEL.getInfoById({ userID, select });
+
+                return infoUserAfterFind;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+	getListUserWithCondition: {
+        auth: "required",
+		params: {
+			select: { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { condition, select } = ctx.params;
+
+                let infoUserAfterFind = await AUTH__USER_MODEL.getListUserWithCondition({ condition, select });
+
+                return infoUserAfterFind;
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
     /**
      * Code: F0015
      * Author: Depv
@@ -416,7 +455,7 @@ module.exports = {
         params: {
             conversationID	: { type: "string" },
             userID			: { type: "string" },
-            isPin			: { type: "string" }
+            isPin			: { type: "boolean" }
         },
         async handler(ctx) {
 			try {
@@ -429,8 +468,29 @@ module.exports = {
 
 				return resultAfterCallHandler;
             } catch (error) {
-				return { error: true, message: error.message };
+				return { error: true, message: error.message, status: 500 };
+            }
+        }
+    },
+
+	getListPinConversation: {			
+        params: {
+            userID: { type: "string" },
+        },
+        async handler(ctx) {
+			try {
+                await this.validateEntity(ctx.params);
+                let { userID } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
+					userID
+				});
+
+				return resultAfterCallHandler;
+            } catch (error) {
+				return { error: true, message: error.message, status: 500 };
             }
         }
     }
+
 }

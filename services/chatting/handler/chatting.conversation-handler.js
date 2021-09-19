@@ -1,12 +1,18 @@
 /**
+ * CONSTATNS
+ */
+const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+
+/**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }                 = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const CHATTING__CONVERSATION_MODEL                    = require('../model/chatting.conversation-model').MODEL;
+const CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
 
 
 module.exports = {
@@ -26,7 +32,7 @@ module.exports = {
         params: {
             name        : { type: "string" },
             description : { type: "string", optional: true },
-            isPrivate   : { type: "string" }
+            isPrivate   : { type: "boolean" }
         },
         async handler(ctx) {
             try {
@@ -88,7 +94,7 @@ module.exports = {
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { conversationID, membersID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.addMembersToConversationByID({
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.addMembersToConversation({
 					conversationID, authorID, membersID
 				});
 
@@ -135,7 +141,7 @@ module.exports = {
         params: {
             conversationID  : { type: "string" },
             memberID        : { type: "string" },
-            isSetAdmin      : { type: "string" },
+            isSetAdmin      : { type: "boolean" },
         },
         async handler(ctx) {
             try {
@@ -162,8 +168,8 @@ module.exports = {
 	updateConfigConversation: {
         params: {
             conversationID  : { type: "string" },
-            typeConfig      : { type: "string" },
-            valueConfig     : { type: "string" },
+            typeConfig      : { type: "number" },
+            valueConfig     : { type: "number" },
         },
         async handler(ctx) {
             try {
@@ -190,7 +196,7 @@ module.exports = {
 	updatePinConversation: {
         params: {
             conversationID  : { type: "string" },
-            isPin        	: { type: "string" }
+            isPin        	: { type: "boolean" }
         },
         async handler(ctx) {
             try {
@@ -269,19 +275,19 @@ module.exports = {
 	 */
 	getListMessagesConversationWithPage: {
         params: {
-            conversationID	: { type: "string" },
-			latestMessageID : { type: "string", optional: true },
-			key 			: { type: "string", optional: true },
-			limit 			: { type: "string", optional: true },
+            conversationID	 : { type: "string" },
+			lastestMessageID : { type: "string", optional: true },
+			keyword 		 : { type: "string", optional: true },
+			limit 			 : { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, latestMessageID, limit, key } = ctx.params;
+                let { conversationID, lastestMessageID, limit, keyword } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
-					conversationID, latestMessageID, limit, key, userID
+					conversationID, lastestMessageID, limit, keyword, userID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -331,6 +337,7 @@ module.exports = {
             dateCreate		: { type: "string", optional: true },
             fromDate		: { type: "string", optional: true },
             toDate			: { type: "string", optional: true },
+            limit			: { type: "string", optional: true },
             isLoadAll		: { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -338,11 +345,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
                 let { 
-					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll 
+					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, limit, isLoadAll 
 				} = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesMediaConversation({ 
-					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, isLoadAll
+					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, limit, isLoadAll
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -386,7 +393,7 @@ module.exports = {
 	updateHideConversation: {
         params: {
             conversationID	: { type: "string" },
-            isHide			: { type: "string" },
+            isHide			: { type: "boolean" },
         },
         async handler(ctx) {
             try {
@@ -413,7 +420,7 @@ module.exports = {
 	updateMuteConversation: {
         params: {
             conversationID	: { type: "string" },
-            isMute			: { type: "string" },
+            isMute			: { type: "boolean" },
             timeMute		: { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -573,16 +580,17 @@ module.exports = {
 	getListConversationWithPage: {
         params: {
             lastestConversationID 	: { type: "string", optional: true },
-            key						: { type: "string", optional: true },
+            keyword					: { type: "string", optional: true },
+            limit					: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID }  					= ctx.meta.infoUser;
-                const { lastestConversationID, key } 	= ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestConversationID, keyword, limit } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-					lastestConversationID, userID, key
+					lastestConversationID, userID, keyword, limit
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -593,23 +601,45 @@ module.exports = {
     },
 
 	/**
-	 * Dev: VinhHV
-	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
-	 * Date: ...
-	 * Updated: MinhVH - 03/08/2021
+	 * Dev: MinhVH
+	 * Func: Danh sách cuộc hội thoại đã pin
+	 * Date: 06/09/2021
 	 */
-	 getListConversationMissMessageByUserID: {
+	getListPinConversation: {
+        params: {},
+        async handler(ctx) {
+            try {
+				const { _id: userID } = ctx.meta.infoUser;
+
+				const resultAfterCallHandler = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
+					userID,
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
+	 * Date: 09/09/2021
+	 */
+	getListConversationMissMessage: {
         params: {
-            userID       			: { type: "string" },
-            lastestConversationID 	: { type: "string", optional: true },
-        },
+			lastestConversationID 	: { type: "string", optional: true },
+            limit					: { type: "string", optional: true },
+		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                let { userID, lastestConversationID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestConversationID, limit } = ctx.params;
 
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
-					userID, lastestConversationID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
+					userID, lastestConversationID, limit
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

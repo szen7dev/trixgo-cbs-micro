@@ -29,7 +29,7 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		[CF_ACTIONS_EXAMPLE.CASE_1_GET_LIST					] 		: EXAMPLE__CASE1_HANLDER.getList,
+		[CF_ACTIONS_EXAMPLE.CASE_1_GET_LIST] 		: EXAMPLE__CASE1_HANLDER.getList,
 	},
 
 	/**
