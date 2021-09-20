@@ -195,7 +195,7 @@ exports.CHATTING_SOCKET = {
         let listUserActive              	= socket.$service.listUserConnected2;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
-		let { conversationID, membersID } 	= data;
+		let { conversationID, memberID } 	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
@@ -212,8 +212,8 @@ exports.CHATTING_SOCKET = {
 			userID,
 			select: '_id bizname fullname image'
 		});
-		const removedMembers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
-			condition: { _id: { $in: membersID } },
+		const removedMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+			condition: { _id: memberID },
 			select: '_id bizname fullname image'
 		});
 
@@ -233,7 +233,7 @@ exports.CHATTING_SOCKET = {
 				data: {
 					infoConversation,
 					infoSender: infoSender.data,
-					removedMembers: removedMembers.data,
+					removedMember: removedMember.data,
 				}
 			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_MEMBER_CONVERSATION], io
 		});

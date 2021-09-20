@@ -834,7 +834,7 @@ class Model extends BaseModel {
 	 * Date: 12/08/2021
 	 */
 	getListMessagesMediaConversation({ 
-		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, limit = 10, isLoadAll 
+		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10, isLoadAll 
 	}){
 		return new Promise(async resolve => {
 			try {
@@ -853,7 +853,16 @@ class Model extends BaseModel {
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
 
+				if(!page || isNaN(page))
+					page = 1;
+
+				if(!limit || isNaN(limit))
+					limit = 10;
+
+				page  		= +page;
+				limit 		= +limit;
 				typeMessage = +typeMessage;
+
 				let conditionObj = { 
 					conversation: ObjectID(conversationID)
 				};
@@ -925,11 +934,18 @@ class Model extends BaseModel {
 						{ $sort: { "_id": -1 } }
 					]
 
-					if(!isTrue(isLoadAll)){
-						pipeline.push({ $limit: +limit });
-					}
+					// if(!isTrue(isLoadAll)){
+					// 	pipeline.push({ $limit: +limit });
+					// }
 
 					listMedia = await CHATTING__CONVERSATION_LINK_COLL.aggregate(pipeline);
+
+					if(!listMedia)
+						return resolve({ error: true, message: "Can't get list message", status: 403 });
+
+					let skip = (page * limit) - limit;
+					listMedia = listMedia.slice(skip, skip + limit);
+
 				} else{
 					// MESSAGE FILE, IMAGE
 					groupObj = {
@@ -972,18 +988,21 @@ class Model extends BaseModel {
 							}
 						},
 						{ $group: groupObj },
-						{ $sort: { "_id": -1 } }
+						{ $sort: { "_id": -1 } },
 					]
 
-					if(!isTrue(isLoadAll)){
-						pipeline.push({ $limit: +limit });
-					}
+					// if(!isTrue(isLoadAll)){
+					// 	pipeline.push({ $limit: +limit });
+					// }
 
 					listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
 
 					if(!listMedia)
 						return resolve({ error: true, message: "Can't get list message", status: 403 });
 
+					let skip = (page * limit) - limit;
+
+					listMedia = listMedia.slice(skip, skip + limit);
 					listMedia = listMedia.map(async media =>{
 
 						let listMessage = media.listMessage.map(message => CHATTING__MESSAGE_COLL

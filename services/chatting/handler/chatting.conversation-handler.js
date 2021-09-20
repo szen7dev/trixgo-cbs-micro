@@ -331,25 +331,26 @@ module.exports = {
 	 */
 	getListMessagesMediaConversation: {
         params: {
-            conversationID	: { type: "string" },
-            typeMessage		: { type: "string" },
-            senderID		: { type: "string", optional: true },
-            dateCreate		: { type: "string", optional: true },
-            fromDate		: { type: "string", optional: true },
-            toDate			: { type: "string", optional: true },
-            limit			: { type: "string", optional: true },
-            isLoadAll		: { type: "string", optional: true },
+            conversationID	 : { type: "string" },
+            typeMessage		 : { type: "string" },
+            senderID		 : { type: "string", optional: true },
+            dateCreate		 : { type: "string", optional: true },
+            fromDate		 : { type: "string", optional: true },
+            toDate			 : { type: "string", optional: true },
+            page			 : { type: "string", optional: true },
+            limit			 : { type: "string", optional: true },
+            isLoadAll		 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
                 let { 
-					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, limit, isLoadAll 
+					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit, isLoadAll 
 				} = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesMediaConversation({ 
-					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, limit, isLoadAll
+					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit, isLoadAll
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
