@@ -6,34 +6,32 @@
  /**
   * MODELS
   */
- const INSPECTION__TEMPLATE_DOC_MODEL                   = require('../model/inspection.area-model').MODEL;
+ const INSPECTION__AREA_MODEL            = require('../model/inspection.area-model').MODEL;
 
 
 module.exports = {
     /**
-	 * Dev: HiepNH
+	 * Dev: Depv ✅
 	 * Func: Thêm khu vực
 	 * Date: 19/08/2021
 	 */
-     insert: {
+    insertArea: {
         auth: "required",
         params: {
-			name  : { type: "string" },
-            sign    : { type: "string" },
-            description    : { type: "description", optional: true },
-            // content 		: { type: "string", optional: true },
+            projectID   : { type: "string" },
+			name        : { type: "string" },
+            parentID    : { type: "string", optional: true },
+            sign        : { type: "string", optional: true },
+            description : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userCreate } = ctx.meta.infoUser;
-                const { name, sign, description } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                const { parentID, projectID, name, sign, description } = ctx.params;
 
-                const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.insert({
-					name, 
-                    sign, 
-                    description,
-                    userCreate
+                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.insert({
+					parentID, projectID, name, sign, description, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -43,19 +41,89 @@ module.exports = {
         }
     },
 
-    getList: {
+    /**
+	 * Dev: Depv ✅
+	 * Func: Cập nhật khu vực
+	 * Date: 19/08/2021
+	 */
+    updateArea: {
+        auth: "required",
         params: {
-            page            : { type: "string", optional: true },
+            areaID      : { type: "string" },
+			name        : { type: "string" },
+            sign        : { type: "string", optional: true },
+            description : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                await this.validateEntity(ctx.params);
-                let { page }        = ctx.params;
-                return { 
-                    error: false, page: page
-                }
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { areaID, name, sign, description } = ctx.params;
+
+                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.update({
+					areaID, name, sign, description, userID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Xóa khu vực
+	 * Date: 19/08/2021
+	 */
+    removeArea: {
+        auth: "required",
+        params: {
+            areaID   : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { areaID } = ctx.params;
+                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.remove({
+					areaID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Xóa khu vực
+	 * Date: 19/08/2021
+	 */
+    listArea: {
+        auth: "required",
+        params: {
+            projectID       : { type: "string" },
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestIDArea   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { projectID, keyword, limit, lastestIDArea } = ctx.params;
+                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.getListArea({
+					keyword, projectID, limit, lastestIDArea 
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },

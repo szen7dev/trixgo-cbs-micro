@@ -18,7 +18,6 @@ const { RANGE_BASE_PAGINATION }                 = require('../../../tools/cursor
 const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
 
-
 class Model extends BaseModel {
 
     constructor() {

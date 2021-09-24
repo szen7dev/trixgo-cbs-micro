@@ -36,7 +36,8 @@ module.exports = {
 	*/
 	actions: {	
 		//==========================================   REACTION ACTIONS   ================================
-		[CF_ACTIONS_REACTION.REACTION_GET_LIST				] 			: REACTION__REACTION_HANDLER.getList,
+		// [CF_ACTIONS_REACTION.REACTION_GET_LIST ] 			: REACTION__REACTION_HANDLER.getList,
+		[CF_ACTIONS_REACTION.REACTION_INSERT   ] 			: REACTION__REACTION_HANDLER.insertReaction,
 
 		//==========================================   COMMENT ACTIONS   ================================
 		[CF_ACTIONS_REACTION.COMMENT_GET_LIST				] 			: REACTION__COMMENT_HANDLER.getList,

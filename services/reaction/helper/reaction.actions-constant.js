@@ -11,6 +11,7 @@ const CF_ACTIONS_REACTION = {
      * REACTION
     */
     REACTION_GET_LIST                        : `${BASE_ACTIONS}_${REACTION}_REACTION_GET_LIST`,
+    REACTION_INSERT                          : `${BASE_ACTIONS}_${REACTION}_REACTION_INSERT`,
 
      /**
      * COMMENT

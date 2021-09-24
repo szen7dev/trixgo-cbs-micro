@@ -16,7 +16,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
         type: String,
         trim: true,
         unique : true,
-        require: true
+        require: true  
     },
     //_________Mô tả hồ sơ
     description: String,
@@ -30,8 +30,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
     numView: Number,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
-     */
-    userCreate: {
+     */   
+    userCreate: { 
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
