@@ -223,16 +223,16 @@ module.exports = {
 	 */
 	 getInfoConversationByID: {
         params: {
-            conversationID: { type: "string" }
+            conversationID: { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				let { _id: userID }  	= ctx.meta.infoUser;
-                let { conversationID } 	= ctx.params;
+				let { _id: userID }  					= ctx.meta.infoUser;
+                let { conversationID, filter, select } 	= ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getInfoConversationByID({ 
-					conversationID, userID
+					conversationID, userID, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -284,10 +284,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, lastestMessageID, limit, keyword } = ctx.params;
+                let { conversationID, lastestMessageID, limit, keyword, filter, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
-					conversationID, lastestMessageID, limit, keyword, userID
+					conversationID, lastestMessageID, userID, limit, keyword, filter, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -311,10 +311,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, messageID } = ctx.params;
+                let { conversationID, messageID, filter, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.searchMessageConversationById({ 
-					conversationID, userID, messageID
+					conversationID, userID, messageID, filter, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -372,11 +372,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID } 	= ctx.meta.infoUser;
-                let { conversationID } 	= ctx.params;
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMemberSendMessagesMediaConversation({ 
-					conversationID, userID
+					conversationID, userID, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -558,11 +558,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID }  	= ctx.meta.infoUser;
-                let { conversationID } 	= ctx.params;
+                let { _id: userID } = ctx.meta.infoUser;
+                let { conversationID, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMembersConversationByID({ 
-					conversationID, userID
+					conversationID, userID, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -588,10 +588,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestConversationID, keyword, limit } = ctx.params;
+                const { lastestConversationID, keyword, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-					lastestConversationID, userID, keyword, limit
+					lastestConversationID, userID, keyword, limit, filter, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -611,9 +611,10 @@ module.exports = {
         async handler(ctx) {
             try {
 				const { _id: userID } = ctx.meta.infoUser;
+				const { select } = ctx.params;
 
 				const resultAfterCallHandler = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
-					userID,
+					userID, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -637,10 +638,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestConversationID, limit } = ctx.params;
+                const { lastestConversationID, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
-					userID, lastestConversationID, limit
+					userID, lastestConversationID, limit, filter, select
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
