@@ -6,18 +6,17 @@ const BaseModel                                 = require('../../../tools/db/bas
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
  
 class Model extends BaseModel {
     constructor() {
-        super(require(REACTION__COMMENT_COLL));
+        super(REACTION__COMMENT_COLL);
     }
     /**
      * Name: Thêm comment
      * Author: Depv
      * Code: F0271
      */
-    insert({ content, images, parentID, inspectionTemplateDocID, userID, ctx }) {
+    insert({ content, userID }) {
         const that = this;
         return new Promise(async (resolve) => {
              try {
@@ -31,43 +30,20 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!ObjectID.invalid(userID))
-                  return resolve({ error: true, message: "author_invalid" });
+                if(!checkObjectIDs(userID))
+                  return resolve({ error: true, message: "Request params userID invalid" });
 
                 if(!content)
-                    return resolve({ error: true, message: "content_invalid" })
+                    return resolve({ error: true, message: "Request params content invalid" })
                 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
+
                 dataInsert.content = content;
                 dataInsert.author = userID;
-
-                if(!ObjectID.invalid(parentID)){
-                    dataInsert.parent = parentID;
-                }
-
-                if(!ObjectID.invalid(inspectionTemplateDocID)){
-                    dataInsert.inspectionTemplateDoc = inspectionTemplateDocID;
-                }
-
-				if(images){
-                    for (const image of images) {
-                        let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-                            app: CF_DOMAIN_SERVICES.COMMENT,
-                            name: image.name,
-                            url: image.url,
-                            size: image.size,
-                            userID,
-                        });
-
-                        if(infoAvatarConversation.error)
-						    return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
-                        // Tiến hành thêm vào hình ảnh vào reaction.comment_file-coll
-                    }
-				}
 
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)
@@ -84,49 +60,48 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F0272
      */
-    update({ content }) {
+    update({ commentID, content, amountChilds, amountReactions }) {
         const that = this;
         return new Promise(async (resolve) => {
             try {
                /**
                 * DECALARTION VARIABLE (1)
                 */
-               let dataInsert = {};
+               let dataUpdate = {};
 
                /** 
                 * VALIDATION STEP (2)
                 *  - kiểm tra valid từ các input
                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                 */
-               if(!ObjectID.invalid(userID))
-                 return resolve({ error: true, message: "author_invalid" });
+                if(!checkObjectIDs(commentID))
+                    return resolve({ error: true, message: "Request params commentID invalid" });
 
-               if(!content)
-                   return resolve({ error: true, message: "content_invalid" })
-               
+                if(!content)
+                    return resolve({ error: true, message: "Request params content invalid" });
+
                /**
                 * LOGIC STEP (3)
                 *  3.1: convert type + update name (ví dụ: string -> number)
                 *  3.2: operation database
                 */    
-               dataInsert.content = content;
-               dataInsert.author = userID;
+                dataUpdate.content = content;
+                if(amountChilds){
+                    dataUpdate.amountChilds = { $inc: amountChilds };
+                }
 
-               if(!ObjectID.invalid(parentID)){
-                   dataInsert.parent = parentID;
-               }
+                if(amountReactions){
+                    dataUpdate.amountReactions = { $inc: amountReactions };
+                }
 
-               if(!ObjectID.invalid(inspectionTemplateDocID)){
-                   dataInsert.inspectionTemplateDoc = inspectionTemplateDocID;
-               }
+                let infoAfterAction = await that.insertData(dataUpdate);
+                if(!infoAfterAction)
+                    return resolve({ error: true, message: 'cannot_update' });
 
-               let infoAfterInsert = await that.insertData(dataInsert);
-               if(!infoAfterInsert)
-                   return resolve({ error: true, message: 'cannot_insert' });
-               return resolve({ error: false, data: infoAfterInsert});
-           } catch (error) {
-               return resolve({ error: true, message: error.message });
-           }
+                return resolve({ error: false, data: infoAfterAction});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
        })
     }
 }

@@ -8,6 +8,7 @@ const INSPECTION__TEMPLATE_DOC_COLL     = require('./database/inspection.templat
 
 const INSPECTION__TEMPLATE_CHECKLIST_HANLDER  	= require('./handler/inspection.template_checklist-hanlder');
 const INSPECTION__TEMPLATE_DOC_REACTION_HANLDER = require('./handler/inspection.template_doc_reaction-hanlder');
+const INSPECTION__TEMPLATE_DOC_COMMENT_HANLDER  = require('./handler/inspection.template_doc_comment-hanlder');
 const INSPECTION__AREA_HANLDER 					= require('./handler/inspection.area-hanlder');
 const INSPECTION__DOCS_HANLDER 					= require('./handler/inspection.doc-hanlder');
 
@@ -52,6 +53,9 @@ module.exports = {
 		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_REACTION_INSERT] : INSPECTION__TEMPLATE_DOC_REACTION_HANLDER.insertReaction,
 		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_REACTION_REMOVE] : INSPECTION__TEMPLATE_DOC_REACTION_HANLDER.removeReaction,
 		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_REACTION_LIST]   : INSPECTION__TEMPLATE_DOC_REACTION_HANLDER.listReaction,
+
+		// Action inspection template comment
+		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_INSERT] : INSPECTION__TEMPLATE_DOC_COMMENT_HANLDER.insertComment,
 
 		// Action inspection area
 		[CF_ACTIONS_INSPECTION.AREA_INSERT]   : INSPECTION__AREA_HANLDER.insertArea,

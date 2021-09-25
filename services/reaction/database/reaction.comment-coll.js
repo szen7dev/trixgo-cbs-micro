@@ -7,11 +7,10 @@ module.exports  = DATABASE_MIDDLEWARE("reaction_comment", {
     //_________Nội dung
     content: String,
     //_________Comment cha (nếu có)
-    parent: {
-        type: Schema.Types.ObjectId,
-        ref : "reaction_comment"
-    },
-  
+    // parent: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "reaction_comment"
+    // },
     //_________Số lượng comment con
     amountChilds: {
         type: Number,

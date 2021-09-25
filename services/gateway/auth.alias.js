@@ -331,6 +331,10 @@ module.exports = {
 
 		[`DELETE ${CF_ROUTINGS_INSPECTION.DOCS}`] : 
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_REMOVE}`],
+
+		//---------------------------S021.INSPECTION.teamplate doc comment
+		[`POST ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] : 
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_INSERT}`],
 	},
 	
 	// Disable to call not-mapped actions

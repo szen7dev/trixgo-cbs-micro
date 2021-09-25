@@ -9,7 +9,7 @@ let CF_DOMAIN_SERVICES = {
     ITEM        : 'item',
     REACTION    : 'reaction',
     INSPECTION  : 'inspection',
-    COMMENT     : 'comment',
+    // COMMENT     : 'comment',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

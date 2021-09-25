@@ -87,7 +87,7 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 dataUpdate = { type };
-
+                
                 let infoAfterInsert = await REACTION__COMMENT_COLL.findByIdAndUpdate(reactionID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

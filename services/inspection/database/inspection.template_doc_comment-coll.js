@@ -12,4 +12,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'reaction_comment'
     },
+    parent: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'reaction_comment'
+    }
 }) 
