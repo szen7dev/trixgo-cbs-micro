@@ -23,7 +23,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     name: String,
     //_________Mã hiệu hồ sơ
     sign: String,
-    //_________Mô tả hồ sơ
+    //_________Mô tả hồ sơ/Vị trí
     description: String,
     //_________Số lượng tương tác
     numLike: Number,
