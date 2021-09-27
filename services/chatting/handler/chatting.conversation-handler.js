@@ -346,11 +346,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
                 let { 
-					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit, isLoadAll 
+					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit 
 				} = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesMediaConversation({ 
-					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit, isLoadAll
+					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -546,10 +546,9 @@ module.exports = {
     },
 
 	/**
-	 * Dev: VinhHV
+	 * Dev: MinhVH
 	 * Func: Lấy danh sách member cuộc hội thoại
-	 * Date: ...
-	 * Updated: 10/08/2021 - MinhVH
+	 * Date: 10/08/2021
 	 */
 	getListMembersConversationByID: {
         params: {

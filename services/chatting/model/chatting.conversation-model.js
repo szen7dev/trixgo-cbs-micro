@@ -515,15 +515,29 @@ class Model extends BaseModel {
 						_id: conversationID,
 						members: { $in: [userID] }
 					}, filter)
-					.populate('members', select.members)
-					.populate('authors', select.authors)
+					.populate({
+						path: 'members',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.members
+					})
+					.populate({
+						path: 'authors',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.authors
+					})
 					.populate('lastMessage', select.lastMessage)
 					.populate('messagesPin', select.messagesPin)
 					.populate({
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'url'
+							select: 'name url size'
 						},
 						select: select.avatar
 					})
@@ -562,7 +576,7 @@ class Model extends BaseModel {
 					.select('_id name description authors avatar')
 					.populate({
 						path: 'avatar authors',
-						select: '_id fullname username',
+						select: '_id fullname username image',
 						populate: {
 							path: 'file',
 							select: 'url'
@@ -582,7 +596,7 @@ class Model extends BaseModel {
 					.select('_id name description authors avatar')
 					.populate({
 						path: 'avatar authors',
-						select: '_id fullname username',
+						select: '_id fullname username image',
 						populate: {
 							path: 'file',
 							select: 'url'
@@ -639,7 +653,14 @@ class Model extends BaseModel {
 						_id: conversationID, 
 						members: { $in: [userID] }
 					})
-					.populate('members', select.members)
+					.populate({
+						path: 'members',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.members
+					})
                     .lean();
 
                 if (!infoConversation) 
@@ -741,11 +762,38 @@ class Model extends BaseModel {
 				}
 
 				let listMessages = await CHATTING__MESSAGE_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-					.populate('sender', select.sender)
-					.populate('usersSeen', select.usersSeen)
-					.populate('receivers', select.receivers)
-					.populate('usersAssigned', select.usersAssigned)
-					.populate('sender', select.sender)
+					.populate({
+						path: 'sender',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.sender
+					})
+					.populate({
+						path: 'usersSeen',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.usersSeen
+					})
+					.populate({
+						path: 'usersAssigned',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.usersAssigned
+					})
+					.populate({
+						path: 'receivers',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.receivers
+					})
 					.populate('parent', select.parent)
 					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
@@ -757,11 +805,6 @@ class Model extends BaseModel {
 						},
 						select: select.files
 					})
-					// .populate({
-					//     path: 'sender usersSeen receivers usersAssigned files.file', 
-					// 	select: '_id fullname image',
-					// 	populate: 'file',
-					// })
 					.sort(sortBy)
 					.limit(+limit)
 					.lean();
@@ -929,7 +972,7 @@ class Model extends BaseModel {
 	 * Date: 12/08/2021
 	 */
 	getListMessagesMediaConversation({ 
-		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10, isLoadAll 
+		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10 
 	}){
 		return new Promise(async resolve => {
 			try {
@@ -1029,10 +1072,6 @@ class Model extends BaseModel {
 						{ $sort: { "_id": -1 } }
 					]
 
-					// if(!isTrue(isLoadAll)){
-					// 	pipeline.push({ $limit: +limit });
-					// }
-
 					listMedia = await CHATTING__CONVERSATION_LINK_COLL.aggregate(pipeline);
 
 					if(!listMedia)
@@ -1086,10 +1125,6 @@ class Model extends BaseModel {
 						{ $sort: { "_id": -1 } },
 					]
 
-					// if(!isTrue(isLoadAll)){
-					// 	pipeline.push({ $limit: +limit });
-					// }
-
 					listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
 
 					if(!listMedia)
@@ -1102,10 +1137,10 @@ class Model extends BaseModel {
 
 						let listMessage = media.listMessage.map(message => CHATTING__MESSAGE_COLL
 							.findOne({ _id: message._id })
-							.select('_id sender content status type files createAt modifyAt')
+							.select('_id sender content status type files.file createAt modifyAt')
 							.populate({
 								path: 'files.file',
-								select: '_id file conversation',
+								select: '_id file',
 								populate: {
 									path: 'file',
 									select: '_id status name url size userCreate'
@@ -1154,7 +1189,14 @@ class Model extends BaseModel {
 						_id: conversationID,
 						members: { $all: [userID] }
 					})
-					.populate('members', select.infoMember)
+					.populate({
+						path: 'members',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.infoMember
+					})
 					.lean();
 
 				if(!checkExistConversation)
@@ -1471,7 +1513,6 @@ class Model extends BaseModel {
 	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
-				// Check params
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
@@ -1528,7 +1569,11 @@ class Model extends BaseModel {
 					.populate({
 						path: 'lastMessage',
 						populate: { 
-							path: 'sender', 
+							path: 'sender',
+							populate: {
+								path: 'image',
+								select: select.image
+							},
 							select: select.sender,
 						},
 						select: select.lastMessage,
@@ -1627,7 +1672,11 @@ class Model extends BaseModel {
 					.populate({
 						path: 'lastMessage',
 						populate: { 
-							path: 'sender', 
+							path: 'sender',
+							populate: {
+								path: 'image',
+								select: select.image
+							},
 							select: select.sender,
 						},
 						select: select.lastMessage,
