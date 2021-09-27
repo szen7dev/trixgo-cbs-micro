@@ -20,7 +20,8 @@ const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.ac
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
 const {
 	checkObjectIDs, 
-	checkNumberIsValidWithRange 
+	checkNumberIsValidWithRange,
+	IsJsonString
 } = require('../../../tools/utils/utils');
 
 /**
@@ -441,6 +442,7 @@ class Model extends BaseModel {
 				let listMessages = await CHATTING__MESSAGE_COLL.find({
 					_id: { $in: messagesID },
 					conversation: conversationID,
+					sender: userID
 				})
 				.select('_id type createAt')
 				.lean();
@@ -470,20 +472,12 @@ class Model extends BaseModel {
 							case 0: // Recall message normal (text message)
 							case 6: // Recall message location
 							case 7: // Recall message share contact
-								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-									_id: message._id,
-									conversation: conversationID,
-									sender: userID
-								}, {
-									$set: { status: 3 }
-								}, { new: true });
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
 								break;
 							case 1: // Recall message images
 							case 2: // Recall message files
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
-									conversation: conversationID,
-									sender: userID,
 									files: {
 										$elemMatch: {
 											file: { $in: filesID }
@@ -672,11 +666,25 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
 	 * Date: 28/08/2021
 	 */
-	getListMessagePinConversation({ conversationID, page, limit, userID }) {
+	getListMessagePinConversation({ conversationID, page, limit, userID, filter = {}, select = {} }) {
         return new Promise(async (resolve) => {
             try {
 				if(!checkObjectIDs([conversationID, userID]))
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -699,18 +707,29 @@ class Model extends BaseModel {
 					.find({
 						_id: { $in: infoConversation.messagesPin },
 						conversation: conversationID
-					})
-					.select('_id sender content status type poll files')
+					}, filter)
 					.populate({
-						path: 'sender poll',
-						select: '_id name fullname companysign'
+						path: 'poll',
+						select: select.poll
+					})
+					.populate({
+						path: 'reminder',
+						select: select.reminder
+					})
+					.populate({
+						path: 'sender',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.sender
 					})
 					.populate({
 						path: 'files.file',
-						select: '_id',
+						select: '_id file',
 						populate: {
 							path: 'file',
-							select: '_id name url status'
+							select: select.file
 						},
 					})
 					.limit(limit)
@@ -1042,7 +1061,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn bình chọn trong cuộc hội thoại
 	 * Date: 30/08/2021
 	 */
-	getListMessagePoll({ conversationID, lastestMessageID, userID, limit = 10 }) {
+	getListMessagePoll({ conversationID, lastestMessageID, userID, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
@@ -1051,6 +1070,20 @@ class Model extends BaseModel {
 
 				if(isNaN(limit))
 					return resolve({ error: true, message: 'Request params limit invalid', status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+				
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -1088,18 +1121,26 @@ class Model extends BaseModel {
 				}
 
 				let	listMessagesPoll = await CHATTING__MESSAGE_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.select('_id sender status type poll')
+					.find({ ...conditionObj, ...conditionFind }, filter)
 					.populate({
 						path: 'sender',
-						select: '_id name fullname companysign'
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.sender
 					})
 					.populate({
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: '_id name fullname image'
+							select: select.usersVote,
+							populate: {
+								path: 'image',
+								select: select.image,
+							}
 						},
+						select: select.poll
 					})
 					.limit(+limit)
 					.sort(sortBy)
@@ -1511,7 +1552,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 	 * Date: 02/09/2021
 	 */
-	getListMessageReminder({ conversationID, lastestMessageID, userID, limit = 10 }) {
+	getListMessageReminder({ conversationID, lastestMessageID, userID, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
@@ -1520,6 +1561,20 @@ class Model extends BaseModel {
 
 				if(isNaN(limit))
 					return resolve({ error: true, message: 'Request params limit invalid', status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -1557,18 +1612,27 @@ class Model extends BaseModel {
 				}
 
 				let	listMessagesReminder = await CHATTING__MESSAGE_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.select('_id sender status type reminder')
+					.find({ ...conditionObj, ...conditionFind }, filter)
+					// .select('_id sender status type reminder')
 					.populate({
 						path: 'sender',
-						select: '_id name fullname image'
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.sender
 					})
 					.populate({
 						path: 'reminder',
 						populate: {
 							path: 'accepts rejects',
-							select: '_id name bizname fullname image'
+							populate: {
+								path: 'image',
+								select: select.image,
+							},
+							select: select.user,
 						},
+						select: select.reminder
 					})
 					.limit(+limit)
 					.sort(sortBy)

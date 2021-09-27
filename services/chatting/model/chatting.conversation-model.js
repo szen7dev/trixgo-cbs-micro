@@ -3,36 +3,36 @@
 /**
  * EXTERNAL PACKAGE
  */
-const ObjectID                                  = require('mongoose').Types.ObjectId;
-const moment									= require('moment');
+const ObjectID                                  	= require('mongoose').Types.ObjectId;
+const moment										= require('moment');
 
 /**
  * CONSTANTS
  */
-const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
-const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-const { CF_ACTIONS_REMINDER } 					= require('../../reminder/helper/reminder.actions-constant');
+const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
 
 /**
  * TOOLS
  */
-const BaseModel                                 = require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION } 				= require('../../../tools/cursor_base/playground/index');
-const { checkObjectIDs, isTrue }				= require('../../../tools/utils/utils');
+const BaseModel                                 	= require('../../../tools/db/base_model');
+const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const { checkObjectIDs, isObject, IsJsonString }	= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
  */
-const CHATTING__MESSAGE_COLL					= require('../database/chatting.message-coll');
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
-const CHATTING__CONVERSATION_FILE_COLL          = require('../database/chatting.conversation_file-coll');
-const CHATTING__CONVERSATION_LINK_COLL          = require('../database/chatting.conversation_link-coll');
+const CHATTING__MESSAGE_COLL						= require('../database/chatting.message-coll');
+const CHATTING__CONVERSATION_COLL               	= require('../database/chatting.conversation-coll');
+const CHATTING__CONVERSATION_FILE_COLL          	= require('../database/chatting.conversation_file-coll');
+const CHATTING__CONVERSATION_LINK_COLL          	= require('../database/chatting.conversation_link-coll');
 
 /**
  * MODELS
  */
-const CHATTING__MESSAGE_MODEL  					= require('../model/chatting.message-model').MODEL;
+const CHATTING__MESSAGE_MODEL  						= require('../model/chatting.message-model').MODEL;
 
 
 class Model extends BaseModel {
@@ -490,33 +490,58 @@ class Model extends BaseModel {
 	 * Func: Lấy thông tin cuộc hội thoại của user
 	 * Date: 04/08/2021
 	 */
-    getInfoConversationByID({ conversationID, userID }){
+    getInfoConversationByID({ conversationID, userID, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs([conversationID, userID]))
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-                const infoConversation = await CHATTING__CONVERSATION_COLL
-					.findOne({ 
-						_id: conversationID, 
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
+                let infoConversation = await CHATTING__CONVERSATION_COLL
+					.findOne({
+						_id: conversationID,
 						members: { $in: [userID] }
-					})
-                    .populate({
-                        path: 'members authors',
-                        select: '_id bizname fullname gender image company birthDay username phone email',
-                    })
+					}, filter)
 					.populate({
-                        path: 'lastMessage messagesPin',
-                        // select: '_id content sender type status usersSeen receivers parent',
-                    })
+						path: 'members',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.members
+					})
+					.populate({
+						path: 'authors',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.authors
+					})
+					.populate('lastMessage', select.lastMessage)
+					.populate('messagesPin', select.messagesPin)
 					.populate({
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'url'
-						}
+							select: 'name url size'
+						},
+						select: select.avatar
 					})
-                    .lean();
+					.lean();
 
                 if (!infoConversation) 
                     return resolve({ error: true, message: "Can't get info conversation", status: 403 });
@@ -551,7 +576,7 @@ class Model extends BaseModel {
 					.select('_id name description authors avatar')
 					.populate({
 						path: 'avatar authors',
-						select: '_id fullname username',
+						select: '_id fullname username image',
 						populate: {
 							path: 'file',
 							select: 'url'
@@ -571,7 +596,7 @@ class Model extends BaseModel {
 					.select('_id name description authors avatar')
 					.populate({
 						path: 'avatar authors',
-						select: '_id fullname username',
+						select: '_id fullname username image',
 						populate: {
 							path: 'file',
 							select: 'url'
@@ -610,27 +635,45 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: 10/08/2021 - MinhVH
 	 */
-	getListMembersConversationByID({ conversationID, userID }){
+	getListMembersConversationByID({ conversationID, userID, select = {} }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs([conversationID, userID]))
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+				
+					select = JSON.parse(select);
+				}
 
                 const infoConversation = await CHATTING__CONVERSATION_COLL
 					.findOne({ 
 						_id: conversationID, 
 						members: { $in: [userID] }
 					})
-                    .populate({
-                        path: 'members',
-                        select: '_id fullname image birthDay username phone email',
-                    })
+					.populate({
+						path: 'members',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.members
+					})
                     .lean();
 
                 if (!infoConversation) 
                     return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
-                return resolve({ error: false, data: infoConversation.members, status: 200 });
+                return resolve({ 
+					error: false, 
+					data: {
+						listRecords: infoConversation.members,
+						totalRecord: infoConversation.members.length
+					}, 
+					status: 200
+				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -643,7 +686,7 @@ class Model extends BaseModel {
 	 * Date: 11/08/2021
 	 * Hàm chuẩn về lấy danh sách mẩu tin
 	 */
-	getListMessagesConversationWithPage({ conversationID, lastestMessageID, userID, keyword, limit = 15 }){
+	getListMessagesConversationWithPage({ conversationID, lastestMessageID, userID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				// Check params
@@ -652,6 +695,20 @@ class Model extends BaseModel {
 
 				if(isNaN(limit))
 					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -704,14 +761,50 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-				let listMessages = await CHATTING__MESSAGE_COLL.find({ ...conditionObj, ...conditionFind }, objSort)
+				let listMessages = await CHATTING__MESSAGE_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate({
-					    path: 'sender usersSeen receivers usersAssigned files.file', 
-						select: '_id fullname image',
-						populate: 'file',
+						path: 'sender',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.sender
 					})
-					.populate('parent poll reminder')
-					// .select('sender content status type createAt')
+					.populate({
+						path: 'usersSeen',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.usersSeen
+					})
+					.populate({
+						path: 'usersAssigned',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.usersAssigned
+					})
+					.populate({
+						path: 'receivers',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.receivers
+					})
+					.populate('parent', select.parent)
+					.populate('poll', select.poll)
+					.populate('reminder', select.reminder)
+					.populate({
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name url size'
+						},
+						select: select.files
+					})
 					.sort(sortBy)
 					.limit(+limit)
 					.lean();
@@ -743,12 +836,26 @@ class Model extends BaseModel {
 	 * Func: Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
 	 * Date: 23/08/2021
 	 */
-	searchMessageConversationById({ conversationID, userID, messageID }){
+	searchMessageConversationById({ conversationID, userID, messageID, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				// Check params
 				if(!checkObjectIDs([conversationID, messageID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -779,38 +886,66 @@ class Model extends BaseModel {
 				}
 
 				let infoMessage = await CHATTING__MESSAGE_COLL
-					.findOne(conditionObjSearchMessage)
+					.findOne(conditionObjSearchMessage, filter)
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('receivers', select.receivers)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('sender', select.sender)
+					.populate('parent', select.parent)
+					.populate('poll', select.poll)
+					.populate('reminder', select.reminder)
 					.populate({
-						path: 'sender usersSeen receivers usersAssigned files.file', 
-						select: '_id bizname fullname image',
-						populate: 'file',
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name url size'
+						},
+						select: select.files
 					})
-					.populate('parent poll reminder')
 					.lean();
 
 				if(!infoMessage)
 					return resolve({ error: true, message: "Can't get info message", status: 400 });
 
-				let listMessagesFront = await CHATTING__MESSAGE_COLL.find(conditionObjFrontList)
+				let listMessagesFront = await CHATTING__MESSAGE_COLL.find(conditionObjFrontList, filter)
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('receivers', select.receivers)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('sender', select.sender)
+					.populate('parent', select.parent)
+					.populate('poll', select.poll)
+					.populate('reminder', select.reminder)
 					.populate({
-						path: 'sender usersSeen receivers usersAssigned files.file', 
-						select: '_id bizname fullname image',
-						populate: 'file',
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name url size'
+						},
+						select: select.files
 					})
-					.populate('parent poll reminder')
-					// .select('sender content status type createAt')
 					.sort(_sort)
 					.limit(5)
 					.lean();
 
-				let listMessagesBack = await CHATTING__MESSAGE_COLL.find(conditionObjBackList)
+				let listMessagesBack = await CHATTING__MESSAGE_COLL.find(conditionObjBackList, filter)
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('receivers', select.receivers)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('sender', select.sender)
+					.populate('parent', select.parent)
+					.populate('poll', select.poll)
+					.populate('reminder', select.reminder)
 					.populate({
-						path: 'sender usersSeen receivers usersAssigned files.file', 
-						select: '_id bizname fullname image',
-						populate: 'file',
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name url size'
+						},
+						select: select.files
 					})
-					.populate('parent poll reminder')
-					// .select('sender content status type createAt')
 					.sort(_sort)
 					.limit(5)
 					.lean();
@@ -820,7 +955,10 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false,
 					status: 200,
-					data: listMessages
+					data: {
+						listRecords: listMessages,
+						totalRecord: listMessages.length
+					}
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -834,7 +972,7 @@ class Model extends BaseModel {
 	 * Date: 12/08/2021
 	 */
 	getListMessagesMediaConversation({ 
-		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10, isLoadAll 
+		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10 
 	}){
 		return new Promise(async resolve => {
 			try {
@@ -934,10 +1072,6 @@ class Model extends BaseModel {
 						{ $sort: { "_id": -1 } }
 					]
 
-					// if(!isTrue(isLoadAll)){
-					// 	pipeline.push({ $limit: +limit });
-					// }
-
 					listMedia = await CHATTING__CONVERSATION_LINK_COLL.aggregate(pipeline);
 
 					if(!listMedia)
@@ -991,10 +1125,6 @@ class Model extends BaseModel {
 						{ $sort: { "_id": -1 } },
 					]
 
-					// if(!isTrue(isLoadAll)){
-					// 	pipeline.push({ $limit: +limit });
-					// }
-
 					listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
 
 					if(!listMedia)
@@ -1007,18 +1137,18 @@ class Model extends BaseModel {
 
 						let listMessage = media.listMessage.map(message => CHATTING__MESSAGE_COLL
 							.findOne({ _id: message._id })
-							.select('_id sender content status type files createAt modifyAt')
+							.select('_id sender content status type files.file createAt modifyAt')
 							.populate({
 								path: 'files.file',
-								select: '_id file conversation',
+								select: '_id file',
 								populate: {
 									path: 'file',
-									select: '_id app status name url size userCreate'
+									select: '_id status name url size userCreate'
 								}
 							})
 							.populate({
 								path: 'sender',
-								select: '_id fullname bizname'
+								select: '_id fullname bizname image'
 							})
 							.lean());
 
@@ -1041,18 +1171,32 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
 	 * Date: 13/08/2021
 	 */
-	getListMemberSendMessagesMediaConversation({ conversationID, userID }){
+	getListMemberSendMessagesMediaConversation({ conversationID, userID, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL
 					.findOne({
 						_id: conversationID,
 						members: { $all: [userID] }
 					})
-					.populate('members')
+					.populate({
+						path: 'members',
+						populate: {
+							path: 'image',
+							select: select.image
+						},
+						select: select.infoMember
+					})
 					.lean();
 
 				if(!checkExistConversation)
@@ -1299,10 +1443,7 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false, 
 					status: 200,
-					data: { 
-						infoAfterDelete, 
-						infoConversation: checkExistConversation
-					}, 
+					data: infoAfterDelete, 
 				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1369,15 +1510,28 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
 	 * Date: 23/08/2021
 	 */
-	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20 }){
+	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
-				// Check params
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if(isNaN(limit))
 					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				let conditionObj 	= { members: { $in: [userID] } };
 				let conditionFind 	= {};
@@ -1411,21 +1565,26 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let listConversation = await CHATTING__CONVERSATION_COLL.find({ ...conditionObj, ...conditionFind }, objSort)
+                let listConversation = await CHATTING__CONVERSATION_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate({
 						path: 'lastMessage',
-						select: '_id content type status usersSeen sender',
 						populate: { 
-							path: 'sender', 
-							select: '_id bizname fullname image company'
-						}
+							path: 'sender',
+							populate: {
+								path: 'image',
+								select: select.image
+							},
+							select: select.sender,
+						},
+						select: select.lastMessage,
 					})
 					.populate({
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'url'
-						}
+							select: select.file
+						},
+						select: select.avatar
 					})
 					.limit(+limit)
 					.sort(sortBy)
@@ -1454,7 +1613,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
 	 * Date: 09/09/2021
 	 */
-    getListConversationMissMessage({ userID, lastestConversationID, limit = 20 }){
+    getListConversationMissMessage({ userID, lastestConversationID, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs([userID]))
@@ -1462,6 +1621,20 @@ class Model extends BaseModel {
 
 				if(isNaN(limit))
 					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
 				let conditionFind = {};
 				let conditionObj  = { 
@@ -1495,21 +1668,26 @@ class Model extends BaseModel {
                 }
 
                 let listConversationMissMessage = await CHATTING__CONVERSATION_COLL
-					.find({ ...conditionObj, ...conditionFind })
+					.find({ ...conditionObj, ...conditionFind }, filter)
 					.populate({
 						path: 'lastMessage',
-						select: '_id content type status usersSeen sender',
 						populate: { 
-							path: 'sender', 
-							select: '_id bizname fullname image company'
-						}
+							path: 'sender',
+							populate: {
+								path: 'image',
+								select: select.image
+							},
+							select: select.sender,
+						},
+						select: select.lastMessage,
 					})
 					.populate({
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'url'
-						}
+							select: select.file
+						},
+						select: select.avatar
 					})
 					.limit(+limit)
 					.sort(sortBy);

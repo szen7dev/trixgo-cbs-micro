@@ -1,4 +1,5 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
 /**
  * import inter-coll, exter-coll
@@ -18,7 +19,7 @@ const { randomStringFixLengthCode }
                                         = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
-const { checkObjectIDs, checkNumberIsValidWithRange }                
+const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }                
                                         = require('../../../tools/utils/utils');
 const { 
     PLATFORM_TRIXGO, PLATFORM_WYNDIX,
@@ -609,7 +610,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách pin cuộc hội thoại
 	 * Date: 06/09/2021
 	 */
-	getListPinConversation({ userID }) {
+	getListPinConversation({ userID, select = {} }) {
         return new Promise(async (resolve) => {
             try {
                 /** 
@@ -620,12 +621,23 @@ class Model extends BaseModel {
 				 if(!checkObjectIDs([userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
 				let infoUser = await AUTH__USER_COLL
 					.findById(userID)
 					.select('conversationsPin')
 					.populate({
 						path: 'conversationsPin',
-						populate: 'lastMessage'
+						populate: {
+							path: 'lastMessage',
+							select: select.lastMessage
+						},
+						select: select.conversationsPin
 					})
 					.lean();
 

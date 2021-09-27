@@ -160,6 +160,17 @@ function _checkPointDotsAndRoundingNumberForPagingChatting(total, perPage){
    (START) CHECK VALID TYPE
 */
 
+exports.IsJsonString = str => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+exports.isObject = obj => typeof obj === 'object' && obj !== null;
+
 // -----------CHECK OBJECT EMPTY --------//
 exports.isEmptyObject = function (obj) {
     for (var key in obj) {

@@ -106,7 +106,7 @@ module.exports = {
 	 */
 	revokeMessage: {
         params: {
-			conversationID : { type: "string" },
+			conversationID: { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -191,10 +191,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, page, limit } = ctx.params;
+                const { conversationID, page, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessagePinConversation({
-					conversationID, page, limit, userID
+					conversationID, page, limit, userID, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -300,10 +300,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, lastestMessageID, limit } = ctx.params;
+                const { conversationID, lastestMessageID, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessagePoll({
-					conversationID, lastestMessageID, userID, limit
+					conversationID, lastestMessageID, userID, limit, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -443,10 +443,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, lastestMessageID, limit } = ctx.params;
+                const { conversationID, lastestMessageID, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessageReminder({
-					conversationID, lastestMessageID, userID, limit
+					conversationID, lastestMessageID, userID, limit, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
