@@ -37,11 +37,13 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		[CF_ACTIONS_REMINDER.ADD_JOB] 							: REMINDER__CORE_HANLDER.addJob,
-		[CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobMuteConversation,
-		[CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION] 		: REMINDER__CORE_HANLDER.deleteJobMuteConversation,
-		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION] 	: REMINDER__CORE_HANLDER.addJobReminderConversation,
-		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION] 	: REMINDER__CORE_HANLDER.deleteJobReminderConversation,
+		[CF_ACTIONS_REMINDER.ADD_JOB] 										: REMINDER__CORE_HANLDER.addJob,
+		[CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION] 					: REMINDER__CORE_HANLDER.addJobMuteConversation,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION] 					: REMINDER__CORE_HANLDER.deleteJobMuteConversation,
+		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION] 				: REMINDER__CORE_HANLDER.addJobReminderConversation,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION] 				: REMINDER__CORE_HANLDER.deleteJobReminderConversation,
+		[CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION] 		: REMINDER__CORE_HANLDER.addJobAutoDeleteMessageConversation,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION]	: REMINDER__CORE_HANLDER.deleteJobAutoDeleteMessageConversation,
 	},
 
 	/**
@@ -85,7 +87,7 @@ module.exports = {
 
 				await this.broker.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_MUTE_CONVERSATION}`, job.attrs.data, {
 					meta: {
-						infoUser: { _id: job.attrs.data.userID, jobID: job.attrs._id }
+						infoUser: { _id: job.attrs.data.userID }
 					}
 				});
 
@@ -99,7 +101,7 @@ module.exports = {
 
 				if(job.attrs.data && job.attrs.data.userID){
 					const socket = require('socket.io-client')(`http://localhost:4000?token=${job.attrs.data.userID}`);
-	
+
 					socket.on("connect", () => {
 						// console.log({ 
 						// 	__MESSAGE: "Connection with the Gateway established", 
@@ -107,10 +109,24 @@ module.exports = {
 						// 	__CONNECTED: socket.connected, 
 						// 	__DISCONNECTED: socket.disconnected 
 						// });
-						socket.emit('CHATTING_CSS_NOTIFYCATION_REMINDER', job.attrs.data);
+						socket.emit('CHATTING_CSS_NOTIFICATION_REMINDER', job.attrs.data);
 						socket.disconnect();
 					});
 				}
+
+				done();
+			});
+
+			agenda.define('auto_delete_message_conversation', async (job, done) => {
+				console.log(`========================================`);
+				console.log(`done auto delete message conversation!!!!`);
+				console.log({ __JOB: job.attrs });
+
+				await this.broker.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.AUTO_DELETE_MESSAGE_CONVERSATION}`, job.attrs.data, {
+					meta: {
+						infoUser: { _id: job.attrs.data.userID }
+					}
+				});
 
 				done();
 			});

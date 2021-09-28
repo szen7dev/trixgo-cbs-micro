@@ -427,11 +427,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID, jobID } = ctx.meta.infoUser;
+                let { _id: userID } = ctx.meta.infoUser;
                 let { conversationID, isMute, timeMute } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateMuteConversation({ 
-					conversationID, userID, isMute, timeMute, jobID, ctx
+					conversationID, userID, isMute, timeMute, ctx
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
