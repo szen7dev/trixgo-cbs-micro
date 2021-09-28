@@ -19,7 +19,7 @@ const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.ac
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
-const { checkObjectIDs, isObject, IsJsonString }	= require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
@@ -517,18 +517,10 @@ class Model extends BaseModel {
 					}, filter)
 					.populate({
 						path: 'members',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
 						select: select.members
 					})
 					.populate({
 						path: 'authors',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
 						select: select.authors
 					})
 					.populate('lastMessage', select.lastMessage)
@@ -655,10 +647,6 @@ class Model extends BaseModel {
 					})
 					.populate({
 						path: 'members',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
 						select: select.members
 					})
                     .lean();
@@ -689,7 +677,6 @@ class Model extends BaseModel {
 	getListMessagesConversationWithPage({ conversationID, lastestMessageID, userID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
-				// Check params
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
@@ -762,38 +749,10 @@ class Model extends BaseModel {
 				}
 
 				let listMessages = await CHATTING__MESSAGE_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-					.populate({
-						path: 'sender',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.sender
-					})
-					.populate({
-						path: 'usersSeen',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.usersSeen
-					})
-					.populate({
-						path: 'usersAssigned',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.usersAssigned
-					})
-					.populate({
-						path: 'receivers',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.receivers
-					})
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('receivers', select.receivers)
 					.populate('parent', select.parent)
 					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
@@ -811,18 +770,25 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
+				let nextCursor  = null;
 
-				if(!keyword){
-					listMessages = listMessages.reverse();
+				if(listMessages && listMessages.length){
+					nextCursor = listMessages[+limit - 1]._id;
+
+					if(!keyword){
+						listMessages = listMessages.reverse();
+						nextCursor	 = listMessages[0]._id;
+					}
 				}
 
-				return resolve({ 
+				return resolve({
 					error: false,
 					status: 200,
 					data: {
 						listRecords: listMessages,
 						limit: +limit,
 						totalRecord,
+						nextCursor
 					}
 				});
 			} catch (error) {
@@ -891,7 +857,6 @@ class Model extends BaseModel {
 					.populate('usersSeen', select.usersSeen)
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
-					.populate('sender', select.sender)
 					.populate('parent', select.parent)
 					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
@@ -913,7 +878,6 @@ class Model extends BaseModel {
 					.populate('usersSeen', select.usersSeen)
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
-					.populate('sender', select.sender)
 					.populate('parent', select.parent)
 					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
@@ -934,7 +898,6 @@ class Model extends BaseModel {
 					.populate('usersSeen', select.usersSeen)
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
-					.populate('sender', select.sender)
 					.populate('parent', select.parent)
 					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
@@ -1189,14 +1152,7 @@ class Model extends BaseModel {
 						_id: conversationID,
 						members: { $all: [userID] }
 					})
-					.populate({
-						path: 'members',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.infoMember
-					})
+					.populate('members', select.infoMember)
 					.lean();
 
 				if(!checkExistConversation)
@@ -1270,7 +1226,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật on/off thông báo cuộc hội thoại của 1 user
 	 * Date: 14/08/2021
 	 */
-	updateMuteConversation({ conversationID, userID, isMute, timeMute, jobID, ctx }){
+	updateMuteConversation({ conversationID, userID, isMute, timeMute, ctx }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -1304,16 +1260,23 @@ class Model extends BaseModel {
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't update mute conversation", status: 403 });
 
+				if((isMute && !timeMute) || !isMute){
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION}`, {
+						conversationID,
+						userID
+					});
+				}
+
 				if(isMute && timeMute){
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION}`, {
+						conversationID,
+						userID
+					});
+
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_MUTE_CONVERSATION}`, {
 						conversationID,
 						timeMute,
 						userID,
-					});
-				} else{
-					console.log('REMOVE JOB MUTE CONVERSATION', jobID);
-					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_MUTE_CONVERSATION}`, {
-						jobID
 					});
 				}
 
@@ -1570,10 +1533,6 @@ class Model extends BaseModel {
 						path: 'lastMessage',
 						populate: { 
 							path: 'sender',
-							populate: {
-								path: 'image',
-								select: select.image
-							},
 							select: select.sender,
 						},
 						select: select.lastMessage,
@@ -1582,7 +1541,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: select.file
+							select: 'name size url'
 						},
 						select: select.avatar
 					})
@@ -1592,6 +1551,11 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
                 let totalRecord = await CHATTING__CONVERSATION_COLL.count(conditionObj);
+				let nextCursor	= null;
+
+				if(listConversation && listConversation.length){
+					nextCursor = listConversation[+limit - 1]._id;
+				}
 
                 return resolve({ 
 					error: false,
@@ -1599,7 +1563,8 @@ class Model extends BaseModel {
 					data: { 
 						listRecords: listConversation, 
 						limit: +limit,
-						totalRecord
+						totalRecord,
+						nextCursor
 					}
 				});
             } catch (error) {
@@ -1671,12 +1636,8 @@ class Model extends BaseModel {
 					.find({ ...conditionObj, ...conditionFind }, filter)
 					.populate({
 						path: 'lastMessage',
-						populate: { 
+						populate: {
 							path: 'sender',
-							populate: {
-								path: 'image',
-								select: select.image
-							},
 							select: select.sender,
 						},
 						select: select.lastMessage,
@@ -1685,7 +1646,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: select.file
+							select: 'name size url'
 						},
 						select: select.avatar
 					})
@@ -1694,6 +1655,11 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__CONVERSATION_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+
+				if(listConversationMissMessage && listConversationMissMessage.length){
+					nextCursor = listConversationMissMessage[+limit - 1]._id;
+				}
 
 				return resolve({ 
 					error: false,
@@ -1702,6 +1668,7 @@ class Model extends BaseModel {
 						listRecords: listConversationMissMessage, 
 						limit: +limit,
 						totalRecord,
+						nextCursor
 					}
 				});
             } catch (error) {

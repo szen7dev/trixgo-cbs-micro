@@ -940,7 +940,7 @@ exports.CHATTING_SOCKET = {
 			arrReceiver, 
 			listUserConnected: listUserActive, 
 			data: { error: false, data: infoMessage }, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFYCATION_REMINDER]
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER]
 		})
     },
 

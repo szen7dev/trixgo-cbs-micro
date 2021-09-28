@@ -8,6 +8,11 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
 
+/**
+ * COLLECTIONS
+ */
+const CHATTING__MESSAGE_COLL					= require('../database/chatting.message-coll');
+
 
 module.exports = {
     /**
@@ -116,6 +121,34 @@ module.exports = {
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.revokeMessage({
 					conversationID, userID, messagesID, filesID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Tự động xoá tất cả tin nhắn của cuộc hội thoại
+	 * Date: 28/09/2021
+	 */
+	autoDeleteMessagesConversation: {
+        params: {
+			conversationID	: { type: "string" },
+			time			: { type: "string" },
+			isDelete		: { type: "boolean", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, time, isDelete } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.autoDeleteMessagesConversation({
+					conversationID, userID, time, isDelete, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

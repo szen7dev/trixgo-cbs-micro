@@ -38,13 +38,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 let { conversationID, userID, timeMute } = ctx.params;
-                let timeScheduler = new Date(Date.now() + 10000);
-
-				// const { setTimeZone } 	= require('../../../tools/utils/time_utils')
-				// const moment = require('moment');
-				// let date = moment("2021-08-16T16:30:24Z").format();
-				// console.log(setTimeZone("2021-08-16T16:30:24Z").format());
-				// let timeScheduler2 = new Date(timeMute).toUTCString();
+                let timeScheduler = '';
 
 				switch (+timeMute) {
 					case 1:
@@ -57,48 +51,49 @@ module.exports = {
 						timeScheduler = "tomorrow at 8am";
 						break;
 					default:
-						timeScheduler = `${timeMute} hours`;
+						// timeScheduler = `${timeMute} hours`;
 						break;
 				}
 
-				// 3:30pm
+				if(!timeScheduler)
+					throw new Error("timeScheduler is empty");
+
 				agenda.schedule(timeScheduler, 'update_mute_conversation', { conversationID, userID, isMute: false });
 				console.log(`agenda: update_mute_conversation added - ${timeScheduler}`);
 
-                return { error: false, data: { conversationID, userID, timeMute, timeScheduler }, status: 200 }
+                return { error: false, message: 'success' };
             } catch (error) {
-                return { error: true, message: error.message, status: 500 };
+				throw new Error(error.message);
             }
         }
     },
 
 	deleteJobMuteConversation: {
         params: {
-			jobID: { type: "string", optional: true },
+			conversationID	: { type: "string" },
+			userID			: { type: "string" },
 		},
         async handler(ctx) {
             try {
-				let { jobID } = ctx.params;
-				// name: "update_mute_conversation"
+				let { conversationID, userID } = ctx.params;
 
-				// if(jobID){
-				// 	// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
-				// 	// console.log({ infoJobMute, jobID })
-				// 	agenda.jobs(
-				// 		{ _id: ObjectID(jobID) },
-				// 		(err, num) => console.log(err, num) // output: null 1
-				// 	);
-				// }
+				if(!conversationID || !userID)
+					throw new Error("Request params conversationID or userID invalid");
 
-				// console.log({ jobID })
+				const listJob = await agenda.jobs({
+					name: "update_mute_conversation",
+					"data.conversationID": conversationID,
+					"data.userID": userID,
+				});
 
-                const removeJobMuteConversation = await agenda.cancel({ name: "update_mute_conversation" });
-				console.log({ __REMOVE_JOB: removeJobMuteConversation })
+				if(listJob && listJob.length){
+					const jobsID = listJob.map(job => ObjectID(job.attrs._id));
+					await agenda.cancel({ _id: { $in: jobsID } });
+				}
 
-                return { error: false, data: jobID };
+                return { error: false, message: 'success' };
             } catch (error) {
-				console.error(error);
-                return { error: true, message: error.message };
+				throw new Error(error.message);
             }
         }
     },
@@ -114,7 +109,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-				await this.validateEntity(ctx.params);
                 let { conversationID, messageID, userID, remindTime, repeat, notifyFor } = ctx.params;
 				let humanTime = '';
 
@@ -143,6 +137,7 @@ module.exports = {
 					await reminder.repeatEvery(humanTime, {
 						skipImmediate: true
 					}).save();
+
 					console.log(`agenda: add_reminder_conversation added - ${humanTime} - ${repeat} - ${notifyFor}`);
 				}
 
@@ -155,40 +150,110 @@ module.exports = {
 					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${repeat} - ${notifyFor}`);
 				}
 
-                return { error: false, message: 'success add job reminder', status: 200 }
+                return { error: false, message: 'success' }
             } catch (error) {
-                return { error: true, message: error.message, status: 500 };
+                throw new Error(error.message);
             }
         }
     },
 
 	deleteJobReminderConversation: {
         params: {
-			jobID: { type: "string", optional: true },
+			conversationID	: { type: "string" },
+			messageID		: { type: "string" },
 		},
         async handler(ctx) {
             try {
-				let { jobID } = ctx.params;
-				// name: "update_mute_conversation"
+				const { conversationID, messageID } = ctx.params;
 
-				// if(jobID){
-				// 	// const infoJobMute = await agenda.jobs({ _id: ObjectID(jobID) });
-				// 	// console.log({ infoJobMute, jobID })
-				// 	agenda.jobs(
-				// 		{ _id: ObjectID(jobID) },
-				// 		(err, num) => console.log(err, num) // output: null 1
-				// 	);
-				// }
+				if(!conversationID || !messageID)
+					throw new Error("Request params conversationID or messageID invalid");
 
-				// console.log({ jobID })
+				const listJob = await agenda.jobs({
+					name: "add_reminder_conversation",
+					"data.conversationID": conversationID,
+					"data.messageID": messageID,
+				});
 
-                const removeJobReminderConversation = await agenda.cancel({ name: "add_reminder_conversation" });
-				console.log({ __REMOVE_JOB: removeJobReminderConversation })
+				if(listJob && listJob.length){
+					const jobsID = listJob.map(job => ObjectID(job.attrs._id));
+					await agenda.cancel({ _id: { $in: jobsID } });
+				}
 
-                return { error: false, data: jobID };
+                return { error: false, message: 'success' };
             } catch (error) {
-				console.error(error);
-                return { error: true, message: error.message };
+                throw new Error(error.message);
+            }
+        }
+    },
+
+	addJobAutoDeleteMessageConversation: {
+        params: {
+            conversationID	: { type: "string" },
+            userID			: { type: "string" },
+            time			: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                let { conversationID, userID, time } = ctx.params;
+                let timeScheduler = '';
+
+				switch (+time) {
+					case 1:
+						timeScheduler = "24 hours";
+						break;
+					case 7:
+						timeScheduler = "1 week";
+						break;
+					case 30:
+						timeScheduler = "1 month";
+						break;
+					default:
+						break;
+				}
+
+				if(!timeScheduler)
+					throw new Error("timeScheduler is empty");
+
+				agenda.schedule(timeScheduler, 'auto_delete_message_conversation', { 
+					conversationID,
+					userID,
+					time,
+					isDelete: true,
+				});
+				console.log(`agenda: auto_delete_message_conversation added - ${timeScheduler}`);
+
+                return { error: false, message: 'success' }
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        }
+    },
+
+	deleteJobAutoDeleteMessageConversation: {
+        params: {
+			conversationID: { type: 'string' },
+		},
+        async handler(ctx) {
+            try {
+				const { conversationID } = ctx.params;
+
+				if(!conversationID)
+					throw new Error("Request params conversationID invalid");
+
+				const listJob = await agenda.jobs({
+					name: "auto_delete_message_conversation",
+					"data.conversationID": conversationID
+				});
+
+				if(listJob && listJob.length){
+					const jobsID = listJob.map(job => ObjectID(job.attrs._id));
+					await agenda.cancel({ _id: { $in: jobsID } });
+				}
+
+                return { error: false, message: 'success' };
+            } catch (error) {
+				throw new Error(error.message);
             }
         }
     },

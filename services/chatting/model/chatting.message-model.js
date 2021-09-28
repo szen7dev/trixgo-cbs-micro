@@ -343,7 +343,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USERID IS MEMBER OF CONVERSATION
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $all: [userID] }
                 }).lean();
@@ -423,11 +423,11 @@ class Model extends BaseModel {
 	revokeMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
+				// CHECK PARAMS	
                 if (!checkObjectIDs([...messagesID, userID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-				// CHECK USERID IS MEMBER OF CONVERSATION
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.find({
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $all: [userID] }
                 }).lean();
@@ -439,13 +439,17 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Request Params filesID Invalid", status: 400 });
 
 				// Get list message will delete
-				let listMessages = await CHATTING__MESSAGE_COLL.find({
-					_id: { $in: messagesID },
-					conversation: conversationID,
-					sender: userID
-				})
-				.select('_id type createAt')
-				.lean();
+				let listMessages = await CHATTING__MESSAGE_COLL
+					.find({
+						_id: { $in: messagesID },
+						conversation: conversationID,
+						sender: userID
+					})
+					.select('_id type createAt')
+					.lean();
+
+				if(!listMessages || !listMessages.length)
+					return resolve({ error: true, message: "Message is not belong conversation", status: 403 });
 
 				// Get list message not expire recall
 				let listMessagesNotExpire = [];
@@ -473,21 +477,48 @@ class Model extends BaseModel {
 							case 6: // Recall message location
 							case 7: // Recall message share contact
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
+
+								// Update last message for conversation
+								let isLastMessage = checkExistConversation.lastMessage.toString() === message._id.toString();
+
+								if(isLastMessage){
+									let lastMessageOfConversation = await CHATTING__MESSAGE_COLL
+										.findOne({ conversation: conversationID })
+										.select('_id')
+										.sort({ _id: -1 })
+
+									await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+										$set: { lastMessage: lastMessageOfConversation._id }
+									})
+								}
+
 								break;
 							case 1: // Recall message images
 							case 2: // Recall message files
-								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-									_id: message._id,
-									files: {
-										$elemMatch: {
-											file: { $in: filesID }
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(message._id, {
+									$pull: {
+										files: {
+											_id: { $in: filesID }
 										}
-									}
-								}, {
-									$set: {
-										"files.$.status": 2
-									}
+									},
 								}, { new: true });
+
+								if(infoMessageAfterUpdated && !infoMessageAfterUpdated.files.length){
+									await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
+								}
+
+								// infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+								// 	_id: message._id,
+								// 	files: {
+								// 		$elemMatch: {
+								// 			file: { $in: filesID }
+								// 		}
+								// 	}
+								// }, {
+								// 	$set: {
+								// 		"files.$.status": 2
+								// 	}
+								// }, { new: true });
 								break;
 							default:
 								break;
@@ -502,6 +533,52 @@ class Model extends BaseModel {
 				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Tự động xoá tất cả tin nhắn của cuộc hội thoại
+	 * Date: 28/09/2021
+	 */
+	autoDeleteMessagesConversation({ conversationID, userID, time, isDelete = false, ctx }){
+		return new Promise(async resolve => {
+			try {
+				// CHECK PARAMS	
+                if (!checkObjectIDs([userID, conversationID])) 
+                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [userID] }
+                }).lean();
+
+                if(!checkExistConversation)
+                    return resolve({ error: true, message: "You aren't author conversation", status: 403 });
+
+				if(isDelete){
+					await CHATTING__MESSAGE_COLL.deleteMany({
+						conversation: conversationID
+					})
+				} else{
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
+						conversationID
+					});
+
+					// !Off auto delete message
+					if(+time !== 0){
+						await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
+							conversationID,
+							userID,
+							time
+						})
+					}
+				}
+
+				resolve({ error: false, message: 'success', status: 200 });
+			} catch (error) {
+				resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
 	}
@@ -708,22 +785,9 @@ class Model extends BaseModel {
 						_id: { $in: infoConversation.messagesPin },
 						conversation: conversationID
 					}, filter)
-					.populate({
-						path: 'poll',
-						select: select.poll
-					})
-					.populate({
-						path: 'reminder',
-						select: select.reminder
-					})
-					.populate({
-						path: 'sender',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.sender
-					})
+					.populate('poll', select.poll)
+					.populate('reminder', select.reminder)
+					.populate('sender', select.sender)
 					.populate({
 						path: 'files.file',
 						select: '_id file',
@@ -1122,23 +1186,12 @@ class Model extends BaseModel {
 
 				let	listMessagesPoll = await CHATTING__MESSAGE_COLL
 					.find({ ...conditionObj, ...conditionFind }, filter)
-					.populate({
-						path: 'sender',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.sender
-					})
+					.populate('sender', select.sender)
 					.populate({
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: select.usersVote,
-							populate: {
-								path: 'image',
-								select: select.image,
-							}
+							select: select.usersVote
 						},
 						select: select.poll
 					})
@@ -1151,6 +1204,11 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+
+				if(listMessagesPoll && listMessagesPoll.length){
+					nextCursor = listMessagesPoll[+limit - 1]._id;
+				}
 
 				return resolve({ 
 					error: false, 
@@ -1158,7 +1216,8 @@ class Model extends BaseModel {
 					data: {
 						listRecords: listMessagesPoll,
 						limit: +limit,
-						totalRecord
+						totalRecord,
+						nextCursor
 					}
 				});
 			} catch (error) {
@@ -1203,19 +1262,6 @@ class Model extends BaseModel {
 					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to create note or reminder conversation", status: 403 });
 				}
-
-				// const responseAgenda = await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
-				// 	conversationID,
-				// 	messageID: '612f466299d3042d09ed4503',
-				// 	userID,
-				// 	remindTime,
-				// 	repeat,
-				// 	notifyFor
-				// });
-
-				// // await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`);
-
-				// return resolve({ error: false, message: 'Yaa!!! Tada', status: 200 });
 
 				// INSERT MESSAGE REMINDER
 				let infoReminderAfterInsert = await CHATTING__MESSAGE_REMINDER_COLL.create({
@@ -1264,7 +1310,7 @@ class Model extends BaseModel {
 
 				// ADD JOB FOR REMINDER
 				await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
-					messageID: infoMessageReminder._id,
+					messageID: infoMessageReminder._id.toString(),
 					conversationID,
 					userID,
 					remindTime,
@@ -1278,6 +1324,7 @@ class Model extends BaseModel {
 					data: infoMessageReminder
 				});
 			} catch(error){
+				console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
@@ -1288,17 +1335,17 @@ class Model extends BaseModel {
 	 * Func: Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
 	 * Date: 01/09/2021
 	 */
-	updateMessageReminder({ conversationID, messageID, content, remindTime, repeat, userID }) {
+	updateMessageReminder({ conversationID, messageID, content, remindTime, repeat, userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs([userID, conversationID, messageID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				if(!REMINDER_REPEAT.includes(repeat))
-					return resolve({ error: true, message: 'Request Params Repeat invalid', status: 400 });
+					return resolve({ error: true, message: 'Request Params repeat invalid', status: 400 });
 
 				if(!moment(remindTime).isValid())
-					return resolve({ error: true, message: 'Request Params Remind Time invalid', status: 400 });
+					return resolve({ error: true, message: 'Request Params remindTime invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1355,9 +1402,15 @@ class Model extends BaseModel {
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
 				if(remindTime){
+					// REMOVE OLD REMINDER JOB
+					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`, {
+						messageID,
+						conversationID,
+					})
+
 					// ADD JOB FOR REMINDER
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_CONVERSATION}`, {
-						messageID: infoReminderAfterUpdate._id,
+						messageID,
 						conversationID,
 						userID,
 						remindTime,
@@ -1476,7 +1529,7 @@ class Model extends BaseModel {
 	 * Func: Xoá nhắc hẹn trong cuộc hội thoại
 	 * Date: 01/09/2021
 	 */
-	deleteReminder({ conversationID, messageID, userID }) {
+	deleteReminder({ conversationID, messageID, userID, ctx }) {
 		return new Promise(async resolve => {
 			try {
 				if (!checkObjectIDs([messageID, userID, conversationID])) 
@@ -1512,6 +1565,12 @@ class Model extends BaseModel {
 
 				if(!infoReminderAfterDelete)
 					return resolve({ error: true, message: "Can't update status reminder", status: 403 });
+
+				// REMOVE OLD REMINDER JOB
+				await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`, {
+					messageID,
+					conversationID
+				})
 
 				// INSERT MESSAGE NOTIFY DELETE REMINDER
 				const infoMessageNotify = await this.insertData({
@@ -1613,23 +1672,11 @@ class Model extends BaseModel {
 
 				let	listMessagesReminder = await CHATTING__MESSAGE_COLL
 					.find({ ...conditionObj, ...conditionFind }, filter)
-					// .select('_id sender status type reminder')
-					.populate({
-						path: 'sender',
-						populate: {
-							path: 'image',
-							select: select.image
-						},
-						select: select.sender
-					})
+					.populate('sender', select.sender)
 					.populate({
 						path: 'reminder',
 						populate: {
 							path: 'accepts rejects',
-							populate: {
-								path: 'image',
-								select: select.image,
-							},
 							select: select.user,
 						},
 						select: select.reminder
@@ -1643,6 +1690,11 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+
+				if(listMessagesReminder && listMessagesReminder.length){
+					nextCursor = listMessagesReminder[+limit - 1]._id;
+				}
 
 				return resolve({ 
 					error: false, 
@@ -1650,7 +1702,8 @@ class Model extends BaseModel {
 					data: {
 						listRecords: listMessagesReminder,
 						limit: +limit,
-						totalRecord
+						totalRecord,
+						nextCursor
 					}
 				});
 			} catch (error) {
