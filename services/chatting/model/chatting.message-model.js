@@ -1132,8 +1132,11 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-				if(isNaN(limit))
-					return resolve({ error: true, message: 'Request params limit invalid', status: 400 });
+				if(isNaN(limit)){
+					limit = 10;
+				} else{
+					limit = +limit;
+				}
 
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -1169,7 +1172,7 @@ class Model extends BaseModel {
 				}
 
 				// GET CONDITION PAGINATION
-				if(lastestMessageID && !checkObjectIDs(lastestMessageID)){
+				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
 					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 403 });
@@ -1195,7 +1198,7 @@ class Model extends BaseModel {
 						},
 						select: select.poll
 					})
-					.limit(+limit)
+					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();
 
@@ -1207,7 +1210,12 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 
 				if(listMessagesPoll && listMessagesPoll.length){
-					nextCursor = listMessagesPoll[+limit - 1]._id;
+
+					if(listMessagesPoll.length > limit){
+						nextCursor = listMessagesPoll[limit - 1]._id;
+						listMessagesPoll.length = limit;
+					}
+
 				}
 
 				return resolve({ 
@@ -1618,8 +1626,11 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-				if(isNaN(limit))
-					return resolve({ error: true, message: 'Request params limit invalid', status: 400 });
+				if(isNaN(limit)) {
+					limit = 10;
+				} else{
+					limit = +limit;
+				}
 
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -1681,7 +1692,7 @@ class Model extends BaseModel {
 						},
 						select: select.reminder
 					})
-					.limit(+limit)
+					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();
 
@@ -1693,7 +1704,12 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 
 				if(listMessagesReminder && listMessagesReminder.length){
-					nextCursor = listMessagesReminder[+limit - 1]._id;
+
+					if(listMessagesReminder.length > limit){
+						nextCursor = listMessagesReminder[limit - 1]._id;
+						listMessagesReminder.length = limit;
+					}
+
 				}
 
 				return resolve({ 

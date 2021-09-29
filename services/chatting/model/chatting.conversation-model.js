@@ -680,8 +680,11 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
-				if(isNaN(limit))
-					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+				if(isNaN(limit)) {
+					limit = 15;
+				} else{
+					limit = +limit;
+				}
 
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -765,7 +768,7 @@ class Model extends BaseModel {
 						select: select.files
 					})
 					.sort(sortBy)
-					.limit(+limit)
+					.limit(limit + 1)
 					.lean();
 
 				// GET TOTAL RECORD
@@ -773,7 +776,11 @@ class Model extends BaseModel {
 				let nextCursor  = null;
 
 				if(listMessages && listMessages.length){
-					nextCursor = listMessages[+limit - 1]._id;
+
+					if(listMessages.length > limit){
+						nextCursor = listMessages[limit - 1]._id;
+						listMessages.length = limit;
+					}
 
 					if(!keyword){
 						listMessages = listMessages.reverse();
@@ -1479,8 +1486,11 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit))
-					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+				if(isNaN(limit)) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
 
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -1545,7 +1555,7 @@ class Model extends BaseModel {
 						},
 						select: select.avatar
 					})
-					.limit(+limit)
+					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();
 
@@ -1554,7 +1564,12 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 
 				if(listConversation && listConversation.length){
-					nextCursor = listConversation[+limit - 1]._id;
+
+					if(listConversation.length > limit){
+						nextCursor = listConversation[limit - 1]._id;
+						listConversation.length = limit;
+					}
+
 				}
 
                 return resolve({ 
@@ -1584,8 +1599,11 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([userID]))
 					return resolve({ error: true, message: 'Request param userID invalid', status: 400 });
 
-				if(isNaN(limit))
-					return resolve({ error: true, message: "Request param limit invalid", status: 400 });
+				if(isNaN(limit)){
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
 
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -1650,7 +1668,7 @@ class Model extends BaseModel {
 						},
 						select: select.avatar
 					})
-					.limit(+limit)
+					.limit(limit + 1)
 					.sort(sortBy);
 
 				// GET TOTAL RECORD
@@ -1658,7 +1676,12 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 
 				if(listConversationMissMessage && listConversationMissMessage.length){
-					nextCursor = listConversationMissMessage[+limit - 1]._id;
+
+					if(listConversationMissMessage.length > limit){
+						nextCursor = listConversationMissMessage[limit - 1]._id;
+						listConversationMissMessage.length = limit;
+					}
+
 				}
 
 				return resolve({ 
