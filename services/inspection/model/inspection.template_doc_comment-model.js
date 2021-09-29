@@ -9,6 +9,7 @@ const { getCurrentPage }			= require('../../../tools/utils/calculate_current_pag
  * import inter-coll, exter-coll
  */
 const INSPECTION__TEMPLATE_DOC_COMMENT_COLL    = require('../database/inspection.template_doc_comment-coll');
+const INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL = require('../database/inspection.template_doc_comment_file-coll');
 const INSPECTION__TEMPLATE_DOC_COLL             = require('../database/inspection.template_doc-coll');
 
 /**
@@ -24,7 +25,7 @@ class Model extends BaseModel {
     constructor() {
         super(INSPECTION__TEMPLATE_DOC_COMMENT_COLL);
     }
-        
+
     /**
      * Thêm mẩu tin: HiepNH ✅
      * F0211
@@ -105,13 +106,13 @@ class Model extends BaseModel {
      * F0214
      * problem: Bị hạn chế không thể sort createAt = 1
      */
-    getListTemplateDoc({ templateDocReactionID, limit = 10, lastestIDTemplateDocReaction  }) { 
+    getListComment({ templateID, limit = 100, lastestIDComment, parentID  }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { template: templateDocReactionID };
+                let conditionObj = { template: templateID };
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
 
@@ -127,8 +128,13 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDTemplateDocReaction && checkObjectIDs(lastestIDTemplateDocReaction)){
-					let infoMessage = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.findById(lastestIDTemplateDocReaction);
+                if(parentID){
+                    conditionObj.parent  = parentID;
+                    conditionFind.parent = parentID;
+                }
+
+				if(lastestIDComment && checkObjectIDs(lastestIDComment)){
+					let infoMessage = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.findById(lastestIDComment);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -143,19 +149,28 @@ class Model extends BaseModel {
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
-                let infoDataAfterGet = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.find({...conditionObj, ...conditionFind })
-                    .select("reaction")
+                let infoDataAfterGet = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.find({...conditionObj, ...conditionFind })
                     .populate({
-                        path: "reaction",
-                        select: "type author"
+                        path: "comment",
+                        select: "_id content author amountChilds amountReactions createAt",
+                        populate: {
+                            path: "author",
+                            select: "fullname",
+                        }
                     })
                     .limit(+limit)
                     .sort(sortBy) 
                     .lean();
+                    
+                let infoDataAfterGetAfterMapFile = [];
+                for (const comment of infoDataAfterGet) {
+                    let fileOfComment = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL.find({ comment: comment._id }).select("file").populate("file");
+                    console.log({ fileOfComment });
+                }
 
                 // GET TOTAL RECORD
-				let totalRecord = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.count(conditionObj);
-                let totalCurrentPage = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.count(conditionFind);
+				let totalRecord = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.count(conditionObj);
+                let totalCurrentPage = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.count(conditionFind);
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });

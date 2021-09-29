@@ -12,9 +12,7 @@ let agenda;
   
 module.exports = {
     addJob: {
-        params: {
-            // page            : { type: "string", optional: true },
-        },
+        params: {},
         async handler(ctx) {
             try {
                 let timeScheduler = new Date(Date.now() + 10000);
@@ -39,7 +37,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-				// await this.validateEntity(ctx.params);
                 let { conversationID, userID, timeMute } = ctx.params;
                 let timeScheduler = new Date(Date.now() + 10000);
 

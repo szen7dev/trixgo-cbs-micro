@@ -3,6 +3,17 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+const GeoSchema = new Schema({
+    type: {
+        type: String,
+        default: "Point"
+    },
+    coordinates: {
+        type: [Number],
+        index: "2dsphere"
+    }
+});
+
 module.exports  = DATABASE_MIDDLEWARE("message_message", {
     /**
      *  Người gửi tin nhắn
@@ -43,6 +54,11 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
         type    : Schema.Types.ObjectId,
         ref     : 'message_message'
     },
+
+	/**
+     * Tin nhắn chia sẻ vị trí
+     */
+	location: GeoSchema,
 
     /**
      * Các files được đính kèm trong cuộc hội thoại

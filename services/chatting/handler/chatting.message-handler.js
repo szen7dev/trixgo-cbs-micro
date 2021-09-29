@@ -32,10 +32,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: senderID } = ctx.meta.infoUser;
-                const { conversationID, parentID, content, type, files, usersAssigned } = ctx.params;
+                const { conversationID, parentID, content, type, location, files, usersAssigned } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, senderID, parentID, content, type, files, usersAssigned, ctx
+					conversationID, senderID, parentID, content, type, files, location, usersAssigned, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

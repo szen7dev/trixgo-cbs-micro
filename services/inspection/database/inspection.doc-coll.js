@@ -4,27 +4,27 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
     
 module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
-    //_________Template
+    //_________Template/Loại hồ sơ
     template: {
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_template_doc'
     },
-    //_________Thuộc dự án
+    //_________Thuộc dự án/Công trình
     project: {
         type    : Schema.Types.ObjectId,
         ref     : 'department' 
     },
-    //_________Thuộc hợp đồng
+    //_________Thuộc hợp đồng/Gói thầu
     contract: {
         type    : Schema.Types.ObjectId,
         ref     : 'contract'
     },
-    //_________Tên hồ sơ
+    //_________Nội dung
     name: String,
     //_________Mã hiệu hồ sơ
-    sign: String, 
-    //_________Mô tả hồ sơ
-    description: String,               
+    sign: String,
+    //_________Mô tả hồ sơ/Vị trí
+    description: String,
     //_________Số lượng tương tác
     numLike: Number,
     //_________Số lượng comment
@@ -43,7 +43,11 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     modifiedDate: {
         type : Date 
     },
-    //_________Trạng thái (1-Đang triển khai/2-Đã hoàn thành) 
+    /**
+    * Trạng thái 
+    * 1-Không đạt yêu cầu
+    * 2-Đạt yêu cầu
+    */
     status: {
         type: Number,
         default: 1
@@ -53,7 +57,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'contract_bill_job'
     },
-    //_________Liên quan tới các khu vực
+    //_________Khu vực
     areas: [{
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_area'

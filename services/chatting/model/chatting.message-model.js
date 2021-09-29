@@ -18,12 +18,10 @@ const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.ac
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
-const { 
-	isTrue,
+const {
 	checkObjectIDs, 
 	checkNumberIsValidWithRange 
 } = require('../../../tools/utils/utils');
-const { getTimeBetween, compareTwoTime } = require('../../../tools/utils/time_utils');
 
 /**
  * BASE
@@ -123,7 +121,9 @@ class Model extends BaseModel {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-    insertMessage({ conversationID, senderID, content, receiversID, parentID, usersAssigned, files, type = 0, ctx }) {
+    insertMessage({ 
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx 
+	}) {
         return new Promise(async (resolve) => {
             try {
                 if (!checkObjectIDs([senderID, conversationID])) 
@@ -140,8 +140,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configSendMessage === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(senderID))
+					if(!listAuthorsID.includes(senderID))
 						return resolve({ error: true, message: "You don't have permission to send message", status: 403 });
 				}
 
@@ -214,7 +215,7 @@ class Model extends BaseModel {
 					if(allLinks && allLinks.length){
 						let listMessageLinks = allLinks.map(link => ({
 							conversationID, 
-							userID: senderID,
+							senderID,
 							link
 						}))
 
@@ -228,30 +229,40 @@ class Model extends BaseModel {
 				let infoMessageAfterInserted = null;
 				let numberMissMessage		 = 1;
 
-				// MESSAGE SHARE CONTACT
-				if(+type === 7){
-					if(!usersAssigned || !usersAssigned.length || !checkObjectIDs(usersAssigned))
-						return resolve({ error: true, message: "Request Params usersAssigned invalid", status: 400 });
+				switch (+type) {
+					case 6: // MESSAGE SHARE LOCATION
+						infoMessageAfterInserted = await this.insertData({
+							...dataInsertMessage,
+							location: {
+								type: "Point", 
+								coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
+							}
+						})
+						break;
+					case 7: // MESSAGE SHARE CONTACT
+						if(!usersAssigned || !usersAssigned.length || !checkObjectIDs(usersAssigned))
+							return resolve({ error: true, message: "Request Params usersAssigned invalid", status: 400 });
 
-					let listMessageShareContact = usersAssigned.map(memberID => ({
-						usersSeen: [senderID],
-						sender: senderID, 
-						receivers: receiversID,
-						conversation: conversationID,
-						usersAssigned: [memberID],
-						type: 7
-					}))
+						let listMessageShareContact = usersAssigned.map(memberID => ({
+							usersSeen: [senderID],
+							sender: senderID, 
+							receivers: receiversID,
+							conversation: conversationID,
+							usersAssigned: [memberID],
+							type: 7
+						}))
 
-					const { results } = await PromisePool
-						.for(listMessageShareContact)
-						.withConcurrency(2)
-						.process(async message => this.insertData(message))
+						const { results } = await PromisePool
+							.for(listMessageShareContact)
+							.withConcurrency(2)
+							.process(async message => this.insertData(message))
 
-					numberMissMessage 		 = results.length;
-					infoMessageAfterInserted = results[results.length - 1];
-				} else{
-					// MESSAGE NORMAL
-					infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+						numberMissMessage 		 = results.length;
+						infoMessageAfterInserted = results[results.length - 1];
+						break;
+					default: // MESSAGE NORMAL
+						infoMessageAfterInserted = await this.insertData(dataInsertMessage);
+						break;
 				}
 
                 if(!infoMessageAfterInserted)
@@ -359,6 +370,8 @@ class Model extends BaseModel {
 
 						switch (message.type) {
 							case 0: // Delete message normal (text message)
+							case 6: // Delete message location
+							case 7: // Delete message contact
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
 									conversation: conversationID
@@ -368,8 +381,8 @@ class Model extends BaseModel {
 									}
 								}, { new: true });
 								break;
-							case 1: // Delete message image, file (media message)
-							case 2:
+							case 1: // Delete message image
+							case 2: // Delete message file
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
 									conversation: conversationID,
@@ -455,6 +468,8 @@ class Model extends BaseModel {
 
 						switch (message.type) {
 							case 0: // Recall message normal (text message)
+							case 6: // Recall message location
+							case 7: // Recall message share contact
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
 									conversation: conversationID,
@@ -463,8 +478,8 @@ class Model extends BaseModel {
 									$set: { status: 3 }
 								}, { new: true });
 								break;
-							case 1: // Recall message images, files (media message)
-							case 2:
+							case 1: // Recall message images
+							case 2: // Recall message files
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 									_id: message._id,
 									conversation: conversationID,
@@ -586,8 +601,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(infoConversation.config && infoConversation.config.configPinMessage === 2){
+					const listAuthorsID = infoConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!infoConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to pin message", status: 403 });
 				}
 
@@ -742,8 +758,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configCreatePoll === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to create poll conversation", status: 403 });
 				}
 
@@ -1140,8 +1157,9 @@ class Model extends BaseModel {
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configCreateNote === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to create note or reminder conversation", status: 403 });
 				}
 

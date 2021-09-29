@@ -109,15 +109,16 @@ class Model extends BaseModel {
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
 					_id: conversationID, 
 					members: { $in: [userID] }
-				});
+				}).lean();
 
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
 				// Check cấu hình admin cuộc hội thoại
 				if(checkExistConversation.config && checkExistConversation.config.configEditInfo === 2){
+					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!checkExistConversation.authors.includes(userID))
+					if(!listAuthorsID.includes(userID))
 						return resolve({ error: true, message: "You don't have permission to edit conversation", status: 403 });
 				}
 
@@ -222,6 +223,20 @@ class Model extends BaseModel {
 					$addToSet: { usersMissMessage }
 				});
 
+				// Check cấu hình admin cuộc hội thoại
+				if(checkExistConversation.config && checkExistConversation.config.configSeeOldMessage === 2){
+					// INSERT USER DELETE HISTORY
+					let usersDeleteHistory = membersID.map(memberID => ({ 
+						userID: memberID,
+						lastMessage: checkExistConversation.lastMessage,
+						time: Date.now()
+					}));
+
+					await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$addToSet: { usersDeleteHistory }
+					});
+				}
+
 				// INSERT MESSAGE ADD MEMBER TO CONVERSATION
 				await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
@@ -280,7 +295,8 @@ class Model extends BaseModel {
                 let infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     $pullAll: pullMemberObj,
 					$pull: {
-						usersMissMessage: { userID: memberID }
+						usersMissMessage: { userID: memberID },
+						usersDeleteHistory: { userID: memberID }
 					}
                 }, { new: true });
 
@@ -388,7 +404,7 @@ class Model extends BaseModel {
                 if(!checkExistConversation)
                     return resolve({ error: true, message: "You aren't author conversation", status: 403 });
 
-				let dataUpdate = {};
+				let dataUpdate = { config: checkExistConversation.config };
 				/**
 				 * 1: Làm nổi bật tin của Admin
 				 * 2: Member mới được xem tin nhắn cũ
@@ -400,25 +416,25 @@ class Model extends BaseModel {
 				 */
 				switch (+typeConfig) {
 					case 1:
-						dataUpdate.config = { configHighlight: +valueConfig };
+						dataUpdate.config['configHighlight']		= +valueConfig;
 						break;
 					case 2:
-						dataUpdate.config = { configSeeOldMessage: +valueConfig };
+						dataUpdate.config['configSeeOldMessage'] 	= +valueConfig;
 						break;
 					case 3:
-						dataUpdate.config = { configEditInfo: +valueConfig };
+						dataUpdate.config['configEditInfo'] 		= +valueConfig;
 						break;
 					case 4:
-						dataUpdate.config = { configCreateNote: +valueConfig };
+						dataUpdate.config['configCreateNote'] 		= +valueConfig;
 						break;
 					case 5:
-						dataUpdate.config = { configCreatePoll: +valueConfig };
+						dataUpdate.config['configCreatePoll'] 		= +valueConfig;
 						break;
 					case 6:
-						dataUpdate.config = { configPinMessage: +valueConfig };
+						dataUpdate.config['configPinMessage'] 		= +valueConfig;
 						break;
 					case 7:
-						dataUpdate.config = { configSendMessage: +valueConfig };
+						dataUpdate.config['configSendMessage'] 		= +valueConfig;
 						break;
 					default:
 						break;
@@ -818,10 +834,13 @@ class Model extends BaseModel {
 	 * Date: 12/08/2021
 	 */
 	getListMessagesMediaConversation({ 
-		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, limit = 10, isLoadAll 
+		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10, isLoadAll 
 	}){
 		return new Promise(async resolve => {
 			try {
+				if(isNaN(typeMessage))
+					return resolve({ error: true, message: "Request param typeMessage invalid", status: 400 });
+
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
@@ -834,9 +853,18 @@ class Model extends BaseModel {
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
 
+				if(!page || isNaN(page))
+					page = 1;
+
+				if(!limit || isNaN(limit))
+					limit = 10;
+
+				page  		= +page;
+				limit 		= +limit;
+				typeMessage = +typeMessage;
+
 				let conditionObj = { 
-					conversation: ObjectID(conversationID), 
-					type: +typeMessage
+					conversation: ObjectID(conversationID)
 				};
 
 				if(senderID && checkObjectIDs([senderID])){
@@ -859,53 +887,147 @@ class Model extends BaseModel {
 
 				let groupObj = {
 					_id: { $dateToString: { format: "%Y-%m-%d", date: "$createAt" } },
-					dataFormat: { 
-						$first: { 
+					dataFormat: {
+						$first: {
 							$dateToString: { format: "%d/%m/%Y", date: "$createAt" }
 						}
 					},
 					// _id: { month: { $month: "$createAt" }, day: { $dayOfMonth: "$createAt" }, year: { $year: "$createAt" } },
-					listMessage: { 
-						$push: {
-							_id: "$_id",
-							senderID: "$sender._id",
-							senderName: "$sender.fullname",
-							content: "$content",
-							status: "$status",
-							type: "$type",
-							files: "$files",
-							modifyAt: "$modifyAt",
-							createAt: "$createAt",
-						}
-					},
-					count: { $sum: 1 }
-				};
-
-				let pipeline = [
-					{ $match: conditionObj },
-					{
-						$lookup: {
-							from: 'users',
-							localField: 'sender',
-							foreignField: '_id',
-							as: 'sender'
-						}
-					},
-					{
-						$unwind: {
-							path: "$sender",
-							preserveNullAndEmptyArrays: true
-						}
-					},
-					{ $group: groupObj },
-					{ $sort: { "_id": -1 } }
-				]
-
-				if(!isTrue(isLoadAll)){
-					pipeline.push({ $limit: +limit });
 				}
 
-				let listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
+				let listMedia = [];
+
+				// MESSAGE LINK
+				if(typeMessage === 3){
+					groupObj = {
+						...groupObj,
+						listMessage: {
+							$push: {
+								_id: "$_id",
+								senderID: "$sender._id",
+								senderName: "$sender.fullname",
+								link: "$link",
+								modifyAt: "$modifyAt",
+								createAt: "$createAt",
+							}
+						},
+						count: { $sum: 1 }
+					}
+
+					let pipeline = [
+						{ $match: conditionObj },
+						{
+							$lookup: {
+								from: 'users',
+								localField: 'sender',
+								foreignField: '_id',
+								as: 'sender'
+							}
+						},
+						{
+							$unwind: {
+								path: "$sender",
+								preserveNullAndEmptyArrays: true
+							}
+						},
+						{ $group: groupObj },
+						{ $sort: { "_id": -1 } }
+					]
+
+					// if(!isTrue(isLoadAll)){
+					// 	pipeline.push({ $limit: +limit });
+					// }
+
+					listMedia = await CHATTING__CONVERSATION_LINK_COLL.aggregate(pipeline);
+
+					if(!listMedia)
+						return resolve({ error: true, message: "Can't get list message", status: 403 });
+
+					let skip = (page * limit) - limit;
+					listMedia = listMedia.slice(skip, skip + limit);
+
+				} else{
+					// MESSAGE FILE, IMAGE
+					groupObj = {
+						...groupObj,
+						listMessage: {
+							$push: {
+								_id: "$_id",
+								senderID: "$sender._id",
+								senderName: "$sender.fullname",
+								content: "$content",
+								status: "$status",
+								type: "$type",
+								files: "$files",
+								modifyAt: "$modifyAt",
+								createAt: "$createAt",
+							}
+						},
+						count: { $sum: 1 }
+					}
+
+					let pipeline = [
+						{ 
+							$match: {
+								...conditionObj,
+								type: typeMessage
+							}
+						},
+						{
+							$lookup: {
+								from: 'users',
+								localField: 'sender',
+								foreignField: '_id',
+								as: 'sender'
+							}
+						},
+						{
+							$unwind: {
+								path: "$sender",
+								preserveNullAndEmptyArrays: true
+							}
+						},
+						{ $group: groupObj },
+						{ $sort: { "_id": -1 } },
+					]
+
+					// if(!isTrue(isLoadAll)){
+					// 	pipeline.push({ $limit: +limit });
+					// }
+
+					listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
+
+					if(!listMedia)
+						return resolve({ error: true, message: "Can't get list message", status: 403 });
+
+					let skip = (page * limit) - limit;
+
+					listMedia = listMedia.slice(skip, skip + limit);
+					listMedia = listMedia.map(async media =>{
+
+						let listMessage = media.listMessage.map(message => CHATTING__MESSAGE_COLL
+							.findOne({ _id: message._id })
+							.select('_id sender content status type files createAt modifyAt')
+							.populate({
+								path: 'files.file',
+								select: '_id file conversation',
+								populate: {
+									path: 'file',
+									select: '_id app status name url size userCreate'
+								}
+							})
+							.populate({
+								path: 'sender',
+								select: '_id fullname bizname'
+							})
+							.lean());
+
+						listMessage = await Promise.all(listMessage);
+						return { ...media, listMessage };
+					})
+
+					listMedia = await Promise.all(listMedia);
+				}
 
 				return resolve({ error: false, data: listMedia, status: 200 })
 			} catch (error) {
@@ -925,11 +1047,13 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
-				// Check user exist in conversation
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $all: [userID] }
-				}).populate('members').lean();
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL
+					.findOne({
+						_id: conversationID,
+						members: { $all: [userID] }
+					})
+					.populate('members')
+					.lean();
 
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
@@ -938,7 +1062,7 @@ class Model extends BaseModel {
 					let condition = { conversation: conversationID, sender: member._id };
 					let totalImagePromise = CHATTING__MESSAGE_COLL.countDocuments({ ...condition, type: 1 });
 					let totalFilePromise = CHATTING__MESSAGE_COLL.countDocuments({ ...condition, type: 2 });
-					let totalLinkPromise = CHATTING__MESSAGE_COLL.countDocuments({ ...condition, type: 3 });
+					let totalLinkPromise = CHATTING__CONVERSATION_LINK_COLL.countDocuments({ ...condition });
 
 					let [totalImage, totalFile, totalLink] = await Promise.all([totalImagePromise, totalFilePromise, totalLinkPromise])
 

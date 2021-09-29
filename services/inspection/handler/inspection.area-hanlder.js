@@ -120,7 +120,7 @@ module.exports = {
                 const resultAfterCallHandler = await INSPECTION__AREA_MODEL.getListArea({
 					keyword, projectID, limit, lastestIDArea 
 				});
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

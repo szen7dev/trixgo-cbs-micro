@@ -3,11 +3,11 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("reaction_comment_file", {
+module.exports  = DATABASE_MIDDLEWARE("comment_file_core", {
     comment: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'reaction_comment'
-    },
+        ref     : 'comment_core'
+    }, 
     
     file: {
         type    :  Schema.Types.ObjectId,

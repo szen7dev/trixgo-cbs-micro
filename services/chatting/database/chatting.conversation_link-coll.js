@@ -11,8 +11,11 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_link", {
         type    :  Schema.Types.ObjectId,
         ref     : 'message_conversation'
     },
-
     link: {
         type: String
+    },
+	sender: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
     },
 })
