@@ -480,10 +480,10 @@ module.exports = {
         async handler(ctx) {
 			try {
                 await this.validateEntity(ctx.params);
-                let { userID } = ctx.params;
+                let { userID, select } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
-					userID
+					userID, select
 				});
 
 				return resultAfterCallHandler;

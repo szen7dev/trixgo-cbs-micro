@@ -148,7 +148,7 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-
+                
                 let infoDataAfterGet = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.find({...conditionObj, ...conditionFind })
                     .populate({
                         path: "comment",

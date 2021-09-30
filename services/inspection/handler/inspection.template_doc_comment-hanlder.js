@@ -108,7 +108,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { templateID, limit, parentID, lastestIDComment }  = ctx.params;
-
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.getListComment({
 					templateID, limit, lastestIDComment, parentID
 				});

@@ -142,6 +142,9 @@ module.exports = {
 		// Thu hồi tin nhắn của cuộc hội thoại (media, text)
 		[CF_ACTIONS_CHATTING.REVOKE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.revokeMessage,
 
+		// Tự động xoá tất cả tin nhắn của cuộc hội thoại
+		[CF_ACTIONS_CHATTING.AUTO_DELETE_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.autoDeleteMessagesConversation,
+
 		// Chia sẻ tin nhắn đến các cuộc hội thoại 
 		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
 
