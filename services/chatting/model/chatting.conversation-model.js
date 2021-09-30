@@ -1538,7 +1538,9 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let listConversation = await CHATTING__CONVERSATION_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                let listConversation = await CHATTING__CONVERSATION_COLL
+					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+					.populate('members', select.members)
 					.populate({
 						path: 'lastMessage',
 						populate: { 
