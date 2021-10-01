@@ -68,7 +68,7 @@ module.exports = {
                 let infoUser = await AUTH__USER_MODEL.updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID });
                 return infoUser;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -78,14 +78,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 let infoUser = ctx.meta.infoUser;
-                if (!infoUser) 
-                    return { error: true, message: 'cannot_get_info_from_token' }
+				let { filter, select } = ctx.params;
 
                 let { _id: userID } = infoUser;
-                let infoUserAfterFind = await AUTH__USER_MODEL.getInfo({ userID });
+                let infoUserAfterFind = await AUTH__USER_MODEL.getInfo({ userID, filter, select });
+
                 return infoUserAfterFind;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -105,7 +105,7 @@ module.exports = {
 
                 return infoUserAfterFind;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -238,10 +238,10 @@ module.exports = {
         async handler(ctx) {
 			try {
                 await this.validateEntity(ctx.params);
-                let { userID, select } = ctx.params;
+                let { userID } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
-					userID, select
+					userID
 				});
 
 				return resultAfterCallHandler;

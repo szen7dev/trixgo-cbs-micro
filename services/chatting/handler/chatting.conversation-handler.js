@@ -590,7 +590,7 @@ module.exports = {
                 const { lastestConversationID, keyword, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-					lastestConversationID, userID, keyword, limit, filter, select
+					lastestConversationID, userID, keyword, limit, filter, select, ctx
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
