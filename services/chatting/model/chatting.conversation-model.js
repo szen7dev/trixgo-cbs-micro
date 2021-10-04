@@ -1480,7 +1480,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
 	 * Date: 23/08/2021
 	 */
-	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20, filter = {}, select = {} }){
+	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20, filter = {}, select = {}, ctx }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -1538,6 +1538,39 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
+				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
+					userID
+				});
+
+				if(listConversationPin.data && listConversationPin.data.length){
+					conditionObj._id = { $nin: listConversationPin.data };
+
+					listConversationPin = listConversationPin.data.map(conversationID => CHATTING__CONVERSATION_COLL
+						.findById(conversationID, filter)
+						.populate('members', select.members)
+						.populate({
+							path: 'lastMessage',
+							populate: { 
+								path: 'sender',
+								select: select.sender,
+							},
+							select: select.lastMessage,
+						})
+						.populate({
+							path: 'avatar',
+							populate: {
+								path: 'file',
+								select: 'name size url'
+							},
+							select: select.avatar
+						})
+						.lean())
+
+					listConversationPin = await Promise.all(listConversationPin);
+				} else{
+					listConversationPin = [];
+				}
+
                 let listConversation = await CHATTING__CONVERSATION_COLL
 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate('members', select.members)
@@ -1566,19 +1599,18 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 
 				if(listConversation && listConversation.length){
-
 					if(listConversation.length > limit){
 						nextCursor = listConversation[limit - 1]._id;
 						listConversation.length = limit;
 					}
-
 				}
 
                 return resolve({ 
 					error: false,
 					status: 200,
-					data: { 
-						listRecords: listConversation, 
+					data: {
+						listConversationPin,
+						listRecords: listConversation,
 						limit: +limit,
 						totalRecord,
 						nextCursor

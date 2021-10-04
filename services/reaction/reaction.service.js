@@ -5,6 +5,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant'
 const { CF_ACTIONS_REACTION } 	        = require('./helper/reaction.actions-constant');
 const REACTION__COMMENT_HANDLER        	= require('./handler/reaction.comment-hanlder');
 const REACTION__REACTION_HANDLER      	= require('./handler/reaction.reaction-hanlder');
+const REACTION__COMMENT_FILE_CORE_HANDLER = require('./handler/reaction.comment_file_core-hanlder');
 
 const REACTION__REACTION_COLL			= require('./database/reaction.reaction-coll');
 const REACTION__COMMENT_COLL			= require('./database/reaction.comment-coll');
@@ -41,6 +42,9 @@ module.exports = {
 
 		//==========================================   COMMENT ACTIONS   ================================
 		[CF_ACTIONS_REACTION.COMMENT_INSERT ] 			: REACTION__COMMENT_HANDLER.insertComment,
+
+		//==========================================   COMMENT_FILE_CORE ACTIONS   ================================
+		[CF_ACTIONS_REACTION.COMMENT_FILE_CORE_INSERT ] : REACTION__COMMENT_FILE_CORE_HANDLER.insertCommentFileCore,
 	},
 
 	/**

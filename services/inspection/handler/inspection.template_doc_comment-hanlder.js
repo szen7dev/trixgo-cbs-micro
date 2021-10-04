@@ -37,8 +37,6 @@ module.exports = {
 				});
                 let commentID = infoCommentCore.data._id;
 
-              
-
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.insert({
 					template: templateID, comment: commentID, parent: parentID
 				});
@@ -47,54 +45,35 @@ module.exports = {
                 if(files){
                     for (const file of files) {
                         let { name, url, size } = file;
-                        
+                        // Add file core
                         const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
                             app: CF_DOMAIN_SERVICES.FILE, name, url, size
                         });
+                        
+                        // Add comment file core
+                        const infoCommentFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_FILE_CORE_INSERT}`, {
+                            comment: resultAfterCallHandler.data._id, fileCore: infoFileCore.data._id
+                        });
+                        
+                        console.log({ infoCommentFileCore });
 
                         // Inser file vào collection template_doc_comment_file-coll
-                        const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: resultAfterCallHandler.data._id, template: templateID, file: infoFileCore.data._id });
+                        const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: resultAfterCallHandler.data._id, template: templateID, file: infoCommentFileCore.data._id });
                         console.log({ resultAfterCallModel });
                     }
                 }
-
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
+ 
+   
 
     /**
-	 * Dev: Depv ❌
-	 * Func: Cập nhật template hồ sơ/biên bản
-	 * Date: 17/08/2021
-	 */
-    // removeReaction: {
-    //     auth: "required",
-    //     params: {
-	// 		reactionID  : { type: "string" },
-    //     },
-    //     async handler(ctx) {
-    //         try {
-	// 			await this.validateEntity(ctx.params);
-	// 			const { _id: authorID } = ctx.meta.infoUser;
-    //             const { reactionID } = ctx.params;
-
-    //             const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_REACTION_MODEL.remove({
-	// 				templateDocReactionID: reactionID
-	// 			});
-
-    //             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-    //         } catch (error) {
-    //             return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-    //         }
-    //     }
-    // },
-
-    /**
-	 * Dev: Depv ❌
-	 * Func: Danh sách template hồ sơ/biên bản
+	 * Dev: Depv 
+	 * Func: Danh sách comment trong template mẫu
 	 * Date: 17/08/2021
 	 */
     listComment: {

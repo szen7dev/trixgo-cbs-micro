@@ -25,7 +25,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { content } = ctx.params;
-
+                
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.insert({
 					content, userID: authorID
 				});

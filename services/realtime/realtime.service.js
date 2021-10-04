@@ -1,30 +1,31 @@
 "use strict";
 
-const ApiService            = require("moleculer-web");
-const SocketIOService       = require('moleculer-io');
-const redis                 = require('redis');
-const redisAdapter          = require('socket.io-redis')
-const express               = require('express');
-const app                   = express();
-const server                = require('http').Server(app);
+const ApiService            					= require("moleculer-web");
+const SocketIOService       					= require('moleculer-io');
+const redis                 					= require('redis');
+const redisAdapter          					= require('socket.io-redis')
+const express               					= require('express');
+const app                   					= express();
+const server                					= require('http').Server(app);
 
 /**
  * MODELS
  */
-const USER_MODEL           	= require('../../services/auth/model/auth.user-model').MODEL;
+const USER_MODEL           						= require('../../services/auth/model/auth.user-model').MODEL;
 
 /**
  * TOOLS
  */
-const { verify }     						= require('../../tools/jwt');
-const { REDIS_SEPERATOR }   				= require('../../tools/cache/cf_redis');
-const { sendDataToMultilSocketsOfListUser } = require('../../tools/socket/index');
-const { CF_DOMAIN_SERVICES } 		    	= require('../gateway/helper/domain.constant');
+const { verify }     							= require('../../tools/jwt');
+const { REDIS_SEPERATOR }   					= require('../../tools/cache/cf_redis');
+const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket/index');
+const { CF_DOMAIN_SERVICES } 		    		= require('../gateway/helper/domain.constant');
 
 /**
  * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
  */
-const { CHATTING_SOCKET } 	= require('../chatting/chatting.socket');
+const { CHATTING_SOCKET } 						= require('../chatting/chatting.socket');
+
 
 let pub = redis.createClient({
     host: REDIS_SEPERATOR.HOST,
@@ -104,10 +105,6 @@ module.exports = {
 							this.emit('HELLO_WORLD', data);
 						},
 
-                        'connect': async function(data, ack) { // write your handler function here.
-                          	console.log('connection');
-                        },
-
                         // 'reconnect': async function(data, ack) { // write your handler function here.
                         //     console.log('reconnection')
                         // },
@@ -116,6 +113,7 @@ module.exports = {
                             let socket                      = this;
                             let socketDisconnectID          = socket.id;
                             // let listUserConnected           = socket.$service.listUserConnected;
+							console.log({ socketDisconnectID })
 
                             socket.$service.removeUserDisconnectIntoListConnectedV2(socketDisconnectID);
                             socket.$service.removeUserDisconnectIntoListConnected(socketDisconnectID);
@@ -123,8 +121,6 @@ module.exports = {
                             // Xét user Online
                             let userID    = socket.client.user;
                             let _infoUser = await USER_MODEL.getDataById(userID);
-
-							console.log({ userDisconnect: userID });
 
                             socket.$service.setUserOffline({ _infoUser });
 
@@ -220,7 +216,7 @@ module.exports = {
             return listUserAfterFilterUserDisconnect;
         },
 
-        removeUserDisconnectIntoListConnectedV2( socketDisconnectID){
+        removeUserDisconnectIntoListConnectedV2(socketDisconnectID){
             let listUserConnected2                              = this.listUserConnected2;
             socketDisconnectID                                  = socketDisconnectID && socketDisconnectID.toString();
             listUserConnected2[this.userID.toString()].sockets  = listUserConnected2[this.userID.toString()].sockets.filter(_socketID => _socketID != socketDisconnectID);
@@ -241,38 +237,39 @@ module.exports = {
             let listUserActive      = this.listUserConnected2 || [];
             let io                  = this.io;
 
-            // Gửi tín hiệu kết nối cho những người bạn
-            sendDataToMultilSocketsOfListUser({ 
-				io,
-				event: 'SSC_ONLINE_USER',
-				arrReceiver: friends,
-				listUserConnected: listUserActive, 
-				data: { 
-					listFriendOnline: [ _infoUser._id ],
-					disconnect: false,
-					arraymember: _infoUser._id,
-					isFirstTime: false
-				}
-			})
-
-            friends.forEach(friendID => {
-                if(friendID && listUserActive[friendID]){
+			friends.forEach(friendID => {
+                if(listUserActive[friendID]){
 					listFriendOnline[listFriendOnline.length] = friendID;
                 }
             });
 
-			// Lấy các người bạn đang online gửi đến chính mình
-			sendDataToMultilSocketsOfListUser({
+            // Gửi tín hiệu kết nối cho những người bạn
+            sendDataToMultilSocketsOfListUser({ 
 				io,
 				event: 'SSC_ONLINE_USER',
-				arrReceiver: [ _infoUser._id ], 
-				listUserConnected: listUserActive, 
-				data: {
-					listFriendOnline,
-					disconnect: false, 
-					isFirstTime: true
+				arrReceiver: listFriendOnline,
+				listUserConnected: listUserActive,
+				data: { 
+					friendOnline: listFriendOnline,
+					disconnect: false,
+					isFirstTime: false
 				}
 			})
+
+			// Lấy các người bạn đang online gửi đến chính mình
+			// sendDataToMultilSocketsOfListUser({
+			// 	io,
+			// 	event: 'SSC_LIST_USER_ONLINE',
+			// 	arrReceiver: [ _infoUser._id ], 
+			// 	listUserConnected: listUserActive, 
+			// 	data: {
+			// 		listFriendOnline,
+			// 		disconnect: false, 
+			// 		isFirstTime: true
+			// 	}
+			// })
+
+			console.log({ connected: this.listUserConnected2, listFriendOnline, listUserActive, userID: _infoUser._id })
         },
 
         // Author: HUYNHVINH
@@ -290,12 +287,12 @@ module.exports = {
                 // let updateTimeOffline = await DB_MESSAGE_CONVERSATION_MODEL.updateUserOffline({  userID : userDisconnect.userID, time });
                 sendDataToMultilSocketsOfListUser({ 
 					io,
-					event: 'SSC_ONLINE_USER',
+					event: 'SSC_OFFLINE_USER',
 					arrReceiver: _infoUser.friends, 
 					listUserConnected: listUserActive, 
 					data: { 
-						friendOnline: _infoUser._id,
-						disconnect: true, 
+						friendOffline: _infoUser._id,
+						disconnect: true,
 						isFirstTime: false
 					}
 				})

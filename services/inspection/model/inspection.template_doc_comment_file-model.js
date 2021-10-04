@@ -9,7 +9,6 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  * import inter-coll, exter-coll
  */
 const INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL    = require('../database/inspection.template_doc_comment_file-coll');
-// const INSPECTION__TEMPLATE_DOC_COLL              = require('../database/inspection.template_doc-coll');
 
 /**
  * import inter-model, exter-model
@@ -26,7 +25,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Thêm mẩu tin: HiepNH ✅
+     * Thêm mẩu tin: DePV ✅
      * F0211
      */
     insert({ comment, template, file }) { 
@@ -49,7 +48,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                dataInsert = { comment, template, file};
+                dataInsert = { comment, template, file };
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create template file", status: 403 });

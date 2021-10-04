@@ -289,7 +289,7 @@ class Model extends BaseModel {
                 
                 return resolve({
                     error: false,
-                    data : { user: isExist, token }
+                    data: { user: newExist, token }
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -368,7 +368,7 @@ class Model extends BaseModel {
         })
     }
     // implement by: KHANHNEY✅ 
-    getInfo({ userID }) {
+    getInfo({ userID, filter, select }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -386,57 +386,28 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let infoUser = await AUTH__USER_COLL.findById(userID)
-                    .select("birthDay gender image signature lastLog email company firstname lastname fullname bizname phone username config lang" )
-                    .populate({
-                        path: "company",
-                        select: "name sign address"
-                    }) // position Không populate được position
-                    .populate({
-                        path: "department",
-                        select: "name sign address"
-                    })
-                    // .populate({
-                    //     path: 'sendToFriends',
-                    //     select: '_id fullname image comp any',
-                    //     populate: {
-                    //         path: 'company',
-                    //         select: '_id name',
-                    //         model: 'company'
-                    //     }
-                    // })
-                    // .populate({
-                    //     path: 'receiveFromFriends',
-                    //     select: '_id fullname image company',
-                    //     populate: {
-                    //         path: 'company',
-                    //         select: '_id name',
-                    //         model: 'company'
-                    //     }
-                    // })
-                    // .populate({
-                    //     path: 'friends',
-                    //     select: '_id fullname image company birthDay',
-                    //     populate: {
-                    //         path: 'company',
-                    //         select: '_id name sign',
-                    //         model: 'company'
-                    //     }
-                    // })
-                    // .populate({
-                    //     path:'tags',
-                    //     select:'_id name'
-                    // })
-                    // .populate({
-                    //     path: 'recentlyFriends',
-                    //     select: '_id fullname image company',
-                    //     populate: {
-                    //         path: 'company',
-                    //         select: '_id name',
-                    //         model: 'company'
-                    //     }
-                    // })
-                // console.log({ infoUser });
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
+                let infoUser = await AUTH__USER_COLL
+					.findById(userID, { ...filter, password: 0 })
+					.populate('company', select.company)
+					.populate('department', select.department)
+					// .populate('position', select.position)
+					.lean();
+
                 return resolve({ error: false, data: infoUser });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -452,7 +423,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'userID_invalid' });
+                    return resolve({ error: true, message: 'Request params userID invalid' });
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
@@ -625,7 +596,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách pin cuộc hội thoại
 	 * Date: 06/09/2021
 	 */
-	getListPinConversation({ userID, select = {} }) {
+	getListPinConversation({ userID }) {
         return new Promise(async (resolve) => {
             try {
                 /** 
@@ -633,27 +604,20 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				 if(!checkObjectIDs([userID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
+				if(!checkObjectIDs([userID]))
+					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				let infoUser = await AUTH__USER_COLL
 					.findById(userID)
 					.select('conversationsPin')
-					.populate({
-						path: 'conversationsPin',
-						populate: {
-							path: 'lastMessage',
-							select: select.lastMessage
-						},
-						select: select.conversationsPin
-					})
+					// .populate({
+					// 	path: 'conversationsPin',
+					// 	populate: {
+					// 		path: 'lastMessage members',
+					// 		select: { ...select.lastMessage, ...select.members },
+					// 	},
+					// 	select: select.conversationsPin
+					// })
 					.lean();
 
 				if(!infoUser)
