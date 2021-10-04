@@ -489,4 +489,8 @@ module.exports = {
         }
     },
 
+	getLinkConversationByID: {
+		
+	}
+
 }

@@ -1,6 +1,7 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
+const ObjectID                          = require("mongoose").Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
@@ -277,7 +278,15 @@ class Model extends BaseModel {
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
                 });
-
+                // Xóa những trường không cần thiết
+                delete isExist._doc.friends;
+                delete isExist._doc.password;
+                delete isExist._doc.recentlyFriends;
+                delete isExist._doc.devices;
+                delete isExist._doc.updatedAt;
+                delete isExist._doc.modifyAt;
+                delete isExist._doc.createAt;
+                
                 return resolve({
                     error: false,
                     data: { user: newExist, token }
@@ -744,57 +753,333 @@ class Model extends BaseModel {
     //     })
     // }
 
-    // /**
-    //  * Cập nhật mật khẩu
-    //  * Đệ
-    //  */
-    // updatePassword({ userID, password, currentPass, newPass, session }) {
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!ObjectID.isValid(userID))
-    //                 return resolve({ error: true, message: "param_not_valid" });
-    //             let checkCurrentPass = await compare( currentPass, password);
-    //             if(!checkCurrentPass)
-    //                 return resolve({ error: true, message: "current_password_faild" });
-    //             let hashpass = await hash(newPass, 8);
-    //             let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-    //                 password: hashpass
-    //             }, { new: true })
-    //             if(!infoUserAfterUpdate)
-    //                 return resolve({ error: true, message: "cannot_update" });
+    /**
+     * Cập nhật mật khẩu
+     * Depv
+     * 19/08/2021
+     */
+    updatePassword({ userID, currentPass, newPass, session }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
 
-    //             await cachingInfoUser(userID, session);
+                let { password } = await AUTH__USER_COLL.findById(userID);
+                let checkCurrentPass = await compare( currentPass, password);
+                if(!checkCurrentPass)
+                    return resolve({ error: true, message: "current_password_faild" });
+                let hashpass = await hash(newPass, 8);
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    password: hashpass
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+                // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
+                return resolve({ error: false, message: "update_password_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
 
-    //             return resolve({ error: false, data: infoUserAfterUpdate });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // }
+    /**
+     * Cập nhật họ và tên
+     * Depv
+     * 19/08/2021
+     */
+    updateFullname({ userID, firstname, lastname, fullname }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataInsert = {};
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                     
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                
+                 /**
+                 * LOGIC STEP (3)
+                 */ 
+                if(firstname){
+                    dataInsert.firstname = firstname;
+                }
 
-    // /**
-    //  * Cập nhật ngôn ngữ(lang)
-    //  * Đệ
-    //  */
-    // updateLanguage({ userID, lang, session }){
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!ObjectID.isValid(userID))
-    //                 return resolve({ error: true, message: "param_not_valid" });
-    //             let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-    //                 lang
-    //             }, { new: true})
-    //             if(!infoUserAfterUpdate)
-    //                 return resolve({ error: true, message: "cannot_update" });
+                if(lastname){
+                    dataInsert.lastname = lastname;
+                }
 
-    //             await cachingInfoUser(userID, session);
+                if(fullname){
+                    dataInsert.fullname = fullname;
+                    let infoUser = await AUTH__USER_COLL.findById(userID).populate({
+                        path: "company",
+                        select: "sign"
+                    });
 
-    //             return resolve({ error: false, data: infoUserAfterUpdate });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message })
-    //         }
-    //     })
-    // }
+                    dataInsert.bizname = `${fullname}-${infoUser.company.sign}`;
+                }
+                console.log({ dataInsert });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataInsert, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+               
+                return resolve({ error: false, message: "update_fullname_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+     /**
+     * Cập nhật email
+     * Depv
+     * 19/08/2021
+     */
+    updateEmail({ userID, email }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    email
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+                    
+                // Xóa những trường không cần thiết
+                delete infoUserAfterUpdate._doc.friends;
+                delete infoUserAfterUpdate._doc.password;
+                delete infoUserAfterUpdate._doc.recentlyFriends;
+                delete infoUserAfterUpdate._doc.devices;
+                delete infoUserAfterUpdate._doc.updatedAt;
+                delete infoUserAfterUpdate._doc.modifyAt;
+                delete infoUserAfterUpdate._doc.createAt;
+                return resolve({ error: false, data: infoUserAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+
+    /**
+     * Cập nhật email
+     * Depv
+     * 19/08/2021
+     */
+    updatePhone({ userID, phone }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    phone
+                }, { new: true })
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+                    
+                // Xóa những trường không cần thiết
+                delete infoUserAfterUpdate._doc.friends;
+                delete infoUserAfterUpdate._doc.password;
+                delete infoUserAfterUpdate._doc.recentlyFriends;
+                delete infoUserAfterUpdate._doc.devices;
+                delete infoUserAfterUpdate._doc.updatedAt;
+                delete infoUserAfterUpdate._doc.modifyAt;
+                delete infoUserAfterUpdate._doc.createAt;
+                return resolve({ error: false, data: infoUserAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+    /**
+     * Cập nhật ngôn ngữ(lang)
+     * Depv
+     */
+    updateLanguage({ userID, lang }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                /**
+                 * LOGIC STEP (3)
+                 */ 
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    lang
+                }, { new: true});
+
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
+                return resolve({ error: false, message: "update_language_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
+     * Cập nhật ngôn ngữ(lang)
+     * Depv
+     */
+    updateBirthDay({ userID, birthDay }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 */
+                if(!ObjectID.isValid(userID))
+                    return resolve({ error: true, message: "param_not_valid" });
+                /**
+                 * LOGIC STEP (3)
+                 */ 
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    birthDay
+                }, { new: true});
+
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
+                return resolve({ error: false, message: "update_birthday_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
+     * Gửi code reset password
+     * Depv
+     */
+    sendOTPResetPassword({ email }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 */
+                if (!email || !email.length)
+                    return res.json({ error: true, message: 'email_invalid' });
+                email = email.toLowerCase().trim();
+            
+                /**
+                 * LOGIC STEP (3)
+                 * 1: Kiểm tra email có tồn tại trong hệ thống không.
+                 */ 
+                let checkExist = await AUTH__USER_COLL.findOne({ email });
+                if (!checkExist) 
+                    return resolve({ error: true, message: 'email_not_exist' });
+
+                let codeReset  = Math.floor(100000 + Math.random() * 900000);
+                console.log({ codeReset });
+                let infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(checkExist._id, { codeReset }, { new: true });
+                if (!infoAfterUpdateCode) 
+                    return resolve({ error: true, message: 'cannot_update_code_reset' });
+                
+                // await cachingInfoUser(session, email);
+                // mở thread khác (worker_pool) CHƯA GỞI EMAIL
+                // pool
+                //     .exec(MAIL_CONSTANTS.MAIL_FORGOT_PASS, [checkExist.email, checkExist.username || checkExist.fullname || checkExist.email , codeReset])
+                // sendMailForgetPassword(checkExist.email, checkExist.username || checkExist.fullname || checkExist.email , codeReset);
+                return resolve({ error: false, data: 'send_email_success' });   
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
+     * confirm code reset password
+     * Depv
+     */
+    confirmCodeResetPassword({ email, code }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 */
+                if (!email || !email.length)
+                    return res.json({ error: true, message: 'email_invalid' });
+                email = email.toLowerCase().trim();
+            
+                /**
+                 * LOGIC STEP (3)
+                 * 1: Kiểm tra code có tồn tại trong hệ thống không.
+                 */ 
+                let checkExist = await AUTH__USER_COLL.findOne({ email, codeReset: code });
+                if (!checkExist) 
+                    return resolve({ error: true, message: 'code_not_exist' });
+                return resolve({ error: false, data: 'code_active' });   
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+    /**
+     * Cập nhật mật khẩu sau khi reset
+     * Depv
+     */ 
+    updatePasswordAfterReset({ email, code, password }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 */
+                if (!email || !email.length)
+                    return res.json({ error: true, message: 'email_invalid' });
+                email = email.toLowerCase().trim();
+            
+                /**
+                 * LOGIC STEP (3)
+                 */ 
+                let checkExist = await AUTH__USER_COLL.findOne({ email, codeReset: code });
+                if (!checkExist) 
+                    return resolve({ error: true, message: 'code_not_exist' });
+                // Tiến hành cập nhật mật khẩu
+                let hashpass = await hash(password, 8);
+                let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(checkExist._id, {
+                    password: hashpass
+                }, { new: true })
+
+                if(!infoUserAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
+                return resolve({ error: false, message: "update_password_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
 
     // //_______Cấu hình hiển thị view mặc định ở trang chủ
     // updateDisplayHomeConfig({ userID, displayHomeConfig, session }){

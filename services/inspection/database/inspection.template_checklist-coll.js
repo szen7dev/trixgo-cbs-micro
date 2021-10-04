@@ -13,6 +13,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_checklist", {
     name: String,
     //_________Mô tả
     description: String,
+    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

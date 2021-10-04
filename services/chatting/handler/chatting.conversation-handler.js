@@ -570,7 +570,7 @@ module.exports = {
             }
         }
     },
-
+    
 	/**
 	 * Dev: VinhHV
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
@@ -650,6 +650,17 @@ module.exports = {
         }
     },
 
+    getLinkConversationByID: {
+        params: {
+        },
+        async handler(ctx) {
+            try {   
+                return '...'
+            } catch (error) {
+                return '...'
+            }
+        }
+    }
 
     //========================= END CONVERSATION  ==============================
 }

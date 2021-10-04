@@ -4,10 +4,10 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
-    //_________Phân loại (kết cấu, kiến trúc,...)
+    //_________Phân loại (kết cấu, kiến trúc,...) cf_constant
     type: {
         type: Number,
-        default: 1
+        default: 1   
     },
     //_________Tên
     name: String,
@@ -16,7 +16,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
         type: String,
         trim: true,
         unique : true,
-        require: true
+        require: true  
     },
     //_________Mô tả hồ sơ
     description: String,
@@ -30,8 +30,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
     numView: Number,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
-     */
-    userCreate: {
+     */   
+    userCreate: { 
         type: Schema.Types.ObjectId,
         ref : 'user'
     },

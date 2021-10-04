@@ -184,8 +184,18 @@ module.exports = {
 		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListMessageReminder,
 
+		// // Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
+		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
 
-		// AUTHOR: VinhVH
+		// Lấy danh sách link của cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
+		
+		// Lấy danh sách file của cuộc hội thoại
+		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
+		
+		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
+		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
+		
 
 		// // Xem các tệp của cuộc hội thoại [****** để sau]
 

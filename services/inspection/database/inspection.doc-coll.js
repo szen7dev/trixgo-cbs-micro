@@ -2,7 +2,7 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
-
+    
 module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Template/Loại hồ sơ
     template: {
@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Thuộc dự án/Công trình
     project: {
         type    : Schema.Types.ObjectId,
-        ref     : 'department'
+        ref     : 'department' 
     },
     //_________Thuộc hợp đồng/Gói thầu
     contract: {
@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     },
     //_________Ngày hồ sơ đã điều chỉnh
     modifiedDate: {
-        type : Date
+        type : Date 
     },
     /**
     * Trạng thái 
@@ -65,7 +65,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Bình luận cuối cùng của hồ sơ
     lastComment: {
         type    : Schema.Types.ObjectId,
-        ref     : 'comment'
+        ref     : 'comment'   
     }, 
     //_________Người thực hiện
     assignee: {
@@ -76,8 +76,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     members: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
-    }],  
-    //_________Chữ ký xác nhận
+    }],             
+    //_________Chữ ký xác nhận 
     signatures: [{
         type    : Schema.Types.ObjectId,
         ref     : 'signature'

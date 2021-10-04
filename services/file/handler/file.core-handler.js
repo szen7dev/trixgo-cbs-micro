@@ -10,12 +10,13 @@ module.exports = {
             url            : { type: "string" },
             size           : { type: "string", optional: true },
 
-            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            // userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { app, name, url, size, userID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                let { app, name, url, size } = ctx.params;
 
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
                 return infoFileAfterInsert;
@@ -85,22 +86,31 @@ module.exports = {
     generateLinkS3: {
         params: {
             type           : { type: "string" },
-
-            app            : { type: "string" },
+            app            : { type: "string", optional: true },
             size           : { type: "string", optional: true },
-
-            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            isUser         : { type: "string", optional: true },
+            // userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
             try {
-                await this.validateEntity(ctx.params);
-                let { type, app, size, userID }        = ctx.params;
-                let fileName = uuidv4();
 
+                let infoUser = ctx.meta.infoUser;
+                let { _id: userID } = infoUser;
+
+                await this.validateEntity(ctx.params);
+                let { type, app, size, isUser }        = ctx.params;
+                let fileName = uuidv4();
                 //TODO kiểm tra lại fileName cần có thêm đuôi (.png, .jpg)
-              
                 let infoGenerateLink    = await GENERATE_LINK_S3(fileName, type);
-                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name: fileName, url: ``, size, userID });
+
+                /**
+                 * Nếu có app thì đang insert file trong app
+                 * Nếu không có app thì đang insert trong user(image, signature)
+                 */
+                let infoFileAfterInsert;
+                if(app){
+                    let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name: fileName, url: ``, size, userID });
+                }
                 return {
                     infoGenerateLink, infoFileAfterInsert
                 };

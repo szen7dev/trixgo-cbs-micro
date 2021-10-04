@@ -181,7 +181,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //     default: 0
     // }, 
     //_______Code reset mật khẩu
-    // codeReset: String,
+    codeReset: String,
     /**
      * Quản lý thông tin Device Mobile
      */

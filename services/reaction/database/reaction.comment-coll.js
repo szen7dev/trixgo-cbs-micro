@@ -3,10 +3,29 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-/**
- * BÌNH LUẬN
- */
-
-module.exports  = DATABASE_MIDDLEWARE("comment", {
+module.exports  = DATABASE_MIDDLEWARE("comment_core", {
+    //_________Nội dung
+    content: String,
+    //_________Comment cha (nếu có)
+    // parent: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "reaction_comment"
+    // },
+    //_________Số lượng comment con
+    amountChilds: {
+        type: Number,
+        default: 0
+    },
+    //_________Số lượng reaction
+    amountReactions: {
+        type: Number,
+        default: 0
+    },
+    
+    //_________Người comment
+    author: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
     
 })

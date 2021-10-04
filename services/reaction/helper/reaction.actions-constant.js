@@ -5,17 +5,25 @@ const BASE_ACTIONS = 'ACT_REACTION';
  */
 const REACTION          = 'REACTION';
 const COMMENT           = 'COMMENT';
+const COMMENT_FILE_CORE = 'COMMENT_FILE_CORE';
 
 const CF_ACTIONS_REACTION = {
-     /**
+    /**
      * REACTION
     */
     REACTION_GET_LIST                        : `${BASE_ACTIONS}_${REACTION}_REACTION_GET_LIST`,
+    REACTION_INSERT                          : `${BASE_ACTIONS}_${REACTION}_REACTION_INSERT`,
 
-     /**
-     * COMMENT
+    /**
+    * COMMENT
     */
-    COMMENT_GET_LIST                         : `${BASE_ACTIONS}_${COMMENT}_COMMENT_GET_LIST`,
-}
+    COMMENT_INSERT                          : `${BASE_ACTIONS}_${COMMENT}_INSERT`,
+    COMMENT_UPDATE                          : `${BASE_ACTIONS}_${COMMENT}_UPDATE`,
 
+    /**
+    * COMMENT FILE CORE
+    */
+    COMMENT_FILE_CORE_INSERT                : `${BASE_ACTIONS}_${COMMENT_FILE_CORE}_INSERT`,
+
+}
 exports.CF_ACTIONS_REACTION = CF_ACTIONS_REACTION;
