@@ -1545,12 +1545,12 @@ class Model extends BaseModel {
 				if(listConversationPin.data && listConversationPin.data.length){
 					conditionObj._id = { $nin: listConversationPin.data };
 
-					listConversationPin = listConversationPin.data.map(conversationID => CHATTING__CONVERSATION_COLL
-						.findById(conversationID, filter)
+					listConversationPin = await CHATTING__CONVERSATION_COLL
+						.find({ _id: { $in: listConversationPin.data } }, filter)
 						.populate('members', select.members)
 						.populate({
 							path: 'lastMessage',
-							populate: { 
+							populate: {
 								path: 'sender',
 								select: select.sender,
 							},
@@ -1564,9 +1564,7 @@ class Model extends BaseModel {
 							},
 							select: select.avatar
 						})
-						.lean())
-
-					listConversationPin = await Promise.all(listConversationPin);
+						.lean()
 				} else{
 					listConversationPin = [];
 				}
