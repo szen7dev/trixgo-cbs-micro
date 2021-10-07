@@ -674,7 +674,7 @@ class Model extends BaseModel {
 	 * Date: 11/08/2021
 	 * Hàm chuẩn về lấy danh sách mẩu tin
 	 */
-	getListMessagesConversationWithPage({ conversationID, lastestMessageID, userID, keyword, limit = 15, filter = {}, select = {} }){
+	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -720,8 +720,8 @@ class Model extends BaseModel {
 				};
 
 				// GET CONDITION PAGINATION
-				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
-					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -1480,7 +1480,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
 	 * Date: 23/08/2021
 	 */
-	getListConversationWithPage({ lastestConversationID, userID, keyword, limit = 20, filter = {}, select = {}, ctx }){
+	getListConversationWithPage({ lastestID, userID, keyword, limit = 20, filter = {}, select = {}, ctx }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -1516,8 +1516,8 @@ class Model extends BaseModel {
                 }
 
 				// GET CONDITION PAGINATION
-                if(lastestConversationID && checkObjectIDs(lastestConversationID)){
-                    let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestID);
                     if(!infoConversation)
                         return resolve({ error: true, message: "Can't get info last conversation", status: 403 });
 
@@ -1625,7 +1625,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách cuộc hội thoại chưa đọc
 	 * Date: 09/09/2021
 	 */
-    getListConversationMissMessage({ userID, lastestConversationID, limit = 20, filter = {}, select = {} }){
+    getListConversationMissMessage({ userID, lastestID, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs([userID]))
@@ -1667,8 +1667,8 @@ class Model extends BaseModel {
 					updateAt: -1
                 };
 
-                if(lastestConversationID && checkObjectIDs(lastestConversationID)){
-					let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestConversationID);
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestID);
                     if(!infoConversation)
                         return resolve({ error: true, message: "Can't get info last conversation", status: 403 });
 
