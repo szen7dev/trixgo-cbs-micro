@@ -824,7 +824,6 @@ class Model extends BaseModel {
 
                     dataInsert.bizname = `${fullname}-${infoUser.company.sign}`;
                 }
-                console.log({ dataInsert });
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataInsert, { new: true })
                 if(!infoUserAfterUpdate)
                     return resolve({ error: true, message: "cannot_update" });

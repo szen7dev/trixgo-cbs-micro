@@ -325,18 +325,18 @@ module.exports = {
 	 */
 	getListMessagePoll: {
         params: {
-			conversationID		: { type: "string" },
-            lastestMessageID 	: { type: "string", optional: true },
-            limit 				: { type: "string", optional: true }
+			conversationID	: { type: "string" },
+            lastestID 		: { type: "string", optional: true },
+            limit 			: { type: "string", optional: true }
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, lastestMessageID, limit, filter, select } = ctx.params;
+                const { conversationID, lastestID, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessagePoll({
-					conversationID, lastestMessageID, userID, limit, filter, select
+					conversationID, lastestID, userID, limit, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -468,18 +468,18 @@ module.exports = {
 	 */
 	getListMessageReminder: {
         params: {
-			conversationID		: { type: "string" },
-            lastestMessageID 	: { type: "string", optional: true },
-            limit				: { type: 'string', optional: true },
+			conversationID	: { type: "string" },
+            lastestID 		: { type: "string", optional: true },
+            limit			: { type: 'string', optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, lastestMessageID, limit, filter, select } = ctx.params;
+                const { conversationID, lastestID, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessageReminder({
-					conversationID, lastestMessageID, userID, limit, filter, select
+					conversationID, lastestID, userID, limit, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

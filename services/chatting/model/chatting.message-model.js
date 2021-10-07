@@ -1125,7 +1125,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn bình chọn trong cuộc hội thoại
 	 * Date: 30/08/2021
 	 */
-	getListMessagePoll({ conversationID, lastestMessageID, userID, limit = 10, filter = {}, select = {} }) {
+	getListMessagePoll({ conversationID, lastestID, userID, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
@@ -1172,8 +1172,8 @@ class Model extends BaseModel {
 				}
 
 				// GET CONDITION PAGINATION
-				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
-					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 403 });
 
@@ -1619,7 +1619,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 	 * Date: 02/09/2021
 	 */
-	getListMessageReminder({ conversationID, lastestMessageID, userID, limit = 10, filter = {}, select = {} }) {
+	getListMessageReminder({ conversationID, lastestID, userID, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
@@ -1666,8 +1666,8 @@ class Model extends BaseModel {
 				}
 
 				// GET CONDITION PAGINATION
-				if(lastestMessageID && checkObjectIDs(lastestMessageID)){
-					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestMessageID);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await CHATTING__MESSAGE_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 403 });
 
