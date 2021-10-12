@@ -47,7 +47,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             let infoSendNoti = await NOTIFICATION__LOG_MODEL.sendNotiMobilePush({ users: listRecievers, title: 'Thử tiếng việt nào', description: 'from LDK TEAM', objDataForSend: { screenkey: 'DETAIL_PAGE' }, ctx })
          }
      },
-     //  loại noti: CLOUD MESSAGING
+     //  loại noti:SMS
      "NOTIFICATION__LOG_CREATE:SMS": {
         handler(ctx) {
             console.log(`------------------NOTIFICATION__LOG_CREATE----------------------`)
