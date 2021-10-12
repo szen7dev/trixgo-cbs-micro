@@ -6,7 +6,6 @@ const FILE__CORE_COLL                           = require('../database/file.core
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION }                 = require('../../../tools/cursor_base/playground/index');
 const { 
     FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS
 }                                               = require('../helper/file.keys-constant');
@@ -32,7 +31,6 @@ class Model extends BaseModel {
      *      app: là các name constant
      * */
     insert({ app, name, url, size, userID }) {
-        const that = this;
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -53,9 +51,7 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let userCreate = userID;
-
-                let infoAfterInsert = await that.insertData({ app, name, url, size, userCreate });
+                let infoAfterInsert = await this.insertData({ app, name, url, size, userCreate: userID });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
@@ -80,7 +76,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let listStatusForUpdateValid                    = [FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS]; // chỉ có các file_processing -> mới được update
+                let listStatusForUpdateValid = [FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS]; // chỉ có các file_processing -> mới được update
                  /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
@@ -88,6 +84,7 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'object_invalid' });
+
                 if (!checkNumberIsValidWithRange({ arrValid: listStatusForUpdateValid, val: status }))
                     return resolve({ error: true, message: 'status_invalid' });
 
@@ -157,7 +154,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let listStatusValid                             = [FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS];
+                let listStatusValid = [FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS];
                  /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
