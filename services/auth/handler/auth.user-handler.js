@@ -53,6 +53,8 @@ module.exports = {
                 let { email, password, platform }        = ctx.params;
                 // console.log({ email, password, platform })
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
+                ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
+
                 return infoUser;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -139,6 +141,28 @@ module.exports = {
         }
     },
 
+    // send noti via cloudmessaging
+    getListUserByIdForPushMobile: {
+        auth: "required",
+        params: {
+            users : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				let { users: listUserID } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListUsersForPushMobile({
+                    listUserID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
     /**
      * Code: F0013
      * Author: Depv
@@ -150,15 +174,16 @@ module.exports = {
             deviceID            : { type: "string" },
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
+            oneSignalID         : { type: "string" },
 
-            userID          : { type: "string" }, //TODO update userID fake
+            userID              : { type: "string" }, //TODO update userID fake
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { userID, platform, deviceID, deviceName, registrationID }        = ctx.params;
+                let { userID, platform, deviceID, deviceName, registrationID, oneSignalID }        = ctx.params;
 
-                let infoUser = await AUTH__USER_MODEL.updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID });
+                let infoUser = await AUTH__USER_MODEL.updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };

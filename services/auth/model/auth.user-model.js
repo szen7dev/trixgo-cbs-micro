@@ -301,7 +301,7 @@ class Model extends BaseModel {
         })
     }
     // implement by: KHANHNEY✅ 
-    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID }) {
+    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -335,15 +335,16 @@ class Model extends BaseModel {
                 let devices     = isExist.devices;
                 let newDevices  = [];
 
-                let itemNewDevice = { deviceName, deviceID, registrationID }
+                let itemNewDevice = { deviceName, deviceID, registrationID, oneSignalID }
                 if (devices.length) {
                     devices.forEach(device => {
                         let _device = device;
                         if (device.deviceID == itemNewDevice.deviceID) {
                             _device = {
-                                deviceID :  device.deviceID, 
-                                deviceName: device.deviceName, 
-                                registrationID : registrationID
+                                deviceID        : device.deviceID, 
+                                deviceName      : device.deviceName, 
+                                registrationID  : registrationID,
+                                oneSignalID     : oneSignalID
                             };
                         } 
                         newDevices.push(_device);
@@ -520,6 +521,48 @@ class Model extends BaseModel {
 						limit,
 						totalRecord,
 						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * 
+     * @param {*} listUserID 123,1243,2121 
+     * @returns []
+     */
+    getListUsersForPushMobile({ listUserID }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(listUserID))
+                    return resolve({ error: true, message: 'Request params listUserID invalid', status: 400 });
+                
+                let userIDConvert = Array.isArray(listUserID) ? listUserID.split(',') : [listUserID];
+
+                let listUsers = await AUTH__USER_COLL
+                    .find({
+                        _id: {
+                            $in: [...userIDConvert.map(item => ObjectID(item))]
+                        }
+                    }, {
+                        _id: 1,
+                        fullname: 1,
+                        devices: 1
+                    })
+                    .lean();
+					// .populate('department', select.department)
+					// .populate('company', select.company)
+                    // .limit(limit + 1)
+                    // .sort(sortBy)
+            
+                return resolve({ 
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listUsers,
 					}
 				});
             } catch (error) {

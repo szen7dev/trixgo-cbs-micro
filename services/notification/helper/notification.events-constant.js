@@ -1,3 +1,8 @@
+/**
+ * MODELS
+*/
+const NOTIFICATION__LOG_MODEL            = require('../model/notification.log-model').MODEL;
+const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant')
  /*-------------------------------------
  * file định nghĩa các constant EVENT của SERVICE (EXAMPLE) emit đi
  */
@@ -27,18 +32,30 @@
       *  - user_service: nhận event và cập nhật thông tin  (thông tin gói sử dụng)
       *  - mail_service: nhận event và gửi mail
       */
-     "ORDER__CREATE": {
-         handler(ctx) {
-             /**
-              * 1/ lấy dữ liệu đầu vào
-              * 2/ thực hiện công việc
-              *      + update process (db, redis) 
-              */
+    //  loại noti: CLOUD MESSAGING
+     "NOTIFICATION__LOG_CREATE:MOBILE": {
+        async handler(ctx) {
+             console.log(`------------------NOTIFICATION__LOG_CREATE:MOBILE----------------------`)
              console.log("Payload:", ctx.params);
              console.log("Sender:", ctx.nodeID);
              console.log("Metadata:", ctx.meta);
              console.log("The called event name:", ctx.eventName);
+
+            let { users: listRecievers } = ctx.params;
+
              // ctx.emit("accounts.created", { user: ctx.params.user });
+            let infoSendNoti = await NOTIFICATION__LOG_MODEL.sendNotiMobilePush({ users: listRecievers, title: 'Thử tiếng việt nào', description: 'from LDK TEAM', objDataForSend: { screenkey: 'DETAIL_PAGE' }, ctx })
          }
-     }
+     },
+     //  loại noti: CLOUD MESSAGING
+     "NOTIFICATION__LOG_CREATE:SMS": {
+        handler(ctx) {
+            console.log(`------------------NOTIFICATION__LOG_CREATE----------------------`)
+            console.log("Payload:", ctx.params);
+            console.log("Sender:", ctx.nodeID);
+            console.log("Metadata:", ctx.meta);
+            console.log("The called event name:", ctx.eventName);
+            // ctx.emit("accounts.created", { user: ctx.params.user });
+        }
+    }
  }

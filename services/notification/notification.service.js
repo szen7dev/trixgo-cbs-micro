@@ -2,14 +2,14 @@
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_EXAMPLE } 	        = require('./helper/example.actions-constant');
-const EXAMPLE__CASE1_HANLDER            = require('./handler/example.case1-hanlder');
-
+const { CF_ACTIONS_NOTIFICATION } 	        = require('./helper/notification.actions-constant');
+const NOTIFICATION__LOG_HANDLER             = require('./handler/notification.log-handler');
+const { LIST_EVENTS_SUBSCRIBE }				= require('./helper/notification.events-constant')
 module.exports = {
-	name: CF_DOMAIN_SERVICES.EXAMPLE,
+	name: CF_DOMAIN_SERVICES.NOTIFICATION,
 	mixins: [
-		DbService('example_case1'),  
-		CacheCleaner([CF_DOMAIN_SERVICES.EXAMPLE])
+		DbService('notification_log'),  
+		CacheCleaner([CF_DOMAIN_SERVICES.NOTIFICATION])
     ],
 
 	/**
@@ -29,13 +29,14 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		[CF_ACTIONS_EXAMPLE.CASE_1_GET_LIST] 		: EXAMPLE__CASE1_HANLDER.getList,
+		// [CF_ACTIONS_EXAMPLE.CASE_1_GET_LIST] 		: EXAMPLE__CASE1_HANLDER.getList,
 	},
 
 	/**
 	* Events
 	*/
 	events: {
+		...LIST_EVENTS_SUBSCRIBE
 	},
 
 	/**
