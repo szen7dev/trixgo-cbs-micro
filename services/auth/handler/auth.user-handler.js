@@ -60,6 +60,85 @@ module.exports = {
         }
     },
 
+     /**
+     * Func: Thêm bạn bè
+     * Author: MinhVH
+     * Date: 12/10/2021
+     */
+    addFriend: {
+        auth: "required",
+        params: {
+            friendID: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let userID       = ctx.meta.infoUser && ctx.meta.infoUser._id;
+                let { friendID } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.addFriend({ userID, friendID });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+     /**
+     * Func: Hủy kết bạn
+     * Author: MinhVH
+     * Date: 12/10/2021
+     */
+    removeFriend: {
+        auth: "required",
+        params: {
+            friendID: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let userID       = ctx.meta.infoUser && ctx.meta.infoUser._id;
+                let { friendID } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.removeFriend({ userID, friendID });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+     * Func: Lấy danh sách bạn bè
+     * Author: MinhVH
+     * Date: 12/10/2021
+     */
+    getListFriend: {
+        auth: "required",
+        params: {
+            lastestID : { type: "string", optional: true },
+			keyword   : { type: "string", optional: true },
+			limit 	  : { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let userID = ctx.meta.infoUser && ctx.meta.infoUser._id;
+				let { lastestID, limit, keyword, filter, select } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListFriend({
+                    userID, lastestID, limit, keyword, filter, select
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
     /**
      * Code: F0013
      * Author: Depv

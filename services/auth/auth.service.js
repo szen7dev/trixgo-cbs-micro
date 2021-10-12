@@ -6,19 +6,20 @@ const { CF_ACTIONS_AUTH } 	        = require('./helper/auth.actions-constant');
 const AUTH__USER_HANDLER			= require('./handler/auth.user-handler');
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
+const AUTH__USER_FRIEND_COLL		= require('./database/auth.user_friend-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
 	mixins: [
 		DbService(AUTH__USER_COLL), 
-		DbService(AUTH__COMPANY_COLL), 
-
+		DbService(AUTH__COMPANY_COLL),
+		DbService(AUTH__USER_FRIEND_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**
-	 	* Service settings
-	*/
+	 * Service settings
+	 */
 	settings: {
 		// fields: ["_id", "name", "products"],
 		// populates : {
@@ -34,24 +35,27 @@ module.exports = {
 	},
 
 	/**
-	 	* Service metadata
-	*/
+	 * Service metadata
+	 */
 	metadata: {
 
 	},
 
 	/**
-		 * Service dependencies
-	*/
+	 * Service dependencies
+	 */
 	dependencies: [],
 
 	/**
- 		* Actions
-	*/
+	 * Actions
+	 */
 	actions: {
 		//============================   AUTH: USER   ==========================//
 		[CF_ACTIONS_AUTH.REGISTER] 									: AUTH__USER_HANDLER.register,
 		[CF_ACTIONS_AUTH.LOGIN] 									: AUTH__USER_HANDLER.login,
+		[CF_ACTIONS_AUTH.ADD_FRIEND] 								: AUTH__USER_HANDLER.addFriend,
+		[CF_ACTIONS_AUTH.REMOVE_FRIEND]								: AUTH__USER_HANDLER.removeFriend,
+		[CF_ACTIONS_AUTH.GET_LIST_FRIEND]							: AUTH__USER_HANDLER.getListFriend,
 		[CF_ACTIONS_AUTH.GET_INFO] 									: AUTH__USER_HANDLER.getInfo,
 		[CF_ACTIONS_AUTH.GET_INFO_BY_ID]		 					: AUTH__USER_HANDLER.getInfoById,
 		[CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION]				: AUTH__USER_HANDLER.getListUserWithCondition,

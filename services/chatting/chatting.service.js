@@ -21,7 +21,11 @@ module.exports = {
 		DbService('message_messages'),
 		DbService('message_conversations'),
 		DbService('message_conversation_links'),
-		DbService('users'),  
+		DbService('message_conversation_files'),
+		DbService('message_message_polls'),
+		DbService('message_message_reminders'),
+		DbService('message_conversation_department'),
+		DbService('users'),
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
 
