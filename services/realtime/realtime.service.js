@@ -20,6 +20,7 @@ const { verify }     							= require('../../tools/jwt');
 const { REDIS_SEPERATOR }   					= require('../../tools/cache/cf_redis');
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket/index');
 const { CF_DOMAIN_SERVICES } 		    		= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 		    		    = require('../auth/helper/auth.actions-constant');
 
 /**
  * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
@@ -134,9 +135,25 @@ module.exports = {
     },
     methods: {
         async socketAuthorize(socket, eventHandler){
-            let accessToken = socket.handshake.query.token;
-            this.userID = accessToken;
-            return Promise.resolve(this.userID);
+            try {
+                let token = socket.handshake.query.token;
+
+                let checkAuthorization = await this.broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
+                console.log({ checkAuthorization, token })
+                if(checkAuthorization.error){
+                    return Promise.reject(checkAuthorization.message);
+                }
+                let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
+                // exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
+                this.logger.info("Authenticated via JWT: ", infoUser.username);
+                // Reduce user fields (it will be transferred to other nodes)
+                this.userID = infoUser._id;
+
+                return Promise.resolve(this.userID);
+            } catch (error) {
+                console.error(error);
+                return Promise.reject(checkAuthorization.message);
+            }
 
             if (accessToken.length) {
                 // try{

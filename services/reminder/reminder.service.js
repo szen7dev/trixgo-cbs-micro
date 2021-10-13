@@ -100,7 +100,7 @@ module.exports = {
 				console.log({ __JOB: job.attrs });
 
 				if(job.attrs.data && job.attrs.data.userID){
-					const socket = require('socket.io-client')(`http://localhost:4000?token=${job.attrs.data.userID}`);
+					const socket = require('socket.io-client')(`https://websocket-cbs.trixgo.com?token=${job.attrs.data.userID}`);
 
 					socket.on("connect", () => {
 						// console.log({ 

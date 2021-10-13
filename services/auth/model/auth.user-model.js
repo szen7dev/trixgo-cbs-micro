@@ -689,7 +689,7 @@ class Model extends BaseModel {
                 if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
 
                 const { infoUser: { _id: userIDAfterDecoded } } = decoded;
-                
+
                 if (!userIDAfterDecoded) 
                     return resolve({ error: true, message: 'token_not_valid' });
 
@@ -697,7 +697,7 @@ class Model extends BaseModel {
 
                 if (!infoUserDB) 
                     return resolve({ error: true, message: 'token_not_valid' });
-                    
+
                 return resolve({ error: false, data: decoded });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
