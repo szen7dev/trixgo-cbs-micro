@@ -188,7 +188,8 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     devices: [{
         deviceName      :{ type : String }, 
         deviceID        :{ type : String },
-        registrationID  :{ type : String }
+        registrationID  :{ type : String },
+        oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal
     }],
     
     /**

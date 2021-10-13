@@ -1,4 +1,5 @@
 const uuidv4                            = require('uuid').v4;
+const { getExtension }                  = require('../../../tools/utils/utils');
 let { GENERATE_LINK_S3 }                = require('../helper/s3');
 let FILE__CORE_MODEL                    = require('../model/file.core-model').MODEL;
 
@@ -85,11 +86,9 @@ module.exports = {
 
     generateLinkS3: {
         params: {
-            type           : { type: "string" },
-            app            : { type: "string", optional: true },
-            size           : { type: "string", optional: true },
-            isUser         : { type: "string", optional: true },
-            // userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            type : { type: "string" },
+            app  : { type: "string", optional: true },
+            size : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -98,24 +97,32 @@ module.exports = {
                 let { _id: userID } = infoUser;
 
                 await this.validateEntity(ctx.params);
-                let { type, app, size, isUser }        = ctx.params;
-                let fileName = uuidv4();
-                //TODO kiểm tra lại fileName cần có thêm đuôi (.png, .jpg)
-                let infoGenerateLink    = await GENERATE_LINK_S3(fileName, type);
+                let { type, app, name, size } = ctx.params;
+                let extension = getExtension(name);
+                let fileName = `${uuidv4()}.${extension}`;
+
+                let infoGenerateLink = await GENERATE_LINK_S3(fileName, type);
 
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
                  */
-                let infoFileAfterInsert;
+                let infoFileAfterInsert = null;
                 if(app){
-                    let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name: fileName, url: ``, size, userID });
+                    infoFileAfterInsert = await FILE__CORE_MODEL.insert({ 
+                        app,
+                        name: fileName, 
+                        url: `https://trx-demo-003.s3-ap-southeast-1.amazonaws.com/root/${fileName}`,
+                        size,
+                        userID 
+                    });
                 }
+
                 return {
                     infoGenerateLink, infoFileAfterInsert
                 };
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },

@@ -257,5 +257,21 @@ exports.checkObjectIDs = (...params) => {
 }
 
 
+/**
+ * Func: Get extension image
+ * Create: 20/09/2021
+*/
+exports.getExtension = path => {
+    const basename = path.split(/[\\/]/).pop();
+    const pos = basename.lastIndexOf(".");
+
+    if (basename === "" || pos < 1)
+        return "";
+
+    return basename.slice(pos + 1);
+}
+
+
+
 exports.checkPointDotsAndRoundingNumberForPagingChatting = _checkPointDotsAndRoundingNumberForPagingChatting;
 exports.checkParametersModel = _checkParametersModel;

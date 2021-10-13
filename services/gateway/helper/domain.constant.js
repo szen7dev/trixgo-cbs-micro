@@ -9,6 +9,7 @@ let CF_DOMAIN_SERVICES = {
     ITEM        : 'item',
     REACTION    : 'reaction',
     INSPECTION  : 'inspection',
+    NOTIFICATION  : 'notification',
     // COMMENT     : 'comment',
 }
 

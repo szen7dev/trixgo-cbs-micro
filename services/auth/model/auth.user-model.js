@@ -2,11 +2,13 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require("mongoose").Types.ObjectId;
+
 /**
  * import inter-coll, exter-coll
  */
 const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
+const AUTH__USER_FRIEND_COLL            = require('../database/auth.user_friend-coll');
 
 /**
  * import inter-model, exter-model
@@ -18,8 +20,10 @@ const AUTH__COMPANY_COLL                = require('../database/auth.company-coll
 // const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
 const { randomStringFixLengthCode } 
                                         = require('../../../tools/utils/string_utils');
+const timeUtils                         = require('../../../tools/utils/time_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
+const { RANGE_BASE_PAGINATION }         = require('../../../tools/cursor_base/playground/index');
 const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }                
                                         = require('../../../tools/utils/utils');
 const { 
@@ -297,7 +301,7 @@ class Model extends BaseModel {
         })
     }
     // implement by: KHANHNEY✅ 
-    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID }) {
+    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -331,15 +335,16 @@ class Model extends BaseModel {
                 let devices     = isExist.devices;
                 let newDevices  = [];
 
-                let itemNewDevice = { deviceName, deviceID, registrationID }
+                let itemNewDevice = { deviceName, deviceID, registrationID, oneSignalID }
                 if (devices.length) {
                     devices.forEach(device => {
                         let _device = device;
                         if (device.deviceID == itemNewDevice.deviceID) {
                             _device = {
-                                deviceID :  device.deviceID, 
-                                deviceName: device.deviceName, 
-                                registrationID : registrationID
+                                deviceID        : device.deviceID, 
+                                deviceName      : device.deviceName, 
+                                registrationID  : registrationID,
+                                oneSignalID     : oneSignalID
                             };
                         } 
                         newDevices.push(_device);
@@ -367,6 +372,205 @@ class Model extends BaseModel {
             }
         })
     }
+
+    // implement by: MINHVH ✅ 
+    addFriend({ userID, friendID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([userID, friendID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                const isFriend = await AUTH__USER_FRIEND_COLL.findOne({
+                    user: userID,
+                    friend: friendID
+                })
+                if(isFriend)
+                    return resolve({ error: true, message: 'User has made friends', status: 403 });
+
+                let infoAfterAddFriend = await AUTH__USER_FRIEND_COLL.create({
+                    user: userID,
+                    friend: friendID,
+                    modifyAt: timeUtils.getCurrentTime(),
+                    createAt: timeUtils.getCurrentTime()
+                })
+
+                return resolve({ error: false, data: infoAfterAddFriend, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    // implement by: MINHVH ✅ 
+    removeFriend({ userID, friendID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([userID, friendID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                const isFriend = await AUTH__USER_FRIEND_COLL.findOne({
+                    user: userID,
+                    friend: friendID
+                })
+                if(!isFriend)
+                    return resolve({ error: true, message: 'Users are not friends', status: 400 });
+
+                const infoAfterDelete = await AUTH__USER_FRIEND_COLL.findOneAndDelete({
+                    user: userID,
+                    friend: friendID
+                })
+
+                return resolve({ error: false, data: infoAfterDelete, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    // implement by: MINHVH ✅ 
+    getListFriend({ userID, lastestID, keyword, limit = 20, filter = {}, select = {} }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				if(isNaN(limit)) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
+				let conditionObj 	= {};
+				let conditionFind 	= {};
+				let objSort 	 	= {};
+                let sortBy = {
+                    modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+                }
+
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
+                    if(!infoUser)
+                        return resolve({ error: true, message: "Can't get info last user friend", status: 403 });
+
+                    let nextInfo = `${infoUser.modifyAt}_${infoUser._id}`;
+                    let keys 	 = ['modifyAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+
+					conditionFind = dataPagingAndSort.data.find;
+                }
+
+				// SEARCH TEXT
+				if(keyword){
+					conditionObj.$text = { $search: keyword };
+					objSort.score = { $meta: "textScore" };
+					sortBy.score  = { $meta: "textScore" };
+				}
+
+                let listFriends = await AUTH__USER_FRIEND_COLL
+					.find({ user: userID })
+                    .select('friend')
+					.lean();
+
+                let listFriendsID = listFriends.map(userFriend => userFriend.friend);
+                conditionObj._id = { $in: listFriendsID };
+
+                listFriends = await AUTH__USER_COLL
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+					.populate('department', select.department)
+					.populate('company', select.company)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+					.lean();
+
+				// GET TOTAL RECORD
+                let totalRecord = await AUTH__USER_FRIEND_COLL.count({ user: userID });
+				let nextCursor	= null;
+
+				if(listFriends && listFriends.length){
+					if(listFriends.length > limit){
+						nextCursor = listFriends[limit - 1]._id;
+						listFriends.length = limit;
+					}
+				}
+
+                return resolve({ 
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listFriends,
+						limit,
+						totalRecord,
+						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * 
+     * @param {*} listUserID 123,1243,2121 
+     * @returns []
+     */
+    getListUsersForPushMobile({ listUserID }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(listUserID))
+                    return resolve({ error: true, message: 'Request params listUserID invalid', status: 400 });
+                
+                let userIDConvert = Array.isArray(listUserID) ? listUserID.split(',') : [listUserID];
+
+                let listUsers = await AUTH__USER_COLL
+                    .find({
+                        _id: {
+                            $in: [...userIDConvert.map(item => ObjectID(item))]
+                        }
+                    }, {
+                        _id: 1,
+                        fullname: 1,
+                        devices: 1
+                    })
+                    .lean();
+					// .populate('department', select.department)
+					// .populate('company', select.company)
+                    // .limit(limit + 1)
+                    // .sort(sortBy)
+            
+                return resolve({ 
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listUsers,
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
     // implement by: KHANHNEY✅ 
     getInfo({ userID, filter, select }) {
         return new Promise(async (resolve) => {
@@ -485,7 +689,7 @@ class Model extends BaseModel {
                 if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
 
                 const { infoUser: { _id: userIDAfterDecoded } } = decoded;
-                
+
                 if (!userIDAfterDecoded) 
                     return resolve({ error: true, message: 'token_not_valid' });
 
@@ -493,7 +697,7 @@ class Model extends BaseModel {
 
                 if (!infoUserDB) 
                     return resolve({ error: true, message: 'token_not_valid' });
-                    
+
                 return resolve({ error: false, data: decoded });
             } catch (error) {
                 return resolve({ error: true, message: error.message })

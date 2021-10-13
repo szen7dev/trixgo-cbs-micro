@@ -37,5 +37,4 @@ module.exports  = DATABASE_MIDDLEWARE("notification_logs", {
     content: {
         type: String
     },
-    // createAt: thời gian thực hiện
 })
