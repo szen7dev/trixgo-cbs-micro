@@ -1,7 +1,7 @@
 /**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
@@ -21,7 +21,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { content } = ctx.params;

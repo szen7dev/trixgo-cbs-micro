@@ -18,13 +18,14 @@ module.exports = {
         auth: "required",
         params: {
 			comment    : { type: "string" },
-			fileCore   : { type: "string" },
+			fileCore   : { type: "string" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { comment, fileCore } = ctx.params;
+				// const { _id: authorID } = ctx.meta.infoUser;
+                const { comment, fileCore }  = ctx.params;
+                console.log({ comment, fileCore });
                 const resultAfterCallHandler = await REACTION__COMMENT_FILE_CORE_MODEL.insert({
 					comment, fileCore
 				});

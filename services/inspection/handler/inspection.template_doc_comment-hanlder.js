@@ -31,10 +31,12 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const {  content, templateID , parentID, files } = ctx.params;
+
                 // call service file để insert
                 const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_INSERT}`, {
 					content
 				});
+
                 let commentID = infoCommentCore.data._id;
 
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.insert({
@@ -45,18 +47,20 @@ module.exports = {
                 if(files){
                     for (const file of files) {
                         let { name, url, size } = file;
+
                         // Add file core
                         const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
                             app: CF_DOMAIN_SERVICES.FILE, name, url, size
                         });
-                        
+
+                        console.log({ comment: resultAfterCallHandler.data._id, fileCore: infoFileCore.data._id });
                         // Add comment file core
                         const infoCommentFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_FILE_CORE_INSERT}`, {
-                            comment: resultAfterCallHandler.data._id, fileCore: infoFileCore.data._id
+                            comment: resultAfterCallHandler.data._id,
+                            fileCore: infoFileCore.data._id
                         });
-                        
-                        console.log({ infoCommentFileCore });
 
+                        console.log({ infoCommentFileCore });
                         // Inser file vào collection template_doc_comment_file-coll
                         const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: resultAfterCallHandler.data._id, template: templateID, file: infoCommentFileCore.data._id });
                         console.log({ resultAfterCallModel });
@@ -68,8 +72,6 @@ module.exports = {
             }
         }
     },
- 
-   
 
     /**
 	 * Dev: Depv 

@@ -19,7 +19,7 @@ module.exports = {
         params: {
 			name  : { type: "string" },
             sign    : { type: "string" },
-            type    : { type: "number" },
+            type    : { type: "string" },
             description : { type: "string", optional: true },
             // content 		: { type: "string", optional: true },
         },
@@ -103,9 +103,9 @@ module.exports = {
 	 */
     getList: {
         params: {
-            limit: { type: "number", optional: true },
+            limit: { type: "string", optional: true },
             lastestIDTemplateDoc: { type: "string", optional: true },
-            type: { type: "number" },
+            type: { type: "string" },
             keyword: { type: "string", optional: true },
         },
         async handler(ctx) {

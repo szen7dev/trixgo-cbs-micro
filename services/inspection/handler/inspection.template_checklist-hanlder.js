@@ -103,7 +103,7 @@ module.exports = {
 	 */
     getListChecklist: {
         params: {
-            limit: { type: "number", optional: true },
+            limit: { type: "string", optional: true },
             lastestIDTemplateChecklist: { type: "string", optional: true },
             inspection: { type: "string" },
         },
