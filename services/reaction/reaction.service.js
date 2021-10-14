@@ -5,11 +5,9 @@ const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant'
 const { CF_ACTIONS_REACTION } 	        = require('./helper/reaction.actions-constant');
 const REACTION__COMMENT_HANDLER        	= require('./handler/reaction.comment-hanlder');
 const REACTION__REACTION_HANDLER      	= require('./handler/reaction.reaction-hanlder');
-const REACTION__COMMENT_FILE_CORE_HANDLER = require('./handler/reaction.comment_file_core-hanlder');
 
 const REACTION__REACTION_COLL			= require('./database/reaction.reaction-coll');
 const REACTION__COMMENT_COLL			= require('./database/reaction.comment-coll');
-const REACTION__COMMENT_FILE_CORE_COLL	= require('./database/reaction.comment_file_core-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.REACTION,
@@ -17,7 +15,6 @@ module.exports = {
 		// gọi tất cả các function dùng ở đây
 		DbService(REACTION__REACTION_COLL),  
 		DbService(REACTION__COMMENT_COLL),  
-		DbService(REACTION__COMMENT_FILE_CORE_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.REACTION])
     ],
 
@@ -43,9 +40,9 @@ module.exports = {
 
 		//==========================================   COMMENT ACTIONS   ================================
 		[CF_ACTIONS_REACTION.COMMENT_INSERT ] 			: REACTION__COMMENT_HANDLER.insertComment,
+		[CF_ACTIONS_REACTION.COMMENT_UPDATE ] 			: REACTION__COMMENT_HANDLER.updateComment,
 
 		//==========================================   COMMENT_FILE_CORE ACTIONS   ================================
-		[CF_ACTIONS_REACTION.COMMENT_FILE_CORE_INSERT ] : REACTION__COMMENT_FILE_CORE_HANDLER.insertCommentFileCore,
 	},
 	
 	/**

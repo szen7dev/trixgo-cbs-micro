@@ -46,8 +46,6 @@ module.exports = {
         params: {
 			commentID : { type: "string" },
 			content   : { type: "string",  optional: true },
-            amountChilds: { type: "string", optional: true },
-            amountReactions: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -56,7 +54,7 @@ module.exports = {
                 const { commentID, content } = ctx.params;
 
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.update({
-					commentID, content, amountChilds, amountReactions
+					commentID, content
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

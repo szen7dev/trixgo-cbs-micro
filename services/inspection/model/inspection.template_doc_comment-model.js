@@ -10,8 +10,7 @@ const { getCurrentPage }			= require('../../../tools/utils/calculate_current_pag
  */
 const INSPECTION__TEMPLATE_DOC_COMMENT_COLL    = require('../database/inspection.template_doc_comment-coll');
 const INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL = require('../database/inspection.template_doc_comment_file-coll');
-const INSPECTION__TEMPLATE_DOC_COLL             = require('../database/inspection.template_doc-coll');
-
+const INSPECTION__TEMPLATE_DOC_COLL              = require('../database/inspection.template_doc-coll');
 /**
  * import inter-model, exter-model
  */
@@ -25,9 +24,10 @@ class Model extends BaseModel {
     constructor() {
         super(INSPECTION__TEMPLATE_DOC_COMMENT_COLL);
     }
-
+    
     /**
-     * Thêm mẩu tin: HiepNH ✅
+     * Thêm comment ✅
+     * Depv
      * F0211
      */
     insert({ template, comment, parent }) { 
@@ -65,6 +65,45 @@ class Model extends BaseModel {
             }
         })
     }
+     
+    /**
+     * Thông tin comment template doc ✅
+     * Depv 
+     * F0211
+     */
+    getInfo({ commentDocID }) { 
+        return new Promise(async (resolve) => {
+            try {   
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(commentDocID))
+                    return resolve({ error: true, message: 'Request params commentDocID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+
+                let infoCommentDoc = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.findById(commentDocID);
+                if(!infoCommentDoc)
+                    return resolve({ error: true, message: "Can't get comment doc", status: 403 });
+
+                return resolve({ error: false, data: infoCommentDoc, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
     /**
      * Xóa template docs: DePV ✅
@@ -150,6 +189,7 @@ class Model extends BaseModel {
 				}
                 
                 let infoDataAfterGet = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.find({...conditionObj, ...conditionFind })
+                    .select("amountChilds amountReactions comment createAt")
                     .populate({
                         path: "comment",
                         select: "_id content author amountChilds amountReactions createAt",
@@ -161,11 +201,17 @@ class Model extends BaseModel {
                     .limit(+limit)
                     .sort(sortBy) 
                     .lean();
-                    
+                
+                // Map hình ảnh với comment
                 let infoDataAfterGetAfterMapFile = [];
                 for (const comment of infoDataAfterGet) {
-                    let fileOfComment = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL.find({ comment: comment._id }).select("file").populate("file");
-                    console.log({ fileOfComment });
+                    let fileOfComment = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL.find({ comment: comment._id }, { _id: 0 }).select("file")
+                                        .populate({
+                                            path: "file",
+                                            select: "name url createAt"
+                                        });
+
+                    infoDataAfterGetAfterMapFile.push({ ...comment, files: [...fileOfComment.map(item => item.file)]})
                 }
 
                 // GET TOTAL RECORD
@@ -178,7 +224,7 @@ class Model extends BaseModel {
                 let totalPage = Math.ceil(totalRecord/limit);
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: infoDataAfterGetAfterMapFile,
                     limit: +limit,
                     totalRecord,
                     totalPage,
@@ -192,4 +238,4 @@ class Model extends BaseModel {
     }
 }
 
-exports.MODEL = new Model;
+exports.MODEL = new Model; 

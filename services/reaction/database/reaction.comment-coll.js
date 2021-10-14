@@ -6,18 +6,7 @@ const Schema                = require('mongoose').Schema;
 module.exports  = DATABASE_MIDDLEWARE("comment_core", {
     //_________Nội dung
     content: String,
-   
-    //_________Số lượng comment con
-    amountChilds: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lượng reaction
-    amountReactions: {
-        type: Number,
-        default: 0
-    },
-    
+
     //_________Người comment
     author: {
         type: Schema.Types.ObjectId,

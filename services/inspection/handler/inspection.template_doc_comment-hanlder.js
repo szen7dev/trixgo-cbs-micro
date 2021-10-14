@@ -25,7 +25,7 @@ module.exports = {
             templateID : { type: "string" },
             parentID : { type: "string", optional: true },
             files    : { type: "array", optional: true }
-        },
+        }, 
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
@@ -38,7 +38,7 @@ module.exports = {
 				});
 
                 let commentID = infoCommentCore.data._id;
-
+                
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.insert({
 					template: templateID, comment: commentID, parent: parentID
 				});
@@ -53,20 +53,69 @@ module.exports = {
                             app: CF_DOMAIN_SERVICES.FILE, name, url, size
                         });
 
-                        console.log({ comment: resultAfterCallHandler.data._id, fileCore: infoFileCore.data._id });
-                        // Add comment file core
-                        const infoCommentFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_FILE_CORE_INSERT}`, {
-                            comment: resultAfterCallHandler.data._id,
-                            fileCore: infoFileCore.data._id
-                        });
-
-                        console.log({ infoCommentFileCore });
                         // Inser file vào collection template_doc_comment_file-coll
-                        const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: resultAfterCallHandler.data._id, template: templateID, file: infoCommentFileCore.data._id });
+                        const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: resultAfterCallHandler.data._id, template: templateID, file: infoFileCore.data._id });
                         console.log({ resultAfterCallModel });
                     }
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Cập nhật comment inspection template
+	 * Date: 17/08/2021
+	 */
+    updateComment: {
+        auth: "required",
+        params: {
+			commentDocID  : { type: "string" },
+			commentCoreID  : { type: "string" },
+			content    : { type: "string" },
+            files      : { type: "array", optional: true },
+            fileIDsRemoved: { type: "array", optional: true },
+        }, 
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { commentDocID, commentCoreID, content, fileIDsRemoved, files } = ctx.params;
+
+                // call service comment core để cập nhật
+                const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
+					commentID: commentCoreID, content
+				});
+
+
+                // Nếu files có thì call service file để thêm
+                if(files){
+                    for (const file of files) {
+                        let { name, url, size } = file;
+
+                        // Add file core
+                        const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
+                            app: CF_DOMAIN_SERVICES.FILE, name, url, size
+                        });
+
+                        // Inser file vào collection template_doc_comment_file-coll
+                        const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: infoCommentCore.data._id, template: templateID, file: infoFileCore.data._id });
+                        console.log({ resultAfterCallModel });
+                    }
+                }
+
+                // Xóa tempalte_doc_comment_file nếu có fileIDsRemoved
+                if(fileIDsRemoved && fileIDsRemoved.length){
+                    for (const fileID of fileIDsRemoved) {
+                        const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.remove({ fileID });
+                        console.log({ resultAfterCallModel });
+                    }
+                }
+
+                return renderStatusCodeAndResponse({ infoCommentCore, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
@@ -80,19 +129,29 @@ module.exports = {
 	 */
     listComment: {
         params: {
-            limit: { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
             lastestIDComment: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            templateID: { type: "string" },
+            parentID        : { type: "string", optional: true },
+            templateID      : { type: "string", optional: true },
+            commentDocID    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { templateID, limit, parentID, lastestIDComment }  = ctx.params;
-                const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.getListComment({
-					templateID, limit, lastestIDComment, parentID
-				});
-
+                let { templateID, limit, parentID, lastestIDComment, commentDocID }  = ctx.params;
+                console.log({ templateID, limit, parentID, lastestIDComment, commentDocID });
+                let resultAfterCallHandler;
+                if(commentDocID){
+                    // Get info
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.getInfo({
+                        commentDocID
+                    });
+                }else{
+                    // Get list
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.getListComment({
+                        templateID, limit, lastestIDComment, parentID
+                    });
+                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
