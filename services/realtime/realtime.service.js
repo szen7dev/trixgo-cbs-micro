@@ -16,7 +16,6 @@ const USER_MODEL           						= require('../../services/auth/model/auth.user-
 /**
  * TOOLS
  */
-const { verify }     							= require('../../tools/jwt');
 const { REDIS_SEPERATOR }   					= require('../../tools/cache/cf_redis');
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket/index');
 const { CF_DOMAIN_SERVICES } 		    		= require('../gateway/helper/domain.constant');
@@ -139,56 +138,18 @@ module.exports = {
                 let token = socket.handshake.query.token;
 
                 let checkAuthorization = await this.broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
-                console.log({ checkAuthorization, token })
                 if(checkAuthorization.error){
                     return Promise.reject(checkAuthorization.message);
                 }
                 let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
-                // exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
+
                 this.logger.info("Authenticated via JWT: ", infoUser.username);
-                // Reduce user fields (it will be transferred to other nodes)
                 this.userID = infoUser._id;
 
                 return Promise.resolve(this.userID);
             } catch (error) {
                 console.error(error);
-                return Promise.reject(checkAuthorization.message);
-            }
-
-            if (accessToken.length) {
-                // try{
-                //     let user = await this.broker.call("users.verifyToken", {accessToken});
-                //     // return {id: user.id, email: user.email, token: accessToken} ; // valid credential, return the user
-                //     return {id: user._id, email: user.email, fullname: user.fullName, token: accessToken}  ;
-                // }catch(err){
-                //     return err; // invalid credentials
-                // }
-
-                /**
-                 * DEMO verify -> về sau thì đẩy về service auth
-                 */
-                try {
-                    
-                    let _data = await verify(accessToken);
-                    if (_data) {
-                        let { password } = _data;
-                        if (password && password == '123456') {
-                            return Promise.resolve({ id: 1, detail: "You are authorized using token.", name: "John Doe" })
-                        } else {
-                            return Promise.reject()
-                        }
-                    } else {
-                        return Promise.reject()
-                    }
-                } catch (error) {
-                    console.log({ error })
-                }
-            } else {
-                  // anonymous user
-                console.log("connect failed");
-                return {
-                    error: true
-                };
+                return Promise.reject(error.message);
             }
         },
 

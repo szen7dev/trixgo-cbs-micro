@@ -16,6 +16,11 @@ const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 const CHATTING__CONVERSATION_COLL 				= require('./database/chatting.conversation-coll');
 const CHATTING__MESSAGE_COLL 					= require('./database/chatting.message-coll');
 
+/**
+ * MODELS
+ */
+const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').MODEL;
+
 
 exports.CHATTING_SOCKET = {
 
@@ -387,59 +392,91 @@ exports.CHATTING_SOCKET = {
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
         let userID                      = socket.client.user;
-        let { conversationID, messageID, usersTag } = data;
+
+        let { conversationID, content, parentID, usersAssigned, files, location, type, usersTag } = data;
+
+		const infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
+			conversationID, 
+			senderID: userID, 
+			content,
+			parentID, 
+			usersAssigned, 
+			files,
+			location,
+			type,
+			ctx: broker
+		})
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
-		const infoMessage	   = await CHATTING__MESSAGE_COLL
-			.findById(messageID)
-			.populate({
-				path: 'parent poll reminder files.file',
-				populate: 'file'
-			})
-			.populate({
-				path: 'sender usersAssigned',
-				select: '_id bizname fullname image'
-			})
-			.lean();
-
-		if(!infoConversation || !infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation or message" },
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEND_MESSAGE], io
-			});
-		}
-
-		const responseData = {
-			infoConversation,
-			infoMessage
-		};
-
-		if(usersTag && usersTag.length){
-			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
-				condition: { _id: { $in: usersTag } },
-				select: '_id bizname fullname image'
-			});
-			responseData.usersTag = usersTag.data;
-		}
-
 		const { members, usersMute } = infoConversation;
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
+		const arrReceivers = members.filter(memberID => {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
+			arrReceivers: [...arrReceivers, userID],
 			data: {
-				error: false,
-				data: responseData
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEND_MESSAGE], io
+				infoMessageAfterInsert,
+				usersTag
+			},
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
 		});
+
+		// const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		// const infoMessage	   = await CHATTING__MESSAGE_COLL
+		// 	.findById(messageID)
+		// 	.populate({
+		// 		path: 'parent poll reminder files.file',
+		// 		populate: 'file'
+		// 	})
+		// 	.populate({
+		// 		path: 'sender usersAssigned',
+		// 		select: '_id bizname fullname image'
+		// 	})
+		// 	.lean();
+
+		// if(!infoConversation || !infoMessage){
+		// 	return sendDataToMultilSocketsOfListUser({ 
+		// 		listUserConnected: listUserActive, 
+		// 		arrReceiver: [userID],
+		// 		data: { error: true, message: "Can't get info conversation or message" },
+		// 		event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEND_MESSAGE], io
+		// 	});
+		// }
+
+		// const responseData = {
+		// 	infoConversation,
+		// 	infoMessage
+		// };
+
+		// if(usersTag && usersTag.length){
+		// 	usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+		// 		condition: { _id: { $in: usersTag } },
+		// 		select: '_id bizname fullname image'
+		// 	});
+		// 	responseData.usersTag = usersTag.data;
+		// }
+
+		// const { members, usersMute } = infoConversation;
+		// const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+
+		// // Không gửi đến user tắt thông báo cuộc hội thoại
+		// const arrReceiver = members.filter(memberID => {
+		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+		// });
+
+		// sendDataToMultilSocketsOfListUser({ 
+		// 	listUserConnected: listUserActive, 
+		// 	arrReceiver,
+		// 	data: {
+		// 		error: false,
+		// 		data: responseData
+		// 	}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEND_MESSAGE], io
+		// });
     },
 
 	/**
