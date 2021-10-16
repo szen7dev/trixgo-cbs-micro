@@ -104,16 +104,16 @@ module.exports = {
     getListChecklist: {
         params: {
             limit: { type: "string", optional: true },
-            lastestIDTemplateChecklist: { type: "string", optional: true },
-            inspection: { type: "string" },
+            lastestIDChecklist: { type: "string", optional: true },
+            templateID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { limit, lastestIDTemplateChecklist, inspection } = ctx.params;
+                let { limit, lastestIDChecklist, templateID } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_CHECKLIST_MODEL.getListByTemplateDocsWithPaging({
-					inspection, limit, lastestIDTemplateChecklist
+					limit, lastestIDChecklist, templateID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

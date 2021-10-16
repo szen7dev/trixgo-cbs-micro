@@ -104,18 +104,25 @@ module.exports = {
     getList: {
         params: {
             limit: { type: "string", optional: true },
-            lastestIDTemplateDoc: { type: "string", optional: true },
+            lastestIDTemplate: { type: "string", optional: true },
             type: { type: "string" },
             keyword: { type: "string", optional: true },
+            templateID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { limit, type, lastestIDTemplateDoc, keyword }        = ctx.params;
-
-                const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.getListByType({
-					limit, type, lastestIDTemplateDoc, keyword
-				});
+                let { limit, type, lastestIDTemplate, keyword, templateID }        = ctx.params;
+                let resultAfterCallHandler;
+                if(templateID){
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.getInfo({
+                        templateID
+                    });
+                }else{
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.getListByType({
+                        limit, type, lastestIDTemplate, keyword
+                    });
+                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

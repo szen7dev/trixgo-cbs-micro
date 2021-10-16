@@ -154,7 +154,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterUpdate)
                     return resolve({ error: true, message: "Can't remove template checklist", status: 403 });
 
-                return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
+                return resolve({ error: false, data: "Remove Success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -166,13 +166,13 @@ class Model extends BaseModel {
      * F0218
      * problem: Bị hạn chế không thể sort createAt = 1
      */
-    getListByTemplateDocsWithPaging({ inspection, limit = 10, lastestIDTemplateChecklist  }) { 
+    getListByTemplateDocsWithPaging({ limit = 10, lastestIDChecklist, templateID  }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { inspection: inspection, state: 1 };
+                let conditionObj = { inspection: templateID, state: 1 };
                 let conditionFind = {};
                 let sortBy  = { createAt: -1 };
 
@@ -181,7 +181,7 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(inspection))
+                if(!checkObjectIDs(templateID))
                     return resolve({ error: true, message: "'Request params templateDocID invalid" });
 
                 /**
@@ -190,8 +190,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDTemplateChecklist && checkObjectIDs(lastestIDTemplateChecklist)){
-					let infoMessage = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(lastestIDTemplateChecklist);
+				if(lastestIDChecklist && checkObjectIDs(lastestIDChecklist)){
+					let infoMessage = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(lastestIDChecklist);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 

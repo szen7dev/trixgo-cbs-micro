@@ -17,17 +17,29 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
         trim: true,
         unique : true,
         require: true  
-    },
+    }, 
     //_________Mô tả hồ sơ
     description: String,
     //_________Số lượng tương tác
-    numLike: Number,
+    numLike: {
+        type: Number,
+        default: 0
+    },
     //_________Số lượng comment
-    numComment: Number,
+    numComment: {
+        type: Number,
+        default: 0
+    },
     //_________Số lượng share
-    numShare: Number,
+    numShare: {
+        type: Number,
+        default: 0
+    },
     //_________Số lượng view
-    numView: Number,
+    numView: {
+        type: Number,
+        default: 0
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */   

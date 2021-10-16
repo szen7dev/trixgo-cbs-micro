@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc_comment", {
     },
     parent: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'comment_core'
+        ref     : 'inspection_template_doc_comment'
     },
     //_________Số lượng comment con
     amountChilds: {

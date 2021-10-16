@@ -25,7 +25,11 @@ class Model extends BaseModel {
         super(INSPECTION__DOC_COLL);
     }
     
-    // Thêm mẩu tin: Depv ✅
+    /**
+     * Name: Thêm inspection docs
+     * Author: DePV ✅
+     * Code: F0231
+     */
     insert({ projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
@@ -66,6 +70,9 @@ class Model extends BaseModel {
                 if (!expiredTime)
                     return resolve({ error: true, message: 'expiredTime_invalid', status: 400 });
 
+                let checkSign = await INSPECTION__DOC_COLL.findOne({ sign, contract: contractID, state: 1 });
+                if(checkSign)
+                    return resolve({ error: true, message: 'Sign existed', status: 400 });
                 /** 
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -87,8 +94,12 @@ class Model extends BaseModel {
         })
     }
     
-    // Cập nhât mẩu tin: Depv ✅ 
-    update({ docID, contract, sign, template, assignee, members, name, expiredTime, job, areas, description, userID }) { 
+    /**
+     * Name: Cập nhật inspection docs
+     * Author: DePV ✅
+     * Code: F0232
+     */
+    update({ docID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**      
@@ -116,14 +127,11 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(job))
                     return resolve({ error: true, message: 'Request params job invalid', status: 400 });
 
-                if(!checkObjectIDs(contract))
-                    return resolve({ error: true, message: 'Request params contract invalid', status: 400 });
-
-                if(sign)
+                if(!sign)
                     return resolve({ error: true, message: 'Request params sign invalid', status: 400 });
                 
-                if (expiredTime)
-                    return resolve({ error: true, message: 'name_invalid', status: 400 });
+                if (!expiredTime)
+                    return resolve({ error: true, message: 'Request params expiredTime invalid', status: 400 });
 
                 /** 
                  * LOGIC STEP (3)
@@ -136,18 +144,22 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                let infoDataAfterInserted = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, { dataUpdate } , { new: true });
-                if(!infoDataAfterInserted)
-                    return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
+                let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate , { new: true });
+                if(!infoDataAfterUpdate)
+                    return resolve({ error: true, message: "Can't update docs", status: 403 });
 
-                return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
+                return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
     
-    // Xóa mẩu tin: Depv ✅
+    /**
+     * Name: Xóa inspection docs
+     * Author: DePV ✅
+     * Code: F0233
+     */
     remove({ docID }) { 
         return new Promise(async (resolve) => {
             try {
@@ -165,17 +177,75 @@ class Model extends BaseModel {
          
                 let infoDataAfterRemove = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, { state: 2 }, { new: true });
                 if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't update inspect area", status: 403 });
+                    return resolve({ error: true, message: "Can't remove inspection docs", status: 403 });
 
-                return resolve({ error: false, data: infoDataAfterRemove, status: 200 });
+                return resolve({ error: false, data: "Remove success", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+     /**
+     * Name: Lấy thông tin inspection docs
+     * Author: DePV ✅
+     * Code: F0234
+     */
+    getInfo({ docID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE STEP (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(docID))
+                    return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
+                    
+                let infoDocs = await INSPECTION__DOC_COLL.findById(docID)
+                                .populate({
+                                    path: "areas",
+                                    select: "name"
+                                })
+                                .populate({
+                                    path: "project",
+                                    select: "name area",
+                                    populate: "area"
+                                })
+                                .populate({
+                                    path: "members",
+                                    select: "image fullname"
+                                })
+                                .populate({
+                                    path: "contract",
+                                    select: "name"
+                                })
+                                .populate({
+                                    path: "template",
+                                    select: "name"
+                                })
+                                .populate({
+                                    path: "assignee",
+                                    select: "image fullname"
+                                });
+                if(!infoDocs)
+                    return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
+
+                return resolve({ error: false, data: infoDocs, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
     
-    /** 
-     * Danh sách area theo project: DePV ✅
+    /**
+     * Name: Danh sách area theo project
+     * Author: DePV ✅
+     * Code: F0235
      */
     getListDocByContract({ contractID, limit = 10, lastestIDdoc }) { 
         return new Promise(async (resolve) => {

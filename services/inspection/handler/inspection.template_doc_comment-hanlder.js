@@ -73,7 +73,7 @@ module.exports = {
     updateComment: {
         auth: "required",
         params: {
-			commentDocID  : { type: "string" },
+			commentTemplateID  : { type: "string" },
 			commentCoreID  : { type: "string" },
 			content    : { type: "string" },
             files      : { type: "array", optional: true },
@@ -83,13 +83,15 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { commentDocID, commentCoreID, content, fileIDsRemoved, files } = ctx.params;
+                const { commentTemplateID, commentCoreID, content, fileIDsRemoved, files } = ctx.params;
 
-                // call service comment core để cập nhật
-                const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
+                // Call service comment core để cập nhật
+                let infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
 					commentID: commentCoreID, content
 				});
 
+                let infoCommentDoc = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.getInfo({ commentTemplateID });
+                let { template: templateID } = infoCommentDoc.data;
 
                 // Nếu files có thì call service file để thêm
                 if(files){
@@ -103,7 +105,7 @@ module.exports = {
 
                         // Inser file vào collection template_doc_comment_file-coll
                         const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: infoCommentCore.data._id, template: templateID, file: infoFileCore.data._id });
-                        console.log({ resultAfterCallModel });
+                        console.log({ infoFileCore, resultAfterCallModel });
                     }
                 }
 
@@ -111,13 +113,34 @@ module.exports = {
                 if(fileIDsRemoved && fileIDsRemoved.length){
                     for (const fileID of fileIDsRemoved) {
                         const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.remove({ fileID });
-                        console.log({ resultAfterCallModel });
                     }
                 }
-
-                return renderStatusCodeAndResponse({ infoCommentCore, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler: { message: "update_comment_success"}, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Xóa comment trong template doc
+	 * Date: 17/08/2021
+	 */
+    removeComment: {
+        auth: "required",
+        params: {
+			commentTemplateID  : { type: "string" },
+        }, 
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { commentTemplateID } = ctx.params;
+                let resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.remove({ commentID: commentTemplateID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },
@@ -133,18 +156,17 @@ module.exports = {
             lastestIDComment: { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             templateID      : { type: "string", optional: true },
-            commentDocID    : { type: "string", optional: true },
+            commentTemplateID    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { templateID, limit, parentID, lastestIDComment, commentDocID }  = ctx.params;
-                console.log({ templateID, limit, parentID, lastestIDComment, commentDocID });
+                let { templateID, limit, parentID, lastestIDComment, commentTemplateID }  = ctx.params;
                 let resultAfterCallHandler;
-                if(commentDocID){
+                if(commentTemplateID){
                     // Get info
                     resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.getInfo({
-                        commentDocID
+                        commentTemplateID
                     });
                 }else{
                     // Get list

@@ -28,7 +28,7 @@ class Model extends BaseModel {
     /**
      * Thêm comment ✅
      * Depv
-     * F0211
+     * F0222
      */
     insert({ template, comment, parent }) { 
         return new Promise(async (resolve) => {
@@ -69,9 +69,9 @@ class Model extends BaseModel {
     /**
      * Thông tin comment template doc ✅
      * Depv 
-     * F0211
+     * F0223
      */
-    getInfo({ commentDocID }) { 
+    getInfo({ commentTemplateID }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -84,8 +84,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(commentDocID))
-                    return resolve({ error: true, message: 'Request params commentDocID invalid', status: 400 });
+                if(!checkObjectIDs(commentTemplateID))
+                    return resolve({ error: true, message: 'Request params commentTemplateID invalid', status: 400 });
 
                 /**
                  * LOGIC STEP (3)
@@ -93,7 +93,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoCommentDoc = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.findById(commentDocID);
+                let infoCommentDoc = await INSPECTION__TEMPLATE_DOC_COMMENT_COLL.findById(commentTemplateID);
                 if(!infoCommentDoc)
                     return resolve({ error: true, message: "Can't get comment doc", status: 403 });
 
@@ -104,10 +104,9 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
      * Xóa template docs: DePV ✅
-     * F0213
+     * F0224
      */
     remove({ commentID }) { 
         return new Promise(async (resolve) => {
@@ -142,7 +141,7 @@ class Model extends BaseModel {
 
     /**
      * Danh sách template docs: DePV ✅
-     * F0214
+     * F0225
      * problem: Bị hạn chế không thể sort createAt = 1
      */
     getListComment({ templateID, limit = 100, lastestIDComment, parentID  }) { 
@@ -205,13 +204,13 @@ class Model extends BaseModel {
                 // Map hình ảnh với comment
                 let infoDataAfterGetAfterMapFile = [];
                 for (const comment of infoDataAfterGet) {
-                    let fileOfComment = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL.find({ comment: comment._id }, { _id: 0 }).select("file")
+                    let fileOfComment = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL.find({ comment: comment._id }).select("file")
                                         .populate({
                                             path: "file",
                                             select: "name url createAt"
                                         });
 
-                    infoDataAfterGetAfterMapFile.push({ ...comment, files: [...fileOfComment.map(item => item.file)]})
+                    infoDataAfterGetAfterMapFile.push({ ...comment, files: [...fileOfComment.map(item => item)]})
                 }
 
                 // GET TOTAL RECORD

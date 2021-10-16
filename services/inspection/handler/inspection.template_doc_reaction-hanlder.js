@@ -32,7 +32,7 @@ module.exports = {
 				});
                 let reactionID = infoReactionCore.data._id;
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_REACTION_MODEL.insert({
-					template, reaction: reactionID
+					template, reaction: reactionID, author: authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -77,16 +77,17 @@ module.exports = {
     listReaction: {
         params: {
             limit: { type: "string", optional: true },
-            lastestIDTemplateDocReaction: { type: "string", optional: true },
-            templateDocReactionID: { type: "string" },
+            lastestIDReaction: { type: "string", optional: true },
+            templateID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { limit, lastestIDTemplateDocReaction, templateDocReactionID }        = ctx.params;
+                let { limit, lastestIDReaction, templateID }        = ctx.params;
+                console.log({ limit, lastestIDReaction, templateID });
 
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_REACTION_MODEL.getListTemplateDoc({
-					templateDocReactionID, limit, lastestIDTemplateDocReaction
+					templateID, limit, lastestIDReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

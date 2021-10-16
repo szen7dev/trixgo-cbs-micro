@@ -29,7 +29,7 @@ class Model extends BaseModel {
      * Thêm mẩu tin: HiepNH ✅
      * F0211
      */
-    insert({ template, reaction }) { 
+    insert({ template, reaction, author }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -41,21 +41,28 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(reaction, template))
-                    return resolve({ error: true, message: 'Request params reaction or template invalid', status: 400 });
+                if(!checkObjectIDs(reaction, template, author))
+                    return resolve({ error: true, message: 'Request params reaction or template or author invalid', status: 400 });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
+                let checkUserReactionExist = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.findOne({ template, author });
+                let infoDataAfterInserted;
+                if(!checkUserReactionExist){
+                    infoDataAfterInserted = await this.insertData({ 
+                        reaction, template, author
+                    });
+                    // Cập nhật lại numLike
+                    await INSPECTION__TEMPLATE_DOC_COLL.findByIdAndUpdate(template , { $inc: { numLike: 1 }});
 
-                let infoDataAfterInserted = await this.insertData({ 
-					reaction, template
-				}); 
-
-                // Cập nhật lại numLike
-                await INSPECTION__TEMPLATE_DOC_COLL.findByIdAndUpdate(template , { $inc: { numLike: 1 }});
+                }else{
+                    infoDataAfterInserted = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.findByIdAndUpdate(checkUserReactionExist._id, {
+                        reaction
+                    }, { new: true })
+                }
 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create template docs reaction", status: 403 });
@@ -112,13 +119,13 @@ class Model extends BaseModel {
      * F0214
      * problem: Bị hạn chế không thể sort createAt = 1
      */
-    getListTemplateDoc({ templateDocReactionID, limit = 10, lastestIDTemplateDocReaction  }) { 
+    getListTemplateDoc({ templateID, limit = 10, lastestIDReaction  }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { template: templateDocReactionID };
+                let conditionObj = { template: templateID };
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
 
@@ -134,8 +141,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDTemplateDocReaction && checkObjectIDs(lastestIDTemplateDocReaction)){
-					let infoMessage = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.findById(lastestIDTemplateDocReaction);
+				if(lastestIDReaction && checkObjectIDs(lastestIDReaction)){
+					let infoMessage = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.findById(lastestIDReaction);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -165,10 +172,11 @@ class Model extends BaseModel {
                 let totalCurrentPage = await INSPECTION__TEMPLATE_DOC_REACTION_COLL.count(conditionFind);
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
+                    return resolve({ error: true, message: "Can't get reaction template docs", status: 403 });
                 
                 let totalPage = Math.ceil(totalRecord/limit);
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+                
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
