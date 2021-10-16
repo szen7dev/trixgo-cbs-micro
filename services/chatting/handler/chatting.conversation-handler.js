@@ -339,7 +339,6 @@ module.exports = {
             toDate			 : { type: "string", optional: true },
             page			 : { type: "string", optional: true },
             limit			 : { type: "string", optional: true },
-            isLoadAll		 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

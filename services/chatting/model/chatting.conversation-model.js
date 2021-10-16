@@ -1003,71 +1003,63 @@ class Model extends BaseModel {
 					// _id: { month: { $month: "$createAt" }, day: { $dayOfMonth: "$createAt" }, year: { $year: "$createAt" } },
 				}
 
-				let listMedia = [];
+				let listMedia 	= [];
+				let totalRecord	= 0;
 
 				// MESSAGE LINK
 				if(typeMessage === 3){
 					groupObj = {
 						...groupObj,
-						listMessage: {
+						messages: {
 							$push: {
 								_id: "$_id",
-								senderID: "$sender._id",
-								senderName: "$sender.fullname",
 								link: "$link",
-								modifyAt: "$modifyAt",
-								createAt: "$createAt",
 							}
 						},
-						count: { $sum: 1 }
 					}
 
 					let pipeline = [
 						{ $match: conditionObj },
-						{
-							$lookup: {
-								from: 'users',
-								localField: 'sender',
-								foreignField: '_id',
-								as: 'sender'
-							}
-						},
-						{
-							$unwind: {
-								path: "$sender",
-								preserveNullAndEmptyArrays: true
-							}
-						},
+						// {
+						// 	$unwind: {
+						// 		path: "$sender",
+						// 		preserveNullAndEmptyArrays: true
+						// 	}
+						// },
 						{ $group: groupObj },
-						{ $sort: { "_id": -1 } }
+						{
+							$facet: {
+								records: [
+									{ $sort: { "_id": -1 } },
+									{ $skip: (page * limit) - limit },
+									{ $limit: limit },
+								],
+								pageInfo: [
+									{ $group: { _id: null, count: { $sum: 1 } } },
+								],
+							},
+						},
 					]
 
 					listMedia = await CHATTING__CONVERSATION_LINK_COLL.aggregate(pipeline);
 
-					if(!listMedia)
-						return resolve({ error: true, message: "Can't get list message", status: 403 });
+					if(!listMedia || !listMedia.length)
+						return resolve({ error: true, message: "Can't get list message", status: 404 });
 
-					let skip = (page * limit) - limit;
-					listMedia = listMedia.slice(skip, skip + limit);
+					totalRecord = listMedia[0].pageInfo[0]?.count;
+					listMedia = listMedia[0].records;
 
 				} else{
 					// MESSAGE FILE, IMAGE
 					groupObj = {
 						...groupObj,
-						listMessage: {
+						messages: {
 							$push: {
 								_id: "$_id",
-								senderID: "$sender._id",
-								senderName: "$sender.fullname",
-								content: "$content",
-								status: "$status",
 								type: "$type",
 								files: "$files",
-								modifyAt: "$modifyAt",
-								createAt: "$createAt",
 							}
 						},
-						count: { $sum: 1 }
 					}
 
 					let pipeline = [
@@ -1077,59 +1069,73 @@ class Model extends BaseModel {
 								type: typeMessage
 							}
 						},
-						{
-							$lookup: {
-								from: 'users',
-								localField: 'sender',
-								foreignField: '_id',
-								as: 'sender'
-							}
-						},
-						{
-							$unwind: {
-								path: "$sender",
-								preserveNullAndEmptyArrays: true
-							}
-						},
 						{ $group: groupObj },
-						{ $sort: { "_id": -1 } },
+						{
+							$facet: {
+								records: [
+									{ $sort: { "_id": -1 } },
+									{ $skip: (page * limit) - limit },
+									{ $limit: limit },
+								],
+								pageInfo: [
+									{ $group: { _id: null, count: { $sum: 1 } } },
+								],
+							},
+						},
 					]
 
 					listMedia = await CHATTING__MESSAGE_COLL.aggregate(pipeline);
 
-					if(!listMedia)
-						return resolve({ error: true, message: "Can't get list message", status: 403 });
+					if(!listMedia || !listMedia.length)
+						return resolve({ error: true, message: "Can't get list message", status: 404 });
 
-					let skip = (page * limit) - limit;
+					totalRecord = listMedia[0].pageInfo[0]?.count;
+					listMedia = listMedia[0].records;
 
-					listMedia = listMedia.slice(skip, skip + limit);
-					listMedia = listMedia.map(async media =>{
-
-						let listMessage = media.listMessage.map(message => CHATTING__MESSAGE_COLL
-							.findOne({ _id: message._id })
-							.select('_id sender content status type files.file createAt modifyAt')
-							.populate({
-								path: 'files.file',
-								select: '_id file',
-								populate: {
-									path: 'file',
-									select: '_id status name url size userCreate'
+					if(listMedia && listMedia.length){
+						listMedia = listMedia.map(async media =>{
+							let listMessage = media.messages.map(message => CHATTING__MESSAGE_COLL
+								.findOne({ _id: message._id })
+								.select('_id files.file')
+								.populate({
+									path: 'files.file',
+									select: '_id file',
+									populate: {
+										path: 'file',
+										select: '_id name url size'
+									}
+								})
+								.lean());
+	
+							listMessage = await Promise.all(listMessage);
+							let messages = [];
+	
+							for (const message of listMessage) {
+								if(message.files && message.files.length){
+									for (const fileInfo of message.files) {
+										messages[messages.length] = fileInfo?.file?.file;
+									}
 								}
-							})
-							.populate({
-								path: 'sender',
-								select: '_id fullname bizname image'
-							})
-							.lean());
+							}
+	
+							return { ...media, messages };
+						})
 
-						listMessage = await Promise.all(listMessage);
-						return { ...media, listMessage };
-					})
+						listMedia = await Promise.all(listMedia);
+					}
 
-					listMedia = await Promise.all(listMedia);
 				}
 
-				return resolve({ error: false, data: listMedia, status: 200 })
+				return resolve({ 
+					error: false, 
+					data: {
+						listRecords: listMedia,
+						limit: +limit,
+						totalRecord,
+						page
+					},
+					status: 200,
+				})
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
