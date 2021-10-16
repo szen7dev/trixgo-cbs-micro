@@ -393,7 +393,7 @@ exports.CHATTING_SOCKET = {
         let io                          = socket.$service.io;
         let userID                      = socket.client.user;
 
-        let { conversationID, content, parentID, usersAssigned, files, location, type, usersTag } = data;
+        let { tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag } = data;
 
 		const infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
 			conversationID, 
@@ -407,9 +407,29 @@ exports.CHATTING_SOCKET = {
 			ctx: broker
 		})
 
+		if(infoMessageAfterInsert.error){
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceivers: [userID],
+				data: {
+					tmpid,
+					infoMessage: infoMessageAfterInsert,
+				},
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+			});
+		}
+
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 		const { members, usersMute } = infoConversation;
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+
+		if(usersTag && usersTag.length){
+			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+				condition: { _id: { $in: usersTag } },
+				select: '_id bizname fullname image'
+			});
+			usersTag = usersTag.data;
+		}
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
 		const arrReceivers = members.filter(memberID => {
@@ -420,8 +440,9 @@ exports.CHATTING_SOCKET = {
 			listUserConnected: listUserActive, 
 			arrReceivers: [...arrReceivers, userID],
 			data: {
-				infoMessageAfterInsert,
-				usersTag
+				tmpid,
+				usersTag,
+				infoMessage: infoMessageAfterInsert,
 			},
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
 		});
