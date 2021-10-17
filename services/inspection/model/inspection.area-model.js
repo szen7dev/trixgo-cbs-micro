@@ -24,7 +24,10 @@ class Model extends BaseModel {
         super(INSPECTION__AREA_COLL);
     }
 
-    // Thêm mẩu tin: Depv ✅
+    /**
+     *  Thêm mẩu tin: Depv ✅
+     *  F0226
+     */
     insert({ parentID, projectID, name, sign, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
@@ -81,7 +84,10 @@ class Model extends BaseModel {
         })
     }
 
-    // Cập nhât mẩu tin: Depv ✅
+    /**
+     * Cập nhât mẩu tin: Depv ✅
+     * F0227
+     */
     update({ areaID, name, sign, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
@@ -136,7 +142,10 @@ class Model extends BaseModel {
         })
     }
 
-    // Xóa mẩu tin: Depv ✅
+    /**
+     * Xóa mẩu tin: Depv ✅
+     * F0228
+     */
     remove({ areaID }) { 
         return new Promise(async (resolve) => {
             try {
@@ -156,7 +165,37 @@ class Model extends BaseModel {
                 if(!infoDataAfterRemove)
                     return resolve({ error: true, message: "Can't update inspect area", status: 403 });
 
-                return resolve({ error: false, data: infoDataAfterRemove, status: 200 });
+                return resolve({ error: false, data: "Remove Success", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Lấy thông tin khu vực: Depv ✅
+     * F0229
+     */
+    getInfo({ areaID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE STEP (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(areaID))
+                    return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
+         
+                let infoData = await INSPECTION__AREA_COLL.findById(areaID);
+                if(!infoData)
+                    return resolve({ error: true, message: "Can't update inspect area", status: 403 });
+
+                return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -165,6 +204,7 @@ class Model extends BaseModel {
 
     /**
      * Danh sách area theo project: DePV ✅
+     * F0230
      */
     getListArea({ keyword, projectID, limit = 10, lastestIDArea  }) { 
         return new Promise(async (resolve) => {

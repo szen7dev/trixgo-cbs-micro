@@ -12,4 +12,8 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc_reaction", {
         type    :  Schema.Types.ObjectId,
         ref     : 'reaction_core'
     },
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    }
 })

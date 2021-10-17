@@ -1,7 +1,7 @@
 /**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
@@ -21,7 +21,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { content } = ctx.params;
@@ -47,8 +46,6 @@ module.exports = {
         params: {
 			commentID : { type: "string" },
 			content   : { type: "string",  optional: true },
-            amountChilds: { type: "string", optional: true },
-            amountReactions: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -57,7 +54,7 @@ module.exports = {
                 const { commentID, content } = ctx.params;
 
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.update({
-					commentID, content, amountChilds, amountReactions
+					commentID, content
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

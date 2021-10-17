@@ -60,7 +60,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F0272
      */
-    update({ commentID, content, amountChilds, amountReactions }) {
+    update({ commentID, content }) {
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -86,15 +86,7 @@ class Model extends BaseModel {
                 *  3.2: operation database
                 */    
                 dataUpdate.content = content;
-                if(amountChilds){
-                    dataUpdate.amountChilds = { $inc: amountChilds };
-                }
-
-                if(amountReactions){
-                    dataUpdate.amountReactions = { $inc: amountReactions };
-                }
-
-                let infoAfterAction = await that.insertData(dataUpdate);
+                let infoAfterAction = await REACTION__COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
                 if(!infoAfterAction)
                     return resolve({ error: true, message: 'cannot_update' });
 

@@ -86,7 +86,7 @@ class Model extends BaseModel {
                  */  
                 let infoDataAfterRemove = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_COLL.findByIdAndDelete(fileID);
                 if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't remove template docs", status: 403 });
+                    return resolve({ error: true, message: "Can't remove file comment template docs", status: 403 });
 
                 return resolve({ error: false, data: infoDataAfterRemove, status: 200 });
             } catch (error) {

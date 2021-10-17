@@ -22,12 +22,12 @@ module.exports = {
             sign        : { type: "string" },
             template    : { type: "string" },
             assignee    : { type: "string" },
-            members     : { type: "array" },
+            members     : { type: "array", option: true },
             name        : { type: "string" },
             expiredTime : { type: "string" },
             job         : { type: "string" },
-            areas       : { type: "array" },
-            description : { type: "string",optional: true  },
+            areas       : { type: "array"  },
+            description : { type: "string" ,optional: true  },
         },
         async handler(ctx) {
             try {
@@ -55,24 +55,23 @@ module.exports = {
         auth: "required",
         params: {
             docID       : { type: "string" },
-            contract    : { type: "string" },
             sign        : { type: "string" },
-            template    : { type: "number" },
-            members     : { type: "string" },
+            template    : { type: "string" },
+            members     : { type: "array" },
             name        : { type: "string" },
             expiredTime : { type: "string" },
             job         : { type: "string" },
-            areas       : { type: "string" },
-            description : { type: "string",optional: true  },
+            areas       : { type: "array" },
+            description : { type: "string", optional: true  },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, contract, sign, template, assignee, members, name, expiredTime, job, areas, description } = ctx.params;
+                const { docID, sign, template, assignee, members, name, expiredTime, job, areas, description } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, contract, sign, template, assignee, members, name, expiredTime, job, areas, description, userID
+					docID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -90,14 +89,13 @@ module.exports = {
     removeDoc: {
         auth: "required",
         params: {
-			docID   : { type: "string" },
+			docID : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { docID  } = ctx.params;
-
+                const { docID } = ctx.params;
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.remove({
 					docID 
 				});
@@ -108,9 +106,10 @@ module.exports = {
             }
         }
     },
+
     /**
-	 * Dev: Depv ❌
-	 * Func: Danh sách template hồ sơ/biên bản
+	 * Func: Danh sách template hồ sơ/biên bản ✅
+	 * Author: Depv 
 	 * Date: 17/08/2021
 	 */
     getList: {
@@ -118,15 +117,23 @@ module.exports = {
             contractID  : { type: "string" },
             limit       : { type: "string", optional: true },
             lastestIDdoc: { type: "string", optional: true },
+            docID       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractID, limit, lastestIDdoc }        = ctx.params;
-
-                const resultAfterCallHandler = await INSPECTION_DOC_MODEL.getListDocByContract({
-					contractID, limit, lastestIDdoc
-				});
+                let { contractID, limit, lastestIDdoc, docID }        = ctx.params;
+                let resultAfterCallHandler;
+                if(docID){
+                    resultAfterCallHandler = await INSPECTION_DOC_MODEL.getInfo({
+                        docID
+                    });
+                }else{
+                    resultAfterCallHandler = await INSPECTION_DOC_MODEL.getListDocByContract({
+                        contractID, limit, lastestIDdoc
+                    });
+                }
+             
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
