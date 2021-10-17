@@ -26,13 +26,25 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Mô tả hồ sơ/Vị trí
     description: String,
     //_________Số lượng tương tác
-    numLike: Number,
+    numLike: {
+        type: Number,
+        default: 0
+    },
     //_________Số lượng comment
-    numComment: Number,
+    numComment: {
+        type: Number,
+        default: 0
+    },
     //_________Số lượng share
-    numShare: Number,
+    numShare: {
+        type: Number,
+        default: 0
+    },
     //_________Số lượng view
-    numView: Number,
+    numView: {
+        type: Number,
+        default: 0
+    },
     //_________Kế hoạch hoàn thành
     expiredTime: { type: Date, default: null },
     //_________Ngày hồ sơ hoàn thành thực tế

@@ -1,12 +1,12 @@
 
 "use strict";
 const ObjectID                                  = require('mongoose').Types.ObjectId;
-const REACTION__COMMENT_FILE_CORE_COLL          = require('../database/reaction.comment_file-coll');
+const REACTION__COMMENT_FILE_CORE_COLL          = require('../database/reaction.comment_file_core-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
- 
+
 class Model extends BaseModel {
     constructor() {
         super(REACTION__COMMENT_FILE_CORE_COLL);

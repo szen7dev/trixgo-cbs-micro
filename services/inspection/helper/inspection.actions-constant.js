@@ -7,6 +7,8 @@ const TEMPLATE_DOC          = 'TEMPLATE_DOC';
 const TEMPLATE_CHECKLIST    = 'TEMPLATE_CHECKLIST';
 const TEMPLATE_DOC_REACTION = 'TEMPLATE_DOC_REACTION';
 const TEMPLATE_DOC_COMMENT  = 'TEMPLATE_DOC_COMMENT';
+const DOC_COMMENT           =  'DOC_COMMENT';
+const DOC_REACTION          =  'DOC_REACTION';
 const AREA                  = 'AREA';
 const DOC                   = 'DOCS';
 // const CASE_2      = 'CASE_2';
@@ -41,6 +43,14 @@ const CF_ACTIONS_INSPECTION = {
     DOCS_REMOVE                                     : `${BASE_ACTIONS}_${DOC}_REMOVE`,
     DOCS_LIST                                       : `${BASE_ACTIONS}_${DOC}_LIST`,
 
+    DOC_COMMENT_INSERT                              : `${BASE_ACTIONS}_${DOC_COMMENT}_INSERT`,
+    DOC_COMMENT_UPDATE                              : `${BASE_ACTIONS}_${DOC_COMMENT}_UPDATE`,
+    DOC_COMMENT_REMOVE                              : `${BASE_ACTIONS}_${DOC_COMMENT}_REMOVE`,
+    DOC_COMMENT_LIST                                : `${BASE_ACTIONS}_${DOC_COMMENT}_LIST`,
+
+    DOC_REACTION_INSERT                             : `${BASE_ACTIONS}_${DOC_REACTION}_INSERT`,
+    DOC_REACTION_REMOVE                             : `${BASE_ACTIONS}_${DOC_REACTION}_REMOVE`,
+    DOC_REACTION_LIST                               : `${BASE_ACTIONS}_${DOC_REACTION}_LIST`,
 }
 
 exports.CF_ACTIONS_INSPECTION = CF_ACTIONS_INSPECTION;

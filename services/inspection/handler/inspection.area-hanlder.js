@@ -113,7 +113,7 @@ module.exports = {
             lastestIDArea   : { type: "string", optional: true },
         },
         async handler(ctx) {
-            try {
+            try {              
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { projectID, keyword, limit, lastestIDArea } = ctx.params;

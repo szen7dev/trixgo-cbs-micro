@@ -167,7 +167,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterUpdate)
                     return resolve({ error: true, message: "Can't remove template docs", status: 403 });
 
-                return resolve({ error: false, data: infoDataAfterUpdate, status: 200 });
+                return resolve({ error: false, message: "Remove Success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -179,7 +179,7 @@ class Model extends BaseModel {
      * F0214
      * problem: Bị hạn chế không thể sort createAt = 1
      */
-    getListByType({ type, keyword, limit = 10, lastestIDTemplateDoc  }) { 
+    getListByType({ type, keyword, limit = 10, lastestIDTemplate  }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -204,8 +204,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDTemplateDoc && checkObjectIDs(lastestIDTemplateDoc)){
-					let infoMessage = await INSPECTION__TEMPLATE_DOC_COLL.findById(lastestIDTemplateDoc);
+				if(lastestIDTemplate && checkObjectIDs(lastestIDTemplate)){
+					let infoMessage = await INSPECTION__TEMPLATE_DOC_COLL.findById(lastestIDTemplate);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -254,6 +254,42 @@ class Model extends BaseModel {
                     currentPage
                 }, status: 200 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Lấy thông tin template DePV ✅
+     * F0214A
+     */
+    getInfo({ templateID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(templateID))
+                    return resolve({ error: true, message: 'Request params templateID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                let infoAfterHandel = await INSPECTION__TEMPLATE_DOC_COLL.findById(templateID);
+
+                if(!infoAfterHandel)
+                    return resolve({ error: true, message: "Can't get info template docs", status: 403 });
+
+                return resolve({ error: false, data: infoAfterHandel, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

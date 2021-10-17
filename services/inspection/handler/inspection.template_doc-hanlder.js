@@ -19,7 +19,7 @@ module.exports = {
         params: {
 			name  : { type: "string" },
             sign    : { type: "string" },
-            type    : { type: "number" },
+            type    : { type: "string" },
             description : { type: "string", optional: true },
             // content 		: { type: "string", optional: true },
         },
@@ -103,19 +103,26 @@ module.exports = {
 	 */
     getList: {
         params: {
-            limit: { type: "number", optional: true },
-            lastestIDTemplateDoc: { type: "string", optional: true },
-            type: { type: "number" },
+            limit: { type: "string", optional: true },
+            lastestIDTemplate: { type: "string", optional: true },
+            type: { type: "string" },
             keyword: { type: "string", optional: true },
+            templateID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { limit, type, lastestIDTemplateDoc, keyword }        = ctx.params;
-
-                const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.getListByType({
-					limit, type, lastestIDTemplateDoc, keyword
-				});
+                let { limit, type, lastestIDTemplate, keyword, templateID }        = ctx.params;
+                let resultAfterCallHandler;
+                if(templateID){
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.getInfo({
+                        templateID
+                    });
+                }else{
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_MODEL.getListByType({
+                        limit, type, lastestIDTemplate, keyword
+                    });
+                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
