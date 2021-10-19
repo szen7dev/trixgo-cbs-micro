@@ -432,13 +432,13 @@ exports.CHATTING_SOCKET = {
 		}
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceivers = members.filter(memberID => {
+		const arrReceiver = members.filter(memberID => {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceivers: [...arrReceivers, userID],
+			arrReceiver: [...arrReceiver, userID],
 			data: {
 				tmpid,
 				usersTag,

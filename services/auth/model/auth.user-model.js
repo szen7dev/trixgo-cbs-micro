@@ -458,8 +458,8 @@ class Model extends BaseModel {
 				let conditionFind 	= {};
 				let objSort 	 	= {};
                 let sortBy = {
-                    modifyAt: -1,
 					createAt: -1,
+                    modifyAt: -1,
 					updateAt: -1
                 }
 
@@ -469,8 +469,8 @@ class Model extends BaseModel {
                     if(!infoUser)
                         return resolve({ error: true, message: "Can't get info last user friend", status: 403 });
 
-                    let nextInfo = `${infoUser.modifyAt}_${infoUser._id}`;
-                    let keys 	 = ['modifyAt__-1', '_id__-1'];
+                    let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
+                    let keys 	 = ['createAt__-1', '_id__-1'];
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
                     if(!dataPagingAndSort || dataPagingAndSort.error)
@@ -496,8 +496,8 @@ class Model extends BaseModel {
 
                 listFriends = await AUTH__USER_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-					.populate('department', select.department)
-					.populate('company', select.company)
+					// .populate('department', select.department)
+					// .populate('company', select.company)
                     .limit(limit + 1)
                     .sort(sortBy)
 					.lean();
@@ -513,7 +513,7 @@ class Model extends BaseModel {
 					}
 				}
 
-                return resolve({ 
+                return resolve({
 					error: false,
 					status: 200,
 					data: {
