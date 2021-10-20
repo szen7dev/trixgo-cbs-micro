@@ -30,6 +30,14 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { parentID, projectID, name, sign, description } = ctx.params;
 
+                //check quyền
+                // let checkRole = false;
+                // if(!checkRole)
+                //     return renderStatusCodeAndResponse({ resultAfterCallHandler: {
+                //         error: true,
+                //         message: "Bạn khồng đủ quyền"
+                //     }, ctx });
+
                 const resultAfterCallHandler = await INSPECTION__AREA_MODEL.insert({
 					parentID, projectID, name, sign, description, userID
 				});
