@@ -20,7 +20,6 @@ const CF_ACTIONS_MEDIA = {
 	DELETE_PIN_MEDIA                  				: `${BASE_ACTIONS}_DELETE_PIN_MEDIA`,
 	WATCHED_MEDIA                  					: `${BASE_ACTIONS}_WATCHED_MEDIA`,
 	LIST_WATCHED_MEDIA                  			: `${BASE_ACTIONS}_LIST_WATCHED_MEDIA`,
-
 	REACTION_MEDIA                              	: `${BASE_ACTIONS}_REACTION_MEDIA`,
     GET_LIST_REACTION_MEDIA                     	: `${BASE_ACTIONS}_GET_LIST_REACTION_MEDIA`,
     COMMENT_MEDIA     		                    	: `${BASE_ACTIONS}_COMMENT_MEDIA`,
@@ -31,7 +30,6 @@ const CF_ACTIONS_MEDIA = {
     REACTION_COMMENT               		        	: `${BASE_ACTIONS}_REACTION_COMMENT`,
     GET_LIST_REACTION_COMMENT     		        	: `${BASE_ACTIONS}_GET_LIST_REACTION_COMMENT`,
     REPLY_COMMENT_MEDIA     		            	: `${BASE_ACTIONS}_REPLY_COMMENT_MEDIA`,
-
 	IMAGE_MEDIA                                     : `${BASE_ACTIONS}_IMAGE_MEDIA`,
 	REACTION_IMAGE_MEDIA                            : `${BASE_ACTIONS}_REACTION_IMAGE_MEDIA`,
     GET_LIST_REACTION_IMAGE_MEDIA                   : `${BASE_ACTIONS}_GET_LIST_REACTION_IMAGE_MEDIA`,
