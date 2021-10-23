@@ -177,22 +177,10 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     },
 
     /**
-     * Thông tin về reaction
+     * Reaction message
      */
-    // reactions: [{
-    //     type    : Schema.Types.ObjectId,
-    //     ref     : 'reaction'
-    // }],
-
-    // /**
-    //  * Mức độ ưu tiên cần xử lý
-    //  * 1-Cao (Hotfix)
-    //  * 2-Bình thường
-    //  * 3-Thấp
-    //  */
-    // priority: {
-    //     type   : Number,
-    //     default: 2
-    // },
-
+    reactions: [{
+        type    : Schema.Types.ObjectId,
+        ref     : 'reaction_core'
+    }],
 })

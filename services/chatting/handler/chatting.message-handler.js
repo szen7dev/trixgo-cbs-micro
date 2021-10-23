@@ -489,8 +489,32 @@ module.exports = {
         }
     },
 
-	getLinkConversationByID: {
-		
-	}
+	/**
+	 * Dev: MinhVH
+	 * Func: Reaction tin nhắn
+	 * Date: 19/10/2021
+	 */
+	reactionMessage: {
+        params: {
+			messageID		: { type: 'string' },
+			typeReaction	: { type: 'number' },
+			isReaction		: { type: 'boolean' },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { messageID, isReaction, typeReaction } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.reactionMessage({
+					messageID, userID, isReaction, typeReaction, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
 }
