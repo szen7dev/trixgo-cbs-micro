@@ -25,6 +25,7 @@ const { CF_ACTIONS_AUTH } 		    		    = require('../auth/helper/auth.actions-con
  * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
  */
 const { CHATTING_SOCKET } 						= require('../chatting/chatting.socket');
+const { MEDIA_SOCKET } 						    = require('../media/media.socket');
 
 
 let pub = redis.createClient({
@@ -101,6 +102,9 @@ module.exports = {
                          *  passing all event of all services
                          */
                         ...CHATTING_SOCKET,
+
+                        ...MEDIA_SOCKET,
+                        
                         'testing': function(data, ack) {
 							this.emit('HELLO_WORLD', data);
 						},
@@ -215,7 +219,7 @@ module.exports = {
             let listUserActive      = this.listUserConnected2 || [];
             let io                  = this.io;
 
-			friends.forEach(friendID => {
+			friends && friends.forEach(friendID => {
                 if(listUserActive[friendID]){
 					listFriendOnline[listFriendOnline.length] = friendID;
                 }
