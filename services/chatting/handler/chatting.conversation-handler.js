@@ -649,17 +649,5 @@ module.exports = {
         }
     },
 
-    getLinkConversationByID: {
-        params: {
-        },
-        async handler(ctx) {
-            try {   
-                return '...'
-            } catch (error) {
-                return '...'
-            }
-        }
-    }
-
     //========================= END CONVERSATION  ==============================
 }

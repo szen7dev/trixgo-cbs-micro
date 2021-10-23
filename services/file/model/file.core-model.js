@@ -56,7 +56,7 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
                 
-                return resolve({ error: false, data: infoAfterInsert});
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

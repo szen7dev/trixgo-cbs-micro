@@ -431,6 +431,18 @@ exports.CHATTING_SOCKET = {
 			usersTag = usersTag.data;
 		}
 
+		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+			userID: userID,
+			select: '_id bizname fullname image'
+		});
+		infoSender = infoSender.data;
+
+		let infoReceivers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+			condition: { _id: { $in: infoConversation.members } },
+			select: '_id bizname fullname image'
+		});
+		infoReceivers = infoReceivers.data;
+
 		// Không gửi đến user tắt thông báo cuộc hội thoại
 		const arrReceiver = members.filter(memberID => {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
@@ -442,6 +454,8 @@ exports.CHATTING_SOCKET = {
 			data: {
 				tmpid,
 				usersTag,
+				infoSender,
+				infoReceivers,
 				infoMessage: infoMessageAfterInsert,
 			},
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io

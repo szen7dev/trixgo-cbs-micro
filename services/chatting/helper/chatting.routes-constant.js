@@ -45,6 +45,7 @@ const CF_ROUTINGS_CHATTING = {
 	DELETE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-message-conversation`,
 	REVOKE_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/revoke-message-conversation`,
 	AUTO_DELETE_MESSAGE_CONVERSATION           		: `${BASE_ROUTE}${CONVERSATION}/auto-delete-message-conversation`,
+	REACTION_MESSAGE_CONVERSATION           		: `${BASE_ROUTE}${CONVERSATION}/reaction-message-conversation`,
 
     INSERT_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/insert-message-poll-conversation`,
     UPDATE_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/update-message-poll-conversation`,

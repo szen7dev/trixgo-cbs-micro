@@ -87,12 +87,12 @@ module.exports = {
     generateLinkS3: {
         params: {
             type : { type: "string" },
+            name : { type: "string" },
             app  : { type: "string", optional: true },
             size : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-
                 let infoUser = ctx.meta.infoUser;
                 let { _id: userID } = infoUser;
 
