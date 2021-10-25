@@ -13,6 +13,7 @@ const { REMINDER_NOTIFY_FOR, REMINDER_REPEAT }		= require('../helper/chatting.ke
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
+const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.actions-constant');
 
 /**
  * TOOLS
@@ -35,6 +36,7 @@ const BaseModel                                     = require('../../../tools/db
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__MESSAGE_POLL_COLL                   = require('../database/chatting.message_poll-coll');
 const CHATTING__MESSAGE_REMINDER_COLL               = require('../database/chatting.message_reminder-coll');
+const CHATTING__MESSAGE_REACTION_COLL               = require('../database/chatting.reaction_message-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 
 /**
@@ -1718,6 +1720,157 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listMessagesReminder,
+						limit: +limit,
+						totalRecord,
+						nextCursor
+					}
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 })
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Reaction tin nhắn
+	 * Date: 26/10/2021
+	 */
+	reactionMessage({ userID, messageID, typeReaction, ctx }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([userID, messageID]))
+                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				// CHECK USER HAVE RAECTION MEDIA
+                let checkExistReactionMessage = await CHATTING__MESSAGE_REACTION_COLL
+					.findOne({
+						author: userID,
+						message: messageID
+					})
+					.populate({
+                        path: 'reaction',
+                        select: 'type'
+                    })
+					.lean();
+
+				if(checkExistReactionMessage && +typeReaction === +checkExistReactionMessage?.reaction?.type){
+					let infoAfterDeleteReactionMessage = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndDelete(checkExistReactionMessage._id);
+                    if (!infoAfterDeleteReactionMessage) {
+                        return resolve({ error: true, message: "Can't remove reaction", status: 403 });
+                    }
+
+                    return resolve({ error: false, data: infoAfterDeleteReactionMessage, status: 200 });
+				}
+
+				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_INSERT}`, {
+					type: typeReaction
+				});
+
+				if(infoAfterInsertReaction.error)
+					return resolve({ error: true, message: infoAfterInsertReaction.message, status: 403 });
+
+				if(checkExistReactionMessage) {
+					let infoReactionAfterUpdate = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndUpdate(checkExistReactionMessage._id, { 
+						reaction: infoAfterInsertReaction?.data?._id
+					});
+
+					return resolve({ error: false, data: infoReactionAfterUpdate, status: 200 });
+				}
+
+				let infoReactionAfterInsert = await CHATTING__MESSAGE_REACTION_COLL.create({ 
+					author: userID,
+					message: messageID,
+					reaction: infoAfterInsertReaction?.data?._id
+				});
+
+                if(!infoReactionAfterInsert)
+                    return resolve({ error: true, message: "Can't reaction message", status: 403 });
+
+                return resolve({ error: false, data: infoReactionAfterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách reaction của tin nhắn
+	 * Date: 02/09/2021
+	 */
+	getListReactionMessage({ userID, mediaID, lastestID, limit = 20 }) {
+		return new Promise(async (resolve) => {
+			try {
+				// Check params
+				if(!checkObjectIDs([mediaID, userID]))
+					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+				if(isNaN(limit)){
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+
+				let conditionFind = {};
+				let conditionObj  = { 
+					media: mediaID, 
+				};
+				let sortBy = {
+					modifyAt: -1,
+					createdAt: -1,
+					updatedAt: -1
+				}
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoReaction = await MEDIA_REACTION_COLL.findById(lastestID);
+					if(!infoReaction)
+						return resolve({ error: true, message: "Can't get info last message", status: 403 });
+
+					let nextInfo = `${infoReaction.updatedAt}_${infoReaction._id}`;
+					let keys	 = ['updatedAt__-1', '_id__-1'];
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionFind = dataPagingAndSort.data.find;
+				}
+
+				let	listReactionMedia = await MEDIA_REACTION_COLL
+					.find({ ...conditionObj, ...conditionFind })
+					.populate('author reaction')
+					.populate({
+						path: 'author',
+						select: 'fullname company image',
+					})
+					.populate({
+						path: 'reaction',
+						select: '_id type',
+					})
+					.limit(limit + 1)
+					.sort(sortBy)
+					.lean();
+
+				if(!listReactionMedia)
+					return resolve({ error: true, message: "Can't get list reaction media", status: 403 });
+
+				// GET TOTAL RECORD
+				let totalRecord = await MEDIA_REACTION_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+
+				if(listReactionMedia && listReactionMedia.length){
+					if(listReactionMedia.length > limit){
+						nextCursor = listReactionMedia[limit - 1]._id;
+						listReactionMedia.length = limit;
+					}
+				}
+
+				return resolve({ 
+					error: false, 
+					status: 200,
+					data: {
+						listRecords: listReactionMedia,
 						limit: +limit,
 						totalRecord,
 						nextCursor
