@@ -11,7 +11,6 @@ const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.mes
 /**
  * COLLECTIONS
  */
-const CHATTING__MESSAGE_COLL					= require('../database/chatting.message-coll');
 
 
 module.exports = {
@@ -28,10 +27,10 @@ module.exports = {
 	 */
 	insertMessage: {
         params: {
-			conversationID  : { type: "string" },
-            parentID		: { type: "string", optional: true },
-            type 			: { type: "string" },
-            content 		: { type: "string", optional: true },
+			conversationID  : { type: 'string' },
+            parentID		: { type: 'string', optional: true },
+            type 			: { type: 'string' },
+            content 		: { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
@@ -57,8 +56,8 @@ module.exports = {
 	 */
 	updateSeenMessage: {
         params: {
-			conversationID  : { type: "string" },
-            messageID		: { type: "string" }
+			conversationID  : { type: 'string' },
+            messageID		: { type: 'string' }
         },
         async handler(ctx) {
             try {
@@ -85,7 +84,7 @@ module.exports = {
 	 */
 	deleteMessage: {
         params: {
-			conversationID : { type: "string" },
+			conversationID : { type: 'string' },
         },
         async handler(ctx) {
             try {
@@ -111,7 +110,7 @@ module.exports = {
 	 */
 	revokeMessage: {
         params: {
-			conversationID: { type: "string" },
+			conversationID: { type: 'string' },
         },
         async handler(ctx) {
             try {
@@ -137,9 +136,9 @@ module.exports = {
 	 */
 	autoDeleteMessagesConversation: {
         params: {
-			conversationID	: { type: "string" },
-			time			: { type: "string" },
-			isDelete		: { type: "boolean", optional: true },
+			conversationID	: { type: 'string' },
+			time			: { type: 'string' },
+			isDelete		: { type: 'boolean', optional: true },
         },
         async handler(ctx) {
             try {
@@ -325,9 +324,9 @@ module.exports = {
 	 */
 	getListMessagePoll: {
         params: {
-			conversationID	: { type: "string" },
-            lastestID 		: { type: "string", optional: true },
-            limit 			: { type: "string", optional: true }
+			conversationID	: { type: 'string' },
+            lastestID 		: { type: 'string', optional: true },
+            limit 			: { type: 'string', optional: true }
 		},
         async handler(ctx) {
             try {
@@ -468,8 +467,8 @@ module.exports = {
 	 */
 	getListMessageReminder: {
         params: {
-			conversationID	: { type: "string" },
-            lastestID 		: { type: "string", optional: true },
+			conversationID	: { type: 'string' },
+            lastestID 		: { type: 'string', optional: true },
             limit			: { type: 'string', optional: true },
 		},
         async handler(ctx) {
@@ -491,13 +490,13 @@ module.exports = {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Reaction tin nhắn
+	 * Func: Reaction tin nhắn trong cuộc hội thoại
 	 * Date: 26/10/2021
 	 */
 	reactionMessage: {
         params: {
 			messageID		: { type: 'string' },
-			typeReaction	: { type: 'number' },
+			typeReaction	: { type: 'string' },
 		},
         async handler(ctx) {
             try {
@@ -507,6 +506,35 @@ module.exports = {
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.reactionMessage({
 					messageID, userID, typeReaction, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách Reaction 1 tin nhắn
+	 * Date: 26/10/2021
+	 */
+	getListReactionByMessage: {
+        params: {
+			messageID		: { type: 'string' },
+			lastestID 		: { type: 'string', optional: true },
+            typeReaction	: { type: 'string', optional: true },
+            limit			: { type: 'string', optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { messageID, lastestID, limit, typeReaction } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListReactionMessage({
+					messageID, userID, lastestID, limit, typeReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -18,8 +18,11 @@ module.exports = {
 	name: CF_DOMAIN_SERVICES.DOCUMENT,
 	mixins: [
 		DbService('document_doc'),
+		DbService('document_file'),
+		DbService('document_user'),
 		DbService('document_package'),
-		DbService('doctype'),
+		DbService('document_storage'),
+		DbService('document_doctype'),
 		DbService('users'),
 		CacheCleaner([CF_DOMAIN_SERVICES.DOCUMENT])
     ],
@@ -42,10 +45,11 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
-		// ======================  CONVERSATION ===========================
+		// ======================  DOCUMENT ===========================
 
-		// Thêm cuộc hội thoại mới
-		[CF_ACTIONS_DOCUMENT.INSERT_DOCUMENT] 		            			: DOCUMENT__DOC_HANDLER.insertDoc,
+		// Tạo mới văn bản
+		[CF_ACTIONS_DOCUMENT.INSERT_DOCUMENT]	: DOCUMENT__DOC_HANDLER.insertDocument,
+		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]	: DOCUMENT__DOC_HANDLER.getListDocument,
 
 	},
 

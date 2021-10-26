@@ -188,8 +188,11 @@ module.exports = {
 		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListMessageReminder,
 
-		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
+		// Reaction tin nhắn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.REACTION_MESSAGE_CONVERSATION]						: CHATTING__MESSAGE_HANDLER.reactionMessage,
+
+		// Danh sách Reaction 1 tin nhắn
+		[CF_ACTIONS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListReactionByMessage,
 	},
 
 	/**

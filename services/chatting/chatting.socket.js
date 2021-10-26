@@ -966,4 +966,48 @@ exports.CHATTING_SOCKET = {
 		})
     },
 
+	/**
+	 * Dev: MinhVH
+	 * Func: Reaction 1 tin nhắn
+	 * Date: 26/10/2021
+	 */
+	 [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
+        let socket               		= this;
+		let userID              		= socket.client.user;
+        let listUserActive       		= socket.$service.listUserConnected2;
+        let io                   		= socket.$service.io;
+		let { messageID, typeReaction }	= data;
+
+		const infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
+
+		if(!infoMessage){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info message" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+			});
+		}
+
+		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+			userID,
+			select: '_id bizname fullname image'
+		});
+
+        sendDataToMultilSocketsOfListUser({ 
+			io,
+			arrReceiver: [infoMessage.sender], 
+			listUserConnected: listUserActive, 
+			data: {
+				error: false, 
+				data: {
+					infoSender,
+					infoMessage,
+					typeReaction
+				}
+			}, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
+		})
+    },
+
 }

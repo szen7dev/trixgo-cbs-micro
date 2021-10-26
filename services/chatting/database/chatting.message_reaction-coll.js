@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports = DATABASE_MIDDLEWARE("message_reaction_message", {
+module.exports = DATABASE_MIDDLEWARE("reaction_message", {
     /**
      * Cảm xúc
      */
@@ -21,7 +21,7 @@ module.exports = DATABASE_MIDDLEWARE("message_reaction_message", {
     /**
      *  Người reaction
      */
-     author: {
+    author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },

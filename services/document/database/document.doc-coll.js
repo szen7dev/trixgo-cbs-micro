@@ -7,10 +7,12 @@ const Schema                = require('mongoose').Schema;
  *  Hồ sơ văn bản
  */
 module.exports  = DATABASE_MIDDLEWARE("document_doc", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
+    /**
+     * Mã hiệu bằng số do hệ thống tự phát sinh
+     */
     suid : {
         type   : String,
-        require:  true,
+        require: true,
         unique : true
     },
     //_________Công ty
@@ -21,22 +23,28 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     //_________Phòng ban/dự án
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"                  
-    },
-    //_________Gói/Hạng mục (đã link với contact)
-    package: {
-        type: Schema.Types.ObjectId,
-        ref : "document_package"                  
+        ref : "department"
     },
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
-        ref : "contract"                  
+        ref : "contract"
     },
+    //_________Gói/Hạng mục (đã link với contact)
+    package: {
+        type: Schema.Types.ObjectId,
+        ref : "document_package"
+    },
+
     /**
      * THÔNG TIN CĂN BẢN
      */
-    //_________Hướng hồ sơ (theo hệ thống)
+    /**
+     * Hướng hồ sơ (theo hệ thống)
+     * 1: Đến
+     * 2: Đi
+     * 3: Nội bộ
+     */
     direction: { type: Number, default: 1 },
     //_________Nơi ban hành
     sender: {
@@ -51,22 +59,22 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     //_________Phân loại theo lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
-        ref : "doctype"
+        ref : "document_doctype"
     },
     //_________Phân loại theo tính chất
     property: {
         type: Schema.Types.ObjectId,
-        ref : "doctype"
+        ref : "document_doctype"
     },
     //_________Phân loại theo khác
     other: {
         type: Schema.Types.ObjectId,
-        ref : "doctype"
+        ref : "document_doctype"
     },
     //_________Địa chỉ lưu trữ
     storage: {
         type: Schema.Types.ObjectId,
-        ref : "storage"          
+        ref : "document_storage"          
     },
     //_________Ngày tháng văn bản/Ngày đóng dấu
     date: {
@@ -110,34 +118,14 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         default: null
     },
     //_________Các văn bản liên đới
-    linkDocument: [{
-        type: Schema.Types.ObjectId,
-        ref: "document_doc"
-    }],
-    //_________File đính kèm hồ sơ
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref: "file"
-    }],
-    //_________Công việc cần xử lý
-    tasks: [{
-        type: Schema.Types.ObjectId,
-        ref: "pcm_plan_task"
-    }],
+    // linkDocument: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: "document_doc"
+    // }],
     //_________Ký xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,
         ref: "signature"
-    }],
-    //_________Comment
-    comments: [{
-        type: Schema.Types.ObjectId,
-        ref: "comment"
-    }],
-    //_________Những người liên quan
-    related: [{
-        type: Schema.Types.ObjectId,
-        ref: "user"
     }],
      /**
      * CẤU TRÚC ĐỆ QUY

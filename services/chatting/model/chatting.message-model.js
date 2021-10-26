@@ -19,6 +19,7 @@ const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.ac
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const { getCurrentTime }							= require('../../../tools/utils/time_utils');
 const {
 	checkObjectIDs, 
 	checkNumberIsValidWithRange,
@@ -36,7 +37,7 @@ const BaseModel                                     = require('../../../tools/db
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__MESSAGE_POLL_COLL                   = require('../database/chatting.message_poll-coll');
 const CHATTING__MESSAGE_REMINDER_COLL               = require('../database/chatting.message_reminder-coll');
-const CHATTING__MESSAGE_REACTION_COLL               = require('../database/chatting.reaction_message-coll');
+const CHATTING__MESSAGE_REACTION_COLL               = require('../database/chatting.message_reaction-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 
 /**
@@ -1733,7 +1734,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Reaction tin nhắn
+	 * Func: Reaction tin nhắn trong cuộc hội thoại
 	 * Date: 26/10/2021
 	 */
 	reactionMessage({ userID, messageID, typeReaction, ctx }){
@@ -1772,7 +1773,8 @@ class Model extends BaseModel {
 
 				if(checkExistReactionMessage) {
 					let infoReactionAfterUpdate = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndUpdate(checkExistReactionMessage._id, { 
-						reaction: infoAfterInsertReaction?.data?._id
+						reaction: infoAfterInsertReaction?.data?._id,
+						modifyAt: getCurrentTime()
 					});
 
 					return resolve({ error: false, data: infoReactionAfterUpdate, status: 200 });
@@ -1781,7 +1783,8 @@ class Model extends BaseModel {
 				let infoReactionAfterInsert = await CHATTING__MESSAGE_REACTION_COLL.create({ 
 					author: userID,
 					message: messageID,
-					reaction: infoAfterInsertReaction?.data?._id
+					reaction: infoAfterInsertReaction?.data?._id,
+					createAt: getCurrentTime()
 				});
 
                 if(!infoReactionAfterInsert)
@@ -1799,11 +1802,11 @@ class Model extends BaseModel {
 	 * Func: Danh sách reaction của tin nhắn
 	 * Date: 02/09/2021
 	 */
-	getListReactionMessage({ userID, mediaID, lastestID, limit = 20 }) {
+	getListReactionMessage({ userID, messageID, lastestID, typeReaction, limit = 20 }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
-				if(!checkObjectIDs([mediaID, userID]))
+				if(!checkObjectIDs([messageID, userID]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
 				if(isNaN(limit)){
@@ -1813,22 +1816,22 @@ class Model extends BaseModel {
 				}
 
 				let conditionFind = {};
-				let conditionObj  = { 
-					media: mediaID, 
+				let conditionReaction = {};
+				let conditionObj = { 
+					message: messageID, 
 				};
 				let sortBy = {
 					modifyAt: -1,
 					createdAt: -1,
-					updatedAt: -1
 				}
 
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoReaction = await MEDIA_REACTION_COLL.findById(lastestID);
+					let infoReaction = await CHATTING__MESSAGE_REACTION_COLL.findById(lastestID);
 					if(!infoReaction)
-						return resolve({ error: true, message: "Can't get info last message", status: 403 });
+						return resolve({ error: true, message: "Can't get info last reaction", status: 403 });
 
 					let nextInfo = `${infoReaction.updatedAt}_${infoReaction._id}`;
-					let keys	 = ['updatedAt__-1', '_id__-1'];
+					let keys	 = ['modifyAt__-1', '_id__-1'];
 
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
@@ -1837,32 +1840,37 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 				}
 
-				let	listReactionMedia = await MEDIA_REACTION_COLL
+				if(typeReaction){
+					conditionReaction.type = typeReaction;
+				}
+
+				let	listReactionMessage = await CHATTING__MESSAGE_REACTION_COLL
 					.find({ ...conditionObj, ...conditionFind })
-					.populate('author reaction')
+					.select('author reaction message')
 					.populate({
 						path: 'author',
-						select: 'fullname company image',
+						select: '_id fullname bizname image',
 					})
 					.populate({
 						path: 'reaction',
 						select: '_id type',
+						match: conditionReaction,
 					})
 					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();
 
-				if(!listReactionMedia)
-					return resolve({ error: true, message: "Can't get list reaction media", status: 403 });
+				if(!listReactionMessage)
+					return resolve({ error: true, message: "Can't get list reaction message", status: 403 });
 
 				// GET TOTAL RECORD
-				let totalRecord = await MEDIA_REACTION_COLL.countDocuments(conditionObj);
+				let totalRecord = await CHATTING__MESSAGE_REACTION_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
 
-				if(listReactionMedia && listReactionMedia.length){
-					if(listReactionMedia.length > limit){
-						nextCursor = listReactionMedia[limit - 1]._id;
-						listReactionMedia.length = limit;
+				if(listReactionMessage && listReactionMessage.length){
+					if(listReactionMessage.length > limit){
+						nextCursor = listReactionMessage[limit - 1]._id;
+						listReactionMessage.length = limit;
 					}
 				}
 
@@ -1870,7 +1878,7 @@ class Model extends BaseModel {
 					error: false, 
 					status: 200,
 					data: {
-						listRecords: listReactionMedia,
+						listRecords: listReactionMessage,
 						limit: +limit,
 						totalRecord,
 						nextCursor
