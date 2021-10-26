@@ -215,9 +215,9 @@ async function randomAndCheckExists(COLL, fieldCheck){
      * isExists: giả lập trường hợp tìm thấy tồn tại
      * A sẽ thay thêm vào colleciton nào để tìm record
      */
-    let isExists = await COLL.findOne({ [fieldCheck]: textResult })
+    let isExists = await COLL.findOne({ [fieldCheck]: textResult });
     if(isExists)
-        return randomAndCheckExists()
+        return randomAndCheckExists(COLL, fieldCheck);
 
     return textResult;
 }

@@ -496,8 +496,6 @@ class Model extends BaseModel {
 
                 listFriends = await AUTH__USER_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-					// .populate('department', select.department)
-					// .populate('company', select.company)
                     .limit(limit + 1)
                     .sort(sortBy)
 					.lean();

@@ -18,4 +18,11 @@ module.exports = DATABASE_MIDDLEWARE("reaction_message", {
 		type    : Schema.Types.ObjectId,
 		ref     : 'message_message'
 	},
+    /**
+     *  Người reaction
+     */
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },
 })
