@@ -431,6 +431,22 @@ exports.CHATTING_SOCKET = {
 			usersTag = usersTag.data;
 		}
 
+		let infoMessage = null;
+
+		if(infoMessageAfterInsert.data){
+			infoMessage = await CHATTING__MESSAGE_COLL
+				.findById(infoMessageAfterInsert.data._id)
+				.populate('sender receivers usersAssigned parent poll reminder')
+				.populate({
+					path: 'files.file',
+					populate: {
+						path: 'file',
+						select: 'name url size'
+					},
+				})
+				.lean();
+		}
+
 		// Không gửi đến user tắt thông báo cuộc hội thoại
 		const arrReceiver = members.filter(memberID => {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
@@ -442,62 +458,10 @@ exports.CHATTING_SOCKET = {
 			data: {
 				tmpid,
 				usersTag,
-				infoMessage: infoMessageAfterInsert,
+				infoMessage,
 			},
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
 		});
-
-		// const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
-		// const infoMessage	   = await CHATTING__MESSAGE_COLL
-		// 	.findById(messageID)
-		// 	.populate({
-		// 		path: 'parent poll reminder files.file',
-		// 		populate: 'file'
-		// 	})
-		// 	.populate({
-		// 		path: 'sender usersAssigned',
-		// 		select: '_id bizname fullname image'
-		// 	})
-		// 	.lean();
-
-		// if(!infoConversation || !infoMessage){
-		// 	return sendDataToMultilSocketsOfListUser({ 
-		// 		listUserConnected: listUserActive, 
-		// 		arrReceiver: [userID],
-		// 		data: { error: true, message: "Can't get info conversation or message" },
-		// 		event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEND_MESSAGE], io
-		// 	});
-		// }
-
-		// const responseData = {
-		// 	infoConversation,
-		// 	infoMessage
-		// };
-
-		// if(usersTag && usersTag.length){
-		// 	usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
-		// 		condition: { _id: { $in: usersTag } },
-		// 		select: '_id bizname fullname image'
-		// 	});
-		// 	responseData.usersTag = usersTag.data;
-		// }
-
-		// const { members, usersMute } = infoConversation;
-		// const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
-
-		// // Không gửi đến user tắt thông báo cuộc hội thoại
-		// const arrReceiver = members.filter(memberID => {
-		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		// });
-
-		// sendDataToMultilSocketsOfListUser({ 
-		// 	listUserConnected: listUserActive, 
-		// 	arrReceiver,
-		// 	data: {
-		// 		error: false,
-		// 		data: responseData
-		// 	}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SEND_MESSAGE], io
-		// });
     },
 
 	/**
@@ -999,6 +963,50 @@ exports.CHATTING_SOCKET = {
 			listUserConnected: listUserActive, 
 			data: { error: false, data: infoMessage }, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER]
+		})
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Reaction 1 tin nhắn
+	 * Date: 26/10/2021
+	 */
+	 [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
+        let socket               		= this;
+		let userID              		= socket.client.user;
+        let listUserActive       		= socket.$service.listUserConnected2;
+        let io                   		= socket.$service.io;
+		let { messageID, typeReaction }	= data;
+
+		const infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
+
+		if(!infoMessage){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info message" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+			});
+		}
+
+		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+			userID,
+			select: '_id bizname fullname image'
+		});
+
+        sendDataToMultilSocketsOfListUser({ 
+			io,
+			arrReceiver: [infoMessage.sender], 
+			listUserConnected: listUserActive, 
+			data: {
+				error: false, 
+				data: {
+					infoSender,
+					infoMessage,
+					typeReaction
+				}
+			}, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
 		})
     },
 

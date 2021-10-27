@@ -24,7 +24,7 @@ module.exports = {
 		DbService('message_conversation_files'),
 		DbService('message_message_polls'),
 		DbService('message_message_reminders'),
-		DbService('message_conversation_department'),
+		DbService('message_reaction_message'),
 		DbService('users'),
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
@@ -184,31 +184,15 @@ module.exports = {
 
 		// Xoá nhắc hẹn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.deleteReminder,
-		
+
 		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListMessageReminder,
 
-		// // Lấy danh sách các cuộc hội thoại phân trang 20 mẫu tin
-		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_BY_USER_ID] 		: CHATTING__CONVERSATION_HANDLER.getListConversationByUserID,
+		// Reaction tin nhắn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.REACTION_MESSAGE_CONVERSATION]						: CHATTING__MESSAGE_HANDLER.reactionMessage,
 
-		// Lấy danh sách link của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
-		
-		// Lấy danh sách file của cuộc hội thoại
-		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_FILE_BY_ID] 		: CHATTING__CONVERSATION_HANDLER.getFileConversationByID,
-		
-		// Lấy bản nháp đang soạn của một user trong một cuộ hội thoại
-		// [CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_DRAFT] 			: CHATTING__CONVERSATION_HANDLER.getConversationDraftByUserID,
-		
-
-		// // Xem các tệp của cuộc hội thoại [****** để sau]
-
-		// // Danh sách cuộc hội thoại có tin nhắn chưa đọc
-		// [CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_BY_USER_ID] : CHATTING__CONVERSATION_HANDLER.getListConversationMissMessageByUserID,
-
-		// // Lấy danh sách link của cuộc hội thoại
-		// [CF_ACTIONS_CHATTING.GET_LINKS_CONVERSATION_BY_ID] 			: CHATTING__CONVERSATION_HANDLER.getLinkConversationByID,
-
+		// Danh sách Reaction 1 tin nhắn
+		[CF_ACTIONS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListReactionByMessage,
 	},
 
 	/**
