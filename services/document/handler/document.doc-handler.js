@@ -8,10 +8,6 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const DOCUMENT__DOC_MODEL                   	= require('../model/document.doc-model').MODEL;
 
-/**
- * COLLECTIONS
- */
-
 
 module.exports = {
     /**
@@ -31,7 +27,9 @@ module.exports = {
             name                : { type: "string" },
             sign                : { type: "string" },
             storeSign           : { type: "string" },
+            type                : { type: "number" },
             description         : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
             approver            : { type: "string" },
             date                : { type: "string" },
             receivedDate        : { type: "string" },
@@ -57,15 +55,15 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const {
-                    parentID, name, sign, storeSign, description, approver, date, receivedDate, style, status,
+                    parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
                     fieldID, propertyID, otherID, storageID, note, departmentID, companyID
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insertDocument({
-                    parentID, name, sign, storeSign, description, approver, date, receivedDate, style, status,
+                    parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
-                    fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID
+                    fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,17 +73,71 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật văn bản
+	 * Date: 28/10/2021
+	 */
+    updateDocument: {
+        params: {
+            documentID          : { type: "string" },
+            name                : { type: "string" },
+            sign                : { type: "string" },
+            storeSign           : { type: "string" },
+            type                : { type: "number" },
+            description         : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
+            approver            : { type: "string", optional: true },
+            date                : { type: "string" },
+            receivedDate        : { type: "string" },
+            style               : { type: "string" },
+            status              : { type: "string" },
+            amount              : { type: "number", optional: true },
+            amountDelivery      : { type: "number", optional: true },
+            requestResponse     : { type: "number", optional: true },
+            expiredResponse     : { type: "string", optional: true },
+            direction           : { type: "number", optional: true },
+            packageID           : { type: "string", optional: true },
+            senderID            : { type: "string", optional: true },
+            receiverID          : { type: "string", optional: true },
+            fieldID             : { type: "string", optional: true },
+            propertyID          : { type: "string", optional: true },
+            otherID             : { type: "string", optional: true },
+            storageID           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userUpdate } = ctx.meta.infoUser;
+                const {
+                    documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    fieldID, propertyID, otherID, storageID, note
+                } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateDocument({
+                    documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    fieldID, propertyID, otherID, storageID, note, userUpdate, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
     /**
 	 * Dev: MinhVH
 	 * Func: Danh sách hồ sơ văn bản
-	 * Date: 26/10/2021
+	 * Date: 27/10/2021
 	 */
     getListDocument: {
         params: {
-            lastestID: { type: "string", optional: true },
-            keyword: { type: "string", optional: true },
-            limit: { type: "number", optional: true },
+            lastestID   : { type: "string", optional: true },
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {

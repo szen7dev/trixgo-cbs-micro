@@ -10,6 +10,7 @@ const CF_ACTIONS_ITEM = {
      /**
      * CONTRACT
     */
+    UPDATE_CONTRACT_BY_CONDITION             : `${BASE_ACTIONS}_${CONTRACT}_UPDATE_CONTRACT_BY_CONDITION`,
     CONTRACT_GET_LIST                        : `${BASE_ACTIONS}_${CONTRACT}_CONTRACT_GET_LIST`,
 
      /**

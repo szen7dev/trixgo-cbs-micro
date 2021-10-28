@@ -49,6 +49,11 @@ module.exports = {
 
 		// Tạo mới văn bản
 		[CF_ACTIONS_DOCUMENT.INSERT_DOCUMENT]	: DOCUMENT__DOC_HANDLER.insertDocument,
+
+		// Cập nhật văn bản
+		[CF_ACTIONS_DOCUMENT.UPDATE_DOCUMENT]	: DOCUMENT__DOC_HANDLER.updateDocument,
+
+		// Danh sách hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]	: DOCUMENT__DOC_HANDLER.getListDocument,
 
 	},

@@ -72,16 +72,12 @@ class BaseModel {
      * @param {*} updatedata giá trị cập nhật
      * @param {*} authorID   người cập nhật
      */
-    updateWhereClause(condition, updatedata, authorID) {
-        let coll = this.coll;
+    updateWhereClause(condition, updatedata) {
         return new Promise(resolve => {
-            updatedata.modifyAt     = Date.now();
-            if (OBJECT_ID.isValid(authorID))
-                updatedata.userUpdate   = authorID;
-            
-            coll.update(condition, updatedata, { multi: true }, function (error) {
-                return resolve(error);
-            })
+            updatedata.modifyAt = timeUtils.getCurrentTime();
+
+            let infoAfterUpdate = await this.coll.findOneAndUpdate(condition, updatedata, { new: true });
+            resolve(infoAfterUpdate);
         })
     }
 

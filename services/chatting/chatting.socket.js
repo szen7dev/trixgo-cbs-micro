@@ -393,19 +393,39 @@ exports.CHATTING_SOCKET = {
         let io                          = socket.$service.io;
         let userID                      = socket.client.user;
 
-        let { tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag } = data;
+        let {
+			tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
+			notifyFor, remindTime, repeat,
+			name, options,
+		} = data;
 
-		const infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
-			conversationID, 
-			senderID: userID, 
-			content,
-			parentID, 
-			usersAssigned, 
-			files,
-			location,
-			type,
-			ctx: broker
-		})
+		let infoMessageAfterInsert = {};
+
+		switch (+type) {
+			case 4:
+				infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessageReminder({
+					conversationID, content, notifyFor, remindTime, repeat, userID, ctx: broker
+				});
+				break;
+			case 5:
+				infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessagePoll({
+					conversationID, name, options, userID
+				});
+				break;
+			default:
+				infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID, 
+					senderID: userID, 
+					content,
+					parentID, 
+					usersAssigned, 
+					files,
+					location,
+					type,
+					ctx: broker
+				})
+				break;
+		}
 
 		if(infoMessageAfterInsert.error){
 			return sendDataToMultilSocketsOfListUser({
@@ -423,6 +443,11 @@ exports.CHATTING_SOCKET = {
 		const { members, usersMute } = infoConversation;
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
+		// Không gửi đến user tắt thông báo cuộc hội thoại
+		const arrReceiver = members.filter(memberID => {
+			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+		});
+
 		if(usersTag && usersTag.length){
 			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 				condition: { _id: { $in: usersTag } },
@@ -435,8 +460,12 @@ exports.CHATTING_SOCKET = {
 
 		if(infoMessageAfterInsert.data){
 			infoMessage = await CHATTING__MESSAGE_COLL
-				.findById(infoMessageAfterInsert.data._id)
-				.populate('sender receivers usersAssigned parent poll reminder')
+				.findById(infoMessageAfterInsert.data._id, { createdAt: 0, updatedAt: 0, __v: 0 })
+				.populate({
+					path: 'sender receivers usersAssigned',
+					select: '_id fullname bizname image'
+				})
+				.populate('parent poll reminder')
 				.populate({
 					path: 'files.file',
 					populate: {
@@ -446,11 +475,6 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 		}
-
-		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
