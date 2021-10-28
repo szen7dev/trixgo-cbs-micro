@@ -20,26 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc", {
     }, 
     //_________Mô tả hồ sơ
     description: String,
-    //_________Số lượng tương tác
-    numLike: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lượng comment
-    numComment: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lượng share
-    numShare: {
-        type: Number,
-        default: 0
-    },
-    //_________Số lượng view
-    numView: {
-        type: Number,
-        default: 0
-    },
+    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */   

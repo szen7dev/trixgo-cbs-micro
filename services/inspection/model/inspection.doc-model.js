@@ -9,7 +9,10 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  */
 const INSPECTION__DOC_COLL                 = require('../database/inspection.doc-coll');
 const ITEM__CONTRACT_COLL                  = require('../../item/database/item.contract-coll');
+const INSPECTION__TEMPLATE_CHECKLIST_COLL  = require('../database/inspection.template_checklist-coll');
+
 const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
+const INSPECTION__CHECKLIST_MODEL          = require('../model/inspection.checklist-model').MODEL;
 
 /**
  * import inter-model, exter-model
@@ -86,7 +89,18 @@ class Model extends BaseModel {
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
-
+            
+                // Tiến hành thêm checklist từ tempalte checklist
+                let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: template });
+                if(listTemplateChecklist.length){
+                    for (const templateChecklist of listTemplateChecklist) {
+                        let { name } = templateChecklist;
+                        let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
+                            inspection: infoDataAfterInserted._id, template, name, authorID: userID
+                        })
+                    }
+                }
+                
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

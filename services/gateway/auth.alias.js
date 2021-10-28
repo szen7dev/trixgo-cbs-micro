@@ -20,6 +20,7 @@ const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-c
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 const { CF_ROUTINGS_INSPECTION } 	= require('../inspection/helper/inspection.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
+const { CF_ROUTINGS_ITEM } 	    = require('../item/helper/item.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -32,6 +33,7 @@ const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-c
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
 const { CF_ACTIONS_INSPECTION } 	= require('../inspection/helper/inspection.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
+const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -406,6 +408,10 @@ module.exports = {
 		//A0240
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] : 
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_LIST}`],
+
+		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
+		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENT_GET_LIST}`] : 
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`],
 
 
 		//---------------------------🏁 START S024.MEDIA 🏁---------------------------//

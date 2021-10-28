@@ -39,7 +39,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST					] 		: ITEM__CONTRACT_HANDLER.getList,
 
 		//==========================================   DEPARTMENT ACTIONS   ================================
-		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST				] 		: ITEM__DEPARTMENT_HANDLER.getList,
+		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST				] 		: ITEM__DEPARTMENT_HANDLER.getListDepartment,
 	},
 
 	/**

@@ -31,7 +31,7 @@ module.exports = {
 	actions: {	
 		//==========================================   REACTION ACTIONS   ================================
 		// [CF_ACTIONS_REACTION.REACTION_GET_LIST ] 	: REACTION__REACTION_HANDLER.getList,
-		// [CF_ACTIONS_REACTION.REACTION_INSERT ] 			: REACTION__REACTION_HANDLER.insertReaction,
+		// [CF_ACTIONS_REACTION.REACTION_INSERT ] 		       : REACTION__REACTION_HANDLER.insertReaction,
 		//==========================================   COMMENT_FILE_CORE ACTIONS   ================================
 	},
 	
@@ -43,7 +43,7 @@ module.exports = {
 
 	/**
 	 	* Methods
-	*/
+	*/         
 	methods: {
 
 	},

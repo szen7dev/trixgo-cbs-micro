@@ -13,6 +13,7 @@ const INSPECTION__DOC_COMMENT_HANLDER  			= require('./handler/inspection.doc_co
 const INSPECTION__AREA_HANLDER 					= require('./handler/inspection.area-hanlder');
 const INSPECTION__DOCS_HANLDER 					= require('./handler/inspection.doc-hanlder');
 const INSPECTION__DOC_REACTION_HANLDER 			= require('./handler/inspection.doc_reaction-hanlder');
+const INSPECTION__DOC_CHECKLIST_HANLDER 		= require('./handler/inspection.doc_checklist-hanlder');
 
 
 
@@ -80,11 +81,14 @@ module.exports = {
 		[CF_ACTIONS_INSPECTION.DOC_COMMENT_REMOVE] : INSPECTION__DOC_COMMENT_HANLDER.removeComment,
 		[CF_ACTIONS_INSPECTION.DOC_COMMENT_LIST]   : INSPECTION__DOC_COMMENT_HANLDER.listComment,
 
-
 		// Action inspection reaction
 		[CF_ACTIONS_INSPECTION.DOC_REACTION_INSERT] : INSPECTION__DOC_REACTION_HANLDER.insertReaction,
 		[CF_ACTIONS_INSPECTION.DOC_REACTION_REMOVE] : INSPECTION__DOC_REACTION_HANLDER.removeReaction,
 		[CF_ACTIONS_INSPECTION.DOC_REACTION_LIST]   : INSPECTION__DOC_REACTION_HANLDER.listReaction,
+
+		// Action inspection checklist
+		[CF_ACTIONS_INSPECTION.DOC_CHECKLIST_UPDATE]: INSPECTION__DOC_CHECKLIST_HANLDER.updateStatus,
+		[CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST]  : INSPECTION__DOC_CHECKLIST_HANLDER.getListOrGetInfoChecklist,
 	},
 
 	/**

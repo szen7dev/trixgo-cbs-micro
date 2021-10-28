@@ -1,13 +1,149 @@
+"use strict";
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+                                        = require('../../../tools/utils/utils');
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+
 /**
- * DECALARTION VARIABLE (1)
+ * import inter-coll, exter-coll
  */
-/** 
- * VALIDATION STEP (2)
- *  - kiểm tra valid từ các input
- *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
- */
+const ITEM__DEPARTMENT_COLL                 = require('../database/item.department-coll');
+const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
+
 /**
- * LOGIC STEP (3)
- *  3.1: convert type + update name (ví dụ: string -> number)
- *  3.2: operation database
- */    
+ * import inter-model, exter-model
+ */
+
+/**
+ * import util files
+ */
+
+class Model extends BaseModel {
+
+    constructor() {
+        super(ITEM__DEPARTMENT_COLL);
+    }
+
+    /**
+     * Name: Lấy thông tin department ✅
+     * Author: Depv 
+     */
+    getInfoDepartment({ departmentID }) { 
+        return new Promise(async (resolve) => {
+            try {   
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(departmentID))
+                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+
+                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
+
+                if(!infoDepartment)
+                    return resolve({ error: true, message: "Can't get department", status: 403 });
+
+                return resolve({ error: false, data: infoDepartment, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Danh sách dự án mà user được quyền truy cập (là member)
+     */
+    getListDepartment({ keyword, limit = 10, lastestIDDepartment, userID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { members: { $in: [userID] } };
+                let conditionFind = {};
+                let sortBy = { createAt: -1 };
+				let objSort 	 	= {};
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+               
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                // GET CONDITION PAGINATION
+				if(lastestIDDepartment && checkObjectIDs(lastestIDDepartment)){
+					let infoMessage = await ITEM__DEPARTMENT_COLL.findById(lastestIDDepartment);
+					if(!infoMessage)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy = dataPagingAndSort.data.sort;
+				}
+
+                // SEARCH TEXT
+				if(keyword){
+					conditionObj.$text = { $search: keyword };
+					objSort.score = { $meta: "textScore" };
+					sortBy.score  = { $meta: "textScore" };
+				}
+
+                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL.find({...conditionObj, ...conditionFind }, objSort)
+                    .select("name userCreate modifyAt sign")
+                    .populate({
+                        path: "userCreate",
+                        select: "fullname"
+                    })
+                    .limit(+limit)
+                    .sort(sortBy) 
+                    .lean();
+
+                // GET TOTAL RECORD
+				let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObj);
+                let totalCurrentPage = await ITEM__DEPARTMENT_COLL.count(conditionFind);
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
+                
+                let totalPage = Math.ceil(totalRecord/limit);
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    currentPage
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+ }
+
+exports.MODEL = new Model;
