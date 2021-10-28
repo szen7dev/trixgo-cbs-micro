@@ -12,6 +12,7 @@ const moment										= require('moment');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-constant');
 
 /**
  * TOOLS
@@ -19,7 +20,7 @@ const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-const
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const stringUtils									= require('../../../tools/utils/string_utils');
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
-const { DOC_DIRECTION_TYPE }                        = require('../helper/document.keys-constant');
+const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
 const { 
     checkObjectIDs,
     IsJsonString,
@@ -30,6 +31,7 @@ const {
  * COLLECTIONS
  */
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
+const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
 
 
 class Model extends BaseModel {
@@ -44,9 +46,9 @@ class Model extends BaseModel {
 	 * Date: 26/10/2021
 	 */
 	insertDocument({
-		parentID, name, sign, storeSign, description, approver, date, receivedDate, style, status,
+		parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
         amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
-        fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID
+        fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -81,14 +83,19 @@ class Model extends BaseModel {
                 }
 
                 amount          && (dataInsert.amount           = +amount || 1);
-                amountDelivery  && (dataInsert.amountDelivery   = +amountDelivery || 1);
+                amountDelivery  && (dataInsert.amountDelivery   = +amountDelivery || 0);
+
+                // Nếu văn bản là hợp đồng => Lưu vào contract
+                if(type && !isNaN(type) && +type === 2){
+                    dataInsert.type = +type;
+                }
 
                 (packageID  && checkObjectIDs(packageID))   && (dataInsert.package  = packageID);
                 (senderID   && checkObjectIDs(senderID))    && (dataInsert.sender   = senderID);
                 (receiverID && checkObjectIDs(receiverID))  && (dataInsert.receiver = receiverID);
                 (fieldID    && checkObjectIDs(fieldID))     && (dataInsert.field    = fieldID);
-                (otherID    && checkObjectIDs(otherID))     && (dataInsert.other    = otherID);
                 (propertyID && checkObjectIDs(propertyID))  && (dataInsert.property = otherID);
+                (otherID    && checkObjectIDs(otherID))     && (dataInsert.other    = otherID);
                 (storageID  && checkObjectIDs(storageID))   && (dataInsert.storage  = storageID);
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -108,6 +115,24 @@ class Model extends BaseModel {
                     });
                 }
 
+                // Update document for contract
+                if(type && !isNaN(type) && +type === 2){
+                    let infoPackage = await DOCUMENT__PACKAGE_COLL
+                        .findById(packageID)
+                        .select('_id contract');
+
+                    if(infoPackage){
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
+                            condition: { _id: infoPackage.contract },
+                            update: {
+                                $addToSet: {
+                                    documents: infoAfterInsert._id
+                                }
+                            }
+                        });
+                    }
+                }
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -115,6 +140,77 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật văn bản
+	 * Date: 28/10/2021
+	 */
+    updateDocument({
+		documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
+        amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+        fieldID, propertyID, otherID, storageID, note, userUpdate, ctx
+	}) {
+        return new Promise(async (resolve) => {
+            try {
+				if (!checkObjectIDs([documentID, userID, packageID, userUpdate]))
+					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+
+                if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction }))
+                    return resolve({ error: true, message: 'Request params direction invalid', status: 400 });
+
+                if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse }))
+                    return resolve({ error: true, message: 'Request params requestResponse invalid', status: 400 });
+
+                let dataUpdate = {
+                    name, 
+                    sign, 
+                    storeSign,
+                    approver,
+                    date, 
+                    receivedDate,
+                    style, 
+                    status,
+                    expiredResponse,
+                    note,
+                    description,
+                    userUpdate
+                }
+
+                direction       && (dataUpdate.direction        = +direction || 1);
+                requestResponse && (dataUpdate.requestResponse  = +requestResponse || 0);
+                amount          && (dataUpdate.amount           = +amount || 1);
+                amountDelivery  && (dataUpdate.amountDelivery   = +amountDelivery || 0);
+
+                if(type && checkNumberIsValidWithRange({ arrValid: DOC_TYPE, val: type })){
+                    dataUpdate.type = +type;
+                }
+
+                (packageID  && checkObjectIDs(packageID))   && (dataUpdate.package  = packageID);
+                (senderID   && checkObjectIDs(senderID))    && (dataUpdate.sender   = senderID);
+                (receiverID && checkObjectIDs(receiverID))  && (dataUpdate.receiver = receiverID);
+                (fieldID    && checkObjectIDs(fieldID))     && (dataUpdate.field    = fieldID);
+                (otherID    && checkObjectIDs(otherID))     && (dataUpdate.other    = otherID);
+                (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = otherID);
+                (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
+
+                if(parentID && checkObjectIDs(parentID)){
+                    let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
+                    dataUpdate.parent = parentID;
+                    dataUpdate.level = infoParent.level + 1;
+                }
+
+				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
+
+				if (!infoAfterUpdate)
+                    return resolve({ error: true, message: "Can't update document", status: 403 });
+
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
 	 * Dev: MinhVH

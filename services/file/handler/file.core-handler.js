@@ -10,7 +10,6 @@ module.exports = {
             name           : { type: "string" },
             url            : { type: "string" },
             size           : { type: "string", optional: true },
-
             // userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
@@ -29,10 +28,9 @@ module.exports = {
     
     updateStatus: {
         params: {
-            fileID         : { type: "string" },
-            status         : { type: "string", optional: true },
-
-            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            fileID: { type: "string" },
+            status: { type: "string", optional: true },
+            userID: { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
             try {
@@ -49,8 +47,7 @@ module.exports = {
 
     getInfoFile: {
         params: {
-
-            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            userID: { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
             try {
@@ -64,11 +61,10 @@ module.exports = {
             }
         }
     },
-    
+
     getListFileWithStatus: {
         params: {
             status         : { type: "string", optional: true },
-
             userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
@@ -93,8 +89,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
+                let { _id: userID } = ctx.meta.infoUser;
 
                 await this.validateEntity(ctx.params);
                 let { type, app, name, size } = ctx.params;
@@ -112,14 +107,15 @@ module.exports = {
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({ 
                         app,
                         name: fileName, 
-                        url: `https://trx-demo-003.s3-ap-southeast-1.amazonaws.com/root/${fileName}`,
+                        url: `${process.env.AWS_BUCKET_URL}/${fileName}`,
                         size,
-                        userID 
+                        userID
                     });
                 }
 
                 return {
-                    infoGenerateLink, infoFileAfterInsert
+                    infoGenerateLink: infoGenerateLink.data, 
+                    infoFileAfterInsert: infoFileAfterInsert.data
                 };
             } catch (error) {
                 return { error: true, message: error.message };
