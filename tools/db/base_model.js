@@ -48,8 +48,8 @@ class BaseModel {
     }
 
     /**
-     * 
-     * @param {*} data 
+     *
+     * @param {*} data
      * @param {*} authorID user tạo || add
      */
     insertData(data) {
@@ -67,13 +67,13 @@ class BaseModel {
     }
 
     /**
-     * 
-     * @param {*} condition  điều kiện 
+     *
+     * @param {*} condition  điều kiện
      * @param {*} updatedata giá trị cập nhật
      * @param {*} authorID   người cập nhật
      */
     updateWhereClause(condition, updatedata) {
-        return new Promise(resolve => {
+        return new Promise(async resolve => {
             updatedata.modifyAt = timeUtils.getCurrentTime();
 
             let infoAfterUpdate = await this.coll.findOneAndUpdate(condition, updatedata, { new: true });

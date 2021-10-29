@@ -60,8 +60,8 @@ class Model extends BaseModel {
 
 					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
-						.findOne({ 
-							members: { 
+						.findOne({
+							members: {
 								$all: [authorID, ...membersID],
 								$size: 2
 							},
@@ -79,9 +79,9 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Number of membersID over 100', status: 400 });
 				}
 
-                let infoConversationAfterInserted = await this.insertData({ 
-					name, 
-					description, 
+                let infoConversationAfterInserted = await this.insertData({
+					name,
+					description,
 					authors: [authorID],
 					members: [...new Set([authorID, ...membersID])]
 				});
@@ -106,8 +106,8 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
                     return resolve({ error: true, message: 'Request params conversationID or userID invalid', status: 400 });
 
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
-					_id: conversationID, 
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
 					members: { $in: [userID] }
 				}).lean();
 
@@ -124,27 +124,31 @@ class Model extends BaseModel {
 
 				let dataUpdate 	= {};
 				name 		&& (dataUpdate.name 		= name);
-				description && (dataUpdate.description 	= description);
+                description && (dataUpdate.description 	= description);
+
+                if(avatar && checkObjectIDs(avatar)){
+                    dataUpdate.avatar = avatar;
+                }
 
 				// Cập nhật avatar cuộc hội thoại
-				if(avatar){
-					let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-						app: CF_DOMAIN_SERVICES.CHATTING,
-						name: avatar.name,
-						url: avatar.url,
-						size: avatar.size,
-						userID,
-					});
-					
-					if(infoAvatarConversation.error)
-						return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
-
-					let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
-						conversation: conversationID,
-						file: infoAvatarConversation.data._id
-					});
-					dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
-				}
+				// if(avatar){
+				// 	let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
+				// 		app: CF_DOMAIN_SERVICES.CHATTING,
+				// 		name: avatar.name,
+				// 		url: avatar.url,
+				// 		size: avatar.size,
+				// 		userID,
+				// 	});
+                //
+				// 	if(infoAvatarConversation.error)
+				// 		return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
+                //
+				// 	let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
+				// 		conversation: conversationID,
+				// 		file: infoAvatarConversation.data._id
+				// 	});
+				// 	dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
+				// }
 
 				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$set: dataUpdate
@@ -157,7 +161,7 @@ class Model extends BaseModel {
 					await CHATTING__MESSAGE_MODEL.insertMessage({
 						senderID: userID,
 						receiversID: infoAfterUpdate.members,
-						conversationID, 
+						conversationID,
 						type: 103
 					})
 				}
@@ -166,7 +170,7 @@ class Model extends BaseModel {
 					await CHATTING__MESSAGE_MODEL.insertMessage({
 						senderID: userID,
 						receiversID: infoAfterUpdate.members,
-						conversationID, 
+						conversationID,
 						type: 104
 					})
 				}
@@ -189,8 +193,8 @@ class Model extends BaseModel {
                 if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length)
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
-					_id: conversationID, 
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
 					authors: { $in: [authorID] }
 				}).populate('members');
 
@@ -199,9 +203,9 @@ class Model extends BaseModel {
 
 				for (const member of checkExistConversation.members) {
 					if(membersID.includes(member._id.toString())){
-						return resolve({ 
-							error: true, 
-							message: `Member ${member.bizname || member.fullname} is existed in conversation`, 
+						return resolve({
+							error: true,
+							message: `Member ${member.bizname || member.fullname} is existed in conversation`,
 							status: 403
 						});
 					}
@@ -226,7 +230,7 @@ class Model extends BaseModel {
 				// Check cấu hình admin cuộc hội thoại
 				if(checkExistConversation.config && checkExistConversation.config.configSeeOldMessage === 2){
 					// INSERT USER DELETE HISTORY
-					let usersDeleteHistory = membersID.map(memberID => ({ 
+					let usersDeleteHistory = membersID.map(memberID => ({
 						userID: memberID,
 						lastMessage: checkExistConversation.lastMessage,
 						time: Date.now()
@@ -242,7 +246,7 @@ class Model extends BaseModel {
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
 					usersAssigned: membersID,
-					conversationID, 
+					conversationID,
 					type: 101
 				})
 
@@ -267,9 +271,9 @@ class Model extends BaseModel {
 				if(memberID === authorID)
 					return resolve({ error: true, message: "You can't remove you from conversation", status: 400 });
 
-                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({ 
-					_id: conversationID, 
-					authors: { $in: [authorID] }, 
+                let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					authors: { $in: [authorID] },
 					members: { $in: [memberID] }
 				});
 
@@ -308,7 +312,7 @@ class Model extends BaseModel {
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
 					usersAssigned: [memberID],
-					conversationID, 
+					conversationID,
 					type: 102
 				})
 
@@ -361,7 +365,7 @@ class Model extends BaseModel {
 					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pull: {
 							authors: memberID
-						}, 
+						},
 					}, { new: true });
 
 					typeMessage = 106; // Xoá bỏ quyền admin của member trong cuộc hội thoại
@@ -371,7 +375,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't update author for conversation", status: 403 });
 
 				await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, 
+					conversationID,
 					senderID: authorID,
 					type: typeMessage,
 					usersAssigned: [memberID],
@@ -535,7 +539,7 @@ class Model extends BaseModel {
 					})
 					.lean();
 
-                if (!infoConversation) 
+                if (!infoConversation)
                     return resolve({ error: true, message: "Can't get info conversation", status: 403 });
 
                 return resolve({ error: false, data: infoConversation, status: 200 });
@@ -557,8 +561,8 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
 				const listGroupConversationsOfUser = await CHATTING__CONVERSATION_COLL
-					.find({ 
-						members: { $in: [userID] }, 
+					.find({
+						members: { $in: [userID] },
 						$nor: [
 							{ members: { $exists: false }},
 							{ members: { $size: 0 }},
@@ -577,7 +581,7 @@ class Model extends BaseModel {
 					.lean();
 
 				const listGroupConversationsOfMember = await CHATTING__CONVERSATION_COLL
-					.find({ 
+					.find({
 						members: { $in: [memberID] },
 						$nor: [
 							{ members: { $exists: false }},
@@ -636,13 +640,13 @@ class Model extends BaseModel {
 				if(select && typeof select === 'string'){
 					if(!IsJsonString(select))
 						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-				
+
 					select = JSON.parse(select);
 				}
 
                 const infoConversation = await CHATTING__CONVERSATION_COLL
-					.findOne({ 
-						_id: conversationID, 
+					.findOne({
+						_id: conversationID,
 						members: { $in: [userID] }
 					})
 					.populate({
@@ -651,15 +655,15 @@ class Model extends BaseModel {
 					})
                     .lean();
 
-                if (!infoConversation) 
+                if (!infoConversation)
                     return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
-                return resolve({ 
-					error: false, 
+                return resolve({
+					error: false,
 					data: {
 						listRecords: infoConversation.members,
 						totalRecord: infoConversation.members.length
-					}, 
+					},
 					status: 200
 				});
             } catch (error) {
@@ -727,7 +731,7 @@ class Model extends BaseModel {
 
 					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
 					let keys	 = ['createAt__-1', '_id__-1'];
-					console.log({ nextInfo });
+
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
@@ -776,7 +780,6 @@ class Model extends BaseModel {
 				let nextCursor  = null;
 
 				if(listMessages && listMessages.length){
-
 					if(listMessages.length > limit){
 						nextCursor = listMessages[limit - 1]._id;
 						listMessages.length = limit;
@@ -922,7 +925,7 @@ class Model extends BaseModel {
 
 				let listMessages = [...listMessagesFront.reverse(), infoMessage, ...listMessagesBack.reverse()];
 
-				return resolve({ 
+				return resolve({
 					error: false,
 					status: 200,
 					data: {
@@ -941,8 +944,8 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách tin nhắn media cuộc hội thoại
 	 * Date: 12/08/2021
 	 */
-	getListMessagesMediaConversation({ 
-		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10 
+	getListMessagesMediaConversation({
+		conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page = 1, limit = 10
 	}){
 		return new Promise(async resolve => {
 			try {
@@ -971,7 +974,7 @@ class Model extends BaseModel {
 				limit 		= +limit;
 				typeMessage = +typeMessage;
 
-				let conditionObj = { 
+				let conditionObj = {
 					conversation: ObjectID(conversationID)
 				};
 
@@ -1020,12 +1023,6 @@ class Model extends BaseModel {
 
 					let pipeline = [
 						{ $match: conditionObj },
-						// {
-						// 	$unwind: {
-						// 		path: "$sender",
-						// 		preserveNullAndEmptyArrays: true
-						// 	}
-						// },
 						{ $group: groupObj },
 						{
 							$facet: {
@@ -1046,7 +1043,7 @@ class Model extends BaseModel {
 					if(!listMedia || !listMedia.length)
 						return resolve({ error: true, message: "Can't get list message", status: 404 });
 
-					totalRecord = listMedia[0].pageInfo[0]?.count;
+					totalRecord = listMedia[0]?.pageInfo[0]?.count;
 					listMedia = listMedia[0].records;
 
 				} else{
@@ -1063,7 +1060,7 @@ class Model extends BaseModel {
 					}
 
 					let pipeline = [
-						{ 
+						{
 							$match: {
 								...conditionObj,
 								type: typeMessage
@@ -1089,7 +1086,7 @@ class Model extends BaseModel {
 					if(!listMedia || !listMedia.length)
 						return resolve({ error: true, message: "Can't get list message", status: 404 });
 
-					totalRecord = listMedia[0].pageInfo[0]?.count;
+					totalRecord = listMedia[0]?.pageInfo[0]?.count;
 					listMedia = listMedia[0].records;
 
 					if(listMedia && listMedia.length){
@@ -1106,10 +1103,10 @@ class Model extends BaseModel {
 									}
 								})
 								.lean());
-	
+
 							listMessage = await Promise.all(listMessage);
 							let messages = [];
-	
+
 							for (const message of listMessage) {
 								if(message.files && message.files.length){
 									for (const fileInfo of message.files) {
@@ -1117,7 +1114,7 @@ class Model extends BaseModel {
 									}
 								}
 							}
-	
+
 							return { ...media, messages };
 						})
 
@@ -1126,8 +1123,8 @@ class Model extends BaseModel {
 
 				}
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					data: {
 						listRecords: listMedia,
 						limit: +limit,
@@ -1264,7 +1261,7 @@ class Model extends BaseModel {
 					}, { new: true })
 				} else{
 					infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-						$pull: { 
+						$pull: {
 							usersMute: userID
 						}
 					}, { new: true })
@@ -1374,7 +1371,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
 
 				await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, 
+					conversationID,
 					senderID: userID,
 					type: 107,
 					usersAssigned: [userID],
@@ -1416,10 +1413,10 @@ class Model extends BaseModel {
 				if(!infoAfterDelete)
 					return resolve({ error: true, message: "Can't delete conversation", status: 403 });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
-					data: infoAfterDelete, 
+					data: infoAfterDelete,
 				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1456,7 +1453,7 @@ class Model extends BaseModel {
 					}
 				}, {
 					$pull: {
-						usersDeleteHistory: { userID } 
+						usersDeleteHistory: { userID }
 					}
 				})
 
@@ -1580,7 +1577,7 @@ class Model extends BaseModel {
 					.populate('members', select.members)
 					.populate({
 						path: 'lastMessage',
-						populate: { 
+						populate: {
 							path: 'sender',
 							select: select.sender,
 						},
@@ -1609,7 +1606,7 @@ class Model extends BaseModel {
 					}
 				}
 
-                return resolve({ 
+                return resolve({
 					error: false,
 					status: 200,
 					data: {
@@ -1658,7 +1655,7 @@ class Model extends BaseModel {
 				}
 
 				let conditionFind = {};
-				let conditionObj  = { 
+				let conditionObj  = {
 					members: { $in: [userID] },
 					usersMissMessage: {
 						$elemMatch: {
@@ -1722,11 +1719,11 @@ class Model extends BaseModel {
 
 				}
 
-				return resolve({ 
+				return resolve({
 					error: false,
 					status: 200,
-					data: { 
-						listRecords: listConversationMissMessage, 
+					data: {
+						listRecords: listConversationMissMessage,
 						limit: +limit,
 						totalRecord,
 						nextCursor
