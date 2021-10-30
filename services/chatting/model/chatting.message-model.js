@@ -3,6 +3,7 @@
 /**
  * EXTERNAL PACKAGE
  */
+const ObjectID                                  	= require('mongoose').Types.ObjectId;
 const PromisePool									= require('@supercharge/promise-pool');
 const moment										= require('moment');
 
@@ -21,7 +22,7 @@ const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.ac
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
 const { getCurrentTime }							= require('../../../tools/utils/time_utils');
 const {
-	checkObjectIDs, 
+	checkObjectIDs,
 	checkNumberIsValidWithRange,
 	IsJsonString
 } = require('../../../tools/utils/utils');
@@ -61,7 +62,7 @@ class Model extends BaseModel {
 	updateUserMissMessage({ conversationID, userID, numberMissMessage }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([conversationID, userID])) 
+                if (!checkObjectIDs([conversationID, userID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
@@ -99,7 +100,7 @@ class Model extends BaseModel {
 							"usersMissMessage.$[elem].amount": numberMissMessage
 						}
 					}, {
-						arrayFilters: [{ 
+						arrayFilters: [{
 							"elem.userID": { $nin: [userID] }
 						}]
 					})
@@ -125,12 +126,12 @@ class Model extends BaseModel {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
-    insertMessage({ 
-		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx 
+    insertMessage({
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([senderID, conversationID])) 
+                if (!checkObjectIDs([senderID, conversationID]))
                     return resolve({ error: true, message: 'Request Params senderID or conversationID invalid', status: 400 });
 
 				// CHECK SENDER IS MEMBER OF CONVERSATION
@@ -153,7 +154,7 @@ class Model extends BaseModel {
 				if(!receiversID){
 					receiversID = checkExistConversation.members;
 				} else{
-					if (!checkObjectIDs(receiversID)) 
+					if (!checkObjectIDs(receiversID))
                     	return resolve({ error: true, message: 'Request Params receiversID invalid', status: 400 });
 				}
 
@@ -164,9 +165,9 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: 'Request Param usersAssigned invalid', status: 400 });
 
 				let dataInsertMessage = {
-					usersSeen: [senderID], 
-					sender: senderID, 
-					content, 
+					usersSeen: [senderID],
+					sender: senderID,
+					content,
 					conversation: conversationID,
 					receivers: receiversID,
 					type
@@ -218,7 +219,7 @@ class Model extends BaseModel {
 
 					if(allLinks && allLinks.length){
 						let listMessageLinks = allLinks.map(link => ({
-							conversationID, 
+							conversationID,
 							senderID,
 							link
 						}))
@@ -238,7 +239,7 @@ class Model extends BaseModel {
 						infoMessageAfterInserted = await this.insertData({
 							...dataInsertMessage,
 							location: {
-								type: "Point", 
+								type: "Point",
 								coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
 							}
 						})
@@ -249,7 +250,7 @@ class Model extends BaseModel {
 
 						let listMessageShareContact = usersAssigned.map(memberID => ({
 							usersSeen: [senderID],
-							sender: senderID, 
+							sender: senderID,
 							receivers: receiversID,
 							conversation: conversationID,
 							usersAssigned: [memberID],
@@ -318,7 +319,7 @@ class Model extends BaseModel {
 				if(infoMessage.status === 3)
 					return resolve({ error: true, message: "Message is recall", status: 403 });
 
-				let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, { 
+				let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
 					$set: { status: 2 },
 					$addToSet: {
 						usersSeen: userID
@@ -343,7 +344,7 @@ class Model extends BaseModel {
 	deleteMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([...messagesID, userID, conversationID])) 
+                if (!checkObjectIDs([...messagesID, userID, conversationID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USERID IS MEMBER OF CONVERSATION
@@ -427,8 +428,8 @@ class Model extends BaseModel {
 	revokeMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
-				// CHECK PARAMS	
-                if (!checkObjectIDs([...messagesID, userID, conversationID])) 
+				// CHECK PARAMS
+                if (!checkObjectIDs([...messagesID, userID, conversationID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -549,8 +550,8 @@ class Model extends BaseModel {
 	autoDeleteMessagesConversation({ conversationID, userID, time, isDelete = false, ctx }){
 		return new Promise(async resolve => {
 			try {
-				// CHECK PARAMS	
-                if (!checkObjectIDs([userID, conversationID])) 
+				// CHECK PARAMS
+                if (!checkObjectIDs([userID, conversationID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -589,13 +590,13 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại 
+	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại
 	 * Date: 25/08/2021
 	 */
 	shareMessageConversation({ conversationsID, messagesID, userID }){
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs([...conversationsID, ...messagesID, userID])) 
+				if (!checkObjectIDs([...conversationsID, ...messagesID, userID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER ID IS MEMBER OF CONVERSATION
@@ -719,14 +720,14 @@ class Model extends BaseModel {
 						$pull: { messagesPin: messageID }
 					}, { new: true });
 
-					typeMessage = 109; // Bỏ Pin 1 tin nhắn trong cuộc hội thoại 
+					typeMessage = 109; // Bỏ Pin 1 tin nhắn trong cuộc hội thoại
 				}
 
 				if(!infoConversationAfterUpdate)
 					return resolve({ error: true, message: "Can't update pin message", status: 403 });
 
 				await this.insertData({
-					conversation: conversationID, 
+					conversation: conversationID,
 					sender: userID,
 					type: typeMessage,
 					receivers: infoConversation.members,
@@ -807,8 +808,8 @@ class Model extends BaseModel {
 				if(!listMessagesPined)
 					return resolve({ error: true, message: "Can't get list message pin", status: 403 });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: {
 						listRecords: listMessagesPined,
@@ -825,13 +826,13 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Thêm tin nhắn bình chọn trong cuộc hội thoại 
+	 * Func: Thêm tin nhắn bình chọn trong cuộc hội thoại
 	 * Date: 25/08/2021
 	 */
 	insertMessagePoll({ conversationID, name, options, userID }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([userID, conversationID]) || !name || !options.length) 
+                if (!checkObjectIDs([userID, conversationID]) || !name || !options.length)
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
@@ -861,7 +862,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't create poll", status: 403 });
 
 				let dataInsertMessage = {
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -894,10 +895,10 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 2 });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
-					data: infoMessagePoll, 
+					data: infoMessagePoll,
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -907,13 +908,13 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Cập nhật bình chọn của 1 user trong cuộc hội thoại 
+	 * Func: Cập nhật bình chọn của 1 user trong cuộc hội thoại
 	 * Date: 28/08/2021
 	 */
 	updateMessagePoll({ conversationID, messageID, newVotes, votesCancel, newOptions, userID }) {
 		return new Promise(async (resolve) => {
 			try {
-				if (!checkObjectIDs([messageID, userID, conversationID])) 
+				if (!checkObjectIDs([messageID, userID, conversationID]))
 					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
@@ -966,7 +967,7 @@ class Model extends BaseModel {
 							"options.$[elem].usersVote": userID
 						}
 					}, {
-						arrayFilters: [{ 
+						arrayFilters: [{
 							"elem._id": { $in: votesCancel }
 						}]
 					});
@@ -979,7 +980,7 @@ class Model extends BaseModel {
 							"options.$[elem].usersVote": userID
 						}
 					}, {
-						arrayFilters: [{ 
+						arrayFilters: [{
 							"elem._id": { $in: newVotes }
 						}]
 					});
@@ -988,7 +989,7 @@ class Model extends BaseModel {
 				let lastMessage = null;
 				let numberMissMessage = 0;
 				let dataInsertMessage = {
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -1008,7 +1009,7 @@ class Model extends BaseModel {
 				if((votesCancel.length || newVotes.length || newOptions.length) && !isFirstTimeVote){
 					lastMessage = await this.insertData({
 						...dataInsertMessage,
-						type: 112 // Thay đổi bình chọn trong cuộc hội thoại 
+						type: 112 // Thay đổi bình chọn trong cuộc hội thoại
 					})
 					numberMissMessage++;
 				}
@@ -1034,8 +1035,8 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: infoMessagePollAfterUpdate
 				});
@@ -1047,13 +1048,13 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Đóng tin nhắn bình chọn trong cuộc hội thoại 
+	 * Func: Đóng tin nhắn bình chọn trong cuộc hội thoại
 	 * Date: 30/08/2021
 	 */
 	closeMessagePoll({ conversationID, messageID, userID }) {
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs([messageID, userID, conversationID])) 
+				if (!checkObjectIDs([messageID, userID, conversationID]))
 					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
@@ -1089,7 +1090,7 @@ class Model extends BaseModel {
 
 				// INSERT MESSAGE NOTIFY CLOSE POLL
 				const infoMessageNotify = await this.insertData({
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -1102,7 +1103,7 @@ class Model extends BaseModel {
 					let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
 					}, { new: true });
-	
+
 					if(!checkLastMessageAfterUpdated)
 						return resolve({ error: true, message: "Can't update last message", status: 403 });
 				}
@@ -1110,8 +1111,8 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: {
 						infoPoll,
@@ -1148,7 +1149,7 @@ class Model extends BaseModel {
 
 					filter = JSON.parse(filter);
 				}
-				
+
 				if(select && typeof select === 'string'){
 					if(!IsJsonString(select))
 						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
@@ -1165,9 +1166,9 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "You aren't member of conversation ", status: 403 });
 
 				let conditionFind = {};
-				let conditionObj  = { 
-					conversation: conversationID, 
-					type: 5 
+				let conditionObj  = {
+					conversation: conversationID,
+					type: 5
 				};
 				let sortBy = {
 					modifyAt: -1,
@@ -1222,8 +1223,8 @@ class Model extends BaseModel {
 
 				}
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: {
 						listRecords: listMessagesPoll,
@@ -1277,9 +1278,9 @@ class Model extends BaseModel {
 
 				// INSERT MESSAGE REMINDER
 				let infoReminderAfterInsert = await CHATTING__MESSAGE_REMINDER_COLL.create({
-					content, 
-					notifyFor, 
-					remindTime: new Date(remindTime), 
+					content,
+					notifyFor,
+					remindTime: new Date(remindTime),
 					repeat
 				})
 
@@ -1287,7 +1288,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't create reminder", status: 403 });
 
 				let dataInsertMessage = {
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -1330,8 +1331,8 @@ class Model extends BaseModel {
 					notifyFor
 				})
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: infoMessageReminder
 				});
@@ -1350,7 +1351,7 @@ class Model extends BaseModel {
 	updateMessageReminder({ conversationID, messageID, content, remindTime, repeat, userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([userID, conversationID, messageID])) 
+                if (!checkObjectIDs([userID, conversationID, messageID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				if(!REMINDER_REPEAT.includes(repeat))
@@ -1380,7 +1381,7 @@ class Model extends BaseModel {
 				// UPDATE MESSAGE REMINDER
 				let infoReminderAfterUpdate = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
 					$set: {
-						content, 
+						content,
 						remindTime: new Date(remindTime),
 						repeat
 					}
@@ -1391,7 +1392,7 @@ class Model extends BaseModel {
 
 				// INSERT MESSAGE NOTIFY UPDATE REMINDER
 				let infoMessageNotify = await this.insertData({
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -1430,10 +1431,10 @@ class Model extends BaseModel {
 					})
 				}
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
-					data: infoReminderAfterUpdate, 
+					data: infoReminderAfterUpdate,
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1449,7 +1450,7 @@ class Model extends BaseModel {
 	updateUsersJoinReminder({ conversationID, messageID, isJoin, userID }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([userID, conversationID, messageID])) 
+                if (!checkObjectIDs([userID, conversationID, messageID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
@@ -1503,7 +1504,7 @@ class Model extends BaseModel {
 
 				// INSERT MESSAGE NOTIFY UPDATE USER JOIN REMINDER
 				let infoMessageNotify = await this.insertData({
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -1525,10 +1526,10 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
-					data: infoReminderAfterUpdate 
+					data: infoReminderAfterUpdate
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1544,7 +1545,7 @@ class Model extends BaseModel {
 	deleteReminder({ conversationID, messageID, userID, ctx }) {
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs([messageID, userID, conversationID])) 
+				if (!checkObjectIDs([messageID, userID, conversationID]))
 					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER IS MEMBER OF CONVERSATION
@@ -1586,7 +1587,7 @@ class Model extends BaseModel {
 
 				// INSERT MESSAGE NOTIFY DELETE REMINDER
 				const infoMessageNotify = await this.insertData({
-					usersSeen: [userID], 
+					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
 					receivers: checkExistConversation.members,
@@ -1599,7 +1600,7 @@ class Model extends BaseModel {
 					let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
 					}, { new: true });
-	
+
 					if(!checkLastMessageAfterUpdated)
 						return resolve({ error: true, message: "Can't update last message", status: 403 });
 				}
@@ -1607,8 +1608,8 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: infoReminderAfterDelete
 				});
@@ -1659,9 +1660,9 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
 
 				let conditionFind = {};
-				let conditionObj  = { 
-					conversation: conversationID, 
-					type: 4 
+				let conditionObj  = {
+					conversation: conversationID,
+					type: 4
 				};
 				let sortBy = {
 					modifyAt: -1,
@@ -1716,8 +1717,8 @@ class Model extends BaseModel {
 
 				}
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: {
 						listRecords: listMessagesReminder,
@@ -1772,7 +1773,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: infoAfterInsertReaction.message, status: 403 });
 
 				if(checkExistReactionMessage) {
-					let infoReactionAfterUpdate = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndUpdate(checkExistReactionMessage._id, { 
+					let infoReactionAfterUpdate = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndUpdate(checkExistReactionMessage._id, {
 						reaction: infoAfterInsertReaction?.data?._id,
 						modifyAt: getCurrentTime()
 					});
@@ -1780,7 +1781,7 @@ class Model extends BaseModel {
 					return resolve({ error: false, data: infoReactionAfterUpdate, status: 200 });
 				}
 
-				let infoReactionAfterInsert = await CHATTING__MESSAGE_REACTION_COLL.create({ 
+				let infoReactionAfterInsert = await CHATTING__MESSAGE_REACTION_COLL.create({
 					author: userID,
 					message: messageID,
 					reaction: infoAfterInsertReaction?.data?._id,
@@ -1816,9 +1817,8 @@ class Model extends BaseModel {
 				}
 
 				let conditionFind = {};
-				let conditionReaction = {};
-				let conditionObj = { 
-					message: messageID, 
+				let conditionObj = {
+					message: ObjectID(messageID),
 				};
 				let sortBy = {
 					modifyAt: -1,
@@ -1841,24 +1841,62 @@ class Model extends BaseModel {
 				}
 
 				if(typeReaction){
-					conditionReaction.type = typeReaction;
+					conditionObj['reaction.type'] = +typeReaction;
 				}
 
-				let	listReactionMessage = await CHATTING__MESSAGE_REACTION_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.select('author reaction message')
-					.populate({
-						path: 'author',
-						select: '_id fullname bizname image',
-					})
-					.populate({
-						path: 'reaction',
-						select: '_id type',
-						match: conditionReaction,
-					})
-					.limit(limit + 1)
-					.sort(sortBy)
-					.lean();
+				let	listReactionMessage = await CHATTING__MESSAGE_REACTION_COLL.aggregate([
+					{
+						$lookup: {
+				            from: "users",
+				            localField: "author",
+				            foreignField: "_id",
+				            as: "author"
+				        }
+					},
+					{
+					  	$unwind: {
+					      	path: '$author',
+					      	preserveNullAndEmptyArrays: true
+					    }
+					},
+					{
+						$lookup: {
+				            from: "reaction_cores",
+				            localField: "reaction",
+				            foreignField: "_id",
+				            as: "reaction"
+				        }
+					},
+					{
+					  	$unwind: {
+					      	path: '$reaction',
+					      	preserveNullAndEmptyArrays: true
+					    }
+					},
+					{
+						$project: {
+							message: 1,
+							author: {
+								_id: 1,
+								fullname: 1,
+								bizname: 1,
+								image: 1
+							},
+							reaction: {
+								_id: 1,
+								type: 1,
+							}
+						}
+					},
+					{
+						$match: {
+							...conditionObj,
+							...conditionFind
+						}
+					},
+					{ $limit: +limit + 1 },
+					{ $sort: sortBy }
+				])
 
 				if(!listReactionMessage)
 					return resolve({ error: true, message: "Can't get list reaction message", status: 403 });
@@ -1874,8 +1912,8 @@ class Model extends BaseModel {
 					}
 				}
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					status: 200,
 					data: {
 						listRecords: listReactionMessage,

@@ -51,10 +51,6 @@ class Model extends BaseModel {
                  */
 
                 let infoContractBillJobID = await CMCS__CONTRACT_BILL_JOB_COLL.findById(contractBillJobID).select(select)
-                                    .populate({
-                                        path: "contracts",
-                                        select: "name sign"
-                                    })
 
                 if(!infoContractBillJobID)
                     return resolve({ error: true, message: "Can't get infoContractBillJob", status: 403 });
@@ -122,14 +118,6 @@ class Model extends BaseModel {
                 
                 let infoDataAfterGet = await CMCS__CONTRACT_BILL_JOB_COLL.find({...conditionObj, ...conditionFind }, objSort)
                     .select(select)
-                    .populate({
-                        path: "contracts",
-                        select: "name sign"
-                    })
-                    .populate({
-                        path: "userCreate",
-                        select: "fullname"
-                    })
                     .limit(+limit)
                     .sort(sortBy) 
                     .lean();
@@ -150,7 +138,7 @@ class Model extends BaseModel {
                     totalPage,
                     currentPage
                 }, status: 200 });
-
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

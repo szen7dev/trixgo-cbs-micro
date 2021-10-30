@@ -15,12 +15,16 @@ const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 const { CF_ROUTINGS_GATEWAY } 		= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH } 			= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-constant');
+const { CF_ROUTINGS_DOCUMENT } 		= require('../document/helper/document.routes-constant');
 const { CF_ROUTINGS_PAYMENT } 		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 const { CF_ROUTINGS_INSPECTION } 	= require('../inspection/helper/inspection.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
-const { CF_ROUTINGS_ITEM } 	    = require('../item/helper/item.routes-constant');
+const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
+const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant');
+
+
 
 /**
  * ------import action's Services--------
@@ -28,12 +32,14 @@ const { CF_ROUTINGS_ITEM } 	    = require('../item/helper/item.routes-constant')
 const { CF_ACTIONS_GATEWAY } 		= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } 			= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-constant');
+const { CF_ACTIONS_DOCUMENT } 		= require('../document/helper/document.actions-constant');
 const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
 const { CF_ACTIONS_INSPECTION } 	= require('../inspection/helper/inspection.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
+const { CF_ACTIONS_CMCS } 	    	= require('../cmcs/helper/cmcs.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -413,6 +419,8 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENT_GET_LIST}`] : 
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`],
 
+		//---------------------------🏁 START SERVICE CMCS 🏁---------------------------//
+
 
 		//---------------------------🏁 START S024.MEDIA 🏁---------------------------//
 		
@@ -519,6 +527,33 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.REPLY_COMMENT_IMAGE_MEDIA}`],
 
 		//---------------------------🏁 END S024.MEDIA 🏁---------------------------//
+		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
+		
+		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`] : 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
+
+		//---------------------------🏁 END SEARVICE CMCS 🏁---------------------------//
+		//---------------------------🏁 START S015.DOCUMENT 🏁---------------------------//
+
+		/**
+		 * Code: A0151
+		 */
+		[`POST ${CF_ROUTINGS_DOCUMENT.INSERT_DOCUMENT}`] : 
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.INSERT_DOCUMENT}`],
+
+		/**
+		 * Code: A0151
+		 */
+		[`PUT ${CF_ROUTINGS_DOCUMENT.UPDATE_DOCUMENT}`] : 
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.UPDATE_DOCUMENT}`],
+
+		/**
+		 * Code: A0152
+		 */
+		 [`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_DOCUMENT}`] : 
+		 [`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT}`],
+
+		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
 	},
 	
 	// Disable to call not-mapped actions

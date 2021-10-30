@@ -29,7 +29,7 @@ module.exports = {
         params: {
 			conversationID  : { type: 'string' },
             parentID		: { type: 'string', optional: true },
-            type 			: { type: 'string' },
+            type 			: { type: 'number' },
             content 		: { type: 'string', optional: true },
         },
         async handler(ctx) {

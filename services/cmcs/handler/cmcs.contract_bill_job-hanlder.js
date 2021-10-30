@@ -15,9 +15,9 @@ module.exports = {
 	 */
     getListAndGetInfoContractBillJob: {
         params: {
+            keyword           : { type: "string", optional: true },
             limit             : { type: "string", optional: true },
             lastestID         : { type: "string", optional: true },
-            keyword           : { type: "string", optional: true },
             contractID        : { type: "string", optional: true },
             contractBillJobID : { type: "string", optional: true },
             select            : { type: "string", optional: true },
@@ -29,7 +29,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(departmentID){
+                if(contractBillJobID){
                     resultAfterCallHandler = await CMCS__CONTRACT_BILL_JOB_MODEL.getInfo({
                         contractBillJobID, select
                     });

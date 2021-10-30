@@ -48,8 +48,8 @@ class BaseModel {
     }
 
     /**
-     * 
-     * @param {*} data 
+     *
+     * @param {*} data
      * @param {*} authorID user tạo || add
      */
     insertData(data) {
@@ -67,21 +67,17 @@ class BaseModel {
     }
 
     /**
-     * 
-     * @param {*} condition  điều kiện 
+     *
+     * @param {*} condition  điều kiện
      * @param {*} updatedata giá trị cập nhật
      * @param {*} authorID   người cập nhật
      */
-    updateWhereClause(condition, updatedata, authorID) {
-        let coll = this.coll;
-        return new Promise(resolve => {
-            updatedata.modifyAt     = Date.now();
-            if (OBJECT_ID.isValid(authorID))
-                updatedata.userUpdate   = authorID;
-            
-            coll.update(condition, updatedata, { multi: true }, function (error) {
-                return resolve(error);
-            })
+    updateWhereClause(condition, updatedata) {
+        return new Promise(async resolve => {
+            updatedata.modifyAt = timeUtils.getCurrentTime();
+
+            let infoAfterUpdate = await this.coll.findOneAndUpdate(condition, updatedata, { new: true });
+            resolve(infoAfterUpdate);
         })
     }
 

@@ -13,7 +13,7 @@ let s3Object                    = new AWS.S3();
 let render_link_upload_file_s3 = ({ fileName, type }) =>{
     try {
         let bucket = `${config.bucket}/root`;
-        
+
         let url = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
             Key: fileName,
@@ -22,10 +22,9 @@ let render_link_upload_file_s3 = ({ fileName, type }) =>{
             ContentType: type,
         });
 
-        // console.log({ url_sign: url })
-        return { error : false, url };
+        return url;
     } catch (error) {
-        return  { error : true, message : 'cant_create_url' }
+        return { error: true, message: "Can't presign url" }
     }
 }
 
@@ -78,7 +77,7 @@ const uploadFile = (pathFile, key) => {
             return resolve({ error: true, message: error.message })
         }
     })
-    
+
 };
 
 exports.GENERATE_LINK_S3 = render_link_upload_s3;

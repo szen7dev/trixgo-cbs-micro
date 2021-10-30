@@ -36,7 +36,8 @@ module.exports = {
 	*/
 	actions: {	
 		//==========================================   CONTRACT ACTIONS   ================================
-		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST					] 		: ITEM__CONTRACT_HANDLER.getList,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST] 				: ITEM__CONTRACT_HANDLER.getList,
+		[CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION] 		: ITEM__CONTRACT_HANDLER.updateContractByCondition,
 
 		//==========================================   DEPARTMENT ACTIONS   ================================
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST				] 		: ITEM__DEPARTMENT_HANDLER.getListDepartment,
