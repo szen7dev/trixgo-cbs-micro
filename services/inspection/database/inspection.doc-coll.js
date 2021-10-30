@@ -9,7 +9,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_template_doc'
     },
-    //_________Thuộc dự án/Công trình
+    //_________Thuộc dự án/Công trình 
     project: {
         type    : Schema.Types.ObjectId,
         ref     : 'department' 
@@ -44,21 +44,21 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     numView: {
         type: Number,
         default: 0
-    },
+    },   
     //_________Kế hoạch hoàn thành
     expiredTime: { type: Date, default: null },
     //_________Ngày hồ sơ hoàn thành thực tế
     date: {
-        type : Date
+        type : Date  
     },
     //_________Ngày hồ sơ đã điều chỉnh
     modifiedDate: {
         type : Date 
     },
     /**
-    * Trạng thái 
-    * 1-Không đạt yêu cầu
-    * 2-Đạt yêu cầu
+    * Trạng thái   
+    * 1-Đang triển khai
+    * 2-Hoàn thành
     */
     status: {
         type: Number,
@@ -69,7 +69,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'contract_bill_job'
     },
-    //_________Khu vực
+    //_________Khu vực (Khu vực cấu kiện)
     areas: [{
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_area'
@@ -79,12 +79,12 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'comment'   
     }, 
-    //_________Người thực hiện
+    //_________Người thực hiện (Thành viên dự án)
     assignee: {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     },       
-    //_________Thành viên liên quan
+    //_________Thành viên liên quan (Thành viên dự án)
     members: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'

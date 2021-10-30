@@ -7,13 +7,13 @@ const CONTRACT          = 'CONTRACT';
 const DEPARTMENT        = 'DEPARTMENT';
 
 const CF_ACTIONS_ITEM = {
-     /**
+    /**
      * CONTRACT
     */
     UPDATE_CONTRACT_BY_CONDITION             : `${BASE_ACTIONS}_${CONTRACT}_UPDATE_CONTRACT_BY_CONDITION`,
     CONTRACT_GET_LIST                        : `${BASE_ACTIONS}_${CONTRACT}_CONTRACT_GET_LIST`,
 
-     /**
+    /**
      * DEPARTMENT
     */
     DEPARTMENT_GET_LIST                      : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_GET_LIST`,

@@ -12,6 +12,7 @@ let CF_DOMAIN_SERVICES = {
     DOCUMENT        : 'document',
     NOTIFICATION    : 'notification',
     MEDIA           : 'media',
+    CMCS            : 'cmcs',
     // COMMENT     : 'comment',
 }
 

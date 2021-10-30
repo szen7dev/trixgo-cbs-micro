@@ -11,6 +11,8 @@ const DOC_COMMENT           =  'DOC_COMMENT';
 const DOC_REACTION          =  'DOC_REACTION';
 const AREA                  = 'AREA';
 const DOC                   = 'DOCS';
+const DOC_CHECKLIST         =  'DOC_CHECKLIST';
+
 // const CASE_2      = 'CASE_2';
 
 const CF_ACTIONS_INSPECTION = {
@@ -51,6 +53,9 @@ const CF_ACTIONS_INSPECTION = {
     DOC_REACTION_INSERT                             : `${BASE_ACTIONS}_${DOC_REACTION}_INSERT`,
     DOC_REACTION_REMOVE                             : `${BASE_ACTIONS}_${DOC_REACTION}_REMOVE`,
     DOC_REACTION_LIST                               : `${BASE_ACTIONS}_${DOC_REACTION}_LIST`,
+
+    DOC_CHECKLIST_UPDATE                            : `${BASE_ACTIONS}_${DOC_CHECKLIST}_UPDATE`,
+    DOC_CHECKLIST_LIST                              : `${BASE_ACTIONS}_${DOC_CHECKLIST}_LIST`,
 }
 
 exports.CF_ACTIONS_INSPECTION = CF_ACTIONS_INSPECTION;

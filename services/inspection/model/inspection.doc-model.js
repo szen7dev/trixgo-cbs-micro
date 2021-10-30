@@ -3,13 +3,17 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const moment                            =  require("moment");
 
 /**
  * import inter-coll, exter-coll
  */
 const INSPECTION__DOC_COLL                 = require('../database/inspection.doc-coll');
 const ITEM__CONTRACT_COLL                  = require('../../item/database/item.contract-coll');
+const INSPECTION__TEMPLATE_CHECKLIST_COLL  = require('../database/inspection.template_checklist-coll');
+
 const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
+const INSPECTION__CHECKLIST_MODEL          = require('../model/inspection.checklist-model').MODEL;
 
 /**
  * import inter-model, exter-model
@@ -86,7 +90,18 @@ class Model extends BaseModel {
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create inspection doc", status: 403 });
-
+            
+                // Tiến hành thêm checklist từ tempalte checklist
+                let listTemplateChecklist = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({ inspection: template });
+                if(listTemplateChecklist.length){
+                    for (const templateChecklist of listTemplateChecklist) {
+                        let { name } = templateChecklist;
+                        let infoChecklistAfterInsert = await INSPECTION__CHECKLIST_MODEL.insert({
+                            inspection: infoDataAfterInserted._id, template, name, authorID: userID
+                        })
+                    }
+                }
+                
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -191,7 +206,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code: F0234
      */
-    getInfo({ docID }) { 
+    getInfo({ docID, select }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -207,6 +222,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
                     
                 let infoDocs = await INSPECTION__DOC_COLL.findById(docID)
+                                .select(select)
                                 .populate({
                                     path: "areas",
                                     select: "name"
@@ -214,7 +230,7 @@ class Model extends BaseModel {
                                 .populate({
                                     path: "project",
                                     select: "name area",
-                                    populate: "area"
+                                    // populate: "area"
                                 })
                                 .populate({
                                     path: "members",
@@ -247,13 +263,54 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code: F0235
      */
-    getListDocByContract({ contractID, limit = 10, lastestIDdoc }) { 
+    getList({ contractID, limit = 10, lastestID, select, assignee, author, userID, signature, area, fromDate, toDate, fromCreateAt, toCreateAt }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
+                /** 
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { contract: contractID, state: 1 };
+                let conditionObj = { state: 1 };
+                if(checkObjectIDs(contractID)){
+                    conditionObj.contract = contractID;
+                }
+                if(checkObjectIDs(assignee)){
+                    conditionObj.assignee = assignee;
+                }
+
+                if(checkObjectIDs(author)){
+                    conditionObj.userCreate = author;
+                }
+
+                if(checkObjectIDs(signature)){
+                    conditionObj.signatures = { $in: [signature] };
+                }
+
+                if(checkObjectIDs(area)){
+                    conditionObj.areas = { $in: [area] };
+                }
+
+                if(fromDate && toDate){
+					conditionObj.expiredTime = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate() 
+                    }
+                }
+
+                if(fromCreateAt && toCreateAt){
+					conditionObj.createdAt = {
+                        $gte: moment(fromCreateAt),
+                        $lte: moment(toCreateAt).endOf('day')._d 
+                    }
+                }
+                // Danh sách phải được lấy theo điều kiền members, assignee, userCreateAt
+                conditionObj["$or"] = [ 
+                    {  members: { $in: [userID] }  }, 
+                    { assignee }, 
+                    { userCreateAt: userID }  
+                ];
+
+                console.log({conditionObj});
+
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
                 let objSort = {};
@@ -269,8 +326,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDdoc && checkObjectIDs(lastestIDdoc)){
-					let infoMessage = await INSPECTION__DOC_COLL.findById(lastestIDdoc);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await INSPECTION__DOC_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -284,8 +341,33 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-
                 let infoDataAfterGet = await INSPECTION__DOC_COLL.find({...conditionObj, ...conditionFind })
+                    .select(select)
+                    .populate({
+                        path: "areas",
+                        select: "name"
+                    })
+                    .populate({
+                        path: "project",
+                        select: "name area",
+                        // populate: "area"
+                    })
+                    .populate({
+                        path: "members",
+                        select: "image fullname"
+                    })
+                    .populate({
+                        path: "contract",
+                        select: "name"
+                    })
+                    .populate({
+                        path: "template",
+                        select: "name"
+                    })
+                    .populate({
+                        path: "assignee",
+                        select: "image fullname"
+                    })
                     .limit(+limit)
                     .sort(sortBy) 
                     .lean();
