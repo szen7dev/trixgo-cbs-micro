@@ -118,17 +118,25 @@ module.exports = {
             projectID       : { type: "string" },
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
-            lastestIDArea   : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            areaID          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {              
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, keyword, limit, lastestIDArea } = ctx.params;
-                const resultAfterCallHandler = await INSPECTION__AREA_MODEL.getListArea({
-					keyword, projectID, limit, lastestIDArea 
-				});
-                
+                const { projectID, keyword, limit, lastestID, areaID, select } = ctx.params;
+                let resultAfterCallHandler;
+                if(areaID){
+                    resultAfterCallHandler = await INSPECTION__AREA_MODEL.getInfo({
+                        areaID, select
+                    });
+                }else{
+                    resultAfterCallHandler = await INSPECTION__AREA_MODEL.getListArea({
+                        keyword, projectID, limit, lastestID, select
+                    });
+                }
+              
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

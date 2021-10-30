@@ -114,23 +114,35 @@ module.exports = {
 	 */
     getList: {
         params: {
-            contractID  : { type: "string" },
+            contractID  : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
-            lastestIDdoc: { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
             docID       : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            assignee    : { type: "string", optional: true },
+            author      : { type: "string", optional: true },
+            contract    : { type: "string", optional: true },
+            signature   : { type: "string", optional: true },
+            area        : { type: "string", optional: true },
+            fromDate    : { type: "string", optional: true },
+            toDate      : { type: "string", optional: true },
+            fromCreateAt: { type: "string", optional: true },
+            toCreateAt  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractID, limit, lastestIDdoc, docID }        = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                let { contractID, limit, lastestID, docID, select, assignee, author, signature, fromDate, toDate, fromCreateAt, toCreateAt, area }        = ctx.params;
                 let resultAfterCallHandler;
+                
                 if(docID){
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getInfo({
-                        docID
+                        docID, select
                     });
                 }else{
-                    resultAfterCallHandler = await INSPECTION_DOC_MODEL.getListDocByContract({
-                        contractID, limit, lastestIDdoc
+                    resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
+                        contractID, limit, lastestID, select, assignee, author, signature, area, userID,  fromDate, toDate, fromCreateAt, toCreateAt
                     });
                 }
              

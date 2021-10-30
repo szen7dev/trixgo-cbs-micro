@@ -9,7 +9,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
         type    : Schema.Types.ObjectId,
         ref     : 'inspection_template_doc'
     },
-    //_________Thuộc dự án/Công trình
+    //_________Thuộc dự án/Công trình 
     project: {
         type    : Schema.Types.ObjectId,
         ref     : 'department' 
@@ -44,19 +44,19 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     numView: {
         type: Number,
         default: 0
-    },
+    },   
     //_________Kế hoạch hoàn thành
     expiredTime: { type: Date, default: null },
     //_________Ngày hồ sơ hoàn thành thực tế
     date: {
-        type : Date
+        type : Date  
     },
     //_________Ngày hồ sơ đã điều chỉnh
     modifiedDate: {
         type : Date 
     },
     /**
-    * Trạng thái 
+    * Trạng thái   
     * 1-Đang triển khai
     * 2-Hoàn thành
     */

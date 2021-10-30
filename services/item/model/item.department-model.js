@@ -27,8 +27,9 @@ class Model extends BaseModel {
     /**
      * Name: Lấy thông tin department ✅
      * Author: Depv 
+     * Code: F00401
      */
-    getInfoDepartment({ departmentID }) { 
+    getInfo({ departmentID, select }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -50,7 +51,13 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
+                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID).select(select)
+                                    .populate({
+                                        path: "contracts",
+                                        select: "name sign"
+                                    })
+
+                console.log({ select });
 
                 if(!infoDepartment)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
@@ -64,14 +71,18 @@ class Model extends BaseModel {
 
     /**
      * Name: Danh sách dự án mà user được quyền truy cập (là member)
+     * Author: Depv 
+     * Code: F00402
      */
-    getListDepartment({ keyword, limit = 10, lastestIDDepartment, userID }) { 
+    getList({ keyword, limit = 10, lastestID, userID, type, select }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { members: { $in: [userID] } };
+                let conditionObj = { members: { $in: [userID]}, type };
+
+             
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
 				let objSort 	 	= {};
@@ -89,8 +100,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDDepartment && checkObjectIDs(lastestIDDepartment)){
-					let infoMessage = await ITEM__DEPARTMENT_COLL.findById(lastestIDDepartment);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await ITEM__DEPARTMENT_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -113,7 +124,11 @@ class Model extends BaseModel {
 				}
 
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL.find({...conditionObj, ...conditionFind }, objSort)
-                    .select("name userCreate modifyAt sign")
+                    .select(select)
+                    .populate({
+                        path: "contracts",
+                        select: "name sign"
+                    })
                     .populate({
                         path: "userCreate",
                         select: "fullname"

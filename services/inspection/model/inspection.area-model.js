@@ -176,7 +176,7 @@ class Model extends BaseModel {
      * Lấy thông tin khu vực: Depv ✅
      * F0229
      */
-    getInfo({ areaID }) { 
+    getInfo({ areaID, select }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -191,7 +191,8 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(areaID))
                     return resolve({ error: true, message: 'Request params areaID invalid', status: 400 });
          
-                let infoData = await INSPECTION__AREA_COLL.findById(areaID);
+                let infoData = await INSPECTION__AREA_COLL.findById(areaID).select(select);
+                console.log({ select });
                 if(!infoData)
                     return resolve({ error: true, message: "Can't update inspect area", status: 403 });
 
@@ -206,7 +207,7 @@ class Model extends BaseModel {
      * Danh sách area theo project: DePV ✅
      * F0230
      */
-    getListArea({ keyword, projectID, limit = 10, lastestIDArea  }) { 
+    getListArea({ keyword, projectID, limit = 10, lastestID, select  }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -228,8 +229,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDArea && checkObjectIDs(lastestIDArea)){
-					let infoMessage = await INSPECTION__AREA_COLL.findById(lastestIDArea);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await INSPECTION__AREA_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -252,6 +253,7 @@ class Model extends BaseModel {
 				}
 
                 let infoDataAfterGet = await INSPECTION__AREA_COLL.find({...conditionObj, ...conditionFind }, objSort)
+                    .select(select)
                     .limit(+limit)
                     .sort(sortBy) 
                     .lean();
