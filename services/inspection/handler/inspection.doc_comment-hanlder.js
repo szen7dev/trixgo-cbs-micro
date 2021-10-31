@@ -22,7 +22,7 @@ module.exports = {
         auth: "required",
         params: {
 			content    : { type: "string" },
-            inspectionID : { type: "string" },
+            inspectionID: { type: "string" },
             parentID : { type: "string", optional: true },
             files    : { type: "array", optional: true }
         }, 

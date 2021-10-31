@@ -55,23 +55,24 @@ module.exports = {
         auth: "required",
         params: {
             docID       : { type: "string" },
-            sign        : { type: "string" },
-            template    : { type: "string" },
-            members     : { type: "array" },
-            name        : { type: "string" },
-            expiredTime : { type: "string" },
-            job         : { type: "string" },
-            areas       : { type: "array" },
-            description : { type: "string", optional: true  },
+            sign        : { type: "string", optional: true },
+            template    : { type: "string", optional: true },
+            members     : { type: "array" , optional: true },
+            name        : { type: "string", optional: true },
+            expiredTime : { type: "string", optional: true },
+            job         : { type: "string", optional: true },
+            areas       : { type: "array" , optional: true },
+            description : { type: "string", optional: true },
+            status      : { type: "number", optional: true },
         },
         async handler(ctx) {
-            try {
+            try {          
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docID, sign, template, assignee, members, name, expiredTime, job, areas, description } = ctx.params;
+                const { docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION_DOC_MODEL.update({
-					docID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID
+					docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -114,11 +115,9 @@ module.exports = {
 	 */
     getList: {
         params: {
+            projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
             docID       : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
             assignee    : { type: "string", optional: true },
             author      : { type: "string", optional: true },
             contract    : { type: "string", optional: true },
@@ -128,12 +127,17 @@ module.exports = {
             toDate      : { type: "string", optional: true },
             fromCreateAt: { type: "string", optional: true },
             toCreateAt  : { type: "string", optional: true },
+            //_____________THÔNG SỐ MẶC ĐỊNH________________
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                let { contractID, limit, lastestID, docID, select, assignee, author, signature, fromDate, toDate, fromCreateAt, toCreateAt, area }        = ctx.params;
+                let { limit, lastestID, select, filter, projectID, contractID, docID, assignee, author, signature, fromDate, toDate, fromCreateAt, toCreateAt, area  } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(docID){
@@ -142,7 +146,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await INSPECTION_DOC_MODEL.getList({
-                        contractID, limit, lastestID, select, assignee, author, signature, area, userID,  fromDate, toDate, fromCreateAt, toCreateAt
+                        limit,lastestID, select, filter, projectID, contractID, select, assignee, author, signature, area, userID,  fromDate, toDate, fromCreateAt, toCreateAt
                     });
                 }
              

@@ -11,6 +11,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 
 const INSPECTION__DOC_COMMENT_COLL      = require('../database/inspection.doc_comment-coll');
 const INSPECTION__DOC_COMMENT_FILE_COLL = require('../database/inspection.doc_comment_file-coll');
+const INSPECTION__DOC_MODEL             = require('../model/inspection.doc-model').MODEL;
 
 /**
  * import inter-model, exter-model
@@ -59,6 +60,9 @@ class Model extends BaseModel {
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create comment", status: 403 });
+
+                // Cập nhật lastMessage cho docs spection
+                await INSPECTION__DOC_MODEL.update({ docID: inspection, lastComment: infoDataAfterInserted._id });
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {

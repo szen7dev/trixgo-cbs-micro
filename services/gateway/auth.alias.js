@@ -380,11 +380,6 @@ module.exports = {
 		[`DELETE ${CF_ROUTINGS_INSPECTION.DOCS}`] : 
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_REMOVE}`],
 
-
-		[`GET ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] : 
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_LIST}`],
-		
-
 		//---------------------------S021.INSPECTION.doc comment
 		//A0234
 		[`POST ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] : 
@@ -415,11 +410,25 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] : 
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_LIST}`],
 
+		//---------------------------S021.INSPECTION.docs checklist
+		[`GET ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] : 
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST}`],
+
+		[`PUT ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] : 
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_UPDATE}`],
+
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENT_GET_LIST}`] : 
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`],
 
-		//---------------------------🏁 START SERVICE CMCS 🏁---------------------------//
+		//------------------------------END SEARVICE ITEM---------------------------//
+
+		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
+	
+		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
+
+		//--------------------------END SEARVICE CMCS---------------------------//
 
 
 		//---------------------------🏁 START S024.MEDIA 🏁---------------------------//
@@ -527,12 +536,7 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.REPLY_COMMENT_IMAGE_MEDIA}`],
 
 		//---------------------------🏁 END S024.MEDIA 🏁---------------------------//
-		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
-		
-		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`] : 
-		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
-
-		//---------------------------🏁 END SEARVICE CMCS 🏁---------------------------//
+	
 		//---------------------------🏁 START S015.DOCUMENT 🏁---------------------------//
 
 		/**

@@ -77,7 +77,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc", {
     //_________Bình luận cuối cùng của hồ sơ
     lastComment: {
         type    : Schema.Types.ObjectId,
-        ref     : 'comment'   
+        ref     : 'inspection_doc_comment'   
     }, 
     //_________Người thực hiện (Thành viên dự án)
     assignee: {

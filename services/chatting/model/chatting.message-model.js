@@ -1194,7 +1194,7 @@ class Model extends BaseModel {
 
 					conditionFind = dataPagingAndSort.data.find;
 				}
-
+				
 				let	listMessagesPoll = await CHATTING__MESSAGE_COLL
 					.find({ ...conditionObj, ...conditionFind }, filter)
 					.populate('sender', select.sender)

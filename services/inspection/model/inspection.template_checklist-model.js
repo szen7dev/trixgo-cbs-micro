@@ -124,7 +124,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Xóa template docs: DePV ✅
      * F0217
@@ -166,7 +166,7 @@ class Model extends BaseModel {
      * F0218
      * problem: Bị hạn chế không thể sort createAt = 1
      */
-    getListByTemplateDocsWithPaging({ limit = 10, lastestIDChecklist, templateID  }) { 
+    getListByTemplateDocsWithPaging({ limit = 10, lastestID, templateID  }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -190,8 +190,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDChecklist && checkObjectIDs(lastestIDChecklist)){
-					let infoMessage = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(lastestIDChecklist);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoMessage = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(lastestID);
 					if(!infoMessage)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
