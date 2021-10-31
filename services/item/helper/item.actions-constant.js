@@ -4,6 +4,7 @@ const BASE_ACTIONS = 'ACT_ITEM';
  * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
  */
 const CONTRACT          = 'CONTRACT';
+const CONTACT           = 'CONTACT';
 const DEPARTMENT        = 'DEPARTMENT';
 
 const CF_ACTIONS_ITEM = {
@@ -17,6 +18,11 @@ const CF_ACTIONS_ITEM = {
      * DEPARTMENT
     */
     DEPARTMENT_GET_LIST                      : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_GET_LIST`,
+
+    /**
+     * CONTACT
+     */
+    GET_LIST_CONTACT                         : `${BASE_ACTIONS}_${CONTACT}_GET_LIST_CONTACT`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

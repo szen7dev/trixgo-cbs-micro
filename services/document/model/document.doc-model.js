@@ -152,7 +152,7 @@ class Model extends BaseModel {
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs([documentID, userID, packageID, userUpdate]))
+				if (!checkObjectIDs([documentID, userUpdate]))
 					return resolve({ error: true, message: 'Request params invalid', status: 400 });
 
                 if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction }))
@@ -193,17 +193,42 @@ class Model extends BaseModel {
                 (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = otherID);
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
 
-                if(parentID && checkObjectIDs(parentID)){
-                    let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
-                    dataUpdate.parent = parentID;
-                    dataUpdate.level = infoParent.level + 1;
+                // Lấy thông tin hợp đồng
+                let infoPackage = null;
+
+                if(packageID){
+                    infoPackage = await DOCUMENT__PACKAGE_COLL
+                        .findById(packageID)
+                        .select('_id contract');
+                }
+
+                if(infoPackage && infoPackage.contract && type && !isNaN(type)){
+                    // Update document cho contract
+                    if(+type === 2){
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
+                            condition: { _id: infoPackage.contract },
+                            update: {
+                                $addToSet: {
+                                    documents: documentID
+                                }
+                            }
+                        });
+                    } else{
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
+                            condition: { _id: infoPackage.contract },
+                            update: {
+                                $pull: {
+                                    documents: documentID
+                                }
+                            }
+                        });
+                    }
                 }
 
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
 
 				if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't update document", status: 403 });
-
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

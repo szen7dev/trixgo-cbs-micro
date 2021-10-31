@@ -127,7 +127,7 @@ class Model extends BaseModel {
 	 * Date: 06/08/2021
 	 */
     insertMessage({
-		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0
 	}) {
         return new Promise(async (resolve) => {
             try {
