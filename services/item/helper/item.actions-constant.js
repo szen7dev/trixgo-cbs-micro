@@ -22,7 +22,7 @@ const CF_ACTIONS_ITEM = {
     /**
      * CONTACT
      */
-    GET_LIST_CONTACT                         : `${BASE_ACTIONS}_${CONTACT}_GET_LIST_CONTACT`,
+    CONTACT_GET_LIST                         : `${BASE_ACTIONS}_${CONTACT}_CONTACT_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

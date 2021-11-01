@@ -56,6 +56,9 @@ module.exports = {
 		// Danh sách hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]	: DOCUMENT__DOC_HANDLER.getListDocument,
 
+		// Danh sách tính chất văn bản
+		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE]	: DOCUMENT__DOC_HANDLER.getListDoctype,
+
 	},
 
 	/**

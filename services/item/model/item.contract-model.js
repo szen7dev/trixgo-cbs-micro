@@ -4,26 +4,26 @@
  * EXTERNAL PACKAGE
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
- 
+
 /**
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
- 
+
 /**
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
- 
+
 /**
  * COLLECTIONS
  */
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
- 
- 
+
+
 class Model extends BaseModel {
- 
+
     constructor() {
         super(ITEM__CONTRACT_COLL);
     }
@@ -36,7 +36,7 @@ class Model extends BaseModel {
     updateContractByCondition({ condition, update }) {
         return new Promise(async (resolve) => {
             try {
-            const infoAfterUpdate = await ITEM__CONTRACT_COLL.findOneAndUpdate(condition, update, { new: true })                
+            const infoAfterUpdate = await ITEM__CONTRACT_COLL.findOneAndUpdate(condition, update, { new: true })
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -49,10 +49,9 @@ class Model extends BaseModel {
 	 * Func: Danh sách hợp đồng 
 	 * Date: 30/08/2021
 	 */
-	getListContract({ lastestID, userID, keyword, limit = 10, filter = {}, select = {} }) {
+	getListContract({ lastestID, userID, departmentID, keyword, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
-				// Check params
 				if(!checkObjectIDs([userID]))
 					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
@@ -85,13 +84,12 @@ class Model extends BaseModel {
 					updateAt: -1
 				}
 
-				// GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoMessage = await ITEM__CONTRACT_COLL.findById(lastestID);
-					if(!infoMessage)
+					let infoContract = await ITEM__CONTRACT_COLL.findById(lastestID);
+					if(!infoContract)
 						return resolve({ error: true, message: "Can't get info last contract", status: 403 });
 
-					let nextInfo = `${infoMessage.modifyAt}_${infoMessage._id}`;
+					let nextInfo = `${infoContract.modifyAt}_${infoContract._id}`;
 					let keys	 = ['modifyAt__-1', '_id__-1'];  
 
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
@@ -100,6 +98,8 @@ class Model extends BaseModel {
 
 					conditionFind = dataPagingAndSort.data.find;
 				}
+
+                departmentID && (conditionObj.department = departmentID);
 
                 // SEARCH TEXT
 				if(keyword){
@@ -110,6 +110,8 @@ class Model extends BaseModel {
 
 				let	listContract = await ITEM__CONTRACT_COLL
 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                    .populate('project', select.project)
+                    .populate('field', select.field)
 					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();

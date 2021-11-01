@@ -4,57 +4,46 @@
  * EXTERNAL PACKAGE
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
- 
+
 /**
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
- 
+
 /**
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
- 
+
 /**
  * COLLECTIONS
  */
-const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
- 
- 
-class Model extends BaseModel {
- 
-    constructor() {
-        super(ITEM__CONTRACT_COLL);
-    }
+const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
 
-    /**
-     * Dev: MinhVH
-     * Func: Cập nhật hợp đồng theo điều kiện
-     * Date: 29/10/2021
-     */
-    updateContractByCondition({ condition, update }) {
-        return new Promise(async (resolve) => {
-            try {
-            const infoAfterUpdate = await ITEM__CONTRACT_COLL.findOneAndUpdate(condition, update, { new: true })                
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
+
+class Model extends BaseModel {
+
+    constructor() {
+        super(ITEM__CONTACT_COLL);
     }
 
    /**
 	 * Dev: MinhVH
-	 * Func: Danh sách hợp đồng 
-	 * Date: 30/08/2021
+	 * Func: Danh sách contact
+	 * Date: 29/10/2021
 	 */
-	getListContract({ lastestID, userID, keyword, limit = 10, filter = {}, select = {} }) {
+	getListContact({ lastestID, userID, companyID, departmentID, keyword, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
 				if(!checkObjectIDs([userID]))
 					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(companyID && !checkObjectIDs([companyID]))
+					return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+
+                if(departmentID && !checkObjectIDs([departmentID]))
+					return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
 				if(isNaN(limit)){
 					limit = 10;
@@ -85,13 +74,12 @@ class Model extends BaseModel {
 					updateAt: -1
 				}
 
-				// GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoMessage = await ITEM__CONTRACT_COLL.findById(lastestID);
-					if(!infoMessage)
-						return resolve({ error: true, message: "Can't get info last contract", status: 403 });
+					let infoContact = await ITEM__CONTACT_COLL.findById(lastestID);
+					if(!infoContact)
+						return resolve({ error: true, message: "Can't get info last contact", status: 403 });
 
-					let nextInfo = `${infoMessage.modifyAt}_${infoMessage._id}`;
+					let nextInfo = `${infoContact.modifyAt}_${infoContact._id}`;
 					let keys	 = ['modifyAt__-1', '_id__-1'];  
 
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
@@ -101,6 +89,9 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 				}
 
+                companyID       && (conditionObj.company = companyID);
+                departmentID    && (conditionObj.department = departmentID);
+
                 // SEARCH TEXT
 				if(keyword){
 					conditionObj.$text = { $search: keyword };
@@ -108,23 +99,25 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-				let	listContract = await ITEM__CONTRACT_COLL
+				let	listContact = await ITEM__CONTACT_COLL
 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                    .populate('department', select.department)
+                    .populate('company', select.company)
 					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();
 
-				if(!listContract)
-					return resolve({ error: true, message: "Can't get list contract", status: 403 });
+				if(!listContact)
+					return resolve({ error: true, message: "Can't get list contact", status: 403 });
 
 				// GET TOTAL RECORD
-				let totalRecord = await ITEM__CONTRACT_COLL.countDocuments(conditionObj);
+				let totalRecord = await ITEM__CONTACT_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
 
-				if(listContract && listContract.length){
-					if(listContract.length > limit){
-						nextCursor = listContract[limit - 1]._id;
-						listContract.length = limit;
+				if(listContact && listContact.length){
+					if(listContact.length > limit){
+						nextCursor = listContact[limit - 1]._id;
+						listContact.length = limit;
 					}
 				}
 
@@ -132,7 +125,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: {
-						listRecords: listContract,
+						listRecords: listContact,
 						limit: +limit,
 						totalRecord,
 						nextCursor

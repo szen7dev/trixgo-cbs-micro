@@ -10,19 +10,29 @@ const ITEM__CONTACT_MODEL                   	= require('../model/item.contact-mo
 
 
 module.exports = {
-    getList: {
+    getListContact: {
         params: {
-            page: { type: "string", optional: true },
+            lastestID: { type: "string", optional: true },
+            limit: { type: "number", optional: true },
+            keyword: { type: "string", optional: true },
+            companyID: { type: "string", optional: true },
+            departmentID: { type: "string", optional: true },
+            filter: { type: "string", optional: true },
+            select: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { page }        = ctx.params;
-                return { 
-                    error: false, page: page, message: 'contract'
-                }
+                const { _id: userID } = ctx.meta.infoUser;
+                const { lastestID, companyID, departmentID, keyword, limit, filter, select } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListContact({
+                    lastestID, userID, companyID, departmentID, keyword, limit, filter, select
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
