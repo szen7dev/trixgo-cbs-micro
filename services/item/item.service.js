@@ -7,7 +7,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant'
 const { CF_ACTIONS_ITEM } 	        	= require('./helper/item.actions-constant');
 
 const ITEM__CONTRACT_HANDLER            = require('./handler/item.contract-handler');
-const ITEM__CONTACT_HANDLER            	= require('./handler/');
+const ITEM__CONTACT_HANDLER            	= require('./handler/item.contact-hanlder');
 const ITEM__DEPARTMENT_HANDLER          = require('./handler/item.department-handler');
 
 const ITEM__CONTRACT_COLL				= require('./database/item.contract-coll');
