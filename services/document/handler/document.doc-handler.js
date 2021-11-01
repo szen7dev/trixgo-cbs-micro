@@ -56,13 +56,13 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const {
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, companyID
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insertDocument({
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID, ctx
 				});
 
@@ -111,13 +111,13 @@ module.exports = {
 				const { _id: userUpdate } = ctx.meta.infoUser;
                 const {
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateDocument({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, userUpdate, ctx
 				});
 
@@ -137,7 +137,9 @@ module.exports = {
         params: {
             lastestID   : { type: "string", optional: true },
             keyword     : { type: "string", optional: true },
-            limit       : { type: "number", optional: true },
+			limit       : { type: "number", optional: true },
+			select      : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -146,7 +148,39 @@ module.exports = {
                 const { lastestID, keyword, limit, select, filter } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
-                    lastestID, keyword, limit, select, filter, userID
+                    lastestID, userID, keyword, limit, select, filter
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách tính chất văn bản
+	 * Date: 27/10/2021
+	 */
+    getListDoctype: {
+        params: {
+            lastestID   	: { type: "string", optional: true },
+            keyword     	: { type: "string", optional: true },
+			companyID		: { type: "string", optional: true },
+            departmentID	: { type: "string", optional: true },
+            limit       	: { type: "number", optional: true },
+			select      	: { type: "string", optional: true },
+            filter      	: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestID, companyID, departmentID, keyword, limit, select, filter } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctype({
+                    lastestID, userID, companyID, departmentID, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

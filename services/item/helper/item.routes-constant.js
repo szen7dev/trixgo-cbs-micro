@@ -4,15 +4,19 @@ const BASE_ROUTE = '/item';
  */
 const DEPARTMENT = '/departments';
 const CONTRACT   = '/contracts';
+const CONTACT   = '/contacts';
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================DEPARTMENT=======================================//
-    DEPARTMENT_GET_LIST                                : `${BASE_ROUTE}${DEPARTMENT}`, // /item/departments
+    DEPARTMENT_GET_LIST                                : `${BASE_ROUTE}${DEPARTMENT}`,
 
     // ================================CONTRACT=======================================//
-    CONTRACT_GET_LIST                                  : `${BASE_ROUTE}${CONTRACT}`, // /item/contracts
+    CONTRACT_GET_LIST                                  : `${BASE_ROUTE}${CONTRACT}`,
+
+    // ================================CONTACT=======================================//
+    CONTACT_GET_LIST                                   : `${BASE_ROUTE}${CONTACT}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;
