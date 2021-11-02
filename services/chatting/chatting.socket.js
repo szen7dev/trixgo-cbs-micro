@@ -469,8 +469,8 @@ exports.CHATTING_SOCKET = {
 				.populate({
 					path: 'poll',
 					populate: {
-						path: "options.usersVote",
-						select: "_id bizname fullname image"
+						path: 'options.usersVote',
+						select: '_id bizname fullname image'
 					}
 				})
 				.populate({

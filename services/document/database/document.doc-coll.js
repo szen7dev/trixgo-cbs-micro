@@ -10,7 +10,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     /**
      * Mã hiệu bằng số do hệ thống tự phát sinh
      */
-    suid : {
+    suid: {
         type   : String,
         require: true,
         unique : true
@@ -127,7 +127,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref: "signature"
     }],
-     /**
+    /**
      * CẤU TRÚC ĐỆ QUY
      */
     parent: {
@@ -141,6 +141,15 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     level: {
         type: Number,
         default: 1
+    },
+    /**
+     * Đánh dấu văn bản
+     * 1: Đánh dấu
+     * 2: Bỏ đánh dấu
+     */
+    mark: {
+        status: { type: Number },
+        updated: Date
     },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
