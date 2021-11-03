@@ -246,14 +246,14 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(docID))
                     return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
-                    
+                
                 let infoDocs = await INSPECTION__DOC_COLL.findById(docID)
                                 .select(select)
                                 .populate({
                                     path: "areas",
                                     select: "name"
                                 })
-                                .populate({
+                                .populate({ 
                                     path: "project",
                                     select: "name area",
                                     // populate: "area"
@@ -276,7 +276,7 @@ class Model extends BaseModel {
                                 });
                 if(!infoDocs)
                     return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
-
+                
                 return resolve({ error: false, data: {infoDocs}, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -432,14 +432,14 @@ class Model extends BaseModel {
 						infoDataAfterGet.length = limit;
 					}
 				}
-
+                
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get docs", status: 403 });
 
                 let totalPage = Math.ceil(totalRecord/limit);
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
                 if(!lastestID){
-                    currentPage =  1
+                    currentPage = 1
                 }
 
                 return resolve({ error: false, data: {
@@ -456,6 +456,6 @@ class Model extends BaseModel {
             }
         })
     }
- }
+}
 
 exports.MODEL = new Model;
