@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -80,7 +80,7 @@ class Model extends BaseModel {
      * Author: DePV
      * Code: F02402
      */
-    updateStatus({ checklistID, status, authorID }) { 
+    update({ checklistID, status, authorID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -93,6 +93,7 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+
                 if(!checkObjectIDs(checklistID))
                     return resolve({ error: true, message: 'Request params checklistID invalid', status: 400 });
 
@@ -160,11 +161,11 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: Lấy danh sách checklist  ✅
+     * Name: Lấy danh sách checklist ✅
      * Author: DePV
      * Code: F02404
      */
-    getListByInspection({ inspectionID, limit = 10, lastestIDchecklist }) { 
+    getList({limit = 10, lastestID, filter, select, inspectionID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -174,6 +175,21 @@ class Model extends BaseModel {
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
                 let objSort = {};
+
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -186,8 +202,8 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // GET CONDITION PAGINATION
-				if(lastestIDchecklist && checkObjectIDs(lastestIDchecklist)){
-					let infoChecklist = await INSPECTION__CHECKLIST_COLL.findById(lastestIDchecklist);
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoChecklist = await INSPECTION__CHECKLIST_COLL.findById(lastestID);
 					if(!infoChecklist)
 						return resolve({ error: true, message: "Can't get info last checklist", status: 400 });
 
@@ -202,8 +218,8 @@ class Model extends BaseModel {
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
-                let infoDataAfterGet = await INSPECTION__CHECKLIST_COLL.find({...conditionObj, ...conditionFind })
-                    .limit(+limit)
+                let infoDataAfterGet = await INSPECTION__CHECKLIST_COLL.find({...conditionObj, ...conditionFind }, { ...filter })
+                    .limit(+limit+1) // Cộng thêm 1 để kiểm tra có nextCursor hay không
                     .sort(sortBy) 
                     .lean();
 
@@ -215,12 +231,26 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get checklists", status: 403 });
                 
                 let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+
+				let nextCursor	= null;
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
+                if(!lastestID){
+                    currentPage =  1
+                }
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
+                    nextCursor,
                     currentPage
                 }, status: 200 });
 

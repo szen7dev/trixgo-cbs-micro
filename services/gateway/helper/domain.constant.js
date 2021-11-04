@@ -13,6 +13,7 @@ let CF_DOMAIN_SERVICES = {
     NOTIFICATION    : 'notification',
     MEDIA           : 'media',
     CMCS            : 'cmcs',
+    TRAINING        : 'training',
     // COMMENT     : 'comment',
 }
 

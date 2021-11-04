@@ -21,11 +21,12 @@ module.exports = {
             contractID        : { type: "string", optional: true },
             contractBillJobID : { type: "string", optional: true },
             select            : { type: "string", optional: true },
+            filter            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { keyword, limit, lastestID, contractID, select, contractBillJobID } = ctx.params;
+                let { keyword, limit, lastestID, contractID, select, contractBillJobID, filter } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -35,10 +36,10 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await CMCS__CONTRACT_BILL_JOB_MODEL.getList({
-                        keyword, limit, lastestID, contractID, select
+                        keyword, limit, lastestID, contractID, filter, select
                     });
                 }
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

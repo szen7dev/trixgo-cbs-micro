@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const moment                            =  require("moment");
@@ -13,7 +13,7 @@ const ITEM__CONTRACT_COLL                  = require('../../item/database/item.c
 const INSPECTION__TEMPLATE_CHECKLIST_COLL  = require('../database/inspection.template_checklist-coll');
 
 const { RANGE_BASE_PAGINATION } 		   = require('../../../tools/cursor_base/playground/index');
-const INSPECTION__CHECKLIST_MODEL          = require('../model/inspection.checklist-model').MODEL;
+const INSPECTION__CHECKLIST_MODEL          = require('./inspection.doc_checklist-model').MODEL;
 
 /**
  * import inter-model, exter-model
@@ -27,6 +27,7 @@ class Model extends BaseModel {
     
     constructor() {
         super(INSPECTION__DOC_COLL);
+        this.STATUS_DONE = 2;
     }
     
     /**
@@ -108,58 +109,83 @@ class Model extends BaseModel {
             }
         })
     }
-    
-    /**
+
+    /** 
      * Name: Cập nhật inspection docs
      * Author: DePV ✅
      * Code: F0232
      */
-    update({ docID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID }) { 
+    update({ docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status, lastComment, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**      
                  * DECALARTION VARIABLE STEP (1)
                  */
-                let dataUpdate = {};
+                let dataUpdate = { };
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-                if(!checkObjectIDs(template))
-                    return resolve({ error: true, message: 'Request params template invalid', status: 400 });
-                
-                if(!checkObjectIDs(assignee))
-                    return resolve({ error: true, message: 'Request params assignee invalid', status: 400 });
-                
-                if(!checkObjectIDs(areas))
-                    return resolve({ error: true, message: 'Request params areas invalid', status: 400 });
-                  
-                if(!checkObjectIDs(job))
-                    return resolve({ error: true, message: 'Request params job invalid', status: 400 });
-
-                if(!sign)
-                    return resolve({ error: true, message: 'Request params sign invalid', status: 400 });
-                
-                if (!expiredTime)
-                    return resolve({ error: true, message: 'Request params expiredTime invalid', status: 400 });
+                if(!checkObjectIDs(docID))
+                    return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
 
                 /** 
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                dataUpdate = { template, sign, assignee, members, name, areas, expiredTime, job, userUpdate: userID };
-                 
+                if(checkObjectIDs(userID)){
+                    dataUpdate.userUpdate = userID;
+                }
+
+                if(checkObjectIDs(template)){
+                    dataUpdate.template = template;
+                }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(assignee){
+                    dataUpdate.assignee = assignee;
+                }
+
+                if(checkObjectIDs(members)){
+                    dataUpdate.members = members;
+                }
+
+                if(checkObjectIDs(areas)){
+                    dataUpdate.areas = areas;
+                }
+
+                if(expiredTime){
+                    dataUpdate.expiredTime = expiredTime;
+                }
+
+                if(job){
+                    dataUpdate.job = job;
+                }
+                
                 if(description){
                     dataUpdate.description = description;
                 }
 
-                let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate , { new: true });
+                if(checkObjectIDs(lastComment)){
+                    dataUpdate.lastComment = lastComment;
+                }
+
+                if(status == this.STATUS_DONE){
+                    dataUpdate.status = this.STATUS_DONE;
+                    dataUpdate.date = new Date();
+                }
+
+                let infoDataAfterUpdate = await INSPECTION__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });
                 if(!infoDataAfterUpdate)
                     return resolve({ error: true, message: "Can't update docs", status: 403 });
 
@@ -220,14 +246,14 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(docID))
                     return resolve({ error: true, message: 'Request params docID invalid', status: 400 });
-                    
+                
                 let infoDocs = await INSPECTION__DOC_COLL.findById(docID)
                                 .select(select)
                                 .populate({
                                     path: "areas",
                                     select: "name"
                                 })
-                                .populate({
+                                .populate({ 
                                     path: "project",
                                     select: "name area",
                                     // populate: "area"
@@ -250,8 +276,8 @@ class Model extends BaseModel {
                                 });
                 if(!infoDocs)
                     return resolve({ error: true, message: "Can't get info inspection docs", status: 403 });
-
-                return resolve({ error: false, data: infoDocs, status: 200 });
+                
+                return resolve({ error: false, data: {infoDocs}, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -263,13 +289,33 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code: F0235
      */
-    getList({ contractID, limit = 10, lastestID, select, assignee, author, userID, signature, area, fromDate, toDate, fromCreateAt, toCreateAt }) { 
+    getList({limit = 10, lastestID, select, filter, projectID, contractID, assignee, author, userID, signature, area, fromDate, toDate, fromCreateAt, toCreateAt }) { 
         return new Promise(async (resolve) => {
             try {
+
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
                 /** 
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { state: 1 };
+
+                if(checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
+                }
+
                 if(checkObjectIDs(contractID)){
                     conditionObj.contract = contractID;
                 }
@@ -290,9 +336,9 @@ class Model extends BaseModel {
                 }
 
                 if(fromDate && toDate){
-					conditionObj.expiredTime = {
-                        $gte: moment(fromDate).toDate(),
-                        $lte: moment(toDate).toDate() 
+					conditionObj.date = {
+                        $gte: moment(fromDate),
+                        $lte: moment(toDate).endOf('day')._d 
                     }
                 }
 
@@ -309,8 +355,6 @@ class Model extends BaseModel {
                     { userCreateAt: userID }  
                 ];
 
-                console.log({conditionObj});
-
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
                 let objSort = {};
@@ -325,6 +369,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
+
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoMessage = await INSPECTION__DOC_COLL.findById(lastestID);
@@ -341,34 +386,34 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-                let infoDataAfterGet = await INSPECTION__DOC_COLL.find({...conditionObj, ...conditionFind })
-                    .select(select)
+
+                let infoDataAfterGet = await INSPECTION__DOC_COLL.find({...conditionObj, ...conditionFind }, { ...filter })
                     .populate({
                         path: "areas",
-                        select: "name"
+                        select: select && select.areas
                     })
                     .populate({
                         path: "project",
-                        select: "name area",
+                        select: select && select.project
                         // populate: "area"
                     })
                     .populate({
                         path: "members",
-                        select: "image fullname"
+                        select: select && select.members
                     })
                     .populate({
                         path: "contract",
-                        select: "name"
+                        select: select && select.contract
                     })
                     .populate({
                         path: "template",
-                        select: "name"
+                        select: select && select.template
                     })
                     .populate({
                         path: "assignee",
-                        select: "image fullname"
+                        select: select && select.assignee
                     })
-                    .limit(+limit)
+                    .limit(+limit+1)
                     .sort(sortBy) 
                     .lean();
 
@@ -377,15 +422,32 @@ class Model extends BaseModel {
                 let totalCurrentPage = await INSPECTION__DOC_COLL.count(conditionFind);
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get docs", status: 403 });
+                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
+
+				let nextCursor	= null;
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
                 
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get docs", status: 403 });
+
                 let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
+                if(!lastestID){
+                    currentPage = 1
+                }
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
+                    nextCursor,
                     currentPage
                 }, status: 200 });
 
@@ -394,6 +456,6 @@ class Model extends BaseModel {
             }
         })
     }
- }
+}
 
 exports.MODEL = new Model;

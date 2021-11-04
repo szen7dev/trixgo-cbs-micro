@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
@@ -66,7 +66,7 @@ class Model extends BaseModel {
      * Name: Danh sách contract bill job
      * Author: Depv 
      */
-    getList({ keyword, limit = 10, lastestID, contractID, select }) { 
+    getList({ keyword, limit = 10, lastestID, contractID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -80,6 +80,20 @@ class Model extends BaseModel {
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
 				let objSort 	 	= {};
+
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
 
                 /** 
                  * VALIDATION STEP (2)
@@ -115,27 +129,45 @@ class Model extends BaseModel {
 					objSort.score = { $meta: "textScore" };
 					sortBy.score  = { $meta: "textScore" };
 				}
-                
-                let infoDataAfterGet = await CMCS__CONTRACT_BILL_JOB_COLL.find({...conditionObj, ...conditionFind }, objSort)
-                    .select(select)
-                    .limit(+limit)
+
+                let infoDataAfterGet = await CMCS__CONTRACT_BILL_JOB_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .populate({
+                        path: "contract",
+                        select: select.contract
+                    })
+                    .limit(+limit+1)
                     .sort(sortBy) 
-                    .lean();
+                    .lean(); 
 
                 // GET TOTAL RECORD
-				let totalRecord = await CMCS__CONTRACT_BILL_JOB_COLL.count(conditionObj);
+				// let totalRecord = await CMCS__CONTRACT_BILL_JOB_COLL.count(conditionObj);
                 let totalCurrentPage = await CMCS__CONTRACT_BILL_JOB_COLL.count(conditionFind);
-
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });
                 
+
+                let totalRecord = await CMCS__CONTRACT_BILL_JOB_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
+                if(!lastestID){
+                    currentPage =  1
+                }
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
+                    nextCursor,
                     currentPage
                 }, status: 200 });
                 

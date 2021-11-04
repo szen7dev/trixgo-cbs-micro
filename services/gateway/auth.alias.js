@@ -23,6 +23,7 @@ const { CF_ROUTINGS_INSPECTION } 	= require('../inspection/helper/inspection.rou
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
 const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
 const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant');
+const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.routes-constant');
 
 
 
@@ -40,6 +41,7 @@ const { CF_ACTIONS_INSPECTION } 	= require('../inspection/helper/inspection.acti
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_CMCS } 	    	= require('../cmcs/helper/cmcs.actions-constant');
+const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -285,7 +287,8 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GENERATE_LINK_S3}`],
 
 		//--------------------------aliases's S021.INSPECTION service--------------------------//
-		//---------------------------S021.INSPECTION.template_docs
+
+		//---------------------------🏁 S021 START SERVICE INSPECTION. TEAMPLATE DOCS 🏁----------------------//
 		//A0211
 		[`POST ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_INSERT}`],
@@ -301,9 +304,12 @@ module.exports = {
 		//A0214
 		[`GET ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_GET_LIST}`],
+		//-----------------------------S021 END SERVICE INSPECTION. TEAMPLATE DOCS----------------------//
 
-		//---------------------------S021.INSPECTION.template_checklist
 
+
+
+		//---------------------------🏁 S021 START SERVICE INSPECTION. TEAMPLATE CHECKLIST 🏁----------------------//
 		//A0215
 		[`POST ${CF_ROUTINGS_INSPECTION.TEMPLATE_CHECKLIST}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_CHECKLIST_INSERT}`],
@@ -319,38 +325,13 @@ module.exports = {
 		//A0218
 		[`GET ${CF_ROUTINGS_INSPECTION.TEMPLATE_CHECKLIST}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_CHECKLIST_LIST}`],
+		//----------------------------- S021 END SERVICE INSPECTION. TEAMPLATE CHECKLIST-------------------------//
 
-		//---------------------------S021.INSPECTION.template_docs_reaction
-		//A0219
-		[`POST ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_REACTION}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_REACTION_INSERT}`],
+	
 
-		//A0220
-		[`DELETE ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_REACTION}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_REACTION_REMOVE}`],
+	
 
-		//A0221
-		[`GET ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_REACTION}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_REACTION_LIST}`],
-
-		//---------------------------S021.INSPECTION.teamplate doc comment
-		//A0222
-		[`POST ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_INSERT}`],
-
-		//A0223
-		[`GET ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_LIST}`],
-
-		//A0224
-		[`PUT ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_UPDATE}`],
-
-		//A0225
-		[`DELETE ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_REMOVE}`],
-
-		//---------------------------S021.INSPECTION.area
+		//---------------------------🏁 S021 START SERVICE INSPECTION. AREA 🏁----------------------//
 		//A0226
 		[`POST ${CF_ROUTINGS_INSPECTION.AREA}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_INSERT}`],
@@ -366,8 +347,12 @@ module.exports = {
 		//A0229
 		[`GET ${CF_ROUTINGS_INSPECTION.AREA}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.AREA_LIST}`],
+		//------------------------------S021 END SERVICE INSPECTION. AREA------------------------//
 
-		//---------------------------S021.INSPECTION.docs
+
+
+
+		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC 🏁----------------------//
 		[`GET ${CF_ROUTINGS_INSPECTION.DOCS}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_LIST}`],
 
@@ -379,13 +364,12 @@ module.exports = {
 
 		[`DELETE ${CF_ROUTINGS_INSPECTION.DOCS}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_REMOVE}`],
+		//---------------------------- S021 START SERVICE INSPECTION. DOC---------------------------//
 
 
-		[`GET ${CF_ROUTINGS_INSPECTION.TEMPLATE_DOC_COMMENT}`] :
-		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_LIST}`],
 
 
-		//---------------------------S021.INSPECTION.doc comment
+		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC COMMENT 🏁---------------------------//
 		//A0234
 		[`POST ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_INSERT}`],
@@ -401,8 +385,13 @@ module.exports = {
 		//A0237
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_LIST}`],
+		//--------------------------S021 END SERVICE INSPECTION. DOC COMMENT---------------------------//
 
-		//---------------------------S021.INSPECTION.docs reaction
+
+
+
+		
+		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC REACTION 🏁---------------------------//
 		//A0238
 		[`POST ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_INSERT}`],
@@ -414,22 +403,84 @@ module.exports = {
 		//A0240
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_REACTION}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_REACTION_LIST}`],
+		//---------------------------S021 END SERVICE INSPECTION. DOC REACTION---------------------------//
+
+
+
+
+
+		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC CHECKLIST 🏁---------------------------//
+		[`GET ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] : 
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST}`],
+
+		[`PUT ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] : 
+		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_UPDATE}`],
+		//------------------------------ S021 END SERVICE INSPECTION. DOC CHECKLIST---------------------------//
+
+
+
+
 
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENT_GET_LIST}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`],
+		//------------------------------END SEARVICE ITEM---------------------------//
 
+
+
+
+
+		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
+		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
+		//-------------------------------END SEARVICE CMCS---------------------------//
+
+
+
+
+
+		//---------------------------🏁 START SEARVICE CONTRACT 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_ITEM.CONTRACT_GET_LIST}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_LIST}`],
 
 		[`GET ${CF_ROUTINGS_ITEM.CONTACT_GET_LIST}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_LIST}`],
+		//---------------------------- END SEARVICE CONTRACT ---------------------------//
 
-		//---------------------------🏁 START SERVICE CMCS 🏁---------------------------//
+
+
+
+
+		//---------------------------🏁 START SEARVICE TRAINING 🏁---------------------------//
+		//TRAINING SUBJECT
+		[`GET ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
+		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_GET_INFO_AND_GET_LIST}`],
+
+		[`POST ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
+		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
+		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
+		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_REMOVE}`],
+		//TRAINING SUBJECT RATING
+
+		[`POST ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT_RATING}`] :
+		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_RATING_INSERT}`],
+
+		//---------------------------- END SEARVICE TRAINING ---------------------------//
+
+
+
+
+
+
+
+
 
 
 		//---------------------------🏁 START S024.MEDIA 🏁---------------------------//
-
 		[`POST ${CF_ROUTINGS_MEDIA.MAIN_MEDIA}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INSERT_MEDIA}`],
 
@@ -531,16 +582,12 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_MEDIA.REPLY_COMMENT_IMAGE_MEDIA}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.REPLY_COMMENT_IMAGE_MEDIA}`],
-
 		//---------------------------🏁 END S024.MEDIA 🏁---------------------------//
-		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
 
-		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`] :
-		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
 
-		//---------------------------🏁 END SEARVICE CMCS 🏁---------------------------//
+
+	
 		//---------------------------🏁 START S015.DOCUMENT 🏁---------------------------//
-
 		/**
 		 * Code: A0151
 		 */
@@ -564,8 +611,11 @@ module.exports = {
 		 */
 		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_DOCTYPE}`] :
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE}`],
-
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
+
+
+
+
 	},
 
 	// Disable to call not-mapped actions
