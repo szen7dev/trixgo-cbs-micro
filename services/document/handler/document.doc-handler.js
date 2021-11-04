@@ -130,6 +130,32 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
+	 * Func: Xóa văn bản
+	 * Date: 30/10/2021
+	 */
+    deleteDocument: {
+        params: {
+			documentID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { documentID } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.deleteDocument({
+                    userID, documentID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
 	 * Func: Danh sách hồ sơ văn bản
 	 * Date: 27/10/2021
 	 */
@@ -224,5 +250,35 @@ module.exports = {
         }
     },
 
+     /**
+	 * Dev: MinhVH
+	 * Func: Danh sách lưu trữ hồ sơ văn bản
+	 * Date: 30/10/2021
+	 */
+    getListStorage: {
+        params: {
+			companyID   : { type: "string" },
+            lastestID   : { type: "string", optional: true },
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "number", optional: true },
+			select      : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { companyID, lastestID, keyword, limit, select, filter } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListStorage({
+                    userID, companyID, lastestID, keyword, limit, select, filter
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
 }

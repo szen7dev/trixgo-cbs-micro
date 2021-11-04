@@ -55,6 +55,9 @@ module.exports = {
 		// Cập nhật văn bản
 		[CF_ACTIONS_DOCUMENT.UPDATE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.updateDocument,
 
+		// Xóa văn bản
+		[CF_ACTIONS_DOCUMENT.DELETE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.deleteDocument,
+
 		// Danh sách hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getListDocument,
 

@@ -10,7 +10,7 @@ module.exports = DATABASE_MIDDLEWARE("document_storage", {
     /**
      * Thuộc về công ty nào
      */
-     company: {
+    company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
