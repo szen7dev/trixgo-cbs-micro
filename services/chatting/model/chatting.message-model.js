@@ -1202,7 +1202,7 @@ class Model extends BaseModel {
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: select.usersVote
+							select: '_id bizname fullname image'
 						},
 						select: select.poll
 					})

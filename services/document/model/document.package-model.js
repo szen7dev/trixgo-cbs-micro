@@ -64,7 +64,7 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-				let conditionObj 	= {};
+				let conditionObj 	= { members: { $in: [userID] } };
 				let conditionFind 	= {};
 				let objSort 	 	= {};
                 let sortBy = {
