@@ -761,7 +761,14 @@ class Model extends BaseModel {
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('receivers', select.receivers)
 					.populate('parent', select.parent)
-					.populate('poll', select.poll)
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizname fullname image'
+						},
+						select: select.poll
+					})
 					.populate('reminder', select.reminder)
 					.populate({
 						path: 'files.file',

@@ -6,3 +6,13 @@ Content-Type: application/json
     "password": "1",
     "platform": "1"
 }
+
+### 
+
+GET http://localhost:3003/api/chatting/conversations/list-message-conversation-with-page?conversationID=6131f11414bdc292e1e8ab3e&limit=3
+Content-Type: application/json
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlbWFpbCI6InZ1aHV5bmhtaW5oOTIyMUBnbWFpbC5jb20iLCJwaG9uZSI6IjA4Mjg5MTI0OTEiLCJmdWxsbmFtZSI6IlbFqSBIdeG7s25oIE1pbmgtVFJYIiwiY29tcGFueSI6IjVlNjBkZmZiMmM0M2E0NDRjNWY4ZTIyNyIsInNpZ25hdHVyZSI6InNpZ25hdHVyZV9kZWZhdWx0LnBuZyIsInN0YXR1cyI6MSwibGV2ZWwiOjEsIl9pZCI6IjVmOTBlZDBkNWU4NDJiN2MxOGRmZjk3MiJ9LCJpYXQiOjE2MzAxNTUyODB9.bmjrpcCMoh_vmm7iR9OTbQ6QomTTRIXBvwhXaPZKzX8
+
+{
+    "conversationID": "6131f11414bdc292e1e8ab3e"
+}
