@@ -17,10 +17,28 @@ module.exports  = DATABASE_MIDDLEWARE("training_subject", {
         ref     : 'training_subject'
     },
     //_________Số lượng bài viết
-    amountLessions: Number,
+    amountLessions: {
+        type: Number,
+        default: 0
+    },
 
     //_________Số lượt xem(Tổng của các bài viết) hoặc tổng của 1 bài viết
-    amountViews: Number,
+    amountViews: {
+        type: Number,
+        default: 0
+    },
+
+    //_________Số lượng comment của 1 bài viết
+    amountComments: {
+        type: Number,
+        default: 0
+    },
+    
+    //_________Số sao đánh giá trung bình
+    amountStars: {
+        type: Number,
+        default: 0
+    },
 
     //___________________________________________________Các trường thuộc bài viết
     //_________Nội dung

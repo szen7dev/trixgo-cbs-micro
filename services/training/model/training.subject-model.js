@@ -212,6 +212,18 @@ class Model extends BaseModel {
 
                 if(!infoData)
                     return resolve({ error: true, message: "Can't get info subject", status: 403 });
+                
+                //Update amountViews cho subject
+                await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, {
+                    $inc: { amountViews: 1 }
+                })
+
+                if(infoData.parent){
+                    //Update amountViews cho subject
+                    await TRAINING__SUBJECT_COLL.findByIdAndUpdate(infoData.parent, {
+                        $inc: { amountViews: 1 }
+                    })
+                }
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
@@ -231,14 +243,18 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
+                console.log({  keyword, limit, lastestID, type, parentID, filter, select });
+
 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                 }
-
-                if(checkObjectIDs(type)){
+ 
+                if(type){
                     conditionObj.type = type;
                 }
+
+                console.log({ conditionObj });
 
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
