@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
@@ -26,18 +26,18 @@ class Model extends BaseModel {
 
     /**
      * Name: Lấy thông tin department ✅
-     * Author: Depv 
+     * Author: Depv
      * Code: F00401
      */
-    getInfo({ departmentID, select }) { 
+    getInfo({ departmentID, select }) {
         return new Promise(async (resolve) => {
-            try {   
+            try {
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -71,10 +71,10 @@ class Model extends BaseModel {
 
     /**
      * Name: Danh sách dự án mà user được quyền truy cập (là member)
-     * Author: Depv 
+     * Author: Depv
      * Code: F00402
      */
-    getList({ keyword, limit = 10, lastestID, userID, type, select }) { 
+    getList({ keyword, limit = 10, lastestID, userID, type, select }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -82,30 +82,30 @@ class Model extends BaseModel {
                  */
                 let conditionObj = { members: { $in: [userID]}, type };
 
-             
+
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
 				let objSort 	 	= {};
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
+
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoMessage = await ITEM__DEPARTMENT_COLL.findById(lastestID);
-					if(!infoMessage)
+					let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(lastestID);
+					if(!infoDepartment)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+					let nextInfo = `${infoDepartment.createAt}_${infoDepartment._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
                     // console.log({ nextInfo });
@@ -134,7 +134,7 @@ class Model extends BaseModel {
                         select: "fullname"
                     })
                     .limit(+limit)
-                    .sort(sortBy) 
+                    .sort(sortBy)
                     .lean();
 
                 // GET TOTAL RECORD
@@ -143,7 +143,7 @@ class Model extends BaseModel {
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });
-                
+
                 let totalPage = Math.ceil(totalRecord/limit);
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
                 return resolve({ error: false, data: {

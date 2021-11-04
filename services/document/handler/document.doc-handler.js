@@ -56,13 +56,13 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const {
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, companyID
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insertDocument({
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID, ctx
 				});
 
@@ -111,13 +111,13 @@ module.exports = {
 				const { _id: userUpdate } = ctx.meta.infoUser;
                 const {
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateDocument({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID, 
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, userUpdate, ctx
 				});
 
@@ -135,18 +135,25 @@ module.exports = {
 	 */
     getListDocument: {
         params: {
-            lastestID   : { type: "string", optional: true },
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "number", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+			limit           : { type: "number", optional: true },
+			companyID       : { type: "string", optional: true },
+			departmentID    : { type: "string", optional: true },
+            packageID	    : { type: "string", optional: true },
+            doctypeID	    : { type: "string", optional: true },
+			marked          : { type: "number", optional: true },
+			select          : { type: "string", optional: true },
+            filter          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, keyword, limit, select, filter } = ctx.params;
-
+                const { lastestID, departmentID, companyID, packageID, doctypeID, marked, keyword, limit, select, filter } = ctx.params;
+                
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
-                    lastestID, keyword, limit, select, filter, userID
+                    lastestID, departmentID, companyID, packageID, doctypeID, userID, marked, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -155,5 +162,67 @@ module.exports = {
             }
         }
     },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách tính chất văn bản
+	 * Date: 27/10/2021
+	 */
+    getListDoctype: {
+        params: {
+            lastestID   	: { type: "string", optional: true },
+            keyword     	: { type: "string", optional: true },
+			companyID		: { type: "string", optional: true },
+            departmentID	: { type: "string", optional: true },
+            limit       	: { type: "number", optional: true },
+			select      	: { type: "string", optional: true },
+            filter      	: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestID, companyID, departmentID, keyword, limit, select, filter } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctype({
+                    lastestID, userID, companyID, departmentID, keyword, limit, select, filter
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Danh sách phân loại hồ sơ trong gói thầu
+	 * Date: 27/10/2021
+	 */
+    getListDoctypeByPackage: {
+        params: {
+			companyID		: { type: "string", optional: true },
+            departmentID	: { type: "string", optional: true },
+            packageID	    : { type: "string" },
+            type	        : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { companyID, departmentID, packageID, type } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctypeByPackage({
+                    userID, companyID, departmentID, packageID, type
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
 
 }

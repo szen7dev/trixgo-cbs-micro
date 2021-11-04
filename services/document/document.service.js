@@ -13,6 +13,8 @@ const { CF_ACTIONS_DOCUMENT } 	        = require('./helper/document.actions-cons
  * HANDLERS
  */
 const DOCUMENT__DOC_HANDLER    			= require('./handler/document.doc-handler');
+const DOCUMENT__PACKAGE_HANDLER    		= require('./handler/document.package-handler');
+
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DOCUMENT,
@@ -48,13 +50,22 @@ module.exports = {
 		// ======================  DOCUMENT ===========================
 
 		// Tạo mới văn bản
-		[CF_ACTIONS_DOCUMENT.INSERT_DOCUMENT]	: DOCUMENT__DOC_HANDLER.insertDocument,
+		[CF_ACTIONS_DOCUMENT.INSERT_DOCUMENT]				: DOCUMENT__DOC_HANDLER.insertDocument,
 
 		// Cập nhật văn bản
-		[CF_ACTIONS_DOCUMENT.UPDATE_DOCUMENT]	: DOCUMENT__DOC_HANDLER.updateDocument,
+		[CF_ACTIONS_DOCUMENT.UPDATE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.updateDocument,
 
 		// Danh sách hồ sơ văn bản
-		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]	: DOCUMENT__DOC_HANDLER.getListDocument,
+		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getListDocument,
+
+		// Danh sách gói thầu
+		[CF_ACTIONS_DOCUMENT.GET_LIST_PACKAGE]				: DOCUMENT__PACKAGE_HANDLER.getListPackage,
+
+		// Danh sách phân loại hồ sơ trong gói thầu
+		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE_BY_PACKAGE]	: DOCUMENT__DOC_HANDLER.getListDoctypeByPackage,
+
+		// Danh sách tính chất văn bản
+		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE]				: DOCUMENT__DOC_HANDLER.getListDoctype,
 
 	},
 

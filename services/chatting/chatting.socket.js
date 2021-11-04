@@ -465,7 +465,14 @@ exports.CHATTING_SOCKET = {
 					path: 'sender receivers usersAssigned',
 					select: '_id fullname bizname image'
 				})
-				.populate('parent poll reminder')
+				.populate('parent reminder')
+				.populate({
+					path: 'poll',
+					populate: {
+						path: 'options.usersVote',
+						select: '_id bizname fullname image'
+					}
+				})
 				.populate({
 					path: 'files.file',
 					populate: {

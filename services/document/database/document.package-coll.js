@@ -8,7 +8,7 @@ const Schema                = require('mongoose').Schema;
  */
 module.exports = DATABASE_MIDDLEWARE("document_package", {
     //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    suid : {
+    suid: {
         type   : String,
         require:  true,
         unique : true
