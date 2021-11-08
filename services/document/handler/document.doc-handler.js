@@ -167,7 +167,10 @@ module.exports = {
 			companyID       : { type: "string", optional: true },
 			departmentID    : { type: "string", optional: true },
             packageID	    : { type: "string", optional: true },
-            doctypeID	    : { type: "string", optional: true },
+			doctypeID	    : { type: "string", optional: true },
+			senderID	    : { type: "string", optional: true },
+            contractID	    : { type: "string", optional: true },
+			requestResponse : { type: "number", optional: true },
 			marked          : { type: "number", optional: true },
 			select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
@@ -176,10 +179,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, departmentID, companyID, packageID, doctypeID, marked, keyword, limit, select, filter } = ctx.params;
-                
+                const { lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, requestResponse, marked, keyword, limit, select, filter } = ctx.params;
+
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
-                    lastestID, departmentID, companyID, packageID, doctypeID, userID, marked, keyword, limit, select, filter
+                    lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, userID, requestResponse, marked, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

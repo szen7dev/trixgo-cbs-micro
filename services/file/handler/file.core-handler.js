@@ -118,7 +118,7 @@ module.exports = {
                     status: 200,
                     data: {
                         infoGenerateLink,
-                        infoFileAfterInsert: infoFileAfterInsert.data
+                        infoFileAfterInsert: infoFileAfterInsert.data,
                     }
                 };
             } catch (error) {
