@@ -43,8 +43,8 @@ exports.checkEmail = email => {
 }
 
 
-/* 
- * Hàm validation các kí tự thực thi script 
+/*
+ * Hàm validation các kí tự thực thi script
  * param: data
  * return boolean
 */
@@ -63,7 +63,7 @@ exports.isValidationData = data => {
 
 
 let stringDomain = [
-    '.com', '.vn', '.edu', '.net', '.org', '.gov', '.info', 
+    '.com', '.vn', '.edu', '.net', '.org', '.gov', '.info',
     '.es', '.id', '.tel', '.tk', '.xyz', '.online', '.group',
     '.live', '.link', '.me', '.pro', '.be'
 ];
@@ -129,7 +129,7 @@ function _checkParametersModel(data, checkValue){
                 }
                 if(typeof data[i][key[0]] != 'number')
                     return { error: true, message: `Request params key ${key} invalid type ${checkValue}` }
-                
+
                 if(!NUMBER_UTILS.isInt(data[i][key[0]]))
                     return { error: true, message: `Request params  key ${key} hadn't been interger` }
             }
@@ -145,6 +145,98 @@ function _checkParametersModel(data, checkValue){
         default:
             return { error: true, message: `Request params key ${key} invalid` }
     }
+}
+
+/**
+ * LẤY DATA ĐỆ QUY
+ * Author: DePV
+ * Tìm kiếm theo findById
+ * @param {*} colection => Tên colection cần đệ quy
+ * @param {*} conditionID => _id collection cần đệ quy
+ * @param {*} parent => _id cha nếu là colection con
+ * ------------------------------------
+ * updated K.NEY (6:35 30/06/2020)
+ * - hàm này chỉ convert cho getListNestedGroup (Budget_group. line: 230)
+ */
+exports.getDataRecursive = async(colection, conditionID, parent) =>{
+    // Khai báo hàm get populate cho các phần tử cha con
+    let constructForAny = (level, path) => {
+        const oneLevel = () => ({ path });
+        let obj = oneLevel();
+
+        while (level) {
+            if (level !== 1) {
+                obj.populate = Object.assign({}, obj);
+                // console.log(obj)
+            }
+            obj = Object.assign({}, obj);
+            // console.log(obj)
+            // console.log('====done')
+            --level;
+        }
+
+        return obj;
+    };
+
+    // Lấy levelMax của con cấp thấp nhất để forEach xử lý
+    let levelMax = await colection.aggregate(
+        [
+            {
+                $group:
+                {
+                    _id: null,
+                    maxLevel: { $max: "$level" }
+                }
+            }
+        ]
+    );
+
+    let levelForRecursive = Number(levelMax[0].maxLevel);
+
+    // Khai báo mảng chứa phần tử cha và các con
+    let arrObjectID = [];
+
+    /**
+     * Khai báo hàm gộp các mảng phần tử con vào trong phần tử cha
+     * Ppdated by K.Ney (6:34 30/06/2020)
+     */
+    let getListIDRecursiveForAny = (arr, level) => {
+        arrObjectID = [...arr]; // VARIABLE GLOBAL
+        let arrTempForRecursive = [...arr];
+
+        for (let i = 0; i < arr.length; i++) {
+            while(level > 0) {
+                arrTempForRecursive.forEach(item => {
+                    if (Array.isArray(item.childs) && item.childs.length) {
+                        let arrTemp = Array.from(item.childs) // update_1
+
+                        arrObjectID = [...arrObjectID, ...arrTemp];
+
+                        arrTempForRecursive = arrObjectID; // update_2
+                    }
+                })
+                --level;
+            }
+        }
+    }
+
+    let infoContractConditionOrigin = await colection.findById(conditionID)
+        .populate(
+            constructForAny(levelForRecursive, 'childs')
+        )
+
+    // Thay thế cho cách cũ ở các phần danh mục (truyền vào Array thay vì object)
+    getListIDRecursiveForAny([infoContractConditionOrigin], levelForRecursive);
+
+    // Nếu có parent thì xóa ID hiện tại nằm trong childs của parent đi
+    // (Dùng trong trường hợp comment mà có comment cha thì Pull phần từ con trong comment cha)
+    if(parent){
+        await colection.findByIdAndUpdate(parent, {
+            $pull: { childs: conditionID }
+        }, { new: true })
+    }
+
+    return arrObjectID;
 }
 
 function _checkPointDotsAndRoundingNumberForPagingChatting(total, perPage){
@@ -192,7 +284,7 @@ exports.isInt = value => {
 
 // -----------CHECK NUMBER VALID  --------//
 exports.checkNumberValid = ({ val }) => {
-    if (!val || Number.isNaN(Number(val))) 
+    if (!val || Number.isNaN(Number(val)))
         return false;
     return true;
 }
@@ -208,7 +300,7 @@ exports.checkNumberIsValidWithRange = ({ arrValid, val }) => {
     return true;
 }
 // -----------CHECK DATE --------//
-// ex valid:  '2021-07-29','12/25/2021' 
+// ex valid:  '2021-07-29','12/25/2021'
 exports.checkDateValid = d => {
     d = new Date(d);
     if (Object.prototype.toString.call(d) === "[object Date]") {
@@ -227,9 +319,9 @@ exports.checkDateValid = d => {
 }
 /**
  * ----------CHECK OBJECT_ID VALID ----------//
- * @param  {...any} params 
- * @returns 
- * 
+ * @param  {...any} params
+ * @returns
+ *
  * -------cách dùng----------
  *  if (!checkObjectIDs(authorID, companyID, projectID)){
  *  ...
@@ -240,7 +332,7 @@ let _isValid = input => {
         return false;
     let inputForCheck = input.toString();
     if (ObjectID.isValid(input.toString())) {
-        if (String(new ObjectID(input)) === inputForCheck) 
+        if (String(new ObjectID(input)) === inputForCheck)
             return true;
         return false;
     }

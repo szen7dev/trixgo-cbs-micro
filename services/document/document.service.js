@@ -70,6 +70,8 @@ module.exports = {
 		// Danh sách tính chất văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE]				: DOCUMENT__DOC_HANDLER.getListDoctype,
 
+		// Danh sách nơi lưu trữ văn bản
+		[CF_ACTIONS_DOCUMENT.GET_LIST_STORAGE]				: DOCUMENT__DOC_HANDLER.getListStorage,
 	},
 
 	/**
