@@ -176,9 +176,19 @@ class Model extends BaseModel {
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
-				if(files && checkObjectIDs(files)){
+				if(files && files.length){
+					let listFilesID = files.filter(file => !checkObjectIDs(file));
+
+					if(listFilesID.length && !checkObjectIDs(listFilesID))
+						return resolve({ error: true, message: 'Request Param files invalid', status: 400 });
+
+					files = files.map(file => ({
+						file,
+						status: 1
+					}))
 					dataInsertMessage.files = files;
 				}
+
 				// if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
 
 				// 	let listFilesMessage = files.map(file => ({
