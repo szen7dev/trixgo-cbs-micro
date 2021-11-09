@@ -9,14 +9,14 @@ module.exports = {
             app            : { type: "string" },
             name           : { type: "string" },
             url            : { type: "string" },
-            size           : { type: "string", optional: true },
-            // userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            size           : { type: "number", optional: true },
+            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { app, name, url, size } = ctx.params;
+				// const { _id: userID } = ctx.meta.infoUser;
+                let { app, name, url, size, userID } = ctx.params;
 
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
                 return infoFileAfterInsert;

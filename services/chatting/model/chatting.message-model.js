@@ -175,15 +175,6 @@ class Model extends BaseModel {
 				parentID 		&& (dataInsertMessage.parent 		= parentID);
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
-				// if(files && checkObjectIDs(files)){
-				// 	files = files.map(file => ({
-				// 		file,
-				// 		status: 1
-				// 	}))
-
-				// 	dataInsertMessage.files = files;
-				// }
-
 				// MESSAGE IMAGES, FILES
 				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
 

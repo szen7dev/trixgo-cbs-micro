@@ -44,7 +44,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'object_invalid' });
 
-                if (!checkNumberValid({ val: size }))
+                if (size && !checkNumberValid({ val: size }))
                     return resolve({ error: true, message: 'size_invalid' });
                 /**
                  * LOGIC STEP (3)
