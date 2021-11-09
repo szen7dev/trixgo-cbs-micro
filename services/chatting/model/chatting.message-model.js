@@ -127,7 +127,7 @@ class Model extends BaseModel {
 	 * Date: 06/08/2021
 	 */
     insertMessage({
-		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -175,55 +175,51 @@ class Model extends BaseModel {
 				parentID 		&& (dataInsertMessage.parent 		= parentID);
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
-				console.log({ files })
-
-				// MESSAGE IMAGES, FILES
-				if(files && checkObjectIDs(files)){
-					files = files.map(file => ({
-						file,
-						status: 1
-					}))
-
-					console.log({ files })
-
-					dataInsertMessage.files = files;
-				}
-
-				// if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
-
-				// 	let listFilesMessage = files.map(file => ({
-				// 		app: CF_DOMAIN_SERVICES.CHATTING,
-				// 		name: file.name,
-				// 		url: file.url,
-				// 		size: file.size,
-				// 		userID: senderID,
+				// if(files && checkObjectIDs(files)){
+				// 	files = files.map(file => ({
+				// 		file,
+				// 		status: 1
 				// 	}))
 
-				// 	const { results } = await PromisePool
-				// 		.for(listFilesMessage)
-				// 		.withConcurrency(2)
-				// 		.process(async file => {
-				// 			// Insert file core collection
-				// 			let infoFile = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, file);
-
-				// 			// Update status file core collection
-				// 			await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`, {
-				// 				fileID: infoFile.data && infoFile.data._id.toString(),
-				// 				status: "1",
-				// 				userID: senderID,
-				// 			});
-
-				// 			// Insert conversation file collection
-				// 			let infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
-				// 				conversationID,
-				// 				fileID: infoFile.data && infoFile.data._id
-				// 			});
-
-				// 			return { file: infoAfterInserted.data && infoAfterInserted.data._id }
-				// 		})
-
-				// 	dataInsertMessage.files = results;
+				// 	dataInsertMessage.files = files;
 				// }
+
+				// MESSAGE IMAGES, FILES
+				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
+
+					let listFilesMessage = files.map(file => ({
+						app: CF_DOMAIN_SERVICES.CHATTING,
+						name: file.name,
+						url: file.url,
+						size: file.size,
+						userID: senderID,
+					}))
+
+					const { results } = await PromisePool
+						.for(listFilesMessage)
+						.withConcurrency(2)
+						.process(async file => {
+							// Insert file core collection
+							let infoFile = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, file);
+
+							// Update status file core collection
+							await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`, {
+								fileID: infoFile.data && infoFile.data._id.toString(),
+								status: "1",
+								userID: senderID,
+							});
+
+							// Insert conversation file collection
+							let infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
+								conversationID,
+								fileID: infoFile.data && infoFile.data._id
+							});
+
+							return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+						})
+
+					dataInsertMessage.files = results;
+				}
 
 				// MESSAGE LINK
 				if(content){
