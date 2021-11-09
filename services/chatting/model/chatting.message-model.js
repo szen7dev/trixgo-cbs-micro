@@ -176,16 +176,12 @@ class Model extends BaseModel {
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
-				if(files && files.length){
-					let listFilesID = files.filter(file => !checkObjectIDs(file));
-
-					if(listFilesID.length && !checkObjectIDs(listFilesID))
-						return resolve({ error: true, message: 'Request Param files invalid', status: 400 });
-
+				if(files && checkObjectIDs(files)){
 					files = files.map(file => ({
 						file,
 						status: 1
 					}))
+
 					dataInsertMessage.files = files;
 				}
 
