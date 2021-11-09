@@ -177,8 +177,14 @@ class Model extends BaseModel {
 
 				// MESSAGE IMAGES, FILES
 				if(files && checkObjectIDs(files)){
+					files = files.map(file => ({
+						file,
+						status: 1
+					}))
+
 					dataInsertMessage.files = files;
 				}
+
 				// if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
 
 				// 	let listFilesMessage = files.map(file => ({
