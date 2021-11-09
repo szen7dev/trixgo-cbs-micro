@@ -253,7 +253,7 @@ class Model extends BaseModel {
 
                 if(!infoAfterDelete)
                     return resolve({ error: true, message: "Can't delete document", status: 422 });
-                
+
                 return resolve({ error: false, data: infoAfterDelete, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -266,7 +266,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách hồ sơ văn bản
 	 * Date: 26/10/2021
 	 */
-    getListDocument({ companyID, departmentID, packageID, doctypeID, userID, lastestID, marked, keyword, limit = 20, filter = {}, select = {} }){
+    getListDocument({ companyID, departmentID, packageID, doctypeID, senderID, contractID, userID, lastestID, requestResponse, marked, keyword, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -283,6 +283,12 @@ class Model extends BaseModel {
 
                 if(doctypeID && !checkObjectIDs(doctypeID))
                     return resolve({ error: true, message: 'Request params doctypeID invalid', status: 400 });
+
+                if(senderID && !checkObjectIDs(senderID))
+                    return resolve({ error: true, message: 'Request params senderID invalid', status: 400 });
+
+                if(contractID && !checkObjectIDs(contractID))
+                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
 
 				if(isNaN(limit)) {
 					limit = 20;
@@ -331,7 +337,7 @@ class Model extends BaseModel {
 
                 companyID       && (conditionObj.company = companyID);
                 departmentID    && (conditionObj.project = departmentID);
-                
+
                 if(companyID || departmentID){
                     listPackage = await DOCUMENT__PACKAGE_COLL.find({
                         ...conditionObj,
@@ -344,7 +350,10 @@ class Model extends BaseModel {
                     conditionObj.package = { $in: listPackage.map(item => item._id) };
                 }
 
-                packageID && (conditionObj.package = packageID);
+                packageID       && (conditionObj.package = packageID);
+                senderID        && (conditionObj.sender = senderID);
+                doctypeID       && (conditionObj.property = doctypeID);
+                requestResponse && (conditionObj.requestResponse = requestResponse);
 
                 if(marked && [1,2].includes(marked)){
                     conditionObj["mark.status"] = marked;

@@ -588,6 +588,7 @@ module.exports = {
 
 	
 		//---------------------------🏁 START S015.DOCUMENT 🏁---------------------------//
+
 		/**
 		 * Code: A0151
 		 */
@@ -601,6 +602,12 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.UPDATE_DOCUMENT}`],
 
 		/**
+		 * Code: A0157
+		 */
+		[`DELETE ${CF_ROUTINGS_DOCUMENT.DELETE_DOCUMENT}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.DELETE_DOCUMENT}`],
+
+		/**
 		 * Code: A0153
 		 */
 		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_DOCUMENT}`] :
@@ -611,9 +618,27 @@ module.exports = {
 		 */
 		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_DOCTYPE}`] :
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE}`],
+
+		/**
+		 * Code: A0155
+		 */
+		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_PACKAGE}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_PACKAGE}`],
+
+		/**
+		 * Code: A0156
+		 */
+		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_DOCTYPE_BY_PACKAGE}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE_BY_PACKAGE}`],
+
+		/**
+		 * Code: A0158
+		 */
+		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_STORAGE}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_STORAGE}`],
+
+
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
-
-
 
 
 	},

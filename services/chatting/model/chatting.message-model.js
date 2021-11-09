@@ -883,10 +883,10 @@ class Model extends BaseModel {
 				}
 
 				// INSERT MESSAGE NOTIFY CREATE POLL
-				await this.insertData({
-					...dataInsertMessage,
-					type: 110
-				})
+				// await this.insertData({
+				// 	...dataInsertMessage,
+				// 	type: 110
+				// })
 
 				// INSERT MESSAGE POLL
 				let infoMessagePoll = await this.insertData({
@@ -1309,10 +1309,10 @@ class Model extends BaseModel {
 				}
 
 				// INSERT MESSAGE NOTIFY CREATE REMINDER
-				await this.insertData({
-					...dataInsertMessage,
-					type: 114
-				})
+				// await this.insertData({
+				// 	...dataInsertMessage,
+				// 	type: 114
+				// })
 
 				// INSERT MESSAGE REMINDER
 				let infoMessageReminder = await this.insertData({

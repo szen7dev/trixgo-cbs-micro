@@ -74,7 +74,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     //_________Địa chỉ lưu trữ
     storage: {
         type: Schema.Types.ObjectId,
-        ref : "document_storage"          
+        ref : "document_storage"
     },
     //_________Ngày tháng văn bản/Ngày đóng dấu
     date: {
@@ -118,10 +118,10 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         default: null
     },
     //_________Các văn bản liên đới
-    // linkDocument: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "document_doc"
-    // }],
+    linkDocument: [{
+        type: Schema.Types.ObjectId,
+        ref: "document_doc"
+    }],
     //_________Ký xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,
