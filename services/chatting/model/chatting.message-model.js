@@ -175,12 +175,16 @@ class Model extends BaseModel {
 				parentID 		&& (dataInsertMessage.parent 		= parentID);
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
+				console.log({ files })
+
 				// MESSAGE IMAGES, FILES
 				if(files && checkObjectIDs(files)){
 					files = files.map(file => ({
 						file,
 						status: 1
 					}))
+
+					console.log({ files })
 
 					dataInsertMessage.files = files;
 				}
