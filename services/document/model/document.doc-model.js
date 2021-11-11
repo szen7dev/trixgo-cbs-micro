@@ -4,6 +4,7 @@
  * EXTERNAL PACKAGE
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
+const PromisePool									= require('@supercharge/promise-pool');
 
 /**
  * CONSTANTS
@@ -80,7 +81,7 @@ class Model extends BaseModel {
                     requestResponse,
                     expiredResponse,
                     note,
-                    description
+                    description,
                 }
 
                 amount          && (dataInsert.amount           = +amount || 1);
@@ -109,6 +110,15 @@ class Model extends BaseModel {
 
 				if (!infoAfterInsert)
                     return resolve({ error: true, message: "Can't create document", status: 403 });
+
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                    $push: {
+                        usersRelated: {
+                            user: userID,
+                            permission: 1
+                        }
+                    }
+                })
 
                 if(parentID) {
                     await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
@@ -161,6 +171,19 @@ class Model extends BaseModel {
 
                 if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse }))
                     return resolve({ error: true, message: 'Request params requestResponse invalid', status: 400 });
+
+                let checkPermission = await DOCUMENT__DOC_COLL.findOne({
+                    _id: documentID,
+                    usersRelated: {
+                        $elemMatch: { 
+                            user: userUpdate, 
+                            permission: { $in: [1,3] }
+                        }
+                    }
+                });
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: 'Document update permission denied', status: 403 });
 
                 let dataUpdate = {
                     name,
@@ -678,6 +701,120 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
+ 	 * Dev: MinhVH
+ 	 * Func: Chia sẻ văn bản
+ 	 * Date: 05/11/2021
+ 	 */
+ 	updateShareDocument({ userID, documentID, usersID, isShare }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!usersID || !usersID.length || !checkObjectIDs(usersID))
+                    return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
+
+                let infoAfterShare = null;
+
+                if(isShare){
+                    let listUserShared = usersID.map(user => ({
+                        user,
+                        permission: 1
+                    }))
+
+                    const { results } = await PromisePool
+                        .for(listUserShared)
+                        .withConcurrency(2)
+                        .process(user => DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                            $addToSet: {
+                                usersRelated: user
+                            }
+                        }, { new: true }))
+
+                    infoAfterShare = results;
+                } else{
+                    const { results } = await PromisePool
+                        .for(usersID)
+                        .withConcurrency(2)
+                        .process(user => DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                            $pull: {
+                                usersRelated: { user }
+                            }
+                        }, { new: true }))
+
+                    infoAfterShare = results;
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterShare
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+ 	 * Dev: MinhVH
+ 	 * Func: Cập nhật quyền người được chia sẻ văn bản
+ 	 * Date: 05/11/2021
+ 	 */
+    updatePermissionShare({ authorID, documentID, userID, permission }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(![1,2].includes(permission))
+                    return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
+
+                let infoDocument = await DOCUMENT__DOC_COLL.findOne({
+                    _id: documentID,
+                    usersRelated: {
+                        $elemMatch: { user: userID }
+                    }
+                });
+
+                if(!infoDocument)
+                    return resolve({ error: true, message: 'User has not yet shared the document', status: 400 });
+
+                let infoAfterUpdate = await DOCUMENT__DOC_COLL.findOneAndUpdate({
+                    _id: documentID,
+                    usersRelated: {
+                        $elemMatch: { user: userID }
+                    }
+                }, {
+                    $set: {
+						"usersRelated.$.permission": permission
+					}
+                }, { new: true });
+
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Update permission failed', status: 400 });
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterUpdate
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

@@ -127,6 +127,24 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref: "signature"
     }],
+    //_________Những người liên quan
+    usersRelated: [{
+        _id: false,
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: "user"
+        },
+        /**
+         * Quyền hạn
+         * 1: Người khởi tạo
+         * 2: Người được xem
+         * 3: Người được chỉnh sửa
+         */
+        permission: {
+            type: Number,
+            default: 1
+        }
+    }],
     /**
      * CẤU TRÚC ĐỆ QUY
      */
