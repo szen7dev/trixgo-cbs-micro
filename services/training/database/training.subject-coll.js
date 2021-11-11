@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE(" ", {
     //_________Số lượng bài viết
     amountLessions: {
         type: Number,
-        default: 0
+        default: 5
     },
 
     //_________Số lượt xem(Tổng của các bài viết) hoặc tổng của 1 bài viết

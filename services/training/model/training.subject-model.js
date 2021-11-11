@@ -230,7 +230,7 @@ class Model extends BaseModel {
                     })
                 }
 
-                let checkUserRating = await TRAINING__SUBJECT_RATING_COLL.findOne({ lession: subjectID, userCreate: userID });
+                let checkUserRating = await TRAINING__SUBJECT_RATING_COLL.findOne({ lession: subjectID, userCreate: userID }).select("score");
                 infoData.useRated = checkUserRating
                 console.log({ infoData });
                 console.log({ checkUserRating });
