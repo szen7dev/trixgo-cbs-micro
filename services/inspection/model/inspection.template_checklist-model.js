@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -8,8 +8,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 /**
  * import inter-coll, exter-coll
  */
-const INSPECTION__TEMPLATE_DOC_COLL          = require('../database/inspection.template_doc-coll');
-const INSPECTION__TEMPLATE_CHECKLIST_COLL    = require('../database/inspection.template_checklist-coll');
+const INSPECTION__TEMPLATE_CHECKLIST_COLL          = require('../database/inspection.template_checklist-coll');
 
 /**
  * import inter-model, exter-model
@@ -37,7 +36,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = { };
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -59,13 +57,13 @@ class Model extends BaseModel {
                  */  
 
                 dataInsert = {
-                    inspection,  name, userCreate: authorID, userUpdate: authorID
+                    inspection, name, userCreate: authorID, userUpdate: authorID
                 };
 
                 if(description){
                     dataInsert.description = description;
                 }
-
+                console.log({ dataInsert });
                 let infoDataAfterInserted = await this.insertData(dataInsert);
 
                 if(!infoDataAfterInserted)
@@ -162,27 +160,80 @@ class Model extends BaseModel {
     }
 
     /**
-     * Xóa template docs: DePV ✅
-     * F0218
-     * problem: Bị hạn chế không thể sort createAt = 1
+     * Lấy thông tin checklist mẫu ✅
+     * Author: Depv
      */
-    getListByTemplateDocsWithPaging({ limit = 10, lastestID, templateID  }) { 
+    getInfo({ checklistID, filter }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { inspection: templateID, state: 1 };
-                let conditionFind = {};
-                let sortBy  = { createAt: -1 };
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(templateID))
-                    return resolve({ error: true, message: "'Request params templateDocID invalid" });
+                if(!checkObjectIDs(checklistID))
+                    return resolve({ error: true, message: 'Request params checklistID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                let infoAfterHandel = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(checklistID).select(filter);
+
+                if(!infoAfterHandel)
+                    return resolve({ error: true, message: "Can't get info template checklist", status: 403 });
+
+                return resolve({ error: false, data: infoAfterHandel, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Danh sách checklist mẫu ✅
+     * Author: Depv 
+     */
+    getList({ keyword, templateID, limit = 10, lastestID, filter = {}, select = {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = {};
+ 
+                if(templateID){
+                    conditionObj.inspection = templateID;
+                }
+
+                let conditionFind = {};
+                let sortBy = { createAt: -1 };
+				let objSort 	 	= {};
+
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
 
                 /**
                  * LOGIC STEP (3)
@@ -191,11 +242,11 @@ class Model extends BaseModel {
                  */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoMessage = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(lastestID);
-					if(!infoMessage)
+					let infoData = await INSPECTION__TEMPLATE_CHECKLIST_COLL.findById(lastestID);
+					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
                     // console.log({ nextInfo });
@@ -206,33 +257,49 @@ class Model extends BaseModel {
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
-                let infoDataAfterGet = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({...conditionObj, ...conditionFind })
-                    .select("name userUpdate modifyAt description")
-                    .populate({
-                        path: "userUpdate",
-                        select: "fullname"
-                    })
-                    .limit(+limit)
+                // SEARCH TEXT
+				if(keyword){
+					conditionObj.$text = { $search: keyword };
+					objSort.score = { $meta: "textScore" };
+					sortBy.score  = { $meta: "textScore" };
+				}
+
+                let infoDataAfterGet = await INSPECTION__TEMPLATE_CHECKLIST_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .limit(+limit+1)
                     .sort(sortBy) 
-                    .lean();
+                    .lean(); 
 
                 // GET TOTAL RECORD
-				let totalRecord = await INSPECTION__TEMPLATE_CHECKLIST_COLL.count(conditionObj);
+				// let totalRecord = await INSPECTION__TEMPLATE_CHECKLIST_COLL.count(conditionObj);
                 let totalCurrentPage = await INSPECTION__TEMPLATE_CHECKLIST_COLL.count(conditionFind);
-
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });
                 
+                let totalRecord = await INSPECTION__TEMPLATE_CHECKLIST_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
+                if(!lastestID){
+                    currentPage =  1
+                }
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
+                    nextCursor,
                     currentPage
                 }, status: 200 });
-
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
