@@ -54,11 +54,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, type, name, description, content, logo } = ctx.params;
+                let { subjectID, name, description, content, logo } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.update({
-                        subjectID, name, logo, description, content, userID
-                    });
+                    subjectID, name, logo, description, content, userID
+                });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

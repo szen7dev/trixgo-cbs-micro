@@ -129,6 +129,10 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
+                if(checkObjectIDs(logo)){
+                    dataUpdate.logo = logo;
+                }
+
                 if(content){
                     dataUpdate.content = content;
                 }
