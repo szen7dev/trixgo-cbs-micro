@@ -56,6 +56,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { subjectID, name, description, content, logo } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+                // Bước check quyền
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.update({
                     subjectID, name, logo, description, content, userID
                 });
@@ -81,6 +82,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { subjectID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+                // Bước check quyền
+
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.remove({
                     subjectID
                 });
