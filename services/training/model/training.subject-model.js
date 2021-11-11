@@ -247,14 +247,13 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {};
+                let conditionObj = {state:1};
                 console.log({  keyword, limit, lastestID, type, parentID, filter, select });
-
 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                 }
- 
+                
                 if(type){
                     conditionObj.type = type;
                 }
@@ -313,7 +312,7 @@ class Model extends BaseModel {
 					objSort.score = { $meta: "textScore" };
 					sortBy.score  = { $meta: "textScore" };
 				}
-
+                
                 let infoDataAfterGet = await TRAINING__SUBJECT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .populate({
                         path: "parent",

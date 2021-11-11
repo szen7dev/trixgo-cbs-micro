@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("training_subject", {
+module.exports  = DATABASE_MIDDLEWARE(" ", {
     //_________ Phân loại chính(Read me, Vocation, E-Tranining & reaction ...) 
     type: Number,
     //_________Tên chủ đề, tên bài viết
