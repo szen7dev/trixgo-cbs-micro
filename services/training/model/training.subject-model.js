@@ -27,6 +27,7 @@ class Model extends BaseModel {
     /**
      * Name: insert subject ✅
      * Author: Depv 
+     * Code: F02501
      */
     insert({ type, name, description, content, parent, userID }) { 
         return new Promise(async (resolve) => {
@@ -85,6 +86,7 @@ class Model extends BaseModel {
      /**
      * Name: update subject ✅
      * Author: Depv 
+     * Code: F02502
      */
     update({ subjectID, name, logo, description, content, userID }) { 
         return new Promise(async (resolve) => {
@@ -145,6 +147,7 @@ class Model extends BaseModel {
      /**
      * Name: Remove subject ✅
      * Author: Depv 
+     * Code: F02503
      */
     remove({ subjectID }) { 
         return new Promise(async (resolve) => {
@@ -185,6 +188,7 @@ class Model extends BaseModel {
     /**
      * Name: Get info subject ✅
      * Author: Depv 
+     * Code: F02504
      */
     getInfo({ subjectID, select }) { 
         return new Promise(async (resolve) => {
@@ -231,10 +235,11 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Name: Danh sách jubject ✅
      * Author: Depv 
+     * Code: F02505
      */
     getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {

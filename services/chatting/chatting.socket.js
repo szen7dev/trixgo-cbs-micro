@@ -430,7 +430,7 @@ exports.CHATTING_SOCKET = {
 		if(infoMessageAfterInsert.error){
 			return sendDataToMultilSocketsOfListUser({
 				listUserConnected: listUserActive,
-				arrReceivers: [userID],
+				arrReceiver: [userID],
 				data: {
 					tmpid,
 					infoMessage: infoMessageAfterInsert,

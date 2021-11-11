@@ -16,7 +16,7 @@ module.exports = {
 	 * Func: Thêm template checklist
 	 * Date: 17/08/2021
 	 */
-    insertChecklist: {
+    insert: {
         auth: "required",
         params: {
 			name          : { type: "string" },
@@ -45,7 +45,7 @@ module.exports = {
 	 * Func: Cập nhật template checklist
 	 * Date: 17/08/2021
 	 */
-    updateChecklist: {
+    update: {
         auth: "required",
         params: {
 			checklistID    : { type: "string" },
@@ -74,7 +74,7 @@ module.exports = {
 	 * Func: Xóa template checklist
 	 * Date: 17/08/2021
 	 */
-    removeChecklist: {
+    remove: {
         auth: "required",
         params: {
 			checklistID  : { type: "string" },
@@ -101,20 +101,31 @@ module.exports = {
 	 * Func: Danh sách template checklist của inspection
 	 * Date: 17/08/2021
 	 */
-    getListChecklist: {
+    getInfoAndGetList: {
         params: {
-            limit: { type: "string", optional: true },
-            lastestID: { type: "string", optional: true },
-            templateID: { type: "string" },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            templateID  : { type: "string", optional: true },
+            checklistID : { type: "string", optional: true },
+            keyword     : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { limit, lastestID, templateID } = ctx.params;
-
-                const resultAfterCallHandler = await INSPECTION__TEMPLATE_CHECKLIST_MODEL.getListByTemplateDocsWithPaging({
-					limit, lastestID, templateID
-				});
+                let { limit, lastestID, templateID, checklistID, keyword, filter, select } = ctx.params;
+                let resultAfterCallHandler;
+                console.log({ limit, lastestID, templateID, checklistID, keyword, filter, select });
+                if(checklistID){
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_CHECKLIST_MODEL.getInfo({
+                        checklistID, filter
+                    });
+                }else{
+                    resultAfterCallHandler = await INSPECTION__TEMPLATE_CHECKLIST_MODEL.getList({
+                        keyword, templateID, limit, lastestID, filter, select
+                    });
+                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
