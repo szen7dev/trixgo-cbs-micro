@@ -8,7 +8,9 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
  * import inter-coll, exter-coll
  */
 const TRAINING__SUBJECT_COLL           = require('../database/training.subject-coll');
-const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
+const TRAINING__SUBJECT_RATING_COLL    = require('../database/training.subject_rating-coll');
+
+const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -190,7 +192,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02504
      */
-    getInfo({ subjectID, select }) { 
+    getInfo({ subjectID, userID, select }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -212,8 +214,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoData = await TRAINING__SUBJECT_COLL.findById(subjectID).select(select)
-
+                let infoData = await TRAINING__SUBJECT_COLL.findById(subjectID).select(select).lean();
                 if(!infoData)
                     return resolve({ error: true, message: "Can't get info subject", status: 403 });
                 
@@ -228,6 +229,11 @@ class Model extends BaseModel {
                         $inc: { amountViews: 1 }
                     })
                 }
+
+                let checkUserRating = await TRAINING__SUBJECT_RATING_COLL.findOne({ lession: subjectID, userCreate: userID });
+                infoData.useRated = checkUserRating
+                console.log({ infoData });
+                console.log({ checkUserRating });
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {

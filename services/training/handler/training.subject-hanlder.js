@@ -116,7 +116,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(subjectID){
                     resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.getInfo({
-                        subjectID, select
+                        subjectID, select, userID
                     });
                 }else{
                     resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.getList({
