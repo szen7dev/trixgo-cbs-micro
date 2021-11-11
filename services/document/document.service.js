@@ -58,6 +58,12 @@ module.exports = {
 		// Xóa văn bản
 		[CF_ACTIONS_DOCUMENT.DELETE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.deleteDocument,
 
+		// Chia sẻ văn bản
+		[CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.updateShareDocument,
+
+		// Cập nhật quyền người được chia sẻ văn bản
+		[CF_ACTIONS_DOCUMENT.UPDATE_PERMISSION_SHARE]		: DOCUMENT__DOC_HANDLER.updatePermissionShare,
+
 		// Danh sách hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getListDocument,
 

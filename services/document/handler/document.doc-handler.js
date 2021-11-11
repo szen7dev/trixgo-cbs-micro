@@ -284,4 +284,59 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: MinhVH
+	 * Func: Chia sẻ văn bản
+	 * Date: 05/11/2021
+	 */
+    updateShareDocument: {
+        params: {
+			documentID  : { type: "string" },
+			isShare     : { type: "boolean" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { documentID, usersID, isShare } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateShareDocument({
+                    userID, documentID, usersID, isShare
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật quyền người được chia sẻ văn bản
+	 * Date: 05/11/2021
+	 */
+    updatePermissionShare: {
+        params: {
+			documentID  : { type: "string" },
+			userID      : { type: "string" },
+			permission  : { type: "number" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { documentID, userID, permission } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updatePermissionShare({
+                    authorID, documentID, userID, permission
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
 }

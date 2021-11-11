@@ -9,6 +9,7 @@ const CF_ROUTINGS_DOCUMENT = {
     DELETE_DOCUMENT                     		: `${BASE_ROUTE}/delete-document`,
     GET_LIST_DOCUMENT                     		: `${BASE_ROUTE}/list-document`,
     GET_LIST_STORAGE                     		: `${BASE_ROUTE}/list-storage`,
+    SHARE_DOCUMENT                     		    : `${BASE_ROUTE}/share-document`,
 
     /// PACKAGE
     GET_LIST_PACKAGE                     		: `${BASE_ROUTE}/list-package`,

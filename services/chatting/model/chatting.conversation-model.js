@@ -126,29 +126,25 @@ class Model extends BaseModel {
 				name 		&& (dataUpdate.name 		= name);
                 description && (dataUpdate.description 	= description);
 
-                if(avatar && checkObjectIDs(avatar)){
-                    dataUpdate.avatar = avatar;
-                }
-
 				// Cập nhật avatar cuộc hội thoại
-				// if(avatar){
-				// 	let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-				// 		app: CF_DOMAIN_SERVICES.CHATTING,
-				// 		name: avatar.name,
-				// 		url: avatar.url,
-				// 		size: avatar.size,
-				// 		userID,
-				// 	});
-                //
-				// 	if(infoAvatarConversation.error)
-				// 		return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
-                //
-				// 	let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
-				// 		conversation: conversationID,
-				// 		file: infoAvatarConversation.data._id
-				// 	});
-				// 	dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
-				// }
+				if(avatar){
+					let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
+						app: CF_DOMAIN_SERVICES.CHATTING,
+						name: avatar.name,
+						url: avatar.url,
+						size: avatar.size,
+						userID,
+					});
+                
+					if(infoAvatarConversation.error)
+						return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
+                
+					let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
+						conversation: conversationID,
+						file: infoAvatarConversation.data._id
+					});
+					dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
+				}
 
 				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$set: dataUpdate
