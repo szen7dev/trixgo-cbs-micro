@@ -28,6 +28,7 @@ class Model extends BaseModel {
     /**
      * Name: insert subject rating ✅
      * Author: Depv 
+     * Code: F02506
      */
     insert({ lession, score, userID }) { 
         return new Promise(async (resolve) => {
