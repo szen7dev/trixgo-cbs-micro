@@ -231,7 +231,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Name: Danh sách jubject ✅
      * Author: Depv 

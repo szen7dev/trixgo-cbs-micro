@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
@@ -204,19 +204,40 @@ class Model extends BaseModel {
     }
 
     /**
-     * Danh sách area theo project: DePV ✅
-     * F0230
+     * Name: Danh sách area theo project: DePV ✅
+     * Code: F0230
+     * Author: Depv 
      */
-    getListArea({ keyword, projectID, limit = 10, lastestID, select  }) { 
+    getList({ keyword, projectID, limit = 10, lastestID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { project: projectID, state: 1 };
+                let conditionObj = { state: 1 };
+ 
+                if(projectID){
+                    conditionObj.project = projectID;
+                }
+
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
-                let objSort = {};
+				let objSort 	 	= {};
+
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -230,11 +251,11 @@ class Model extends BaseModel {
                  */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoMessage = await INSPECTION__AREA_COLL.findById(lastestID);
-					if(!infoMessage)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+					let infoData = await INSPECTION__AREA_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoMessage.createAt}_${infoMessage._id}`;
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
                     // console.log({ nextInfo });
@@ -252,29 +273,42 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let infoDataAfterGet = await INSPECTION__AREA_COLL.find({...conditionObj, ...conditionFind }, objSort)
-                    .select(select)
-                    .limit(+limit)
+                let infoDataAfterGet = await INSPECTION__AREA_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .limit(+limit+1)
                     .sort(sortBy) 
-                    .lean();
+                    .lean(); 
 
                 // GET TOTAL RECORD
-				let totalRecord = await INSPECTION__AREA_COLL.count(conditionObj);
+				// let totalRecord = await INSPECTION__AREA_COLL.count(conditionObj);
                 let totalCurrentPage = await INSPECTION__AREA_COLL.count(conditionFind);
-
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });
                 
+                let totalRecord = await INSPECTION__AREA_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
+                if(!lastestID){
+                    currentPage =  1
+                }
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
+                    nextCursor,
                     currentPage
                 }, status: 200 });
-
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

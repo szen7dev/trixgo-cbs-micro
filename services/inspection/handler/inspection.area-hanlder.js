@@ -15,7 +15,7 @@ module.exports = {
 	 * Func: Thêm khu vực
 	 * Date: 19/08/2021
 	 */
-    insertArea: {
+    insert: {
         auth: "required",
         params: {
             projectID   : { type: "string" },
@@ -54,7 +54,7 @@ module.exports = {
 	 * Func: Cập nhật khu vực
 	 * Date: 19/08/2021
 	 */
-    updateArea: {
+    update: {
         auth: "required",
         params: {
             areaID      : { type: "string" },
@@ -85,7 +85,7 @@ module.exports = {
 	 * Func: Xóa khu vực
 	 * Date: 19/08/2021
 	 */
-    removeArea: {
+    remove: {
         auth: "required",
         params: {
             areaID   : { type: "string" },
@@ -106,34 +106,35 @@ module.exports = {
         }
     },
 
-
     /**
 	 * Dev: Depv ✅
 	 * Func: Xóa khu vực
 	 * Date: 19/08/2021
 	 */
-    listArea: {
+    getInfoAndGetList: {
         auth: "required",
         params: {
-            projectID       : { type: "string" },
+            projectID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             areaID          : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            filter          : { type: "string", optional: true },
         },
         async handler(ctx) {
-            try {              
+            try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, keyword, limit, lastestID, areaID, select } = ctx.params;
+                const { projectID, keyword, limit, lastestID, areaID, select, filter  } = ctx.params;
                 let resultAfterCallHandler;
                 if(areaID){
                     resultAfterCallHandler = await INSPECTION__AREA_MODEL.getInfo({
                         areaID, select
                     });
                 }else{
-                    resultAfterCallHandler = await INSPECTION__AREA_MODEL.getListArea({
-                        keyword, projectID, limit, lastestID, select
+                    resultAfterCallHandler = await INSPECTION__AREA_MODEL.getList({
+                        keyword, projectID, limit, lastestID, select, filter 
                     });
                 }
               
