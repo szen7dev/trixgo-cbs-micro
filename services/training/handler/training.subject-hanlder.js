@@ -82,8 +82,8 @@ module.exports = {
                 let { subjectID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.remove({
-                        subjectID
-                    });
+                    subjectID
+                });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
