@@ -129,6 +129,10 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
+                if(checkObjectIDs(logo)){
+                    dataUpdate.logo = logo;
+                }
+
                 if(content){
                     dataUpdate.content = content;
                 }
@@ -243,7 +247,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Danh sách jubject ✅
+     * Name: Danh sách subject ✅
      * Author: Depv 
      * Code: F02505
      */
@@ -263,8 +267,6 @@ class Model extends BaseModel {
                 if(type){
                     conditionObj.type = type;
                 }
-
-                console.log({ conditionObj });
 
                 let conditionFind = {};
                 let sortBy = { createAt: -1 };
@@ -323,6 +325,9 @@ class Model extends BaseModel {
                     .populate({
                         path: "parent",
                         select: select.parent
+                    }).populate({
+                        path: "logo",
+                        select: "url name size"
                     })
                     .limit(+limit+1)
                     .sort(sortBy) 
