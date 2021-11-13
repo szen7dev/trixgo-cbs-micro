@@ -74,11 +74,11 @@ class Model extends BaseModel {
 
 				// GET CONDITION PAGINATION
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoConversation = await DOCUMENT__PACKAGE_COLL.findById(lastestID);
-                    if(!infoConversation)
+                    let infoPackage = await DOCUMENT__PACKAGE_COLL.findById(lastestID);
+                    if(!infoPackage)
                         return resolve({ error: true, message: "Can't get info last package", status: 403 });
 
-                    let nextInfo = `${infoConversation.modifyAt}_${infoConversation._id}`;
+                    let nextInfo = `${infoPackage.modifyAt}_${infoPackage._id}`;
                     let keys 	 = ['modifyAt__-1', '_id__-1'];
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
@@ -99,6 +99,11 @@ class Model extends BaseModel {
 
                 let listPackages = await DOCUMENT__PACKAGE_COLL
 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+					.populate('company', select.company)
+					.populate('project', select.project)
+					.populate('contract', select.contract)
+					.populate('members', select.members)
+					.populate('author', select.author)
 					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();

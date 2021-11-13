@@ -9,7 +9,6 @@ let	ApiGateway 				= require("moleculer-web"),
 	{ CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant'),
 	apiV1 					= require("./auth.alias"), // config api
 	apiNonAuthV1 			= require("./non-auth.alias"); // config api
- 	// SocketService 			= require('./socket-io.service');			
 
 const { CF_ACTIONS_GATEWAY } 	        = require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } 	        	= require('../auth/helper/auth.actions-constant');
@@ -19,7 +18,6 @@ module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
 		ApiGateway, 
-		// SocketService,
 		// OpenApiMixin(),
 	],
 	settings: {

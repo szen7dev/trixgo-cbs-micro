@@ -1,14 +1,13 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * import inter-coll, exter-coll
  */
 const ITEM__DEPARTMENT_COLL                 = require('../database/item.department-coll');
-const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION } 		    = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -71,107 +70,26 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách dự án mà user được quyền truy cập (là member)
-     * Author: Depv
-     * Code  : F00402
-     */
-    getList1({ keyword, limit = 10, lastestID, userID, type, select }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { members: { $in: [userID]}, type };
-
-
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
-				let objSort 	 	= {};
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                // GET CONDITION PAGINATION
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(lastestID);
-					if(!infoDepartment)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoDepartment.createAt}_${infoDepartment._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-                    // console.log({ nextInfo });
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-
-                // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-
-                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL.find({...conditionObj, ...conditionFind }, objSort)
-                    .select(select)
-                    .populate({
-                        path: "contracts",
-                        select: "name sign"
-                    })
-                    .populate({
-                        path: "userCreate",
-                        select: "fullname"
-                    })
-                    .limit(+limit)
-                    .sort(sortBy)
-                    .lean();
-
-                // GET TOTAL RECORD
-				let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObj);
-                let totalCurrentPage = await ITEM__DEPARTMENT_COLL.count(conditionFind);
-
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
-
-                let totalPage = Math.ceil(totalRecord/limit);
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit });
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: +limit,
-                    totalRecord,
-                    totalPage,
-                    currentPage
-                }, status: 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Name  : Danh sách dự án mà user được quyền truy cập (là member)
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ keyword, type, userID, limit = 10, lastestID, filter = {}, select = {} }) { 
+    getList({ companyID, keyword, type, userID, limit = 10, lastestID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(companyID && !checkObjectIDs(companyID))
+                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { members: { $in: [userID]} };
+                let conditionObj = { 
+                    members: { $in: [userID]}, 
+                };
+
+                companyID && (conditionObj.company = companyID);
  
                 if(type){
                     conditionObj.type = type;
@@ -230,14 +148,14 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                    .find({ ...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .lean(); 
 
                 // GET TOTAL RECORD
-				// let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObj);
-                let totalCurrentPage = await ITEM__DEPARTMENT_COLL.count(conditionFind);
+                let totalCurrentPage = await ITEM__DEPARTMENT_COLL.countDocuments(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
                 
@@ -254,7 +172,7 @@ class Model extends BaseModel {
 
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
                 if(!lastestID){
-                    currentPage =  1
+                    currentPage = 1;
                 }
 
                 return resolve({ error: false, data: {
@@ -265,7 +183,6 @@ class Model extends BaseModel {
                     nextCursor,
                     currentPage
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

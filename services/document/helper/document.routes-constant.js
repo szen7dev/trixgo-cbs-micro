@@ -7,9 +7,13 @@ const CF_ROUTINGS_DOCUMENT = {
     INSERT_DOCUMENT                     		: `${BASE_ROUTE}/insert-document`,
     UPDATE_DOCUMENT                     		: `${BASE_ROUTE}/update-document`,
     DELETE_DOCUMENT                     		: `${BASE_ROUTE}/delete-document`,
+    GET_INFO_DOCUMENT                     		: `${BASE_ROUTE}/info-document`,
     GET_LIST_DOCUMENT                     		: `${BASE_ROUTE}/list-document`,
     GET_LIST_STORAGE                     		: `${BASE_ROUTE}/list-storage`,
     SHARE_DOCUMENT                     		    : `${BASE_ROUTE}/share-document`,
+    UPDATE_PERMISSION_SHARE                     : `${BASE_ROUTE}/update-permission-share`,
+    ADD_FILE_ATTACHMENT                         : `${BASE_ROUTE}/add-file-attachment`,
+    GET_LIST_USER_SHARED                        : `${BASE_ROUTE}/list-user-shared`,
 
     /// PACKAGE
     GET_LIST_PACKAGE                     		: `${BASE_ROUTE}/list-package`,

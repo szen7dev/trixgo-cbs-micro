@@ -31,6 +31,7 @@ const CF_ROUTINGS_AUTH = {
     ADD_FRIEND                          : `${BASE_ROUTE}${USER}/add-friend`,
     REMOVE_FRIEND                       : `${BASE_ROUTE}${USER}/remove-friend`,
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
+    GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
 }
 
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

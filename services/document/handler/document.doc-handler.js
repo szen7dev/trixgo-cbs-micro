@@ -156,6 +156,33 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
+	 * Func: Chi tiết hồ sơ văn bản
+	 * Date: 12/11/2021
+	 */
+    getInfoDocumment: {
+        params: {
+			documentID : { type: "string" },
+			select     : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { documentID, select } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getInfoDocumment({
+                    userID, documentID, select
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
 	 * Func: Danh sách hồ sơ văn bản
 	 * Date: 27/10/2021
 	 */
@@ -163,15 +190,15 @@ module.exports = {
         params: {
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
-			limit           : { type: "number", optional: true },
+			limit           : { type: "string", optional: true },
 			companyID       : { type: "string", optional: true },
 			departmentID    : { type: "string", optional: true },
             packageID	    : { type: "string", optional: true },
 			doctypeID	    : { type: "string", optional: true },
 			senderID	    : { type: "string", optional: true },
             contractID	    : { type: "string", optional: true },
-			requestResponse : { type: "number", optional: true },
-			marked          : { type: "number", optional: true },
+			requestResponse : { type: "string", optional: true },
+			marked          : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
         },
@@ -179,10 +206,14 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, requestResponse, marked, keyword, limit, select, filter } = ctx.params;
+                const { 
+                    lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, 
+                    requestResponse, marked, keyword, limit, select, filter
+                } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
-                    lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, userID, requestResponse, marked, keyword, limit, select, filter
+                    lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, userID, 
+                    requestResponse, marked, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -292,16 +323,16 @@ module.exports = {
     updateShareDocument: {
         params: {
 			documentID  : { type: "string" },
-			isShare     : { type: "boolean" },
+			isShare     : { type: "boolean" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
                 const { documentID, usersID, isShare } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateShareDocument({
-                    userID, documentID, usersID, isShare
+                    authorID, documentID, usersID, isShare
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -330,6 +361,62 @@ module.exports = {
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updatePermissionShare({
                     authorID, documentID, userID, permission
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Danh sách user được truy cập hồ sơ
+	 * Date: 10/11/2021
+	 */
+    getListUserShared: {
+        params: {
+			documentID  : { type: "string" },
+            lastestID   : { type: "string", optional: true },
+            limit       : { type: "number", optional: true },
+			select      : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { documentID, lastestID, limit, select, filter } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListUserShared({
+                    userID, documentID, lastestID, limit, select, filter
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm file đính kèm trong hồ sơ
+	 * Date: 13/11/2021
+	 */  
+    addFileAttachment: {
+        params: {
+			documentID: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { documentID, filesID } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.addFileAttachment({
+                    authorID, documentID, filesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -38,6 +38,7 @@ const CF_ACTIONS_AUTH = {
     ADD_FRIEND                          : `${BASE_ACTIONS}_${USER}_ADD_FRIEND`,
     REMOVE_FRIEND                       : `${BASE_ACTIONS}_${USER}_REMOVE_FRIEND`,
     GET_LIST_FRIEND                     : `${BASE_ACTIONS}_${USER}_GET_LIST_FRIEND`,
+    GET_LIST_USER                       : `${BASE_ACTIONS}_${USER}_GET_LIST_USER`,
     GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH: `${BASE_ACTIONS}_${USER}_GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH`,
 
 	/**
