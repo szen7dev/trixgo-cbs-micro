@@ -171,13 +171,13 @@ class Model extends BaseModel {
                 if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse }))
                     return resolve({ error: true, message: 'Request params requestResponse invalid', status: 400 });
 
-                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
                     user: userUpdate,
                     permission: { $in: [1,3] }
                 }).lean()
 
-                if(!infoAuthorDocument)
+                if(!checkPermission)
                     return resolve({ error: true, message: "Permission denined", status: 403 });
 
                 let dataUpdate = {
@@ -267,13 +267,13 @@ class Model extends BaseModel {
                 if (!checkObjectIDs([documentID, userID]))
 					return resolve({ error: true, message: 'Request params documentID or userID invalid', status: 400 });
 
-                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
                     user: userID,
                     permission: 1
                 }).lean()
 
-                if(!infoAuthorDocument)
+                if(!checkPermission)
                     return resolve({ error: true, message: "Permission denined", status: 403 });
 
                 const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
@@ -448,11 +448,12 @@ class Model extends BaseModel {
                     conditionObj.package = { $in: listPackage.map(item => item._id) };
                 }
 
-                packageID       && (conditionObj.package = packageID);
-                senderID        && (conditionObj.sender = senderID);
-                doctypeID       && (conditionObj.property = doctypeID);
+                packageID       && (conditionObj.package         = packageID);
+                senderID        && (conditionObj.sender          = senderID);
+                doctypeID       && (conditionObj.property        = doctypeID);
                 requestResponse && (conditionObj.requestResponse = +requestResponse);
 
+                // Lấy danh sách đánh dấu sao
                 if(marked && [1,2].includes(+marked)){
                     conditionObj["mark.status"] = +marked;
                     sortBy = { "mark.updated": -1, ...sortBy };
@@ -552,7 +553,6 @@ class Model extends BaseModel {
  				let sortBy = {
  					modifyAt: -1,
  					createAt: -1,
- 					updateAt: -1
  				}
 
  				if(lastestID && checkObjectIDs(lastestID)){
@@ -638,7 +638,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs([packageID]))
                     return resolve({ error: true, message: 'Request params packageID invalid', status: 400 });
 
-                let conditionObj  = { package: ObjectID(packageID) };
+                let conditionObj = { package: ObjectID(packageID) };
                 companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
                 type            && (conditionObj['property.type'] = +type);
@@ -719,7 +719,6 @@ class Model extends BaseModel {
                 let sortBy = {
                     modifyAt: -1,
                     createAt: -1,
-                    updateAt: -1
                 }
 
                 if(lastestID && checkObjectIDs(lastestID)){
