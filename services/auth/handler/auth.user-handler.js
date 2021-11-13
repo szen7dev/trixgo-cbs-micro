@@ -141,6 +141,38 @@ module.exports = {
         }
     },
 
+    /**
+     * Func: Lấy danh sách user
+     * Author: MinhVH
+     * Date: 12/11/2021
+     */
+    getListUser: {
+        auth: "required",
+        params: {
+            lastestID       : { type: "string", optional: true },
+			keyword         : { type: "string", optional: true },
+			limit 	        : { type: "string", optional: true },
+			departmentID 	: { type: "string", optional: true },
+			filter 	        : { type: "string", optional: true },
+			select 	        : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser; 
+				let { lastestID, limit, keyword, filter, select, departmentID } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListUser({
+                    userID, lastestID, limit, keyword, filter, select, departmentID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
     // send noti via cloudmessaging
     getListUserByIdForPushMobile: {
         auth: "required",
@@ -237,13 +269,16 @@ module.exports = {
         auth: "required",
 		params: {
 			select: { type: "string", optional: true },
+			filter: { type: "string", optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                let { condition, select } = ctx.params;
+                let { condition, select, filter } = ctx.params;
 
-                let infoUserAfterFind = await AUTH__USER_MODEL.getListUserWithCondition({ condition, select });
+                let infoUserAfterFind = await AUTH__USER_MODEL.getListUserWithCondition({ 
+                    condition, select, filter
+                });
 
                 return infoUserAfterFind;
             } catch (error) {

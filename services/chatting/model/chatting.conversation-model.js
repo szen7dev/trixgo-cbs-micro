@@ -715,8 +715,7 @@ class Model extends BaseModel {
 				let objSort 	 	= {};
 				let sortBy = {
 					modifyAt: -1,
-					createAt: -1,
-					updateAt: -1
+					createAt: -1
 				};
 
 				// GET CONDITION PAGINATION

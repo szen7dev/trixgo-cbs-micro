@@ -99,7 +99,7 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 				}
 
-                departmentID && (conditionObj.department = departmentID);
+                departmentID && (conditionObj.project = departmentID);
 
                 // SEARCH TEXT
 				if(keyword){

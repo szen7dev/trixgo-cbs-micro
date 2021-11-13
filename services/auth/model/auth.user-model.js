@@ -496,7 +496,7 @@ class Model extends BaseModel {
 
                 listFriends = await AUTH__USER_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-                    .limit(limit + 1)
+                    .limit(+limit + 1)
                     .sort(sortBy)
 					.lean();
 
@@ -516,6 +516,105 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listFriends,
+						limit,
+						totalRecord,
+						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    // implement by: MINHVH ✅ 
+    getListUser({ userID, lastestID, departmentID, keyword, limit = 20, filter = {}, select = {} }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(departmentID && !checkObjectIDs(departmentID))
+                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+				if(isNaN(limit)) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
+				let conditionObj 	= {};
+				let conditionFind 	= {};
+				let objSort 	 	= {};
+                let sortBy = {
+                    modifyAt: -1,
+					createAt: -1,
+					updateAt: -1
+                }
+
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
+                    if(!infoUser)
+                        return resolve({ error: true, message: "Can't get info last user", status: 403 });
+
+                    let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
+                    let keys 	 = ['createAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+
+					conditionFind = dataPagingAndSort.data.find;
+                }
+
+                departmentID && (conditionObj.department = departmentID);
+
+				// SEARCH TEXT
+				if(keyword){
+					conditionObj.$text = { $search: keyword };
+					objSort.score = { $meta: "textScore" };
+					sortBy.score  = { $meta: "textScore" };
+				}
+
+                let listUsers = await AUTH__USER_COLL
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                    .populate('company', select.company)
+                    .populate('department', select.department)
+                    .limit(+limit + 1)
+                    .sort(sortBy)
+					.lean();
+
+				// GET TOTAL RECORD
+                let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+				let nextCursor	= null;
+
+				if(listUsers && listUsers.length){
+					if(listUsers.length > limit){
+						nextCursor = listUsers[limit - 1]._id;
+						listUsers.length = limit;
+					}
+				}
+
+                return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listUsers,
 						limit,
 						totalRecord,
 						nextCursor
@@ -649,11 +748,18 @@ class Model extends BaseModel {
     }
 
 	// implement by: MINHVH ✅ 
-	getListUserWithCondition({ condition, select }) {
+	getListUserWithCondition({ condition, select, filter = {} }) {
         return new Promise(async (resolve) => {
             try {
+                if(filter && typeof filter === 'string'){
+                    if(!IsJsonString(filter))
+                        return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+                    filter = JSON.parse(filter);
+                }
+
 				const listUsers = await AUTH__USER_COLL
-					.find(condition)
+					.find(condition, filter)
 					.select(select)
 					.lean();
 

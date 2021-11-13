@@ -4,14 +4,11 @@
  * EXTERNAL PACKAGE
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
-const PromisePool									= require('@supercharge/promise-pool');
 
 /**
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
-const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-constant');
 
 /**
@@ -19,6 +16,7 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const stringUtils									= require('../../../tools/utils/string_utils');
+const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
 const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
 const {
@@ -31,9 +29,11 @@ const {
  * COLLECTIONS
  */
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
+const DOCUMENT__FILE_COLL           				= require('../database/document.doc_file-coll');
 const DOCUMENT__DOCTYPE_COLL           				= require('../database/document.doctype-coll');
 const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
 const DOCUMENT__STORAGE_COLL           				= require('../database/document.storage-coll');
+const DOCUMENT__USER_COLL           				= require('../database/document.user_related-coll');
 
 
 class Model extends BaseModel {
@@ -55,7 +55,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				if (!checkObjectIDs([userID, companyID, departmentID, packageID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+					return resolve({ error: true, message: 'Request params companyID or departmentID or packageID invalid', status: 400 });
 
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction }))
                     return resolve({ error: true, message: 'Request params direction invalid', status: 400 });
@@ -103,22 +103,21 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
                     dataInsert.parent = parentID;
-                    dataInsert.level = infoParent.level + 1;
+                    dataInsert.level = +infoParent.level + 1;
                 }
 
 				let infoAfterInsert = await this.insertData(dataInsert);
 
 				if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Can't create document", status: 403 });
+                    return resolve({ error: true, message: "Can't create document", status: 422 });
 
-                await DOCUMENT__DOC_COLL.findByIdAndUpdate(infoAfterInsert._id, {
-                    $push: {
-                        usersRelated: {
-                            user: userID,
-                            permission: 1
-                        }
-                    }
-                })
+                await DOCUMENT__USER_COLL.create({
+                    document: infoAfterInsert._id,
+                    user: userID,
+                    permission: 1,
+                    createAt: timeUtils.getCurrentTime(),
+                    modifyAt: timeUtils.getCurrentTime()
+                });
 
                 if(parentID) {
                     await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
@@ -172,18 +171,14 @@ class Model extends BaseModel {
                 if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse }))
                     return resolve({ error: true, message: 'Request params requestResponse invalid', status: 400 });
 
-                let checkPermission = await DOCUMENT__DOC_COLL.findOne({
-                    _id: documentID,
-                    usersRelated: {
-                        $elemMatch: { 
-                            user: userUpdate, 
-                            permission: { $in: [1,3] }
-                        }
-                    }
-                });
+                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: userUpdate,
+                    permission: { $in: [1,3] }
+                }).lean()
 
-                if(!checkPermission)
-                    return resolve({ error: true, message: 'Document update permission denied', status: 403 });
+                if(!infoAuthorDocument)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
 
                 let dataUpdate = {
                     name,
@@ -214,7 +209,7 @@ class Model extends BaseModel {
                 (receiverID && checkObjectIDs(receiverID))  && (dataUpdate.receiver = receiverID);
                 (fieldID    && checkObjectIDs(fieldID))     && (dataUpdate.field    = fieldID);
                 (otherID    && checkObjectIDs(otherID))     && (dataUpdate.other    = otherID);
-                (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = otherID);
+                (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = propertyID);
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
 
                 // Lấy thông tin hợp đồng
@@ -252,7 +247,7 @@ class Model extends BaseModel {
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
 
 				if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Can't update document", status: 403 });
+                    return resolve({ error: true, message: "Can't update document", status: 422 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -272,12 +267,92 @@ class Model extends BaseModel {
                 if (!checkObjectIDs([documentID, userID]))
 					return resolve({ error: true, message: 'Request params documentID or userID invalid', status: 400 });
 
+                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: userID,
+                    permission: 1
+                }).lean()
+
+                if(!infoAuthorDocument)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
                 const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
 
                 if(!infoAfterDelete)
                     return resolve({ error: true, message: "Can't delete document", status: 422 });
 
                 return resolve({ error: false, data: infoAfterDelete, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Chi tiết hồ sơ văn bản
+	 * Date: 12/11/2021
+	 */
+    getInfoDocumment({ userID, documentID, select }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs([documentID, userID]))
+					return resolve({ error: true, message: 'Request params documentID or userID invalid', status: 400 });
+
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+
+                let checkPermission = await DOCUMENT__USER_COLL
+                    .findOne({
+                        document: documentID,
+                        user: userID
+                    })
+                    .lean();
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                const infoDocument = await DOCUMENT__DOC_COLL
+                    .findById(documentID)
+                    .populate('company', select.company)
+                    .populate('project', select.project)
+                    .populate('contract', select.contract)
+                    .populate('package', select.package)
+                    .populate('field', select.field)
+                    .populate('property', select.property)
+                    .populate('other', select.other)
+                    .populate('storage', select.storage)
+                    .populate('sender', select.sender)
+                    .populate('receiver', select.receiver)
+                    .populate('author', select.author)
+                    .populate('userUpdate', select.userUpdate)
+                    .populate('childs', select.childs)
+                    .lean();
+
+                if(!infoDocument)
+                    return resolve({ error: true, message: "Can't get info document", status: 400 });
+
+                const listFilesAttachment = await DOCUMENT__FILE_COLL
+                    .find({ document: documentID })
+                    .select('file user')
+                    .populate({
+                        path: 'file',
+                        select: '_id name url size'
+                    })
+                    .populate({
+                        path: 'user',
+                        select: '_id bizname fullname image'
+                    })
+                    .sort({ createAt: -1 })
+                    .lean();
+
+                infoDocument.files = listFilesAttachment;
+
+                return resolve({ error: false, data: infoDocument, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -344,11 +419,11 @@ class Model extends BaseModel {
 
 				// GET CONDITION PAGINATION
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoConversation = await DOCUMENT__DOC_COLL.findById(lastestID);
-                    if(!infoConversation)
+                    let infoDocument = await DOCUMENT__DOC_COLL.findById(lastestID);
+                    if(!infoDocument)
                         return resolve({ error: true, message: "Can't get info last document", status: 403 });
 
-                    let nextInfo = `${infoConversation.modifyAt}_${infoConversation._id}`;
+                    let nextInfo = `${infoDocument.modifyAt}_${infoDocument._id}`;
                     let keys 	 = ['modifyAt__-1', '_id__-1'];
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
@@ -376,10 +451,10 @@ class Model extends BaseModel {
                 packageID       && (conditionObj.package = packageID);
                 senderID        && (conditionObj.sender = senderID);
                 doctypeID       && (conditionObj.property = doctypeID);
-                requestResponse && (conditionObj.requestResponse = requestResponse);
+                requestResponse && (conditionObj.requestResponse = +requestResponse);
 
-                if(marked && [1,2].includes(marked)){
-                    conditionObj["mark.status"] = marked;
+                if(marked && [1,2].includes(+marked)){
+                    conditionObj["mark.status"] = +marked;
                     sortBy = { "mark.updated": -1, ...sortBy };
                 }
 
@@ -496,7 +571,7 @@ class Model extends BaseModel {
  				}
 
                 companyID       && (conditionObj.company = companyID);
-                departmentID    && (conditionObj.department = departmentID);
+                departmentID    && (conditionObj.project = departmentID);
 
                  // SEARCH TEXT
  				if(keyword){
@@ -543,11 +618,11 @@ class Model extends BaseModel {
  		})
  	}
 
-     /**
- 	 * Dev: MinhVH
- 	 * Func: Danh sách phân loại hồ sơ trong gói thầu
- 	 * Date: 27/10/2021
- 	 */
+    /**
+     * Dev: MinhVH
+     * Func: Danh sách phân loại hồ sơ trong gói thầu
+     * Date: 27/10/2021
+     */
     getListDoctypeByPackage({ userID, companyID, departmentID, packageID, type }) {
         return new Promise(async (resolve) => {
             try {
@@ -565,7 +640,7 @@ class Model extends BaseModel {
 
                 let conditionObj  = { package: ObjectID(packageID) };
                 companyID       && (conditionObj.company = ObjectID(companyID));
-                departmentID    && (conditionObj.department = ObjectID(departmentID));
+                departmentID    && (conditionObj.project = ObjectID(departmentID));
                 type            && (conditionObj['property.type'] = +type);
 
                 let	listDoctype = await DOCUMENT__DOC_COLL.aggregate([
@@ -671,6 +746,10 @@ class Model extends BaseModel {
 
                 let	listStorage = await DOCUMENT__STORAGE_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                    .populate('userCreate', select.userCreate)
+                    .populate('userUpdate', select.userUpdate)
+                    .populate('company', select.company)
+                    .populate('childs', select.childs)
                     .limit(limit + 1)
                     .sort(sortBy)
                     .lean();
@@ -710,11 +789,11 @@ class Model extends BaseModel {
  	 * Func: Chia sẻ văn bản
  	 * Date: 05/11/2021
  	 */
- 	updateShareDocument({ userID, documentID, usersID, isShare }) {
+ 	updateShareDocument({ authorID, documentID, usersID, isShare }) { 
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
 
                 if(!checkObjectIDs([documentID]))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
@@ -722,35 +801,34 @@ class Model extends BaseModel {
                 if(!usersID || !usersID.length || !checkObjectIDs(usersID))
                     return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
 
+                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean()
+
+                if(!infoAuthorDocument)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
                 let infoAfterShare = null;
 
                 if(isShare){
                     let listUserShared = usersID.map(user => ({
+                        document: documentID,
                         user,
-                        permission: 1
+                        permission: 2,
+                        createAt: timeUtils.getCurrentTime(),
+                        modifyAt: timeUtils.getCurrentTime()
                     }))
 
-                    const { results } = await PromisePool
-                        .for(listUserShared)
-                        .withConcurrency(2)
-                        .process(user => DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
-                            $addToSet: {
-                                usersRelated: user
-                            }
-                        }, { new: true }))
-
-                    infoAfterShare = results;
+                    infoAfterShare = await DOCUMENT__USER_COLL.insertMany(listUserShared);
                 } else{
-                    const { results } = await PromisePool
-                        .for(usersID)
-                        .withConcurrency(2)
-                        .process(user => DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
-                            $pull: {
-                                usersRelated: { user }
-                            }
-                        }, { new: true }))
+                    let listUserRemoveShare = usersID.map(user => ({
+                        document: documentID,
+                        user
+                    }))
 
-                    infoAfterShare = results;
+                    infoAfterShare = await DOCUMENT__USER_COLL.deleteMany(listUserRemoveShare);
                 }
 
                 return resolve({
@@ -781,37 +859,183 @@ class Model extends BaseModel {
                 if(!checkObjectIDs([userID]))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(![1,2].includes(permission))
+                if(![2,3].includes(permission))
                     return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
 
-                let infoDocument = await DOCUMENT__DOC_COLL.findOne({
-                    _id: documentID,
-                    usersRelated: {
-                        $elemMatch: { user: userID }
-                    }
-                });
+                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean();
 
-                if(!infoDocument)
+                if(!infoAuthorDocument)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                let infoUserShared = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: userID
+                }).lean()
+
+                if(!infoUserShared)
                     return resolve({ error: true, message: 'User has not yet shared the document', status: 400 });
 
-                let infoAfterUpdate = await DOCUMENT__DOC_COLL.findOneAndUpdate({
-                    _id: documentID,
-                    usersRelated: {
-                        $elemMatch: { user: userID }
-                    }
-                }, {
+                let infoAfterUpdate = await DOCUMENT__USER_COLL.findByIdAndUpdate(infoUserShared._id, {
                     $set: {
-						"usersRelated.$.permission": permission
-					}
-                }, { new: true });
+                        permission
+                    }
+                }, { new: true })
 
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Update permission failed', status: 400 });
+                    return resolve({ error: true, message: 'Update permission failed', status: 422 });
 
                 return resolve({
                     error: false,
                     status: 200,
                     data: infoAfterUpdate
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+ 	 * Dev: MinhVH
+ 	 * Func: Danh sách user được truy cập hồ sơ
+ 	 * Date: 10/11/2021
+ 	 */
+ 	getListUserShared({ userID, documentID, lastestID, limit = 10, filter = {}, select = {} }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(isNaN(limit)){
+                    limit = 10;
+                } else{
+                    limit = +limit;
+                }
+
+                if(filter && typeof filter === 'string'){
+                    if(!IsJsonString(filter))
+                        return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+                    filter = JSON.parse(filter);
+                }
+
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+
+                let conditionFind = {};
+                let conditionObj  = { document: documentID };
+                let sortBy = {
+                    modifyAt: -1,
+                    createAt: -1,
+                }
+
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUserShared = await DOCUMENT__USER_COLL.findById(lastestID);
+                    if(!infoUserShared)
+                        return resolve({ error: true, message: "Can't get info last user shared", status: 403 });
+
+                    let nextInfo = `${infoUserShared.modifyAt}_${infoUserShared._id}`;
+                    let keys	 = ['modifyAt__-1', '_id__-1'];  
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionFind = dataPagingAndSort.data.find;
+                }
+
+                let	listUserShared = await DOCUMENT__USER_COLL
+                    .find({ ...conditionObj, ...conditionFind }, filter)
+                    .populate('document', select.document)
+                    .populate('user', select.user)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .lean();
+
+                if(!listUserShared)
+                    return resolve({ error: true, message: "Can't get list user shared", status: 400 });
+
+                // GET TOTAL RECORD
+                let totalRecord = await DOCUMENT__USER_COLL.countDocuments(conditionObj);
+                let nextCursor	= null;
+
+                if(listUserShared && listUserShared.length){
+                    if(listUserShared.length > limit){
+                        nextCursor = listUserShared[limit - 1]._id;
+                        listUserShared.length = limit;
+                    }
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: {
+                        listRecords: listUserShared,
+                        limit: +limit,
+                        totalRecord,
+                        nextCursor
+                    }
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm file đính kèm trong hồ sơ
+	 * Date: 13/11/2021
+	 */  
+    addFileAttachment({ authorID, documentID, filesID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([authorID]))
+                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+
+                if(!checkObjectIDs([documentID]))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+                if(!filesID || !filesID.length || !checkObjectIDs(filesID))
+                    return resolve({ error: true, message: 'Request params filesID invalid', status: 400 });
+
+                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: authorID,
+                    permission: 1
+                }).lean()
+
+                if(!infoAuthorDocument)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
+
+                const listFilesInsert = filesID.map(file => ({
+                    document: documentID,
+                    user: authorID,
+                    file,
+                    createAt: timeUtils.getCurrentTime(),
+                    modifyAt: timeUtils.getCurrentTime()
+                }))
+
+                let infoAfterInsert = await DOCUMENT__FILE_COLL.insertMany(listFilesInsert);
+
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: 'Add files attachment failed', status: 422 });
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterInsert
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

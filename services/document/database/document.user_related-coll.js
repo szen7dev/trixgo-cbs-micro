@@ -4,9 +4,9 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 /**
- *  User được truy cập Hồ sơ văn bản
+ *  User được chia sẻ văn bản
  */
-module.exports  = DATABASE_MIDDLEWARE("document_user", {
+module.exports  = DATABASE_MIDDLEWARE("document_user_related", {
     document: {
         type: Schema.Types.ObjectId,
         ref: "document_doc"
@@ -17,12 +17,12 @@ module.exports  = DATABASE_MIDDLEWARE("document_user", {
     },
     /**
      * Quyền hạn
-     * 0: Người khởi tạo
-     * 1: Người được xem
-     * 2: Người được chỉnh sửa
+     * 1: Người khởi tạo
+     * 2: Người được xem
+     * 3: Người được chỉnh sửa
      */
     permission: {
         type: Number,
-        default: 0
+        default: 2
     }
 });

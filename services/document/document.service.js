@@ -58,11 +58,17 @@ module.exports = {
 		// Xóa văn bản
 		[CF_ACTIONS_DOCUMENT.DELETE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.deleteDocument,
 
+		// Chi tiết hồ sơ văn bản
+		[CF_ACTIONS_DOCUMENT.GET_INFO_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getInfoDocumment,
+
 		// Chia sẻ văn bản
 		[CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.updateShareDocument,
 
 		// Cập nhật quyền người được chia sẻ văn bản
 		[CF_ACTIONS_DOCUMENT.UPDATE_PERMISSION_SHARE]		: DOCUMENT__DOC_HANDLER.updatePermissionShare,
+
+		// Danh sách user được truy cập hồ sơ
+		[CF_ACTIONS_DOCUMENT.GET_LIST_USER_SHARED]			: DOCUMENT__DOC_HANDLER.getListUserShared,
 
 		// Danh sách hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getListDocument,
@@ -78,6 +84,9 @@ module.exports = {
 
 		// Danh sách nơi lưu trữ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_STORAGE]				: DOCUMENT__DOC_HANDLER.getListStorage,
+
+		// Thêm file đính kèm trong hồ sơ
+		[CF_ACTIONS_DOCUMENT.ADD_FILE_ATTACHMENT]			: DOCUMENT__DOC_HANDLER.addFileAttachment,
 	},
 
 	/**

@@ -1,4 +1,5 @@
 "use strict";
+
 const DbService                		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
@@ -12,8 +13,8 @@ const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
 	mixins: [
-		DbService(AUTH__USER_COLL), 
 		DbService(AUTH__COMPANY_COLL),
+		DbService(AUTH__USER_COLL),
 		DbService(AUTH__USER_FRIEND_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
@@ -56,6 +57,7 @@ module.exports = {
 		[CF_ACTIONS_AUTH.ADD_FRIEND] 								: AUTH__USER_HANDLER.addFriend,
 		[CF_ACTIONS_AUTH.REMOVE_FRIEND]								: AUTH__USER_HANDLER.removeFriend,
 		[CF_ACTIONS_AUTH.GET_LIST_FRIEND]							: AUTH__USER_HANDLER.getListFriend,
+		[CF_ACTIONS_AUTH.GET_LIST_USER]								: AUTH__USER_HANDLER.getListUser,
 		[CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH]		: AUTH__USER_HANDLER.getListUserByIdForPushMobile,
 		[CF_ACTIONS_AUTH.GET_INFO] 									: AUTH__USER_HANDLER.getInfo,
 		[CF_ACTIONS_AUTH.GET_INFO_BY_ID]		 					: AUTH__USER_HANDLER.getInfoById,
@@ -73,6 +75,7 @@ module.exports = {
 		[CF_ACTIONS_AUTH.SEND_OPT_RESET_PASSWORD] 					: AUTH__USER_HANDLER.sendOTPResetPassword,
 		[CF_ACTIONS_AUTH.CONFIRM_CODE_RESET_PASSWORD] 				: AUTH__USER_HANDLER.confirmCodeResetPassword,
 		[CF_ACTIONS_AUTH.UPDATE_PASSWORD_AFTER_FORGET] 				: AUTH__USER_HANDLER.updatePasswordAfterForget,
+
 		[CF_ACTIONS_AUTH.UPDATE_PIN_CONVERSATION] 					: AUTH__USER_HANDLER.updatePinConversation,
 		[CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION]					: AUTH__USER_HANDLER.getListPinConversation,
 	},
