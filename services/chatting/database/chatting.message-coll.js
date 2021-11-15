@@ -89,7 +89,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 0: đã gửi nhưng chưa xem/ chưa nhận))
      * 1: đã nhận
      * 2: đã xem
-	 * 3: đã thu hồi (tất cả mọi người đều không thấy)
     */
     status: {
         type   : Number,

@@ -283,13 +283,13 @@ class Model extends BaseModel {
                     lastLog: new Date()
                 });
                 // Xóa những trường không cần thiết
-                delete isExist._doc.friends;
-                delete isExist._doc.password;
-                delete isExist._doc.recentlyFriends;
-                delete isExist._doc.devices;
-                delete isExist._doc.updatedAt;
-                delete isExist._doc.modifyAt;
-                delete isExist._doc.createAt;
+                // delete isExist._doc.friends;
+                // delete isExist._doc.password;
+                // delete isExist._doc.recentlyFriends;
+                // delete isExist._doc.devices;
+                // delete isExist._doc.updatedAt;
+                // delete isExist._doc.modifyAt;
+                // delete isExist._doc.createAt;
                 
                 return resolve({
                     error: false,

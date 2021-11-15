@@ -850,7 +850,6 @@ class Model extends BaseModel {
 				let _sort = {
 					modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
 				};
 
 				// CHECK USER DELETE HISTORY
@@ -870,8 +869,15 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('parent', select.parent)
-					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizname fullname image'
+						},
+						select: select.poll
+					})
 					.populate({
 						path: 'files.file',
 						populate: {
@@ -891,8 +897,15 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('parent', select.parent)
-					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizname fullname image'
+						},
+						select: select.poll
+					})
 					.populate({
 						path: 'files.file',
 						populate: {
@@ -911,8 +924,15 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('parent', select.parent)
-					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizname fullname image'
+						},
+						select: select.poll
+					})
 					.populate({
 						path: 'files.file',
 						populate: {
@@ -1517,7 +1537,6 @@ class Model extends BaseModel {
                 let sortBy = {
                     modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
                 }
 
 				// GET CONDITION PAGINATION
