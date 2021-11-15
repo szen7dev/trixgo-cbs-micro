@@ -790,7 +790,14 @@ class Model extends BaseModel {
 						_id: { $in: infoConversation.messagesPin },
 						conversation: conversationID
 					}, filter)
-					.populate('poll', select.poll)
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizname fullname image'
+						},
+						select: select.poll
+					})
 					.populate('reminder', select.reminder)
 					.populate('sender', select.sender)
 					.populate({
