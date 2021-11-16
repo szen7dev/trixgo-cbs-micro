@@ -1005,6 +1005,7 @@ exports.CHATTING_SOCKET = {
 	 [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
         let socket               		= this;
 		let userID              		= socket.client.user;
+		let broker                      = socket.$service.broker;
         let listUserActive       		= socket.$service.listUserConnected2;
         let io                   		= socket.$service.io;
 		let { messageID, typeReaction }	= data;
@@ -1020,6 +1021,13 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
+		const infoAfterReaction = await CHATTING__MESSAGE_MODEL.reactionMessage({
+			userID,
+			messageID,
+			typeReaction,
+			ctx: broker
+		})
+
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
 			select: '_id bizname fullname image'
@@ -1034,7 +1042,7 @@ exports.CHATTING_SOCKET = {
 				data: {
 					infoSender,
 					infoMessage,
-					typeReaction
+					infoReaction: infoAfterReaction
 				}
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
