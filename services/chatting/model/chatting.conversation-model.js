@@ -850,6 +850,7 @@ class Model extends BaseModel {
 				let _sort = {
 					modifyAt: -1,
 					createAt: -1,
+					updateAt: -1
 				};
 
 				// CHECK USER DELETE HISTORY
@@ -869,15 +870,8 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('parent', select.parent)
+					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
-					.populate({
-						path: 'poll',
-						populate: {
-							path: 'options.usersVote',
-							select: '_id bizname fullname image'
-						},
-						select: select.poll
-					})
 					.populate({
 						path: 'files.file',
 						populate: {
@@ -897,15 +891,8 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('parent', select.parent)
+					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
-					.populate({
-						path: 'poll',
-						populate: {
-							path: 'options.usersVote',
-							select: '_id bizname fullname image'
-						},
-						select: select.poll
-					})
 					.populate({
 						path: 'files.file',
 						populate: {
@@ -924,15 +911,8 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('parent', select.parent)
+					.populate('poll', select.poll)
 					.populate('reminder', select.reminder)
-					.populate({
-						path: 'poll',
-						populate: {
-							path: 'options.usersVote',
-							select: '_id bizname fullname image'
-						},
-						select: select.poll
-					})
 					.populate({
 						path: 'files.file',
 						populate: {
@@ -1562,6 +1542,8 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
+				conditionObj.usersHide = { $nin: [userID] };
+
 				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
 					userID
 				});
@@ -1570,7 +1552,7 @@ class Model extends BaseModel {
 					conditionObj._id = { $nin: listConversationPin.data };
 
 					listConversationPin = await CHATTING__CONVERSATION_COLL
-						.find({ _id: { $in: listConversationPin.data } }, filter)
+						.find({ _id: { $in: listConversationPin.data }, usersHide: { $nin: [userID] } }, filter)
 						.populate('members', select.members)
 						.populate({
 							path: 'lastMessage',
