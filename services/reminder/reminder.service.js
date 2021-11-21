@@ -148,10 +148,15 @@ module.exports = {
 			agenda.start();
 		}
 
-		let client = await MongoClient.connect(MONGODB_URL);
+		// let client = await MongoClient.connect(MONGODB_URL);
 		// let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
-		let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
-	
+		
+		const connectionOpts = {
+			db: { address:MONGODB_URL, collection: process.env.AGENDA_COLLECTION || "agenda_jobs" },
+		};
+		// agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
+		agenda = new Agenda(connectionOpts)
+
 		runDefineTask().catch(error => {
 			console.error({ runDefineTask_error: error });
 			process.exit(-1);
