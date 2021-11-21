@@ -8,7 +8,10 @@ const { MONGODB_URL } 	= require('../../../tools/db/utils');
     let client = await MongoClient.connect(MONGODB_URL);
 
 	const connectionOpts = {
-		db: { address: `admin_cbs:dAGT5ttW6CLrsTuw@127.0.0.1:27017`, collection: process.env.AGENDA_COLLECTION || "agenda_jobs" },
+		db: { 	address:MONGODB_URL, 
+				collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
+				options: { useNewUrlParser: true }	
+			},
 	};
     // agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
     agenda = new Agenda(connectionOpts)
