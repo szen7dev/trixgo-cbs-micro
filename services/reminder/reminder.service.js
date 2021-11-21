@@ -152,7 +152,7 @@ module.exports = {
 		// let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 		
 		const connectionOpts = {
-			db: { address:MONGODB_URL, collection: process.env.AGENDA_COLLECTION || "agenda_jobs" },
+			db: { address: `admin_cbs:dAGT5ttW6CLrsTuw@127.0.0.1:27017`, collection: process.env.AGENDA_COLLECTION || "agenda_jobs" },
 		};
 		// agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 		agenda = new Agenda(connectionOpts)
