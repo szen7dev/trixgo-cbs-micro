@@ -149,7 +149,7 @@ module.exports = {
 		}
 
 		let client = await MongoClient.connect(MONGODB_URL);
-		let agenda = new Agenda().mongo(client.db("agendatest"), "jobs");
+		let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 	
 		runDefineTask().catch(error => {
 			console.error({ runDefineTask_error: error });
