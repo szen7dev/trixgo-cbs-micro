@@ -2,9 +2,10 @@ const Agenda            = require('agenda');
 const ObjectID 			= require('mongodb').ObjectID;
 const { MongoClient }   = require('mongodb');
 let agenda;
+const { MONGODB_URL } 	= require('../../../tools/db/utils');
 
 (async function run() {
-    let client = await MongoClient.connect("mongodb://localhost:27017");
+    let client = await MongoClient.connect(MONGODB_URL);
     agenda = new Agenda().mongo(client.db("agendatest"), "jobs");
   
 	await new Promise(resolve => agenda.once('ready', resolve));

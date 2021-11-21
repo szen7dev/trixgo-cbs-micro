@@ -11,6 +11,7 @@ const { CF_ACTIONS_CHATTING } 	        = require('../chatting/helper/chatting.ac
 
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
 
+const { MONGODB_URL } 					= require('../../tools/db/utils');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.REMINDER,
@@ -147,7 +148,7 @@ module.exports = {
 			agenda.start();
 		}
 
-		let client = await MongoClient.connect("mongodb://localhost:27017");
+		let client = await MongoClient.connect(MONGODB_URL);
 		let agenda = new Agenda().mongo(client.db("agendatest"), "jobs");
 	
 		runDefineTask().catch(error => {
