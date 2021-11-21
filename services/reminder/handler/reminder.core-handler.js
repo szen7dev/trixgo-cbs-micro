@@ -6,7 +6,12 @@ const { MONGODB_URL } 	= require('../../../tools/db/utils');
 
 (async function run() {
     let client = await MongoClient.connect(MONGODB_URL);
-    agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
+
+	const connectionOpts = {
+		db: { address:MONGODB_URL, collection: process.env.AGENDA_COLLECTION || "agenda_jobs" },
+	};
+    // agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
+    agenda = new Agenda(connectionOpts)
   
 	await new Promise(resolve => agenda.once('ready', resolve));
 })(); //IIFE func - run now
