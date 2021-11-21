@@ -158,7 +158,7 @@ module.exports = {
 				},
 		};
 		// agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
-		agenda = new Agenda(connectionOpts)
+		let agenda = new Agenda(connectionOpts)
 
 		runDefineTask().catch(error => {
 			console.error({ runDefineTask_error: error });
