@@ -281,7 +281,7 @@ class Model extends BaseModel {
                 if(!infoUpdateLastMessage)
                     return resolve({ error: true, message: "Can't update last message", status: 403 });
 
-				// UPDATE SHOW CONVERSATION HIDED
+				// UPDATE SHOW CONVERSATION HIDE
 				await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$set: { usersHide: [] }
 				}, { new: true });

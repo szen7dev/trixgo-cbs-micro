@@ -44,7 +44,8 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             let { users: listRecievers } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
-            let infoSendNoti = await NOTIFICATION__LOG_MODEL.sendNotiMobilePush({ users: listRecievers, title: 'Thử tiếng việt nào', description: 'from LDK TEAM', objDataForSend: { screenkey: 'DETAIL_PAGE' }, ctx })
+            let infoSendNoti = await NOTIFICATION__LOG_MODEL.sendNotiMobilePush({ users: listRecievers, title: 'Thử tiếng việt nào', description: 'from TRIXGO', objDataForSend: { screenkey: 'DETAIL_PAGE' }, ctx })
+            console.log({ infoSendNoti })
          }
      },
      //  loại noti:SMS
