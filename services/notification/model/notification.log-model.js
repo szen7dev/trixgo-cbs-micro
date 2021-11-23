@@ -16,7 +16,6 @@ class Model extends BaseModel {
     }
    
     sendNotiMobilePush({ users, title, description, objDataForSend, ctx }) {
-        const that = this;
         return new Promise(async (resolve) => {
              try {
                 /**
@@ -46,6 +45,7 @@ class Model extends BaseModel {
                         listRecords.forEach(user => {
                             // mỗi user có devices[{oneSignalID}]
                             let { devices } = user;
+                            console.log({ devices })
                             listOneSignalIDForMobilePush = [...listOneSignalIDForMobilePush, ...devices.map(item => item.oneSignalID)]
                         })
 

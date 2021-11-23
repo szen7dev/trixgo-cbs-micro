@@ -399,6 +399,11 @@ exports.CHATTING_SOCKET = {
 			name, options,
 		} = data;
 
+		let infoAfterCall = broker.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5f90ed0d5e842b7c18dff972' });
+		// 5fb500a8a0f90f086b2b25f1
+
+		console.log({ infoAfterCall })
+
 		let infoMessageAfterInsert = {};
 
 		switch (+type) {
