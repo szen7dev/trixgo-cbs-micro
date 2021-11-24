@@ -1040,7 +1040,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Reaction 1 tin nhắn
 	 * Date: 26/10/2021
 	 */
-	 [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
         let socket               		= this;
 		let userID              		= socket.client.user;
 		let broker                      = socket.$service.broker;
