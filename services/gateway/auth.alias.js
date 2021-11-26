@@ -24,6 +24,7 @@ const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constan
 const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
 const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant');
 const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.routes-constant');
+const { CF_ROUTINGS_SUBJECT } 	    = require('../subject_pcm/helper/subject.routes-constant');
 
 
 
@@ -42,6 +43,7 @@ const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-con
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_CMCS } 	    	= require('../cmcs/helper/cmcs.actions-constant');
 const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.actions-constant');
+const { CF_ACTIONS_SUBJECT } 	    = require('../subject_pcm/helper/subject.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -480,14 +482,6 @@ module.exports = {
 		//---------------------------- END SEARVICE TRAINING ---------------------------//
 
 
-
-
-
-
-
-
-
-
 		//---------------------------🏁 START S024.MEDIA 🏁---------------------------//
 		[`POST ${CF_ROUTINGS_MEDIA.MAIN_MEDIA}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INSERT_MEDIA}`],
@@ -592,8 +586,22 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.REPLY_COMMENT_IMAGE_MEDIA}`],
 		//---------------------------🏁 END S024.MEDIA 🏁---------------------------//
 
+		//---------------------------🏁 START S014.SUBJECT AND PCM 🏁---------------------------//
 
 
+
+		//---------------------------🏁 END S014.SUBJECT AND PCM 🏁---------------------------//
+		[`POST ${CF_ROUTINGS_SUBJECT.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT}.${CF_ACTIONS_SUBJECT.SUBJECT__PCM_PLAN_REPORT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_SUBJECT.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT}.${CF_ACTIONS_SUBJECT.SUBJECT__PCM_PLAN_REPORT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_SUBJECT.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT}.${CF_ACTIONS_SUBJECT.SUBJECT__PCM_PLAN_REPORT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_SUBJECT.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT}.${CF_ACTIONS_SUBJECT.SUBJECT__PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST}`],
 	
 		//---------------------------🏁 START S015.DOCUMENT 🏁---------------------------//
 
@@ -677,6 +685,9 @@ module.exports = {
 
 
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
+
+
+
 
 
 	},

@@ -1,12 +1,9 @@
 "use strict";
 
-/**
- *  Báo cáo công việc
- */
-const BASE_COLL = require('../../intalize/base-coll');
-const Schema    = require('mongoose').Schema;
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
+const Schema                = require('mongoose').Schema;
 
-module.exports  = BASE_COLL("pcm_plan_report", {
+module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
     //_________Mã hiệu bằng số do hệ thống tự phát sinh
     // suid : {
     //     type   : String,
@@ -16,7 +13,7 @@ module.exports  = BASE_COLL("pcm_plan_report", {
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
-    }, 
+    },
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
@@ -63,10 +60,10 @@ module.exports  = BASE_COLL("pcm_plan_report", {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_report"
     },
-    // childs: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "pcm_plan_report"
-    // }],
+    childs: [{
+        type: Schema.Types.ObjectId,
+        ref: "pcm_plan_report"
+    }],
     level: {
         type: Number,
         default: 1
@@ -79,9 +76,9 @@ module.exports  = BASE_COLL("pcm_plan_report", {
      * 4-Ghim kết quả tìm kiếm Document
      * 5-Ghim kết quả tìm kiếm hợp đồng
      * 6-Ghim kết quả tìm kiếm comment
-     * ----------------MỚI-----------------------
+     * ----------------NEW-----------------
      * 1 - Nhóm(Thư mục chủ đề)
-     * 2 -  
+     * 2 - 
      */        
     type: { type: Number, default: 1 },
 

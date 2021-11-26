@@ -8,24 +8,26 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT__PCM_PLAN_REPORT_COLL    = require('../database/subject.pcm_plan_report-coll');
-const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
+const SUBJECT__USER_PCM_PLAN_REPORT_COLL = require('../database/subject.user_pcm_plan_report-coll');
+const SUBJECT__PCM_PLAN_REPORT_COLL = require('../database/subject.pcm_plan_report-coll');
+
+const { RANGE_BASE_PAGINATION } 	     = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {
+class Model extends BaseModel {               
 
     constructor() {
-        super(SUBJECT__PCM_PLAN_REPORT_COLL);
+        super(SUBJECT__USER_PCM_PLAN_REPORT_COLL);
     }
 
     /**
-     * Name: insert pcm_plan_report ✅
+     * Name: insert user_pcm_plan_report ✅
      * Author: Depv
      * Code: 
      */
-    insert({ companyID, projectID, type, name, parentID, userID }) { 
+    insert({ userID, subjectID, role, author }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -42,39 +44,26 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!checkObjectIDs(companyID))
-                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+                if(!checkObjectIDs(subjectID))
+                    return resolve({ error: true, message: 'Request params subjectID invalid', status: 400 });
 
-                // if(!checkObjectIDs(projectID))
-                //     return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
                 
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                dataInsert = { company: companyID, project: projectID, userCreate: userID, userUpdate: userID };
+                dataInsert = { user: userID, subject: subjectID, author, role };
 
-                if(type){
-                    dataInsert.type = type;
+                let { parent } = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(subjectID);
+                if(parent){
+                    dataInsert.parent = parent;
                 }
 
-                if(name){
-                    dataInsert.name = name; 
-                }
-
-                if(ObjectID.isValid(parentID)){
-                    dataInsert.parent = parentID;
-                }
-
-                if(ObjectID.isValid(projectID)){
-                    dataInsert.project = projectID;
-                }
-
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAterInsert = await this.insertData(dataInsert);    
 
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: "Can't insert user_pcm_plan_report", status: 403 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -83,12 +72,13 @@ class Model extends BaseModel {
         })
     }
 
+
      /**
-     * Name: update pcm_plan_report ✅
-     * Author: Depv 
+     * Name: update user_pcm_plan_report ✅
+     * Author: Depv
      * Code: 
      */
-    update({ reportID, name, userID }) { 
+    update({ userSubjectID, role }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -102,34 +92,23 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!ObjectID.isValid(reportID))
-                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
-
+                if(!checkObjectIDs(userSubjectID))
+                    return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
+                
+                if(!role && ![1,2,3].includes(role))                  
+                    return resolve({ error: true, message: 'Request params role invalid', status: 400 });
+                
                 /**
                  * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
                  */
-                dataUpdate = { userCreate: userID, userUpdate: userID };
-                
-                if(name){
-                    dataUpdate.name = name;
-                }
-                // Chờ hỏi Minh xem cách update ntn
-                // if(logo){
-                //     dataUpdate.logo = logo;
-                // }
-
-                // if(description){
-                //     dataUpdate.description = description;
-                // }
-                let infoAterUpdate = await SUBJECT__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true });
+                dataUpdate.role = role;
+                let infoAterUpdate = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate);
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't update pcm plan report", status: 403 });
+                    return resolve({ error: true, message: "Can't update user_pcm_plan_report", status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -138,42 +117,40 @@ class Model extends BaseModel {
         })
     }
 
-
      /**
-     * Name: Remove pcm_plan_report ✅
-     * Author: Depv 
-     * Code: F02503
+     * Name: insert user_pcm_plan_report ✅
+     * Author: Depv
+     * Code: 
      */
-    remove({ reportID }) { 
+    remove({ userSubjectID }) { 
         return new Promise(async (resolve) => {
             try {   
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { };
                 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(!checkObjectIDs(userSubjectID))
+                    return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
 
-                if(!checkObjectIDs(reportID))
-                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
-
+                
                 /**
                  * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
                  */
-              
-                let infoAterUpdate = await SUBJECT__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, { state: 2 }, { new: true });
 
-                if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't remove subject", status: 403 });
+                let infoAterRemove = await SUBJECT__PCM_PLAN_REPORT_COLL.findByIdAndDelete(userSubjectID);
 
-                return resolve({ error: false, message: "Remove success", status: 200 });
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "Can't remove user_pcm_plan_report", status: 403 });
+
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -181,11 +158,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Get info pcm_plan_report ✅
-     * Author: Depv 
-     * Code: F02504
+     * Name: get info user_pcm_plan_report ✅
+     * Author: Depv
+     * Code: 
      */
-    getInfo({ reportID, select }) { 
+    getInfo({ userSubjectID }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -198,48 +175,48 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(reportID))
-                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
+                if(!checkObjectIDs(userSubjectID))
+                    return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
 
                 /**
                  * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
                  */
 
-                let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(reportID).select(select).lean();
-                if(!infoData)
-                    return resolve({ error: true, message: "Can't get info subject", status: 403 });
-                
-                return resolve({ error: false, data: infoData, status: 200 });
+                let infoUserSubject = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(userSubjectID);
+
+                if(!infoUserSubject)
+                    return resolve({ error: true, message: "Can't info user_pcm_plan_report", status: 403 });
+
+                return resolve({ error: false, data: infoUserSubject, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /** 
-     * Name: Danh sách pcm_plan_report ✅
-     * Author: Depv 
+     * Name: Danh sách user_pcm_plan_report ✅
+     * Author: Depv
      * Code: 
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, select = {} }) { 
+    getList({ keyword, limit = 10, lastestID, userID, parentID, filter = {}, select = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {state:1};
-                console.log({  keyword, limit, lastestID, type, parentID, filter, select });
+                let conditionObj = { state: 1 };
 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                 }
-                
-                if(type){
-                    conditionObj.type = type;
-                }
 
+                if(checkObjectIDs(userID)){
+                    conditionObj.user = userID;
+                }
+                
                 let conditionFind = {};
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
@@ -271,7 +248,7 @@ class Model extends BaseModel {
                  */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(lastestID);
+					let infoData = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -293,22 +270,22 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
                 
-                let infoDataAfterGet = await SUBJECT__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .populate({
                         path: "parent",
-                        select: select.parent
+                        select: "name"
                     })
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .lean(); 
-
+                
                 // GET TOTAL RECORD
-				// let totalRecord = await SUBJECT__PCM_PLAN_REPORT_COLL.count(conditionObj);
-                let totalCurrentPage = await SUBJECT__PCM_PLAN_REPORT_COLL.count(conditionFind);
+				// let totalRecord = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.count(conditionObj);
+                let totalCurrentPage = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let totalRecord = await SUBJECT__PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
+                let totalRecord = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     
