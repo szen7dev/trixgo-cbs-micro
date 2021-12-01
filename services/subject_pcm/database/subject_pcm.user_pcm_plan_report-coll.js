@@ -1,16 +1,17 @@
 "use strict";
 
+"use strict";
+
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-//USER CÓ QUYỀN TRUY CẬP SUBJECT
 module.exports  = DATABASE_MIDDLEWARE("user_pcm_plan_report", {
    
     user: {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    
+     
     subject: {
         type: Schema.Types.ObjectId,
         ref: 'pcm_plan_report'

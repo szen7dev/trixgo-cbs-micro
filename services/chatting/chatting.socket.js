@@ -483,15 +483,53 @@ exports.CHATTING_SOCKET = {
 				.lean();
 		}
 
+		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver: [...arrReceiver, userID],
+			arrReceiver: members,
 			data: {
 				tmpid,
 				usersTag,
 				infoMessage,
 			},
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+		});
+
+		let description = infoMessage.content;
+		let senderFullname = '';
+
+		if(members.length > 2){
+			infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+				userID,
+				select: '_id bizname fullname image'
+			});
+
+			senderFullname = infoSender.fullname;
+			description = `${senderFullname}: ${description}`;
+		}
+
+		switch (infoMessage.type) {
+			case 1:
+				description = `${senderFullname} đã gửi 1 ảnh`;
+				break;
+			case 2:
+				description = `${senderFullname} đã gửi 1 file`;
+				break;
+			case 4:
+				description = `${senderFullname} đã tạo 1 nhắc hẹn`;
+				break;
+			case 5:
+				description = `${senderFullname} đã tạo 1 cuộc bình chọn`;
+				break;
+			default:
+				break;
+		}
+
+		// SEND CLOUDMSG
+		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE", { 
+			users: arrReceiver,
+			title: infoConversation.name,
+			description
 		});
     },
 
@@ -1002,7 +1040,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Reaction 1 tin nhắn
 	 * Date: 26/10/2021
 	 */
-	 [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
         let socket               		= this;
 		let userID              		= socket.client.user;
 		let broker                      = socket.$service.broker;

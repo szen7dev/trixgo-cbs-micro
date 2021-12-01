@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT__PCM_PLAN_REPORT_MODEL            = require('../model/subject.pcm_plan_report').MODEL;
+const SUBJECT__PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.pcm_plan_report').MODEL;
 
 module.exports = {
     /**

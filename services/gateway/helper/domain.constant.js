@@ -14,7 +14,7 @@ let CF_DOMAIN_SERVICES = {
     MEDIA           : 'media',
     CMCS            : 'cmcs',
     TRAINING        : 'training',
-    SUBJECT         : 'subject',
+    SUBJECT_PCM     : 'subject_pcm',
     // COMMENT     : 'comment',
 }
 

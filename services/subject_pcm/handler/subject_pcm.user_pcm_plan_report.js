@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT__USER_PCM_PLAN_REPORT_MODEL            = require('../model/subject.user_pcm_plan_report').MODEL;
+const SUBJECT__USER_PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.user_pcm_plan_report').MODEL;
 
 module.exports = {
     
@@ -25,14 +25,16 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { subjectID, users } = ctx.params;
 				const { _id: author, company: companyID } = ctx.meta.infoUser;
-                
-                let resultAfterCallHandler;
+                let resultAfterCallHandler = [];
+                let ROLE_VIEW = 2;
+
                 for (const userID of users) {
-                    resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.insert({
-                        userID, subjectID, role: 2, author
+                    let infoAfterInsert = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.insert({
+                        userID, subjectID, role: ROLE_VIEW, author
                     });
+                    resultAfterCallHandler.push(infoAfterInsert);
                 }
-                resultAfterCallHandler = { error: false, message: "insert success" };
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -47,19 +49,18 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            subjectID         : { type: "string" },
-            name              : { type: "string", optional: true },
-            select            : { type: "string", optional: true },
+            userSubjectID     : { type: "string" },
+            role              : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, name, select } = ctx.params;
+                let { userSubjectID, role } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.update({
-                    reportID: subjectID, name, userID, select
+                let resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.update({
+                    userSubjectID, role
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -76,18 +77,18 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            subjectID         : { type: "string" },
+            userSubjectID         : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID } = ctx.params;
+                let { userSubjectID } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.remove({
-                    reportID: subjectID
+                let resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.remove({
+                    userSubjectID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -110,22 +111,22 @@ module.exports = {
             type        : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
             filter      : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            subjectID   : { type: "string", optional: true },
+            select       : { type: "string", optional: true },
+            userSubjectID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, keyword, limit, lastestID, type, parentID, filter, select } = ctx.params;
+                let { userSubjectID, keyword, limit, lastestID, type, parentID, filter, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                     
                 let resultAfterCallHandler;
-                if(subjectID){
-                    resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getInfo({
-                        reportID: subjectID, select
+                if(userSubjectID){
+                    resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.getInfo({
+                        userSubjectID: userSubjectID, select
                     });
                 }else{
-                    resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getList({
+                    resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.getList({
                         keyword, limit, lastestID, type, parentID, filter, select
                     });
                 }

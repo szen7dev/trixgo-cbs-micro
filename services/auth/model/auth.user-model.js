@@ -631,18 +631,18 @@ class Model extends BaseModel {
      * @param {*} listUserID 123,1243,2121 
      * @returns []
      */
-    getListUsersForPushMobile({ listUserID }){
+    getListUsersForPushMobile({ users }){
         return new Promise(async resolve => {
             try {
-				if(!checkObjectIDs(listUserID))
-                    return resolve({ error: true, message: 'Request params listUserID invalid', status: 400 });
-                
-                let userIDConvert = Array.isArray(listUserID) ? listUserID.split(',') : [listUserID];
+				if(!checkObjectIDs(users))
+                    return resolve({ error: true, message: 'Request params users invalid', status: 400 });
+
+                let userIDConvert = Array.isArray(users) ? users : [users];
 
                 let listUsers = await AUTH__USER_COLL
                     .find({
                         _id: {
-                            $in: [...userIDConvert.map(item => ObjectID(item))]
+                            $in: userIDConvert
                         }
                     }, {
                         _id: 1,
@@ -650,11 +650,7 @@ class Model extends BaseModel {
                         devices: 1
                     })
                     .lean();
-					// .populate('department', select.department)
-					// .populate('company', select.company)
-                    // .limit(limit + 1)
-                    // .sort(sortBy)
-            
+
                 return resolve({ 
 					error: false,
 					status: 200,

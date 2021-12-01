@@ -16,9 +16,9 @@ class Model extends BaseModel {
     }
    
     sendNotiMobilePush({ users, title, description, objDataForSend, ctx }) {
-        const that = this;
         return new Promise(async (resolve) => {
              try {
+                 console.log({ users, title, description, objDataForSend })
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -27,9 +27,9 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
                 if(!checkObjectIDs(users))
-                  return resolve({ error: true, message: "users_invalid" });
+                    return resolve({ error: true, message: "users_invalid" });
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
@@ -44,8 +44,9 @@ class Model extends BaseModel {
                     let listOneSignalIDForMobilePush = [];
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
-                            // mỗi user có devices[{oneSignalID}]
                             let { devices } = user;
+                            // console.log({ devices })
+
                             listOneSignalIDForMobilePush = [...listOneSignalIDForMobilePush, ...devices.map(item => item.oneSignalID)]
                         })
 
@@ -58,13 +59,16 @@ class Model extends BaseModel {
                                 "en": description
                             },
                             data: objDataForSend,
+                            ios_sound: 'teaser.wav',
+                            android_sound: 'teaser',
+                            ios_badgeType: 'Increase',
+                            ios_badgeCount: 1,
+                            // android_channel_id: 'xxxxxxx-4462-xxxx-884a-xxxxxxxxxx',
                             include_player_ids: listOneSignalIDForMobilePush
                         }
                         // console.log({ dataForSend })
                         sendNotificationviaCloudMessaging(dataForSend)
                     }
-                  
-                   
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message });

@@ -177,15 +177,15 @@ module.exports = {
     getListUserByIdForPushMobile: {
         auth: "required",
         params: {
-            users : { type: "string" },
+            // users : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				let { users: listUserID } = ctx.params;
+				let { users } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListUsersForPushMobile({
-                    listUserID
+                    users
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

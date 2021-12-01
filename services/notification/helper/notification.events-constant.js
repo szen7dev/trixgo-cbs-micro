@@ -41,10 +41,18 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
              console.log("Metadata:", ctx.meta);
              console.log("The called event name:", ctx.eventName);
 
-            let { users: listRecievers } = ctx.params;
+            let { users: listRecievers, title, description } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
-            let infoSendNoti = await NOTIFICATION__LOG_MODEL.sendNotiMobilePush({ users: listRecievers, title: 'Thử tiếng việt nào', description: 'from LDK TEAM', objDataForSend: { screenkey: 'DETAIL_PAGE' }, ctx })
+            await NOTIFICATION__LOG_MODEL.sendNotiMobilePush({ 
+                users: listRecievers,
+                title: title,
+                description: description,
+                objDataForSend: {
+                    screenkey: 'DETAIL_PAGE'
+                }, 
+                ctx
+            })
          }
      },
      //  loại noti:SMS

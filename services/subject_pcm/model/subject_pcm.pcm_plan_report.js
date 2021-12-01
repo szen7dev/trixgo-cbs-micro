@@ -8,14 +8,14 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT__PCM_PLAN_REPORT_COLL     = require('../database/subject.pcm_plan_report-coll');
+const SUBJECT__PCM_PLAN_REPORT_COLL     = require('../database/subject_pcm.pcm_plan_report-coll');
 
 const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
  */
-const SUBJECT__PCM_PLAN_REPORT_MODEL   = require('../model/subject.user_pcm_plan_report').MODEL;
+const SUBJECT__PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
 
 class Model extends BaseModel {
 

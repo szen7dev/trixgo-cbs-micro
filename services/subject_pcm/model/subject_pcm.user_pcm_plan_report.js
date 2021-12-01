@@ -8,8 +8,8 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT__USER_PCM_PLAN_REPORT_COLL = require('../database/subject.user_pcm_plan_report-coll');
-const SUBJECT__PCM_PLAN_REPORT_COLL = require('../database/subject.pcm_plan_report-coll');
+const SUBJECT__USER_PCM_PLAN_REPORT_COLL = require('../database/subject_pcm.user_pcm_plan_report-coll');
+const SUBJECT__PCM_PLAN_REPORT_COLL      = require('../database/subject_pcm.pcm_plan_report-coll');
 
 const { RANGE_BASE_PAGINATION } 	     = require('../../../tools/cursor_base/playground/index');
 
@@ -53,11 +53,19 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
+                let checkExist = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findOne({ 
+                    user: userID,
+                    subject: subjectID
+                });
+
+                if(checkExist)
+                    return resolve({  error: true, message: "User subject exist", status: 403  });
+
                 dataInsert = { user: userID, subject: subjectID, author, role };
 
-                let { parent } = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(subjectID);
-                if(parent){
-                    dataInsert.parent = parent;
+                let infoPlanReport = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(subjectID);
+                if(infoPlanReport && infoPlanReport.parent){
+                    dataInsert.parent = infoPlanReport.parent;
                 }
 
                 let infoAterInsert = await this.insertData(dataInsert);    
@@ -96,7 +104,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userSubjectID))
                     return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
                 
-                if(!role && ![1,2,3].includes(role))                  
+                if(!role && ![2,3].includes(role))                  
                     return resolve({ error: true, message: 'Request params role invalid', status: 400 });
                 
                 /**
@@ -105,7 +113,7 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 dataUpdate.role = role;
-                let infoAterUpdate = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate);
+                let infoAterUpdate = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate, { new: true });
 
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't update user_pcm_plan_report", status: 403 });
@@ -137,7 +145,6 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(userSubjectID))
                     return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
-
                 
                 /**
                  * LOGIC STEP (3)
@@ -145,7 +152,7 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
 
-                let infoAterRemove = await SUBJECT__PCM_PLAN_REPORT_COLL.findByIdAndDelete(userSubjectID);
+                let infoAterRemove = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findByIdAndDelete(userSubjectID);
 
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Can't remove user_pcm_plan_report", status: 403 });
@@ -184,7 +191,14 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
 
-                let infoUserSubject = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(userSubjectID);
+                let infoUserSubject = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(userSubjectID).populate({
+                    path: "subject",
+                    select: "name"
+                })
+                .populate({
+                    path: "user",
+                    select: "fullname image"
+                });
 
                 if(!infoUserSubject)
                     return resolve({ error: true, message: "Can't info user_pcm_plan_report", status: 403 });
@@ -272,8 +286,12 @@ class Model extends BaseModel {
                 
                 let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .populate({
-                        path: "parent",
+                        path: "subject",
                         select: "name"
+                    })
+                    .populate({
+                        path: "user",
+                        select: "fullname image"
                     })
                     .limit(+limit+1)
                     .sort(sortBy) 
