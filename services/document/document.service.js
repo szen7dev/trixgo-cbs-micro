@@ -19,13 +19,12 @@ const DOCUMENT__PACKAGE_HANDLER    		= require('./handler/document.package-handl
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DOCUMENT,
 	mixins: [
-		DbService('document_doc'),
 		DbService('document_file'),
-		DbService('document_user'),
+		DbService('document_doc'),
 		DbService('document_package'),
-		DbService('document_storage'),
-		DbService('document_doctype'),
-		DbService('users'),
+		DbService('document_user_related'),
+		DbService('doctype'),
+		DbService('storage'),
 		CacheCleaner([CF_DOMAIN_SERVICES.DOCUMENT])
     ],
 

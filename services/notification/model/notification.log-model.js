@@ -66,7 +66,7 @@ class Model extends BaseModel {
                             // android_channel_id: 'xxxxxxx-4462-xxxx-884a-xxxxxxxxxx',
                             include_player_ids: listOneSignalIDForMobilePush
                         }
-                        // console.log({ dataForSend })
+
                         sendNotificationviaCloudMessaging(dataForSend)
                     }
                 }

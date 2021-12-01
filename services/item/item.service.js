@@ -42,14 +42,15 @@ module.exports = {
 	*/
 	actions: {
 		//==========================================  CONTRACT ACTIONS  ================================
-		[CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION] 		: ITEM__CONTRACT_HANDLER.updateContractByCondition,
-		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST] 				: ITEM__CONTRACT_HANDLER.getListContract,
+		[CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION] 			: ITEM__CONTRACT_HANDLER.updateContractByCondition,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST] 					: ITEM__CONTRACT_HANDLER.getListContract,
 
 		//==========================================  DEPARTMENT ACTIONS  ================================
-		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 				: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
 
 		//==========================================  CONTACT ACTIONS  ================================
-		[CF_ACTIONS_ITEM.CONTACT_GET_LIST] 					: ITEM__CONTACT_HANDLER.getListContact,
+		[CF_ACTIONS_ITEM.GET_LIST_CONTACT] 						: ITEM__CONTACT_HANDLER.getListContact,
+		[CF_ACTIONS_ITEM.INFO_CONTACT] 							: ITEM__CONTACT_HANDLER.getInfoContact,
 	},
 
 	/**

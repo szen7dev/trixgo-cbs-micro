@@ -10,11 +10,11 @@ let CF_DOMAIN_SERVICES = {
     REACTION        : 'reaction',
     INSPECTION      : 'inspection',
     DOCUMENT        : 'document',
+    HUMAN           : 'human',
     NOTIFICATION    : 'notification',
     MEDIA           : 'media',
     CMCS            : 'cmcs',
     TRAINING        : 'training',
-    // COMMENT     : 'comment',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

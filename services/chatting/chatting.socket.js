@@ -443,7 +443,7 @@ exports.CHATTING_SOCKET = {
 		const { members, usersMute } = infoConversation;
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
-		// Không gửi đến user tắt thông báo cuộc hội thoại
+		// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
 		const arrReceiver = members.filter(memberID => {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
@@ -498,12 +498,12 @@ exports.CHATTING_SOCKET = {
 		let description = infoMessage.content;
 		let senderFullname = '';
 
-		if(members.length > 2){
-			infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-				userID,
-				select: '_id bizname fullname image'
-			});
+		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+			userID,
+			select: 'fullname'
+		});
 
+		if(members.length > 2){
 			senderFullname = infoSender.fullname;
 			description = `${senderFullname}: ${description}`;
 		}
@@ -525,10 +525,12 @@ exports.CHATTING_SOCKET = {
 				break;
 		}
 
-		// SEND CLOUDMSG
+		console.log({ arrReceiver })
+
+		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE", { 
 			users: arrReceiver,
-			title: infoConversation.name,
+			title: members.length === 2 ? infoSender.fullname : infoConversation.name,
 			description
 		});
     },

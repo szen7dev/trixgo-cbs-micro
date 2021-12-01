@@ -9,6 +9,7 @@ const ObjectID                                  	= require('mongoose').Types.Obj
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
@@ -32,7 +33,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách contact
 	 * Date: 29/10/2021
 	 */
-	getListContact({ lastestID, userID, companyID, departmentID, keyword, limit = 10, filter = {}, select = {} }) {
+	getListContact({ lastestID, userID, companyID, departmentID, keyword, isExpire, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
@@ -103,6 +104,24 @@ class Model extends BaseModel {
 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
                     .populate('department', select.department)
                     .populate('company', select.company)
+                    .populate('field', select.field)
+                    .populate('property', select.property)
+                    .populate('area', select.area)
+                    .populate('area1', select.area1)
+                    .populate('area2', select.area2)
+                    .populate('linkSale', select.linkSale)
+                    .populate('linkUser', select.linkUser)
+                    .populate('workingStatus', select.workingStatus)
+                    .populate('contractType', select.contractType)
+                    .populate('workplace', select.workplace)
+                    .populate('educationalBackground', select.educationalBackground)
+                    .populate('major', select.major)
+                    .populate('documents', select.documents)
+                    .populate('seniority', select.seniority)
+                    .populate('other', select.other)
+                    .populate('files', select.files)
+                    .populate('parent', select.parent)
+                    .populate('childs', select.childs)
 					.limit(limit + 1)
 					.sort(sortBy)
 					.lean();
@@ -136,6 +155,58 @@ class Model extends BaseModel {
 			}
 		})
 	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Chi tiết nhân sự
+	 * Date: 26/11/2021
+	 */
+	getInfoContact({ userID, contactID, select }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs([contactID, userID]))
+					return resolve({ error: true, message: 'Request params contactID or userID invalid', status: 400 });
+
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+
+                const infoContact = await ITEM__CONTACT_COLL
+                    .findById(documentID)
+                    .populate('department', select.department)
+                    .populate('company', select.company)
+                    .populate('field', select.field)
+                    .populate('property', select.property)
+                    .populate('area', select.area)
+                    .populate('area1', select.area1)
+                    .populate('area2', select.area2)
+                    .populate('linkSale', select.linkSale)
+                    .populate('linkUser', select.linkUser)
+                    .populate('workingStatus', select.workingStatus)
+                    .populate('contractType', select.contractType)
+                    .populate('workplace', select.workplace)
+                    .populate('educationalBackground', select.educationalBackground)
+                    .populate('major', select.major)
+                    .populate('documents', select.documents)
+                    .populate('seniority', select.seniority)
+                    .populate('other', select.other)
+                    .populate('files', select.files)
+                    .populate('parent', select.parent)
+                    .populate('childs', select.childs)
+                    .lean();
+
+                if(!infoContact)
+                    return resolve({ error: true, message: "Can't get info contact", status: 400 });
+
+                return resolve({ error: false, data: infoContact, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
 }
 

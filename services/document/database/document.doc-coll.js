@@ -59,22 +59,22 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     //_________Phân loại theo lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
-        ref : "document_doctype"
+        ref : "doctype"
     },
     //_________Phân loại theo tính chất
     property: {
         type: Schema.Types.ObjectId,
-        ref : "document_doctype"
+        ref : "doctype"
     },
     //_________Phân loại theo khác
     other: {
         type: Schema.Types.ObjectId,
-        ref : "document_doctype"
+        ref : "doctype"
     },
     //_________Địa chỉ lưu trữ
     storage: {
         type: Schema.Types.ObjectId,
-        ref : "document_storage"
+        ref : "storage"
     },
     //_________Ngày tháng văn bản/Ngày đóng dấu
     date: {

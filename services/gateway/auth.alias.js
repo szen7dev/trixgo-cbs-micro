@@ -445,10 +445,21 @@ module.exports = {
 		//---------------------------🏁 START SEARVICE CONTRACT 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_ITEM.CONTRACT_GET_LIST}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_LIST}`],
+		//---------------------------- END SEARVICE CONTRACT ---------------------------//
+
+
+
+
+
+		//---------------------------🏁 START SEARVICE CONTACT 🏁---------------------------//
 
 		[`GET ${CF_ROUTINGS_ITEM.CONTACT_GET_LIST}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_LIST}`],
-		//---------------------------- END SEARVICE CONTRACT ---------------------------//
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.GET_LIST_CONTACT}`],
+
+		[`GET ${CF_ROUTINGS_ITEM.CONTACT_GET_LIST}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DETAIL_CONTACT}`],
+
+		//---------------------------- END SEARVICE CONTACT ---------------------------//
 
 
 
