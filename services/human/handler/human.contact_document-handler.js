@@ -21,23 +21,24 @@ module.exports = {
 	 * Func: Danh sách hồ sơ nhân sự sắp hết hạn
 	 * Date: 26/11/2021
 	 */
-    getListHumanByExpireDocument: {
+    getListContactByExpireDocument: {
         params: {
-            lastestID       : { type: "string", optional: true },
-            keyword         : { type: "string", optional: true },
-			limit           : { type: "number", optional: true },
-			companyID       : { type: "string" },
-			select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            keyword             : { type: "string", optional: true },
+			limit               : { type: "number", optional: true },
+			companyID           : { type: "string" },
+			type                : { type: "number", optional: true },
+			select              : { type: "string", optional: true },
+            filter              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, companyID, keyword, limit, select, filter } = ctx.params;
+                const { lastestID, companyID, type, keyword, limit, select, filter } = ctx.params;
                 
-                const resultAfterCallHandler = await HUMAN_MODEL.getListHumanByExpireDocument({
-                    lastestID, companyID, userID, keyword, limit, select, filter
+                const resultAfterCallHandler = await HUMAN_MODEL.getListContactByExpireDocument({
+                    lastestID, companyID, userID, type, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

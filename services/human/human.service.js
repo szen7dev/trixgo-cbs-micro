@@ -43,7 +43,7 @@ module.exports = {
 		// ======================  HUMAN ===========================
 
 		// Danh sách hồ sơ nhân sự sắp hết hạn
-		[CF_ACTIONS_HUMAN.GET_LIST_HUMAN_BY_EXPIRE_DOCUMENT]	: HUMAN_HANDLER.getListHumanByExpireDocument,
+		[CF_ACTIONS_HUMAN.GET_LIST_CONTACT_BY_EXPIRE_DOCUMENT]	: HUMAN_HANDLER.getListContactByExpireDocument,
 	},
 
 	/**

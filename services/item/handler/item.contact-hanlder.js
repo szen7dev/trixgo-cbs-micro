@@ -18,23 +18,32 @@ module.exports = {
 	 */
     getListContact: {
         params: {
-            lastestID       : { type: "string", optional: true },
-            limit           : { type: "number", optional: true },
-            keyword         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            departmentID    : { type: "string", optional: true },
-            isExpire        : { type: "boolean", optional: true },
-            filter          : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            limit               : { type: "number", optional: true },
+            keyword             : { type: "string", optional: true },
+            companyID           : { type: "string" },
+            departmentID        : { type: "string", optional: true },
+            positionID          : { type: "string", optional: true },
+            contractTypeID      : { type: "string", optional: true },
+            isExpireContract    : { type: "boolean", optional: true },
+            isUpcomingBirthday  : { type: "boolean", optional: true },
+            insuranceStatus     : { type: "number", optional: true },
+            gender              : { type: "number", optional: true },
+            filter              : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, companyID, departmentID, keyword, isExpire, limit, filter, select } = ctx.params;
+                const { 
+                    lastestID, companyID, departmentID, positionID, contractTypeID, insuranceStatus, gender, keyword, 
+                    isExpireContract, isUpcomingBirthday, limit, filter, select
+                } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListContact({
-                    lastestID, userID, companyID, departmentID, keyword, isExpire, limit, filter, select
+                    lastestID, userID, companyID, departmentID, positionID, contractTypeID, insuranceStatus, gender, keyword, 
+                    isExpireContract, isUpcomingBirthday, limit, filter, select
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -70,4 +79,5 @@ module.exports = {
             }
         }
     },
+
 }

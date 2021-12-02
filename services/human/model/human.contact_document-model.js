@@ -3,6 +3,8 @@
 /**
  * EXTERNAL PACKAGE
  */
+const moment 										= require("moment");
+const ISOdate 										= require('isodate');
 
 /**
  * CONSTANTS
@@ -35,7 +37,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách hồ sơ nhân sự sắp hết hạn
 	 * Date: 26/11/2021
 	 */
-	getListHumanByExpireDocument({ lastestID, userID, companyID, keyword, limit = 20, filter = {}, select = {} }){
+	getListContactByExpireDocument({ lastestID, userID, companyID, keyword, type, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -78,7 +80,7 @@ class Model extends BaseModel {
                     if(!infoContactDocument)
                         return resolve({ error: true, message: "Can't get info last contact document", status: 403 });
 
-                    let nextInfo = `${infoPackage.modifyAt}_${infoPackage._id}`;
+                    let nextInfo = `${infoContactDocument.modifyAt}_${infoContactDocument._id}`;
                     let keys 	 = ['modifyAt__-1', '_id__-1'];
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
@@ -87,6 +89,16 @@ class Model extends BaseModel {
 
 					conditionFind = dataPagingAndSort.data.find;
                 }
+
+				let currentDay = ISOdate(moment().endOf('day').format());
+				let currentDateAddFourMonth = ISOdate(moment().add(4, 'month').format());
+
+				conditionObj.toDate = {
+					$lte: currentDateAddFourMonth,
+					$gte: currentDay
+				}
+
+				type && (conditionObj.type = type);
 
 				// SEARCH TEXT
 				if(keyword){

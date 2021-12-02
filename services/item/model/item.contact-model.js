@@ -3,7 +3,8 @@
 /**
  * EXTERNAL PACKAGE
  */
-const ObjectID                                  	= require('mongoose').Types.ObjectId;
+const moment                                  		= require('moment');
+const ISOdate                                  		= require('isodate');
 
 /**
  * CONSTANTS
@@ -33,18 +34,27 @@ class Model extends BaseModel {
 	 * Func: Danh sách contact
 	 * Date: 29/10/2021
 	 */
-	getListContact({ lastestID, userID, companyID, departmentID, keyword, isExpire, limit = 10, filter = {}, select = {} }) {
+	getListContact({ 
+		lastestID, userID, companyID, departmentID, positionID, contractTypeID, insuranceStatus, gender, keyword, 
+		isExpireContract, isUpcomingBirthday, limit = 10, filter = {}, select = {}
+	}) {
 		return new Promise(async (resolve) => {
 			try {
 				// Check params
 				if(!checkObjectIDs([userID]))
 					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(companyID && !checkObjectIDs([companyID]))
+                if(!checkObjectIDs([companyID]))
 					return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
                 if(departmentID && !checkObjectIDs([departmentID]))
 					return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+				if(positionID && !checkObjectIDs([positionID]))
+					return resolve({ error: true, message: 'Request params positionID invalid', status: 400 });
+
+				if(contractTypeID && !checkObjectIDs([contractTypeID]))
+					return resolve({ error: true, message: 'Request params contractTypeID invalid', status: 400 });
 
 				if(isNaN(limit)){
 					limit = 10;
@@ -66,13 +76,12 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
+				let conditionObj  = { company: companyID };
 				let conditionFind = {};
-				let conditionObj  = {};
                 let objSort = {};
 				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
 				}
 
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -90,8 +99,39 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 				}
 
-                companyID       && (conditionObj.company = companyID);
-                departmentID    && (conditionObj.department = departmentID);
+                departmentID    && (conditionObj.department 		= departmentID);
+                positionID    	&& (conditionObj.position 			= positionID);
+                contractTypeID	&& (conditionObj.contractType 		= contractTypeID);
+                insuranceStatus	&& (conditionObj.insuranceStatus	= insuranceStatus);
+                gender			&& (conditionObj.gender 			= gender);
+
+				let currentDay = ISOdate(moment().endOf('day').format());
+				let currentDateAddFourMonth = ISOdate(moment().add(4, 'month').format());
+
+				if(isExpireContract){
+					conditionObj.contractExpire = {
+						$lte: currentDateAddFourMonth,
+						$gte: currentDay
+					}
+				}
+
+				if(isUpcomingBirthday){
+					conditionObj.birthday = {
+						$lte: currentDateAddFourMonth,
+						$gte: currentDay
+					}
+				}
+
+				// if(fromDate && toDate){
+                //     let firstDayOfYear = `${Number(fromDate)}-01-01T00:00:00.000Z`
+                //     let lastDayOfYear = `${Number(toDate)}-12-31T00:00:00.000Z`
+                //     let _fromDate   = moment(firstDayOfYear).startOf('day').format();// <=== fix ISODate here
+                //     let _toDate     = moment(lastDayOfYear).endOf('day').format();// <=== fix ISODate here
+                //     ObjectSearch.createAt = { 
+                //         $gte: moment(_fromDate).toDate(),
+                //         $lte: moment(_toDate).toDate()
+                //     }
+                // }
 
                 // SEARCH TEXT
 				if(keyword){
