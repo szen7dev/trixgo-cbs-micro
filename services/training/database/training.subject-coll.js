@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("training_subject", {
     //_________Số lượng bài viết
     amountLessions: {
         type: Number,
-        default: 5
+        default: 0
     },
 
     //_________Số lượt xem(Tổng của các bài viết) hoặc tổng của 1 bài viết
@@ -37,7 +37,7 @@ module.exports  = DATABASE_MIDDLEWARE("training_subject", {
     //_________Số sao đánh giá trung bình
     amountStars: {
         type: Number,
-        default: 0
+        default: 5
     },
 
     //___________________________________________________Các trường thuộc bài viết

@@ -290,7 +290,7 @@ class Model extends BaseModel {
                     $addToSet: { tasks: taskID }   
                 }, { new: true })
                  
-                 //__________Tin nhắn (nếu có)
+                //__________Tin nhắn (nếu có)
                 //  if(messageID && ObjectID.isValid(messageID)){
                 //      await MESSAGE_COLL.findByIdAndUpdate(messageID, { task: taskID }, { new: true });
                 //  }
@@ -501,7 +501,6 @@ class Model extends BaseModel {
                 if(isproposal){
                     dataUpdate.isproposal = isproposal;
                 }
-                
 
                 let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
 
@@ -514,7 +513,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
      /**
      * Name: insert user_pcm_plan_report ✅
      * Author: Depv
