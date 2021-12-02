@@ -82,18 +82,18 @@ module.exports = {
             progressType   : { type: "string", optional: true },
             field          : { type: "string", optional: true },
             contract       : { type: "string", optional: true },
-            draft          : { type: "string", optional: true },
-            isproposal     : { type: "string", optional: true },
+            draft          : { type: "number", optional: true },
+            isproposal     : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, sign, name, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal } = ctx.params;
+                let { taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.update({
-                    taskID, sign, name, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal
+                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

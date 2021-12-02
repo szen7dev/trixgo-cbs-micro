@@ -71,7 +71,6 @@ class Model extends BaseModel {
                 let { amountStars } = await TRAINING__SUBJECT_COLL.findById(lession);
                 let starAVG = (Number(amountStars) + Number(score))/2;
                 starAVG = Number(starAVG).toFixed(1);
-                console.log({ starAVG  });
                 // Cập nhật amountStars
                 await TRAINING__SUBJECT_COLL.findByIdAndUpdate(lession, { amountStars: starAVG }, { new: true });
 
