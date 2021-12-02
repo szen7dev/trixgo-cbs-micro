@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("file_core", {
     name : { type: String, require: true }, //uuidv1
     
     status: { 
-        type: Number,
+        type: Number, 
         enum:[FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],
         require: true, 
         default: FILE_PROCESSING

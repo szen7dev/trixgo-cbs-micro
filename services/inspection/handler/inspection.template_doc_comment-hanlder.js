@@ -31,7 +31,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const {  content, templateID , parentID, files } = ctx.params;
-
+                
                 // call service file để insert
                 const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_INSERT}`, {
 					content

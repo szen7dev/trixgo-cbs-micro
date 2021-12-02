@@ -24,6 +24,7 @@ const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constan
 const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
 const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant');
 const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.routes-constant');
+const { CF_ROUTINGS_SUBJECT_PCM } 	    = require('../subject_pcm/helper/subject_pcm.routes-constant');
 
 
 
@@ -42,6 +43,7 @@ const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-con
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_CMCS } 	    	= require('../cmcs/helper/cmcs.actions-constant');
 const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.actions-constant');
+const { CF_ACTIONS_SUBJECT_PCM } 	= require('../subject_pcm/helper/subject_pcm.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -491,14 +493,6 @@ module.exports = {
 		//---------------------------- END SEARVICE TRAINING ---------------------------//
 
 
-
-
-
-
-
-
-
-
 		//---------------------------🏁 START S024.MEDIA 🏁---------------------------//
 		[`POST ${CF_ROUTINGS_MEDIA.MAIN_MEDIA}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INSERT_MEDIA}`],
@@ -604,6 +598,48 @@ module.exports = {
 		//---------------------------🏁 END S024.MEDIA 🏁---------------------------//
 
 
+		//---------------------------🏁 START S014.SUBJECT AND PCM 🏁---------------------------//
+		[`POST ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST}`],
+
+
+
+		[`POST ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST}`],
+
+
+		//----------------------------pcm_plan_task
+		[`POST ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_INSERT}`],
+
+
+		[`PUT ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_UPDATE}`],
+
+
+		[`GET ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`],
+
+
+		//---------------------------🏁 END S014.SUBJECT AND PCM 🏁---------------------------//
 
 	
 		//---------------------------🏁 START S015.DOCUMENT 🏁---------------------------//
@@ -688,6 +724,9 @@ module.exports = {
 
 
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
+
+
+
 
 
 	},

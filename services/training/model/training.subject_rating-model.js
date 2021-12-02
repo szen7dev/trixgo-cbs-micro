@@ -69,9 +69,9 @@ class Model extends BaseModel {
                 let infoAterInsert = await this.insertData(dataInsert);
                 // Update amountStars cho subject(lession)
                 let { amountStars } = await TRAINING__SUBJECT_COLL.findById(lession);
-                let starAVG = (amountStars + score)/2;
-                starAVG = starAVG.toFixed(1);
-
+                let starAVG = (Number(amountStars) + Number(score))/2;
+                starAVG = Number(starAVG).toFixed(1);
+                console.log({ starAVG  });
                 // Cập nhật amountStars
                 await TRAINING__SUBJECT_COLL.findByIdAndUpdate(lession, { amountStars: starAVG }, { new: true });
 

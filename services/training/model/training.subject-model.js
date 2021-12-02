@@ -246,7 +246,7 @@ class Model extends BaseModel {
         })
     }
     
-    /**
+    /** 
      * Name: Danh sách subject ✅
      * Author: Depv 
      * Code: F02505

@@ -15,8 +15,6 @@ const INSPECTION__DOCS_HANLDER 					= require('./handler/inspection.doc-hanlder'
 const INSPECTION__DOC_REACTION_HANLDER 			= require('./handler/inspection.doc_reaction-hanlder');
 const INSPECTION__DOC_CHECKLIST_HANLDER 		= require('./handler/inspection.doc_checklist-hanlder');
 
-
-
 module.exports = {
 	name: CF_DOMAIN_SERVICES.INSPECTION,
 	mixins: [
@@ -63,7 +61,7 @@ module.exports = {
 		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_UPDATE] : INSPECTION__TEMPLATE_DOC_COMMENT_HANLDER.updateComment,
 		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_LIST]   : INSPECTION__TEMPLATE_DOC_COMMENT_HANLDER.listComment,
 		[CF_ACTIONS_INSPECTION.TEMPLATE_DOC_COMMENT_REMOVE] : INSPECTION__TEMPLATE_DOC_COMMENT_HANLDER.removeComment,
-			
+
 		// Action inspection area
 		[CF_ACTIONS_INSPECTION.AREA_INSERT]   : INSPECTION__AREA_HANLDER.insert,
 		[CF_ACTIONS_INSPECTION.AREA_UPDATE]   : INSPECTION__AREA_HANLDER.update,
@@ -75,7 +73,7 @@ module.exports = {
 		[CF_ACTIONS_INSPECTION.DOCS_UPDATE]   : INSPECTION__DOCS_HANLDER.updateDoc,
 		[CF_ACTIONS_INSPECTION.DOCS_REMOVE]   : INSPECTION__DOCS_HANLDER.removeDoc,
 		[CF_ACTIONS_INSPECTION.DOCS_LIST]  	  : INSPECTION__DOCS_HANLDER.getList,
-
+		
 		// Action inspection comment
 		[CF_ACTIONS_INSPECTION.DOC_COMMENT_INSERT] : INSPECTION__DOC_COMMENT_HANLDER.insertComment,
 		[CF_ACTIONS_INSPECTION.DOC_COMMENT_UPDATE] : INSPECTION__DOC_COMMENT_HANLDER.updateComment,
@@ -99,7 +97,7 @@ module.exports = {
 	},
 
 	/**
-	 	* Methods
+	* Methods
 	*/
 	methods: {
 
@@ -120,7 +118,7 @@ module.exports = {
 	},
 
 	/**
-	 	* Service stopped lifecycle event handler
+	* Service stopped lifecycle event handler
 	*/
 	async stopped() {
 

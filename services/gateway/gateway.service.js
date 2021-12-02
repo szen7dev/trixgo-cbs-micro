@@ -34,12 +34,18 @@ module.exports = {
 		],
 
 		cors: {
-            // origin: "*",
-			// methods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"],
-            // allowedHeaders: ["Origin, X-Requested-With, Content-Type, Accept, X-Access-Token"],
-            // exposedHeaders: [],
-            // credentials: false,
-            // maxAge: 3600
+			// Configures the Access-Control-Allow-Origin CORS header.
+			origin: "*",
+			// Configures the Access-Control-Allow-Methods CORS header. 
+			methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE"],
+			// Configures the Access-Control-Allow-Headers CORS header.
+			allowedHeaders: ['X-Requested-With', 'content-type'],
+			// Configures the Access-Control-Expose-Headers CORS header.
+			exposedHeaders: [],
+			// Configures the Access-Control-Allow-Credentials CORS header.
+			credentials: true,
+			// Configures the Access-Control-Max-Age CORS header.
+			maxAge: 3600
         },
 		routes: [
 			// get routes from external file - merged with subproject if applicable

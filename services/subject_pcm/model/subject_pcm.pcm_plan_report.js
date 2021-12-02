@@ -1,0 +1,342 @@
+"use strict";
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+                                        = require('../../../tools/utils/utils');
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+
+/**
+ * import inter-coll, exter-coll
+ */
+const SUBJECT__PCM_PLAN_REPORT_COLL     = require('../database/subject_pcm.pcm_plan_report-coll');
+
+const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
+
+/**
+ * import inter-model, exter-model
+ */
+const SUBJECT__PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
+
+class Model extends BaseModel {
+
+    constructor() {
+        super(SUBJECT__PCM_PLAN_REPORT_COLL);
+    }
+
+    /**
+     * Name: insert pcm_plan_report ✅
+     * Author: Depv
+     * Code: 
+     */
+    insert({ companyID, projectID, type, name, parentID, userID }) { 
+        return new Promise(async (resolve) => {
+            try {   
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataInsert = { };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(!checkObjectIDs(companyID))
+                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+
+                // if(!checkObjectIDs(projectID))
+                //     return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
+                
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                dataInsert = { company: companyID, project: projectID, userCreate: userID, userUpdate: userID };
+
+                if(type){
+                    dataInsert.type = type;
+                }
+
+                if(name){
+                    dataInsert.name = name; 
+                }
+
+                if(ObjectID.isValid(parentID)){
+                    dataInsert.parent = parentID;
+                }
+
+                if(ObjectID.isValid(projectID)){
+                    dataInsert.project = projectID;
+                }
+
+                let infoAterInsert = await this.insertData(dataInsert);
+
+                if(!infoAterInsert)
+                    return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
+
+                // TẠO USER_PCM_PLAN_REPORT
+                await SUBJECT__PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
+
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+     /**
+     * Name: update pcm_plan_report ✅
+     * Author: Depv
+     * Code: 
+     */
+    update({ reportID, name, userID, select }) { 
+        return new Promise(async (resolve) => {
+            try {   
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(!ObjectID.isValid(reportID))
+                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+                dataUpdate = { userCreate: userID, userUpdate: userID };
+                
+                if(name){
+                    dataUpdate.name = name;
+                }
+                
+                let infoAterUpdate = await SUBJECT__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
+
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "Can't update pcm plan report", status: 403 });
+
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+
+     /**
+     * Name: Remove pcm_plan_report ✅
+     * Author: Depv 
+     * Code: F02503
+     */
+    remove({ reportID }) { 
+        return new Promise(async (resolve) => {
+            try {   
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                if(!checkObjectIDs(reportID))
+                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+              
+                let infoAterUpdate = await SUBJECT__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, { state: 2 }, { new: true });
+
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "Can't remove subject", status: 403 });
+
+                return resolve({ error: false, message: "Remove success", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Get info pcm_plan_report ✅
+     * Author: Depv 
+     * Code: F02504
+     */
+    getInfo({ reportID, select }) { 
+        return new Promise(async (resolve) => {
+            try {   
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(reportID))
+                    return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+
+                let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(reportID).select(select).lean();
+                if(!infoData)
+                    return resolve({ error: true, message: "Can't get info subject", status: 403 });
+                
+                return resolve({ error: false, data: infoData, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    /** 
+     * Name: Danh sách pcm_plan_report ✅
+     * Author: Depv 
+     * Code: 
+     */
+    getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, select = {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { state: 1 };
+                console.log({  keyword, limit, lastestID, type, parentID, filter, select });
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID;
+                }
+                
+                if(type){
+                    conditionObj.type = type;
+                }
+
+                let conditionFind = {};
+                let sortBy   = { createAt: -1 };
+				let objSort  = {};
+
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
+				}
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                // GET CONDITION PAGINATION
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy = dataPagingAndSort.data.sort;
+				}
+
+                // SEARCH TEXT
+				if(keyword){
+					conditionObj.$text = { $search: keyword };
+					objSort.score = { $meta: "textScore" };
+					sortBy.score  = { $meta: "textScore" };
+				}
+                
+                let infoDataAfterGet = await SUBJECT__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .populate({
+                        path: "parent",
+                        select: "name"
+                    })
+                    .limit(+limit+1)
+                    .sort(sortBy) 
+                    .lean(); 
+
+                // GET TOTAL RECORD
+				// let totalRecord = await SUBJECT__PCM_PLAN_REPORT_COLL.count(conditionObj);
+                let totalCurrentPage = await SUBJECT__PCM_PLAN_REPORT_COLL.count(conditionFind);
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let totalRecord = await SUBJECT__PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+                let totalPage = Math.ceil(totalRecord/limit);
+                    
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
+                if(!lastestID){
+                    currentPage =  1
+                }
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                    currentPage
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+ }
+
+exports.MODEL = new Model;
