@@ -424,11 +424,11 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: update user_pcm_plan_report ✅
+     * Name: update pcm_plan_report ✅
      * Author: Depv
      * Code: 
      */
-    update({ taskID, sign, name, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal }) { 
+    update({ taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -456,6 +456,14 @@ class Model extends BaseModel {
 
                 if(name){
                     dataUpdate.name = name;
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
                 }
 
                 if(startTime){
@@ -494,7 +502,7 @@ class Model extends BaseModel {
                     dataUpdate.contract = contract;
                 }
 
-                if(draft){
+                if([0, 1].includes(draft)){
                     dataUpdate.draft = draft;
                 }
                 
@@ -513,13 +521,13 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
      /**
      * Name: insert user_pcm_plan_report ✅
      * Author: Depv
      * Code: 
      */
-    remove({ userSubjectID }) { 
+    remove({ taskID }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -532,8 +540,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(userSubjectID))
-                    return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
+                if(!checkObjectIDs(taskID))
+                    return resolve({ error: true, message: 'taskID_invalid', status: 400 });
                 
                 /**
                  * LOGIC STEP (3)
@@ -541,10 +549,10 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
 
-                let infoAterRemove = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndDelete(userSubjectID);
+                let infoAterRemove = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndDelete(taskID);
 
                 if(!infoAterRemove)
-                    return resolve({ error: true, message: "Can't remove user_pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: "Can't_remove_task", status: 403 });
 
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
@@ -758,7 +766,7 @@ class Model extends BaseModel {
         })
     }
 
-    /** 
+    /**
      * Name  : Danh sách user_pcm_plan_report ✅
      * Author: Depv
      * Code  : 
