@@ -1,4 +1,5 @@
 const BASE_ACTIONS 	 = 'ACT_HUMAN';
+const CONTACT 		 = 'CONTACT';
 
 const CF_ACTIONS_CONTACT = {
 	/**
