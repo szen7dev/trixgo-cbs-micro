@@ -1,8 +1,10 @@
 "use strict";
+
 let moment = require('moment-timezone');
+let ISOdate = require('isodate');
 
 function setTimeZone(date) {
-    return moment.tz(date,'Asia/Ho_Chi_Minh');
+    return moment.tz(date, 'Asia/Ho_Chi_Minh');
 }
 exports.setTimeZone = setTimeZone;
 exports.getCurrentTime = function () {
@@ -80,4 +82,75 @@ Date.prototype.addHours = function(h) {
 Date.prototype.addMinutes = function(m) {
 	this.setTime(this.getTime() + (m * 60 * 1000));
 	return this;
+}
+
+exports.addHoursToDate = function (dateAdded, hours) {
+    return new Date((new Date(dateAdded)).getTime() + (hours * 60 * 60000));
+};
+
+exports.setHours = (date, h = 0, m = 0, s = 0) => {
+    date = new Date(date);
+    date.setHours(h,m,s); // Set hours, minutes and seconds
+    return date;
+ }
+
+exports.calculateExpire = (currentTimestamp, expireTimestamp, type = 'minutes') => {
+    const currentDate = new Date(currentTimestamp);
+    const expireDate  = new Date(expireTimestamp);
+
+    // Get Seconds
+    const secondsCurrent = currentDate.getSeconds();
+    const secondsExpired = expireDate.getSeconds();
+
+    // Get Minutes
+    const minutesCurrent = currentDate.getMinutes();
+    const minutesExpired = expireDate.getMinutes();
+
+    // Get Hours
+    const hoursCurrent = currentDate.getHours();
+    const hoursExpired = expireDate.getHours();
+
+    // Get date
+    const dateCurrent = currentDate.getDate();
+    const dateExpired = expireDate.getDate();
+
+    // Get month
+    const monthCurrent = currentDate.getMonth();
+    const monthExpired = expireDate.getMonth();
+
+    // Get year
+    const yearCurrent = currentDate.getFullYear();
+    const yearExpired = expireDate.getFullYear();
+
+    const current = moment([yearCurrent, monthCurrent, dateCurrent, hoursCurrent, minutesCurrent, secondsCurrent]);
+    const expire = moment([yearExpired, monthExpired, dateExpired, hoursExpired, minutesExpired, secondsExpired]);
+
+    return expire.diff(current, type);
+}
+
+exports.calculateExpireTime = (currentTimestamp, expireTimestamp, type = 'minutes') => {
+    const currentDate = new Date(currentTimestamp);
+    const expireDate  = new Date(expireTimestamp);
+
+    // Get Hours
+    const minutesCurrent = currentDate.getMinutes();
+    const minutesExpire = expireDate.getMinutes();
+
+    // Get Hours
+    const hoursCurrent = currentDate.getHours();
+    const hoursExpire = expireDate.getHours();
+
+    // Get date
+    const dateCurrent = currentDate.getDate();
+
+    // Get month
+    const monthCurrent = currentDate.getMonth();
+
+    // Get year
+    const yearCurrent = currentDate.getFullYear();
+
+    const current = moment([yearCurrent, monthCurrent, dateCurrent, hoursCurrent, minutesCurrent]);
+    const expire = moment([yearCurrent, monthCurrent, dateCurrent, hoursExpire, minutesExpire]);
+
+    return expire.diff(current, type);
 }

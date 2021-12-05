@@ -6,7 +6,7 @@ const Schema                = require('mongoose').Schema;
 /**
  *  Phân loại hồ sơ
  */
-module.exports = DATABASE_MIDDLEWARE("document_doctype", {
+module.exports = DATABASE_MIDDLEWARE("doctype", {
     //_________Công ty 
     company: {
         type: Schema.Types.ObjectId,
@@ -22,11 +22,11 @@ module.exports = DATABASE_MIDDLEWARE("document_doctype", {
      */
     parent: {
         type: Schema.Types.ObjectId,
-        ref: "document_doctype"
+        ref: "doctype"
     },
     childs: [{
         type: Schema.Types.ObjectId,
-        ref: "document_doctype"
+        ref: "doctype"
     }],
     level: {
         type: Number,

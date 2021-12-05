@@ -1,12 +1,8 @@
 "use strict";
+
 /**
  * MIDDLEWARE
  */
-// const {
-// 	CHECK_AUTHENCATION,
-// 	CHECK_AUTHORIZATION,
-// } 								= require('./auth');
-
 const { CF_DOMAIN_SERVICES } 	= require('./helper/domain.constant');
 
 /**
@@ -22,10 +18,10 @@ const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
 const { CF_ROUTINGS_INSPECTION } 	= require('../inspection/helper/inspection.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
 const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
+const { CF_ROUTINGS_CONTACT }		= require('../human/helper/human.routes-constant');
 const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant');
 const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.routes-constant');
-const { CF_ROUTINGS_SUBJECT_PCM } 	    = require('../subject_pcm/helper/subject_pcm.routes-constant');
-
+const { CF_ROUTINGS_SUBJECT_PCM }	= require('../subject_pcm/helper/subject_pcm.routes-constant');
 
 
 /**
@@ -41,9 +37,11 @@ const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
 const { CF_ACTIONS_INSPECTION } 	= require('../inspection/helper/inspection.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
+const { CF_ACTIONS_CONTACT }		= require('../human/helper/human.actions-constant');
 const { CF_ACTIONS_CMCS } 	    	= require('../cmcs/helper/cmcs.actions-constant');
 const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 	= require('../subject_pcm/helper/subject_pcm.actions-constant');
+
 
 module.exports = {
 	path: 'api',
@@ -447,10 +445,27 @@ module.exports = {
 		//---------------------------🏁 START SEARVICE CONTRACT 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_ITEM.CONTRACT_GET_LIST}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_LIST}`],
-
-		[`GET ${CF_ROUTINGS_ITEM.CONTACT_GET_LIST}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_LIST}`],
 		//---------------------------- END SEARVICE CONTRACT ---------------------------//
+
+
+
+
+
+		//---------------------------🏁 START SEARVICE HUMAN (CONTACT) 🏁---------------------------//
+
+		[`GET ${CF_ROUTINGS_CONTACT.GET_LIST_CONTACT_DOCUMENT}`] :
+		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.GET_LIST_CONTACT_DOCUMENT}`],
+
+		[`GET ${CF_ROUTINGS_CONTACT.INFO_CONTACT_DOCUMENT}`] :
+		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.INFO_CONTACT_DOCUMENT}`],
+
+		[`GET ${CF_ROUTINGS_CONTACT.GET_LIST_CONTACT}`] :
+		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.GET_LIST_CONTACT}`],
+
+		[`GET ${CF_ROUTINGS_CONTACT.INFO_CONTACT}`] :
+		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.INFO_CONTACT}`],
+
+		//---------------------------- END SEARVICE HUMAN (CONTACT) ---------------------------//
 
 
 

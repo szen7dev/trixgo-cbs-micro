@@ -652,7 +652,7 @@ class Model extends BaseModel {
                     },
                     {
                         $lookup: {
-                            from: "document_doctypes",
+                            from: "doctypes",
                             localField: "property",
                             foreignField: "_id",
                             as: "property"

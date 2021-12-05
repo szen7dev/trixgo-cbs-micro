@@ -18,11 +18,6 @@ const CF_ACTIONS_ITEM = {
      * DEPARTMENT
     */
     DEPARTMENT_GET_LIST                      : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_GET_LIST`,
-
-    /**
-     * CONTACT
-     */
-    CONTACT_GET_LIST                         : `${BASE_ACTIONS}_${CONTACT}_CONTACT_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

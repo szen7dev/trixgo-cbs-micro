@@ -3479,6 +3479,11 @@ isobject@^3.0.0, isobject@^3.0.1:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha1-TkMekrEalzFjaqH5yNHMvP2reN8=
 
+isodate@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/isodate/-/isodate-0.1.4.tgz#0bda17a4049424a3bdfd323b85473a7e0744ddb8"
+  integrity sha1-C9oXpASUJKO9/TI7hUc6fgdE3bg=
+
 isstream@^0.1.2, isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
