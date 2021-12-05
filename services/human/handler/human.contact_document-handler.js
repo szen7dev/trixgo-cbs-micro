@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const HUMAN_MODEL                               = require('../model/human.contact_document-model').MODEL;
+const CONTACT_DOCUMENT_MODEL                    = require('../model/human.contact_document-model').MODEL;
 
 
 module.exports = {
@@ -18,16 +18,17 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Danh sách hồ sơ nhân sự sắp hết hạn
+	 * Func: Danh sách hồ sơ nhân sự
 	 * Date: 26/11/2021
 	 */
-    getListContactByExpireDocument: {
+    getListContactDocument: {
         params: {
             lastestID           : { type: "string", optional: true },
             keyword             : { type: "string", optional: true },
 			limit               : { type: "number", optional: true },
 			companyID           : { type: "string" },
 			type                : { type: "number", optional: true },
+			isExpire            : { type: "boolean", optional: true },
 			select              : { type: "string", optional: true },
             filter              : { type: "string", optional: true },
         },
@@ -35,10 +36,38 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, companyID, type, keyword, limit, select, filter } = ctx.params;
-                
-                const resultAfterCallHandler = await HUMAN_MODEL.getListContactByExpireDocument({
-                    lastestID, companyID, userID, type, keyword, limit, select, filter
+                const { lastestID, companyID, type, isExpire, keyword, limit, select, filter } = ctx.params;
+
+                const resultAfterCallHandler = await CONTACT_DOCUMENT_MODEL.getListContactDocument({
+                    lastestID, companyID, userID, type, isExpire, keyword, limit, select, filter
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+    
+    /**
+	 * Dev: MinhVH
+	 * Func: Chi tiết nhân sự
+	 * Date: 30/11/2021
+	 */
+    getInfoContactDocument: {
+        params: {
+			contactID  : { type: "string" },
+			type       : { type: "number" },
+			select     : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { contactID, type, select } = ctx.params;
+
+                const resultAfterCallHandler = await CONTACT_DOCUMENT_MODEL.getInfoContactDocument({
+                    userID, contactID, type, select
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

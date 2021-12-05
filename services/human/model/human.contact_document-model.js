@@ -37,7 +37,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách hồ sơ nhân sự sắp hết hạn
 	 * Date: 26/11/2021
 	 */
-	getListContactByExpireDocument({ lastestID, userID, companyID, keyword, type, limit = 20, filter = {}, select = {} }){
+	getListContactDocument({ lastestID, userID, companyID, keyword, type, isExpire, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -90,12 +90,14 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
                 }
 
-				let currentDay = ISOdate(moment().endOf('day').format());
-				let currentDateAddFourMonth = ISOdate(moment().add(4, 'month').format());
-
-				conditionObj.toDate = {
-					$lte: currentDateAddFourMonth,
-					$gte: currentDay
+				if(isExpire){
+					let currentDay = ISOdate(moment().endOf('day').format());
+					let currentDateAddFourMonth = ISOdate(moment().add(4, 'month').format());
+	
+					conditionObj.toDate = {
+						$lte: currentDateAddFourMonth,
+						$gte: currentDay
+					}
 				}
 
 				type && (conditionObj.type = type);
@@ -143,6 +145,61 @@ class Model extends BaseModel {
 						nextCursor
 					}
 				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Chi tiết nhân sự
+	 * Date: 26/11/2021
+	 */
+	getInfoContactDocument({ userID, contactID, type, select }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs([contactID, userID]))
+					return resolve({ error: true, message: 'Request params contactID or userID invalid', status: 400 });
+
+				/**
+				 * Hồ sơ chi tiết nhân sự (phân các loại)
+				 * 1. Lịch sử làm việc ở các đơn vị
+				 * 2. Kinh nghiệm thực tế tham gia tại các Dự án
+				 * 3. Lịch sử làm việc theo các Quyết định bổ nhiệm tại các hợp đồng (Chức vụ)
+				 * 4. Trình độ học vấn + Chuyên ngành đào tạo
+				 * 5. Bằng cấp chứng chỉ
+				 * 6. Khác (Bảo hiểm xã hội, tài sản giao nhận, lịch sử tuyển dụng, quá trình làm việc, công tác)
+				 */
+				const ARR_TYPE_VALID = [1,2,3,4,5,6];
+
+				if (!ARR_TYPE_VALID.includes(type))
+					return resolve({ error: true, message: 'Request params type invalid', status: 400 });
+
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+
+                const infoContact = await CONTACT_DOCUMENT_COLL
+                    .findOne({ contact: contactID, type })
+                    .populate('company', select.company)
+                    .populate('contact', select.contact)
+                    .populate('field2', select.field2)
+                    .populate('position2', select.position2)
+                    .populate('contract', select.contract)
+                    .populate('educationalBackground2', select.educationalBackground2)
+                    .populate('certificateType', select.certificateType)
+                    .populate('certificateName', select.certificateName)
+                    .populate('files', select.files)
+                    .lean();
+
+                if(!infoContact)
+                    return resolve({ error: true, message: "Can't get info contact document", status: 400 });
+
+                return resolve({ error: false, data: infoContact, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

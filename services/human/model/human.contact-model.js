@@ -20,16 +20,16 @@ const BaseModel                                 	= require('../../../tools/db/ba
 /**
  * COLLECTIONS
  */
-const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
+const CONTACT_COLL            						= require('../database/human.contact-coll');
 
 
 class Model extends BaseModel {
 
     constructor() {
-        super(ITEM__CONTACT_COLL);
+        super(CONTACT_COLL);
     }
 
-   /**
+	/**
 	 * Dev: MinhVH
 	 * Func: Danh sách contact
 	 * Date: 29/10/2021
@@ -85,7 +85,7 @@ class Model extends BaseModel {
 				}
 
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoContact = await ITEM__CONTACT_COLL.findById(lastestID);
+					let infoContact = await CONTACT_COLL.findById(lastestID);
 					if(!infoContact)
 						return resolve({ error: true, message: "Can't get info last contact", status: 403 });
 
@@ -140,7 +140,7 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-				let	listContact = await ITEM__CONTACT_COLL
+				let	listContact = await CONTACT_COLL
 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
                     .populate('department', select.department)
                     .populate('company', select.company)
@@ -170,7 +170,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't get list contact", status: 403 });
 
 				// GET TOTAL RECORD
-				let totalRecord = await ITEM__CONTACT_COLL.countDocuments(conditionObj);
+				let totalRecord = await CONTACT_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
 
 				if(listContact && listContact.length){
@@ -214,7 +214,7 @@ class Model extends BaseModel {
                     select = JSON.parse(select);
                 }
 
-                const infoContact = await ITEM__CONTACT_COLL
+                const infoContact = await CONTACT_COLL
                     .findById(documentID)
                     .populate('department', select.department)
                     .populate('company', select.company)

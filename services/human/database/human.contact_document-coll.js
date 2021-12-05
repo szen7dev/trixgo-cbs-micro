@@ -33,11 +33,9 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     workplace: String,
     //_________Người tham chiếu
     reference: String,
-    //_________Lĩnh vực chuyên môn
     /**
      * Lĩnh vực chuyên môn
      * Chuyên ngành đào tạo
-     * /item/doctypes/?tab=7
      */
     field2: {
         type: Schema.Types.ObjectId,

@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const ITEM__CONTACT_MODEL                   	= require('../model/item.contact-model').MODEL;
+const CONTACT_MODEL                   	        = require('../model/human.contact-model').MODEL;
 
 
 module.exports = {
@@ -41,7 +41,7 @@ module.exports = {
                     isExpireContract, isUpcomingBirthday, limit, filter, select
                 } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListContact({
+                const resultAfterCallHandler = await CONTACT_MODEL.getListContact({
                     lastestID, userID, companyID, departmentID, positionID, contractTypeID, insuranceStatus, gender, keyword, 
                     isExpireContract, isUpcomingBirthday, limit, filter, select
                 });
@@ -69,7 +69,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { contactID, select } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfoContact({
+                const resultAfterCallHandler = await CONTACT_MODEL.getInfoContact({
                     userID, contactID, select
                 });
 

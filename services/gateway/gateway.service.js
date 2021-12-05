@@ -116,7 +116,7 @@ module.exports = {
 		 * @param {IncomingRequest} req
 		 * @returns {Promise}
 		 */
-		async authorize(ctx, route, req) {
+		async authorize(ctx, _, req) {
 			let token;
 			console.log(`--------------TOKEN: ----------`)
 			if (req.headers.authorization) {
