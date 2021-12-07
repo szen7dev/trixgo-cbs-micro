@@ -771,19 +771,19 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ keyword, limit = 10, lastestID, userID, projectID, status, draft, type, typeStatus, filter = {}, select = {} }) { 
+    getList({ keyword, limit = 10, lastestID, userID, projectID, assigneeID, status, draft, type, typeStatus, filter = {}, select = {}, populates= {}, populates1={},
+         populates2={}, populates3={}, collection, isproposal, isExpired, fromDate, toDate }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { 
-                    state: 1,
-                    // usersDelete: {$nin: [userID]} 
+                    // state: 1,
+                    usersDelete: {$nin: [userID]} 
                 };
                 
-                let conditionFind = {
-                };
+                let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
 
@@ -794,13 +794,40 @@ class Model extends BaseModel {
 					filter = JSON.parse(filter);
 				}
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+				// if(select && typeof select === 'string'){
+				// 	if(!IsJsonString(select))
+				// 		return resolve({ error: true, message: 'Request params select invalid', status: 400 });
 
-					select = JSON.parse(select);
+				// 	select = JSON.parse(select);
+				// }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
 				}
 
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -815,15 +842,43 @@ class Model extends BaseModel {
                  if(status){
                     conditionObj.status = { $in: status }
                 }
-                
+
+                // KIỂM TRA ĐIỀU KIỆN NHANH CHẬM
+                if(isExpired && isExpired.includes('1')){
+                    // BÌNH THƯỜNG
+                    conditionObj.expiredTime = { $gt: new Date() }
+                }
+
+                if(isExpired && isExpired.includes('2')){
+                    // CHẬM
+                    conditionObj.status = { $ne: 3 }
+                    conditionObj.expiredTime = { $lt: new Date() }
+				}
+                // Từ ngày đến ngày
+                if(fromDate && toDate){
+                    conditionObj.expiredTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
+				}
+                // Việc nháp
                 if(draft && Number(draft) === 1){
                     conditionObj.draft = 1;
                 } else{
                     conditionObj.draft = 0;
                 }
-
+                // Dự án
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
+                }
+                /**
+                * Phân loại chủ đề
+                * 1-Công việc
+                * 2-Checklist
+                */
+                if(collection){
+                    conditionObj.type = collection;
+                }
+                // Loại công việc
+                if(isproposal){
+                    conditionObj.isproposal = isproposal;
                 }
                 
                 /**
@@ -841,6 +896,7 @@ class Model extends BaseModel {
                         { related: { $in: [userID] }}
                     ]
                 }
+
                 if(type == 1){
                     conditionObj.assignee = userID;
                 }
@@ -893,6 +949,7 @@ class Model extends BaseModel {
                         $gt: addDate(7)
                     }
                 }
+
                 if(typeStatus && typeStatus == 4){
                     conditionObj.actualFinishTime = {
                         $lt: start
@@ -916,28 +973,44 @@ class Model extends BaseModel {
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
+                // Người thực hiện
+                if(assigneeID && checkObjectIDs(assigneeID)){
+                    conditionObj.assignee = assigneeID;
+                }
+
                 // SEARCH TEXT
+				// if(keyword){
+				// 	conditionObj.$text = { $search: keyword };
+				// 	objSort.score = { $meta: "textScore" };
+				// 	sortBy.score  = { $meta: "textScore" };
+				// }
 				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-                console.log({ conditionObj });
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .populate({
-                        path: "subject",
-                        select: "name"
-                    })
-                    .populate({
-                        path: "user",
-                        select: "fullname image"
+                        path: populates.value || "",
+                        select: populates.select || "",
+                        populate: {
+                            path: populates1.value || "",
+                            select: populates1.select || "",
+                            populate: {
+                                path: populates2.value || "",
+                                select: populates2.select || "",
+                                populate: {
+                                    path: populates3.value || "",
+                                    select: populates3.select || "",
+                                }
+                            }
+                        }
                     })
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .lean(); 
                 
                 // GET TOTAL RECORD
-				// let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObj);
                 let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });

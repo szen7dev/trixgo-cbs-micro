@@ -30,7 +30,7 @@ module.exports = {
             startHour        : { type: "string", optional: true },
             expiredHour      : { type: "string", optional: true },
             expiredTime      : { type: "string", optional: true },
-            parentID           : { type: "string", optional: true },
+            parentID         : { type: "string", optional: true },
             docreID          : { type: "string", optional: true },
             messageID        : { type: "string", optional: true },
             contractID       : { type: "string", optional: true },
@@ -53,7 +53,7 @@ module.exports = {
                 let { projectID, groupID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID  } = ctx.params;
 
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, ctx
+                    projectID, groupID, authorID: userID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -147,13 +147,25 @@ module.exports = {
             filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             type        : { type: "string", optional: true },
+            status      : { type: "string", optional: true },
             typeStatus  : { type: "string", optional: true },
             taskID      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+            populates1: { type: "string", optional: true },
+            populates2: { type: "string", optional: true },
+            populates3: { type: "string", optional: true },
+            collection:      { type: "string", optional: true },
+            assigneeID:    { type: "string", optional: true },
+            isproposal:    { type: "string", optional: true },
+            isExpired:     { type: "string", optional: true },
+            fromDate:      { type: "string", optional: true },
+            toDate:        { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, keyword, limit, lastestID, projectID, status, draft, type, typeStatus, filter, select } = ctx.params;
+                let { taskID, keyword, limit, lastestID, projectID, status, draft, type, typeStatus, filter, 
+                    select, populates, populates1, populates2, populates3, collection, assigneeID, isproposal, isExpired, fromDate, toDate } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                     
                 let resultAfterCallHandler;
@@ -163,7 +175,8 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
-                        keyword, limit, lastestID, userID, projectID, status, draft, type, typeStatus, filter, select
+                        keyword, limit, lastestID, userID, projectID, status, draft, type, typeStatus, filter, 
+                        select, populates, populates1, populates2, populates3, collection, assigneeID, isproposal, isExpired, fromDate, toDate
                     });
                 }
                 

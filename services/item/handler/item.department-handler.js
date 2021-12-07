@@ -24,21 +24,25 @@ module.exports = {
             type            : { type: "number", optional: true },
             select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+            populates1 : { type: "string", optional: true },
+            populates2 : { type: "string", optional: true },
+            populates3 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { keyword, limit, lastestID, departmentID, companyID, type, select, filter } = ctx.params;
+                let { keyword, limit, lastestID, departmentID, companyID, type, select, filter, populates, populates1, populates2, populates3 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(departmentID){
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getInfo({
-                        departmentID, select
+                        departmentID, select, populates, populates1, populates2, populates3
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getList({
-                        companyID, keyword, limit, lastestID, userID, type, select, filter
+                        companyID, keyword, limit, lastestID, userID, type, select, filter, populates, populates1, populates2, populates3
                     });
                 }
 

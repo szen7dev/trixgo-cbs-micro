@@ -642,6 +642,10 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`],
 
+		//----------------------------pcm_plan_group
+		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_GROUP}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST}`],
+
 
 		//---------------------------🏁 END S014.SUBJECT AND PCM 🏁---------------------------//
 

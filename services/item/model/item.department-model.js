@@ -28,13 +28,44 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F00401
      */
-    getInfo({ departmentID, select }) {
+    getInfo({ departmentID, select, populates={}, populates1= {}, populates2={}, populates3 = {} }) {
         return new Promise(async (resolve) => {
             try {
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+
+                // populate
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+                // populate cấp 1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+
+                // populate cấp 2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+
+                // populate cấp 3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
 
                 /**
                  * VALIDATION STEP (2)
@@ -51,12 +82,22 @@ class Model extends BaseModel {
                  */
 
                 let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID).select(select)
-                                    .populate({
-                                        path: "contracts",
-                                        select: "name sign"
-                                    })
-
-                console.log({ select });
+                .populate({
+                    path: populates.value || "",
+                    select: populates.select || "",
+                    populate: {
+                        path: populates1.value || "",
+                        select: populates1.select || "",
+                        populate: {
+                            path: populates2.value || "",
+                            select: populates2.select || "",
+                            populate: {
+                                path: populates3.value || "",
+                                select: populates3.select || "",
+                            }
+                        }
+                    }
+                })
 
                 if(!infoDepartment)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
@@ -73,7 +114,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, limit = 10, lastestID, filter = {}, select = {} }) { 
+    getList({ companyID, keyword, type, userID, limit = 10, lastestID, filter = {}, select = {}, populates={}, populates1= {}, populates2={}, populates3 = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(companyID && !checkObjectIDs(companyID))
@@ -81,6 +122,38 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                // populate
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+                // populate cấp 1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+
+                // populate cấp 2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+
+                // populate cấp 3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
+
 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -142,16 +215,38 @@ class Model extends BaseModel {
 				}
 
                 // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+				// if(keyword){
+				// 	conditionObj.$text = { $search: keyword };
+				// 	objSort.score = { $meta: "textScore" };
+				// 	sortBy.score  = { $meta: "textScore" };
+				// }  
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
 
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy) 
+                    .populate({
+                        path: populates.value || "",
+                        select: populates.select || "",
+                        populate: {
+                            path: populates1.value || "",
+                            select: populates1.select || "",
+                            populate: {
+                                path: populates2.value || "",
+                                select: populates2.select || "",
+                                populate: {
+                                    path: populates3.value || "",
+                                    select: populates3.select || "",
+                                }
+                            }
+                        }
+                    })
                     .lean(); 
 
                 // GET TOTAL RECORD

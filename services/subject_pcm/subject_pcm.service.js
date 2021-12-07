@@ -7,9 +7,11 @@ const { CF_ACTIONS_SUBJECT_PCM } 	    = require('./helper/subject_pcm.actions-co
 const SUBJECT__PCM_PLAN_REPORT_HANDLER  	 = require('./handler/subject_pcm.pcm_plan_report');
 const SUBJECT__USER_PCM_PLAN_REPORT_HANDLER  = require('./handler/subject_pcm.user_pcm_plan_report');
 const PCM__PCM_PLAN_TASK_HANDLER  			 = require('./handler/subject_pcm.pcm_plan_task');
+const PCM__PCM_PLAN_GROUP_HANDLER  			 = require('./handler/subject_pcm.pcm_plan_group');
 
 const SUBJECT__PCM_PLAN_REPORT_COLL		= require('./database/subject_pcm.pcm_plan_report-coll');
 const SUBJECT__PCM_PLAN_TASK_COLL		= require('./database/subject_pcm.pcm_plan_task-coll');
+const SUBJECT__PCM_PLAN_GROUP_COLL		= require('./database/subject_pcm.pcm_plan_group-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
@@ -17,6 +19,7 @@ module.exports = {
 		// gọi tất cả các function dùng ở đây
 		DbService(SUBJECT__PCM_PLAN_REPORT_COLL),  
 		DbService(SUBJECT__PCM_PLAN_TASK_COLL),  
+		DbService(SUBJECT__PCM_PLAN_GROUP_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.SUBJECT_PCM])
     ],
 
@@ -52,6 +55,10 @@ module.exports = {
 		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_INSERT]							: PCM__PCM_PLAN_TASK_HANDLER.insert,
 		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_UPDATE]							: PCM__PCM_PLAN_TASK_HANDLER.update,
 		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST]			: PCM__PCM_PLAN_TASK_HANDLER.getInfoAndGetList,
+
+		//========================================== PCM_PLAN_GROUP   ================================
+		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST]			: PCM__PCM_PLAN_GROUP_HANDLER.getInfoAndGetList,
+
 	},
 	
 	/**
