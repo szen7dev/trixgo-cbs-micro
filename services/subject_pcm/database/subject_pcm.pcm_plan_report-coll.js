@@ -77,9 +77,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
      * 5-Ghim kết quả tìm kiếm hợp đồng
      * 6-Ghim kết quả tìm kiếm comment
      * ----------------NEW-----------------
-     * 1 - Nhóm(Thư mục chủ đề)
-     * 2 - 
-     */        
+     * 7  - Nhóm(Thư mục chủ đề)
+     */       
     type: { type: Number, default: 1 },
 
      /**

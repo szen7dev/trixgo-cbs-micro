@@ -184,7 +184,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02504
      */
-    getInfo({ reportID, select }) { 
+    getInfo({ reportID, select, populates= {}, populates1={}, populates2={}, populates3={} }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -200,13 +200,61 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(reportID))
                     return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
 
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+                // populates1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+
+                // populates2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // populates3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
 
-                let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(reportID).select(select).lean();
+                let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(reportID)
+                .select(select)
+                .populate({//1
+                    path: populates.value || "",
+                    select: populates.select || "",
+                    populate: {//2
+                        path: populates1.value || "",
+                        select: populates1.select || "",
+                        populate: {//3
+                            path: populates2.value || "",
+                            select: populates2.select || "",
+                            populate: {//4
+                                path: populates3.value || "",
+                                select: populates3.select || "",
+                            }
+                        }
+                    }
+                })
+                .lean();
                 if(!infoData)
                     return resolve({ error: true, message: "Can't get info subject", status: 403 });
                 
@@ -220,17 +268,24 @@ class Model extends BaseModel {
     /** 
      * Name: Danh sách pcm_plan_report ✅
      * Author: Depv 
-     * Code: 
+     * Code:
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, select = {} }) { 
+    getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { state: 1 };
-                console.log({  keyword, limit, lastestID, type, parentID, filter, select });
+                let conditionFind = {};
+                let sortBy   = { createAt: -1 };
+				let objSort  = {};
 
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                 }
@@ -239,29 +294,43 @@ class Model extends BaseModel {
                     conditionObj.type = type;
                 }
 
-                let conditionFind = {};
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
-
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
 						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
 
 					filter = JSON.parse(filter);
 				}
+				
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}
+                // populates1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
 
-					select = JSON.parse(select);
+					populates1 = JSON.parse(populates1);
 				}
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // populates2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // populates3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
 
                 /**
                  * LOGIC STEP (3)
@@ -293,12 +362,24 @@ class Model extends BaseModel {
 				}
                 
                 let infoDataAfterGet = await SUBJECT__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .populate({
-                        path: "parent",
-                        select: "name"
-                    })
                     .limit(+limit+1)
                     .sort(sortBy) 
+                    .populate({//1
+                        path: populates.value || "",
+                        select: populates.select || "",
+                        populate: {//2
+                            path: populates1.value || "",
+                            select: populates1.select || "",
+                            populate: {//3
+                                path: populates2.value || "",
+                                select: populates2.select || "",
+                                populate: {//4
+                                    path: populates3.value || "",
+                                    select: populates3.select || "",
+                                }
+                            }
+                        }
+                    })
                     .lean(); 
 
                 // GET TOTAL RECORD
@@ -337,6 +418,7 @@ class Model extends BaseModel {
             }
         })
     }
+
  }
 
 exports.MODEL = new Model;

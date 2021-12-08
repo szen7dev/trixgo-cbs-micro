@@ -34,7 +34,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { keyword, limit, lastestID, projectID, planGroupID, filter, select, populates, populates1, populates2, populates3 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-
                 let resultAfterCallHandler; 
                 if(planGroupID){
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_GROUP_MODEL.getInfo({
@@ -42,7 +41,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_GROUP_MODEL.getList({
-                        keyword, limit, lastestID, projectID, filter, populates, populates1, populates2, populates3
+                        keyword, limit, userID, lastestID, projectID, filter, populates, populates1, populates2, populates3
                     });
                 }
                 

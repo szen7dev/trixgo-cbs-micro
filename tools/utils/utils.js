@@ -248,8 +248,8 @@ function _checkPointDotsAndRoundingNumberForPagingChatting(total, perPage){
     return Number(total/perPage) + 1;
 }
 
-/*
-   (START) CHECK VALID TYPE
+/**
+ * * (START) CHECK VALID TYPE
 */
 
 exports.IsJsonString = str => {
@@ -363,6 +363,45 @@ exports.getExtension = path => {
     return basename.slice(pos + 1);
 }
 
+/**
+ * Func: check params populate
+ * Create: 20/09/2021
+*/
+exports.checkParamsPopulate = (populates, populates1, populates2, populates3) => {
+    
+    // populates
+    if(populates && typeof populates === 'string'){
+        if(!this.IsJsonString(populates))
+            return { error: true, message: 'Request params populates invalid', status: 400 }
+
+        populates = JSON.parse(populates);
+    }
+
+    // populates1
+    if(populates1 && typeof populates1 === 'string'){
+        if(!this.IsJsonString(populates1))
+            return { error: true, message: 'Request params populates1 invalid', status: 400 }
+
+        populates1 = JSON.parse(populates1);
+    }
+
+    // populates2
+    if(populates2 && typeof populates2 === 'string'){
+        if(!this.IsJsonString(populates2))
+            return { error: true, message: 'Request params populates2 invalid', status: 400 }
+
+        populates2 = JSON.parse(populates2);
+    }
+
+    // populates3
+    if(populates3 && typeof populates3 === 'string'){
+        if(!this.IsJsonString(populates3))
+            return { error: true, message: 'Request params populates3 invalid', status: 400 }
+
+        populates3 = JSON.parse(populates3);
+    }
+    return { error: false, message: 'pass', status: 200 }
+}
 
 
 exports.checkPointDotsAndRoundingNumberForPagingChatting = _checkPointDotsAndRoundingNumberForPagingChatting;

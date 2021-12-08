@@ -116,6 +116,12 @@ class Model extends BaseModel {
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
 
+               
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
 						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
@@ -152,21 +158,19 @@ class Model extends BaseModel {
 
 					populates3 = JSON.parse(populates3);
 				}
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                     
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if(projectID){
                     conditionObj.project = projectID;
                 }
-                
+
+                if(userID){
+                    conditionObj.user = userID;
+                }
                 
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){

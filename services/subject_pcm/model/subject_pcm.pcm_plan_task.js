@@ -772,7 +772,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ keyword, limit = 10, lastestID, userID, projectID, assigneeID, status, draft, type, typeStatus, filter = {}, select = {}, populates= {}, populates1={},
-         populates2={}, populates3={}, collection, isproposal, isExpired, fromDate, toDate }) { 
+         populates2={}, populates3={}, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -782,10 +782,37 @@ class Model extends BaseModel {
                     // state: 1,
                     usersDelete: {$nin: [userID]} 
                 };
-                
+
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                let listGroups;
+                if(signGroupOfTask){
+                    let keyword = signGroupOfTask.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let signGroup = new RegExp(keyword, 'i');
+ 
+                    let listGroupBySign = await  SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ sign: signGroup });
+                    let listGroupBySignID = listGroupBySign.map(item => item._id);
+                    listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, _id: { $in: listGroupBySignID } });
+                 }else{
+                    listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
+                 }
+                 
+                 // lấy công việc mà mình được quyền truy cập
+                conditionObj.$or = [
+                    { author: userID },
+                    { assignee: userID },
+                    { related: { $in: [userID] }},
+                    { group: { $in: listGroups.map(item => item._id) }},
+                ]
 
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -793,46 +820,37 @@ class Model extends BaseModel {
 
 					filter = JSON.parse(filter);
 				}
-
-				// if(select && typeof select === 'string'){
-				// 	if(!IsJsonString(select))
-				// 		return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-				// 	select = JSON.parse(select);
-				// }
-
+				
+                // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
 				}
-
+                // populates1
                 if(populates1 && typeof populates1 === 'string'){
 					if(!IsJsonString(populates1))
 						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
 
 					populates1 = JSON.parse(populates1);
 				}
-
+                // populates2
                 if(populates2 && typeof populates2 === 'string'){
 					if(!IsJsonString(populates2))
 						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
 
 					populates2 = JSON.parse(populates2);
 				}
-
+                
+                // populates3
                 if(populates3 && typeof populates3 === 'string'){
 					if(!IsJsonString(populates3))
 						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
 
 					populates3 = JSON.parse(populates3);
 				}
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+               
                     
                 /**
                  * LOGIC STEP (3)
@@ -989,7 +1007,10 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .limit(+limit+1)
+                    .sort(sortBy)     
                     .populate({
                         path: populates.value || "",
                         select: populates.select || "",
@@ -1006,9 +1027,62 @@ class Model extends BaseModel {
                             }
                         }
                     })
-                    .limit(+limit+1)
-                    .sort(sortBy) 
                     .lean(); 
+
+                // Gán dữ liệu typeStatus
+                let listTask = [];
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    for (const element of infoDataAfterGet) {
+                        let taskNewTemp = element;
+                        if(taskNewTemp && taskNewTemp.expiredTime){
+                            // typeStatus
+                            // 1 Ngày nay
+                            // 2 Tới hạn tuần tới
+                            // 3 Tới hạn + 7 ngày tới
+                            // 4 Quá hạn
+                            // 5 Chưa tới hạn -> Tới hạn + 7 ngày tới
+                            let date    = new Date();
+                            let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
+                            let expiredTimeTemp = new Date(taskNewTemp.expiredTime);
+                            let expiredTime = new Date(expiredTimeTemp.getFullYear() + "-" + (expiredTimeTemp.getMonth() + 1) + "-" + expiredTimeTemp.getDate());
+                            
+                            if(+today == +expiredTime){
+                                taskNewTemp = {
+                                    ...taskNewTemp, 
+                                    typeStatus: 1
+                                }
+                            }else{
+                                if(+today < +expiredTime && +expiredTime < +addDate(7)){
+                                    taskNewTemp = {
+                                        ...taskNewTemp, 
+                                        typeStatus: 2
+                                    }
+                                }else{
+                                    if(+today < +expiredTime && +expiredTime < +addDate(14) ){
+                                        taskNewTemp = {
+                                            ...taskNewTemp, 
+                                            typeStatus: 3
+                                        }
+                                    }else{
+                                        if( +expiredTime <= +addDate(14)){
+                                            taskNewTemp = {
+                                                ...taskNewTemp, 
+                                                typeStatus: 4
+                                            }
+                                        }else{
+                                            taskNewTemp = {
+                                                ...taskNewTemp, 
+                                                typeStatus: 5
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            listTask = [...listTask, taskNewTemp];
+                        }
+                    }
+                }
                 
                 // GET TOTAL RECORD
                 let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionFind);
@@ -1032,7 +1106,7 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: listTask,
                     limit: +limit,
                     totalRecord,
                     totalPage,

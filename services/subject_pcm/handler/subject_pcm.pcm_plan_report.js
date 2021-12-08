@@ -110,21 +110,25 @@ module.exports = {
             filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             subjectID   : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+            populates1   : { type: "string", optional: true },
+            populates2   : { type: "string", optional: true },
+            populates3   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, keyword, limit, lastestID, type, parentID, filter, select } = ctx.params;
+                let { subjectID, keyword, limit, lastestID, type, parentID, filter, select, populates, populates1, populates2, populates3 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                     
                 let resultAfterCallHandler;
                 if(subjectID){
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getInfo({
-                        reportID: subjectID, select
+                        reportID: subjectID, select, populates, populates1, populates2, populates3
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getList({
-                        keyword, limit, lastestID, type, parentID, filter, select
+                        keyword, limit, lastestID, type, parentID, filter, populates, populates1, populates2, populates3
                     });
                 }
                 

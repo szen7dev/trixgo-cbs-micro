@@ -59,7 +59,7 @@ class Model extends BaseModel {
                 });
 
                 if(checkExist)
-                    return resolve({  error: true, message: "User subject exist", status: 403  });
+                    return resolve({  error: true, message: "User_subject_exist", status: 403  });
 
                 dataInsert = { user: userID, subject: subjectID, author, role };
 
@@ -169,14 +169,14 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ userSubjectID }) { 
+    getInfo({ userSubjectID, select, populates= {}, populates1 = {}, populates2 = {}, populates3 = {} }) { 
         return new Promise(async (resolve) => {
             try {   
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -185,20 +185,61 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userSubjectID))
                     return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
 
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+
+                // populates1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+
+                // populates2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // populates3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
+                
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-
-                let infoUserSubject = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(userSubjectID).populate({
-                    path: "subject",
-                    select: "name"
-                })
-                .populate({
-                    path: "user",
-                    select: "fullname image"
-                });
+                let infoUserSubject = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(userSubjectID)
+                    .select(select)    
+                    .populate({
+                        path: populates.value || "",
+                        select: populates.select || "",
+                        populate: {
+                            path: populates1.value || "",
+                            select: populates1.select || "",
+                            populate: {
+                                path: populates2.value || "",
+                                select: populates2.select || "",
+                                populate: {
+                                    path: populates3.value || "",
+                                    select: populates3.select || "",
+                                }
+                            }
+                        }
+                    })
 
                 if(!infoUserSubject)
                     return resolve({ error: true, message: "Can't info user_pcm_plan_report", status: 403 });
@@ -215,25 +256,32 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getList({ keyword, limit = 10, lastestID, userID, parentID, filter = {}, select = {} }) { 
+    getList({ keyword, limit = 10, lastestID, userID, parentID, filter = {}, populates= {}, populates1 = {}, populates2 = {}, populates3 = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { state: 1 };
-
-                if(checkObjectIDs(parentID)){
-                    conditionObj.parent = parentID;
-                }
-
-                if(checkObjectIDs(userID)){
-                    conditionObj.user = userID;
-                }
-                
                 let conditionFind = {};
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                // if(checkObjectIDs(parentID)){
+                //     conditionObj.subject["parent"] = parentID;
+                // }else{
+                //     conditionObj.subject["parent"] = null;
+                // } 
+
+                console.log({ conditionObj });
+                if(checkObjectIDs(userID)){
+                    conditionObj.user = userID;
+                }
 
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -242,18 +290,37 @@ class Model extends BaseModel {
 					filter = JSON.parse(filter);
 				}
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					select = JSON.parse(select);
+					populates = JSON.parse(populates);
 				}
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // populates1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+
+                // populates2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // populates3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
 
                 /**
                  * LOGIC STEP (3)
@@ -278,23 +345,36 @@ class Model extends BaseModel {
 				}
 
                 // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+				// if(keyword){
+				// 	conditionObj.$text = { $search: keyword };
+				// 	objSort.score = { $meta: "textScore" };
+				// 	sortBy.score  = { $meta: "textScore" };
+				// }
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
                 
                 let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .populate({
-                        path: "subject",
-                        select: "name"
-                    })
-                    .populate({
-                        path: "user",
-                        select: "fullname image"
-                    })
                     .limit(+limit+1)
-                    .sort(sortBy) 
+                    .populate({
+                        path: populates.value || "",
+                        select: populates.select || "",
+                        populate: {
+                            path: populates1.value || "",
+                            select: populates1.select || "",
+                            populate: {
+                                path: populates2.value || "",
+                                select: populates2.select || "",
+                                populate: {
+                                    path: populates3.value || "",
+                                    select: populates3.select || "",
+                                }
+                            }
+                        }
+                    })
+                    .sort(sortBy)
                     .lean(); 
                 
                 // GET TOTAL RECORD

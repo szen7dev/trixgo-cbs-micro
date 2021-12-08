@@ -4,19 +4,23 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
+/**
+ * COLLECTION PHÂN QUYỀN TRUY CÂP NHÓM, CHỦ ĐỀ
+ */
 
 module.exports  = DATABASE_MIDDLEWARE("user_pcm_plan_report", {
-   
+    //____Người dùng
     user: {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-     
+    //____Nhóm hoặc chủ đề
     subject: {
         type: Schema.Types.ObjectId,
         ref: 'pcm_plan_report'
     },
 
+    //____Nếu chủ để thì parent là id nhóm
     parent: {
         type: Schema.Types.ObjectId,
         ref: 'pcm_plan_report'
@@ -32,9 +36,7 @@ module.exports  = DATABASE_MIDDLEWARE("user_pcm_plan_report", {
         default: 2,
     },
     
-    /**
-     * THÔNG TIN NGƯỜI TẠO
-     */
+    //____Thông tin người tạo
     author: {
         type: Schema.Types.ObjectId,
         ref : "user"
