@@ -109,14 +109,14 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
+                
+                let conditionObj = {
+                    members: { $in: [userID]}, 
                 };
                 
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
-
-               
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -166,10 +166,6 @@ class Model extends BaseModel {
                  */
                 if(projectID){
                     conditionObj.project = projectID;
-                }
-
-                if(userID){
-                    conditionObj.user = userID;
                 }
                 
                 // GET CONDITION PAGINATION

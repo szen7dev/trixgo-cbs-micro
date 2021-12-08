@@ -351,7 +351,7 @@ class Model extends BaseModel {
                     });
                     if (!newDevices.find(item => item.deviceID === itemNewDevice.deviceID)) 
                         newDevices.push(itemNewDevice)
-                } else {
+                } else {  
                     newDevices = [
                         itemNewDevice
                     ]

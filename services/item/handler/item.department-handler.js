@@ -16,12 +16,15 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
+            // Field bổ sung
+            type            : { type: "string", optional: true },
+            departmentID    : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
-            departmentID    : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            type            : { type: "number", optional: true },
             select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
@@ -42,7 +45,8 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getList({
-                        companyID, keyword, limit, lastestID, userID, type, select, filter, populates, populates1, populates2, populates3
+                        companyID, lastestID, userID, type, 
+                        keyword, limit, select, filter, populates, populates1, populates2, populates3
                     });
                 }
 

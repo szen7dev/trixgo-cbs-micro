@@ -31,9 +31,14 @@ class Model extends BaseModel {
     getInfo({ departmentID, select, populates={}, populates1= {}, populates2={}, populates3 = {} }) {
         return new Promise(async (resolve) => {
             try {
-
                 /**
                  * DECALARTION VARIABLE (1)
+                 */
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
                 // populate
@@ -43,6 +48,7 @@ class Model extends BaseModel {
 
 					populates = JSON.parse(populates);
 				}
+
                 // populate cấp 1
                 if(populates1 && typeof populates1 === 'string'){
 					if(!IsJsonString(populates1))
@@ -67,11 +73,7 @@ class Model extends BaseModel {
 					populates3 = JSON.parse(populates3);
 				}
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
@@ -114,9 +116,33 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, limit = 10, lastestID, filter = {}, select = {}, populates={}, populates1= {}, populates2={}, populates3 = {} }) { 
+    getList({ companyID, keyword, type, userID, limit = 10, lastestID, filter = {}, populates={}, populates1= {}, populates2={}, populates3 = {} }) { 
         return new Promise(async (resolve) => {
             try {
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { 
+                    members: { $in: [userID]}, 
+                };
+
+                companyID && (conditionObj.company = companyID);
+ 
+                if(type){
+                    conditionObj.type = +type;
+                }
+                
+                let conditionFind = {};
+                let sortBy        = { createAt: -1 };
+				let objSort 	  = {};
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
                 if(companyID && !checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
@@ -130,6 +156,7 @@ class Model extends BaseModel {
 
 					populates = JSON.parse(populates);
 				}
+
                 // populate cấp 1
                 if(populates1 && typeof populates1 === 'string'){
 					if(!IsJsonString(populates1))
@@ -154,43 +181,12 @@ class Model extends BaseModel {
 					populates3 = JSON.parse(populates3);
 				}
 
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { 
-                    members: { $in: [userID]}, 
-                };
-
-                companyID && (conditionObj.company = companyID);
- 
-                if(type){
-                    conditionObj.type = type;
-                }
-
-                let conditionFind = {};
-                let sortBy        = { createAt: -1 };
-				let objSort 	  = {};
-
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
 						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
 
 					filter = JSON.parse(filter);
 				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 /**
                  * LOGIC STEP (3)
@@ -227,6 +223,7 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
+                console.log({ conditionObj });
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
@@ -248,7 +245,7 @@ class Model extends BaseModel {
                         }
                     })
                     .lean(); 
-
+                
                 // GET TOTAL RECORD
                 let totalCurrentPage = await ITEM__DEPARTMENT_COLL.countDocuments(conditionFind);
                 if(!infoDataAfterGet)
