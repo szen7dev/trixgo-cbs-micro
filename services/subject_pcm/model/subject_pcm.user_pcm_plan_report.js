@@ -354,8 +354,6 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
-                console.log({ conditionObj });
                 
                 let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
@@ -383,7 +381,7 @@ class Model extends BaseModel {
                 let totalCurrentPage = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
-
+                    
                 let totalRecord = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);

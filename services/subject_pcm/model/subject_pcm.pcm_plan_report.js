@@ -8,7 +8,8 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT__PCM_PLAN_REPORT_COLL     = require('../database/subject_pcm.pcm_plan_report-coll');
+const SUBJECT__PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
+const SUBJECT__USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
 
 const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
 
@@ -270,7 +271,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code:
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={} }) { 
+    getList({ keyword, limit = 10, lastestID, type, parentID, userID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -288,6 +289,8 @@ class Model extends BaseModel {
                  */
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
+                }else{
+                    conditionObj.parent = null;
                 }
                 
                 if(type){
@@ -360,7 +363,13 @@ class Model extends BaseModel {
 					objSort.score = { $meta: "textScore" };
 					sortBy.score  = { $meta: "textScore" };
 				}
-                
+
+                let listUserPcmPlanReportAccess = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
+
+                let listSubjectAccess = listUserPcmPlanReportAccess.map(item => item.subject);
+                console.log({ listSubjectAccess });
+                // conditionObj._id = { $in: listSubjectAccess };
+
                 let infoDataAfterGet = await SUBJECT__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)

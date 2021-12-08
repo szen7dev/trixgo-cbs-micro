@@ -736,7 +736,6 @@ class Model extends BaseModel {
 					populates3 = JSON.parse(populates3);
 				}
                
-                    
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
