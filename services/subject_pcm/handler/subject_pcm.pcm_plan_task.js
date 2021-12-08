@@ -139,44 +139,48 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
+            // Field bổ sung
             projectID   : { type: "string", optional: true },
             draft       : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
             type        : { type: "string", optional: true },
             status      : { type: "string", optional: true },
             typeStatus  : { type: "string", optional: true },
             taskID      : { type: "string", optional: true },
+            collection  : { type: "string", optional: true },
+            assigneeID  : { type: "string", optional: true },
+            isproposal  : { type: "string", optional: true },
+            isExpired   : { type: "string", optional: true },
+            fromDate    : { type: "string", optional: true },
+            toDate      : { type: "string", optional: true },
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1: { type: "string", optional: true },
-            populates2: { type: "string", optional: true },
-            populates3: { type: "string", optional: true },
-            collection:      { type: "string", optional: true },
-            assigneeID:    { type: "string", optional: true },
-            isproposal:    { type: "string", optional: true },
-            isExpired:     { type: "string", optional: true },
-            fromDate:      { type: "string", optional: true },
-            toDate:        { type: "string", optional: true },
+            populates1  : { type: "string", optional: true },
+            populates2  : { type: "string", optional: true },
+            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, keyword, limit, lastestID, projectID, status, draft, type, typeStatus, filter, 
-                    select, populates, populates1, populates2, populates3, collection, assigneeID, isproposal, isExpired, fromDate, toDate } = ctx.params;
+                let { 
+                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, isproposal, isExpired, fromDate, toDate,
+                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
+                } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                     
                 let resultAfterCallHandler;
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID 
+                        taskID, userID, select, populates, populates1, populates2, populates3
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         keyword, limit, lastestID, userID, projectID, status, draft, type, typeStatus, filter, 
-                        select, populates, populates1, populates2, populates3, collection, assigneeID, isproposal, isExpired, fromDate, toDate
+                        populates, populates1, populates2, populates3, collection, assigneeID, isproposal, isExpired, fromDate, toDate
                     });
                 }
                 

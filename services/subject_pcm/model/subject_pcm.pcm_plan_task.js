@@ -566,175 +566,60 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ taskID, userID }){
+    getInfo({ taskID, userID, select, populates, populates1, populates2, populates3 }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'param_invalid' });
-               
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+                // populates1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+                // populates2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // populates3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
+
                 let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskID)
-                    .populate({
-                        path: 'project',
-                        select:'_id name sign address company owner admins',
-                    })
-                    .populate({
-                        path: 'group',
-                        select:'_id name sign members', // Trường members này rất quan trọng để xét quyền truy cập hợp lệ trong 1 task
-                    })
-                    .populate({
-                        path: 'parent',
-                        select:'_id name sign assignee expiredTime status percentage ',
-                        populate:{
-                            path: 'assignee',
-                            select:'_id fullname image username email phone',
-                        }
-                    })
-                    .populate({
-                        path: 'author',
-                        select:'_id fullname image username email phone department company',
-                        populate:{
-                            path: 'department company',
-                            select:'_id name sign image phone address', // Sử dụng để lấy logo hiển thị khi in ấn tài liệu
-                        }
-                    })
-                    .populate({
-                        path: 'assignee',
-                        select:'_id fullname image username email phone company',
-                        populate:{
-                            path: 'company',
-                            select:'_id name sign image', // Sử dụng để lấy logo hiển thị khi in ấn tài liệu
-                        }
-                    })
-                    .populate({
-                        path: 'related',
-                        select:'_id fullname image username email phone company',
-                        populate:{
-                            path: 'company',
-                            select:'_id name sign image', // Sử dụng để lấy logo hiển thị khi in ấn tài liệu
-                        }
-                    })
-                    .populate({
-                        path: 'childs',
-                        populate:{
-                            path: 'assignee authorAttachs assigneeAttachs',
-                            select:'_id name sign note path company image', // Sử dụng để get company của công ty dự thầu (task con)
-                        }
-                    })
-                    .populate({
-                        path: 'checklists',
-                        options: { sort: { '_id': 1 } },
-                        populate: {
-                            path: 'author assignee project',
-                            select:'_id name sign fullname image signature',
-                        }
-                    })
-                    .populate({
-                        path: 'subtasks',
-                        // options: { sort: { '_id': 1 } },
-                        options: { sort: { 'createAt': 1 } },
-                        populate: {
-                            path: 'author assignee project',
-                            select:'_id name sign fullname image signature',
-                        }
-                    })
-                    .populate({
-                        path: 'links',
-                        select:'_id name sign author assignee expiredTime status percentage',
-                        populate:{
-                            path: 'author assignee',
-                            select:'_id name sign fullname image company image',
-                            populate:{
-                                path: 'company',
-                                select:'_id name sign',
-                            }
-                        }
-                    })
-                    .populate({
-                        path: 'authorAttachs',
-                        populate:{
-                            path: 'author',
-                            select:'_id name sign fullname image signature company',
-                            populate:{
-                                path: 'company',
-                                select:'_id name sign',
-                            }
-                        }
-                    })
-                    .populate({
-                        path: 'assigneeAttachs',
-                        populate:{
-                            path: 'author',
-                            select:'_id name sign fullname image signature company',
-                            populate:{
-                                path: 'company',
-                                select:'_id name sign',
-                            }
-                        }
-                    })
-                    .populate({
-                        path: 'responses situations methods',
-                        populate:{
-                            path: 'author attachs task reactions files',
-                            populate:{
-                                path: 'author position company reactions attach files',
-                                populate:{
-                                    path: 'company',
-                                    select:'_id name sign',
-                                }
-                            }
-                        }
-                    })
-                    .populate({
-                        path: 'comments',
-                        populate:{
-                            path: 'author attach childs reactions files',
-                            populate:{
-                                path: 'author position company reactions attach files',
-                                populate:{
-                                    path: 'position company author',
-                                    select:'_id name sign fullname image signature',
-                                }
-                            }
-                        }
-                    })
-                    .populate({
-                        path: 'situations.author',
-                        select:'_id name sign fullname image',
-                    })
-                    .populate({
-                        path: 'methods.author',
-                        select:'_id name sign fullname image',
-                    })
-                    .populate({
-                        path: 'approver openedUsers', // User đã xác nhận mở thầu
-                        select:'_id name sign fullname image',
-                    })
-                    .populate('rfas')
-                    .populate({
-                        path: 'contract',
-                        select:'_id name sign packageName project personInCharge fcuValue chair',
-                        populate: {
-                            path: "project personInCharge chair owner",
-                            select: "name department investmentAmount",
-                            populate: {
-                                path: "department",
-                                select: "name"
-                            }
-                        }
-                    })
-                    .populate('document')
-                    .populate('field')
-                    .populate({
-                        path: 'signatures',
-                        populate:{
-                            path: 'author',
-                            select:'_id fullname image signature'
-                        }
-                    })
-                    .populate({
-                        path: 'quality',
-                        select: '_id name',
-                    })
+                                .select(select)
+                                .populate({
+                                    path: populates?.value || "",
+                                    select: populates?.select || "",
+                                    populate: {
+                                        path: populates1?.value ||"",
+                                        select: populates1?.select || "",
+                                        populate: {
+                                            path: populates2?.value || "",
+                                            select: populates2?.select || "",
+                                            populate: {
+                                                path: populates3?.value || "",
+                                                select: populates3?.select || "",
+                                            }
+                                        }
+                                    }
+                                })
+
                 
                 //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
                 await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
@@ -1012,17 +897,17 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy)     
                     .populate({
-                        path: populates.value || "",
-                        select: populates.select || "",
+                        path: populates?.value || "",
+                        select: populates?.select || "",
                         populate: {
-                            path: populates1.value || "",
-                            select: populates1.select || "",
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
                             populate: {
-                                path: populates2.value || "",
-                                select: populates2.select || "",
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
                                 populate: {
-                                    path: populates3.value || "",
-                                    select: populates3.select || "",
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
                                 }
                             }
                         }

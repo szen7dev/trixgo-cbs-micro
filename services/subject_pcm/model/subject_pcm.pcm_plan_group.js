@@ -73,17 +73,17 @@ class Model extends BaseModel {
                 let infoPlanGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(planGroupID)
                 .select(select)
                 .populate({
-                    path: populates.value || "",
-                    select: populates.select || "",
+                    path: populates?.value || "",
+                    select: populates?.select || "",
                     populate: {
-                        path: populates1.value || "",
-                        select: populates1.select || "",
+                        path: populates1?.value || "",
+                        select: populates1?.select || "",
                         populate: {
-                            path: populates2.value || "",
-                            select: populates2.select || "",
+                            path: populates2?.value || "",
+                            select: populates2?.select || "",
                             populate: {
-                                path: populates3.value || "",
-                                select: populates3.select || "",
+                                path: populates3?.value || "",
+                                select: populates3?.select || "",
                             }
                         }
                     }
@@ -203,17 +203,17 @@ class Model extends BaseModel {
 
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .populate({
-                        path: populates.value || "",
-                        select: populates.select || "",
+                        path: populates?.value || "",
+                        select: populates?.select || "",
                         populate: {
-                            path: populates1.value || "",
-                            select: populates1.select || "",
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
                             populate: {
-                                path: populates2.value || "",
-                                select: populates2.select || "",
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
                                 populate: {
-                                    path: populates3.value || "",
-                                    select: populates3.select || "",
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
                                 }
                             }
                         }

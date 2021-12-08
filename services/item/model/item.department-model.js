@@ -83,17 +83,17 @@ class Model extends BaseModel {
 
                 let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID).select(select)
                 .populate({
-                    path: populates.value || "",
-                    select: populates.select || "",
+                    path: populates?.value || "",
+                    select: populates?.select || "",
                     populate: {
-                        path: populates1.value || "",
-                        select: populates1.select || "",
+                        path: populates1?.value || "",
+                        select: populates1?.select || "",
                         populate: {
-                            path: populates2.value || "",
-                            select: populates2.select || "",
+                            path: populates2?.value || "",
+                            select: populates2?.select || "",
                             populate: {
-                                path: populates3.value || "",
-                                select: populates3.select || "",
+                                path: populates3?.value || "",
+                                select: populates3?.select || "",
                             }
                         }
                     }
@@ -232,17 +232,17 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .populate({
-                        path: populates.value || "",
-                        select: populates.select || "",
+                        path: populates?.value || "",
+                        select: populates?.select || "",
                         populate: {
-                            path: populates1.value || "",
-                            select: populates1.select || "",
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
                             populate: {
-                                path: populates2.value || "",
-                                select: populates2.select || "",
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
                                 populate: {
-                                    path: populates3.value || "",
-                                    select: populates3.select || "",
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
                                 }
                             }
                         }

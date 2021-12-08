@@ -15,7 +15,7 @@ const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playgr
 /**
  * import inter-model, exter-model
  */
-const SUBJECT__PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
+const SUBJECT__USER_PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
 
 class Model extends BaseModel {
 
@@ -80,7 +80,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
 
                 // TẠO USER_PCM_PLAN_REPORT
-                await SUBJECT__PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
+                await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -239,17 +239,17 @@ class Model extends BaseModel {
                 let infoData = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(reportID)
                 .select(select)
                 .populate({//1
-                    path: populates.value || "",
-                    select: populates.select || "",
+                    path: populates?.value || "",
+                    select: populates?.select || "",
                     populate: {//2
-                        path: populates1.value || "",
-                        select: populates1.select || "",
+                        path: populates1?.value || "",
+                        select: populates1?.select || "",
                         populate: {//3
-                            path: populates2.value || "",
-                            select: populates2.select || "",
+                            path: populates2?.value || "",
+                            select: populates2?.select || "",
                             populate: {//4
-                                path: populates3.value || "",
-                                select: populates3.select || "",
+                                path: populates3?.value || "",
+                                select: populates3?.select || "",
                             }
                         }
                     }
@@ -363,19 +363,19 @@ class Model extends BaseModel {
                 
                 let infoDataAfterGet = await SUBJECT__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
-                    .sort(sortBy) 
+                    .sort(sortBy)
                     .populate({//1
-                        path: populates.value || "",
-                        select: populates.select || "",
+                        path: populates?.value || "",
+                        select: populates?.select || "",
                         populate: {//2
-                            path: populates1.value || "",
-                            select: populates1.select || "",
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
                             populate: {//3
-                                path: populates2.value || "",
-                                select: populates2.select || "",
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
                                 populate: {//4
-                                    path: populates3.value || "",
-                                    select: populates3.select || "",
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
                                 }
                             }
                         }

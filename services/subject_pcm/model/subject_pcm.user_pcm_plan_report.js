@@ -63,7 +63,7 @@ class Model extends BaseModel {
 
                 dataInsert = { user: userID, subject: subjectID, author, role };
 
-                let infoPlanReport = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(subjectID);
+                let infoPlanReport = await SUBJECT__PCM_PLAN_REPORT_COLL.findById(subjectID);
                 if(infoPlanReport && infoPlanReport.parent){
                     dataInsert.parent = infoPlanReport.parent;
                 }
@@ -225,17 +225,17 @@ class Model extends BaseModel {
                 let infoUserSubject = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(userSubjectID)
                     .select(select)    
                     .populate({
-                        path: populates.value || "",
-                        select: populates.select || "",
+                        path: populates?.value || "",
+                        select: populates?.select || "",
                         populate: {
-                            path: populates1.value || "",
-                            select: populates1.select || "",
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
                             populate: {
-                                path: populates2.value || "",
-                                select: populates2.select || "",
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
                                 populate: {
-                                    path: populates3.value || "",
-                                    select: populates3.select || "",
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
                                 }
                             }
                         }
@@ -262,7 +262,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { state: 1 };
+                let conditionObj = { };
                 let conditionFind = {};
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
@@ -272,13 +272,12 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                // if(checkObjectIDs(parentID)){
-                //     conditionObj.subject["parent"] = parentID;
-                // }else{
-                //     conditionObj.subject["parent"] = null;
-                // } 
+                if(!checkObjectIDs(parentID)){
+                    conditionObj.parent = null;
+                }else{
+                    conditionObj.parent = parentID;
+                }
 
-                console.log({ conditionObj });
                 if(checkObjectIDs(userID)){
                     conditionObj.user = userID;
                 }
@@ -355,21 +354,23 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+
+                console.log({ conditionObj });
                 
                 let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .populate({
-                        path: populates.value || "",
-                        select: populates.select || "",
+                        path: populates?.value || "",
+                        select: populates?.select || "",
                         populate: {
-                            path: populates1.value || "",
-                            select: populates1.select || "",
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
                             populate: {
-                                path: populates2.value || "",
-                                select: populates2.select || "",
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
                                 populate: {
-                                    path: populates3.value || "",
-                                    select: populates3.select || "",
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
                                 }
                             }
                         }
