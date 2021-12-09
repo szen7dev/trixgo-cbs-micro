@@ -672,6 +672,17 @@ class Model extends BaseModel {
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
 
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                let end = new Date();
+                end.setHours(23,59,59,999);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -698,7 +709,7 @@ class Model extends BaseModel {
                     { related: { $in: [userID] }},
                     { group: { $in: listGroups.map(item => item._id) }},
                 ]
-
+                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
 						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
@@ -706,21 +717,21 @@ class Model extends BaseModel {
 					filter = JSON.parse(filter);
 				}
 				
-                // populates
+                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
 				}
-                // populates1
+                // POPULATE 1
                 if(populates1 && typeof populates1 === 'string'){
 					if(!IsJsonString(populates1))
 						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
 
 					populates1 = JSON.parse(populates1);
 				}
-                // populates2
+                // POPULATE 2
                 if(populates2 && typeof populates2 === 'string'){
 					if(!IsJsonString(populates2))
 						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
@@ -728,7 +739,7 @@ class Model extends BaseModel {
 					populates2 = JSON.parse(populates2);
 				}
                 
-                // populates3
+                // POPULATE 3
                 if(populates3 && typeof populates3 === 'string'){
 					if(!IsJsonString(populates3))
 						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
@@ -741,32 +752,35 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                 if(status){
+                // TRẠNG THÁI CÔNG VIỆC
+                if(status){
                     conditionObj.status = { $in: status }
                 }
 
                 // KIỂM TRA ĐIỀU KIỆN NHANH CHẬM
                 if(isExpired && isExpired == 1){
-                    // BÌNH THƯỜNG
+                    // VIỆC BÌNH THƯỜNG
                     conditionObj.expiredTime = { $gt: new Date() }
                 }
 
                 if(isExpired && isExpired == 2){
-                    // CHẬM
+                    // VIỆC CHẬM
                     conditionObj.status = { $ne: 3 }
                     conditionObj.expiredTime = { $lt: new Date() }
 				}
-                // Từ ngày đến ngày
+                // TỪ NGÀY ĐẾN NGÀY
                 if(fromDate && toDate){
                     conditionObj.expiredTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
 				}
-                // Việc nháp
+
+                // VIỆC NHÁP
                 if(draft && Number(draft) === 1){
                     conditionObj.draft = 1;
                 } else{
                     conditionObj.draft = 0;
                 }
-                // Dự án
+
+                // DỰ ÁN
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
                 }
@@ -778,7 +792,8 @@ class Model extends BaseModel {
                 if(collection){
                     conditionObj.type = collection;
                 }
-                // Loại công việc
+
+                // PHÂN LOẠI CÔNG VIỆC
                 if(isproposal){
                     conditionObj.isproposal = isproposal;
                 }
@@ -802,6 +817,7 @@ class Model extends BaseModel {
                 if(type == 1){
                     conditionObj.assignee = userID;
                 }
+
                 if(type == 2){
                     conditionObj.author = userID;
                 }
@@ -815,50 +831,42 @@ class Model extends BaseModel {
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
                 }
-                // console.log(conditionObj)
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
 
                 // typeStatus
                 // 1 Ngày nay
                 // 2 Tới hạn tuần tới
                 // 3 Tới hạn + 7 ngày tới
                 // 4 Quá hạn
+
+                // NGÀY NAY
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
                         $gte: start,
                         $lte: end,
                     }
                 }
+                // TỚI HẠN TUẦN TỚI
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
                         $gte: addDate(1),
                         $lte: addDate(7)
                     }
                 }
+                // TỚI HẠN + 7 NGÀY TỚI
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
                         $gt: addDate(7)
                     }
                 }
 
+                // QUÁ HẠN
                 if(typeStatus && typeStatus == 4){
                     conditionObj.actualFinishTime = {
                         $lt: start
                     }
                 }
 
-                // GET CONDITION PAGINATION
+                // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
@@ -875,12 +883,12 @@ class Model extends BaseModel {
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
-                // Người thực hiện
+                // NGƯỜI THỰC HIỆN
                 if(assigneeID && checkObjectIDs(assigneeID)){
                     conditionObj.assignee = assigneeID;
                 }
 
-                // Người tạo việc
+                // NGƯỜI TẠO VIỆC
                 if(authorID && checkObjectIDs(authorID)){
                     conditionObj.author = authorID;
                 }
@@ -917,6 +925,14 @@ class Model extends BaseModel {
                         }
                     })
                     .lean(); 
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
 
                 // Gán dữ liệu typeStatus
                 let listTask = [];
@@ -971,10 +987,11 @@ class Model extends BaseModel {
                             listTask = [...listTask, taskNewTemp];
                         }
 
-                        // Kiểm tra số lượng checklist đã hoàn thành.
+                        // KIỂM TRA SỐ LƯỢNG CHECKLIST ĐÃ HOÀN THÀNH
+                        // let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2 })
+                        // console.log({ amountChecklist });
                     }
                 }
-
                 
                 // GET TOTAL RECORD
                 let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionFind);
@@ -982,16 +999,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-                        listTask.length = limit;
-					}
-				}
 
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
                 if(!lastestID){

@@ -172,7 +172,6 @@ module.exports = {
                     keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                    
                 let resultAfterCallHandler;
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
@@ -181,7 +180,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate,
-                        keyword, limit, lastestID, populates, populates1, populates2, populates3
+                        keyword, limit: Number(limit), lastestID, populates, populates1, populates2, populates3
                     });
                 }
                 
