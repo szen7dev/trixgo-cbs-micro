@@ -47,17 +47,19 @@ module.exports = {
         params: {
             subjectID         : { type: "string" },
             name              : { type: "string", optional: true },
+            type              : { type: "number", optional: true },
             select            : { type: "string", optional: true },
+            conditionPin      : { type: "object", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, name, select } = ctx.params;
+                let { subjectID, name, type, select, conditionPin } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
                 let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.update({
-                    reportID: subjectID, name, userID, select
+                    reportID: subjectID, name, type, userID, select, conditionPin
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -124,7 +126,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(subjectID){
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getInfo({
-                        reportID: subjectID, select, populates, populates1, populates2, populates3
+                        reportID: subjectID, select, filter, populates, populates1, populates2, populates3
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getList({

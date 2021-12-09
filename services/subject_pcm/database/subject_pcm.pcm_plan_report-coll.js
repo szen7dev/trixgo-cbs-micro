@@ -71,19 +71,19 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_report", {
     /**
      * Phân loại báo cáo và ghim kết quả tìm kiếm
      * 1-Báo cáo
-     * 2-Ghim kết quả tìm kiếm
+     * 2-Ghim kết quả tìm kiếm công việc
      * 3-Ghim kết quả tìm kiếm checklist
      * 4-Ghim kết quả tìm kiếm Document
      * 5-Ghim kết quả tìm kiếm hợp đồng
      * 6-Ghim kết quả tìm kiếm comment
      * ----------------NEW-----------------
-     * 7  - Nhóm(Thư mục chủ đề)
-     */       
+     * 7- Nhóm(Thư mục chủ đề) micro
+     */
     type: { type: Number, default: 1 },
 
-     /**
+    /**
      * Điều kiện tìm kiếm
-     * Sau này dùng điều kiện này để tìm kiếm công việc, checklist, document
+     * Sau này dùng điều kiện này để tìm kiếm công việc, checklist, document, nhân sự
      */
     conditionPin: {
         type: Object,

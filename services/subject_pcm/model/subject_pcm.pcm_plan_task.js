@@ -746,12 +746,12 @@ class Model extends BaseModel {
                 }
 
                 // KIỂM TRA ĐIỀU KIỆN NHANH CHẬM
-                if(isExpired && isExpired.includes('1')){
+                if(isExpired && isExpired == 1){
                     // BÌNH THƯỜNG
                     conditionObj.expiredTime = { $gt: new Date() }
                 }
 
-                if(isExpired && isExpired.includes('2')){
+                if(isExpired && isExpired == 2){
                     // CHẬM
                     conditionObj.status = { $ne: 3 }
                     conditionObj.expiredTime = { $lt: new Date() }
@@ -938,40 +938,30 @@ class Model extends BaseModel {
                             if(+today == +expiredTime){
                                 taskNewTemp = {
                                     ...taskNewTemp, 
-                                    typeStatus: {
-                                        value: 1, message: "Ngày nay"
-                                    }
+                                    typeStatus: 1
                                 }
                             }else{
                                 if(+today < +expiredTime && +expiredTime < +addDate(7)){
                                     taskNewTemp = {
                                         ...taskNewTemp, 
-                                        typeStatus:{
-                                            value: 2, message: "Tới hạn tuần tới"
-                                        }
+                                        typeStatus: 2
                                     }
                                 }else{
                                     if(+today < +expiredTime && +expiredTime < +addDate(14) ){
                                         taskNewTemp = {
                                             ...taskNewTemp, 
-                                            typeStatus: {
-                                                value: 3, message: "Tới hạn + 7 ngày tới"
-                                            }
+                                            typeStatus: 3
                                         }
                                     }else{
                                         if( +expiredTime <= +addDate(14)){
                                             taskNewTemp = {
                                                 ...taskNewTemp, 
-                                                typeStatus: {
-                                                    value: 4, message: "Quá hạn"
-                                                }
+                                                typeStatus: 4
                                             }
                                         }else{
                                             taskNewTemp = {
                                                 ...taskNewTemp, 
-                                                typeStatus: {
-                                                    value: 4, message: "Chưa tới hạn"
-                                                }
+                                                typeStatus: 5
                                             }
                                         }
                                     }
