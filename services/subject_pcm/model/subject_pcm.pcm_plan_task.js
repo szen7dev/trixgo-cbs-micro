@@ -652,7 +652,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user_pcm_plan_report ✅
+     * Name  : Danh sách pcm_plan_task ✅
      * Author: Depv
      * Code  : 
      */
@@ -929,7 +929,7 @@ class Model extends BaseModel {
                             // 2 Tới hạn tuần tới
                             // 3 Tới hạn + 7 ngày tới
                             // 4 Quá hạn
-                            // 5 Chưa tới hạn -> Tới hạn + 7 ngày tới
+                            // 5 Chưa tới hạn -> 3. Tới hạn + 7 ngày tới
                             let date    = new Date();
                             let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
                             let expiredTimeTemp = new Date(taskNewTemp.expiredTime);
@@ -970,8 +970,11 @@ class Model extends BaseModel {
 
                             listTask = [...listTask, taskNewTemp];
                         }
+
+                        // Kiểm tra số lượng checklist đã hoàn thành.
                     }
                 }
+
                 
                 // GET TOTAL RECORD
                 let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionFind);
@@ -981,11 +984,12 @@ class Model extends BaseModel {
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-                    
+
 				if(infoDataAfterGet && infoDataAfterGet.length){
 					if(infoDataAfterGet.length > limit){
 						nextCursor = infoDataAfterGet[limit - 1]._id;
 						infoDataAfterGet.length = limit;
+                        listTask.length = limit;
 					}
 				}
 
