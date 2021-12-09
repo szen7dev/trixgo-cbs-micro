@@ -938,30 +938,40 @@ class Model extends BaseModel {
                             if(+today == +expiredTime){
                                 taskNewTemp = {
                                     ...taskNewTemp, 
-                                    typeStatus: 1
+                                    typeStatus: {
+                                        value: 1, message: "Ngày nay"
+                                    }
                                 }
                             }else{
                                 if(+today < +expiredTime && +expiredTime < +addDate(7)){
                                     taskNewTemp = {
                                         ...taskNewTemp, 
-                                        typeStatus: 2
+                                        typeStatus:{
+                                            value: 2, message: "Tới hạn tuần tới"
+                                        }
                                     }
                                 }else{
                                     if(+today < +expiredTime && +expiredTime < +addDate(14) ){
                                         taskNewTemp = {
                                             ...taskNewTemp, 
-                                            typeStatus: 3
+                                            typeStatus: {
+                                                value: 3, message: "Tới hạn + 7 ngày tới"
+                                            }
                                         }
                                     }else{
                                         if( +expiredTime <= +addDate(14)){
                                             taskNewTemp = {
                                                 ...taskNewTemp, 
-                                                typeStatus: 4
+                                                typeStatus: {
+                                                    value: 4, message: "Quá hạn"
+                                                }
                                             }
                                         }else{
                                             taskNewTemp = {
                                                 ...taskNewTemp, 
-                                                typeStatus: 5
+                                                typeStatus: {
+                                                    value: 4, message: "Chưa tới hạn"
+                                                }
                                             }
                                         }
                                     }
