@@ -656,7 +656,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ keyword, limit = 10, lastestID, userID, projectID, assigneeID, status, draft, type, typeStatus, filter = {}, select = {}, populates= {}, populates1={},
+    getList({ keyword, limit = 10, lastestID, userID, projectID, assigneeID, authorID, status, draft, type, typeStatus, filter = {}, select = {}, populates= {}, populates1={},
          populates2={}, populates3={}, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask }) { 
         return new Promise(async (resolve) => {
             try {
@@ -878,6 +878,11 @@ class Model extends BaseModel {
                 // Người thực hiện
                 if(assigneeID && checkObjectIDs(assigneeID)){
                     conditionObj.assignee = assigneeID;
+                }
+
+                // Người tạo việc
+                if(authorID && checkObjectIDs(authorID)){
+                    conditionObj.author = authorID;
                 }
 
                 // SEARCH TEXT
