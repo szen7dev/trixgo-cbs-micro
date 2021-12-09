@@ -22,7 +22,7 @@ module.exports = {
             assigneeID       : { type: "string" },
             relatedIDs       : { type: "array", optional: true },
             actualStartTime  : { type: "string", optional: true },
-            type             : { type: "string", optional: true },
+            type             : { type: "number", optional: true },
             isproposal       : { type: "number", optional: true },
             description      : { type: "string", optional: true },
             sign             : { type: "string", optional: true },

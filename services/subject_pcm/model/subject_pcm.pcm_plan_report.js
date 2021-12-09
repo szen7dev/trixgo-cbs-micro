@@ -366,8 +366,7 @@ class Model extends BaseModel {
 
                 let listUserPcmPlanReportAccess = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
 
-                let listSubjectAccess = listUserPcmPlanReportAccess.map(item => item.subject);
-                console.log({ listSubjectAccess });
+                let listSubjectAccess = listUserPcmPlanReportAccess.map(item => item.subject);   
                 // conditionObj._id = { $in: listSubjectAccess };
 
                 let infoDataAfterGet = await SUBJECT__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
@@ -389,8 +388,8 @@ class Model extends BaseModel {
                             }
                         }
                     })
-                    .lean(); 
-
+                    .lean();
+                
                 // GET TOTAL RECORD
 				// let totalRecord = await SUBJECT__PCM_PLAN_REPORT_COLL.count(conditionObj);
                 let totalCurrentPage = await SUBJECT__PCM_PLAN_REPORT_COLL.count(conditionFind);
