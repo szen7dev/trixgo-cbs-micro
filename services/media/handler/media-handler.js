@@ -35,11 +35,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: author } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
                 const { content, type, location, files, tagFriends, images, background, company, group, kind } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insert({
-					author, content, type, location, files, tagFriends, images, background, company, group, kind, ctx
+					authorID, content, type, location, files, tagFriends, images, background, company, group, kind, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -61,7 +61,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				let { _id: userID }  	= ctx.meta.infoUser;
+				let { _id: userID } = ctx.meta.infoUser;
                 let { lastestID, limit } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
@@ -81,17 +81,18 @@ module.exports = {
 	 */
 	updateMedia: {
         params: {
-            mediaID : { type: "string", optional: true },
-            content : { type: "string", optional: true },
+            mediaID     : { type: "string" },
+            content     : { type: "string" },
+            type        : { type: "number" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				let { _id: author }  	= ctx.meta.infoUser;
+				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group } = ctx.params;
                
                 let resultAfterCallHandler = await MEDIA_MODEL.update({ 
-					mediaID, author, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx
+					mediaID, authorID, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -107,7 +108,7 @@ module.exports = {
 	 */
     deleteMedia: {
         params: {
-            mediaID 		: { type: "string", optional: true },
+            mediaID: { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -131,7 +132,7 @@ module.exports = {
 	 */
     watchedMedia: {
         params: {
-            mediaID     : { type: "string" },
+            mediaID: { type: "string" },
         },
         async handler(ctx) {
             try {
