@@ -420,10 +420,10 @@ class Model extends BaseModel {
 				};
 
 				//=======================VALIDATION===========================
-				if(!checkObjectIDs([userID]))
+				if(!checkObjectIDs(userID))
 					return resolve({ error: true, message: 'Request param userID invalid', status: 400 });
 
-				if(lastestID && !checkObjectIDs([lastestID]))
+				if(lastestID && !checkObjectIDs(lastestID))
 					return resolve({ error: true, message: 'Request param lastestID invalid', status: 400 });
 
 				let infoUser = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
@@ -439,7 +439,7 @@ class Model extends BaseModel {
 						},
 						{
 							tagFriends: { // Được tag vào bài biết ✅ 
-								$in : userID
+								$in: [userID]
 							}
 						},
 						{
@@ -449,24 +449,16 @@ class Model extends BaseModel {
 						{
 							type: 2, 
 							author: { // Bạn bè trong công ty ✅
-								$in: [infoUser?.data?.friends]
+								$in: infoUser?.data?.friends
 							},
 							company: infoUser?.data?.company
 						},
 						{
 							type: 3, 
 							author: { // Tất cả bạn bè ✅
-								$in: [infoUser?.data?.friends]
+								$in: infoUser?.data?.friends
 							}
-						},
-						// {
-						// 	type: 4, // Bài viết cho group
-						// 	group: userID
-						// },
-						// {
-						// 	type: 5,  // Bài viết cho doanh nghiệp ✅
-						// 	company: infoUser.company
-						// },
+						}
 					]
 				}
 
@@ -588,7 +580,6 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-			
 				let listMediaAfterSet = [];
 				let nextCursor	= null;
 				if (listMedia && listMedia.length) {
@@ -597,6 +588,7 @@ class Model extends BaseModel {
 						listMedia.length = limit;
 					}
 				}
+
 				if (listMedia && listMedia.length) {
 					for (let media of listMedia) {
 						let countUserWatched = await MEDIA_SEEN_COLL.count({
@@ -661,7 +653,7 @@ class Model extends BaseModel {
 								idxCommentChild ++;
 							}
 
-							let infoCommentFile 	= await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
+							let infoCommentFile = await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
 								.select('_id')
 								.populate({
 									path: 'file',
@@ -675,7 +667,7 @@ class Model extends BaseModel {
 								files: infoCommentFile,
 								listCommnetChild,
 							}
-							idxComment ++;
+							idxComment++;
 						}
 						// for(const comment of listComment) {
 
@@ -701,15 +693,15 @@ class Model extends BaseModel {
 						]
 					}
 				}
-				
+
 				// GET TOTAL RECORD
-				let totalRecord = await MEDIA_COLL.countDocuments({...conditionObj});
+				let totalRecord = await MEDIA_COLL.countDocuments(conditionObj);
 
 				return resolve({ 
 					error: false,
 					status: 200,
 					data: { 
-						listRecords: listMediaAfterSet, 
+						listRecords: listMedia, 
 						limit: +limit,
 						totalRecord,
 						nextCursor
