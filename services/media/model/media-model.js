@@ -109,7 +109,7 @@ class Model extends BaseModel {
 						name: background.name,
 						url: background.url,
 						size: background.size,
-						userID: author,
+						userID: authorID,
 					});
 
 					if(infoBackgroundMedia.error)
@@ -133,7 +133,7 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 					let resultOfListFileAfterInserted = await Promise.all(listFileInserted);
@@ -170,7 +170,7 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 
@@ -310,7 +310,7 @@ class Model extends BaseModel {
 						name: background.name,
 						url: background.url,
 						size: background.size,
-						userID: author,
+						userID: authorID,
 					});
 					if(infoBackgroundMedia.error)
 						return resolve({ error: true, message: 'Request background media failed', status: 403 });
@@ -331,7 +331,7 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 
@@ -366,7 +366,7 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 
