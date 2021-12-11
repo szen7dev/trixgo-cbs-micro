@@ -7,7 +7,8 @@
  * 5: Bài viết cho Doanh nghiệp (Group)
  * ..... Sau bổ sung thêm vài loại bài viết
  */
-exports.MEDIA_TYPES = [1,2,3,4,5];
+// exports.MEDIA_TYPES = [1,2,3,4,5];
+exports.MEDIA_TYPES = ['company', 'just-me', 'department', 'community', 'system'];
 
 exports.MEDIA_TYPE = {
     PERSONAL: 1,

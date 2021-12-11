@@ -43,7 +43,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
-	insert({ authorID, content, type, location, files, tagFriends, images, background, company, group, ctx }) {
+	insert({ authorID, title, content, type, location, files, tagFriends, images, background, company, group, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -54,14 +54,34 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
 
-				if (!MEDIA_TYPES.includes(+type)) {
+				if (!MEDIA_TYPES.includes(type)) {
                     return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
 
 				condition = {
 					author: authorID,
+					title,
 					content,
-					type
+				}
+
+				switch (type) {
+					case 'company':
+						condition.type = 1;
+						break;
+					case 'just-me':
+						condition.type = 2;
+						break;
+					case 'departments':
+						condition.type = 3;
+						break;
+					case 'community':
+						condition.type = 4;
+						break;
+					case 'system':
+						condition.type = 4;
+						break;
+					default:
+						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
 
 				if (location) {
@@ -216,7 +236,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
-	update({ mediaID, authorID, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx }) {
+	update({ mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx }) {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
@@ -226,7 +246,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(mediaID))
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
 
-				if (!MEDIA_TYPES.includes(+type)) {
+				if (!MEDIA_TYPES.includes(type)) {
                     return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
 
@@ -241,8 +261,28 @@ class Model extends BaseModel {
 				}
 
 				condition = {
+					title,
 					content,
-					type
+				}
+
+				switch (type) {
+					case 'company':
+						condition.type = 1;
+						break;
+					case 'just-me':
+						condition.type = 2;
+						break;
+					case 'departments':
+						condition.type = 3;
+						break;
+					case 'community':
+						condition.type = 4;
+						break;
+					case 'system':
+						condition.type = 4;
+						break;
+					default:
+						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
 
 				if (location) {
@@ -409,7 +449,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
-    getListMedia({ userID, lastestID, limit = 20, ctx }){
+    getListMedia({ userID, lastestID, companyID, limit = 20, ctx }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -460,6 +500,10 @@ class Model extends BaseModel {
 							}
 						}
 					]
+				}
+
+				if(companyID && checkObjectIDs(companyID)){
+					conditionObj.company = companyID;
 				}
 
                 let listAfterFind = await this.getListWithCondition({
@@ -696,6 +740,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
 				let totalRecord = await MEDIA_COLL.countDocuments(conditionObj);
+				let totalPages = Math.ceil(totalRecord / limit);
 
 				return resolve({ 
 					error: false,
@@ -704,6 +749,7 @@ class Model extends BaseModel {
 						listRecords: listMedia, 
 						limit: +limit,
 						totalRecord,
+						totalPages,
 						nextCursor
 					}
 				});

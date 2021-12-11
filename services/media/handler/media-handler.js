@@ -29,17 +29,18 @@ module.exports = {
 	 */
     insertMedia: {
         params: {
+            title       : { type: "string" },
             content     : { type: "string" },
-            type        : { type: "number" },
+            type        : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { content, type, location, files, tagFriends, images, background, company, group, kind } = ctx.params;
+                const { title, content, type, location, files, tagFriends, images, background, company, group, kind } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insert({
-					authorID, content, type, location, files, tagFriends, images, background, company, group, kind, ctx
+					authorID, title, content, type, location, files, tagFriends, images, background, company, group, kind, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -55,16 +56,17 @@ module.exports = {
 	 */
     getListMedia: {
         params: {
-            limit			: { type: 'string', optional: true },
+            limit: { type: 'string', optional: true },
+            companyID: { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: userID } = ctx.meta.infoUser;
-                let { lastestID, limit } = ctx.params;
+                let { lastestID, limit, companyID } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
-					userID, lastestID, limit, ctx
+					userID, lastestID, limit, companyID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,18 +82,19 @@ module.exports = {
 	 */
 	updateMedia: {
         params: {
+            title       : { type: "string" },
             mediaID     : { type: "string" },
             content     : { type: "string" },
-            type        : { type: "number" },
+            type        : { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
-                let { mediaID, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group } = ctx.params;
+                let { mediaID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group } = ctx.params;
                
                 let resultAfterCallHandler = await MEDIA_MODEL.update({ 
-					mediaID, authorID, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx
+					mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
