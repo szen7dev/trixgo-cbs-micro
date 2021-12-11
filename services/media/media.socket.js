@@ -23,8 +23,7 @@ exports.MEDIA_SOCKET = {
         let userID                      = socket.client.user;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
-			
-		console.log({userID, listUserActive})
+
         sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
 			arrReceiver: [userID], 

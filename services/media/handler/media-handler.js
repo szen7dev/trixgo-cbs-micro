@@ -55,7 +55,6 @@ module.exports = {
 	 */
     getListMedia: {
         params: {
-            lastestID 		: { type: "string", optional: true },
             limit			: { type: 'string', optional: true },
         },
         async handler(ctx) {
