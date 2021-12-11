@@ -3,7 +3,6 @@
 /**
  * EXTERNAL PACKAGE
  */
-const ObjectID                                  = require('mongoose').Types.ObjectId;
 
 /**
  * CONSTANTS
@@ -11,6 +10,7 @@ const ObjectID                                  = require('mongoose').Types.Obje
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+const { MEDIA_TYPES } 							= require('../helper/media.keys-constant');
 
 /**
  * TOOLS
@@ -33,13 +33,8 @@ const MEDIA_PIN_COLL					    	= require('../database/media.pin-coll');
 const MEDIA_COMMENT_IMAGE_COLL					= require('../database/media.comment_image-coll');
 const MEDIA_REACTION_IMAGE_COLL				    = require('../database/media.reaction_image-coll');
 
-/**
- * MODELS
- */
-
 
 class Model extends BaseModel {
-
     constructor() {
         super(MEDIA_COLL);
     }
@@ -48,7 +43,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
-	insert({ author, content, type, location, files, tagFriends, images, background, company, group, ctx }) {
+	insert({ authorID, content, type, location, files, tagFriends, images, background, company, group, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -56,97 +51,78 @@ class Model extends BaseModel {
 				let condition = {};
 
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
+				if(!checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
 
-				if (!content || !content.length) {
-                    return resolve({ error: true, message: 'Request params content invalid', status: 400 });
-				}	
-
-				if (!type || Number.isNaN(Number(type)) || ![1,2,3,4,5].includes(Number(type))) {
+				if (!MEDIA_TYPES.includes(+type)) {
                     return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
+
 				condition = {
-					author,
+					author: authorID,
 					content,
 					type
 				}
+
 				if (location) {
 					let locationOfMedia = {
 						type: "Point", 
 						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
 					}
 
-					console.log({locationOfMedia});
-
-					condition = {
-						...condition,
-						location: locationOfMedia,
-					}
-
-					console.log({condition});
+					condition.location = locationOfMedia;
 				}
 
 				if (tagFriends) {
-					if(!checkObjectIDs([...tagFriends]))
+					if(!checkObjectIDs(tagFriends))
                     	return resolve({ error: true, message: 'Request params tagFriends invalid', status: 400 });
-					
-					condition = {
-						...condition,
-						tagFriends,
-					}
+
+					condition.tagFriends = tagFriends;
 				}
 
 				if (company) {
 					if(!checkObjectIDs(company))
-                    	return resolve({ error: true, message: 'Request params company invalid', status: 400 });
+                    	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-					condition = {
-						...condition,
-						company,
-					}
+					condition.company = company;
 				}
 
 				if (group) {
 					if(!checkObjectIDs(group))
                     	return resolve({ error: true, message: 'Request params group invalid', status: 400 });
 
-					condition = {
-						...condition,
-						group,
-					}
+					condition.group = group;
 				}
 
-				let infoMediaAfterInserted = await this.insertData({ 
-					...condition
-				});
+				let infoMediaAfterInserted = await this.insertData(condition);
 
                 if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't create media", status: 403 });
+                    return resolve({ error: true, message: "Can't create media", status: 422 });
 
 				// INSERT FILE GỌI QUA FILE CORE SERVICE
 				let conditionObjUpdate = {};
+				let mediaID = infoMediaAfterInserted._id;
+
 				if (background) {
 					let infoBackgroundMedia = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
 						app: CF_DOMAIN_SERVICES.MEDIA,
 						name: background.name,
 						url: background.url,
 						size: background.size,
-						userID: author,
+						userID: authorID,
 					});
+
 					if(infoBackgroundMedia.error)
 						return resolve({ error: true, message: 'Request background media failed', status: 403 });
 
 					let infoBackgroundAfterInserted = await MEDIA_FILE_COLL.create({
-						media: infoMediaAfterInserted._id,
+						media: mediaID,
 						file: infoBackgroundMedia.data._id,
 						createAt: new Date(),
 						modifyAt: new Date(),
 					});
-					
-					conditionObjUpdate = {
-						background: infoBackgroundAfterInserted._id
-					}
+
+					conditionObjUpdate.background = infoBackgroundAfterInserted._id;
 				}
 
 				if (files && files.length) {
@@ -157,7 +133,7 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 					let resultOfListFileAfterInserted = await Promise.all(listFileInserted);
@@ -165,30 +141,26 @@ class Model extends BaseModel {
 					let listFileID = [];
 					// KIỂM TRA GỌI SERVICE LỖI
 					resultOfListFileAfterInserted.map(item => {
-						if (item.error) {
-							return resolve({ error: true, message: 'Request files media failed', status: 403 });
+						if (!item.error) {
+							listFileID = [
+								...listFileID,
+								item?.data?._id
+							]
 						}
-						listFileID = [
-							...listFileID,
-							item.data._id
-						]
 					});
 
 					// LƯU VỀ COLL MEDIA_FILE_COLL
 					let listFileMedia = listFileID.map(item => {
 						return MEDIA_FILE_COLL.create({
-							media: infoMediaAfterInserted._id,
+							media: mediaID,
 							file: item._id,
 							createAt: new Date(),
 							modifyAt: new Date(),
 						});
 					});
-					let resultFileMediaAfterInseted = await Promise.all(listFileMedia)
-					
-					conditionObjUpdate = {
-						...conditionObjUpdate,
-						files: [...resultFileMediaAfterInseted.map(item => item._id)]
-					}
+					let resultFileMediaAfterInseted = await Promise.all(listFileMedia);
+
+					conditionObjUpdate.files = [...resultFileMediaAfterInseted.map(item => item._id)];
 				}
 
 				if (images && images.length) {
@@ -198,47 +170,39 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 
 					let resultOfListImageAfterInserted = await Promise.all(listImageInserted);
-					
+
 					let listImageID = [];
 					// KIỂM TRA GỌI SERVICE LỖI
 					resultOfListImageAfterInserted.map(item => {
-						if (item.error) {
-							return resolve({ error: true, message: 'Request images media failed', status: 403 });
+						if (!item.error) {
+							listImageID = [
+								...listImageID,
+								item?.data?._id
+							]
 						}
-						listImageID = [
-							...listImageID,
-							item.data._id
-						]
 					});
 
 					// LƯU VỀ COLL MEDIA_FILE_COLL
 					let listFileMedia = listImageID.map(item => {
 						return MEDIA_FILE_COLL.create({
-							media: infoMediaAfterInserted._id,
+							media: mediaID,
 							file: item._id,
 							createAt: new Date(),
 							modifyAt: new Date(),
 						});
 					});
 					let resultFileMediaAfterInseted = await Promise.all(listFileMedia)
-					
-					conditionObjUpdate = {
-						...conditionObjUpdate,
-						images: [...resultFileMediaAfterInseted.map(item => item._id)]
-					}
+
+					conditionObjUpdate.images = [...resultFileMediaAfterInseted.map(item => item._id)];
 				}
-			
+
 				if (!isEmptyObject(conditionObjUpdate)) {
-					let infoMediaAfterUpdateFile = await MEDIA_COLL.findByIdAndUpdate(infoMediaAfterInserted._id, {
-						...conditionObjUpdate
-					}, {
-						new: true
-					});
+					infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, conditionObjUpdate, { new: true });
 				}
 
                 return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
@@ -252,32 +216,28 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
-	update({ mediaID, author, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx }) {
+	update({ mediaID, authorID, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx }) {
         return new Promise(async (resolve) => {
             try {
-
 				//=======================VARIABLE/CONSTANTS=====================
 				let condition = {};
 
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([mediaID]))
+				if(!checkObjectIDs(mediaID))
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				
-				if (!content || !content.length) {
-                    return resolve({ error: true, message: 'Request params content invalid', status: 400 });
-				}	
 
-				if (!type || Number.isNaN(Number(type)) || ![1,2,3,4,5].includes(Number(type))) {
+				if (!MEDIA_TYPES.includes(+type)) {
                     return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
 
 				let infoMedia = await MEDIA_COLL.findById(mediaID);
-				
+
 				if (!infoMedia) {
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
 				}
-				if (infoMedia.author.toString() != author.toString()) {
-                    return resolve({ error: true, message: 'User dont create this media', status: 400 });
+
+				if (infoMedia.author.toString() !== authorID.toString()) {
+                    return resolve({ error: true, message: 'Permission denined', status: 403 });
 				}
 
 				condition = {
@@ -290,87 +250,57 @@ class Model extends BaseModel {
 						type: "Point", 
 						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
 					}
-					condition = {
-						...condition,
-						locationOfMedia,
-					}
+
+					condition.location = locationOfMedia;
 				}
 
 				if (tagFriends) {
-					if(!checkObjectIDs([...tagFriends]))
+					if(!checkObjectIDs(tagFriends))
                     	return resolve({ error: true, message: 'Request params tagFriends invalid', status: 400 });
-					
-					condition = {
-						...condition,
-						tagFriends,
-					}
-				} else {
-					condition = {
-						...condition,
-						tagFriends: [],
-					}
+
+					condition.tagFriends = tagFriends;
 				}
 
 				if (company) {
 					if(!checkObjectIDs(company))
-                    	return resolve({ error: true, message: 'Request params company invalid', status: 400 });
+                    	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-					condition = {
-						...condition,
-						company,
-					}
-				} else {
-					condition = {
-						...condition,
-						company: null,
-					}
+					condition.company = company;
 				}
 
 				if (group) {
 					if(!checkObjectIDs(group))
                     	return resolve({ error: true, message: 'Request params group invalid', status: 400 });
 
-					condition = {
-						...condition,
-						group,
-					}
-				} else {
-					condition = {
-						...condition,
-						group: null,
-					}
+					condition.group = group;
 				}
 
-				if (filesDelete) {
-					if(!checkObjectIDs([filesDelete]))
+				if (filesDelete && filesDelete.length) {
+					if(!checkObjectIDs(filesDelete))
                     	return resolve({ error: true, message: 'Request params filesDelete invalid', status: 400 });
 
 					condition = {
 						...condition,
 						$pullAll: {
-							files: [...filesDelete.map(item => ObjectID(item))]
+							files: filesDelete
 						},
 					}
 				}
 
-				if (imageDelete) {
-					if(!checkObjectIDs([imageDelete]))
+				if (imageDelete && imageDelete.length) {
+					if(!checkObjectIDs(imageDelete))
                     	return resolve({ error: true, message: 'Request params imageDelete invalid', status: 400 });
 
 					condition.$pullAll = {
 						...condition.$pullAll,
-						images: [...imageDelete.map(item => ObjectID(item))]
+						images: imageDelete
 					}
 				}
 			
-				let infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, { 
-					...condition
-				}, {
-					new: true
-				});
+				let infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, condition, { new: true });
 
                 if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't create media", status: 403 });
+                    return resolve({ error: true, message: "Can't update media", status: 422 });
 
 				// INSERT FILE GỌI QUA FILE CORE SERVICE
 				let conditionObjUpdate = {};
@@ -380,25 +310,19 @@ class Model extends BaseModel {
 						name: background.name,
 						url: background.url,
 						size: background.size,
-						userID: author,
+						userID: authorID,
 					});
 					if(infoBackgroundMedia.error)
 						return resolve({ error: true, message: 'Request background media failed', status: 403 });
 
 					let infoBackgroundAfterInserted = await MEDIA_FILE_COLL.create({
-						media: infoMediaAfterInserted._id,
+						media: mediaID,
 						file: infoBackgroundMedia.data._id
 					});
-					
-					conditionObjUpdate = {
-						background: infoBackgroundAfterInserted._id
-					}
-				} else {
-					conditionObjUpdate = {
-						background: null
-					}
+
+					conditionObjUpdate.background = infoBackgroundAfterInserted._id;
 				}
-				
+
 				if (files && files.length) {
 					// GỌI SERVICE FILE
 					let listFileInserted = files.map( item => {
@@ -407,36 +331,32 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
-					let resultOfListFileAfterInserted = await Promise.all(listFileInserted);
 
+					let resultOfListFileAfterInserted = await Promise.all(listFileInserted);
 					let listFileID = [];
-					// KIỂM TRA GỌI SERVICE LỖI
+
 					resultOfListFileAfterInserted.map(item => {
-						if (item.error) {
-							return resolve({ error: true, message: 'Request files media failed', status: 403 });
+						if (!item.error) {
+							listFileID = [
+								...listFileID,
+								item?.data?._id
+							]
 						}
-						listFileID = [
-							...listFileID,
-							item.data._id
-						]
 					});
 
 					// LƯU VỀ COLL MEDIA_FILE_COLL
 					let listFileMedia = listFileID.map(item => {
 						return MEDIA_FILE_COLL.create({
-							media: infoMediaAfterInserted._id,
+							media: mediaID,
 							file: item._id
 						});
 					});
-					let resultFileMediaAfterInseted = await Promise.all(listFileMedia)
-					
-					conditionObjUpdate.$addToSet = {
-						...conditionObjUpdate.$addToSet,
-						files: [...resultFileMediaAfterInseted.map(item => item._id)]
-					}
+					let resultFileMediaAfterInseted = await Promise.all(listFileMedia);
+
+					conditionObjUpdate.files = [...resultFileMediaAfterInseted.map(item => item._id)];
 				}
 
 				if (images && images.length) {
@@ -446,44 +366,36 @@ class Model extends BaseModel {
 							name: item.name,
 							url: item.url,
 							size: item.size,
-							userID: author,
+							userID: authorID,
 						});
 					});
 
 					let resultOfListImageAfterInserted = await Promise.all(listImageInserted);
 					let listImageID = [];
-					// KIỂM TRA GỌI SERVICE LỖI
+
 					resultOfListImageAfterInserted.map(item => {
-						if (item.error) {
-							return resolve({ error: true, message: 'Request images media failed', status: 403 });
+						if (!item.error) {
+							listImageID = [
+								...listImageID,
+								item?.data?._id
+							]
 						}
-						listImageID = [
-							...listImageID,
-							item.data._id
-						]
 					});
 
 					// LƯU VỀ COLL MEDIA_FILE_COLL
 					let listFileMedia = listImageID.map(item => {
 						return MEDIA_FILE_COLL.create({
-							media: infoMediaAfterInserted._id,
+							media: mediaID,
 							file: item._id
 						});
 					});
-					let resultFileMediaAfterInseted = await Promise.all(listFileMedia)
-					
-					conditionObjUpdate.$addToSet = {
-						...conditionObjUpdate.$addToSet,
-						images: [...resultFileMediaAfterInseted.map(item => item._id)]
-					}
+					let resultFileMediaAfterInseted = await Promise.all(listFileMedia);
+
+					conditionObjUpdate.images = [...resultFileMediaAfterInseted.map(item => item._id)];
 				}
-			
+
 				if (!isEmptyObject(conditionObjUpdate)) {
-					let infoMediaAfterUpdateFile = await MEDIA_COLL.findByIdAndUpdate(infoMediaAfterInserted._id, {
-						...conditionObjUpdate
-					}, {
-						new: true
-					});
+					infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, conditionObjUpdate, { new: true });
 				}
 
                 return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
@@ -497,7 +409,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
-    getListMedia({ userID, lastestID, limit = 20, filter = {}, select = {}, ctx }){
+    getListMedia({ userID, lastestID, limit = 20, ctx }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -505,13 +417,13 @@ class Model extends BaseModel {
 				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
 				};
 
 				//=======================VALIDATION===========================
-				if(!checkObjectIDs([userID]))
+				if(!checkObjectIDs(userID))
 					return resolve({ error: true, message: 'Request param userID invalid', status: 400 });
-				if(lastestID && !checkObjectIDs([lastestID]))
+
+				if(lastestID && !checkObjectIDs(lastestID))
 					return resolve({ error: true, message: 'Request param lastestID invalid', status: 400 });
 
 				let infoUser = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
@@ -527,7 +439,7 @@ class Model extends BaseModel {
 						},
 						{
 							tagFriends: { // Được tag vào bài biết ✅ 
-								$in : userID
+								$in: [userID]
 							}
 						},
 						{
@@ -537,24 +449,16 @@ class Model extends BaseModel {
 						{
 							type: 2, 
 							author: { // Bạn bè trong công ty ✅
-								$in: [infoUser?.data?.friends]
+								$in: infoUser?.data?.friends
 							},
 							company: infoUser?.data?.company
 						},
 						{
 							type: 3, 
 							author: { // Tất cả bạn bè ✅
-								$in: [infoUser?.data?.friends]
+								$in: infoUser?.data?.friends
 							}
-						},
-						// {
-						// 	type: 4, // Bài viết cho group
-						// 	group: userID
-						// },
-						// {
-						// 	type: 5,  // Bài viết cho doanh nghiệp ✅
-						// 	company: infoUser.company
-						// },
+						}
 					]
 				}
 
@@ -564,8 +468,8 @@ class Model extends BaseModel {
 					sortBy,
 					lastestID,
 				});
-				return resolve(listAfterFind);
 
+				return resolve(listAfterFind);
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -576,9 +480,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: XÓA BÀI VIẾT	
 	 */
-	remove({ 
-		mediaID
-	}) {
+	remove({ mediaID }) {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(mediaID))
@@ -587,8 +489,9 @@ class Model extends BaseModel {
 				let infoMediaAfterDelete = await MEDIA_COLL.findByIdAndUpdate(mediaID, { status: 2 }, { new: true });
 
 				if (!infoMediaAfterDelete) {
-                    return resolve({ error: true, message: "Can't delete media", status: 400 });
+                    return resolve({ error: true, message: "Can't delete media", status: 422 });
 				}
+
 				return resolve({ 
 					error: false,
 					status: 200,
@@ -605,7 +508,6 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: ĐÓNG GÓI RENDER BÀI VIẾT	
 	 */
-
 	getListWithCondition({ conditionObj, limit, sortBy, lastestID }) {
 		return new Promise(async resolve => {
             try { 
@@ -678,7 +580,6 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-			
 				let listMediaAfterSet = [];
 				let nextCursor	= null;
 				if (listMedia && listMedia.length) {
@@ -687,6 +588,7 @@ class Model extends BaseModel {
 						listMedia.length = limit;
 					}
 				}
+
 				if (listMedia && listMedia.length) {
 					for (let media of listMedia) {
 						let countUserWatched = await MEDIA_SEEN_COLL.count({
@@ -751,7 +653,7 @@ class Model extends BaseModel {
 								idxCommentChild ++;
 							}
 
-							let infoCommentFile 	= await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
+							let infoCommentFile = await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
 								.select('_id')
 								.populate({
 									path: 'file',
@@ -765,7 +667,7 @@ class Model extends BaseModel {
 								files: infoCommentFile,
 								listCommnetChild,
 							}
-							idxComment ++;
+							idxComment++;
 						}
 						// for(const comment of listComment) {
 
@@ -791,15 +693,15 @@ class Model extends BaseModel {
 						]
 					}
 				}
-				
+
 				// GET TOTAL RECORD
-				let totalRecord = await MEDIA_COLL.countDocuments({...conditionObj});
+				let totalRecord = await MEDIA_COLL.countDocuments(conditionObj);
 
 				return resolve({ 
 					error: false,
 					status: 200,
 					data: { 
-						listRecords: listMediaAfterSet, 
+						listRecords: listMedia, 
 						limit: +limit,
 						totalRecord,
 						nextCursor
@@ -811,11 +713,11 @@ class Model extends BaseModel {
         })
 	}
 
-	  /**
+	/**
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH CÁC USER ĐÃ XEM BÀI VIẾT
 	 */
-	getListWatchedMedia({ mediaID, lastestID, limit, ctx }) {
+	getListWatchedMedia({ mediaID, lastestID, limit }) {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
@@ -898,7 +800,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT	
 	 */
-	watchedMedia({ userID, mediaID, ctx }) {
+	watchedMedia({ userID, mediaID }) {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
