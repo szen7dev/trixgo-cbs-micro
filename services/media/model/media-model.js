@@ -530,7 +530,8 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(mediaID))
 					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
 
-				let infoMediaAfterDelete = await MEDIA_COLL.findByIdAndUpdate(mediaID, { status: 2 }, { new: true });
+				// let infoMediaAfterDelete = await MEDIA_COLL.findByIdAndUpdate(mediaID, { status: 2 }, { new: true });
+				let infoMediaAfterDelete = await MEDIA_COLL.findByIdAndDelete(mediaID);
 
 				if (!infoMediaAfterDelete) {
                     return resolve({ error: true, message: "Can't delete media", status: 422 });
