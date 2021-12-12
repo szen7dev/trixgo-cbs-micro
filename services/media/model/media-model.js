@@ -547,6 +547,67 @@ class Model extends BaseModel {
         })
     }
 
+	/**
+	 * Dev: NPNguyen 🐸
+	 * Func: XÓA BÀI VIẾT	
+	 */
+	getInfo({ mediaID }) {
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(mediaID))
+					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
+
+				let infoMedia = await MEDIA_COLL
+					.findById(mediaID)
+					.populate({
+						path: 'author',
+						select: 'fullname company image',
+						populate: { 
+							path: 'company', 
+							select: 'name'
+						}
+					})
+					.populate({
+						path: 'files',
+						select: 'file',
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
+					})
+					.populate({
+						path: 'images',
+						select: 'file',
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
+					})
+					.populate({
+						path: 'background',
+						select: 'file',
+						populate: {
+							path: 'file',
+							select: 'url'
+						}
+					})
+					.lean();
+
+				if (!infoMedia) {
+                    return resolve({ error: true, message: "Can't get info media", status: 403 });
+				}
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: infoMedia
+				});
+			} catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
 	/**
 	 * Dev: NPNguyen 🐸

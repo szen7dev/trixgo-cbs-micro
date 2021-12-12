@@ -128,6 +128,30 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: NPNguyen 🐸
+	 * Func: CHI TIẾT BÀI VIẾT	
+	 */
+    getInfoMedia: {
+        params: {
+            mediaID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                let { mediaID } = ctx.params;
+
+                let resultAfterCallHandler = await MEDIA_MODEL.getInfo({ 
+					mediaID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
      /**
 	 * Dev: NPNguyen 🐸
 	 * Func: ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT	

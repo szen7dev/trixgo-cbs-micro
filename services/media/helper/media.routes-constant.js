@@ -6,6 +6,7 @@ const CF_ROUTINGS_MEDIA = {
 	// ======================== ROUTE - API ===============================
     
     MAIN_MEDIA                  		        : `${BASE_ROUTE}`,
+    INFO_MEDIA                  		        : `${BASE_ROUTE}/:mediaID`,
     SAVE_MEDIA                  		        : `${BASE_ROUTE}/save`,
     PIN_MEDIA                  		            : `${BASE_ROUTE}/pin`,
     WATCHED_MEDIA                  		        : `${BASE_ROUTE}/watched`,
