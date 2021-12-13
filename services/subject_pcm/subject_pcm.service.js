@@ -4,14 +4,16 @@ const CacheCleaner                	    = require("../../tools/mixins/cache.clean
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_SUBJECT_PCM } 	    = require('./helper/subject_pcm.actions-constant');
 
-const SUBJECT__PCM_PLAN_REPORT_HANDLER  	 = require('./handler/subject_pcm.pcm_plan_report');
-const SUBJECT__USER_PCM_PLAN_REPORT_HANDLER  = require('./handler/subject_pcm.user_pcm_plan_report');
-const PCM__PCM_PLAN_TASK_HANDLER  			 = require('./handler/subject_pcm.pcm_plan_task');
-const PCM__PCM_PLAN_GROUP_HANDLER  			 = require('./handler/subject_pcm.pcm_plan_group');
+const SUBJECT_PCM__PCM_PLAN_REPORT_HANDLER  	 		= require('./handler/subject_pcm.pcm_plan_report');
+const SUBJECT_PCM__USER_PCM_PLAN_REPORT_HANDLER  		= require('./handler/subject_pcm.user_pcm_plan_report');
+const SUBJECT_PCM__PCM_PLAN_TASK_HANDLER  			 	= require('./handler/subject_pcm.pcm_plan_task');
+const SUBJECT_PCM__PCM_PLAN_GROUP_HANDLER  			 	= require('./handler/subject_pcm.pcm_plan_group');
+const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER  		= require('./handler/subject_pcm.pcm_plan_task_comment');
 
-const SUBJECT__PCM_PLAN_REPORT_COLL		= require('./database/subject_pcm.pcm_plan_report-coll');
-const SUBJECT__PCM_PLAN_TASK_COLL		= require('./database/subject_pcm.pcm_plan_task-coll');
-const SUBJECT__PCM_PLAN_GROUP_COLL		= require('./database/subject_pcm.pcm_plan_group-coll');
+const SUBJECT__PCM_PLAN_REPORT_COLL			= require('./database/subject_pcm.pcm_plan_report-coll');
+const SUBJECT__PCM_PLAN_TASK_COLL			= require('./database/subject_pcm.pcm_plan_task-coll');
+const SUBJECT__PCM_PLAN_GROUP_COLL			= require('./database/subject_pcm.pcm_plan_group-coll');
+const SUBJECT__PCM_PLAN_TASK_COMMENT_COLL	= require('./database/subject_pcm.pcm_plan_task_comment-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
@@ -20,6 +22,7 @@ module.exports = {
 		DbService(SUBJECT__PCM_PLAN_REPORT_COLL),  
 		DbService(SUBJECT__PCM_PLAN_TASK_COLL),  
 		DbService(SUBJECT__PCM_PLAN_GROUP_COLL),  
+		DbService(SUBJECT__PCM_PLAN_TASK_COMMENT_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.SUBJECT_PCM])
     ],
 
@@ -40,25 +43,30 @@ module.exports = {
 	*/
 	actions: {
 		//==========================================  SUBJECT REPORT ACTIONS   ================================
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_INSERT]   				: SUBJECT__PCM_PLAN_REPORT_HANDLER.insert,
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_UPDATE]   				: SUBJECT__PCM_PLAN_REPORT_HANDLER.update,
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_REMOVE]   				: SUBJECT__PCM_PLAN_REPORT_HANDLER.remove,
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST]	: SUBJECT__PCM_PLAN_REPORT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_INSERT]   				: SUBJECT_PCM__PCM_PLAN_REPORT_HANDLER.insert,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_UPDATE]   				: SUBJECT_PCM__PCM_PLAN_REPORT_HANDLER.update,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_REMOVE]   				: SUBJECT_PCM__PCM_PLAN_REPORT_HANDLER.remove,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST]	: SUBJECT_PCM__PCM_PLAN_REPORT_HANDLER.getInfoAndGetList,
 	
 		//========================================== USER SUBJECT REPORT ACTIONS   ================================
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_INSERT]   			: SUBJECT__USER_PCM_PLAN_REPORT_HANDLER.insert,
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_UPDATE]   			: SUBJECT__USER_PCM_PLAN_REPORT_HANDLER.update,
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_REMOVE]   			: SUBJECT__USER_PCM_PLAN_REPORT_HANDLER.remove,
-		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST]: SUBJECT__USER_PCM_PLAN_REPORT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_INSERT]   			: SUBJECT_PCM__USER_PCM_PLAN_REPORT_HANDLER.insert,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_UPDATE]   			: SUBJECT_PCM__USER_PCM_PLAN_REPORT_HANDLER.update,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_REMOVE]   			: SUBJECT_PCM__USER_PCM_PLAN_REPORT_HANDLER.remove,
+		[CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST]: SUBJECT_PCM__USER_PCM_PLAN_REPORT_HANDLER.getInfoAndGetList,
 
 		//========================================== PCM_PLAN_TASK   ================================
-		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_INSERT]							: PCM__PCM_PLAN_TASK_HANDLER.insert,
-		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_UPDATE]							: PCM__PCM_PLAN_TASK_HANDLER.update,
-		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST]			: PCM__PCM_PLAN_TASK_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_INSERT]							: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.insert,
+		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_UPDATE]							: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.update,
+		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST]			: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.getInfoAndGetList,
 
 		//========================================== PCM_PLAN_GROUP   ================================
-		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST]			: PCM__PCM_PLAN_GROUP_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST]			: SUBJECT_PCM__PCM_PLAN_GROUP_HANDLER.getInfoAndGetList,
 
+		//========================================== PCM_PLAN_TASK_COMMENT   ================================
+		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT]				: SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER.insert,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_UPDATE]				: SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER.update,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_REMOVE]				: SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER.remove,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_GET_INFO_AND_GET_LIST]: SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER.getInfoAndGetList,
 	},
 	
 	/**

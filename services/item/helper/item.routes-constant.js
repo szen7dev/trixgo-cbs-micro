@@ -9,10 +9,10 @@ const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================DEPARTMENT=======================================//
-    DEPARTMENT_GET_LIST                                : `${BASE_ROUTE}${DEPARTMENT}`,
+    DEPARTMENTS                                : `${BASE_ROUTE}${DEPARTMENT}`,
 
     // ================================CONTRACT=======================================//
-    CONTRACT_GET_LIST                                  : `${BASE_ROUTE}${CONTRACT}`,
+    CONTRACT_GET_LIST                          : `${BASE_ROUTE}${CONTRACT}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

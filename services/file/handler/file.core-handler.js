@@ -17,7 +17,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				// const { _id: userID } = ctx.meta.infoUser;
                 let { app, name, url, size, userID } = ctx.params;
-
+                
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {
@@ -79,7 +79,7 @@ module.exports = {
             }
         }
     },
-
+    
     generateLinkS3: {
         params: {
             type : { type: "string" },
@@ -105,6 +105,7 @@ module.exports = {
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
                  */
+
                 let infoFileAfterInsert = null;
                 if(app && !infoGenerateLink.error){
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
@@ -116,7 +117,7 @@ module.exports = {
                         userID
                     });
                 }
-
+                
                 return {
                     error: false,
                     status: 200,

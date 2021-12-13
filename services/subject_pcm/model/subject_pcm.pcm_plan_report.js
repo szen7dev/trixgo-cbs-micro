@@ -274,14 +274,8 @@ class Model extends BaseModel {
                 .lean();
                 if(!infoData)
                     return resolve({ error: true, message: "Can't get info subject", status: 403 });
-                let { type, conditionPin } = infoData;
 
-                let listDataPin = [];
-                if(type == 2 && conditionPin ){
-                    listDataPin = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({ ...conditionPin, filter, populates, populates1, populates2, populates3 });
-                }
-
-                return resolve({ error: false, data: { infoData, listDataPin }, status: 200 });
+                return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

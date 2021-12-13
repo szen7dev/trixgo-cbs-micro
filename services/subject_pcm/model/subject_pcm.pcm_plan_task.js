@@ -18,7 +18,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL       = require('../database/subject_pcm.pcm_plan_task-coll');
 const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
 const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
-const { template } = require('lodash');
+const { template }                          = require('lodash');
 
 /**
  * import inter-model, exter-model
@@ -157,11 +157,10 @@ class Model extends BaseModel {
                     dataInsert.contract = contractID;
                 }else{
                     // Lấy theo group
-                    if(infoGroup.contract){
+                    if(infoGroup && infoGroup.contract){
                         dataInsert.contract = infoGroup.contract
                     }
                 }
-
                 //_________B2.4 Kiểm tra có contractID có hay không (nếu tạo từ văn bản)
                 if(documentID && ObjectID.isValid(documentID)){
                     dataInsert.document = documentID;
@@ -187,7 +186,7 @@ class Model extends BaseModel {
                 }
 
                 //_________Phân loại khác
-                if(infoGroup.property){
+                if(infoGroup && infoGroup.property){
                     dataInsert.field = infoGroup.property;
                 }
 
@@ -423,19 +422,30 @@ class Model extends BaseModel {
         })
     }
 
-     /**
+    /**
      * Name: update pcm_plan_report ✅
      * Author: Depv
      * Code: 
      */
-    update({ taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal }) { 
+    update({ typeUpdate,
+        taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
+        contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+        links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags
+    }){ 
         return new Promise(async (resolve) => {
             try {   
+
+                /**
+                 * KHU VỰC CHECK QUYỀN CẬP NHẬT CÔNG VIỆC
+                 */
+                // Dựa vào trường typeUpdate để cập nhật
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { };
+                let dataAddToset = {};
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -450,112 +460,232 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
+                //_________Mã công việc
                 if(sign){
                     dataUpdate.sign = sign;
                 }
-
+                //_________Tên công việc
                 if(name){
                     dataUpdate.name = name;
                 }
-
+                //_________Mô tả
                 if(description){
                     dataUpdate.description = description;
                 }
-
+                //_________Ghi chú
                 if(note){
                     dataUpdate.note = note;
                 }
-
+                //_________Kế hoạch ban đầu
                 if(startTime){
                     dataUpdate.startTime = startTime;
                 }
-
+                //_________Kế hoạch ban đầu
                 if(expiredTime){
                     dataUpdate.expiredTime = expiredTime;
                 }
-
+                //_________Dự kiến thời lượng (h)
                 if(amountoftime){
                     dataUpdate.amountoftime = amountoftime;
                 }
-
+                //_________Đơn giá cho 1 giờ làm
                 if(amountPerHour){
                     dataUpdate.amountPerHour = amountPerHour;
                 }
 
-                if(checkObjectIDs(assignee)){
-                    dataUpdate.assignee = assignee;
+                //_________người thực hiện
+                if(checkObjectIDs(assigneeID)){
+                    dataUpdate.assignee = assigneeID;
                 }
 
-                if(checkObjectIDs(userUpdate)){
-                    dataUpdate.userUpdate = userUpdate;
+                //_________userUpdate
+                if(checkObjectIDs(userID)){
+                    dataUpdate.userUpdate = userID;
                 }
-
+                //_________Phân loại tiến độ
                 if(progressType){
                     dataUpdate.progressType = progressType;
                 }
-
-                if(field){
-                    dataUpdate.field = field;
+                //_________Tính chất
+                if(checkObjectIDs(fieldID)){
+                    dataUpdate.field = fieldID;
+                }
+                
+                //_________Hợp đồng
+                if(checkObjectIDs(contractID)){
+                    dataUpdate.contract = contractID;
                 }
 
-                if(contract){
-                    dataUpdate.contract = contract;
-                }
-
+                //_________Việc nháp
                 if([0, 1].includes(draft)){
                     dataUpdate.draft = draft;
                 }
-                
+
+                //_________Phân loại công việc
                 if(isproposal){
-                    dataUpdate.isproposal = isproposal;
+                    dataUpdate.isproposal = +isproposal;
+                }
+
+                //_________User xóa task
+                if(checkObjectIDs(usersDelete)){
+                    dataAddToset = { ...dataAddToset, usersDelete}
+                }
+
+                //_________Người liên quan
+                if(checkObjectIDs(related)){
+                    dataAddToset = { ...dataAddToset, related }
+                }
+
+                //_________Trạng thái công việc
+                if(status){
+                    dataUpdate.status = status;
+                }
+
+                //_________Số ngày chậm tiến độ
+                if(offtimeReason){
+                    dataUpdate.offtimeReason = offtimeReason;
+                }
+                
+                //_________Giá trị vượt ngân sách
+                if(offbudgetReason){
+                    dataUpdate.offbudgetReason = offbudgetReason;
+                }
+
+                //_________Giá trị vượt ngân sách
+                if(offbudgetReason){
+                    dataUpdate.offbudgetReason = offbudgetReason;
+                }
+
+                //_________Phân loại công việc mẫu/thông thường
+                if(checkObjectIDs(templateID)){
+                    dataUpdate.template = templateID;
+                }
+                //_________Phân loại mức độ quan trọng (cao, bình thường, thấp, siêu cao)
+                if(priority){
+                    dataUpdate.priority = priority;
+                }
+                //_________Khoá/Mở
+                if(lock){
+                    dataUpdate.lock = lock;
+                }
+
+                //_________Ký duyệt xác nhận
+                if(checkObjectIDs(signatures)){
+                    dataAddToset = { ...dataAddToset, signatures }
+                }
+
+                //_________Các việc có liên quan kèm theo
+                if(checkObjectIDs(links)){
+                    dataAddToset = { ...dataAddToset, links }
+                }
+
+                //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
+                if(checkObjectIDs(authorAttachs)){
+                    dataAddToset = { ...dataAddToset, authorAttachs }
+                }
+                
+                //_________File của người thực hiện-cân nhắc bỏ do không linh hoạt phiên bản
+                if(checkObjectIDs(assigneeAttachs)){
+                    dataAddToset = { ...dataAddToset, assigneeAttachs }
+                }
+
+                //_________% hoàn thành (max = 100)
+                if(percentage){
+                    dataUpdate.percentage = percentage;
+                }
+
+                //_________Nhận xét
+                if(judgement){
+                    dataUpdate.judgement = judgement;
+                }
+
+                //_________Tiến độ
+                if(overdue){
+                    dataUpdate.overdue = overdue;
+                }
+
+                //_________Chất lượng
+                if(score){
+                    dataUpdate.score = score;
+                }
+
+                //_________Mức độ cấp bách
+                if(urgent){
+                    dataUpdate.urgent = urgent;
+                }
+
+                //_________Mức độ phức tạp
+                if(difficult){
+                    dataUpdate.difficult = difficult;
+                }
+               
+                //_________Kết thúc thực tế
+                if(finishTime){
+                    dataUpdate.finishTime = finishTime;
+                }
+
+                //_________Giá trị bị phạt
+                if(punish){
+                    dataUpdate.punish = punish;
+                }
+
+               //_________Người phê duyệt
+                if(checkObjectIDs(approver)){
+                    dataUpdate.approver = approver;
+                }
+
+                //_________Thời điểm phê duyệt
+                if(timeApproved){
+                    dataUpdate.timeApproved = timeApproved;
+                }
+
+                //_________Giá trị phê duyệt/Giá phê duyệt trúng thầu
+                if(valueApproved){
+                    dataUpdate.valueApproved = valueApproved;
+                }
+
+                //_________Giá dự thầu
+                if(bidPrice){
+                    dataUpdate.bidPrice = bidPrice;
+                }
+
+                //_________Giảm giá dự thầu
+                if(bidPriceDiscount){
+                    dataUpdate.bidPriceDiscount = bidPriceDiscount;
+                }
+
+                //_________Giá dự thầu thừa/thiếu
+                if(bidPriceAdjustment){
+                    dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
+                }
+
+                //_________User đồng ý mở thầu
+                if(checkObjectIDs(openedUsers)){
+                    dataAddToset = { ...dataAddToset, openedUsers }
+                }
+
+                //_________Hồ sơ thầu đã được mở hay chưa (0/1)
+                if(checkObjectIDs(openedStatus)){
+                    dataUpdate.openedStatus = openedStatus
+                }
+
+                //_________Những user đánh dấu quan tâm/start/bookmark
+                if(checkObjectIDs(flags)){
+                    dataAddToset = { ...dataAddToset, flags }
+                }
+
+                //_________Trường hợp cập nhật nhiều dữ liệu addToSet cùng 1 lúc
+                if(dataAddToset){
+                    dataUpdate.$addToSet = dataAddToset;
                 }
 
                 let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
-
+                
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-     /**
-     * Name: insert user_pcm_plan_report ✅
-     * Author: Depv
-     * Code: 
-     */
-    remove({ taskID }) { 
-        return new Promise(async (resolve) => {
-            try {   
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(taskID))
-                    return resolve({ error: true, message: 'taskID_invalid', status: 400 });
-                
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-
-                let infoAterRemove = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndDelete(taskID);
-
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "Can't_remove_task", status: 403 });
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
+            } catch (error) { 
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -569,6 +699,7 @@ class Model extends BaseModel {
     getInfo({ taskID, userID, select, populates, populates1, populates2, populates3 }){
         return new Promise(async resolve => {
             try {
+                console.log({ taskID, userID, select, populates, populates1, populates2, populates3 });
                 if (!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'param_invalid' });
                 // populates
@@ -656,8 +787,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ keyword, limit = 10, lastestID, userID, projectID, assigneeID, authorID, status, draft, type, typeStatus, filter = {}, select = {}, populates= {}, populates1={},
-         populates2={}, populates3={}, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask }) { 
+    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID,
+        keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -665,7 +796,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = { 
                     // state: 1,
-                    usersDelete: {$nin: [userID]} 
+                    usersDelete: { $nin: [userID] } 
                 };
 
                 let conditionFind = { };
@@ -821,13 +952,16 @@ class Model extends BaseModel {
                 if(type == 2){
                     conditionObj.author = userID;
                 }
+
                 if(type == 3){
                     conditionObj.flags = { $in: [userID]};
                 }
+
                 if(type == 4){
                     conditionObj.author = userID;
                     conditionObj.draft = 1;
                 }
+
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
                 }
@@ -904,10 +1038,10 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
+                
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
-                    .sort(sortBy)     
+                    .sort(sortBy)
                     .populate({
                         path: populates?.value || "",
                         select: populates?.select || "",
@@ -933,7 +1067,6 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-
                 // Gán dữ liệu typeStatus
                 let listTask = [];
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -984,15 +1117,20 @@ class Model extends BaseModel {
                                 }
                             }
 
-                            listTask = [...listTask, taskNewTemp];
                         }
 
                         // KIỂM TRA SỐ LƯỢNG CHECKLIST ĐÃ HOÀN THÀNH
-                        // let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2 })
-                        // console.log({ amountChecklist });
+                        let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2 });
+                        let amountChecklistDone = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2, status: 3 });
+                        let checklist = `${amountChecklistDone}/${amountChecklist}`
+                        taskNewTemp = {
+                            ...taskNewTemp, 
+                            checklist
+                        }
+
+                        listTask = [...listTask, taskNewTemp];
                     }
                 }
-                
                 // GET TOTAL RECORD
                 let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionFind);
                 if(!infoDataAfterGet)

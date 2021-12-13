@@ -1,0 +1,64 @@
+// liệt kê các actions của hệ thống
+const BASE_ACTIONS = 'ACT_AUTH';
+
+/**
+ * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
+ */
+const COMPANY = 'COMPANY',
+      USER     = 'USER', REGISTER_TRIAL = "REGISTER_TRIAL";
+/**
+ * nguyên tắc chuyển đổi từ method trong .handler
+ *  VD: handler(insertFast) -> action(INSERT_FAST)
+ */
+const CF_ACTIONS_AUTH = {
+    /**
+     * USER
+     */
+    REGISTER        					: `${BASE_ACTIONS}_${USER}_REGISTER`,
+    LOGIN           					: `${BASE_ACTIONS}_${USER}_LOGIN`,
+    GET_INFO        					: `${BASE_ACTIONS}_${USER}_GET_INFO`,
+    GET_INFO_BY_ID						: `${BASE_ACTIONS}_${USER}_GET_INFO_BY_ID`,
+    GET_LIST_USER_WITH_CONDITION		: `${BASE_ACTIONS}_${USER}_GET_LIST_USER_WITH_CONDITION`,
+
+    UPDATE_DEVICE_WHEN_LOGIN_MOBILE     : `${BASE_ACTIONS}_${USER}_UPDATE_DEVICE_WHEN_LOGIN_MOBILE`,
+    RESOLVE_TOKEN                       : `${BASE_ACTIONS}_${USER}_RESOLVE_TOKEN`,
+
+    SEARCH_WITH_FIND                    : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FIND`,
+    SEARCH_WITH_FULL_TEXT               : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FULL_TEXT`,
+    UPDATE_PASSWORD                     : `${BASE_ACTIONS}_${USER}_UPDATE_PASSWORD`,
+    UPDATE_FULLNAME                     : `${BASE_ACTIONS}_${USER}_UPDATE_FULLNAME`,
+    UPDATE_EMAIL                        : `${BASE_ACTIONS}_${USER}_UPDATE_EMAIL`,
+    UPDATE_PHONE                        : `${BASE_ACTIONS}_${USER}_UPDATE_PHONE`,
+    UPDATE_LANGUAGE                     : `${BASE_ACTIONS}_${USER}_UPDATE_LANGUAGE`,
+    UPDATE_BIRTHDAY                     : `${BASE_ACTIONS}_${USER}_UPDATE_BIRTHDAY`,
+    SEND_OPT_RESET_PASSWORD             : `${BASE_ACTIONS}_${USER}_SEND_OPT_RESET_PASSWORD`,
+    CONFIRM_CODE_RESET_PASSWORD         : `${BASE_ACTIONS}_${USER}_CONFIRM_CODE_RESET_PASSWORD`,
+    UPDATE_PASSWORD_AFTER_FORGET        : `${BASE_ACTIONS}_${USER}_UPDATE_PASSWORD_AFTER_FORGET`,
+
+    ADD_FRIEND                          : `${BASE_ACTIONS}_${USER}_ADD_FRIEND`,
+    REMOVE_FRIEND                       : `${BASE_ACTIONS}_${USER}_REMOVE_FRIEND`,
+    GET_LIST_FRIEND                     : `${BASE_ACTIONS}_${USER}_GET_LIST_FRIEND`,
+    GET_LIST_USER                       : `${BASE_ACTIONS}_${USER}_GET_LIST_USER`,
+    GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH: `${BASE_ACTIONS}_${USER}_GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH`,
+
+	/**
+	 * CHATTING
+	 */
+    UPDATE_PIN_CONVERSATION            	: `${BASE_ACTIONS}_${USER}_UPDATE_PIN_CONVERSATION`,
+    GET_LIST_PIN_CONVERSATION          	: `${BASE_ACTIONS}_${USER}_GET_LIST_PIN_CONVERSATION`,
+
+    /**
+	 * COMPANY
+	 */
+    GET_INFO_OR_GET_LIST_COMPANY        : `${BASE_ACTIONS}_${COMPANY}_GET_INFO_OR_GET_LIST_COMPANY`,
+    
+    /**
+	 * REGISTER TRIAL
+	 */
+    REGISTER_TRIAL_INSERT               : `${BASE_ACTIONS}_${REGISTER_TRIAL}_INSERT`,
+    REGISTER_TRIAL_UPDATE               : `${BASE_ACTIONS}_${REGISTER_TRIAL}_UPDATE`,
+    REGISTER_TRIAL_REMOVE               : `${BASE_ACTIONS}_${REGISTER_TRIAL}_REMOVE`,
+    REGISTER_TRIAL_GET_INFO_AND_GET_LIST: `${BASE_ACTIONS}_${REGISTER_TRIAL}_GET_INFO_AND_GET_LIST`,
+}
+
+exports.CF_ACTIONS_AUTH = CF_ACTIONS_AUTH;

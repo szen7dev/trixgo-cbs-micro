@@ -3,8 +3,9 @@ const BASE_ROUTE = '/auth';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
- const COMPANY = '/companies',
-       USER    = '/users';
+ const COMPANY           = '/companies',
+       USER              = '/users',
+       REGISTER_TRIAL    = '/register_trials';
 
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
@@ -32,6 +33,6 @@ const CF_ROUTINGS_AUTH = {
     REMOVE_FRIEND                       : `${BASE_ROUTE}${USER}/remove-friend`,
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
+    // REGISTER_TRIAL                      : `${BASE_ROUTE}${REGISTER_TRIAL}`,
 }
-
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;
