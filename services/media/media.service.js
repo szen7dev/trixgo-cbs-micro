@@ -60,6 +60,9 @@ module.exports = {
 		// ✅	XÓA BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
 
+		// ✅	CHI TIẾT BÀI VIẾT	
+		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
+
 		// ✅	ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.WATCHED_MEDIA] 		            			: MEDIA_HANDLER.watchedMedia,
 

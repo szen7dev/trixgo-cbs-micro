@@ -24,6 +24,14 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
 
     /**
+     * Tiêu đề của bài viết
+     */
+    title: {
+        type: String,
+		default: ''
+    },
+
+    /**
      * Nội dung của bài viết
      */
     content: {
@@ -33,11 +41,11 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
 
    /**
      * Loại bài viết
-     * 1: Bài viết cá nhân (Only me)
-     * 2: Bài viết cho bạn bè trong công ty (Friends in your company)
-     * 3: Bài viết cho tất cả bạn bè (All your friends)
-     * 4: Bài viết cho Group (Group)
-     * 5: Bài viết cho Doanh nghiệp (Group)
+     * 1: Bài viết công ty (Thành viên trong công ty)
+     * 2: Bài viết cá nhân
+     * 3: Dự án, phòng ban
+     * 4: Cộng đồng
+     * 5: Hệ thống
      * ..... Sau bổ sung thêm vài loại bài viết
 	 */
     type: {
