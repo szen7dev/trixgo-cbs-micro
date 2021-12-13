@@ -8,8 +8,8 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("department", {
-      //_________ Công ty  
-      company: {
+    //_________ Công ty  
+    company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
@@ -20,10 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref: "department"
     },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "department"
-    }],
+  
     level: {
         type: Number,
         default: 1
@@ -50,14 +47,12 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     type: { type: Number, default: 1 },
     /**
      * Giai đoạn dự án
-     * https://www.letsbuild.com/blog/6-stages-of-a-project-in-construction
-     * https://designeverest.com/blog/what-are-the-stages-of-a-construction-project/
-     * 1-The concept of a project
-     * 2-Design
-     * 3-Pre-construction stage
-     * 4-Procurement stage
-     * 5-Construction stage
-     * 6-Post-construction stage
+     * 1-Đang phát triển
+     * 2-Lập kế hoạch
+     * 3-Thiết kế
+     * 4-Đấu thầu
+     * 5-Xây dựng
+     * 6-Khác
      */
     stage: { type: Number, default: 1 },
     /**
@@ -111,21 +106,21 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     /**
      * THÔNG TIN CĂN BẢN
      */
-    //_________Hợp đồng
-    contracts: [{
-        type: Schema.Types.ObjectId,
-        ref : "contract"
-    }],
-    //_________Nhóm công việc
-    planGroups: [{
-        type: Schema.Types.ObjectId,
-        ref : "pcm_plan_group"
-    }],
-    //_________Gói văn bản/tài liệu
-    packages: [{
-        type: Schema.Types.ObjectId, 
-        ref : "document_package"
-    }],
+    //_________Hợp đồng (BỎ)
+    // contracts: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref : "contract"
+    // }],
+    //_________Nhóm công việc (BỎ)
+    // planGroups: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref : "pcm_plan_group"
+    // }],
+    //_________Gói văn bản/tài liệu (BỎ)
+    // packages: [{
+    //     type: Schema.Types.ObjectId, 
+    //     ref : "document_package"
+    // }],
     //_________Tên
     name: String,
     //_________Mô tả
@@ -162,13 +157,13 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         ref : 'user'
     },
     //_________Tổng mức đầu tư
-    investmentAmount: {
+    budget: {
         type   : Number,
         default: 0
     },
     //_________Ghi chú
     note: String,
-    //_________Chức vụ của thành viên trong Dự án/phòng ban
+    //_________Chức vụ của thành viên trong Dự án/phòng ban (BỎ)
     position: [{
         user :  {
             type: Schema.Types.ObjectId,
@@ -196,5 +191,375 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    }
+    },
+
+    /**
+     * COLLECTION CÔNG VIỆC VÀ THÔNG TIN
+     */
+    //______Tổng số cột mốc
+    milestones: {
+        type   : Number,
+        default: 0
+    },
+    //______Số mốc đã hoàn thành
+    completedMilestones: {
+        type   : Number,
+        default: 0
+    },
+
+    //______Tổng số công việc
+    tasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc
+    completedTasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Hình ảnh gần đây nhất của dự án
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref : 'file_core'
+    }],
+    //______Bình luận cuối cùng
+    lastComment: {
+        type: Schema.Types.ObjectId,
+        ref : 'comment_core'
+    },
+
+    /**
+     * COLLECTION CHỈ SỐ TÀI CHÍNH
+     */
+    //______Doanh thu
+    revenue: {
+        type: Number,
+        default : 0
+    },
+    
+    //______Dự báo doanh thu tới khi kết thúc
+    forecastRevenue: {
+        type: Number,
+        default : 0
+    },
+    //______Doanh thu thực tế
+    realRevenue: {
+        type: Number,
+        default : 0
+    },
+
+    //______Dự báo ngân sách
+    forecastBudget: {
+        type: Number,
+        default : 0
+    },
+
+    //______Ngân sách thực tế
+    realBudget: {
+        type: Number,
+        default : 0
+    },
+
+    //______Lợi nhuận NPV
+    npv: {
+        type: Number,
+        default : 0
+    }, 
+
+    //______Dự báo Lợi nhuận NPV
+    forecastNpv: { 
+        type: Number,
+        default : 0
+    }, 
+
+    //______Thực tế lợi nhuận
+    realNpv: { 
+        type: Number,
+        default : 0
+    }, 
+
+    //______Lợi nhuận IRR
+    irr: { 
+        type: Number,
+        default : 0
+    }, 
+
+    //______Dự báo lợi nhuận IRR
+    forecastIrr: { 
+        type: Number,
+        default : 0
+    }, 
+
+    //______Thực tế IRR
+    realIrr: { 
+        type: Number,
+        default : 0
+    }, 
+    
+    /**
+     * COLLECTION DÒNG TIỀN CHI
+     */
+    //______Số lượng gói thầu
+    numberOfPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Giá trị gói thầu đã hoàn thành
+    numberOfCompletedPackage: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số lượng hợp đồng mua vào
+    numberOfContractIn: {
+        type: Number,
+        default : 0
+    },
+
+    //______Giá trị ký hợp đồng trước VAT
+    contractValue: {
+        type: Number,
+        default : 0
+    },
+
+    //______Giá trị phát sinh trước VAT
+    contractPlusValue: {
+        type: Number,
+        default : 0
+    },
+
+    //______VAT hợp đồng
+    contractVatValue: {
+        type: Number,
+        default : 0
+    },
+    
+    //______Tạm ứng theo hợp đồng
+    contractAdvancePayment: {
+        type: Number,
+        default : 0
+    },
+
+    //______Sản lượng trước VAT
+    contractProduce: {
+        type: Number,
+        default : 0
+    },
+
+    //______Nghiệm thu phát sinh trước VAT
+    contractPlusAcceptance: {
+        type: Number,
+        default : 0
+    },
+
+    //______VAT
+    contractVatAcceptance: {
+        type: Number,
+        default : 0
+    },
+
+    //______Giá trị giữ lại
+    contractRetainedValue: {
+        type: Number,
+        default : 0
+    },
+
+    //______Thu hồi tạm ứng
+    contractAdvancePaymentDeduction: {
+        type: Number,
+        default : 0
+    },
+
+    //______Khấu trừ khác
+    contractOtherDeduction: {
+        type: Number,
+        default : 0
+    },
+
+    //______Đề nghị tạm ứng/thanh toán
+    contractRecommendedPayment: {
+        type: Number,
+        default : 0
+    },
+
+    //______Đã giải ngân
+    contractAmountPaid: {
+        type: Number,
+        default : 0
+    },
+
+    //______Còn lại chưa giải ngân
+    contractRemainingPayment: {
+        type: Number,
+        default : 0
+    },
+
+    //______Dư ứng
+    contractAdvancePaymentOverage: {
+        type: Number,
+        default : 0
+    },
+
+    /**
+     * COLLECTION DÒNG TIỀN THU
+     */
+    //______Bắt đầu mở bán
+    openTime: {
+        type: Date,
+    },
+
+    //______Kết thúc mở bán
+    closedTime: {
+        type: Date,
+    },
+
+    //______Số đại lý tham gia bán hàng
+    numberOfAgent: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số lượng booking
+    numberOfBooking: {
+        type: Number,
+        default : 0
+    },
+
+    //______Giá trị booking
+    totalBookingValue: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số lượng đặt cọc
+    numberOfDeposit: {
+        type: Number,
+        default : 0
+    },
+
+    //______Giá trị đặt cọc
+    totalDepositValue: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số hợp đồng bán ra
+    numberOfContract: {
+        type: Number,
+        default : 0
+    },
+
+    //______Giá trị hợp đồng bán ra
+    totalContractValue: {
+        type: Number,
+        default : 0
+    },
+
+    //______Công nợ phải thu
+    receivable: {
+        type: Number,
+        default : 0
+    },
+
+    /**
+    * COLLECTION PHÁT TRIỂN THỊ TRƯỜNG
+    */
+
+    //______Ước tính giá trị
+    estimate: {
+        type: Number,
+        default : 0
+    },
+
+    //______Ngày liên hệ gần nhất
+    lastDateContact: {
+        type: Date,
+    },
+
+    //______Đầu mối kết nối
+    transactionContacts: {
+        type: Schema.Types.ObjectId,
+        ref : 'contract'
+    },
+
+    //______Khả năng thành công
+    likelihoodOfSuccess: {
+        type: Date,
+    },
+
+    //______Tiến trình cuối cùng
+    lastChange: {
+        type: Schema.Types.ObjectId,
+        ref : 'comment'
+    },
+    
+
+    /**
+    * THÔNG TIN KHÁC
+    */
+    //______Số danh bạ
+    numberOfContact: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số biên bản họp
+    numberOfMoms: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số hồ sơ văn bản
+    numberOfDocs: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số bản vẽ
+    numberOfDrawings: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số báo cáo
+    numberOfReports: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số hồ sơ thanh toán
+    numberOfIpcs: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số RFI
+    numberOfRfis: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số Submitals
+    numberOfSubmitals: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số Punch list
+    numberOfPunchLists: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số hình ảnh
+    numberOfPhotos: {
+        type: Number,
+        default : 0
+    },
+
+    //______Số hồ sơ chất lượng
+    numberOfInspections: {
+        type: Number,
+        default : 0
+    },
 })

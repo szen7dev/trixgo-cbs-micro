@@ -4,14 +4,17 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc_comment", {
+    //_________templateID
     template: {
         type    :  Schema.Types.ObjectId,
         ref     : 'inspection_template_doc'
     },
+    //_________ID comment core
     comment: {
         type    :  Schema.Types.ObjectId,
         ref     : 'comment_core'
     },
+    //_________ID comment cha
     parent: {
         type    :  Schema.Types.ObjectId,
         ref     : 'inspection_template_doc_comment'

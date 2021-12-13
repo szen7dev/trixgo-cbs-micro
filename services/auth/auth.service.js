@@ -5,9 +5,12 @@ const CacheCleaner                	= require("../../tools/mixins/cache.cleaner.m
 const { CF_DOMAIN_SERVICES } 		= require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 	        = require('./helper/auth.actions-constant');
 const AUTH__USER_HANDLER			= require('./handler/auth.user-handler');
+const AUTH__COMPANY_HANDLER			= require('./handler/auth.company-handler');
+const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-handler');
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__USER_FRIEND_COLL		= require('./database/auth.user_friend-coll');
+const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
 
 module.exports = {
@@ -16,6 +19,7 @@ module.exports = {
 		DbService(AUTH__COMPANY_COLL),
 		DbService(AUTH__USER_COLL),
 		DbService(AUTH__USER_FRIEND_COLL),
+		DbService(AUTH__REGISTER_TRIAL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**
@@ -78,10 +82,23 @@ module.exports = {
 
 		[CF_ACTIONS_AUTH.UPDATE_PIN_CONVERSATION] 					: AUTH__USER_HANDLER.updatePinConversation,
 		[CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION]					: AUTH__USER_HANDLER.getListPinConversation,
+
+		/**
+		 * KHU VỰC DÀNH CHO COMPANY
+		 */
+		[CF_ACTIONS_AUTH.GET_INFO_OR_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
+	
+		/**
+		 * KHU VỰC DÀNH CHO REGISTER_TRIAL
+		 */
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT]						: AUTH__REGISTER_TRIAL_HANDLER.insert,
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE]						: AUTH__REGISTER_TRIAL_HANDLER.update,
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_REMOVE]						: AUTH__REGISTER_TRIAL_HANDLER.remove,
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_GET_INFO_AND_GET_LIST]		: AUTH__REGISTER_TRIAL_HANDLER.getInfoAndGetList,
 	},
 
 	/**
-	 	* Events
+	* Events
 	*/
 	events: {
 	},

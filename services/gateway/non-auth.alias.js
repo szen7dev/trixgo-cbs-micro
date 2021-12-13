@@ -60,6 +60,12 @@ module.exports = {
 		// A00146
 		// [`POST ${CF_ROUTINGS_AUTH.UPDATE_PASSWORD_AFTER_FORGET}`] : 
 		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PASSWORD_AFTER_FORGET}`],
+		
+		// /**
+		//  * KHÁCH HÀNG ĐĂNG KÝ TRẢI NGHIỆM SẢN PHẨM
+		//  */
+		// [`POST ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT}`],
 	},
 	
 	// Disable to call not-mapped actions

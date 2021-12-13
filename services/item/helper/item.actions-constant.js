@@ -17,6 +17,8 @@ const CF_ACTIONS_ITEM = {
     /**
      * DEPARTMENT
     */
+    DEPARTMENT_INSERT                        : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_INSERT`,
+    DEPARTMENT_UPDATE                        : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_UPDATE`,
     DEPARTMENT_GET_LIST                      : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_GET_LIST`,
 }
 

@@ -1,0 +1,3 @@
+Trường hợp comment trong công việc
+Lưu trường files trong comment referent đến fileCore nhưng vẫn tạo bảng phụ để sau này dễ truy vẫn, nhưng chỉ giới hạn 10 đến 20 file trong 1 comment
+

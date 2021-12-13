@@ -26,8 +26,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, fullname, level, companyID, platform }        = ctx.params;
-                console.log({ email, fullname, level, companyID, platform } )
-
                 let infoUser = await AUTH__USER_MODEL.register({ email, fullname, level, companyID, platform });
                 return infoUser;
             } catch (error) {
@@ -310,6 +308,7 @@ module.exports = {
             let { token }        = ctx.params;
 
             let infoUser = await AUTH__USER_MODEL.resolveToken({ token });
+            console.log({ infoUser })
             return infoUser;
         }
     },

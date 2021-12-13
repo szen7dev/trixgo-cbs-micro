@@ -1,4 +1,8 @@
-let AUTH__COMPANY_MODEL                         = require('../model/auth.company-model').MODEL;
+/**
+ * TOOLS
+ */
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+let AUTH__COMPANY_MODEL                         = require('../model/auth.company-model.js').MODEL;
 
 module.exports = {
     insert: {
@@ -9,8 +13,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { status }        = ctx.params;
-
-                let listTransactions = await PAYMENT__TRANSACTION_MODEL.getListTransactions({ status });
+                let listTransactions  = await PAYMENT__TRANSACTION_MODEL.getListTransactions({ status });
                 return listTransactions;
             } catch (error) {
                 return { error: true, message: error.message };
@@ -124,5 +127,53 @@ module.exports = {
             }
         }
     },
+
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Danh sách dự án mà user được quyền truy cập
+	 */
+    getInfoAndGetListCompany: {
+        params: {
+            // Field bổ sung
+            companyID       : { type: "string", optional: true },
+            // Field mặc định
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            filter          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+            populates1      : { type: "string", optional: true },
+            populates2      : { type: "string", optional: true },
+            populates3      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { 
+                    companyID,
+                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3 } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler;
+                if(companyID){
+                    resultAfterCallHandler = await AUTH__COMPANY_MODEL.getInfo({
+                        companyID, select, populates, populates1, populates2, populates3
+                    });
+                }else{
+                    resultAfterCallHandler = await AUTH__COMPANY_MODEL.getList({
+                        companyID, lastestID, userID, type, 
+                        keyword, limit, select, filter, populates, populates1, populates2, populates3
+                    });
+                }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
 
 }

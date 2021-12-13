@@ -73,58 +73,45 @@ module.exports = {
             taskID         : { type: "string" },
             sign           : { type: "string", optional: true },
             name           : { type: "string", optional: true },
+            sign           : { type: "string", optional: true },
+            description    : { type: "string", optional: true },
             startTime      : { type: "string", optional: true },
             expiredTime    : { type: "string", optional: true },
             amountoftime   : { type: "string", optional: true },
             amountPerHour  : { type: "string", optional: true },
-            assignee       : { type: "string", optional: true },
-            userUpdate     : { type: "string", optional: true },
+            assigneeID     : { type: "string", optional: true },
             progressType   : { type: "string", optional: true },
-            field          : { type: "string", optional: true },
-            contract       : { type: "string", optional: true },
+            fieldID        : { type: "string", optional: true },
+            contractID     : { type: "string", optional: true },
             draft          : { type: "number", optional: true },
             isproposal     : { type: "number", optional: true },
+            userIDDelete   : { type: "number", optional: true },
+            typeUpdate    : { type: "number", optional: true },
+            flags         : { type: "array", optional: true },
+            related       : { type: "array", optional: true },
+            
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal } = ctx.params;
+                let { 
+                    typeUpdate,
+                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
+                    contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags
+                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.update({
-                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assignee, userUpdate, progressType, field, contract, draft, isproposal
+                    typeUpdate,
+                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
+                    contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags
                 });
                 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-     /**
-	 * Dev: Depv ✅
-	 * Func: remove pcm_plan_report
-	 */
-    remove: {
-        auth: "required",
-        params: {
-            taskID         : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { taskID } = ctx.params;
-
-				const { _id: userID } = ctx.meta.infoUser;
-                
-                // Bước check quyền
-                // let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.remove({
-                //     reportID: subjectID
-                // });
-
-                // Chờ xử lý collection user_delete_pcm_plan_task-coll
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -173,14 +160,15 @@ module.exports = {
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
+                
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates, populates1, populates2, populates3
-                    });
+                        téaskID, userID, select, populates, populates1, populates2, populatesdes3
+                    });sd
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate,
-                        keyword, limit: Number(limit), lastestID, populates, populates1, populates2, populates3
+                        keyword, limit, lastestID, populates, populates1, populates2, populates3
                     });
                 }
                 

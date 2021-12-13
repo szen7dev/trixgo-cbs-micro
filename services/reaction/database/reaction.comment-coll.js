@@ -12,5 +12,4 @@ module.exports  = DATABASE_MIDDLEWARE("comment_core", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
-    
 })

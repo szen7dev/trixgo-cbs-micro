@@ -24,6 +24,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { type, name, parentID } = ctx.params;
+
                 console.log({ type, name, parentID });
 				const { _id: userID, company: companyID } = ctx.meta.infoUser;
 

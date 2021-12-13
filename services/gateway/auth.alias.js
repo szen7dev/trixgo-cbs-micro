@@ -23,7 +23,6 @@ const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant'
 const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.routes-constant');
 const { CF_ROUTINGS_SUBJECT_PCM }	= require('../subject_pcm/helper/subject_pcm.routes-constant');
 
-
 /**
  * ------import action's Services--------
  */
@@ -100,8 +99,8 @@ module.exports = {
 		/**
 		 * Code: A00112
 		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_PHONE}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PHONE}`],
+		// [`POST ${CF_ROUTINGS_AUTH.UPDATE_PHONE}`] :
+		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PHONE}`],
 
 		/**
 		 * Code: A00113
@@ -127,6 +126,19 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_USER}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER}`],
 
+
+		/**
+		 * KHÁCH HÀNG ĐĂNG KÝ DÙNG THỬ
+		 */
+
+		// [`PUT ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE}`],
+
+		// [`DELETE ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_REMOVE}`],
+		
+		// [`GET ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_GET_INFO_AND_GET_LIST}`],
 
 		//--------------------------aliases's CHATTING service--------------------------//
 		[`POST ${CF_ROUTINGS_CHATTING.INSERT_CONVERSATION}`] :
@@ -409,9 +421,6 @@ module.exports = {
 		//---------------------------S021 END SERVICE INSPECTION. DOC REACTION---------------------------//
 
 
-
-
-
 		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC CHECKLIST 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_CHECKLIST}`] : 
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_CHECKLIST_LIST}`],
@@ -421,15 +430,16 @@ module.exports = {
 		//------------------------------ S021 END SERVICE INSPECTION. DOC CHECKLIST---------------------------//
 
 
-
-
-
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
-		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENT_GET_LIST}`] :
+		[`POST ${CF_ROUTINGS_ITEM.DEPARTMENTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_ITEM.DEPARTMENTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`],
+
+		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`],
 		//------------------------------END SEARVICE ITEM---------------------------//
-
-
 
 
 
@@ -630,7 +640,7 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.SUBJECT__USER_PCM_PLAN_REPORT_GET_INFO_AND_GET_LIST}`],
 
 
-		//----------------------------pcm_plan_task
+		//----------------------------pcm_plan_tasks
 		[`POST ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_INSERT}`],
 
@@ -642,10 +652,14 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`],
 
-		//----------------------------pcm_plan_group
+		//----------------------------pcm_plan_groups
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_GROUP}`] :
-		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST}`],
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST}`],
 
+
+		//----------------------------pcm_plan_task_comments
+		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT_PCM__PCM_PLAN_TASK_COMMENT}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`],
 
 		//---------------------------🏁 END S014.SUBJECT AND PCM 🏁---------------------------//
 
