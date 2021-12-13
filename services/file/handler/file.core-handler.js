@@ -85,11 +85,14 @@ module.exports = {
             type : { type: "string" },
             name : { type: "string" },
             app  : { type: "string", optional: true },
-            size : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 let { _id: userID } = ctx.meta.infoUser;
+
+                console.log({
+                    PARAMS: ctx.params
+                })
 
                 await this.validateEntity(ctx.params);
                 let { type, app, name, size } = ctx.params;
@@ -108,6 +111,7 @@ module.exports = {
                         app,
                         name: fileName,
                         url: `${process.env.AWS_BUCKET_URL}/${fileName}`,
+                        type,
                         size,
                         userID
                     });

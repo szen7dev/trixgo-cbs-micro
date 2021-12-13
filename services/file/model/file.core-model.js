@@ -1,5 +1,4 @@
 "use strict";
-const ObjectID                                  = require('mongoose').Types.ObjectId;
 
 const FILE__CORE_COLL                           = require('../database/file.core-coll');
 
@@ -12,7 +11,7 @@ const {
 
 class Model extends BaseModel {
     constructor() {
-        super(require('../database/file.core-coll'));
+        super(FILE__CORE_COLL);
     }
     /**
      * 1/ insert (processing)
@@ -30,7 +29,7 @@ class Model extends BaseModel {
      *   lưu ý:
      *      app: là các name constant
      * */
-    insert({ app, name, url, size, userID }) {
+    insert({ app, name, url, size, type, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -51,7 +50,7 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let infoAfterInsert = await this.insertData({ app, name, url, size, userCreate: userID });
+                let infoAfterInsert = await this.insertData({ app, name, url, size, type, userCreate: userID });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

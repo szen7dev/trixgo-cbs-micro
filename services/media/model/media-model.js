@@ -124,20 +124,12 @@ class Model extends BaseModel {
 				let mediaID = infoMediaAfterInserted._id;
 
 				if (background) {
-					let infoBackgroundMedia = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-						app: CF_DOMAIN_SERVICES.MEDIA,
-						name: background.name,
-						url: background.url,
-						size: background.size,
-						userID: authorID,
-					});
-
-					if(infoBackgroundMedia.error)
+					if(!checkObjectIDs(background))
 						return resolve({ error: true, message: 'Request background media failed', status: 403 });
 
 					let infoBackgroundAfterInserted = await MEDIA_FILE_COLL.create({
 						media: mediaID,
-						file: infoBackgroundMedia.data._id,
+						file: background,
 						createAt: new Date(),
 						modifyAt: new Date(),
 					});
@@ -145,35 +137,12 @@ class Model extends BaseModel {
 					conditionObjUpdate.background = infoBackgroundAfterInserted._id;
 				}
 
-				if (files && files.length) {
-					// GỌI SERVICE FILE
-					let listFileInserted = files.map( item => {
-						return ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-							app: CF_DOMAIN_SERVICES.MEDIA,
-							name: item.name,
-							url: item.url,
-							size: item.size,
-							userID: authorID,
-						});
-					});
-					let resultOfListFileAfterInserted = await Promise.all(listFileInserted);
-
-					let listFileID = [];
-					// KIỂM TRA GỌI SERVICE LỖI
-					resultOfListFileAfterInserted.map(item => {
-						if (!item.error) {
-							listFileID = [
-								...listFileID,
-								item?.data?._id
-							]
-						}
-					});
-
+				if (files && files.length && checkObjectIDs(files)) {
 					// LƯU VỀ COLL MEDIA_FILE_COLL
-					let listFileMedia = listFileID.map(item => {
+					let listFileMedia = files.map(fileID => {
 						return MEDIA_FILE_COLL.create({
 							media: mediaID,
-							file: item._id,
+							file: fileID,
 							createAt: new Date(),
 							modifyAt: new Date(),
 						});
@@ -184,34 +153,11 @@ class Model extends BaseModel {
 				}
 
 				if (images && images.length) {
-					let listImageInserted = images.map( item => {
-						return ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-							app: CF_DOMAIN_SERVICES.MEDIA,
-							name: item.name,
-							url: item.url,
-							size: item.size,
-							userID: authorID,
-						});
-					});
-
-					let resultOfListImageAfterInserted = await Promise.all(listImageInserted);
-
-					let listImageID = [];
-					// KIỂM TRA GỌI SERVICE LỖI
-					resultOfListImageAfterInserted.map(item => {
-						if (!item.error) {
-							listImageID = [
-								...listImageID,
-								item?.data?._id
-							]
-						}
-					});
-
 					// LƯU VỀ COLL MEDIA_FILE_COLL
-					let listFileMedia = listImageID.map(item => {
+					let listFileMedia = images.map(imageID => {
 						return MEDIA_FILE_COLL.create({
 							media: mediaID,
-							file: item._id,
+							file: imageID,
 							createAt: new Date(),
 							modifyAt: new Date(),
 						});
@@ -573,7 +519,7 @@ class Model extends BaseModel {
 						select: 'file',
 						populate: {
 							path: 'file',
-							select: 'url'
+							select: '_id name size type url'
 						}
 					})
 					.populate({
@@ -581,7 +527,7 @@ class Model extends BaseModel {
 						select: 'file',
 						populate: {
 							path: 'file',
-							select: 'url'
+							select: '_id name size type url'
 						}
 					})
 					.populate({
