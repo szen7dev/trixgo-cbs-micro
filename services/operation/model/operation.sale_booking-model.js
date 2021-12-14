@@ -5,15 +5,16 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 
-/**s
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+/**
  * import inter-coll, exter-coll
  */
-const AUTH__REGISTER_TRIAL_COLL             = require('../database/operation.sale_booking-coll');
+const OPERATION__SALE_BOOKING_COLL          = require('../database/operation.sale_booking-coll');
 const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
@@ -21,62 +22,68 @@ const { template }                          = require('lodash');
  * import inter-model, exter-model
  */
 class Model extends BaseModel {               
-
     constructor() {
-        super(AUTH__REGISTER_TRIAL_COLL);
+        super(OPERATION__SALE_BOOKING_COLL);
     }
-
+    
     /**
-     * Name: insert register trial ✅
+     * Name: insert sale booking ✅
      * Author: Depv
      * Code: 
      */
-    insert({ fullname, organization, type , email, phone, note }) { 
+    insert({ projectID, name, note, departmentID, contractID, date, bookingValue, depositValue, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { };
+                let dataInsert = { userCreate: userID };
                 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!fullname)
-                    return resolve({ error: true, message: 'Request params fullname invalid', status: 400 });
 
-                if(!organization)
-                    return resolve({ error: true, message: 'Request params organization invalid', status: 400 });
-
-                if(!type)
-                    return resolve({ error: true, message: 'Request params type invalid', status: 400 });
-
-                if(!email)
-                    return resolve({ error: true, message: 'Request params email invalid', status: 400 });
-
-                if(!phone)
-                    return resolve({ error: true, message: 'Request params email invalid', status: 400 });
-                
-                let checkExist = await AUTH__REGISTER_TRIAL_COLL.findOne({
-                    $or: [
-                        { email }, 
-                        { phone }
-                    ]
-                });
-                if(checkExist)
-                    return resolve({ error: true, message: 'phone_or_email_existed', status: 400 });
-
-                dataInsert = { fullname, organization, type, email, phone, note }
+                dataInsert = { name, date , project: projectID, bookingValue };
                     
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
+
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
+
+                if(!infoProject || infoProject.error)
+					return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
                 
+                let { company } = infoProject.data;
+                dataInsert.company = company;
+                dataInsert.sign    = sign;
+                if(note){
+                    dataInsert.note    = note;
+                }
+
+                if(note){
+                    dataInsert.note    = note;
+                }
+
+                if(checkObjectIDs(departmentID)){
+                    dataInsert.department = departmentID;
+                }
+
+                if(checkObjectIDs(contractID)){
+                    dataInsert.contract = contractID;
+                }
+
+                if(depositValue){
+                    dataInsert.depositValue = depositValue;
+                }
+
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
@@ -89,11 +96,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update register trial ✅
+     * Name: update sale booking ✅
      * Author: Depv
      * Code: 
      */
-    update({ registerTrialID, fullname, organization, type , email, phone, note, userID }) { 
+    update({ saleBookingID,projectID, name, note, departmentID, contractID, date, bookingValue, depositValue, lock, lockTime, userDeposit, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 
@@ -107,50 +114,73 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(registerTrialID))
-                    return resolve({ error: true, message: 'Request params registerTrialID invalid', status: 400 });
-
-                if(fullname){
-                    dataUpdate.fullname = fullname;
+                if(!checkObjectIDs(saleBookingID))
+                    return resolve({ error: true, message: 'Request params saleBookingID invalid', status: 400 });
+                
+                if(name){
+                    dataUpdate.name = name;
                 }
 
-                if(organization){
-                    dataUpdate.organization = organization;
-                }
-
-                if(type){
-                    dataUpdate.type = type;
-                }
-
-                if(email){
-                    dataUpdate.email = email;
-                }
-
-                if(phone){
-                    dataUpdate.phone = phone;
+                if(description){
+                    dataUpdate.description = description;
                 }
 
                 if(note){
                     dataUpdate.note = note;
                 }
-
-                let checkExist = await AUTH__REGISTER_TRIAL_COLL.findOne({
-                    $or: [
-                        { email }, 
-                        { phone }
-                    ],
-                    _id: { $ne: registerTrialID }
-                });
-                if(checkExist)
-                    return resolve({ error: true, message: 'phone_or_email_existed', status: 400 });
-                    
+                
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
+                if(checkObjectIDs(projectID)){
+
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                        departmentID: projectID
+                    })
+
+                    if(!infoProject || infoProject.error)
+                        return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
+
+                    let { company } = infoProject.data;
+                    dataUpdate.company = company;
+                    dataUpdate.project = projectID;
+                }
+
+                if(checkObjectIDs(departmentID)){
+                    dataUpdate.department = departmentID;
+                }
+
+                if(checkObjectIDs(contractID)){
+                    dataUpdate.contract = contractID;
+                }
+
+                if(date){
+                    dataUpdate.date = date;
+                }
+
+                if(bookingValue){
+                    dataUpdate.bookingValue = bookingValue;
+                }
+
+                if(depositValue){
+                    dataUpdate.depositValue = depositValue;
+                }
+
+                if(lock){
+                    dataUpdate.lock = lock;
+                }
+
+                if(lockTime){
+                    dataUpdate.lockTime = lockTime;
+                }
+
+                if(userDeposit){
+                    dataUpdate.userDeposit = userDeposit;
+                }
                 
-                let infoAterUpdate = await AUTH__REGISTER_TRIAL_COLL.findByIdAndUpdate(registerTrialID, dataUpdate, { new: true });
+                let infoAterUpdate = await OPERATION__SALE_BOOKING_COLL.findByIdAndUpdate(saleBookingID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
  
@@ -162,11 +192,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove register trial ✅
+     * Name: Remove sale booking ✅
      * Author: Depv
      * Code: 
      */
-    remove({ registerTrialID }) { 
+    remove({ saleBookingID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -178,15 +208,15 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(registerTrialID))
-                    return resolve({ error: true, message: 'Request params registerTrialID invalid', status: 400 });
+                if(!checkObjectIDs(saleBookingID))
+                    return resolve({ error: true, message: 'Request params saleBookingID invalid', status: 400 });
                     
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterRemove = await AUTH__REGISTER_TRIAL_COLL.findByIdAndDelete(registerTrialID);
+                let infoAterRemove = await OPERATION__SALE_BOOKING_COLL.findByIdAndDelete(saleBookingID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", status: 403 });
  
@@ -198,11 +228,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get register trial ✅
+     * Name: get sale booking ✅
      * Author: Depv
      * Code: 
      */
-    getInfo({ registerTrialID }) { 
+    getInfo({ saleBookingID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -214,15 +244,15 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(registerTrialID))
-                    return resolve({ error: true, message: 'Request params registerTrialID invalid', status: 400 });
+                if(!checkObjectIDs(saleBookingID))
+                    return resolve({ error: true, message: 'Request params saleBookingID invalid', status: 400 });
                     
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterRemove = await AUTH__REGISTER_TRIAL_COLL.findById(registerTrialID);
+                let infoAterRemove = await OPERATION__SALE_BOOKING_COLL.findById(saleBookingID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", status: 403 });
  
@@ -234,11 +264,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách register trial✅
+     * Name  : Danh sách sale booking✅
      * Author: Depv
      * Code  : 
      */
-    getList({ type,
+    getList({ projectID, type, status, sale bookingID, contactID, lock, userDepositID, contractID,
         keyword, limit = 10, lastestID, filter = {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -259,10 +289,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                if(type){
-                    conditionObj.type = type;
-                }
-
                 // LẤY NHỮNG TRƯỜNG CẦN THIẾT
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -277,9 +303,42 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
 
+                if(type){
+                    conditionObj.type = type;
+                }
+
+                if(lock){
+                    conditionObj.lock = lock;
+                }
+
+                if(status){
+                    conditionObj.status = status;
+                }
+
+                if(checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
+                }
+               
+
+                if(checkObjectIDs(sale bookingID)){
+                    conditionObj.sale booking = sale bookingID;
+                }
+
+                if(checkObjectIDs(contactID)){
+                    conditionObj.contact = contactID;
+                }
+
+                if(checkObjectIDs(userDepositID)){
+                    conditionObj.userDeposit = userDepositID;
+                }
+
+                if(checkObjectIDs(contractID)){
+                    conditionObj.contract = contractID;
+                }
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await AUTH__REGISTER_TRIAL_COLL.findById(lastestID);
+					let infoData = await OPERATION__SALE_BOOKING_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -297,20 +356,16 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.$or = [
-                        { fullname : new RegExp(keyword, 'i') },
-                        { phone: new RegExp(keyword, 'i') },
-                        { email: new RegExp(keyword, 'i') },
-                    ];
+                    conditionObj.name = new RegExp(keyword, 'i');
                 }
                 
-                let infoDataAfterGet = await AUTH__REGISTER_TRIAL_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await OPERATION__SALE_BOOKING_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
                     .lean(); 
 
                   // GET TOTAL RECORD
-                let totalCurrentPage = await AUTH__REGISTER_TRIAL_COLL.count(conditionFind);
+                let totalCurrentPage = await OPERATION__SALE_BOOKING_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
                     
@@ -322,7 +377,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await AUTH__REGISTER_TRIAL_COLL.countDocuments(conditionObj);
+                let totalRecord = await OPERATION__SALE_BOOKING_COLL.countDocuments(conditionObj);
                 let totalPage = Math.ceil(totalRecord/limit);
 
                 let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;

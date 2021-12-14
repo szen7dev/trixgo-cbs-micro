@@ -22,6 +22,7 @@ const { CF_ROUTINGS_CONTACT }		= require('../human/helper/human.routes-constant'
 const { CF_ROUTINGS_CMCS } 	    	= require('../cmcs/helper/cmcs.routes-constant');
 const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.routes-constant');
 const { CF_ROUTINGS_SUBJECT_PCM }	= require('../subject_pcm/helper/subject_pcm.routes-constant');
+const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -40,6 +41,7 @@ const { CF_ACTIONS_CONTACT }		= require('../human/helper/human.actions-constant'
 const { CF_ACTIONS_CMCS } 	    	= require('../cmcs/helper/cmcs.actions-constant');
 const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 	= require('../subject_pcm/helper/subject_pcm.actions-constant');
+const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.actions-constant');
 
 
 module.exports = {
@@ -749,10 +751,25 @@ module.exports = {
 
 
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
+		[`POST ${CF_ROUTINGS_DOCUMENT.SHARE_DOCUMENT}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT}`],
 
 
+		//---------------------------🏁 START SERVICE OPERATION 🏁---------------------------//
+		//___________TIỆN ÍCH QUANH TA
+		[`POST ${CF_ROUTINGS_OPERATION.UTILITY}`] :
+		[`${CF_DOMAIN_SERVICES.OPERATION}.${CF_ACTIONS_OPERATION.UTILITY_INSERT}`],
 
+		[`PUT ${CF_ROUTINGS_OPERATION.UTILITY}`] :
+		[`${CF_DOMAIN_SERVICES.OPERATION}.${CF_ACTIONS_OPERATION.UTILITY_UPDATE}`],
 
+		[`DELETE ${CF_ROUTINGS_OPERATION.UTILITY}`] :
+		[`${CF_DOMAIN_SERVICES.OPERATION}.${CF_ACTIONS_OPERATION.UTILITY_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_OPERATION.UTILITY}`] :
+		[`${CF_DOMAIN_SERVICES.OPERATION}.${CF_ACTIONS_OPERATION.UTILITY_GET_INFO_AND_GET_LIST}`],
+
+		//---------------------------🏁 END SERVICE OPERATION 🏁---------------------------//
 
 	},
 
