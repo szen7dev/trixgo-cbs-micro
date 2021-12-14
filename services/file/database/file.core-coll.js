@@ -19,6 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("file_core", {
     },
     url : { type: String, require: true },
     size: { type: Number },
+    type: { type: String },
 
     userCreate: {
         type: Schema.Types.ObjectId,
