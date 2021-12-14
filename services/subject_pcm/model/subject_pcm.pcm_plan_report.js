@@ -121,7 +121,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                dataUpdate = { userCreate: userID, userUpdate: userID, conditionPin };
+                dataUpdate = { userUpdate: userID };
                 
                 if(name){
                     dataUpdate.name = name;
@@ -132,6 +132,7 @@ class Model extends BaseModel {
                 }
 
                 if(conditionPin){
+
                     dataUpdate.conditionPin = conditionPin;
                 }
                 

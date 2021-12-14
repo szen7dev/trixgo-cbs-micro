@@ -1,20 +1,21 @@
 "use strict";
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+                                        = require('../../../tools/utils/utils');
+const stringUtils					    = require('../../../tools/utils/string_utils');
+const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-/**
- * EXTERNAL PACKAGE
- */
-const ObjectID                                  	= require('mongoose').Types.ObjectId;
 
-/**
- * CONSTANTS
- */
-const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+
 
 /**
  * TOOLS
  */
-const BaseModel                                 	= require('../../../tools/db/base_model');
 
 /**
  * COLLECTIONS
@@ -155,109 +156,661 @@ class Model extends BaseModel {
 	 * Func: Tạo hợp đồng
 	 * Date: 13/12/2021
 	 */
-	insert({ outin, field, type, subType, status, packageName, name, sign, storeSign, note, note1, description, buyerInfo, buyerBank, sellerInfo, sellerBank, date, startTime, endTime, packagePrice, value, plus, advancePayment, finalValue, valueNetOrg, valueNet, backupBudget, cgValue, expiredCg, agValue, expiredAg, project, linkCrm, chair, personInCharge, debtStatus, fcuExRate, fcuValue, fcuPlus, fcuAdvancePayment, fcuFinalValue, fcuCgValue, fcuAgValue, fcuPackagePrice, managementFee, subcontractFee, vat, warehouse, company, authorID, parent }) {
-        return new Promise(async resolve => {
+	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
+        name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
+        value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
+        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
+        cgValue, expiredCg, agValue, expiredAg
+         }){
+        return new Promise(async resolve => { 
             try {
-                if(!name || !_isValid(company) || !_isValid(authorID))
-                    return resolve({ error: true, message: 'param_not_valid' });
-				
                 let dataInsert = {
-                    company,
-                    userCreate: authorID,
-                    outin: outin ? Number(outin) : 1, 
-                    type: type ? Number(type) : 1, 
-                    status: status ? Number(status) : 1,
-                    subType: subType ? Number(subType) : 1,
-                    packageName, 
-                    name, 
-                    sign, 
-                    storeSign, 
-                    note, 
-                    buyerBank, 
-                    sellerBank, 
-                    note1,
-                    description, 
-                    date, 
-                    startTime, 
-                    endTime, 
-                    packagePrice: packagePrice ? Number(packagePrice) : 0,
-                    value: value ? Number(value) : 0,
-                    plus: plus ? Number(plus) : 0,
-                    advancePayment: advancePayment ? Number(advancePayment) : 0,
-                    finalValue: finalValue ? Number(finalValue) : 0,
-                    valueNetOrg: valueNetOrg ? Number(valueNetOrg) : 0, 
-                    valueNet: valueNet ? Number(valueNet) : 0, 
-                    backupBudget: backupBudget ? Number(backupBudget) : 0, 
-                    cgValue: cgValue ? Number(cgValue) : 0, 
-                    expiredCg, 
-                    agValue: agValue ? Number(agValue) : 0, 
-                    expiredAg,
-                    fcuExRate: fcuExRate ? fcuExRate : 0, 
-                    fcuValue: fcuValue ? fcuValue : 0, 
-                    fcuPlus: fcuPlus ? fcuPlus : 0, 
-                    fcuAdvancePayment: fcuAdvancePayment ? fcuAdvancePayment : 0, 
-                    fcuFinalValue: fcuFinalValue ? fcuFinalValue : 0, 
-                    fcuCgValue: fcuCgValue ? fcuCgValue : 0, 
-                    fcuAgValue: fcuAgValue ? fcuAgValue : 0, 
-                    fcuPackagePrice: fcuPackagePrice ? fcuPackagePrice : 0, 
-                    managementFee: managementFee ? managementFee : 0, 
-                    subcontractFee: subcontractFee ? subcontractFee : 0, 
-                    vat: vat ? vat : 10, 
+                    project: projectID, name, sign, date
                 }
 
-                if(field && _isValid(field)){
-                    dataInsert.field = field;
-                }   
-                if(project && _isValid(project)){
-                    dataInsert.project = project;
-                }  
-                if(buyerInfo && _isValid(buyerInfo)){
-                    dataInsert.buyerInfo = buyerInfo;
-                }    
-                if(sellerInfo && _isValid(sellerInfo)){
-                    dataInsert.sellerInfo = sellerInfo;
-                }    
-                if(linkCrm && _isValid(linkCrm)){
-                    dataInsert.linkCrm = linkCrm;
-                }     
-                if(chair && _isValid(chair)){
-                    dataInsert.chair = chair;
-                }   
-                if(personInCharge && _isValid(personInCharge)){
-                    dataInsert.personInCharge = personInCharge;
-                }    
-                if(debtStatus && _isValid(debtStatus)){
-                    dataInsert.debtStatus = debtStatus;
-                }    
-                if(warehouse && _isValid(warehouse)){
-                    dataInsert.warehouse = warehouse;
-                }    
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
 
-                if(parent && _isValid(parent)){
-                    dataInsert.parent = parent;
-                    let infoMenuParent = await CONTRACT_COLL.findById(parent);
-                    dataInsert.level = infoMenuParent.level + 1;
+                if(!infoProject.error)
+                    return resolve({ error: true, message: "Request params project invalid" });
+                
+                dataInsert.company = infoProject.data.company;
+
+                // company lấy theo product
+                if(checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                    let infoContractParent = await ITEM__CONTRACT_COLL.findById(parentID);
+                    if(infoContractParent){
+                        dataInsert.level = infoContractParent.level + 1;
+                    }
+                }
+
+                if(checkObjectIDs(admins)){
+                    dataInsert.admins = admins;
+                }
+
+                if(checkObjectIDs(members)){
+                    dataInsert.members = members;
+                }
+
+                if(draft){
+                    dataInsert.draft = draft;
+                }
+
+                if(outin){
+                    dataInsert.outin = outin;
+                }
+
+                if(status){
+                    dataInsert.status = status;
+                }
+
+                if(real){
+                    dataInsert.real = real;
+                }
+
+                if(subType){
+                    dataInsert.subType = subType;
+                }
+
+                if(type){
+                    dataInsert.type = type;
+                }
+
+                if(field){
+                    dataInsert.field = field;
+                }
+
+                if(chairID){
+                    dataInsert.chair = chairID;
+                }
+
+                if(personInChargeID){
+                    dataInsert.personInCharge = personInChargeID;
+                }
+
+                if(debtStatusID){
+                    dataInsert.debtStatus = debtStatusID;
+                }
+
+                if(warehouseID){
+                    dataInsert.warehouse = warehouseID;
+                }
+
+                if(name){
+                    dataInsert.name = name;
+                }
+
+                if(sign){
+                    dataInsert.sign = sign;
+                }
+
+                if(storeSign){
+                    dataInsert.storeSign = storeSign;
+                }
+
+                if(description){
+                    dataInsert.description = description;
+                }
+
+                if(note){
+                    dataInsert.note = note;
+                }
+
+                if(note1){
+                    dataInsert.note1 = note1;
+                }
+
+                if(date){
+                    dataInsert.date = date;
+                }
+
+                if(startTime){
+                    dataInsert.startTime = startTime;
+                }
+
+                if(endTime){
+                    dataInsert.endTime = endTime;
+                }
+
+                if(checkObjectIDs(buyerInfoID)){
+                    dataInsert.buyerInfo = buyerInfoID;
+                }
+
+                if(buyerBank){
+                    dataInsert.buyerBank = buyerBank;
+                }
+
+                if(checkObjectIDs(sellerInfoID)){
+                    dataInsert.sellerInfo = sellerInfoID;
+                }
+                
+                if(buyerBank){
+                    dataInsert.buyerBank = buyerBank;
+                }
+
+                if(sellerBank){
+                    dataInsert.sellerBank = sellerBank;
+                }
+
+                if(packageName){
+                    dataInsert.packageName = packageName;
+                }
+
+                if(lock){
+                    dataInsert.lock = lock;
+                }
+
+                if(value){
+                    dataInsert.value = value;
+                }
+
+                if(plus){
+                    dataInsert.plus = plus;
+                }
+
+                if(vatValue){
+                    dataInsert.vatValue = vatValue;
+                }
+
+                if(advancePayment){
+                    dataInsert.advancePayment = advancePayment;
+                }
+
+                if(produce){
+                    dataInsert.produce = produce;
+                }
+
+                if(plusProduce){
+                    dataInsert.plusProduce = plusProduce;
+                }
+
+                if(vatProduce){
+                    dataInsert.vatProduce = vatProduce;
+                }
+
+                if(acceptance){
+                    dataInsert.acceptance = acceptance;
+                }
+
+                if(plusAcceptance){
+                    dataInsert.plusAcceptance = plusAcceptance;
+                }
+
+                if(vatAcceptance){
+                    dataInsert.vatAcceptance = vatAcceptance;
+                }
+
+                if(retainedValue){
+                    dataInsert.retainedValue = retainedValue;
+                }
+
+                if(advancePaymentDeduction){
+                    dataInsert.advancePaymentDeduction = advancePaymentDeduction;
+                }
+
+                if(otherDeduction){
+                    dataInsert.otherDeduction = otherDeduction;
+                }
+
+                if(recommendedPayment){
+                    dataInsert.recommendedPayment = recommendedPayment;
+                }
+
+                if(advancePaymentPaid){
+                    dataInsert.advancePaymentPaid = advancePaymentPaid;
+                }
+
+                if(amountPaid){
+                    dataInsert.amountPaid = amountPaid;
+                }
+
+                if(remainingPayment){
+                    dataInsert.remainingPayment = remainingPayment;
+                }
+
+                if(advancePaymentOverage){
+                    dataInsert.advancePaymentOverage = advancePaymentOverage;
+                }
+
+                if(finalValue){
+                    dataInsert.finalValue = finalValue;
+                }
+
+                if(budget){
+                    dataInsert.budget = budget;
+                }
+
+                if(budgetVAT){
+                    dataInsert.budgetVAT = budgetVAT;
+                }
+
+                if(forecastBudget){
+                    dataInsert.forecastBudget = forecastBudget;
+                }
+
+                if(forecastBudgetVAT){
+                    dataInsert.forecastBudgetVAT = forecastBudgetVAT;
+                }
+
+                if(managementFee){
+                    dataInsert.managementFee = managementFee;
+                }
+
+                if(subcontractFee){
+                    dataInsert.subcontractFee = subcontractFee;
+                }
+
+                if(expenses){
+                    dataInsert.expenses = expenses;
+                }
+
+                if(profit){
+                    dataInsert.profit = profit;
+                }
+
+                if(cgValue){
+                    dataInsert.cgValue = cgValue;
+                }
+
+                if(expiredCg){
+                    dataInsert.expiredCg = expiredCg;
+                }
+
+                if(agValue){
+                    dataInsert.agValue = agValue;
+                }
+
+                if(expiredAg){
+                    dataInsert.expiredAg = expiredAg;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if(parent) {
-                    await CONTRACT_COLL.findByIdAndUpdate(parent, {
-                            $addToSet: { childs: infoAfterInsert._id } 
-                    }, { new: true });
-                }
-
-                if(project) {
-                    await DEPARTMENT_COLL.findByIdAndUpdate(project, {
-                        $addToSet: { contracts: infoAfterInsert._id } 
-                    }, { new: true });
-                }
-                
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
+
+    /**
+	 * Dev: Depv
+	 * Func: Cập nhật hợp đồng
+	 * Date: 13/12/2021
+	 */
+	update({ contractID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
+        name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
+        value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
+        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
+        cgValue, expiredCg, agValue, expiredAg
+         }){
+        return new Promise(async resolve => { 
+            try {
+                if(checkObjectIDs(contractID))
+                    return resolve({ error: true, message: "Request params contractID invalid" });
+
+                let dataUpdate = {
+                    project: projectID, name, sign, date
+                }
+
+                let dataAddToSet = {};
+                let dataPull     = {};
+
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
+
+                if(!infoProject.error)
+                    return resolve({ error: true, message: "Request params project invalid" });
+                //________company được lấy theo dự án
+                dataUpdate.company = infoProject.data.company;
+                
+                if(checkObjectIDs(parentID)){
+                    dataUpdate.parent = parentID;
+                    let infoContractParent = await ITEM__CONTRACT_COLL.findById(parentID);
+                    if(infoContractParent){
+                        dataUpdate.level = infoContractParent.level + 1;
+                    }
+                }
+
+                if(checkObjectIDs(admins)){
+                    dataAddToSet.admins = admins;
+                }
+
+                if(checkObjectIDs(members)){
+                    dataAddToSet.members = members;
+                }
+
+                if(checkObjectIDs(adminIDRemove)){
+                    dataPull.admins = adminIDRemove;
+                }
+
+                if(checkObjectIDs(memberIDRemove)){
+                    dataPull.members = memberIDRemove;
+                }
+
+                if(draft){
+                    dataUpdate.draft = draft;
+                }
+
+                if(outin){
+                    dataUpdate.outin = outin;
+                }
+
+                if(status){
+                    dataUpdate.status = status;
+                }
+
+                if(real){
+                    dataUpdate.real = real;
+                }
+
+                if(subType){
+                    dataUpdate.subType = subType;
+                }
+
+                if(type){
+                    dataUpdate.type = type;
+                }
+
+                if(field){
+                    dataUpdate.field = field;
+                }
+
+                if(chairID){
+                    dataUpdate.chair = chairID;
+                }
+
+                if(personInChargeID){
+                    dataUpdate.personInCharge = personInChargeID;
+                }
+
+                if(debtStatusID){
+                    dataUpdate.debtStatus = debtStatusID;
+                }
+
+                if(warehouseID){
+                    dataUpdate.warehouse = warehouseID;
+                }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(storeSign){
+                    dataUpdate.storeSign = storeSign;
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
+                }
+
+                if(note1){
+                    dataUpdate.note1 = note1;
+                }
+
+                if(date){
+                    dataUpdate.date = date;
+                }
+
+                if(startTime){
+                    dataUpdate.startTime = startTime;
+                }
+
+                if(endTime){
+                    dataUpdate.endTime = endTime;
+                }
+
+                if(checkObjectIDs(buyerInfoID)){
+                    dataUpdate.buyerInfo = buyerInfoID;
+                }
+
+                if(buyerBank){
+                    dataUpdate.buyerBank = buyerBank;
+                }
+
+                if(checkObjectIDs(sellerInfoID)){
+                    dataUpdate.sellerInfo = sellerInfoID;
+                }
+                
+                if(buyerBank){
+                    dataUpdate.buyerBank = buyerBank;
+                }
+
+                if(sellerBank){
+                    dataUpdate.sellerBank = sellerBank;
+                }
+
+                if(packageName){
+                    dataUpdate.packageName = packageName;
+                }
+
+                if(lock){
+                    dataUpdate.lock = lock;
+                }
+
+                if(value){
+                    dataUpdate.value = value;
+                }
+
+                if(plus){
+                    dataUpdate.plus = plus;
+                }
+
+                if(vatValue){
+                    dataUpdate.vatValue = vatValue;
+                }
+
+                if(advancePayment){
+                    dataUpdate.advancePayment = advancePayment;
+                }
+
+                if(produce){
+                    dataUpdate.produce = produce;
+                }
+
+                if(plusProduce){
+                    dataUpdate.plusProduce = plusProduce;
+                }
+
+                if(vatProduce){
+                    dataUpdate.vatProduce = vatProduce;
+                }
+
+                if(acceptance){
+                    dataUpdate.acceptance = acceptance;
+                }
+
+                if(plusAcceptance){
+                    dataUpdate.plusAcceptance = plusAcceptance;
+                }
+
+                if(vatAcceptance){
+                    dataUpdate.vatAcceptance = vatAcceptance;
+                }
+
+                if(retainedValue){
+                    dataUpdate.retainedValue = retainedValue;
+                }
+
+                if(advancePaymentDeduction){
+                    dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
+                }
+
+                if(otherDeduction){
+                    dataUpdate.otherDeduction = otherDeduction;
+                }
+
+                if(recommendedPayment){
+                    dataUpdate.recommendedPayment = recommendedPayment;
+                }
+
+                if(advancePaymentPaid){
+                    dataUpdate.advancePaymentPaid = advancePaymentPaid;
+                }
+
+                if(amountPaid){
+                    dataUpdate.amountPaid = amountPaid;
+                }
+
+                if(remainingPayment){
+                    dataUpdate.remainingPayment = remainingPayment;
+                }
+
+                if(advancePaymentOverage){
+                    dataUpdate.advancePaymentOverage = advancePaymentOverage;
+                }
+
+                if(finalValue){
+                    dataUpdate.finalValue = finalValue;
+                }
+
+                if(budget){
+                    dataUpdate.budget = budget;
+                }
+
+                if(budgetVAT){
+                    dataUpdate.budgetVAT = budgetVAT;
+                }
+
+                if(forecastBudget){
+                    dataUpdate.forecastBudget = forecastBudget;
+                }
+
+                if(forecastBudgetVAT){
+                    dataUpdate.forecastBudgetVAT = forecastBudgetVAT;
+                }
+
+                if(managementFee){
+                    dataUpdate.managementFee = managementFee;
+                }
+
+                if(subcontractFee){
+                    dataUpdate.subcontractFee = subcontractFee;
+                }
+
+                if(expenses){
+                    dataUpdate.expenses = expenses;
+                }
+
+                if(profit){
+                    dataUpdate.profit = profit;
+                }
+
+                if(cgValue){
+                    dataUpdate.cgValue = cgValue;
+                }
+
+                if(expiredCg){
+                    dataUpdate.expiredCg = expiredCg;
+                }
+
+                if(agValue){
+                    dataUpdate.agValue = agValue;
+                }
+
+                if(expiredAg){
+                    dataUpdate.expiredAg = expiredAg;
+                }
+
+                if(dataAddToSet){
+                    dataUpdate.$addToSet = dataAddToSet;
+                }
+
+                if(dataPull){
+                    dataUpdate.$pull = dataPull;
+                }
+
+                let infoAfterInsert = await this.insertData(dataUpdate);
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+
+      /**
+     * Name: Remove Hợp đồng ✅
+     * Author: Depv
+     * Code: 
+     */
+    remove({ contractID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(contractID))
+                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
+                    
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await ITEM__CONTRACT_COLL.findByIdAndDelete(contractID);
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "can't_remove", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: get Hợp đồng ✅
+     * Author: Depv
+     * Code: 
+     */
+    getInfo({ contractID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(contractID))
+                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
+                    
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await ITEM__CONTRACT_COLL.findById(contractID);
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "can't_remove", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
