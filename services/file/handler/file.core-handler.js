@@ -111,7 +111,7 @@ module.exports = {
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
                         app,
                         name: fileName,
-                        url: `${process.env.AWS_BUCKET_URL}/${fileName}`,
+                        url: `${process.env.AWS_BUCKET_URL}${process.env.AWS_BUCKET_PATH}/${fileName}`,
                         type,
                         size,
                         userID
