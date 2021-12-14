@@ -64,7 +64,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     files: [
         {
 			type: Schema.Types.ObjectId,
-			ref: 'media_file'
+			ref: 'file_core'
         }
     ],
 
@@ -84,7 +84,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     images: [
         {
 			type: Schema.Types.ObjectId,
-			ref: 'media_file'
+			ref: 'file_core'
         }
     ],
 
@@ -93,7 +93,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
      */
     background: {
         type: Schema.Types.ObjectId,
-        ref: 'media_file'
+        ref: 'file_core'
     },
 
     /**
