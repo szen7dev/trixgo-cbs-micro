@@ -12,50 +12,67 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
      */
     //_________(1)Giá trị hợp đồng
     value: { type: Number, default: 0 },
-    //_________(2)Giá trị phát sinh
-    plus: { type: Number, default: 0 },
-    //_________(3)VAT GIÁ TRỊ
+
+    //_________2)VAT GIÁ TRỊ
     vatValue: { type: Number, default: 0 },
 
-    //_________(4)Giá trị tạm ứng
+    //_________(3)Giá trị phát sinh
+    plus: { type: Number, default: 0 },
+
+    //_________(4)Phát sinh phần VAT
+    vatPlus: { type: Number, default: 0 },
+
+    //_________(5)Giá trị tạm ứng
     advancePayment: { type: Number, default: 0 },
     
-    //_________(5)Sản lượng đã thực hiện
+    //_________(6)Sản lượng đã thực hiện
     produce: { type: Number, default: 0 },
-    //_________(6)Sản lượng phát sinh trước VAT
-    plusProduce: { type: Number, default: 0 },
+  
     //_________(7)Vat sản lượng
     vatProduce: { type: Number, default: 0 },
 
-    //_________(8)Nghiệm thu trước VAT
+    //_________(8)Sản lượng phát sinh trước VAT
+    plusProduce: { type: Number, default: 0 },
+
+    //_________(9)Sản lượng phát sinh phần VAT
+    vatPlusProduce: { type: Number, default: 0 },
+    
+
+    //_________(10)Nghiệm thu trước VAT
     acceptance: { type: Number, default: 0 },
-    //_________(9)Nghiệm thu phát sinh trước VAT
+
+    //_________(11)VAT nghiệm thu
+    vatAcceptance: { type: Number, default: 0 },
+
+    //_________(12)Nghiệm thu phát sinh trước VAT
     plusAcceptance: { type: Number, default: 0 },
 
-    //_________(10)VAT nghiệm thu
-    vatAcceptance: { type: Number, default: 0 },
-    //_________(11)Giá trị giữ lại
+    //_________(13)Giá trị nghiệm thu phát sinh phần VAT
+    vatPlusAcceptance: { type: Number, default: 0 },
+
+   
+    //_________(14)Giá trị giữ lại
     retainedValue: { type: Number, default: 0 },
-    //_________(12)Thu hồi tạm ứng
+    //_________(15)Thu hồi tạm ứng
     advancePaymentDeduction: { type: Number, default: 0 },
-    //_________(13)Khấu trừ khác (nếu có)
+    //_________(16)Khấu trừ khác (nếu có)
     otherDeduction: { type: Number, default: 0 },
-    //_________(14 = (8 + 9+10) - (11 + 12 + 13))Đề nghị tạm ứng/thanh toán
+    //_________(17 = (10 + 11 + 12 + 13) - (14 + 15 + 16))Đề nghị tạm ứng/thanh toán
     recommendedPayment: { type: Number, default: 0 },
 
-    //_________(15)Đã giải ngân tạm ứng
+    //_________(18)Đã giải ngân tạm ứng
     advancePaymentPaid: { type: Number, default: 0 },
 
-    //_________(16)Đã giải ngân thanh toán
+    //_________(19)Đã giải ngân thanh toán
     amountPaid: { type: Number, default: 0 },
 
-    //_________(17)Còn lại chưa giải ngân
+    //_________(20 = (17 - 18 - 19))Còn lại chưa giải ngân
     remainingPayment: { type: Number, default: 0 },
 
-    //_________(18 = (4) - (15))Dư ứng
+    //_________(21 = (5) - (18))Dư ứng
     advancePaymentOverage: { type: Number, default: 0 },
 
-    //_________(19)Giá trị quyết toán
+    //_________(22)Giá trị quyết toán
     finalValue: { type: Number, default: 0 },
 
     //_________Thuế VAT (%)

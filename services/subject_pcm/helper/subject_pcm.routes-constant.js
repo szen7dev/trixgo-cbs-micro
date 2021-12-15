@@ -13,6 +13,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     ORIGIN_APP: BASE_ROUTE,
     // ================================PCM_PLAN_TASK=======================================//
     PCM__PCM_PLAN_TASK                  : `${BASE_ROUTE}${PCM_PLAN_TASK}`,
+    PCM__PCM_PLAN_TASK_GET_BADGE        : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge`,
     SUBJECT__PCM_PLAN_REPORT            : `${BASE_ROUTE}${PCM_PLAN_REPORT}`,
     SUBJECT__USER_PCM_PLAN_REPORT       : `${BASE_ROUTE}${USER_PCM_PLAN_REPORT}`,
     SUBJECT__PCM_PLAN_GROUP             : `${BASE_ROUTE}${PCM_PLAN_GROUP}`,
