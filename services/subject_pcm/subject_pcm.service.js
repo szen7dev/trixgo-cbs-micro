@@ -14,6 +14,7 @@ const SUBJECT__PCM_PLAN_REPORT_COLL			= require('./database/subject_pcm.pcm_plan
 const SUBJECT__PCM_PLAN_TASK_COLL			= require('./database/subject_pcm.pcm_plan_task-coll');
 const SUBJECT__PCM_PLAN_GROUP_COLL			= require('./database/subject_pcm.pcm_plan_group-coll');
 const SUBJECT__PCM_PLAN_TASK_COMMENT_COLL	= require('./database/subject_pcm.pcm_plan_task_comment-coll');
+const SUBJECT__PCM_PLAN_LOG_COLL			= require('./database/subject_pcm.user_pcm_plan_log-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
