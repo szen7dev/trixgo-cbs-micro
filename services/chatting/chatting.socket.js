@@ -29,6 +29,8 @@ exports.CHATTING_SOCKET = {
         let userID                      = socket.client.user;
         let listUserActive              = socket.$service.listUserConnected2;
         let io                          = socket.$service.io;
+
+		console.log({ data })
 		
         sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
