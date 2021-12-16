@@ -13,17 +13,24 @@ const { CF_ACTIONS_MEDIA } 	            = require('./helper/media.actions-consta
  * HANDLERS
  */
 const MEDIA_HANDLER    					= require('./handler/media-handler');
+const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
+
+/**
+ * COLL
+ */
+ const MEDIA__COMMENT_COLL    			= require('./database/media.comment-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
 	mixins: [
 		DbService('media_post'),
 		DbService('media_comment_image'),
-		DbService('media_comment'),
+		// DbService('media_comment'),
 		DbService('media_post_file'),  
 		DbService('media_reaction_image'),  
 		DbService('media_reaction'),  
 		DbService('media_user_seen'),  
+		DbService(MEDIA__COMMENT_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -159,6 +166,11 @@ module.exports = {
 		// ✅	LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC VÀO TRONG COMMENT ẢNH CỦA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_COMMENT_IMAGE]   			: MEDIA_HANDLER.getListReactionCommentImage,
 
+		/**
+		 * COMMENT
+		 */
+		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   			: MEDIA__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 	},
 
 	/**

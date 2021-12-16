@@ -1,5 +1,6 @@
 // liệt kê các actions của hệ thống
 const BASE_ACTIONS = 'ACT_MEDIA';
+const COMMENT      = 'COMMENT';
 
 /**
  * nguyên tắc chuyển đổi từ method trong .handler
@@ -41,7 +42,15 @@ const CF_ACTIONS_MEDIA = {
     GET_DETAIL_COMMENT_IMAGE_MEDIA	                : `${BASE_ACTIONS}_GET_DETAIL_COMMENT_IMAGE_MEDIA`,
     REACTION_COMMENT_IMAGE               		    : `${BASE_ACTIONS}_REACTION_COMMENT_IMAGE`,
     GET_LIST_REACTION_COMMENT_IMAGE     		    : `${BASE_ACTIONS}_GET_LIST_REACTION_COMMENT_IMAGE`,
-    REPLY_COMMENT_IMAGE_MEDIA     		            : `${BASE_ACTIONS}_REPLY_COMMENT_IMAGE_MEDIA`
+    REPLY_COMMENT_IMAGE_MEDIA     		            : `${BASE_ACTIONS}_REPLY_COMMENT_IMAGE_MEDIA`,
+
+    /**
+     * COMMENT
+     */
+    
+    COMMENT_INSERT                                  : `${BASE_ACTIONS}_${COMMENT}_INSERT`,
+    COMMENT_GET_INFO_AND_GET_LIST                   : `${BASE_ACTIONS}_${COMMENT}_GET_INFO_AND_GET_LIST`,
+
 }
 
 exports.CF_ACTIONS_MEDIA = CF_ACTIONS_MEDIA;

@@ -1,12 +1,12 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }  = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const REACTION__COMMENT_MODEL      = require('../model/reaction.comment-model').MODEL;
+const REACTION__COMMENT_MODEL      = require('../model/reaction.comment_core-model').MODEL;
 
 module.exports = {
     /**
@@ -17,16 +17,17 @@ module.exports = {
     insertComment: {
         auth: "required",
         params: {
-			content   : { type: "string" },
+			content   : { type: "string", optional: true },
+			files     : { type: "array",  optional: true },
+			images    : { type: "array",  optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { content } = ctx.params;
-                
+				const { _id: userID } = ctx.meta.infoUser;
+                const { content, files, images } = ctx.params;
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.insert({
-					content, userID: authorID
+					content, files, images, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

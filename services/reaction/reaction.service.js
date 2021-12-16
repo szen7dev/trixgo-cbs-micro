@@ -6,8 +6,8 @@ const { CF_ACTIONS_REACTION } 	        = require('./helper/reaction.actions-cons
 const REACTION__COMMENT_HANDLER        	= require('./handler/reaction.comment-hanlder');
 const REACTION__REACTION_HANDLER      	= require('./handler/reaction.reaction-hanlder');
 
-const REACTION__REACTION_COLL			= require('./database/reaction.reaction-coll');
-const REACTION__COMMENT_COLL			= require('./database/reaction.comment-coll');
+const REACTION__REACTION_COLL			= require('./database/reaction.reaction_core-coll');
+const REACTION__COMMENT_COLL			= require('./database/reaction.comment_core-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.REACTION,
@@ -38,7 +38,7 @@ module.exports = {
 		// [CF_ACTIONS_REACTION.REACTION_GET_LIST ] 	: REACTION__REACTION_HANDLER.getList,
 		[CF_ACTIONS_REACTION.REACTION_INSERT ] 			: REACTION__REACTION_HANDLER.insertReaction,
 
-		//==========================================   COMMENT ACTIONS   ================================
+		//==========================================   COMMENT_CORE   ================================
 		[CF_ACTIONS_REACTION.COMMENT_INSERT ] 			: REACTION__COMMENT_HANDLER.insertComment,
 		[CF_ACTIONS_REACTION.COMMENT_UPDATE ] 			: REACTION__COMMENT_HANDLER.updateComment,
 

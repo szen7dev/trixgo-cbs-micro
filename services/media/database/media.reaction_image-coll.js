@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_reaction_image", {
      reaction: {
         type    : Schema.Types.ObjectId,
         ref     : 'reaction_core'
-    },
+    }, 
 
     /**
      *  Người reaction
