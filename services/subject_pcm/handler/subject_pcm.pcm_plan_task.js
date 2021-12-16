@@ -163,8 +163,8 @@ module.exports = {
                 
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
-                        téaskID, userID, select, populates, populates1, populates2, populatesdes3
-                    });sd
+                        taskID, userID, select, populates, populates1, populates2, populates3
+                    });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate,
@@ -178,4 +178,27 @@ module.exports = {
             }
         }
     },
+    
+    /**
+	 * Dev: Depv ✅
+	 * Func: Lấy số lượng công việc của bạn để hiển thị ngoài trang chủ
+	 */
+    getAmountTask: {
+        auth: "required",
+        params: {},
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                // Bước check quyền
+                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
 }

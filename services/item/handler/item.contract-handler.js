@@ -48,4 +48,277 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * KHU VỰC NÀY PHAN VĂN ĐỆ VIẾT
+     */
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Thêm contract
+	 * Date: 19/08/2021
+	 */
+    insert: {
+        auth: "required",
+        params: {
+            projectID       : { type: "string" },
+            parentID        : { type: "string", optional: true },
+            admins          : { type: "string", optional: true },
+            members         : { type: "string", optional: true },
+            draft           : { type: "number", optional: true },
+            outin           : { type: "string", optional: true },
+            status          : { type: "string", optional: true },
+            real            : { type: "string", optional: true },
+            ousubTypetin    : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            field           : { type: "string", optional: true },
+            chairID         : { type: "string", optional: true },
+            personInChargeID: { type: "string", optional: true },
+            debtStatusID    : { type: "string", optional: true },
+            warehouseID     : { type: "string", optional: true },
+            name            : { type: "string", optional: true },
+            sign            : { type: "string", optional: true },
+            storeSign       : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            note            : { type: "string", optional: true },
+            note1           : { type: "string", optional: true },
+            date            : { type: "string", optional: true },
+            startTime       : { type: "string", optional: true },
+            endTime         : { type: "string", optional: true },
+            buyerInfoID     : { type: "string", optional: true },
+            buyerBank       : { type: "string", optional: true },
+            sellerBank      : { type: "string", optional: true },
+            packageName     : { type: "string", optional: true },
+            lock            : { type: "string", optional: true },
+            value           : { type: "string", optional: true },
+            plus            : { type: "string", optional: true },
+            vatValue        : { type: "string", optional: true },
+            advancePayment  : { type: "string", optional: true },
+            produce         : { type: "string", optional: true },
+            plusProduce     : { type: "string", optional: true },
+            vatProduce      : { type: "string", optional: true },
+            acceptance      : { type: "string", optional: true },
+            plusAcceptance  : { type: "string", optional: true },
+            vatAcceptance   : { type: "string", optional: true },
+            retainedValue   : { type: "string", optional: true },
+            advancePaymentDeduction: { type: "string", optional: true },
+            otherDeduction         : { type: "string", optional: true },
+            recommendedPayment     : { type: "string", optional: true },
+            advancePaymentPaid     : { type: "string", optional: true },
+            amountPaid             : { type: "string", optional: true },
+            remainingPayment       : { type: "string", optional: true },
+            advancePaymentOverage  : { type: "string", optional: true },
+            finalValue             : { type: "string", optional: true },
+            budget                 : { type: "string", optional: true },
+            budgetVAT              : { type: "string", optional: true },
+            forecastBudget         : { type: "string", optional: true },
+            forecastBudgetVAT      : { type: "string", optional: true },
+            managementFee          : { type: "string", optional: true },
+            subcontractFee         : { type: "string", optional: true },
+            expenses               : { type: "string", optional: true },
+            profit                 : { type: "string", optional: true },
+            cgValue                : { type: "string", optional: true },
+            expiredCg              : { type: "string", optional: true },
+            agValue                : { type: "string", optional: true },
+            expiredAg              : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name,
+                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, 
+                     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
+                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
+                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg  } = ctx.params;
+                
+                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.insert({
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+     /**
+	 * Dev: Depv ✅
+	 * Func: Cập nhật hợp đồng
+	 * Date: 19/08/2021
+	 */
+    update: {
+        auth: "required",
+        params: {
+            contractID      : { type: "string" },
+            projectID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            admins          : { type: "string", optional: true },
+            members         : { type: "string", optional: true },
+            draft           : { type: "number", optional: true },
+            outin           : { type: "string", optional: true },
+            status          : { type: "string", optional: true },
+            real            : { type: "string", optional: true },
+            ousubTypetin    : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            field           : { type: "string", optional: true },
+            chairID         : { type: "string", optional: true },
+            personInChargeID: { type: "string", optional: true },
+            debtStatusID    : { type: "string", optional: true },
+            warehouseID     : { type: "string", optional: true },
+            name            : { type: "string", optional: true },
+            sign            : { type: "string", optional: true },
+            storeSign       : { type: "string", optional: true },
+            description     : { type: "string", optional: true },
+            note            : { type: "string", optional: true },
+            note1           : { type: "string", optional: true },
+            date            : { type: "string", optional: true },
+            startTime       : { type: "string", optional: true },
+            endTime         : { type: "string", optional: true },
+            buyerInfoID     : { type: "string", optional: true },
+            buyerBank       : { type: "string", optional: true },
+            sellerBank      : { type: "string", optional: true },
+            packageName     : { type: "string", optional: true },
+            lock            : { type: "string", optional: true },
+            value           : { type: "string", optional: true },
+            plus            : { type: "string", optional: true },
+            vatValue        : { type: "string", optional: true },
+            advancePayment  : { type: "string", optional: true },
+            produce         : { type: "string", optional: true },
+            plusProduce     : { type: "string", optional: true },
+            vatProduce      : { type: "string", optional: true },
+            acceptance      : { type: "string", optional: true },
+            plusAcceptance  : { type: "string", optional: true },
+            vatAcceptance   : { type: "string", optional: true },
+            retainedValue   : { type: "string", optional: true },
+            advancePaymentDeduction: { type: "string", optional: true },
+            otherDeduction         : { type: "string", optional: true },
+            recommendedPayment     : { type: "string", optional: true },
+            advancePaymentPaid     : { type: "string", optional: true },
+            amountPaid             : { type: "string", optional: true },
+            remainingPayment       : { type: "string", optional: true },
+            advancePaymentOverage  : { type: "string", optional: true },
+            finalValue             : { type: "string", optional: true },
+            budget                 : { type: "string", optional: true },
+            budgetVAT              : { type: "string", optional: true },
+            forecastBudget         : { type: "string", optional: true },
+            forecastBudgetVAT      : { type: "string", optional: true },
+            managementFee          : { type: "string", optional: true },
+            subcontractFee         : { type: "string", optional: true },
+            expenses               : { type: "string", optional: true },
+            profit                 : { type: "string", optional: true },
+            cgValue                : { type: "string", optional: true },
+            expiredCg              : { type: "string", optional: true },
+            agValue                : { type: "string", optional: true },
+            expiredAg              : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { contractID, projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name,
+                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, 
+                     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
+                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
+                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg  } = ctx.params;
+                
+                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
+                    contractID,
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: XÓA HỢP ĐỒNG
+	 * Date: 19/08/2021
+	 */
+    remove: {
+        auth: "required",
+        params: {
+            contractID      : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { contractID }  = ctx.params;
+                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.remove({ contractID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+     /**
+	 * Dev: Depv ✅
+	 * Func: LẤY THÔNG TIN HOẶC LẤY DANH SACH HỢP ĐỒNG
+	 * Date: 19/08/2021
+	 */
+    getInfoAndGetList: {
+        auth: "required",
+        params: {
+            contractID          : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
+            draft               : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+            status              : { type: "string", optional: true },
+            real                : { type: "string", optional: true },
+            subType             : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
+            field               : { type: "string", optional: true },
+            chairID             : { type: "string", optional: true },
+            personInChargeID    : { type: "string", optional: true },
+            debtStatusID        : { type: "string", optional: true },
+            warehouseID         : { type: "string", optional: true },
+
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+            populates1  : { type: "string", optional: true },
+            populates2  : { type: "string", optional: true },
+            populates3  : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, 
+                    keyword, limit, lastestID, populates2, populates3, filter, populates
+                } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler;
+                if(contractID){
+                    resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
+                        contractID, select, populates, populates1, populates2, populates3
+                    });
+                }else{
+                    resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
+                        projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, keyword, limit, lastestID, populates2, populates3, filter, populates
+                    });
+                }
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
 }

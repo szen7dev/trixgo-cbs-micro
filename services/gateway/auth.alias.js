@@ -344,9 +344,7 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.TEMPLATE_CHECKLIST_LIST}`],
 		//----------------------------- S021 END SERVICE INSPECTION. TEAMPLATE CHECKLIST-------------------------//
 
-	
 
-	
 
 		//---------------------------🏁 S021 START SERVICE INSPECTION. AREA 🏁----------------------//
 		//A0226
@@ -367,8 +365,6 @@ module.exports = {
 		//------------------------------S021 END SERVICE INSPECTION. AREA------------------------//
 
 
-
-
 		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC 🏁----------------------//
 		[`GET ${CF_ROUTINGS_INSPECTION.DOCS}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_LIST}`],
@@ -382,7 +378,6 @@ module.exports = {
 		[`DELETE ${CF_ROUTINGS_INSPECTION.DOCS}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOCS_REMOVE}`],
 		//---------------------------- S021 START SERVICE INSPECTION. DOC---------------------------//
-
 
 
 
@@ -403,9 +398,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_INSPECTION.DOC_COMMENT}`] :
 		[`${CF_DOMAIN_SERVICES.INSPECTION}.${CF_ACTIONS_INSPECTION.DOC_COMMENT_LIST}`],
 		//--------------------------S021 END SERVICE INSPECTION. DOC COMMENT---------------------------//
-
-
-
 
 		
 		//---------------------------🏁 S021 START SERVICE INSPECTION. DOC REACTION 🏁---------------------------//
@@ -448,22 +440,56 @@ module.exports = {
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`]: 
 		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
+
+
+		// CONTRACT_IPC
+		[`POST ${CF_ROUTINGS_CMCS.CONTRACT_IPC}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_CMCS.CONTRACT_IPC}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_CMCS.CONTRACT_IPC}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_IPC}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_INFO_AND_GET_LIST}`],
+
+		// CONTRACT_PRODUCT
+		[`POST ${CF_ROUTINGS_CMCS.CONTRACT_PRODUCTION}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_CMCS.CONTRACT_PRODUCTION}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_CMCS.CONTRACT_PRODUCTION}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_PRODUCTION}`]: 
+		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_INFO_AND_GET_LIST}`],
+
 		//-------------------------------END SEARVICE CMCS---------------------------//
 
 
-
-
-
 		//---------------------------🏁 START SEARVICE CONTRACT 🏁---------------------------//
-		[`GET ${CF_ROUTINGS_ITEM.CONTRACT_GET_LIST}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_LIST}`],
+		[`GET ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`],
+
+		[`POST ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_REMOVE}`],
+
 		//---------------------------- END SEARVICE CONTRACT ---------------------------//
 
 
 
 
-
-		//---------------------------🏁 START SEARVICE HUMAN (CONTACT) 🏁---------------------------//
+		//---------------------------🏁 START SEARVICE HUMAN (CONTACT) 🏁------------------------//
 
 		[`GET ${CF_ROUTINGS_CONTACT.GET_LIST_CONTACT_DOCUMENT}`] :
 		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.GET_LIST_CONTACT_DOCUMENT}`],
@@ -477,13 +503,11 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_CONTACT.INFO_CONTACT}`] :
 		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.INFO_CONTACT}`],
 
-		//---------------------------- END SEARVICE HUMAN (CONTACT) ---------------------------//
+		//---------------------------- END SEARVICE HUMAN (CONTACT) --------------------------------//
 
 
 
-
-
-		//---------------------------🏁 START SEARVICE TRAINING 🏁---------------------------//
+		//---------------------------🏁 START SEARVICE TRAINING 🏁--------------------------------//
 		//TRAINING SUBJECT
 		//F02504 || F02505
 		[`GET ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
@@ -656,6 +680,10 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK}`] :
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`],
+
+
+		[`GET ${CF_ROUTINGS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_BADGE}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_AMOUNT}`],
 
 		//----------------------------pcm_plan_groups
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT__PCM_PLAN_GROUP}`] :

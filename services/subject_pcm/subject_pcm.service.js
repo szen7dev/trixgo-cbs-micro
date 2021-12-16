@@ -14,6 +14,7 @@ const SUBJECT__PCM_PLAN_REPORT_COLL			= require('./database/subject_pcm.pcm_plan
 const SUBJECT__PCM_PLAN_TASK_COLL			= require('./database/subject_pcm.pcm_plan_task-coll');
 const SUBJECT__PCM_PLAN_GROUP_COLL			= require('./database/subject_pcm.pcm_plan_group-coll');
 const SUBJECT__PCM_PLAN_TASK_COMMENT_COLL	= require('./database/subject_pcm.pcm_plan_task_comment-coll');
+const SUBJECT__PCM_PLAN_LOG_COLL			= require('./database/subject_pcm.user_pcm_plan_log-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
@@ -58,6 +59,7 @@ module.exports = {
 		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_INSERT]							: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.insert,
 		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_UPDATE]							: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.update,
 		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_INFO_AND_GET_LIST]			: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.PCM__PCM_PLAN_TASK_GET_AMOUNT]						: SUBJECT_PCM__PCM_PLAN_TASK_HANDLER.getAmountTask,
 
 		//========================================== PCM_PLAN_GROUP   ================================
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_GROUP_GET_INFO_AND_GET_LIST]			: SUBJECT_PCM__PCM_PLAN_GROUP_HANDLER.getInfoAndGetList,

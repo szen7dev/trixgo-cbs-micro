@@ -4,70 +4,73 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
-    //_________Ngày tháng IPC
-    date: { type: Date, default: Date.now },
-    
-    //_________Tên
-    name: String,
-
-    //_________Mô tả
-    description: String,
-
-    //_________Ký hiệu
-    sign: String,
-
-    //_________Ghi chú
-    note: String,
-
-    //_________Phân loại(1-Tạm ứng/2-Thanh toán/3-Quyết toán )
+    //_________Phân loại(1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
     type: { type: Number, default: 0 },
 
-    //_________ Công ty
+    //_________ Công ty(*)
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
 
-    //_________ Dự án
+    //_________ Dự án(*)
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
 
-    //_________Hợp đồng
+    //_________Hợp đồng(*)
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
+    
+    //_________Tên(*)
+    name: String,
+    
+    //_________Ký hiệu
+    sign: String,
+
+    //_________Mô tả
+    description: String,
+
+    //_________Ngày tháng IPC(*)
+    date: { type: Date, default: Date.now },
+
+    //_________Ghi chú
+    note: String,
 
     //_________(1)Nghiệm thu trước VAT
     acceptance:  { type: Number, default: 0},
 
-    //_________(2)Nghiệm thu phát sinh trước VAT
-    plusAcceptance:  { type: Number, default: 0},
-
-    //_________(3)VAT nghiệm thu
+    //_________(2)VAT nghiệm thu
     vatAcceptance:  { type: Number, default: 0},
 
-    //_________(4)Giá trị giữ lại
+    //_________(3)Nghiệm thu phát sinh trước VAT
+    plusAcceptance:  { type: Number, default: 0},
+
+    //_________(4)Giá trị nghiệm thu phát sinh phần VAT
+    vatPlusAcceptance:  { type: Number, default: 0},
+
+    //_________(5)Giá trị giữ lại
     retainedValue:  { type: Number, default: 0},
 
-    //_________(5)Thu hồi tạm ứng
+    //_________(6)Thu hồi tạm ứng
     advancePaymentDeduction:  { type: Number, default: 0},
 
-    //_________(6)Khấu trừ khác (nếu có)
+    //_________(7)Khấu trừ khác (nếu có)
     otherDeduction:  { type: Number, default: 0},
 
-    //_________((7) = (1 + 2 + 3) - (4 + 5 + 6))Đề nghị tạm ứng/thanh toán
+    //_________((8) = (1 + 2 + 3 + 4) - (5 + 6 + 7))Đề nghị tạm ứng/thanh toán
     recommendedPayment: { type: Number, default: 0},
 
-    //_________(8)Thời hạn thanh toán
+    //_________(9)Thời hạn thanh toán
     timeForPayment:  { type: Number, default: 0},
 
-    //_________(9)Đã giải ngân
+    //_________(10)Đã giải ngân
     amountPaid:  { type: Number, default: 0},
 
-    //_________((10) = 7- 9) Còn lại chưa giải ngân
+    //_________((11) = 8- 10) Còn lại chưa giải ngân
     remainingPayment:  { type: Number, default: 0},
     
     /**

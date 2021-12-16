@@ -42,6 +42,11 @@ module.exports = {
 		//==========================================  CONTRACT ACTIONS  ================================
 		[CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION] 			: ITEM__CONTRACT_HANDLER.updateContractByCondition,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST] 					: ITEM__CONTRACT_HANDLER.getListContract,
+		[CF_ACTIONS_ITEM.CONTRACT_INSERT] 						: ITEM__CONTRACT_HANDLER.insert,
+		[CF_ACTIONS_ITEM.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
+		[CF_ACTIONS_ITEM.CONTRACT_REMOVE] 						: ITEM__CONTRACT_HANDLER.remove,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
+
 
 		//==========================================  DEPARTMENT ACTIONS  ================================
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,

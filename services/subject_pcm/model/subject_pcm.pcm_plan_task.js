@@ -1131,18 +1131,13 @@ class Model extends BaseModel {
                         listTask = [...listTask, taskNewTemp];
                     }
                 }
+                
                 // GET TOTAL RECORD
-                let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
-                let totalPage = Math.ceil(totalRecord/limit);
-
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
-                }
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: listTask,
@@ -1150,11 +1145,102 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    /**
+     * Name: Lấy số lượng task của bạn ✅
+     * Author: Depv
+     */
+    getAmountTask({ userID }){
+        return new Promise(async resolve => {
+            try {
+                /**
+                    *   { value: 0, text: 'Việc thông thường', sign: 'Tasks', key: 'task' },
+                        { value: 1, text: 'Yêu cầu thông tin', sign: 'RFis', key: 'rfi' },
+                        { value: 2, text: 'Yêu cầu phê duyệt', sign: 'RFa', key: 'rfa' },
+                        { value: 3, text: 'Thanh toán', sign: 'CRFa', key: 'crfa' },
+                        { value: 4, text: 'Lựa chọn nhà thầu', sign: 'BRFa', key: 'brfa' },
+                        { value: 5, text: 'Nghiệm thu chất lượng', sign: 'QRFa', key: 'inspection' },
+                        { value: 6, text: 'Yêu cầu sửa chữa', sign: 'Punch', key: 'punch' },
+                        { value: 7, text: 'Yêu cầu thay đổi', sign: 'RFc', key: 'rfc' },
+                        { value: 8, text: 'Yêu cầu thực hiện', sign: 'RFe', key: 'rfe' },
+                        { value: 9, text: 'Báo cáo', sign: 'Report', key: 'report' },
+                        { value: 10, text: 'Tiến độ', sign: 'Schedule', key: 'schedule' },
+                        { value: 11, text: 'Họp', sign: 'MOM', key: 'mom' },
+                    *   
+                 */
+                /**
+                 * Tổng số lượng công việc của tôi
+                 */
+                let amountTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                    assignee: userID, 
+                    status: { $ne: 3 },
+                    type: 1
+                })
+
+                /**
+                 * Số lượng công việc thuộc đệ trình phê duyệt
+                 */
+                let amountTaskIsRFa = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    isproposal: 2,
+                    status: { $ne: 3 },
+                    type: 1
+                })
+
+                /**
+                 * Tổng số lượng công việc thuộc yêu cầu thông tin
+                 */
+                let amountTaskIsRFis = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                    assignee: userID,
+                    isproposal: 1,
+                    status: { $ne: 3 },
+                    type: 1
+
+                })
+
+                /**
+                 * Tổng số lượng công việc bạn quan tâm
+                 */
+                let amountTaskIsFlags = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                    flags: {
+                       $in: [userID]
+                    },
+                    type: 1
+                });
+
+                /**
+                 * Tổng số lượng công việc bạn đã giao người khac
+                 */
+                let amountTaskIsAssignee = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                    author: userID,
+                    status: { $ne: 3 },
+                    type: 1
+                });
+
+                /**
+                 * Tổng số lượng công việc nháp
+                 */
+                let amountTaskIsDraft = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                    $or: [
+                        { author: userID }, 
+                        { related: { $in: [userID] } }, 
+                    ],
+                    draft: 1,
+                    type: 1
+                });
+
+                return resolve({ error: false, data: {
+                    amountTask, amountTaskIsRFa, amountTaskIsRFis, amountTaskIsFlags, amountTaskIsAssignee, amountTaskIsDraft
+                }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

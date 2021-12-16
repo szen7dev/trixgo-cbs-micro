@@ -28,7 +28,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { keyword, limit, lastestID, contractID, select, contractBillJobID, filter } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-
+                
                 let resultAfterCallHandler;
                 if(contractBillJobID){
                     resultAfterCallHandler = await CMCS__CONTRACT_BILL_JOB_MODEL.getInfo({
