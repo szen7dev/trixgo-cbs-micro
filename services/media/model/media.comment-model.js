@@ -30,7 +30,6 @@ const MEDIA_REACTION_IMAGE_COLL				    = require('../database/media.reaction_ima
 const MEDIA_COMMENT_COLL				    	= require('../database/media.comment-coll');
 const MEDIA_COMMENT_FILE_COLL				    = require('../database/media.comment_file-coll');
 
-
 class Model extends BaseModel {
 
     constructor() {
@@ -100,7 +99,7 @@ class Model extends BaseModel {
             }
 		})
 	}
-
+	
 	/**
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG BÀI VIẾT
