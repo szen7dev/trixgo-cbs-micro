@@ -18,35 +18,51 @@ const NOTIFICATION_COLL 				        = require('./database/notification.log-coll'
 /**
  * MODELS
  */
-const NOTIFICATION_MODEL 					    = require('./model/notification.log-model').MODEL;
 
 
-exports.CHATTING_SOCKET = {
+exports.NOTIFICATION_SOCKET = {
  
     [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_CSS_ADD_MEDIA]: async function(data, ack) { 
         let socket                      = this;
+		let broker						= socket.$service.broker;
         let listUserActive              = socket.$service.listUserConnected2;
         let userID                      = socket.client.user;
         let io                          = socket.$service.io;
+		let { receivers }				= data;
 
-		// if(!infoConversation){
-		// 	return sendDataToMultilSocketsOfListUser({ 
-		// 		listUserConnected: listUserActive, 
-		// 		arrReceiver: [userID],
-		// 		data: { error: true, message: "Can't get info conversation" }, 
-		// 		event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
-		// 	});
-		// }
+		if(!receivers || !receivers.length){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get receivers notification" }, 
+				event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
+			});
+		}
+
+		let listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+			condition: { _id: { $in: receivers, $nin: [userID] } },
+			select: '_id'
+		});
+
+		if(listReceivers.error){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: listReceivers, 
+				event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
+			});
+		}
+
+		listReceivers = listReceivers.data.map(receiver => receiver._id);
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver: [],
+			arrReceiver: listReceivers,
 			data: {
 				error: false,
-				data: {
-                    
-				}
+				message: 'You get a new notification'
 			}, event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
 		});
-     },
+	},
+
 }

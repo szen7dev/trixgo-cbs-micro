@@ -30,7 +30,7 @@ class Model extends BaseModel {
                     content,
                     type,
                     sender,
-                    status: this.NOT_SEND
+                    status: this.SEND_SUCCESS
                 };
 
                 if(!title) {
@@ -186,7 +186,7 @@ class Model extends BaseModel {
 
 				// Init condition object
 				let conditionObj 	= { 
-                    // status: this.SEND_SUCCESS,
+                    status: this.SEND_SUCCESS,
                     receiver: authorID
                 };
 				let conditionFind 	= {};
@@ -219,8 +219,6 @@ class Model extends BaseModel {
 					objSort.score = { $meta: "textScore" };
 					sortBy.score  = { $meta: "textScore" };
 				}
-
-                console.log({ conditionObj, conditionFind });
 
 				let listNotifications = await NOTIFICATION__LOG_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate('sender', select.sender)

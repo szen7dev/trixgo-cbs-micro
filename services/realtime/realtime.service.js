@@ -24,6 +24,7 @@ const { CF_ACTIONS_AUTH } 		    		    = require('../auth/helper/auth.actions-con
 /**
  * mỗi service có thể có 1/n event socket -> cách đặt tên [service].[socket]
  */
+const { NOTIFICATION_SOCKET } 					= require('../notification/notification.socket');
 const { CHATTING_SOCKET } 						= require('../chatting/chatting.socket');
 const { MEDIA_SOCKET } 						    = require('../media/media.socket');
 
@@ -101,8 +102,8 @@ module.exports = {
                         /**
                          *  passing all event of all services
                          */
+                        ...NOTIFICATION_SOCKET,
                         ...CHATTING_SOCKET,
-
                         ...MEDIA_SOCKET,
                         
                         'testing': function(data, ack) {
