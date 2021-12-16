@@ -11,7 +11,7 @@
  module.exports = {
     /**
      * Dev: Depv ✅
-     * Func: insert pcm_plan_report
+     * Func: insert comment media
      */
     insert: {
         auth: "required",
@@ -27,8 +27,8 @@
                 await this.validateEntity(ctx.params);
                 
                 let { _id: userID } = ctx.meta.infoUser;
-                let { mediaID, parentID, content, files, images  } = ctx.params;
-                console.log({ mediaID, parentID, content, files, images });
+                let { mediaID, parentID, content, files, images } = ctx.params;
+
                 let resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
                     mediaID, parentID, content, files, images, userID, ctx
                 });
@@ -42,14 +42,14 @@
  
     /**
      * Dev: Depv ✅
-     * Func: getList and getInfo pcm_plan_report
+     * Func: getList and getInfo comment media
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
             // Field bổ sung
             commentID   : { type: "string", optional: true },
-            mediaID     : { type: "string", optional: true },
+            mediaID     : { type: "string" },
             parentID    : { type: "string", optional: true },
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -66,22 +66,22 @@
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    commentID, mediaID, parentID, keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
+                    commentID, mediaID, parentID, keyword, limit, lastestID, select, filter,
+                    populates, populates1, populates2, populates3
                 } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
-                
+
                 if(commentID){
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getInfo({
                         commentID, select, populates, populates1, populates2, populates3
                     });
-                }else{
+                } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
                         mediaID, parentID,
                         keyword, limit, lastestID, populates, populates1, populates2, populates3, filter
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

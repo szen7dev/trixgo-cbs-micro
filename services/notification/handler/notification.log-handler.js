@@ -30,24 +30,24 @@ module.exports = {
         params: {
             title       : { type: "string" },
             content     : { type: "string" },
-            receiver    : { type: "string" },
+            receivers   : { type: "array" },
             type        : { type: "number" },
         },
         async handler(ctx) {
-             try {
+            try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { type, title, content, receiver } = ctx.params;
+                const { type, title, content, receivers } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insertNotification({
-                    type, title, content, sender: authorID, receiver
+                    type, title, content, sender: authorID, receivers
                 });
- 
-                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-             } catch (error) {
-                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-             }
-         }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
     },
 
     /**

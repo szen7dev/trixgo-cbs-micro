@@ -8,7 +8,7 @@
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { MEDIA_TYPES } 							= require('../helper/media.keys-constant');
 
@@ -43,12 +43,13 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
-	insert({ authorID, title, content, type, location, files, tagFriends, images, background, company, group, ctx }) {
+	insert({ authorID, title, content, type, location, files, tagFriends, images, background, company, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
 				//=======================VARIABLE/CONSTANTS=====================
 				let condition = {};
+				let receiversNotification = [];
 
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs(authorID))
@@ -78,7 +79,7 @@ class Model extends BaseModel {
 						condition.type = 4;
 						break;
 					case 'system':
-						condition.type = 4;
+						condition.type = 5;
 						break;
 					default:
 						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
@@ -105,13 +106,6 @@ class Model extends BaseModel {
                     	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
 					condition.company = company;
-				}
-
-				if (group) {
-					if(!checkObjectIDs(group))
-                    	return resolve({ error: true, message: 'Request params group invalid', status: 400 });
-
-					condition.group = group;
 				}
 
 				let infoMediaAfterInserted = await this.insertData(condition);
@@ -146,6 +140,37 @@ class Model extends BaseModel {
 
 				if (!isEmptyObject(conditionObjUpdate)) {
 					infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, conditionObjUpdate, { new: true });
+				}
+
+				let conditionReceiver = {};
+
+				switch (condition.type) {
+					case 1:
+						conditionReceiver = { company };
+						break;
+					case 3:
+						conditionReceiver = { department };
+						break;
+					default:
+						break;
+				};
+
+				if(!Object.keys(conditionReceiver).length){
+					const receivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+						condition: conditionReceiver,
+						select: '_id'
+					});
+	
+					if(!receivers.error){
+						receiversNotification = receivers.data.map(receiver => receiver._id);
+
+						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+							title: `Ai đó đã tạo 1 bài viết`,
+							content,
+							receivers: ["5f90ed0d5e842b7c18dff972"],
+							type: 1
+						});
+					}
 				}
 
                 return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
@@ -1087,6 +1112,7 @@ class Model extends BaseModel {
 			}
 		})
 	}
+
 }
 
 exports.MODEL = new Model;

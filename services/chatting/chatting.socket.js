@@ -31,7 +31,7 @@ exports.CHATTING_SOCKET = {
         let io                          = socket.$service.io;
 
 		console.log({ data })
-		
+
         sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
 			arrReceiver: [userID], 

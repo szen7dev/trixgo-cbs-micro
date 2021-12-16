@@ -37,10 +37,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { title, content, type, location, files, tagFriends, images, background, company, group, kind } = ctx.params;
+                const { title, content, type, location, files, tagFriends, images, background, company, kind } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insert({
-					authorID, title, content, type, location, files, tagFriends, images, background, company, group, kind, ctx
+					authorID, title, content, type, location, files, tagFriends, images, background, company, kind, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -91,10 +91,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
-                let { mediaID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group } = ctx.params;
+                let { mediaID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company } = ctx.params;
                
                 let resultAfterCallHandler = await MEDIA_MODEL.update({ 
-					mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group, ctx
+					mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

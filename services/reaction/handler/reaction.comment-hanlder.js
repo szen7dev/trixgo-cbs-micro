@@ -45,17 +45,18 @@ module.exports = {
     updateComment: {
         auth: "required",
         params: {
-			commentID : { type: "string" },
-			content   : { type: "string",  optional: true },
+			commentID           : { type: "string" },
+			content             : { type: "string", optional: true },
+			amountCommentReply  : { type: "number", optional: true },
+			amountReaction      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { commentID, content } = ctx.params;
+                const { commentID, content, amountCommentReply, amountReaction } = ctx.params;
 
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.update({
-					commentID, content
+					commentID, content, amountCommentReply, amountReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -64,4 +65,5 @@ module.exports = {
             }
         }
     },
+
 }

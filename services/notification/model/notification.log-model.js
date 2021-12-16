@@ -17,7 +17,12 @@ class Model extends BaseModel {
         this.SEND_FAILED = 2;
     }
 
-    insertNotification({ type, title, content, sender, receiver }){
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm thông báo
+	 * Date: 17/12/2021
+	 */
+    insertNotification({ type, title, content, sender, receivers }){
         return new Promise(async resolve => {
             try {
                 const dataInsert = {
@@ -25,7 +30,6 @@ class Model extends BaseModel {
                     content,
                     type,
                     sender,
-                    receiver,
                     status: this.NOT_SEND
                 };
 
@@ -65,16 +69,21 @@ class Model extends BaseModel {
                     });
                 }
                 
-                if(!checkObjectIDs(receiver)) {
+                if(!checkObjectIDs(receivers)){
                     return resolve({
                         error: true,
-                        message: 'Request params receiver invalid',
-                        key: 'params_receiver_invalid',
-                        status: 400
-                    });
+                        message: 'Request params receivers invalid',
+                        key: 'params_receivers_invalid',
+                        status: 400,
+                    })
                 }
 
-                const infoAfterInsertNoti = await this.insertData(dataInsert);
+                const infoInsertNotiAsync = receivers.map(receiver => this.insertData({
+                    ...dataInsert,
+                    receiver
+                }))
+
+                const infoAfterInsertNoti = await Promise.all(infoInsertNotiAsync);
                 
                 if(!infoAfterInsertNoti) {
                     return resolve({
@@ -92,6 +101,11 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật trạng thái thông báo
+	 * Date: 17/12/2021
+	 */
     updateStatus({ notificationID, status }){
         return new Promise(async resolve => {
             try {
@@ -135,9 +149,8 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Lấy danh sách tin nhắn cuộc hội thoại (tìm kiếm tin nhắn, phân trang)
-	 * Date: 11/08/2021
-	 * Hàm chuẩn về lấy danh sách mẩu tin
+	 * Func: Lấy danh sách thông báo
+	 * Date: 17/12/2021
 	 */
     getListNotification({ authorID, lastestID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
@@ -171,18 +184,9 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-				// Check user exist in conversation
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $all: [userID] }
-				}).lean();
-
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
-
 				// Init condition object
 				let conditionObj 	= { 
-                    status: this.SEND_SUCCESS,
+                    // status: this.SEND_SUCCESS,
                     receiver: authorID
                 };
 				let conditionFind 	= {};
@@ -215,6 +219,8 @@ class Model extends BaseModel {
 					objSort.score = { $meta: "textScore" };
 					sortBy.score  = { $meta: "textScore" };
 				}
+
+                console.log({ conditionObj, conditionFind });
 
 				let listNotifications = await NOTIFICATION__LOG_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate('sender', select.sender)
@@ -310,5 +316,7 @@ class Model extends BaseModel {
             }
         })
     }
+
 }
+
 exports.MODEL = new Model;
