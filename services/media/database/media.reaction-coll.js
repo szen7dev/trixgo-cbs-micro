@@ -20,7 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_reaction", {
         type    : Schema.Types.ObjectId,
         ref     : 'comment'
     },
-
+          
     /**
      * Cảm xúc
      */

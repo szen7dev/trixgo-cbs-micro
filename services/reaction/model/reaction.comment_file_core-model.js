@@ -1,7 +1,7 @@
 
 "use strict";
 const ObjectID                                  = require('mongoose').Types.ObjectId;
-const REACTION__COMMENT_FILE_CORE_COLL          = require('../database/reaction.comment_file_core-coll');
+const REACTION__COMMENT_FILE_CORE_COLL          = require('../database/reaction.comment_file_core-coll.js');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');
@@ -39,7 +39,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */    
+                 */
                 dataInsert = { comment, file: fileCore };
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)

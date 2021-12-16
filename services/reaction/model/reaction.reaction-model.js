@@ -1,8 +1,8 @@
 
 "use strict";
 const ObjectID                                  = require('mongoose').Types.ObjectId;
-const REACTION__COMMENT_COLL                    = require('../database/reaction.comment-coll');
-const REACTION__REACTION_COLL                   = require('../database/reaction.reaction-coll');
+const REACTION__COMMENT_COLL                    = require('../database/reaction.comment_core-coll');
+const REACTION__REACTION_COLL                   = require('../database/reaction.reaction_core-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');

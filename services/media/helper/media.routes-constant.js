@@ -1,4 +1,6 @@
 const BASE_ROUTE = '/medias';
+const MEDIA = '/media';
+const COMMENTS = 'comments';
 
 const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
@@ -22,5 +24,7 @@ const CF_ROUTINGS_MEDIA = {
     DETAIL_COMMENT_IMAGE_MEDIA     		         : `${BASE_ROUTE}/detail-comment-images`,
     REACTION_COMMENT_IMAGE               		 : `${BASE_ROUTE}/reaction-comment-images`,
     REPLY_COMMENT_IMAGE_MEDIA     		         : `${BASE_ROUTE}/reply-comment-images`,
+    //KHU VỰC NÀY ĐỆ VIẾT
+    MEDIA_COMMENTS     		                     : `${MEDIA}/${COMMENTS}`,
 }
 exports.CF_ROUTINGS_MEDIA = CF_ROUTINGS_MEDIA;

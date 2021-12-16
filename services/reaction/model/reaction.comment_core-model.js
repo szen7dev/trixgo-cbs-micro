@@ -1,7 +1,7 @@
 
 "use strict";
 const ObjectID                                  = require('mongoose').Types.ObjectId;
-const REACTION__COMMENT_COLL                    = require('../database/reaction.comment-coll');
+const REACTION__COMMENT_COLL                    = require('../database/reaction.comment_core-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');
@@ -16,7 +16,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F0271
      */
-    insert({ content, userID }) {
+    insert({ content, files, images, userID }) {
         const that = this;
         return new Promise(async (resolve) => {
              try {
@@ -24,7 +24,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = {};
-                
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
@@ -42,8 +41,10 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
 
-                dataInsert.content = content;
-                dataInsert.author = userID;
+                dataInsert.content  = content;
+                dataInsert.author   = userID;
+                dataInsert.files    = files;
+                dataInsert.images   = images;
 
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)

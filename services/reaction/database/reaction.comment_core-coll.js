@@ -1,0 +1,43 @@
+"use strict";
+
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
+const Schema                = require('mongoose').Schema;
+
+module.exports  = DATABASE_MIDDLEWARE("comment_core", {
+    //_________Nội dung
+    content: String,
+
+    //_________Các files được đính kèm trong bài viết
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file_core'
+    }],
+    
+    //_________Các ảnh được đính kèm trong bài viết
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file_core'
+    }],
+
+    //_________Người comment
+    author: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
+    //_________Số lượng comment con của comment cha
+    amountCommentReply: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________Số lượng comment con của comment cha
+    amountReaction: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________Số lượng comment con của comment cha
+    typeReactions: [{
+        type :  Number,
+    }],
+})

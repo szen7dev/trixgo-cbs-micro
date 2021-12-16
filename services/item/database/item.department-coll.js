@@ -514,7 +514,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
-
+    
     //______Số bản vẽ
     numberOfDrawings: {
         type: Number,
