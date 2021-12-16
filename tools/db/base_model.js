@@ -57,8 +57,6 @@ class BaseModel {
         return new PROMISE(function (resolve) {
             data.modifyAt = timeUtils.getCurrentTime();
             data.createAt = timeUtils.getCurrentTime();
-            // if (OBJECT_ID.isValid(authorID))
-            //     data.userCreate = authorID;
 
             (new coll(data)).save(function (error, result) {
                 return resolve(result, error);
