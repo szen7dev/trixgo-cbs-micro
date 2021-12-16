@@ -43,7 +43,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
-	insert({ authorID, title, content, type, location, files, tagFriends, images, background, company, ctx }) {
+	insert({ authorID, title, content, type, location, files, tagFriends, images, background, companyID, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -101,11 +101,11 @@ class Model extends BaseModel {
 					condition.tagFriends = tagFriends;
 				}
 
-				if (company) {
-					if(!checkObjectIDs(company))
+				if (companyID) {
+					if(!checkObjectIDs(companyID))
                     	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-					condition.company = company;
+					condition.company = companyID;
 				}
 
 				let infoMediaAfterInserted = await this.insertData(condition);
@@ -146,7 +146,7 @@ class Model extends BaseModel {
 
 				switch (condition.type) {
 					case 1:
-						conditionReceiver = { company };
+						conditionReceiver = { company: companyID };
 						break;
 					case 3:
 						conditionReceiver = { department };
@@ -155,25 +155,32 @@ class Model extends BaseModel {
 						break;
 				};
 
-				if(!Object.keys(conditionReceiver).length){
+				if(Object.keys(conditionReceiver).length){
 					const receivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
-						condition: conditionReceiver,
+						condition: { ...conditionReceiver, _id: { $nin: [authorID] } },
 						select: '_id'
 					});
 	
 					if(!receivers.error){
+						const infoSender = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+							userID: authorID,
+							select: 'fullname'
+						});
 						receiversNotification = receivers.data.map(receiver => receiver._id);
 
 						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-							title: `Ai đó đã tạo 1 bài viết`,
-							content,
-							receivers: ["5f90ed0d5e842b7c18dff972"],
+							title: `${infoSender?.data?.fullname} đã tạo 1 bài viết`,
+							content: content.length > 200 ? content.substring(0, 200) : content,
+							receivers: receiversNotification,
 							type: 1
 						});
 					}
 				}
 
-                return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
+                return resolve({ error: false, data: {
+					infoMediaAfterInserted,
+					receivers: receiversNotification
+				}, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -185,7 +192,7 @@ class Model extends BaseModel {
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
 	update({
-		mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, company, group
+		mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, companyID, group
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -251,18 +258,11 @@ class Model extends BaseModel {
 					condition.tagFriends = tagFriends;
 				}
 
-				if (company) {
-					if(!checkObjectIDs(company))
+				if (companyID) {
+					if(!checkObjectIDs(companyID))
                     	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-					condition.company = company;
-				}
-
-				if (group) {
-					if(!checkObjectIDs(group))
-                    	return resolve({ error: true, message: 'Request params group invalid', status: 400 });
-
-					condition.group = group;
+					condition.company = companyID;
 				}
 
 				if (filesDelete && filesDelete.length) {
