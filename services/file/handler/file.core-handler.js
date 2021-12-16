@@ -90,10 +90,6 @@ module.exports = {
             try {
                 let { _id: userID } = ctx.meta.infoUser;
 
-                console.log({
-                    PARAMS: ctx.params
-                })
-
                 await this.validateEntity(ctx.params);
                 let { type, app, name, size } = ctx.params;
                 let extension = getExtension(name);
@@ -117,7 +113,7 @@ module.exports = {
                         userID
                     });
                 }
-                
+
                 return {
                     error: false,
                     status: 200,

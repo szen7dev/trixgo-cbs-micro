@@ -547,14 +547,16 @@ module.exports = {
         params: {
             mediaID: { type: "string" },
             content: { type: "string" },
+            parentID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { mediaID, content, files } = ctx.params;
+                const { mediaID, parentID, content, images, files } = ctx.params;
+
                 const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.commentMedia({
-					authorID, mediaID, content, files, ctx
+					authorID, mediaID, parentID, content, images, files, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -578,7 +580,7 @@ module.exports = {
                 const { mediaID, limit, lastestID } = ctx.params;
 
                 const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.getListCommentMedia({
-					mediaID, limit, lastestID, ctx
+					mediaID, limit, lastestID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -616,7 +618,7 @@ module.exports = {
 	 * Dev: NPNguyen 🐸
 	 * Func: CHỈNH SỬA COMMENT TRONG BÀI VIẾT
 	 */
-     updateCommentMedia: {
+    updateCommentMedia: {
         params: {
             commentID: { type: "string" },
         },
@@ -624,9 +626,9 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { commentID, content, files } = ctx.params;
+                const { commentID, content, images, files } = ctx.params;
                 const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.updateCommentMedia({
-					authorID, commentID, content, files, ctx
+					authorID, commentID, content, images, files, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -640,7 +642,7 @@ module.exports = {
 	 * Dev: NPNguyen 🐸
 	 * Func: XÓA COMMENT TRONG BÀI VIẾT
 	 */
-      deleteCommentMedia: {
+    deleteCommentMedia: {
         params: {
             commentID: { type: "string" },
         },
@@ -650,7 +652,7 @@ module.exports = {
                 const { _id: authorID } = ctx.meta.infoUser;
                 const { commentID } = ctx.params;
                 const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.deleteCommentMedia({
-					authorID, commentID, ctx
+					authorID, commentID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
