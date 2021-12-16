@@ -59,34 +59,28 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
 	location: GeoSchema,
 
     /**
-     * Các files được đính kèm trong bài viết
-     */
-    files: [
-        {
-			type: Schema.Types.ObjectId,
-			ref: 'file_core'
-        }
-    ],
-
-    /**
      * Bạn bè được tag trong bài viết
      */
-    tagFriends: [
-        {
-			type: Schema.Types.ObjectId,
-			ref: 'user'
-        }
-    ],
+    tagFriends: [{
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }],
+
+    /**
+     * Các files được đính kèm trong bài viết
+     */
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file_core'
+    }],
 
     /**
      * Các ảnh được đính kèm trong bài viết
      */
-    images: [
-        {
-			type: Schema.Types.ObjectId,
-			ref: 'file_core'
-        }
-    ],
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file_core'
+    }],
 
      /**
      * Background bài viết
@@ -114,14 +108,6 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         ref     : 'company'
     },
 
-     /**
-     * ID nhóm
-     */
-    group: {
-        type    : Schema.Types.ObjectId,
-        // ref     : 'group'
-    },
-
     /**
      * 1: Mặc định
      * 2: Lưu bài viết
@@ -131,5 +117,4 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: Number,
         default: 1
     },
-
 })

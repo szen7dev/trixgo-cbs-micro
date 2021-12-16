@@ -13,6 +13,22 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
     },
 
     /**
+     * Các files được đính kèm trong bài viết
+     */
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file_core'
+    }],
+
+    /**
+     * Các ảnh được đính kèm trong bài viết
+     */
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file_core'
+    }],
+
+    /**
      * Comment
      */
     comment: {
@@ -26,6 +42,14 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
     parent: {
         type    :  Schema.Types.ObjectId,
         ref     : 'comment_core'
+    },
+
+    /**
+     *  ID comment reply cuối
+     */
+    lastestReplyID: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'media_comment'
     },
 
     /**
