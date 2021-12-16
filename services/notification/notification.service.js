@@ -1,14 +1,17 @@
 "use strict";
+
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_NOTIFICATION } 	        = require('./helper/notification.actions-constant');
-const NOTIFICATION__LOG_HANDLER             = require('./handler/notification.log-handler');
-const { LIST_EVENTS_SUBSCRIBE }				= require('./helper/notification.events-constant')
+const { CF_ACTIONS_NOTIFICATION }		= require('./helper/notification.actions-constant');
+const { LIST_EVENTS_SUBSCRIBE }			= require('./helper/notification.events-constant');
+const NOTIFICATION_LOG_HANDLER			= require('./handler/notification.log-handler');
+const NOTIFICATION_LOG_COLL				= require('./database/notification.log-coll');
+
 module.exports = {
 	name: CF_DOMAIN_SERVICES.NOTIFICATION,
 	mixins: [
-		DbService('notification_log'),  
+		DbService(NOTIFICATION_LOG_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.NOTIFICATION])
     ],
 
@@ -20,16 +23,19 @@ module.exports = {
 	},
 
 	/**
-	* Service dependencies
-	*/
+	 * Service dependencies
+	 */
 	dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
+
 	/**
 	* Actions
 	*/
 	actions: {	
-		// [CF_ACTIONS_EXAMPLE.CASE_1_GET_LIST] 		: EXAMPLE__CASE1_HANLDER.getList,
+		[CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION]			: NOTIFICATION_LOG_HANDLER.insertNotification,
+		[CF_ACTIONS_NOTIFICATION.UPDATE_STATUS_NOTIFICATION]	: NOTIFICATION_LOG_HANDLER.updateStatus,
+		[CF_ACTIONS_NOTIFICATION.GET_LIST_NOTIFICATION]			: NOTIFICATION_LOG_HANDLER.getListNotification,
 	},
 
 	/**

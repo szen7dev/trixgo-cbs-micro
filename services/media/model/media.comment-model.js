@@ -40,7 +40,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -52,8 +52,8 @@ class Model extends BaseModel {
 
                 if(infoCommentCore.error)
                     return resolve(infoCommentCore);
-               
-                let comment = infoCommentCore.data._id;
+
+                let commentCoreID = infoCommentCore.data._id;
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -61,7 +61,7 @@ class Model extends BaseModel {
                  */
                 let dataInsert = {  
                     media: mediaID,
-                    comment,
+                    comment: commentCoreID,
                     userCreate: userID
                 }
 
@@ -69,13 +69,19 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
-                
+                    return resolve({ error: true, message: "can't_insert_comment_media ", status: 403 });
+
                 if(checkObjectIDs(parentID)){
-                    await MEDIA__COMMENT_COLL.findByIdAndUpdate(parentID, { lastestReplyID: infoAterInsert._id});
+                    await MEDIA__COMMENT_COLL.findByIdAndUpdate(parentID, { 
+                        lastestReplyID: infoAterInsert._id
+                    });
+
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
+                        commentID: commentCoreID,
+                        amountCommentReply: 1
+                    })
                 }
                     
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
@@ -154,9 +160,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách pcm_plan_task ✅
+     * Name  : Danh sách comment notification ✅
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({ mediaID, parentID,
         keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
@@ -165,37 +171,22 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-
-                };
-
-                let conditionFind = { };
+                let conditionObj = {};
+                let conditionFind = {};
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
 
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                if(mediaID){
+                if(checkObjectIDs(mediaID)){
                     conditionObj.media = mediaID;
                 }
                 
-                if(parentID){
-                    conditionObj.parent = parentID;
+                if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                 }
                
@@ -228,7 +219,6 @@ class Model extends BaseModel {
 
 					populates2 = JSON.parse(populates2);
 				}
-                
                 // POPULATE 3
                 if(populates3 && typeof populates3 === 'string'){
 					if(!IsJsonString(populates3))
@@ -247,25 +237,19 @@ class Model extends BaseModel {
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await MEDIA__COMMENT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info last comment media", status: 400 });
 
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
-                    // console.log({ nextInfo });
+
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
-				// if(keyword){
-                //     keyword = keyword.split(" ");
-                //     keyword = '.*' + keyword.join(".*") + '.*';
-                //     conditionObj.name = new RegExp(keyword, 'i');
-                // }
-                
                 let infoDataAfterGet = await MEDIA__COMMENT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -286,9 +270,11 @@ class Model extends BaseModel {
                         }
                     })
                     .lean(); 
+
                 // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
+
                 let nextCursor	= null;
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -297,7 +283,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                
+
                 let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObj);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
@@ -308,7 +294,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
