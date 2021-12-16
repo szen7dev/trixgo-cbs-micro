@@ -1,13 +1,13 @@
-const BASE_ROUTE = '/example';
+const BASE_ROUTE = '/notifications';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
-const CASE_1 = '/case_1';
 
-const CF_ROUTINGS_EXAMPLE = {
+const CF_ROUTINGS_NOTIFICATION = {
     ORIGIN_APP: BASE_ROUTE,
 
-    CASE_1_GET_LIST                                : `${BASE_ROUTE}${CASE_1}`, // /payment/transactions
+    GET_LIST_NOTIFICATION               : `${BASE_ROUTE}/list-notifications`,
+    UPDATE_STATUS_NOTIFICATION          : `${BASE_ROUTE}/update-status-notification`,
 }
 
-exports.CF_ROUTINGS_EXAMPLE = CF_ROUTINGS_EXAMPLE;
+exports.CF_ROUTINGS_NOTIFICATION = CF_ROUTINGS_NOTIFICATION;

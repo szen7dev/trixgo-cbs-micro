@@ -1,9 +1,11 @@
 // liệt kê các actions của hệ thống
-const BASE_ACTIONS = 'ACT_NOTIFICATION';
-const LOG      = 'LOG';
+const BASE_ACTIONS  = 'ACT_NOTIFICATION';
+const LOG           = 'LOG';
 
 const CF_ACTIONS_NOTIFICATION = {
-    INSERT                        : `${BASE_ACTIONS}_${LOG}_INSERT`,
+    INSERT_NOTIFICATION                         : `${BASE_ACTIONS}_${LOG}_INSERT_NOTIFICATION`,
+    UPDATE_STATUS_NOTIFICATION                  : `${BASE_ACTIONS}_${LOG}_UPDATE_STATUS_NOTIFICATION`,
+    GET_LIST_NOTIFICATION                       : `${BASE_ACTIONS}_${LOG}_GET_LIST_NOTIFICATION`,
 }
 
 exports.CF_ACTIONS_NOTIFICATION = CF_ACTIONS_NOTIFICATION;

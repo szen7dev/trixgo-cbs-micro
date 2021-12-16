@@ -5,3 +5,5 @@ exports.NOTI_TYPE_MOBILE                = 'NOTI_TYPE_MOBILE';
 exports.NOTI_TYPE_WEB                   = 'NOTI_TYPE_WEB';
 exports.NOTI_TYPE_SMS                   = 'NOTI_TYPE_SMS';
 exports.NOTI_TYPE_EMAIL                 = 'NOTI_TYPE_EMAIL';
+
+exports.NOTI_TYPE = [1,2,3,4,5]
