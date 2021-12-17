@@ -18,14 +18,13 @@ const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
 /**
  * COLL
  */
- const MEDIA__COMMENT_COLL    			= require('./database/media.comment-coll');
+const MEDIA__COMMENT_COLL    			= require('./database/media.comment-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
 	mixins: [
 		DbService('media_post'),
 		DbService('media_comment_image'),
-		// DbService('media_comment'),
 		DbService('media_post_file'),  
 		DbService('media_reaction_image'),  
 		DbService('media_reaction'),  
@@ -169,8 +168,8 @@ module.exports = {
 		/**
 		 * COMMENT
 		 */
-		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   			: MEDIA__COMMENT_HANDLER.insert,
-		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   							: MEDIA__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]				: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 	},
 
 	/**

@@ -36,7 +36,6 @@ class Model extends BaseModel {
     insert({ mediaID, parentID, content, files, images, userID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-            
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -78,14 +77,17 @@ class Model extends BaseModel {
                         lastestReplyID: infoAterInsert._id
                     });
 
+                    const infoParent = await MEDIA__COMMENT_COLL.findById(parentID).select('comment');
+
                     await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
-                        commentID: commentCoreID,
+                        commentID: `${infoParent?.comment}`,
                         amountCommentReply: 1
                     })
                 }
                     
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -160,12 +162,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách comment notification ✅
+     * Name  : Danh sách comment ✅
      * Author: Depv
      * Code  :
      */
-    getList({ mediaID, parentID,
-        keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
+    getList({ mediaID, parentID, limit = 10, lastestID, populates2 = {}, populates3 = {}, filter = {}, populates = {}, populates1 = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -173,7 +174,10 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {};
                 let conditionFind = {};
-                let sortBy   = { createAt: -1 };
+                let sortBy = {
+					createAt: -1,
+					_id: -1,
+				};
 				let objSort  = {};
 
                 /** 
@@ -188,8 +192,10 @@ class Model extends BaseModel {
                 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
+                } else{
+                    conditionObj.parent = { $exists: false };
                 }
-               
+
                 // LẤY NHỮNG TRƯỜNG CẦN THIẾT
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -197,7 +203,7 @@ class Model extends BaseModel {
 
 					filter = JSON.parse(filter);
 				}
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -247,7 +253,6 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
 					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
 				}
 
                 let infoDataAfterGet = await MEDIA__COMMENT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
@@ -259,14 +264,14 @@ class Model extends BaseModel {
                         populate: {
                             path: populates1?.value || "",
                             select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
+                            // populate: {
+                            //     path: populates2?.value || "",
+                            //     select: populates2?.select || "",
+                            //     populate: {
+                            //         path: populates3?.value || "",
+                            //         select: populates3?.select || "",
+                            //     }
+                            // }
                         }
                     })
                     .lean(); 
@@ -279,9 +284,12 @@ class Model extends BaseModel {
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        // nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
+
+                    infoDataAfterGet = infoDataAfterGet.reverse();
+                    nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
                 let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObj);
@@ -295,6 +303,7 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
