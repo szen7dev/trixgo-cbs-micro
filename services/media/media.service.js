@@ -110,9 +110,6 @@ module.exports = {
 		// ✅	CHỈNH SỬA COMMENT TRONG BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_COMMENT_MEDIA]            				: MEDIA_HANDLER.updateCommentMedia,
 
-		// ✅	XÓA COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA_HANDLER.deleteCommentMedia,
-
 		// ✅	TRẢ LỜI COMMENT TRONG BÀI VIẾT
 		[CF_ACTIONS_MEDIA.REPLY_COMMENT_MEDIA]         					: MEDIA_HANDLER.replyCommentMedia,
 
@@ -169,6 +166,7 @@ module.exports = {
 		 * COMMENT
 		 */
 		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   							: MEDIA__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.deleteComment,
 		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]				: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 	},
 

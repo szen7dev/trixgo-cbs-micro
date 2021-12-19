@@ -39,6 +39,31 @@ module.exports = {
             }
         }
     },
+
+     /**
+	 * Dev: NPNguyen 🐸
+	 * Func: XÓA COMMENT TRONG BÀI VIẾT
+	 */
+    deleteComment: {
+        params: {
+            commentID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID } = ctx.params;
+
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.delete({
+					authorID, commentID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
  
     /**
      * Dev: Depv ✅
