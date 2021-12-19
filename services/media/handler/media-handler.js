@@ -57,16 +57,17 @@ module.exports = {
     getListMedia: {
         params: {
             limit: { type: 'string', optional: true },
+            type: { type: 'string', optional: true },
             companyID: { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: userID } = ctx.meta.infoUser;
-                let { lastestID, limit, companyID } = ctx.params;
+                let { lastestID, limit, companyID, type } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
-					userID, lastestID, limit, companyID, ctx
+					userID, lastestID, limit, companyID, type, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -637,31 +638,6 @@ module.exports = {
             }
         }
     },
-
-     /**
-	 * Dev: NPNguyen 🐸
-	 * Func: XÓA COMMENT TRONG BÀI VIẾT
-	 */
-    deleteCommentMedia: {
-        params: {
-            commentID: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
-                const { commentID } = ctx.params;
-                const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.deleteCommentMedia({
-					authorID, commentID
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
 
     /**
 	 * Dev: NPNguyen 🐸

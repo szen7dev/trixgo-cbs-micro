@@ -205,16 +205,20 @@ module.exports = {
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
             oneSignalID         : { type: "string" },
-
-            userID              : { type: "string" }, //TODO update userID fake
+            userID              : { type: "string", optional: true }, //TODO update userID fake
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { userID, platform, deviceID, deviceName, registrationID, oneSignalID }        = ctx.params;
+                let infoUser = ctx.meta.infoUser;
+                let { userID, platform, deviceID, deviceName, registrationID, oneSignalID } = ctx.params;
 
-                let infoUser = await AUTH__USER_MODEL.updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID });
-                return infoUser;
+                userID = userID || infoUser._id;
+
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateDeviceLogin({
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID
+                });
+                return infoUserAfterUpdate;
             } catch (error) {
                 return { error: true, message: error.message };
             }

@@ -1,13 +1,7 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.actions-constant');
@@ -15,9 +9,8 @@ const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.ac
 /**s
  * import inter-coll, exter-coll
  */
-const MEDIA__COMMENT_COLL       = require('../database/media.comment-coll');
-const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
-const { template }                          = require('lodash');
+const MEDIA__COMMENT_COLL               = require('../database/media.comment-coll');
+const { RANGE_BASE_PAGINATION }         = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -84,9 +77,68 @@ class Model extends BaseModel {
                         amountCommentReply: 1
                     })
                 }
+
+                infoAterInsert = await MEDIA__COMMENT_COLL
+                    .findById(infoAterInsert._id)
+                    .populate({
+                        path: 'comment userCreate lastestReplyID',
+                        select: '_id fullname image content files images amountCommentReply amountReaction createAt',
+                        populate: {
+                            path: 'comment userCreate',
+                            select: '_id fullname image content files images amountCommentReply amountReaction'
+                        }
+                    })
+                    .lean();
+
+                console.log({ infoAterInsert });
                     
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
+                console.error(error);
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH 🐸
+	 * Func: XÓA COMMENT	
+	 */
+	delete({ authorID, commentID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(authorID))
+					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+
+                if(!checkObjectIDs(commentID))
+					return resolve({ error: true, message: 'Request param commentID invalid', status: 400 });
+
+                let infoComment = await MEDIA__COMMENT_COLL.findOne({ _id: commentID, userCreate: authorID }).populate('parent');
+
+                if(!infoComment)
+                    return resolve({ error: true, message: 'Not found info comment', status: 403 });
+
+                if(infoComment.parent){
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
+                        commentID: `${infoComment?.parent?.comment}`,
+                        amountCommentReply: -1
+                    })
+                } else{
+                    // await MEDIA__COMMENT_COLL.deleteMany({ parent: commentID });
+                }
+
+				let infoCommentAfterDelete = await MEDIA__COMMENT_COLL.findByIdAndDelete(commentID);
+
+				if (!infoCommentAfterDelete) {
+                    return resolve({ error: true, message: "Can't delete comment", status: 422 });
+				}
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: infoCommentAfterDelete
+				});
+			} catch (error) {
                 console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -134,23 +186,23 @@ class Model extends BaseModel {
 				}
 
                 let infoComment = await MEDIA__COMMENT_COLL.findById(commentID)
-                                .select(select)
-                                .populate({
-                                    path: populates?.value || "",
-                                    select: populates?.select || "",
-                                    populate: {
-                                        path: populates1?.value ||"",
-                                        select: populates1?.select || "",
-                                        populate: {
-                                            path: populates2?.value || "",
-                                            select: populates2?.select || "",
-                                            populate: {
-                                                path: populates3?.value || "",
-                                                select: populates3?.select || "",
-                                            }
-                                        }
-                                    }
-                                })
+                    .select(select)
+                    .populate({
+                        path: populates?.value || "",
+                        select: populates?.select || "",
+                        populate: {
+                            path: populates1?.value ||"",
+                            select: populates1?.select || "",
+                            populate: {
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
+                                populate: {
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
+                                }
+                            }
+                        }
+                    })
 
 				if (!infoComment) return resolve({ error: true, message: 'cannot_get' });
 
@@ -166,7 +218,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ mediaID, parentID, limit = 10, lastestID, populates2 = {}, populates3 = {}, filter = {}, populates = {}, populates1 = {} }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, populates2 = {}, populates3 = {}, filter = {}, populates = {}, populates1 = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
