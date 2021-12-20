@@ -1,13 +1,7 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.actions-constant');
@@ -15,9 +9,8 @@ const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.ac
 /**s
  * import inter-coll, exter-coll
  */
-const MEDIA__COMMENT_COLL       = require('../database/media.comment-coll');
-const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
-const { template }                          = require('lodash');
+const MEDIA__COMMENT_COLL               = require('../database/media.comment-coll');
+const { RANGE_BASE_PAGINATION }         = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -77,14 +70,76 @@ class Model extends BaseModel {
                         lastestReplyID: infoAterInsert._id
                     });
 
+                    const infoParent = await MEDIA__COMMENT_COLL.findById(parentID).select('comment');
+
                     await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
-                        commentCoreID,
+                        commentID: `${infoParent?.comment}`,
                         amountCommentReply: 1
                     })
                 }
-                
+
+                infoAterInsert = await MEDIA__COMMENT_COLL
+                    .findById(infoAterInsert._id)
+                    .populate({
+                        path: 'comment userCreate lastestReplyID',
+                        select: '_id fullname image content files images amountCommentReply amountReaction createAt',
+                        populate: {
+                            path: 'comment userCreate',
+                            select: '_id fullname image content files images amountCommentReply amountReaction'
+                        }
+                    })
+                    .lean();
+
+                console.log({ infoAterInsert });
+                    
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
+                console.error(error);
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH 🐸
+	 * Func: XÓA COMMENT	
+	 */
+	delete({ authorID, commentID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(authorID))
+					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+
+                if(!checkObjectIDs(commentID))
+					return resolve({ error: true, message: 'Request param commentID invalid', status: 400 });
+
+                let infoComment = await MEDIA__COMMENT_COLL.findOne({ _id: commentID, userCreate: authorID }).populate('parent');
+
+                if(!infoComment)
+                    return resolve({ error: true, message: 'Not found info comment', status: 403 });
+
+                if(infoComment.parent){
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
+                        commentID: `${infoComment?.parent?.comment}`,
+                        amountCommentReply: -1
+                    })
+                } else{
+                    // await MEDIA__COMMENT_COLL.deleteMany({ parent: commentID });
+                }
+
+				let infoCommentAfterDelete = await MEDIA__COMMENT_COLL.findByIdAndDelete(commentID);
+
+				if (!infoCommentAfterDelete) {
+                    return resolve({ error: true, message: "Can't delete comment", status: 422 });
+				}
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: infoCommentAfterDelete
+				});
+			} catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -131,23 +186,23 @@ class Model extends BaseModel {
 				}
 
                 let infoComment = await MEDIA__COMMENT_COLL.findById(commentID)
-                                .select(select)
-                                .populate({
-                                    path: populates?.value || "",
-                                    select: populates?.select || "",
-                                    populate: {
-                                        path: populates1?.value ||"",
-                                        select: populates1?.select || "",
-                                        populate: {
-                                            path: populates2?.value || "",
-                                            select: populates2?.select || "",
-                                            populate: {
-                                                path: populates3?.value || "",
-                                                select: populates3?.select || "",
-                                            }
-                                        }
-                                    }
-                                })
+                    .select(select)
+                    .populate({
+                        path: populates?.value || "",
+                        select: populates?.select || "",
+                        populate: {
+                            path: populates1?.value ||"",
+                            select: populates1?.select || "",
+                            populate: {
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
+                                populate: {
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
+                                }
+                            }
+                        }
+                    })
 
 				if (!infoComment) return resolve({ error: true, message: 'cannot_get' });
 
@@ -159,12 +214,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách comment notification ✅
+     * Name  : Danh sách comment ✅
      * Author: Depv
      * Code  :
      */
-    getList({ mediaID, parentID,
-        keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, populates2 = {}, populates3 = {}, filter = {}, populates = {}, populates1 = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -172,7 +226,10 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {};
                 let conditionFind = {};
-                let sortBy   = { createAt: -1 };
+                let sortBy = {
+					createAt: -1,
+					_id: -1,
+				};
 				let objSort  = {};
 
                 /** 
@@ -187,8 +244,10 @@ class Model extends BaseModel {
                 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
+                } else{
+                    conditionObj.parent = { $exists: false };
                 }
-               
+
                 // LẤY NHỮNG TRƯỜNG CẦN THIẾT
                 if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter))
@@ -196,7 +255,7 @@ class Model extends BaseModel {
 
 					filter = JSON.parse(filter);
 				}
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -246,7 +305,6 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
 					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
 				}
 
                 let infoDataAfterGet = await MEDIA__COMMENT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
@@ -258,14 +316,14 @@ class Model extends BaseModel {
                         populate: {
                             path: populates1?.value || "",
                             select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
+                            // populate: {
+                            //     path: populates2?.value || "",
+                            //     select: populates2?.select || "",
+                            //     populate: {
+                            //         path: populates3?.value || "",
+                            //         select: populates3?.select || "",
+                            //     }
+                            // }
                         }
                     })
                     .lean(); 
@@ -278,9 +336,12 @@ class Model extends BaseModel {
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        // nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
+
+                    infoDataAfterGet = infoDataAfterGet.reverse();
+                    nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
                 let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObj);
@@ -294,6 +355,7 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

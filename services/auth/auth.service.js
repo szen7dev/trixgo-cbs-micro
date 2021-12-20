@@ -86,8 +86,8 @@ module.exports = {
 		/**
 		 * KHU VỰC DÀNH CHO COMPANY
 		 */
-		[CF_ACTIONS_AUTH.GET_INFO_OR_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
-	
+		[CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
+		
 		/**
 		 * KHU VỰC DÀNH CHO REGISTER_TRIAL
 		 */

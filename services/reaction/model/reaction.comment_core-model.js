@@ -92,15 +92,12 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(commentCoreID))
                     return resolve({ error: true, message: "Request params commentCoreID invalid" });
 
-                if(!content)
-                    return resolve({ error: true, message: "Request params content invalid" });
-
                /**
                 * LOGIC STEP (3)
                 *  3.1: convert type + update name (ví dụ: string -> number)
                 *  3.2: operation database
                 */    
-                dataUpdate.content = content;
+                content && (dataUpdate.content = content);
 
                 if(amountCommentReply){
                     dataUpdate.$inc = {
@@ -157,6 +154,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterAction});
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message });
             }
        })

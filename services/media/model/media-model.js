@@ -335,7 +335,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
-    getListMedia({ userID, lastestID, companyID, limit = 20, ctx }){
+    getListMedia({ userID, lastestID, companyID, type, limit = 20, ctx }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -390,6 +390,29 @@ class Model extends BaseModel {
 
 				if(companyID && checkObjectIDs(companyID)){
 					conditionObj.company = companyID;
+				}
+
+				switch (type) {
+					case 'company':
+						conditionObj.type = 1;
+						break;
+					case 'just-me':
+						conditionObj.type = 2;
+						break;
+					case 'departments':
+						conditionObj.type = 3;
+						break;
+					case 'community':
+						conditionObj.type = 4;
+						break;
+					case 'system':
+						conditionObj.type = 5;
+						break;
+					case 'internal-company':
+						conditionObj.type = { $in: [1,2,3] };
+						break;
+					default:
+						break;
 				}
 
                 let listAfterFind = await this.getListWithCondition({
@@ -483,7 +506,6 @@ class Model extends BaseModel {
         })
     }
 
-
 	/**
 	 * Dev: NPNguyen 🐸
 	 * Func: ĐÓNG GÓI RENDER BÀI VIẾT	
@@ -559,84 +581,91 @@ class Model extends BaseModel {
 
 				if (listMedia && listMedia.length) {
 					for (let media of listMedia) {
-						let countUserWatched = await MEDIA_SEEN_COLL.count({
+						let countUserWatched = await MEDIA_SEEN_COLL.countDocuments({
 							media: { $in: [media._id] }
 						});
 
-						let countComments = await MEDIA_COMMENT_COLL.count({
+						let countComments = await MEDIA_COMMENT_COLL.countDocuments({
 							media: { $in: [media._id] }
 						});
 
-						let countReactions = await MEDIA_REACTION_COLL.count({
+						let countReactions = await MEDIA_REACTION_COLL.countDocuments({
 							media: { $in: [media._id] }
 						});
-						
-						let listComment = await MEDIA_COMMENT_COLL.find({ media: { $in: [media._id] }, parent: { $exists: false } })
-							.select('_id')
-							.populate({
-								path: 'author',
-								select: 'fullname company image',
-							})
-							.populate({
-								path: 'comment',
-								select: 'content',
-							})
-							.sort(sortBy)
-							.limit(2)
-							.lean();
 
-						let idxComment = 0;
-						for (let comment of listComment) {
-							let idxCommentChild = 0;
-							let totalCommentChild 		= await MEDIA_COMMENT_COLL.count({ parent: comment._id })
-							let totalReactionComment 	= await MEDIA_REACTION_COLL.count({ comment: comment.comment._id })
-							let listCommnetChild 		= await MEDIA_COMMENT_COLL.find({ parent: comment._id })
-								.select('_id')
-								.populate({
-									path: 'author',
-									select: 'fullname company image',
-								})
-								.populate({
-									path: 'comment',
-									select: 'content'
-								})
-								.sort(sortBy)
-								.limit(2)
-								.lean();
-
-							for (let commentChid of listCommnetChild) {
-								let infoCommentChildFile 	= await MEDIA_COMMENT_FILE_COLL.find({ comment: commentChid.comment._id })
-									.select('_id')
-									.populate({
-										path: 'file',
-										select: 'name url',
-									})
-								let totalReactionCommentChild 	= await MEDIA_REACTION_COLL.count({ comment: commentChid.comment._id })
-
-								listCommnetChild[idxCommentChild].comment = {
-									...listCommnetChild[idxCommentChild].comment,
-									totalReactionCommentChild,
-									files: infoCommentChildFile
-								}
-								idxCommentChild ++;
-							}
-
-							let infoCommentFile = await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
-								.select('_id')
-								.populate({
-									path: 'file',
-									select: 'name url',
-								})
-
-							listComment[idxComment].comment = {
-								...listComment[idxComment].comment,
-								totalCommentChild,
-								totalReactionComment,
-								files: infoCommentFile,
-								listCommnetChild,
-							}
-							idxComment++;
+						listMediaAfterSet[listMediaAfterSet.length] = {
+							...media,
+							totalComments: countComments,
+							totalWatched: countUserWatched,
+							totalReactions: countReactions,
 						}
+						
+						// let listComment = await MEDIA_COMMENT_COLL.find({ media: { $in: [media._id] }, parent: { $exists: false } })
+						// 	.select('_id')
+						// 	.populate({
+						// 		path: 'author',
+						// 		select: 'fullname company image',
+						// 	})
+						// 	.populate({
+						// 		path: 'comment',
+						// 		select: 'content',
+						// 	})
+						// 	.sort(sortBy)
+						// 	.limit(2)
+						// 	.lean();
+
+						// let idxComment = 0;
+						// for (let comment of listComment) {
+						// 	let idxCommentChild = 0;
+						// 	let totalCommentChild 		= await MEDIA_COMMENT_COLL.count({ parent: comment._id })
+						// 	let totalReactionComment 	= await MEDIA_REACTION_COLL.count({ comment: comment.comment._id })
+						// 	let listCommnetChild 		= await MEDIA_COMMENT_COLL.find({ parent: comment._id })
+						// 		.select('_id')
+						// 		.populate({
+						// 			path: 'author',
+						// 			select: 'fullname company image',
+						// 		})
+						// 		.populate({
+						// 			path: 'comment',
+						// 			select: 'content'
+						// 		})
+						// 		.sort(sortBy)
+						// 		.limit(2)
+						// 		.lean();
+
+						// 	for (let commentChid of listCommnetChild) {
+						// 		let infoCommentChildFile 	= await MEDIA_COMMENT_FILE_COLL.find({ comment: commentChid.comment._id })
+						// 			.select('_id')
+						// 			.populate({
+						// 				path: 'file',
+						// 				select: 'name url',
+						// 			})
+						// 		let totalReactionCommentChild 	= await MEDIA_REACTION_COLL.count({ comment: commentChid.comment._id })
+
+						// 		listCommnetChild[idxCommentChild].comment = {
+						// 			...listCommnetChild[idxCommentChild].comment,
+						// 			totalReactionCommentChild,
+						// 			files: infoCommentChildFile
+						// 		}
+						// 		idxCommentChild ++;
+						// 	}
+
+						// 	let infoCommentFile = await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
+						// 		.select('_id')
+						// 		.populate({
+						// 			path: 'file',
+						// 			select: 'name url',
+						// 		})
+
+						// 	listComment[idxComment].comment = {
+						// 		...listComment[idxComment].comment,
+						// 		totalCommentChild,
+						// 		totalReactionComment,
+						// 		files: infoCommentFile,
+						// 		listCommnetChild,
+						// 	}
+						// 	idxComment++;
+						// }
 						// for(const comment of listComment) {
 
 						// 	let listComment2 = await MEDIA_REACTION_COLL.find({ comment: { $in: [comment._id] } })
@@ -649,16 +678,16 @@ class Model extends BaseModel {
 
 						// TODO: Count total comment of User
 
-						listMediaAfterSet = [
-							...listMediaAfterSet,
-							{
-								...media,
-								totalUserWatched: countUserWatched,
-								totalComments: countComments,
-								totalReactions: countReactions,
-								listComment
-							}
-						]
+						// listMediaAfterSet = [
+						// 	...listMediaAfterSet,
+						// 	{
+						// 		...media,
+						// 		totalUserWatched: countUserWatched,
+						// 		totalComments: countComments,
+						// 		totalReactions: countReactions,
+						// 		listComment
+						// 	}
+						// ]
 					}
 				}
 
@@ -670,7 +699,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: { 
-						listRecords: listMedia, 
+						listRecords: listMediaAfterSet, 
 						limit: +limit,
 						totalRecord,
 						totalPages,

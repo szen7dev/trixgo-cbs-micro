@@ -8,9 +8,9 @@ const {
 
 module.exports  = DATABASE_MIDDLEWARE("file_core", {
     // list app CONSTANT
-    app  : { type: String, require: true },
-    name : { type: String, require: true }, //uuidv1
-    
+    app     : { type: String, require: true },
+    nameOrg : { type: String, require: true }, //Tên gốc
+    name    : { type: String, require: true }, //uuidv1
     status: { 
         type: Number, 
         enum:[FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],

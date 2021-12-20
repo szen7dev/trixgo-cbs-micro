@@ -1,14 +1,14 @@
 /**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
  /**
   * MODELS
   */
- const MEDIA__COMMENT_MODEL                      = require('../model/media.comment-model').MODEL;
+const MEDIA__COMMENT_MODEL                      = require('../model/media.comment-model').MODEL;
  
- module.exports = {
+module.exports = {
     /**
      * Dev: Depv ✅
      * Func: insert comment media
@@ -16,26 +16,51 @@
     insert: {
         auth: "required",
         params: {
-            mediaID  : { type: "string" },
-            parentID : { type: "string", optional: true },
-            content  : { type: "string", optional: true },
-            files    : { type: "array", optional: true },
-            images   : { type: "array", optional: true },
+            mediaID         : { type: "string" },
+            parentID        : { type: "string", optional: true },
+            content         : { type: "string", optional: true },
+            files           : { type: "array", optional: true },
+            images          : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                
+
                 let { _id: userID } = ctx.meta.infoUser;
                 let { mediaID, parentID, content, files, images } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
                     mediaID, parentID, content, files, images, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
+            }
+        }
+    },
+
+     /**
+	 * Dev: NPNguyen 🐸
+	 * Func: XÓA COMMENT TRONG BÀI VIẾT
+	 */
+    deleteComment: {
+        params: {
+            commentID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID } = ctx.params;
+
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.delete({
+					authorID, commentID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
@@ -66,7 +91,7 @@
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    commentID, mediaID, parentID, keyword, limit, lastestID, select, filter,
+                    commentID, mediaID, parentID, limit, lastestID, select, filter,
                     populates, populates1, populates2, populates3
                 } = ctx.params;
                 let resultAfterCallHandler;
@@ -77,8 +102,7 @@
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, parentID,
-                        keyword, limit, lastestID, populates, populates1, populates2, populates3, filter
+                        mediaID, parentID, limit, lastestID, populates, populates1, populates2, populates3, filter
                     });
                 }
 

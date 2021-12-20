@@ -128,12 +128,12 @@ module.exports = {
         }
     },
 
-
     /**
 	 * Dev: Depv ✅
-	 * Func: Danh sách dự án mà user được quyền truy cập
+	 * Func: Lấy thông tin hoặc danh sách công ty
 	 */
     getInfoAndGetListCompany: {
+        auth: "required",
         params: {
             // Field bổ sung
             companyID       : { type: "string", optional: true },
@@ -158,13 +158,12 @@ module.exports = {
 
                 let resultAfterCallHandler;
                 if(companyID){
-                    resultAfterCallHandler = await AUTH__COMPANY_MODEL.getInfo({
+                    resultAfterCallHandler = await AUTH__COMPANY_MODEL.getInfoV2({
                         companyID, select, populates, populates1, populates2, populates3
                     });
                 }else{
-                    resultAfterCallHandler = await AUTH__COMPANY_MODEL.getList({
-                        companyID, lastestID, userID, type, 
-                        keyword, limit, select, filter, populates, populates1, populates2, populates3
+                    resultAfterCallHandler = await AUTH__COMPANY_MODEL.getListV2({
+                        userID, keyword, limit, lastestID, filter, populates, populates1, populates2, populates3
                     });
                 }
 
@@ -174,6 +173,4 @@ module.exports = {
             }
         }
     },
-
-
 }
