@@ -24,6 +24,7 @@ const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.route
 const { CF_ROUTINGS_SUBJECT_PCM }	= require('../subject_pcm/helper/subject_pcm.routes-constant');
 const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes-constant');
 const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notification.routes-constant');
+const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -44,7 +45,7 @@ const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.action
 const { CF_ACTIONS_SUBJECT_PCM } 	= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.actions-constant');
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
-
+const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -821,7 +822,15 @@ module.exports = {
 		// [`PUT ${CF_ROUTINGS_NOTIFICATION.UPDATE_STATUS_NOTIFICATION}`] :
 		// [`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ROUTINGS_NOTIFICATION.UPDATE_STATUS_NOTIFICATION}`],
 
-		//---------------------------🏁 END SERVICE NOTIFICATION 🏁---------------------------//
+		//---------------------------🏁 END SERVICE REACTION 🏁---------------------------//
+
+		[`PUT ${CF_ROUTINGS_REACTION.COMMENT_CORES}`] :
+		[`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE}`],
+
+		[`GET ${CF_ROUTINGS_REACTION.COMMENT_CORES}`] :
+		[`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_GET_INFO_AND_GET_LIST}`],
+		
+		//---------------------------🏁 END SERVICE REACTION 🏁---------------------------//
 
 	},
 

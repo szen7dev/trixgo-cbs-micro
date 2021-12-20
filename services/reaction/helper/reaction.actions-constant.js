@@ -4,7 +4,7 @@ const BASE_ACTIONS = 'ACT_REACTION';
  * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
  */
 const REACTION          = 'REACTION';
-const COMMENT           = 'COMMENT';
+const COMMENT_CORE      = 'COMMENT_CORE';
 const COMMENT_FILE_CORE = 'COMMENT_FILE_CORE';
 
 const CF_ACTIONS_REACTION = {
@@ -17,8 +17,9 @@ const CF_ACTIONS_REACTION = {
     /**
     * COMMENT
     */
-    COMMENT_INSERT                          : `${BASE_ACTIONS}_${COMMENT}_INSERT`,
-    COMMENT_UPDATE                          : `${BASE_ACTIONS}_${COMMENT}_UPDATE`,
+    COMMENT_CORE_INSERT                     : `${BASE_ACTIONS}_${COMMENT_CORE}_INSERT`,
+    COMMENT_CORE_UPDATE                     : `${BASE_ACTIONS}_${COMMENT_CORE}_UPDATE`,
+    COMMENT_CORE_GET_INFO_AND_GET_LIST      : `${BASE_ACTIONS}_${COMMENT_CORE}_GET_INFO_AND_GET_LIST`,
 
     /**
     * COMMENT FILE CORE

@@ -36,7 +36,6 @@ class Model extends BaseModel {
     insert({ mediaID, parentID, content, files, images, userID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-            
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -79,11 +78,11 @@ class Model extends BaseModel {
                     });
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
-                        commentID: commentCoreID,
+                        commentCoreID,
                         amountCommentReply: 1
                     })
                 }
-                    
+                
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

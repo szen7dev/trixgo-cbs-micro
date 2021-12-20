@@ -318,10 +318,10 @@ module.exports = {
      * Name: Tìm kiếm tất cả user theo fullname (cơ chế full text search, sort theo point full_text)
      */
     searchWithFullText: {
-        cache: {
-            keys: ["key"],
-            ttl: 60 * 60 //1 hour
-        },			
+        // cache: {
+        //     keys: ["key"],
+        //     ttl: 60 * 60 //1 hour
+        // },			
         params: {
             key: { type: "string", optional: true }
         },

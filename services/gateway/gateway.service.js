@@ -125,18 +125,22 @@ module.exports = {
 					token = req.headers.authorization.split(" ")[1];
 			}
 
-			let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
-			// console.log({ checkAuthorization, token })
-			if(checkAuthorization.error){
-				return Promise.reject(checkAuthorization.message);
+			try {
+				let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
+				// console.log({ checkAuthorization, token })
+				if(checkAuthorization.error){
+					return Promise.reject(checkAuthorization.message);
+				}
+				let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
+				// exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
+				this.logger.info("Authenticated via JWT: ", infoUser.username);
+				// Reduce user fields (it will be transferred to other nodes)
+				ctx.meta.infoUser = infoUser;
+				ctx.meta.token 	  = token;
+				return infoUser;
+			} catch (error) {
+				console.error(error)
 			}
-			let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
-			// exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
-			this.logger.info("Authenticated via JWT: ", infoUser.username);
-			// Reduce user fields (it will be transferred to other nodes)
-			ctx.meta.infoUser = infoUser;
-			ctx.meta.token 	  = token;
-			return infoUser;
 
 			// return console.log({ checkAuthorization, [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`]: `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}` })
 
