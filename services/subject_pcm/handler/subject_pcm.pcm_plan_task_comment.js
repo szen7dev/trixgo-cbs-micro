@@ -24,25 +24,26 @@ module.exports = {
 			content    : { type: "string" },
             taskID     : { type: "string" },
             parentID   : { type: "string", optional: true },
-            files      : { type: "array", optional: true }
+            files      : { type: "array", optional: true },
+            images     : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const {  content, taskID , parentID, files } = ctx.params;
+                const {  content, taskID , parentID, files, images } = ctx.params;
                 
                 // call service comment để insert comment_core
-                const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_INSERT}`, {
-					content
+                const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_INSERT}`, {
+					content, files, images
 				});
 
                 if(!infoCommentCore || infoCommentCore.error)
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler: "cannot_insert_comment_core", ctx });
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler: infoCommentCore, ctx });
 
                 let commentCoreID = infoCommentCore.data._id;
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.insert({
-					taskID, commentCoreID, parentID, files
+					taskID, commentCoreID, parentID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

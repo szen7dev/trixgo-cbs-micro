@@ -130,7 +130,7 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_USER}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER}`],
-
+		
 		/**
 		 * KHU VỰC DÀNH CHO CÔNG TY
 		 */

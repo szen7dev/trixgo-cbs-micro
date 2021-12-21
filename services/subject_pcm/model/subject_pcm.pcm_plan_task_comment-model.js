@@ -30,7 +30,7 @@ class Model extends BaseModel {
      * Name  : Thêm comment ✅
      * Author: Depv
      */
-    insert({ taskID, commentCoreID, parentID, files }) { 
+    insert({ taskID, commentCoreID, parentID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -59,21 +59,9 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                // File core
-                if(checkObjectIDs(files)){
-                    dataInsert.files = files;
-                }
-
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create comment task", status: 403 });
-
-                if(files){
-                    for (const file of files) {
-                        let resultAfterCallModel = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_FILE_MODEL.insert({ comment: infoDataAfterInserted._id, task: taskID, file });
-                        console.log({ resultAfterCallModel });
-                    }
-                }
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
