@@ -25,7 +25,6 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-
                 let { _id: userID } = ctx.meta.infoUser;
                 let { mediaID, parentID, content, files, images } = ctx.params;
 

@@ -28,22 +28,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
         ref     : 'pcm_plan_task_comment'
     },
 
-    //_________ID file đính kèm
-    files: [
-        {
-            type    :  Schema.Types.ObjectId,
-            ref     : 'file_core'
-        }
-    ],
-
-    //_________ID image đính kèm
-    images: [
-        {
-            type    :  Schema.Types.ObjectId,
-            ref     : 'file_core'
-        }
-    ],
-    
     //_________Số lượng comment con
     amountChilds: {
         type: Number,
