@@ -84,14 +84,18 @@ class Model extends BaseModel {
                         path: 'comment userCreate lastestReplyID',
                         select: '_id fullname image content files images amountCommentReply amountReaction createAt',
                         populate: {
-                            path: 'comment userCreate',
-                            select: '_id fullname image content files images amountCommentReply amountReaction'
+                            path: 'files images comment userCreate lastestReplyID',
+                            select: '_id name url size type fullname image content files images amountCommentReply amountReaction',
+                            populate: {
+                                path: 'files images',
+                                select: '_id name url size type'
+                            }
                         }
                     })
                     .lean();
 
-                console.log({ infoAterInsert });
-                    
+                // console.log({ infoAterInsert });
+
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
                 console.error(error);
@@ -316,14 +320,14 @@ class Model extends BaseModel {
                         populate: {
                             path: populates1?.value || "",
                             select: populates1?.select || "",
-                            // populate: {
-                            //     path: populates2?.value || "",
-                            //     select: populates2?.select || "",
-                            //     populate: {
-                            //         path: populates3?.value || "",
-                            //         select: populates3?.select || "",
-                            //     }
-                            // }
+                            populate: {
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
+                                // populate: {
+                                //     path: populates3?.value || "",
+                                //     select: populates3?.select || "",
+                                // }
+                            }
                         }
                     })
                     .lean(); 
