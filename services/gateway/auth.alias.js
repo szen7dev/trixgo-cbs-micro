@@ -24,6 +24,7 @@ const { CF_ROUTINGS_TRAINING } 	    = require('../training/helper/training.route
 const { CF_ROUTINGS_SUBJECT_PCM }	= require('../subject_pcm/helper/subject_pcm.routes-constant');
 const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes-constant');
 const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notification.routes-constant');
+const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -44,7 +45,7 @@ const { CF_ACTIONS_TRAINING } 	    = require('../training/helper/training.action
 const { CF_ACTIONS_SUBJECT_PCM } 	= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.actions-constant');
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
-
+const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -130,20 +131,24 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_USER}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER}`],
 
+		/**
+		 * KHU VỰC DÀNH CHO CÔNG TY
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`],
 
 		/**
 		 * KHÁCH HÀNG ĐĂNG KÝ DÙNG THỬ
 		 */
+		[`PUT ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE}`],
 
-		// [`PUT ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
-		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE}`],
-
-		// [`DELETE ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
-		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_REMOVE}`],
+		[`DELETE ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_REMOVE}`],
 		
-		// [`GET ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
-		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_GET_INFO_AND_GET_LIST}`],
-
+		[`GET ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_GET_INFO_AND_GET_LIST}`],
+		
 		//--------------------------aliases's CHATTING service--------------------------//
 		[`POST ${CF_ROUTINGS_CHATTING.INSERT_CONVERSATION}`] :
 		[`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.INSERT_CONVERSATION}`],
@@ -822,7 +827,15 @@ module.exports = {
 		// [`PUT ${CF_ROUTINGS_NOTIFICATION.UPDATE_STATUS_NOTIFICATION}`] :
 		// [`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ROUTINGS_NOTIFICATION.UPDATE_STATUS_NOTIFICATION}`],
 
-		//---------------------------🏁 END SERVICE NOTIFICATION 🏁---------------------------//
+		//---------------------------🏁 END SERVICE REACTION 🏁---------------------------//
+
+		[`PUT ${CF_ROUTINGS_REACTION.COMMENT_CORES}`] :
+		[`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE}`],
+
+		[`GET ${CF_ROUTINGS_REACTION.COMMENT_CORES}`] :
+		[`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_GET_INFO_AND_GET_LIST}`],
+		
+		//---------------------------🏁 END SERVICE REACTION 🏁---------------------------//
 
 	},
 

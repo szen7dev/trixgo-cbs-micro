@@ -33,6 +33,14 @@ const CF_ROUTINGS_AUTH = {
     REMOVE_FRIEND                       : `${BASE_ROUTE}${USER}/remove-friend`,
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
-    // REGISTER_TRIAL                      : `${BASE_ROUTE}${REGISTER_TRIAL}`,
+    /**
+     * COMPANY
+     */
+    COMPANY                           : `${BASE_ROUTE}${COMPANY}`,
+
+    /**
+     * ĐĂNG KÝ DÙNG THỬ
+     */
+    REGISTER_TRIAL                      : `${BASE_ROUTE}${REGISTER_TRIAL}`,
 }
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

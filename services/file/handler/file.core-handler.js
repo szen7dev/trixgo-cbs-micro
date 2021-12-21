@@ -79,12 +79,13 @@ module.exports = {
             }
         }
     },
-    
+
     generateLinkS3: {
         params: {
             type : { type: "string" },
             name : { type: "string" },
             app  : { type: "string", optional: true },
+            size : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -94,6 +95,7 @@ module.exports = {
                 let { type, app, name, size } = ctx.params;
                 let extension = getExtension(name);
                 let fileName = `${uuidv4()}.${extension}`;
+                let nameOrg = name;
 
                 let infoGenerateLink = await GENERATE_LINK_S3(fileName, type);
 
@@ -106,6 +108,7 @@ module.exports = {
                 if(app && !infoGenerateLink.error){
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
                         app,
+                        nameOrg,
                         name: fileName,
                         url: `${process.env.AWS_BUCKET_URL}${process.env.AWS_BUCKET_PATH}/${fileName}`,
                         type,
