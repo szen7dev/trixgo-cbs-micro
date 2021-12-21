@@ -72,8 +72,8 @@ class Model extends BaseModel {
 
                     const infoParent = await MEDIA__COMMENT_COLL.findById(parentID).select('comment');
 
-                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
-                        commentID: `${infoParent?.comment}`,
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE}`, {
+                        commentCoreID: `${infoParent?.comment}`,
                         amountCommentReply: 1
                     })
                 }
