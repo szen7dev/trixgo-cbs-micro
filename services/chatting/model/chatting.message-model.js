@@ -176,36 +176,50 @@ class Model extends BaseModel {
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
-				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
+				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
+
+					// let listFilesMessage = files.map(file => ({
+					// 	app: CF_DOMAIN_SERVICES.CHATTING,
+					// 	name: file.name,
+					// 	url: file.url,
+					// 	size: file.size,
+					// 	userID: senderID,
+					// }))
+
+					// const { results } = await PromisePool
+					// 	.for(listFilesMessage)
+					// 	.withConcurrency(2)
+					// 	.process(async file => {
+					// 		// Insert file core collection
+					// 		let infoFile = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, file);
+
+					// 		// Update status file core collection
+					// 		await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`, {
+					// 			fileID: infoFile.data && infoFile.data._id.toString(),
+					// 			status: "1",
+					// 			userID: senderID,
+					// 		});
+
+					// 		// Insert conversation file collection
+					// 		let infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
+					// 			conversationID,
+					// 			fileID: infoFile.data && infoFile.data._id
+					// 		});
+
+					// 		return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+					// 	})
 
 					let listFilesMessage = files.map(file => ({
-						app: CF_DOMAIN_SERVICES.CHATTING,
-						name: file.name,
-						url: file.url,
-						size: file.size,
-						userID: senderID,
+						conversationID,
+						fileID: file
 					}))
 
 					const { results } = await PromisePool
 						.for(listFilesMessage)
 						.withConcurrency(2)
 						.process(async file => {
-							// Insert file core collection
-							let infoFile = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, file);
-
-							// Update status file core collection
-							await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`, {
-								fileID: infoFile.data && infoFile.data._id.toString(),
-								status: "1",
-								userID: senderID,
-							});
-
 							// Insert conversation file collection
-							let infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
-								conversationID,
-								fileID: infoFile.data && infoFile.data._id
-							});
-
+							const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert(file);
 							return { file: infoAfterInserted.data && infoAfterInserted.data._id }
 						})
 
@@ -605,7 +619,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				// CHECK USER ID IS MEMBER OF CONVERSATION
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL
+				let listConversations = await CHATTING__CONVERSATION_COLL
 					.find({
 						_id: { $in: conversationsID },
 						members: { $all: [userID] }
@@ -613,11 +627,11 @@ class Model extends BaseModel {
 					.select('_id members')
 					.lean();
 
-				if(!checkExistConversation)
+				if(!listConversations)
 					return resolve({ error: true, message: "You aren't member of conversations", status: 403 });
 
 				const { results } = await PromisePool
-					.for(checkExistConversation)
+					.for(listConversations)
 					.withConcurrency(2)
 					.process(async conversation => {
 
