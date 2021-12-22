@@ -1256,7 +1256,8 @@ class Model extends BaseModel {
                 let amountTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
                     assignee: userID, 
                     status: { $ne: 3 },
-                    type: 1
+                    usersDelete: { $nin: [userID] },
+                    // type: 1
                 })
 
                 /**
@@ -1266,7 +1267,8 @@ class Model extends BaseModel {
                     assignee: userID,
                     isproposal: 2,
                     status: { $ne: 3 },
-                    type: 1
+                    usersDelete: { $nin: [userID] },
+                    // type: 1
                 })
 
                 /**
@@ -1276,7 +1278,8 @@ class Model extends BaseModel {
                     assignee: userID,
                     isproposal: 1,
                     status: { $ne: 3 },
-                    type: 1
+                    usersDelete: { $nin: [userID] },
+                    // type: 1
                 })
 
                 /**
@@ -1286,7 +1289,8 @@ class Model extends BaseModel {
                     flags: {
                        $in: [userID]
                     },
-                    type: 1
+                    usersDelete: { $nin: [userID] },
+                    // type: 1
                 });
 
                 /**
@@ -1295,7 +1299,8 @@ class Model extends BaseModel {
                 let amountTaskIsAssignee = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
                     author: userID,
                     status: { $ne: 3 },
-                    type: 1
+                    usersDelete: { $nin: [userID] },
+                    // type: 1
                 });
 
                 /**
@@ -1307,7 +1312,8 @@ class Model extends BaseModel {
                         { related: { $in: [userID] } }, 
                     ],
                     draft: 1,
-                    type: 1
+                    usersDelete: { $nin: [userID] },
+                    // type: 1
                 });
 
                 return resolve({ error: false, data: {
