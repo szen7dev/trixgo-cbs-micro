@@ -107,7 +107,9 @@ module.exports = {
         params: {
             userSubjectID: { type: "string", optional: true },
             parentID     : { type: "string", optional: true },
-
+            /**
+             * Thông tin mặc định
+             */
             keyword      : { type: "string", optional: true },
             limit        : { type: "string", optional: true },
             lastestID    : { type: "string", optional: true },

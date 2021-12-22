@@ -342,13 +342,7 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-
-                // SEARCH TEXT
-				// if(keyword){
-				// 	conditionObj.$text = { $search: keyword };
-				// 	objSort.score = { $meta: "textScore" };
-				// 	sortBy.score  = { $meta: "textScore" };
-				// }
+              
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -393,18 +387,12 @@ class Model extends BaseModel {
 					}
 				}
 
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
-                }
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {

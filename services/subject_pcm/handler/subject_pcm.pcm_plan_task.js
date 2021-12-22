@@ -141,6 +141,7 @@ module.exports = {
             isExpired   : { type: "string", optional: true },
             fromDate    : { type: "string", optional: true },
             toDate      : { type: "string", optional: true },
+            parentID    : { type: "string", optional: true },
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -156,7 +157,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate,
+                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID,
                     keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
@@ -168,7 +169,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate,
+                        userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID,
                         keyword, limit, lastestID, populates, populates1, populates2, populates3
                     });
                 }
