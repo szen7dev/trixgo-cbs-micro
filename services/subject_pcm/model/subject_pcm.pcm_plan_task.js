@@ -1275,7 +1275,6 @@ class Model extends BaseModel {
                     isproposal: 1,
                     status: { $ne: 3 },
                     type: 1
-
                 })
 
                 /**

@@ -24,12 +24,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { type, name, parentID } = ctx.params;
-
-                console.log({ type, name, parentID });
-				const { _id: userID, company: companyID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.insert({
-                    companyID, type, name, parentID, userID
+                    companyID: company._id, type, name, parentID, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
