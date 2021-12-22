@@ -865,7 +865,8 @@ class Model extends BaseModel {
                  */
                 let conditionObj = { 
                     // state: 1,
-                    usersDelete: { $nin: [userID] } 
+                    usersDelete: { $nin: [userID] },
+                    status: { $ne: 3 }
                 };
 
                 let conditionFind = { };
