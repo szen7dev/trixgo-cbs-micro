@@ -9,13 +9,14 @@ const ISOdate                                  		= require('isodate');
 /**
  * CONSTANTS
  */
-const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
+// const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
+const { checkObjectIDs } 							= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
