@@ -870,7 +870,7 @@ class Model extends BaseModel {
                 };
 
                 let conditionFind = { };
-                let sortBy   = { createAt: -1 };
+                let sortBy   = { actualFinishTime: 1 };
 				let objSort  = {};
 
                 let start = new Date();
@@ -1078,7 +1078,7 @@ class Model extends BaseModel {
 
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
+					let keys	 = ['actualFinishTime__1', '_id__1'];
                     // console.log({ nextInfo });
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
