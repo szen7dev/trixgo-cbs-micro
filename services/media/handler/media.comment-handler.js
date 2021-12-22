@@ -19,8 +19,6 @@ module.exports = {
             mediaID         : { type: "string" },
             parentID        : { type: "string", optional: true },
             content         : { type: "string", optional: true },
-            files           : { type: "array", optional: true },
-            images          : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {

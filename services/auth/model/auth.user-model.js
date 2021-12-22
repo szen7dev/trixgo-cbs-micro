@@ -226,7 +226,13 @@ class Model extends BaseModel {
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
                     return resolve({ error: true, message: 'platform_invalid' });
 
-                let isExist         = await AUTH__USER_COLL.findOne({ email: emailValid });
+                let isExist         = await AUTH__USER_COLL
+                    .findOne({ email: emailValid })
+                    .populate({
+                        path: 'company',
+                        select: '_id name sign image'
+                    });
+
                 if (!isExist)
                     return resolve({ error: true, message: 'email_not_exist' });
                 
@@ -263,7 +269,7 @@ class Model extends BaseModel {
                     company: isExist.company,
                     // department: isExist.department,
                     // position: isExist.position,
-                    // image: isExist.image,
+                    image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
