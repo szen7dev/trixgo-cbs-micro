@@ -25,10 +25,10 @@ module.exports = {
         params: {
             lastestID           : { type: "string", optional: true },
             keyword             : { type: "string", optional: true },
-			limit               : { type: "number", optional: true },
+			limit               : { type: "string", optional: true },
 			companyID           : { type: "string" },
-			type                : { type: "number", optional: true },
-			isExpire            : { type: "boolean", optional: true },
+			type                : { type: "string", optional: true },
+			isExpire            : { type: "string", optional: true },
 			select              : { type: "string", optional: true },
             filter              : { type: "string", optional: true },
         },
@@ -57,7 +57,7 @@ module.exports = {
     getInfoContactDocument: {
         params: {
 			contactID  : { type: "string" },
-			type       : { type: "number" },
+			type       : { type: "string" },
 			select     : { type: "string", optional: true },
         },
         async handler(ctx) {
