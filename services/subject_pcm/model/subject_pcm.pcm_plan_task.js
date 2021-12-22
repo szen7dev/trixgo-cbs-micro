@@ -754,18 +754,85 @@ class Model extends BaseModel {
                                             }
                                         }
                                     }
-                                })
+                                }).lean();
 
-                
-                //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
-                await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                    $pull: { 
-                        news: userID
-                    },
-                    $addToSet: {
-                        viewedUsers: userID
+				if (!infoTask) return resolve({ error: true, message: 'cannot_get' });
+
+                // KIỂM TRA SỐ LƯỢNG CHECKLIST ĐÃ HOÀN THÀNH
+                let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskID, type: 2 });
+                let amountChecklistDone = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskID, type: 2, status: 3 });
+                let checklist = `${amountChecklistDone}/${amountChecklist}`
+                infoTask.checklist = checklist;
+            
+                // THÔNG TIN KIỂM TRA TRẠNG THÁI CÔNG VIỆC
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                let end = new Date();
+                end.setHours(23,59,59,999);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+
+                // KIỂM TRA TRẠNG THÁI CÔNG VIỆC
+                if(infoTask && infoTask.expiredTime){
+                    // typeStatus
+                    // 1 Ngày nay
+                    // 2 Tới hạn tuần tới
+                    // 3 Tới hạn + 7 ngày tới
+                    // 4 Quá hạn
+                    // 5 Chưa tới hạn -> 3. Tới hạn + 7 ngày tới
+                    let date    = new Date();
+                    let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
+                    let expiredTimeTemp = new Date(infoTask.expiredTime);
+                    let expiredTime = new Date(expiredTimeTemp.getFullYear() + "-" + (expiredTimeTemp.getMonth() + 1) + "-" + expiredTimeTemp.getDate());
+                    
+                    if(+today == +expiredTime){
+                        infoTask = {
+                            ...infoTask, 
+                            typeStatus: 1
+                        }
+                    }else{
+                        if(+today < +expiredTime && +expiredTime < +addDate(7)){
+                            infoTask = {
+                                ...infoTask, 
+                                typeStatus: 2
+                            }
+                        }else{
+                            if(+today < +expiredTime && +expiredTime < +addDate(14) ){
+                                infoTask = {
+                                    ...infoTask, 
+                                    typeStatus: 3
+                                }
+                            }else{
+                                if( +expiredTime <= +addDate(14)){
+                                    infoTask = {
+                                        ...infoTask, 
+                                        typeStatus: 4
+                                    }
+                                }else{
+                                    infoTask = {
+                                        ...infoTask, 
+                                        typeStatus: 3
+                                    }
+                                }
+                            }
+                        }
                     }
-                }, { new: true })
+                }     
+
+                //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
+                // await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                //     $pull: { 
+                //         news: userID
+                //     },
+                //     $addToSet: {
+                //         viewedUsers: userID
+                //     }
+                // }, { new: true })
 
 				// let logID = infoTask && infoTask.lastLog;
 
@@ -777,9 +844,6 @@ class Model extends BaseModel {
                 //         }
                 //     });
                 // }
-
-				if (!infoTask) return resolve({ error: true, message: 'cannot_get' });
-
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -792,7 +856,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID,
+    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID,
         keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -1031,7 +1095,11 @@ class Model extends BaseModel {
                 if(authorID && checkObjectIDs(authorID)){
                     conditionObj.author = authorID;
                 }
-
+                
+                // ID công việc cha, công việc chứa checklist
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID;
+                }
                 // SEARCH TEXT
 				// if(keyword){
 				// 	conditionObj.$text = { $search: keyword };
