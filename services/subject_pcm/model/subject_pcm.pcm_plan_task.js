@@ -106,7 +106,8 @@ class Model extends BaseModel {
                     assignee: assigneeID,
                     author  : authorID,
                     suid,
-                    expiredTime: expiredHour ? dateConcatnate : expiredTime,
+                    expiredTime,
+                    actualFinishTime: expiredTime,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                 }
                 
