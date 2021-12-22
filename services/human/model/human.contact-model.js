@@ -16,7 +16,7 @@ const ISOdate                                  		= require('isodate');
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
-const { checkObjectIDs } 							= require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
