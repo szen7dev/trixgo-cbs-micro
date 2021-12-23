@@ -29,8 +29,6 @@ const CF_ROUTINGS_AUTH = {
     CONFIRM_CODE_RESET_PASSWORD         : `${BASE_ROUTE}${USER}/confirm-code-reset-password`,
     UPDATE_PASSWORD_AFTER_FORGET        : `${BASE_ROUTE}${USER}/update-password-after-forget`,
 
-    ADD_FRIEND                          : `${BASE_ROUTE}${USER}/add-friend`,
-    REMOVE_FRIEND                       : `${BASE_ROUTE}${USER}/remove-friend`,
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
     

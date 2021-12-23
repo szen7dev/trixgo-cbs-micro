@@ -9,7 +9,6 @@ const AUTH__COMPANY_HANDLER			= require('./handler/auth.company-handler');
 const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-handler');
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
-const AUTH__USER_FRIEND_COLL		= require('./database/auth.user_friend-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
 
@@ -18,7 +17,6 @@ module.exports = {
 	mixins: [
 		DbService(AUTH__COMPANY_COLL),
 		DbService(AUTH__USER_COLL),
-		DbService(AUTH__USER_FRIEND_COLL),
 		DbService(AUTH__REGISTER_TRIAL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
@@ -58,8 +56,6 @@ module.exports = {
 		//============================   AUTH: USER   ==========================//
 		[CF_ACTIONS_AUTH.REGISTER] 									: AUTH__USER_HANDLER.register,
 		[CF_ACTIONS_AUTH.LOGIN] 									: AUTH__USER_HANDLER.login,
-		[CF_ACTIONS_AUTH.ADD_FRIEND] 								: AUTH__USER_HANDLER.addFriend,
-		[CF_ACTIONS_AUTH.REMOVE_FRIEND]								: AUTH__USER_HANDLER.removeFriend,
 		[CF_ACTIONS_AUTH.GET_LIST_FRIEND]							: AUTH__USER_HANDLER.getListFriend,
 		[CF_ACTIONS_AUTH.GET_LIST_USER]								: AUTH__USER_HANDLER.getListUser,
 		[CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH]		: AUTH__USER_HANDLER.getListUserByIdForPushMobile,

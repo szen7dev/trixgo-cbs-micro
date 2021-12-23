@@ -155,10 +155,10 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //     ref: 'user'
     // }],
     //_______Danh sách bạn bè
-    // friends: [{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
+    friends: [{ 
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }],
     //_______Bạn bè liên lạc gần đây
     // recentlyFriends: [{ 
     //     type: Schema.Types.ObjectId,
