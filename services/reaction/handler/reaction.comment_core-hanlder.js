@@ -45,22 +45,22 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-			commentCoreID       : { type: "string" },
+			commentID           : { type: "string" },
 			content             : { type: "string", optional: true },
 			amountCommentReply  : { type: "number", optional: true },
 			amountReaction      : { type: "number", optional: true },
-			files               : { type: "array", optional: true  },
-			filesRemove         : { type: "array", optional: true  },
-			images              : { type: "array", optional: true  },
-			imagesRemove        : { type: "array", optional: true  },
+			files               : { type: "array", optional: true },
+			images              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { commentCoreID, content, files, filesRemove, images, imagesRemove, amountCommentReply, amountReaction } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID, content, files, images, amountCommentReply, amountReaction } = ctx.params;
+                console.log({ commentID, content, files, images, amountCommentReply, amountReaction });
 
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.update({
-					commentCoreID, content, files, filesRemove, images, imagesRemove, amountCommentReply, amountReaction
+					commentCoreID: commentID, authorID, content, files, images, amountCommentReply, amountReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

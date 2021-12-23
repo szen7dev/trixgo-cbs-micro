@@ -85,7 +85,7 @@ module.exports = {
             type : { type: "string" },
             name : { type: "string" },
             app  : { type: "string", optional: true },
-            size : { type: "string", optional: true },
+            size : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {

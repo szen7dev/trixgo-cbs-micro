@@ -37,7 +37,7 @@ module.exports = {
         }
     },
 
-     /**
+    /**
 	 * Dev: NPNguyen 🐸
 	 * Func: XÓA COMMENT TRONG BÀI VIẾT
 	 */
@@ -61,7 +61,7 @@ module.exports = {
             }
         }
     },
- 
+
     /**
      * Dev: Depv ✅
      * Func: getList and getInfo comment media
@@ -109,4 +109,4 @@ module.exports = {
             }
         }
     },
- }
+}

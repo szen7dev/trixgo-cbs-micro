@@ -35,12 +35,11 @@ module.exports = {
 	*/
 	actions: {	
 		//==========================================   REACTION ACTIONS   ================================
-		// [CF_ACTIONS_REACTION.REACTION_GET_LIST ] 	: REACTION__REACTION_HANDLER.getList,
 		[CF_ACTIONS_REACTION.REACTION_INSERT] 			: REACTION__REACTION_HANDLER.insertReaction,
 
 		//==========================================   COMMENT_CORE   =====================================
-		[CF_ACTIONS_REACTION.COMMENT_CORE_INSERT ] 				 : REACTION__COMMENT_HANDLER.insert,
-		[CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE ] 				 : REACTION__COMMENT_HANDLER.update,
+		[CF_ACTIONS_REACTION.COMMENT_CORE_INSERT] 				 : REACTION__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE] 				 : REACTION__COMMENT_HANDLER.update,
 		[CF_ACTIONS_REACTION.COMMENT_CORE_GET_INFO_AND_GET_LIST ]: REACTION__COMMENT_HANDLER.getInfoAndGetList,
 		//==========================================   COMMENT_FILE_CORE ACTIONS   =======================
 	},

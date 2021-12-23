@@ -76,7 +76,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F0272
      */
-    update({ commentCoreID, content, files, filesRemove, images, imagesRemove, amountCommentReply, amountReaction }) {
+    update({ commentCoreID, authorID, content, files, images, amountCommentReply, amountReaction }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -91,6 +91,9 @@ class Model extends BaseModel {
                 */
                 if(!checkObjectIDs(commentCoreID))
                     return resolve({ error: true, message: "Request params commentCoreID invalid" });
+
+                if(!checkObjectIDs(authorID))
+                    return resolve({ error: true, message: "Request params authorID invalid" });
 
                /**
                 * LOGIC STEP (3)
@@ -110,49 +113,38 @@ class Model extends BaseModel {
                         amountReaction
                     }
                 }
-                let dataAddToSet = {};
-                let dataPull     = {};
+
                 // CẬP NHẬT FILE MỚI
                 if(checkObjectIDs(files)){
-                    dataAddToSet.files = files;
+                    dataUpdate.files = files;
+                } else{
+                    dataUpdate.files = [];
                 }
 
                 // CẬP NHẬT HÌNH ẢNH MỚI
                 if(checkObjectIDs(images)){
-                    dataAddToSet.images = images;
-                }
-                
-                // CẬP NHẬT XÓA FILE CŨ
-                if(checkObjectIDs(filesRemove)){
-                    dataPull.files = filesRemove;
+                    dataUpdate.images = images;
+                } else{
+                    dataUpdate.images = [];
                 }
 
-                // CẬP NHẬT XÓA HÌNH ẢNH CŨ
-                if(checkObjectIDs(imagesRemove)){
-                    dataPull.images = imagesRemove;
-                }
-
-                if(dataAddToSet){
-                    dataUpdate.$addToSet = dataAddToSet;
-                }
-
-                let infoAfterAction = await REACTION__COMMENT_COLL.findByIdAndUpdate(commentCoreID, dataUpdate, {
-                    new: true
-                });
+                let infoAfterAction = await REACTION__COMMENT_COLL.findOneAndUpdate({
+                    _id: commentCoreID,
+                    author: authorID
+                }, dataUpdate);
 
                 if(!infoAfterAction)
                     return resolve({ error: true, message: 'cannot_update' });
 
-                // Trường hợp này không thể sử dung $pull hoặc $addToSet cùng lúc được nên mình xử lý $pull sau
-                if(dataPull){
-                    let infoAfterAction = await REACTION__COMMENT_COLL.findByIdAndUpdate(commentCoreID, { $pull: dataPull }, {
-                        new: true
-                    });
-                    console.log({ infoAfterAction });
+                infoAfterAction = await REACTION__COMMENT_COLL
+                    .findById(infoAfterAction._id)
+                    .populate({
+                        path: 'files images author',
+                        select: '_id name url size type fullname image',
+                    })
+                    .lean();
 
-                }
-
-                return resolve({ error: false, data: infoAfterAction});
+                return resolve({ error: false, data: infoAfterAction });
             } catch (error) {
                 console.error(error);
                 return resolve({ error: true, message: error.message });

@@ -24,14 +24,8 @@ const CF_ACTIONS_MEDIA = {
 	LIST_WATCHED_MEDIA                  			: `${BASE_ACTIONS}_LIST_WATCHED_MEDIA`,
 	REACTION_MEDIA                              	: `${BASE_ACTIONS}_REACTION_MEDIA`,
     GET_LIST_REACTION_MEDIA                     	: `${BASE_ACTIONS}_GET_LIST_REACTION_MEDIA`,
-    COMMENT_MEDIA     		                    	: `${BASE_ACTIONS}_COMMENT_MEDIA`,
-    GET_LIST_COMMENT_MEDIA	                    	: `${BASE_ACTIONS}_GET_LIST_COMMENT_MEDIA`,
-    UPDATE_COMMENT_MEDIA	                    	: `${BASE_ACTIONS}_UPDATE_COMMENT_MEDIA`,
-    DELETE_COMMENT_MEDIA	                    	: `${BASE_ACTIONS}_DELETE_COMMENT_MEDIA`,
-    GET_DETAIL_COMMENT_MEDIA	                    : `${BASE_ACTIONS}_GET_DETAIL_COMMENT_MEDIA`,
     REACTION_COMMENT               		        	: `${BASE_ACTIONS}_REACTION_COMMENT`,
     GET_LIST_REACTION_COMMENT     		        	: `${BASE_ACTIONS}_GET_LIST_REACTION_COMMENT`,
-    REPLY_COMMENT_MEDIA     		            	: `${BASE_ACTIONS}_REPLY_COMMENT_MEDIA`,
 	IMAGE_MEDIA                                     : `${BASE_ACTIONS}_IMAGE_MEDIA`,
 	REACTION_IMAGE_MEDIA                            : `${BASE_ACTIONS}_REACTION_IMAGE_MEDIA`,
     GET_LIST_REACTION_IMAGE_MEDIA                   : `${BASE_ACTIONS}_GET_LIST_REACTION_IMAGE_MEDIA`,
@@ -47,10 +41,9 @@ const CF_ACTIONS_MEDIA = {
     /**
      * COMMENT
      */
-    
     COMMENT_INSERT                                  : `${BASE_ACTIONS}_${COMMENT}_INSERT`,
     COMMENT_GET_INFO_AND_GET_LIST                   : `${BASE_ACTIONS}_${COMMENT}_GET_INFO_AND_GET_LIST`,
-
+    DELETE_COMMENT_MEDIA	                    	: `${BASE_ACTIONS}_${COMMENT}_DELETE`,
 }
 
 exports.CF_ACTIONS_MEDIA = CF_ACTIONS_MEDIA;
