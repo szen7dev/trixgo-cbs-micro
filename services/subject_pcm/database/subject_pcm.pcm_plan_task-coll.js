@@ -21,6 +21,17 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
+    //_________Công ty của người tạo việc
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+
+    //_________Công ty của người thực hiện
+    companyOfAssignee: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
     /**
      * CẤU TRÚC ĐỆ QUY
      */

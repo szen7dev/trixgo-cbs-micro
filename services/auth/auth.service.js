@@ -78,7 +78,9 @@ module.exports = {
 
 		[CF_ACTIONS_AUTH.UPDATE_PIN_CONVERSATION] 					: AUTH__USER_HANDLER.updatePinConversation,
 		[CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION]					: AUTH__USER_HANDLER.getListPinConversation,
-
+		// KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
+		[CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST]				: AUTH__USER_HANDLER.getInfoAndGetList,
+		
 		/**
 		 * KHU VỰC DÀNH CHO COMPANY
 		 */

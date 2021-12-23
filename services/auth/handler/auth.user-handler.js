@@ -632,6 +632,56 @@ module.exports = {
 				return { error: true, message: error.message, status: 500 };
             }
         }
-    }
+    },
+
+    /**
+     * KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
+     */
+    
+    /**
+	 * Dev: Depv ✅
+	 * Func: getList and getInfo pcm_plan_report
+	 */
+    getInfoAndGetList: {
+        auth: "required",
+        params: {
+            // Field bổ sung
+            userID    : { type: "string", optional: true },
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            filter      : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+            populates1  : { type: "string", optional: true },
+            populates2  : { type: "string", optional: true },
+            populates3  : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { 
+                    userID,
+                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
+                } = ctx.params;
+				// const { _id: userID } = ctx.meta.infoUser;
+                let resultAfterCallHandler;
+                
+                if(userID){
+                    resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
+                        userID, select, populates, populates1, populates2, populates3
+                    });
+                }else{
+                    resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
+                        companyID, keyword, limit, lastestID, filter, populates, populates1, populates2, populates3,
+                    });
+                }
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 
 }
