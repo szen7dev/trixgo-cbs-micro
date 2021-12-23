@@ -32,7 +32,8 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                console.error(error);
+                return { error: true, message: error.message };
             }
         }
     },

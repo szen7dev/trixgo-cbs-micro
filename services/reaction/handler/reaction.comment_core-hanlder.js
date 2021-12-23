@@ -57,7 +57,6 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const { commentID, content, files, images, amountCommentReply, amountReaction } = ctx.params;
-                console.log({ commentID, content, files, images, amountCommentReply, amountReaction });
 
                 const resultAfterCallHandler = await REACTION__COMMENT_MODEL.update({
 					commentCoreID: commentID, authorID, content, files, images, amountCommentReply, amountReaction

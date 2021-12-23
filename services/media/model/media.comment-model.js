@@ -73,7 +73,7 @@ class Model extends BaseModel {
                     const infoParent = await MEDIA__COMMENT_COLL.findById(parentID).select('comment');
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE}`, {
-                        commentCoreID: `${infoParent?.comment}`,
+                        commentID: `${infoParent?.comment}`,
                         amountCommentReply: 1
                     })
                 }
@@ -93,8 +93,6 @@ class Model extends BaseModel {
                         }
                     })
                     .lean();
-
-                // console.log({ infoAterInsert });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -127,8 +125,6 @@ class Model extends BaseModel {
                         commentID: `${infoComment?.parent?.comment}`,
                         amountCommentReply: -1
                     })
-                } else{
-                    // await MEDIA__COMMENT_COLL.deleteMany({ parent: commentID });
                 }
 
 				let infoCommentAfterDelete = await MEDIA__COMMENT_COLL.findByIdAndDelete(commentID);
