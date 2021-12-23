@@ -9,13 +9,14 @@ const ISOdate                                  		= require('isodate');
 /**
  * CONSTANTS
  */
-const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
+// const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
@@ -90,7 +91,7 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get info last contact", status: 403 });
 
 					let nextInfo = `${infoContact.modifyAt}_${infoContact._id}`;
-					let keys	 = ['modifyAt__-1', '_id__-1'];  
+					let keys	 = ['modifyAt__-1', '_id__-1'];
 
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
