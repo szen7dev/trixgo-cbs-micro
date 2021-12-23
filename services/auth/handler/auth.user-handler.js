@@ -125,7 +125,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let userID = ctx.meta.infoUser && ctx.meta.infoUser._id;
+                let { _id: userID } = ctx.meta.infoUser;
 				let { lastestID, limit, keyword, filter, select } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListFriend({

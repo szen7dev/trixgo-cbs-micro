@@ -8,7 +8,6 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
  */
 const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
-const AUTH__USER_FRIEND_COLL            = require('../database/auth.user_friend-coll');
 
 /**
  * import inter-model, exter-model
@@ -381,60 +380,6 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    addFriend({ userID, friendID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([userID, friendID]))
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
-
-                const isFriend = await AUTH__USER_FRIEND_COLL.findOne({
-                    user: userID,
-                    friend: friendID
-                })
-                if(isFriend)
-                    return resolve({ error: true, message: 'User has made friends', status: 403 });
-
-                let infoAfterAddFriend = await AUTH__USER_FRIEND_COLL.create({
-                    user: userID,
-                    friend: friendID,
-                    modifyAt: timeUtils.getCurrentTime(),
-                    createAt: timeUtils.getCurrentTime()
-                })
-
-                return resolve({ error: false, data: infoAfterAddFriend, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
-
-    // implement by: MINHVH ✅ 
-    removeFriend({ userID, friendID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([userID, friendID]))
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
-
-                const isFriend = await AUTH__USER_FRIEND_COLL.findOne({
-                    user: userID,
-                    friend: friendID
-                })
-                if(!isFriend)
-                    return resolve({ error: true, message: 'Users are not friends', status: 400 });
-
-                const infoAfterDelete = await AUTH__USER_FRIEND_COLL.findOneAndDelete({
-                    user: userID,
-                    friend: friendID
-                })
-
-                return resolve({ error: false, data: infoAfterDelete, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
-
-    // implement by: MINHVH ✅ 
     getListFriend({ userID, lastestID, keyword, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
@@ -461,13 +406,14 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-				let conditionObj 	= {};
+                let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('friends');
+
+				let conditionObj 	= { _id: { $in: infoUserWithFriends.friends } };
 				let conditionFind 	= {};
 				let objSort 	 	= {};
                 let sortBy = {
 					createAt: -1,
                     modifyAt: -1,
-					updateAt: -1
                 }
 
 				// GET CONDITION PAGINATION
@@ -493,22 +439,14 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let listFriends = await AUTH__USER_FRIEND_COLL
-					.find({ user: userID })
-                    .select('friend')
-					.lean();
-
-                let listFriendsID = listFriends.map(userFriend => userFriend.friend);
-                conditionObj._id = { $in: listFriendsID };
-
-                listFriends = await AUTH__USER_COLL
+                const listFriends = await AUTH__USER_COLL
                     .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-                    .limit(+limit + 1)
+                    .limit(limit + 1)
                     .sort(sortBy)
 					.lean();
 
 				// GET TOTAL RECORD
-                let totalRecord = await AUTH__USER_FRIEND_COLL.count({ user: userID });
+                let totalRecord = await AUTH__USER_COLL.count(conditionObj);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
