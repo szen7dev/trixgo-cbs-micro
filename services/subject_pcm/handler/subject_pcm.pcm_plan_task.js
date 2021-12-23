@@ -158,13 +158,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                
                 let { 
                     taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
                     keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
                 } = ctx.params;
+
 				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler;
-                
+                // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
                         taskID, userID, select, populates, populates1, populates2, populates3
