@@ -1,7 +1,7 @@
 "use strict";
-
 const BaseModel                         = require('../../../tools/db/base_model');
-const ObjectID                          = require("mongoose").Types.ObjectId;
+const ObjectID                          = require('mongoose').Types.ObjectId;
+
 
 /**
  * import inter-coll, exter-coll
@@ -2495,6 +2495,231 @@ class Model extends BaseModel {
     //         }
     //     })
     // }
+
+    /**
+     * Khu vực Đệ viết theo cách mới
+     */
+    
+    /**
+     * Name: get info user ✅
+     * Author: Depv
+     */
+    getInfoV2({ userID, select, populates, populates1, populates2, populates3 }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+                // populates1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+                // populates2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // populates3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
+
+                let infoTask = await AUTH__USER_COLL.findById(userID)
+                                .select(select)
+                                .populate({
+                                    path: populates?.value || "",
+                                    select: populates?.select || "",
+                                    populate: {
+                                        path: populates1?.value ||"",
+                                        select: populates1?.select || "",
+                                        populate: {
+                                            path: populates2?.value || "",
+                                            select: populates2?.select || "",
+                                            populate: {
+                                                path: populates3?.value || "",
+                                                select: populates3?.select || "",
+                                            }
+                                        }
+                                    }
+                                }).lean();
+
+				if (!infoTask) return resolve({ error: true, message: 'cannot_get' });
+                return resolve({ error: false, data: infoTask });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : Danh sách user ✅
+     * Author: Depv
+     * Code  : 
+     */
+    getListV2({
+        companyID,
+        keyword, limit = 10, lastestID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={}, }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { 
+                };
+
+                let conditionFind = { };
+                let sortBy   = { createAt: -1 };
+				let objSort  = {};
+               
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+              
+               
+                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
+                if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+					filter = JSON.parse(filter);
+				}
+				
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}
+                // POPULATE 1
+                if(populates1 && typeof populates1 === 'string'){
+					if(!IsJsonString(populates1))
+						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+
+					populates1 = JSON.parse(populates1);
+				}
+                // POPULATE 2
+                if(populates2 && typeof populates2 === 'string'){
+					if(!IsJsonString(populates2))
+						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
+
+					populates2 = JSON.parse(populates2);
+				}
+                
+                // POPULATE 3
+                if(populates3 && typeof populates3 === 'string'){
+					if(!IsJsonString(populates3))
+						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
+
+					populates3 = JSON.parse(populates3);
+				}
+               
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await AUTH__USER_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy = dataPagingAndSort.data.sort;
+				}
+
+                // SEARCH TEXT
+				// if(keyword){
+				// 	conditionObj.$text = { $search: keyword };
+				// 	objSort.score = { $meta: "textScore" };
+				// 	sortBy.score  = { $meta: "textScore" };
+				// }
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+                
+                let infoDataAfterGet = await AUTH__USER_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate({
+                        path: populates?.value || "",
+                        select: populates?.select || "",
+                        populate: {
+                            path: populates1?.value || "",
+                            select: populates1?.select || "",
+                            populate: {
+                                path: populates2?.value || "",
+                                select: populates2?.select || "",
+                                populate: {
+                                    path: populates3?.value || "",
+                                    select: populates3?.select || "",
+                                }
+                            }
+                        }
+                    })
+                    .lean(); 
+
+                // GET TOTAL RECORD
+                if(!infoDataAfterGet)
+                   return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

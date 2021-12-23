@@ -92,7 +92,7 @@ class Model extends BaseModel {
                 
                 if(!checkObjectIDs(assigneeID))
                     return resolve({ error: true, message: 'assignee_invalid', status: 400 });
-             
+                
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -541,7 +541,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(related)){
                     dataAddToset = { ...dataAddToset, related }
                 }
-
+                
                 //_________Trạng thái công việc
                 if(status){
                     dataUpdate.status = status;
@@ -858,7 +858,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID,
-        keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
+        keyword, limit = 10, lastestID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={}, }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -976,12 +976,10 @@ class Model extends BaseModel {
 				}
 
                 // VIỆC NHÁP
-                if(draft && Number(draft) === 1){
-                    conditionObj.draft = 1;
-                } else{
-                    conditionObj.draft = 0;
-                }
-
+                if(draft && [0,1].includes(draft)){
+                    conditionObj.draft = draft;
+                } 
+                
                 // DỰ ÁN
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
@@ -1135,6 +1133,10 @@ class Model extends BaseModel {
                     })
                     .lean(); 
 
+                // GET TOTAL RECORD
+                if(!infoDataAfterGet)
+                   return resolve({ error: true, message: "Can't get data", status: 403 });
+
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
@@ -1142,6 +1144,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
+
                 // Gán dữ liệu typeStatus
                 let listTask = [];
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -1206,10 +1209,6 @@ class Model extends BaseModel {
                         listTask = [...listTask, taskNewTemp];
                     }
                 }
-                
-                // GET TOTAL RECORD
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
                 let totalPage   = Math.ceil(totalRecord/limit);
