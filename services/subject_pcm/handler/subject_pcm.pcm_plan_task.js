@@ -142,6 +142,8 @@ module.exports = {
             fromDate    : { type: "string", optional: true },
             toDate      : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
+            companyOfAuthor  : { type: "string", optional: true },
+            companyOfAssignee: { type: "string", optional: true },
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -156,20 +158,23 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                
                 let { 
-                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID,
+                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
                     keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
                 } = ctx.params;
+
 				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler;
-                
+                // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
                         taskID, userID, select, populates, populates1, populates2, populates3
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID,
+                        userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
                         keyword, limit, lastestID, populates, populates1, populates2, populates3
                     });
                 }
@@ -195,7 +200,7 @@ module.exports = {
 
                 // Bước check quyền
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
-                
+                // let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.updateCompanyOfAuthorAndCompanyOfAssignee();
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
