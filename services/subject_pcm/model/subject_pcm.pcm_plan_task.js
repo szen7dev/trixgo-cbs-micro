@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert user_pcm_plan_report ✅
+     * Name: insert task ✅
      * Author: Depv
      * Code: 
      */
@@ -429,7 +429,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update pcm_plan_report ✅
+     * Name: update task ✅
      * Author: Depv
      * Code: 
      */
@@ -541,7 +541,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(related)){
                     dataAddToset = { ...dataAddToset, related }
                 }
-                
+
                 //_________Trạng thái công việc
                 if(status){
                     dataUpdate.status = status;
@@ -698,7 +698,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info user_pcm_plan_report ✅
+     * Name: get info task ✅
      * Author: Depv
      * Code: 
      */
@@ -857,7 +857,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID,
+    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
         keyword, limit = 10, lastestID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={}, }) { 
         return new Promise(async (resolve) => {
             try {
@@ -1099,7 +1099,19 @@ class Model extends BaseModel {
                 // ID công việc cha, công việc chứa checklist
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
+                    delete conditionObj.$or
                 }
+
+                // Công ty của người tạo việc
+                if(companyOfAuthor && checkObjectIDs(companyOfAuthor)){
+                    conditionObj.companyOfAuthor = companyOfAuthor;
+                }
+                
+                // Công ty của người thực hiện
+                if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
+                    conditionObj.companyOfAssignee = companyOfAssignee;
+                }
+
                 // SEARCH TEXT
 				// if(keyword){
 				// 	conditionObj.$text = { $search: keyword };
@@ -1111,7 +1123,6 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -1323,6 +1334,37 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Api thêm 2 trường dữ liệu companyOfAuthor và companyOfAssignee ✅
+     * Author: Depv
+     */
+    updateCompanyOfAuthorAndCompanyOfAssignee(){
+        return new Promise(async resolve => {
+            try {
+                
+                let listTaskAfterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({}).select("author assignee")
+                                        .populate({
+                                            path: "author assignee",
+                                            select: "company"
+                                        });
+                let amount = 0;
+                for (const task of listTaskAfterUpdate) {
+                    let abc = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(task._id, { 
+                        companyOfAuthor: task.author.company, 
+                        companyOfAssignee: task.assignee.company, 
+                    }, { new: true });
+                    amount++;
+                    console.log({ amount });
+                }
+
+                return resolve({ error: false, message: "Vui lòng đợi" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
