@@ -158,12 +158,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser; 
-                ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-                    users: [userID],
-                    title: 'TEST TEST',
-                    description: 'TEST DESCRIPTION',
-                    web_url: `https://facebook.com/hiepnh.trixgo`
-                });
 				let { lastestID, limit, keyword, filter, select, departmentID } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListUser({
