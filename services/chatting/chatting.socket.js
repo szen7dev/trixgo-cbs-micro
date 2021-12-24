@@ -530,10 +530,11 @@ exports.CHATTING_SOCKET = {
 		console.log({ arrReceiver })
 
 		// SEND CLOUD-MSG
-		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE", { 
+		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 			users: arrReceiver,
 			title: members.length === 2 ? infoSender.fullname : infoConversation.name,
-			description
+			description,
+			web_url: `https://facebook.com/hiepnh.trixgo`
 		});
     },
 

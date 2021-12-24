@@ -190,6 +190,19 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         deviceID        :{ type : String },
         registrationID  :{ type : String },
         oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal
+        /**
+         * vì mobile có 2 loại app khác nhau
+         *  1/ CBS
+         *      - WEB CBS
+         *      - APP CBS
+         *      - WEB TEASER
+         *  2/ Teaser
+         *      - APP Teaser
+         */
+        env: {
+            type: Number,
+            default: 1
+        }
     }],
     
     /**

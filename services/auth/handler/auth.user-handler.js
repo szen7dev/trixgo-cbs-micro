@@ -158,6 +158,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser; 
+                ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                    users: [userID],
+                    title: 'TEST TEST',
+                    description: 'TEST DESCRIPTION',
+                    web_url: `https://facebook.com/hiepnh.trixgo`
+                });
 				let { lastestID, limit, keyword, filter, select, departmentID } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListUser({
@@ -205,18 +211,18 @@ module.exports = {
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
             oneSignalID         : { type: "string" },
-            userID              : { type: "string", optional: true }, //TODO update userID fake
+            env                 : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let infoUser = ctx.meta.infoUser;
-                let { userID, platform, deviceID, deviceName, registrationID, oneSignalID } = ctx.params;
+                let { platform, deviceID, deviceName, registrationID, oneSignalID, env } = ctx.params;
 
-                userID = userID || infoUser._id;
+                let userID = infoUser._id;
 
                 let infoUserAfterUpdate = await AUTH__USER_MODEL.updateDeviceLogin({
-                    userID, platform, deviceID, deviceName, registrationID, oneSignalID
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, env
                 });
                 return infoUserAfterUpdate;
             } catch (error) {
