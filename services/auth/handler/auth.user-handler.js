@@ -205,7 +205,7 @@ module.exports = {
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
             oneSignalID         : { type: "string" },
-            env                 : { type: "string" },
+            env                 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
