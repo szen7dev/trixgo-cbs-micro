@@ -199,6 +199,17 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_checklist"
     }],
+
+    //_________Tổng số lượng check list
+    amountChecklist: {
+        type: Number, default: 0
+    },
+
+    //_________Tổng số lượng check list đã hoàn thành
+    amountFinishChecklist: {
+        type: Number, default: 0
+    },
+
     //_________Ký duyệt xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,

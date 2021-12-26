@@ -151,9 +151,6 @@ module.exports = {
             filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1  : { type: "string", optional: true },
-            populates2  : { type: "string", optional: true },
-            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -161,7 +158,7 @@ module.exports = {
                 
                 let { 
                     taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
-                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
+                    keyword, limit, lastestID, select, filter, populates
                 } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
@@ -170,12 +167,12 @@ module.exports = {
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates, populates1, populates2, populates3
+                        taskID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, typeStatus, filter, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
-                        keyword, limit, lastestID, populates, populates1, populates2, populates3
+                        userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
+                        keyword, limit, filter, lastestID, populates
                     });
                 }
                 

@@ -702,128 +702,30 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ taskID, userID, select, populates, populates1, populates2, populates3 }){
+    getInfo({ taskID, userID, select, populates }){
         return new Promise(async resolve => {
             try {
-                console.log({ taskID, userID, select, populates, populates1, populates2, populates3 });
                 if (!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'param_invalid' });
+
                 // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
-				}
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
                 let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
-                                .populate({
-                                    path: populates?.value || "",
-                                    select: populates?.select || "",
-                                    populate: {
-                                        path: populates1?.value ||"",
-                                        select: populates1?.select || "",
-                                        populate: {
-                                            path: populates2?.value || "",
-                                            select: populates2?.select || "",
-                                            populate: {
-                                                path: populates3?.value || "",
-                                                select: populates3?.select || "",
-                                            }
-                                        }
-                                    }
-                                }).lean();
+                                .populate(populates).lean();
 
-				if (!infoTask) return resolve({ error: true, message: 'cannot_get' });
-
-                // KIỂM TRA SỐ LƯỢNG CHECKLIST ĐÃ HOÀN THÀNH
-                let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskID, type: 2 });
-                let amountChecklistDone = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskID, type: 2, status: 3 });
-                let checklist = `${amountChecklistDone}/${amountChecklist}`
-                infoTask.checklist = checklist;
-            
-                // THÔNG TIN KIỂM TRA TRẠNG THÁI CÔNG VIỆC
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
-
-                // KIỂM TRA TRẠNG THÁI CÔNG VIỆC
-                if(infoTask && infoTask.expiredTime){
-                    // typeStatus
-                    // 1 Ngày nay
-                    // 2 Tới hạn tuần tới
-                    // 3 Tới hạn + 7 ngày tới
-                    // 4 Quá hạn
-                    // 5 Chưa tới hạn -> 3. Tới hạn + 7 ngày tới
-                    let date    = new Date();
-                    let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
-                    let expiredTimeTemp = new Date(infoTask.expiredTime);
-                    let expiredTime = new Date(expiredTimeTemp.getFullYear() + "-" + (expiredTimeTemp.getMonth() + 1) + "-" + expiredTimeTemp.getDate());
-                    
-                    if(+today == +expiredTime){
-                        infoTask = {
-                            ...infoTask, 
-                            typeStatus: 1
-                        }
-                    }else{
-                        if(+today < +expiredTime && +expiredTime < +addDate(7)){
-                            infoTask = {
-                                ...infoTask, 
-                                typeStatus: 2
-                            }
-                        }else{
-                            if(+today < +expiredTime && +expiredTime < +addDate(14) ){
-                                infoTask = {
-                                    ...infoTask, 
-                                    typeStatus: 3
-                                }
-                            }else{
-                                if( +expiredTime <= +addDate(14)){
-                                    infoTask = {
-                                        ...infoTask, 
-                                        typeStatus: 4
-                                    }
-                                }else{
-                                    infoTask = {
-                                        ...infoTask, 
-                                        typeStatus: 3
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }     
+				if (!infoTask) 
+                    return resolve({ error: true, message: 'cannot_get' });
 
                 //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
                 // await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
@@ -858,7 +760,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
-        keyword, limit = 10, lastestID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={}, }) { 
+        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -922,39 +824,18 @@ class Model extends BaseModel {
 
 					filter = JSON.parse(filter);
 				}
-				
                 // Kiểm tra điều kiện populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-
-                // Kiểm tra điều kiện populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // Kiểm tra điều kiện populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // Kiểm tra điều kiện populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-               
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -969,18 +850,18 @@ class Model extends BaseModel {
                 // Tìm kiếm điều kiên công việc nhanh chậm
                 if(isExpired && isExpired == 1){
                     //Việc bình thường
-                    conditionObj.expiredTime = { $gt: new Date() }
+                    conditionObj.actualFinishTime = { $gt: new Date() }
                 }
 
                 if(isExpired && isExpired == 2){
                     //Việc chậm
                     conditionObj.status = { $ne: 3 }
-                    conditionObj.expiredTime = { $lt: new Date() }
+                    conditionObj.actualFinishTime = { $lt: new Date() }
 				}
 
                 // Lấy những công việc từ ngày đến ngày
                 if(fromDate && toDate){
-                    conditionObj.expiredTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
+                    conditionObj.actualFinishTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
 				}
 
                 // lấy những việc nháp hoặc không phải việc nháp
@@ -1056,6 +937,7 @@ class Model extends BaseModel {
                         $lte: end,
                     }
                 }
+
                 // Lấy việc tới hạn tuần tới
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
@@ -1063,6 +945,7 @@ class Model extends BaseModel {
                         $lte: addDate(7)
                     }
                 }
+
                 // lấy việc tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
@@ -1126,26 +1009,12 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+
                 // Bắt đầu quey trong db
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                    .populate(populates)
                     .lean(); 
 
                 // Kiểm tra nếu sai
@@ -1162,68 +1031,69 @@ class Model extends BaseModel {
                 }
 
                 // Gán dữ liệu cho biến typeStatus
-                let listTask = [];
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    for (const element of infoDataAfterGet) {
-                        let taskNewTemp = element;
-                        if(taskNewTemp && taskNewTemp.expiredTime){
-                            // typeStatus
-                            // 1 Ngày nay
-                            // 2 Tới hạn tuần tới
-                            // 3 Tới hạn + 7 ngày tới
-                            // 4 Quá hạn
-                            // 5 Chưa tới hạn -> 3. Tới hạn + 7 ngày tới
-                            let date    = new Date();
-                            let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
-                            let expiredTimeTemp = new Date(taskNewTemp.expiredTime);
-                            let expiredTime = new Date(expiredTimeTemp.getFullYear() + "-" + (expiredTimeTemp.getMonth() + 1) + "-" + expiredTimeTemp.getDate());
+                // let listTask = [];
+                // if(infoDataAfterGet && infoDataAfterGet.length){
+                //     for (const element of infoDataAfterGet) {
+                //         let taskNewTemp = element;
+                //         if(taskNewTemp && taskNewTemp.expiredTime){
+                //             // typeStatus
+                //             // 1 Ngày nay
+                //             // 2 Tới hạn tuần tới
+                //             // 3 Tới hạn + 7 ngày tới
+                //             // 4 Quá hạn
+                //             // 5 Chưa tới hạn -> 3. Tới hạn + 7 ngày tới
+                //             let date    = new Date();
+                //             let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
+                //             let expiredTimeTemp = new Date(taskNewTemp.expiredTime);
+                //             let expiredTime = new Date(expiredTimeTemp.getFullYear() + "-" + (expiredTimeTemp.getMonth() + 1) + "-" + expiredTimeTemp.getDate());
                             
-                            if(+today == +expiredTime){
-                                taskNewTemp = {
-                                    ...taskNewTemp, 
-                                    typeStatus: 1
-                                }
-                            }else{
-                                if(+today < +expiredTime && +expiredTime < +addDate(7)){
-                                    taskNewTemp = {
-                                        ...taskNewTemp, 
-                                        typeStatus: 2
-                                    }
-                                }else{
-                                    if(+today < +expiredTime && +expiredTime < +addDate(14) ){
-                                        taskNewTemp = {
-                                            ...taskNewTemp, 
-                                            typeStatus: 3
-                                        }
-                                    }else{
-                                        if( +expiredTime <= +addDate(14)){
-                                            taskNewTemp = {
-                                                ...taskNewTemp, 
-                                                typeStatus: 4
-                                            }
-                                        }else{
-                                            taskNewTemp = {
-                                                ...taskNewTemp, 
-                                                typeStatus: 5
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                //             if(+today == +expiredTime){
+                //                 taskNewTemp = {
+                //                     ...taskNewTemp, 
+                //                     typeStatus: 1
+                //                 }
+                //             }else{
+                //                 if(+today < +expiredTime && +expiredTime < +addDate(7)){
+                //                     taskNewTemp = {
+                //                         ...taskNewTemp, 
+                //                         typeStatus: 2
+                //                     }
+                //                 }else{
+                //                     if(+today < +expiredTime && +expiredTime < +addDate(14) ){
+                //                         taskNewTemp = {
+                //                             ...taskNewTemp, 
+                //                             typeStatus: 3
+                //                         }
+                //                     }else{
+                //                         if( +expiredTime <= +addDate(14)){
+                //                             taskNewTemp = {
+                //                                 ...taskNewTemp, 
+                //                                 typeStatus: 4
+                //                             }
+                //                         }else{
+                //                             taskNewTemp = {
+                //                                 ...taskNewTemp, 
+                //                                 typeStatus: 5
+                //                             }
+                //                         }
+                //                     }
+                //                 }
+                //             }
 
-                        }
+                //         }
 
-                        // Kiểm tra số lượng checklist đã hoàn thành
-                        let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2 });
-                        let amountChecklistDone = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2, status: 3 });
-                        let checklist = `${amountChecklistDone}/${amountChecklist}`
-                        taskNewTemp = {
-                            ...taskNewTemp, 
-                            checklist
-                        }
-                        listTask = [...listTask, taskNewTemp];
-                    }
-                }
+                //         // Kiểm tra số lượng checklist đã hoàn thành
+                //         let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2 });
+                //         let amountChecklistDone = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2, status: 3 });
+                //         let checklist = `${amountChecklistDone}/${amountChecklist}`
+                //         taskNewTemp = {
+                //             ...taskNewTemp, 
+                //             checklist
+                //         }
+                //         listTask = [...listTask, taskNewTemp];
+                //     }
+                // }
+
                 // Tổng số việc tìm thấy
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
 
@@ -1231,7 +1101,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
-                    listRecords: listTask,
+                    listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
