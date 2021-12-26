@@ -1,8 +1,8 @@
 
-exports.sendNotificationviaCloudMessaging = function(data) {
-   console.log({
-    sendNotificationviaCloudMessaging: data
-   })
+exports.sendNotificationviaOneSignal = function(data) {
+  //  console.log({
+  //   sendNotificationviaOneSignal: data
+  //  })
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz"
@@ -41,4 +41,4 @@ exports.sendNotificationviaCloudMessaging = function(data) {
 //     big_picture: 'https://trixgo.com/template/images/logo.png'
 // };
 
-// sendNotificationviaCloudMessaging(message)
+// sendNotificationviaOneSignal(message)

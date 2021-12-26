@@ -12,7 +12,7 @@ let s3Object                    = new AWS.S3();
 // link từ s3 upload file
 let render_link_upload_file_s3 = ({ fileName, type }) =>{
     try {
-        let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH}`;
+        let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH || 'root/test'}`;
 
         let url = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,

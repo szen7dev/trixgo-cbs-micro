@@ -306,7 +306,7 @@ class Model extends BaseModel {
         })
     }
     // implement by: KHANHNEY✅ 
-    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID }) {
+    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, env }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -341,7 +341,7 @@ class Model extends BaseModel {
                 let devices     = isExist.devices;
                 let newDevices  = [];
 
-                let itemNewDevice = { deviceName, deviceID, registrationID, oneSignalID }
+                let itemNewDevice = { deviceName, deviceID, registrationID, oneSignalID, env }
                 if (devices.length) {
                     devices.forEach(device => {
                         let _device = device;
@@ -350,7 +350,8 @@ class Model extends BaseModel {
                                 deviceID        : device.deviceID, 
                                 deviceName      : device.deviceName, 
                                 registrationID  : registrationID,
-                                oneSignalID     : oneSignalID
+                                oneSignalID     : oneSignalID,
+                                env
                             };
                         } 
                         newDevices.push(_device);

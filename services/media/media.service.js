@@ -98,20 +98,9 @@ module.exports = {
 
 		// ================================  MEDIA COMMENT  ================================ //
 
-		// ✅	COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.COMMENT_MEDIA]            					: MEDIA_HANDLER.commentMedia,
-
-		// ✅	LẤY DANH SÁCH COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_LIST_COMMENT_MEDIA]            			: MEDIA_HANDLER.getListCommentMedia,
-
-		// ✅	LẤY CHI TIẾT COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_DETAIL_COMMENT_MEDIA]            			: MEDIA_HANDLER.getDetailCommentMedia,
-
-		// ✅	CHỈNH SỬA COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.UPDATE_COMMENT_MEDIA]            				: MEDIA_HANDLER.updateCommentMedia,
-
-		// ✅	TRẢ LỜI COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.REPLY_COMMENT_MEDIA]         					: MEDIA_HANDLER.replyCommentMedia,
+		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   							: MEDIA__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.deleteComment,
+		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]				: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 
 		// ================================  MEDIA REACTION  ================================ //
 
@@ -161,13 +150,6 @@ module.exports = {
 
 		// ✅	LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC VÀO TRONG COMMENT ẢNH CỦA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_COMMENT_IMAGE]   			: MEDIA_HANDLER.getListReactionCommentImage,
-
-		/**
-		 * COMMENT
-		 */
-		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   							: MEDIA__COMMENT_HANDLER.insert,
-		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.deleteComment,
-		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]				: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 	},
 
 	/**

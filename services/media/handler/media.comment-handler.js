@@ -32,12 +32,13 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                console.error(error);
+                return { error: true, message: error.message };
             }
         }
     },
 
-     /**
+    /**
 	 * Dev: NPNguyen 🐸
 	 * Func: XÓA COMMENT TRONG BÀI VIẾT
 	 */
@@ -61,7 +62,7 @@ module.exports = {
             }
         }
     },
- 
+
     /**
      * Dev: Depv ✅
      * Func: getList and getInfo comment media
@@ -109,4 +110,4 @@ module.exports = {
             }
         }
     },
- }
+}
