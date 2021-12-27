@@ -14,7 +14,7 @@ const Schema                = require('mongoose').Schema;
  * 3. Báo cáo hiệu quả sử dụng lao động
  * 4. Báo cáo hiệu quả tuyển dụng
  */
-module.exports  = DATABASE_MIDDLEWARE("contact", {
+module.exports  = DATABASE_MIDDLEWARE("contact1", {
     // Công ty   
     company: {
         type: Schema.Types.ObjectId,

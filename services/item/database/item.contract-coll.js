@@ -179,7 +179,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Trạng thái triển khai (1-Đang triển khai/2-Đang bàn giao/3-Hoàn thành/4-Tạm dừng)
     status: { type: Number, default: 1 },
     
-    //_________Thực/gửi dấu (1-Hợp đồng thực/2-Gửi dấu ~ Với dự án thì là các Gói chi phí sẽ triển khai/Thực tế đã ký/Thực-ảo/Chính thức-Nháp)
+    //_________Phân loại thực ảo (1-Hợp đồng thực/2-Gửi dấu ~ Với dự án thì là các Gói chi phí sẽ triển khai/Thực tế đã ký/Thực-ảo/Chính thức-Nháp)
     real: { type: Number, default: 1 },
 
     //_________Phân loại khác (1-Thông thường/2-Đặc biệt)

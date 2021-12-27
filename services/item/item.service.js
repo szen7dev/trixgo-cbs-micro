@@ -8,10 +8,14 @@ const { CF_ACTIONS_ITEM } 	        	= require('./helper/item.actions-constant');
 
 const ITEM__CONTRACT_HANDLER            = require('./handler/item.contract-handler');
 const ITEM__DEPARTMENT_HANDLER          = require('./handler/item.department-handler');
+const ITEM__DOCTYPE_HANDLER          	= require('./handler/item.doctype-handler');
+const ITEM__CONTACT_HANDLER          	= require('./handler/item.contact-handler');
 
 const ITEM__CONTRACT_COLL				= require('./database/item.contract-coll');
 const ITEM__DEPARTMENT_COLL				= require('./database/item.department-coll');
 const ITEM__AREA_COLL					= require('./database/item.area-coll');
+const ITEM__DOCTYPE_COLL				= require('./database/item.doctype-coll');
+const ITEM__CONTACT_COLL				= require('./database/item.contact-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
@@ -20,6 +24,8 @@ module.exports = {
 		DbService(ITEM__CONTRACT_COLL),
 		DbService(ITEM__DEPARTMENT_COLL),
 		DbService(ITEM__AREA_COLL),
+		DbService(ITEM__DOCTYPE_COLL),
+		DbService(ITEM__CONTACT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ITEM])
     ],
 
@@ -52,6 +58,12 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DEPARTMENT_UPDATE] 					: ITEM__DEPARTMENT_HANDLER.update,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
+	
+		//==========================================  DOCTYPE ACTIONS  ================================
+		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
+
+		//==========================================  CONTACT ACTIONS  ================================
+		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
 	},
 
 	/**

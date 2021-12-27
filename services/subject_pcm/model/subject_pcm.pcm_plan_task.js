@@ -824,6 +824,7 @@ class Model extends BaseModel {
 
 					filter = JSON.parse(filter);
 				}
+
                 // Kiểm tra điều kiện populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -1010,17 +1011,17 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
-                // Bắt đầu quey trong db
+                // Bắt đầu query trong db
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
-
+                    .lean();
+                
                 // Kiểm tra nếu sai
                 if(!infoDataAfterGet)
                    return resolve({ error: true, message: "Can't get data", status: 403 });
-                
+
                 // nextCursor phần tử cuối cùng khi phân trang
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -1028,71 +1029,7 @@ class Model extends BaseModel {
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
-                }
-
-                // Gán dữ liệu cho biến typeStatus
-                // let listTask = [];
-                // if(infoDataAfterGet && infoDataAfterGet.length){
-                //     for (const element of infoDataAfterGet) {
-                //         let taskNewTemp = element;
-                //         if(taskNewTemp && taskNewTemp.expiredTime){
-                //             // typeStatus
-                //             // 1 Ngày nay
-                //             // 2 Tới hạn tuần tới
-                //             // 3 Tới hạn + 7 ngày tới
-                //             // 4 Quá hạn
-                //             // 5 Chưa tới hạn -> 3. Tới hạn + 7 ngày tới
-                //             let date    = new Date();
-                //             let today   =  new Date(date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
-                //             let expiredTimeTemp = new Date(taskNewTemp.expiredTime);
-                //             let expiredTime = new Date(expiredTimeTemp.getFullYear() + "-" + (expiredTimeTemp.getMonth() + 1) + "-" + expiredTimeTemp.getDate());
-                            
-                //             if(+today == +expiredTime){
-                //                 taskNewTemp = {
-                //                     ...taskNewTemp, 
-                //                     typeStatus: 1
-                //                 }
-                //             }else{
-                //                 if(+today < +expiredTime && +expiredTime < +addDate(7)){
-                //                     taskNewTemp = {
-                //                         ...taskNewTemp, 
-                //                         typeStatus: 2
-                //                     }
-                //                 }else{
-                //                     if(+today < +expiredTime && +expiredTime < +addDate(14) ){
-                //                         taskNewTemp = {
-                //                             ...taskNewTemp, 
-                //                             typeStatus: 3
-                //                         }
-                //                     }else{
-                //                         if( +expiredTime <= +addDate(14)){
-                //                             taskNewTemp = {
-                //                                 ...taskNewTemp, 
-                //                                 typeStatus: 4
-                //                             }
-                //                         }else{
-                //                             taskNewTemp = {
-                //                                 ...taskNewTemp, 
-                //                                 typeStatus: 5
-                //                             }
-                //                         }
-                //                     }
-                //                 }
-                //             }
-
-                //         }
-
-                //         // Kiểm tra số lượng checklist đã hoàn thành
-                //         let amountChecklist = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2 });
-                //         let amountChecklistDone = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({ parent: taskNewTemp._id, type: 2, status: 3 });
-                //         let checklist = `${amountChecklistDone}/${amountChecklist}`
-                //         taskNewTemp = {
-                //             ...taskNewTemp, 
-                //             checklist
-                //         }
-                //         listTask = [...listTask, taskNewTemp];
-                //     }
-                // }
+                }   
 
                 // Tổng số việc tìm thấy
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
@@ -1113,7 +1050,6 @@ class Model extends BaseModel {
             }
         })
     }
-    
     /**
      * Name: Lấy số lượng task của bạn ✅
      * Author: Depv
