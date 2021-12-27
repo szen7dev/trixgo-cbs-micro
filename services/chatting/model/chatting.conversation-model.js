@@ -520,7 +520,7 @@ class Model extends BaseModel {
 						select: select.members
 					})
 					.populate({
-						path: 'authors',
+						path: 'author',
 						select: select.authors
 					})
 					.populate('lastMessage', select.lastMessage)
