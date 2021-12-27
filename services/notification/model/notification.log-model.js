@@ -5,8 +5,12 @@ const BaseModel                                 = require('../../../tools/db/bas
 const { checkObjectIDs }                        = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-const { sendNotificationviaCloudMessaging }     = require('../../../tools/cloudmsg/noti.send');
-const { ONE_SIGNAL__APP_ID, NOTI_TYPE }         = require('../helper/notification.keys-constant')
+const { sendNotificationviaOneSignal }          = require('../../../tools/cloudmsg/noti.send');
+const { 
+    NOTI_TYPE,
+    ONESIGNAL_APP_CBS,
+    ONESIGNAL_APP_TEASER 
+}         = require('../helper/notification.keys-constant')
  
 class Model extends BaseModel {
     constructor() {
@@ -254,9 +258,12 @@ class Model extends BaseModel {
 		})
 	}
    
-    sendNotiMobilePush({ users, title, description, objDataForSend, ctx }) {
+    // sendNotiMobilePush({ users, title, description, objDataForSend, ctx }) {
+    sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
         return new Promise(async (resolve) => {
              try {
+                const WEB_CBS           = 1;
+                const MOBILE_TEARSER    = 2;
                  console.log({ users, title, description, objDataForSend })
                 /**
                  * DECALARTION VARIABLE (1)
@@ -281,32 +288,63 @@ class Model extends BaseModel {
                     let { data: { listRecords } } = infoAfterCall;
 
                     let listOneSignalIDForMobilePush = [];
+
+                    /**
+                     * @param listDeviceFromMobile "danh sách device ENV: TEASER"
+                     * @param listDeviceFromWebBrowser  "danh sách device ENV: CBS"
+                     */
+                    let listDeviceFromMobile        = [];
+                    let listDeviceFromWebBrowser    = [];
+
+
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
                             let { devices } = user;
-                            // console.log({ devices })
+                            listDeviceFromMobile = [
+                                ...listDeviceFromMobile,
+                                ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
+                            ]
+                            listDeviceFromWebBrowser = [
+                                ...listDeviceFromWebBrowser,
+                                ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
+                            ]
 
-                            listOneSignalIDForMobilePush = [...listOneSignalIDForMobilePush, ...devices.map(item => item.oneSignalID)]
-                        })
+                        });
 
+                        // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
-                            app_id: ONE_SIGNAL__APP_ID,
-                            headings: {
-                                "en": title
-                            },
-                            contents: {
-                                "en": description
-                            },
-                            data: objDataForSend,
-                            ios_sound: 'teaser.wav',
-                            android_sound: 'teaser',
-                            ios_badgeType: 'Increase',
-                            ios_badgeCount: 1,
-                            // android_channel_id: 'xxxxxxx-4462-xxxx-884a-xxxxxxxxxx',
-                            include_player_ids: listOneSignalIDForMobilePush
+                            headings: { "en": title },
+                            contents: { "en": description },
+                        }
+                        console.log("🚀 ~ file: notification.log-model.js ~ line 308 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowser", listDeviceFromWebBrowser)
+
+                        if (listDeviceFromMobile.length > 0) {
+                            // MOBILE PUSH
+                            let dataForMobilePush = {
+                                ...dataForSend,
+                                data: objDataForSend,
+                                app_id: ONESIGNAL_APP_TEASER,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
+                                ios_badgeType: 'Increase',
+                                ios_badgeCount: 1,
+                                include_player_ids: listDeviceFromMobile
+                            }
+                            
+                            sendNotificationviaOneSignal(dataForMobilePush)
+                        } 
+                        if (listDeviceFromWebBrowser.length > 0) {
+                            // WEB PUSH
+                            let dataForWebPush = {
+                                ...dataForSend,
+                                app_id: ONESIGNAL_APP_CBS,
+                                web_url,
+                                include_player_ids: listDeviceFromMobile
+                            }
+                            sendNotificationviaOneSignal(dataForWebPush)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
                         }
 
-                        sendNotificationviaCloudMessaging(dataForSend)
                     }
                 }
             } catch (error) {
@@ -314,7 +352,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 }
 
 exports.MODEL = new Model;

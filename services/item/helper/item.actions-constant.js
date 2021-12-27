@@ -6,6 +6,7 @@ const BASE_ACTIONS = 'ACT_ITEM';
 const CONTRACT          = 'CONTRACT';
 const CONTACT           = 'CONTACT';
 const DEPARTMENT        = 'DEPARTMENT';
+const DOCTYPE           = 'DOCTYPE';
 
 const CF_ACTIONS_ITEM = {
     /**
@@ -25,6 +26,16 @@ const CF_ACTIONS_ITEM = {
     DEPARTMENT_INSERT                        : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_INSERT`,
     DEPARTMENT_UPDATE                        : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_UPDATE`,
     DEPARTMENT_GET_LIST                      : `${BASE_ACTIONS}_${DEPARTMENT}_DEPARTMENT_GET_LIST`,
+
+    /**
+     * DOCTYPE
+     */
+    DOCTYPE_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${DOCTYPE}_GET_INFO_AND_GET_LIST`,
+
+     /**
+     * CONTACT
+     */
+    CONTACT_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${CONTACT}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

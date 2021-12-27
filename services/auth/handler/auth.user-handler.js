@@ -205,18 +205,18 @@ module.exports = {
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
             oneSignalID         : { type: "string" },
-            userID              : { type: "string", optional: true }, //TODO update userID fake
+            env                 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let infoUser = ctx.meta.infoUser;
-                let { userID, platform, deviceID, deviceName, registrationID, oneSignalID } = ctx.params;
+                let { platform, deviceID, deviceName, registrationID, oneSignalID, env } = ctx.params;
 
-                userID = userID || infoUser._id;
+                let userID = infoUser._id;
 
                 let infoUserAfterUpdate = await AUTH__USER_MODEL.updateDeviceLogin({
-                    userID, platform, deviceID, deviceName, registrationID, oneSignalID
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, env
                 });
                 return infoUserAfterUpdate;
             } catch (error) {

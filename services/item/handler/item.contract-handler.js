@@ -290,26 +290,23 @@ module.exports = {
             filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1  : { type: "string", optional: true },
-            populates2  : { type: "string", optional: true },
-            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, 
-                    keyword, limit, lastestID, populates2, populates3, filter, populates
+                    keyword, limit, lastestID, filter, select, populates
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
-                        contractID, select, populates, populates1, populates2, populates3
+                        contractID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
-                        projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, keyword, limit, lastestID, populates2, populates3, filter, populates
+                        projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID, keyword, limit, lastestID, filter
                     });
                 }
                 

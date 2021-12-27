@@ -426,6 +426,9 @@ module.exports = {
 
 
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
+		/**
+		 * DỰ ÁN PHÒNG BAN
+		 */
 		[`POST ${CF_ROUTINGS_ITEM.DEPARTMENTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_INSERT}`],
 
@@ -434,9 +437,36 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_ITEM.DEPARTMENTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`],
+
+		/**
+		 * DOCTYPE
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.DOCTYPES}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST}`],
+
+		/**
+		 * CONTRACT
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`],
+
+		[`POST ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_REMOVE}`],
+
+		/**
+		 * CONTACT
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.CONTACTS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST}`],
+
+
 		//------------------------------END SEARVICE ITEM---------------------------//
-
-
 
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`]: 
@@ -472,20 +502,7 @@ module.exports = {
 		//-------------------------------END SEARVICE CMCS---------------------------//
 
 
-		//---------------------------🏁 START SEARVICE CONTRACT 🏁---------------------------//
-		[`GET ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`],
-
-		[`POST ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_INSERT}`],
-
-		[`PUT ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`],
-
-		[`DELETE ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
-		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_REMOVE}`],
-
-		//---------------------------- END SEARVICE CONTRACT ---------------------------//
+		
 
 
 
