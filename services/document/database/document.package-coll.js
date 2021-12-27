@@ -6,7 +6,7 @@ const Schema                = require('mongoose').Schema;
 /**
  *  Hồ sơ văn bản
  */
-module.exports = DATABASE_MIDDLEWARE("document_package", {
+module.exports = DATABASE_MIDDLEWARE("package", {
     //_________Mã hiệu bằng số do hệ thống tự phát sinh
     suid: {
         type   : String,
