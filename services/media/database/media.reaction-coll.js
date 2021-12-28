@@ -20,7 +20,15 @@ module.exports  = DATABASE_MIDDLEWARE("media_reaction", {
         type    : Schema.Types.ObjectId,
         ref     : 'comment'
     },
-          
+
+    /**
+     * file
+     */
+    file: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'file_core'  
+    },
+
     /**
      * Cảm xúc
      */
@@ -30,9 +38,9 @@ module.exports  = DATABASE_MIDDLEWARE("media_reaction", {
     },
 
     /**
-     *  Người reaction
+     *  Người tạo(Lấy nhanh)
      */
-    author: {
+    userCreate: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },

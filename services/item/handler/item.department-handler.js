@@ -216,7 +216,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { keyword, limit, lastestID, departmentID, companyID, type, select, filter, populates } = ctx.params;
+                let {  departmentID, companyID, type, keyword, limit, lastestID, select, filter, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler;

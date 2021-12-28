@@ -26,12 +26,10 @@ const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA_FILE_COLL					    	= require('../database/media.file-coll');
 const MEDIA_SEEN_COLL					    	= require('../database/media.seen-coll');
 const MEDIA_COMMENT_COLL					    = require('../database/media.comment-coll');
-const MEDIA_COMMENT_FILE_COLL					= require('../database/media.comment_file-coll');
 const MEDIA_REACTION_COLL					    = require('../database/media.reaction-coll');
 const MEDIA_SAVE_COLL					    	= require('../database/media.save-coll');
 const MEDIA_PIN_COLL					    	= require('../database/media.pin-coll');
 const MEDIA_COMMENT_IMAGE_COLL					= require('../database/media.comment_image-coll');
-const MEDIA_REACTION_IMAGE_COLL				    = require('../database/media.reaction_image-coll');
 
 
 class Model extends BaseModel {
@@ -1126,12 +1124,10 @@ class Model extends BaseModel {
 
 
 				let totalCommentImages  = await MEDIA_COMMENT_IMAGE_COLL.count({ image: imageID })
-				let totalReactionImages = await MEDIA_REACTION_IMAGE_COLL.count({ image: imageID })
 
 				infoImage = {
 					...infoImage,
 					totalCommentImages,
-					totalReactionImages
 				}
 				
 				if(!infoImage)

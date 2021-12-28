@@ -36,7 +36,7 @@ module.exports  = DATABASE_MIDDLEWARE("comment_core", {
         default : 0
     },
 
-    //_________Số lượng comment con của comment cha
+    //_________1 mảng loại cảm xúc để show trên view
     typeReactions: [{
         type :  Number,
     }],

@@ -14,11 +14,11 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * COLLECTION
  */
-const REACTION__COMMENT_COLL            = require('../database/reaction.comment_core-coll');
+const REACTION__COMMENT_CORE_COLL            = require('../database/reaction.comment_core-coll');
 
 class Model extends BaseModel {
     constructor() {
-        super(REACTION__COMMENT_COLL);
+        super(REACTION__COMMENT_CORE_COLL);
     }
     /**
      * Name: Thêm comment core
@@ -128,7 +128,7 @@ class Model extends BaseModel {
                     dataUpdate.images = [];
                 }
 
-                let infoAfterAction = await REACTION__COMMENT_COLL.findOneAndUpdate({
+                let infoAfterAction = await REACTION__COMMENT_CORE_COLL.findOneAndUpdate({
                     _id: commentCoreID,
                     author: authorID
                 }, dataUpdate);
@@ -136,7 +136,7 @@ class Model extends BaseModel {
                 if(!infoAfterAction)
                     return resolve({ error: true, message: 'cannot_update' });
 
-                infoAfterAction = await REACTION__COMMENT_COLL
+                infoAfterAction = await REACTION__COMMENT_CORE_COLL
                     .findById(infoAfterAction._id)
                     .populate({
                         path: 'files images author',
@@ -194,7 +194,7 @@ class Model extends BaseModel {
 					populates3 = JSON.parse(populates3);
 				}
 
-                let infoComment = await REACTION__COMMENT_COLL.findById(taskID)
+                let infoComment = await REACTION__COMMENT_CORE_COLL.findById(taskID)
                                 .select(select)
                                 .populate({
                                     path: populates?.value || "",

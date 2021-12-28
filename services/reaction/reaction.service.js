@@ -1,11 +1,19 @@
 "use strict";
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+/**
+ * DOMAIN AND ACTIONS
+ */
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_REACTION } 	        = require('./helper/reaction.actions-constant');
-const REACTION__COMMENT_HANDLER        	= require('./handler/reaction.comment_core-hanlder');
-const REACTION__REACTION_HANDLER      	= require('./handler/reaction.reaction-hanlder');
-
+/**
+ * HANDLERS
+ */
+const REACTION__COMMENT_CORE_HANDLER        	= require('./handler/reaction.comment_core-hanlder');
+const REACTION__REACTION_CORE_HANDLER      	= require('./handler/reaction.reaction_core-hanlder');
+/**
+ * COLLECTIONS
+ */
 const REACTION__REACTION_CORE_COLL			= require('./database/reaction.reaction_core-coll');
 const REACTION__COMMENT_CORE_COLL			= require('./database/reaction.comment_core-coll');
 
@@ -34,14 +42,13 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
-		//==========================================   REACTION ACTIONS   ================================
-		[CF_ACTIONS_REACTION.REACTION_INSERT] 			: REACTION__REACTION_HANDLER.insertReaction,
-
 		//==========================================   COMMENT_CORE   =====================================
-		[CF_ACTIONS_REACTION.COMMENT_CORE_INSERT] 				 : REACTION__COMMENT_HANDLER.insert,
-		[CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE] 				 : REACTION__COMMENT_HANDLER.update,
-		[CF_ACTIONS_REACTION.COMMENT_CORE_GET_INFO_AND_GET_LIST ]: REACTION__COMMENT_HANDLER.getInfoAndGetList,
-		//==========================================   COMMENT_FILE_CORE ACTIONS   =======================
+		[CF_ACTIONS_REACTION.COMMENT_CORE_INSERT] 				 : REACTION__COMMENT_CORE_HANDLER.insert,
+		[CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE] 				 : REACTION__COMMENT_CORE_HANDLER.update,
+		[CF_ACTIONS_REACTION.COMMENT_CORE_GET_INFO_AND_GET_LIST ]: REACTION__COMMENT_CORE_HANDLER.getInfoAndGetList,
+		//==========================================   REACTION_CORE   =====================================
+		[CF_ACTIONS_REACTION.REACTION_CORE_INSERT] 				 : REACTION__REACTION_CORE_HANDLER.insert,
+		[CF_ACTIONS_REACTION.REACTION_CORE_UPDATE] 				 : REACTION__REACTION_CORE_HANDLER.update,
 	},
 	
 	/**
