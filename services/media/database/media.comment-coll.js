@@ -10,16 +10,16 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         ref     : 'media'
     },
 
-    //_________Comment core
-    comment: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'comment_core'
-    },
-
     //_________ID Comment cha
     parent: {
         type    :  Schema.Types.ObjectId,
         ref     : 'media_comment'
+    },
+
+    //_________Comment core
+    comment: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'comment_core'
     },
     
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)

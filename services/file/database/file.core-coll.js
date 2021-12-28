@@ -25,5 +25,6 @@ module.exports  = DATABASE_MIDDLEWARE("file_core", {
         type: Schema.Types.ObjectId,
         ref: 'user',
         require: true
-    }
+    },
+    
 });

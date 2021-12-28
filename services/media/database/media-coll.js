@@ -117,4 +117,27 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: Number,
         default: 1
     },
+
+    //_________Số lượng reaction của media
+    amountReaction: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________Số lượng comment của media
+    amountComment: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________Số lượng lượt xem của media
+    amountView: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________1 mảng loại cảm xúc để show trên view(3 cái)
+    typeReactions: [{
+        type :  Number,
+    }],
 })

@@ -1,8 +1,7 @@
 
 "use strict";
 const ObjectID                                  = require('mongoose').Types.ObjectId;
-const REACTION__COMMENT_COLL                    = require('../database/reaction.comment_core-coll');
-const REACTION__REACTION_COLL                   = require('../database/reaction.reaction_core-coll');
+const REACTION__REACTION_CORE_COLL              = require('../database/reaction.reaction_core-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
                                                 = require('../../../tools/utils/utils');
@@ -12,10 +11,10 @@ const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-consta
 // Lưu ý reaction core chỉ có 2 hàm thêm và vập nhật, xóa và lấy danh sách thì được lấy thông qua reaction theo ứng dụng
 class Model extends BaseModel {
     constructor() {
-        super(REACTION__REACTION_COLL);
+        super(REACTION__REACTION_CORE_COLL);
     }
     /**
-     * Name: Thêm reaction ✅
+     * Name: Thêm reaction core ✅
      * Author: Depv
      * Code: F0275
      */
@@ -44,7 +43,7 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                dataInsert = { type, author: userID };
+                dataInsert = { type, userCreate: userID };
 
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)
@@ -55,13 +54,13 @@ class Model extends BaseModel {
             }
         });
     }
-
+    
     /**
      * Name: Cập nhật type reaction ✅
      * Author: Depv
      * Code: F0276
      */
-    update({ reactionID, type }) {
+    update({ reactionCoreID, type }) {
         const that = this;
         return new Promise(async (resolve) => {
              try {
@@ -75,8 +74,8 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(reactionID))
-                    return resolve({ error: true, message: "reactionID_invalid" });
+                if(!checkObjectIDs(reactionCoreID))
+                    return resolve({ error: true, message: "reactionCoreID_invalid" });
 
                 if(!type)
                     return resolve({ error: true, message: "type_invalid" });
@@ -88,7 +87,7 @@ class Model extends BaseModel {
                  */    
                 dataUpdate = { type };
                 
-                let infoAfterInsert = await REACTION__COMMENT_COLL.findByIdAndUpdate(reactionID, dataUpdate, { new: true });
+                let infoAfterInsert = await REACTION__REACTION_CORE_COLL.findByIdAndUpdate(reactionCoreID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
                 return resolve({ error: false, data: infoAfterInsert});

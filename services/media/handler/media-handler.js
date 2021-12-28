@@ -12,7 +12,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const MEDIA_MODEL                               = require('../model/media-model').MODEL;
 const COMMENT_MEDIA_MODEL                       = require('../model/media.comment-model').MODEL;
-const COMMENT_MEDIA_IMAGE_MODEL                = require('../model/media.comment_image-model').MODEL;
+// const COMMENT_MEDIA_IMAGE_MODEL                = require('../model/media.comment_image-model').MODEL;
 
 
 module.exports = {
