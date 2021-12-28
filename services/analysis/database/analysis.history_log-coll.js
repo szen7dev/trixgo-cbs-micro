@@ -4,6 +4,17 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("history_log", {
+    //_______Dự án (option, chỉ khi truy cập vào project thì mới có trường này)
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : 'department' 
+    },
+
+    //_______Hợp đồng (option, chỉ khi truy cập vào contract thì mới có trường này)
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref : 'contract' 
+    },
     
     //_________Loại hành động(1-Xem/2-Thêm/3-Sửa/4-Xóa) thay bằng collection
     type: {
