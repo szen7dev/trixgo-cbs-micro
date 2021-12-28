@@ -31,16 +31,17 @@ module.exports = {
             title       : { type: "string" },
             content     : { type: "string" },
             receivers   : { type: "array" },
+            path        : { type: "string", optional: true },
             type        : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { type, title, content, receivers } = ctx.params;
+                const { type, title, content, path, receivers } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insertNotification({
-                    type, title, content, sender: authorID, receivers
+                    type, title, content, path, sender: authorID, receivers
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
