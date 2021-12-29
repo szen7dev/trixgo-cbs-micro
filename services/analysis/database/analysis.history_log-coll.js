@@ -4,16 +4,16 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("history_log", {
-    //_________Dự án
+    //_______Dự án (option, chỉ khi truy cập vào project thì mới có trường này)
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"
+        ref : 'department' 
     },
-    
-    //_________Hợp đồng
+
+    //_______Hợp đồng (option, chỉ khi truy cập vào contract thì mới có trường này)
     contract: {
         type: Schema.Types.ObjectId,
-        ref : "contract"
+        ref : 'contract' 
     },
     
     //_________Loại hành động(1-Xem/2-Thêm/3-Sửa/4-Xóa) thay bằng collection
@@ -22,7 +22,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         default: 1
     },
     
-    //_________Thực hiện trên collection nào(VD: Pcm, Docs ...)
+    //_________Thực hiện trên collection nào(VD: Pcm_plan_task, Docs ...)
     collection: {
         kind: String,
         item: { type: Schema.Types.ObjectId, refPath: 'field.kind' }

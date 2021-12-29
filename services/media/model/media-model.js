@@ -47,7 +47,7 @@ class Model extends BaseModel {
 
 				//=======================VARIABLE/CONSTANTS=====================
 				let condition = {};
-				let receiversNotification = [];
+				let receiversNoti = [];
 
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs(authorID))
@@ -164,12 +164,13 @@ class Model extends BaseModel {
 							userID: authorID,
 							select: 'fullname'
 						});
-						receiversNotification = receivers.data.map(receiver => receiver._id);
+						receiversNoti = receivers.data.map(receiver => receiver._id);
 
 						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 							title: `${infoSender?.data?.fullname} đã tạo 1 bài viết`,
 							content: content.length > 200 ? content.substring(0, 200) : content,
-							receivers: receiversNotification,
+							receivers: receiversNoti,
+							path: `/social/post/${mediaID}`,
 							type: 1
 						});
 					}
@@ -177,7 +178,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
 					infoMediaAfterInserted,
-					receivers: receiversNotification
+					receivers: receiversNoti
 				}, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -350,40 +351,40 @@ class Model extends BaseModel {
 				if(lastestID && !checkObjectIDs(lastestID))
 					return resolve({ error: true, message: 'Request param lastestID invalid', status: 400 });
 
-				let infoUser = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-					userID: userID,
-					select: "company fullname friends",
-				});
+				// let infoUser = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+				// 	userID: userID,
+				// 	select: "company fullname friends",
+				// });
 
 				conditionObj = {
 					status: 1, //HOẠT ĐỘNG ✅
-					$or: [
-						{
-							author: userID, // Tác giả bài viết ✅
-						},
-						{
-							tagFriends: { // Được tag vào bài biết ✅ 
-								$in: [userID]
-							}
-						},
-						{
-							type: 1, //  Chỉ mình tôi ✅ 
-							author: userID,
-						},
-						{
-							type: 2, 
-							author: { // Bạn bè trong công ty ✅
-								$in: infoUser?.data?.friends
-							},
-							company: infoUser?.data?.company
-						},
-						{
-							type: 3, 
-							author: { // Tất cả bạn bè ✅
-								$in: infoUser?.data?.friends
-							}
-						}
-					]
+					// $or: [
+					// 	{
+					// 		author: userID, // Tác giả bài viết ✅
+					// 	},
+					// 	{
+					// 		tagFriends: { // Được tag vào bài biết ✅ 
+					// 			$in: [userID]
+					// 		}
+					// 	},
+					// 	{
+					// 		type: 1, //  Chỉ mình tôi ✅ 
+					// 		author: userID,
+					// 	},
+					// 	{
+					// 		type: 2, 
+					// 		author: { // Bạn bè trong công ty ✅
+					// 			$in: infoUser?.data?.friends
+					// 		},
+					// 		company: infoUser?.data?.company
+					// 	},
+					// 	{
+					// 		type: 3, 
+					// 		author: { // Tất cả bạn bè ✅
+					// 			$in: infoUser?.data?.friends
+					// 		}
+					// 	}
+					// ]
 				}
 
 				if(companyID && checkObjectIDs(companyID)){
@@ -412,6 +413,7 @@ class Model extends BaseModel {
 					default:
 						break;
 				}
+				console.log({ conditionObj })
 
                 let listAfterFind = await this.getListWithCondition({
 					conditionObj,

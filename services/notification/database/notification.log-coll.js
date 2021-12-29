@@ -36,5 +36,8 @@ module.exports  = DATABASE_MIDDLEWARE("notification_logs", {
     },
     content: {
         type: String
-    },  
+    },
+    path: {
+        type: String
+    },
 })

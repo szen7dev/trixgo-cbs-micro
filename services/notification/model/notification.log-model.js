@@ -26,13 +26,14 @@ class Model extends BaseModel {
 	 * Func: Thêm thông báo
 	 * Date: 17/12/2021
 	 */
-    insertNotification({ type, title, content, sender, receivers }){
+    insertNotification({ type, title, content, path, sender, receivers }){
         return new Promise(async resolve => {
             try {
                 const dataInsert = {
                     title,
                     content,
                     type,
+                    path,
                     sender,
                     status: this.SEND_SUCCESS
                 };
