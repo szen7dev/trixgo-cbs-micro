@@ -48,8 +48,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { email, password, platform }        = ctx.params;
-                // console.log({ email, password, platform })
+                let { email, password, platform } = ctx.params;
+
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
 
