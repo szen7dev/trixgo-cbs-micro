@@ -308,7 +308,8 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
-                        projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID, keyword, limit, lastestID, filter
+                        projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
+                        keyword, limit, lastestID, filter, populates
                     });
                 }
                 
