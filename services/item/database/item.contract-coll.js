@@ -182,7 +182,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Phân loại thực ảo (1-Hợp đồng thực/2-Gửi dấu ~ Với dự án thì là các Gói chi phí sẽ triển khai/Thực tế đã ký/Thực-ảo/Chính thức-Nháp)
     real: { type: Number, default: 1 },
 
-    //_________Phân loại khác (1-Thông thường/2-Đặc biệt)
+    //_________Phân loại khác (1-Thông thường/2-Đặc biệt)  
     subType: { type: Number, default: 1 },
 
     //_________Phân loại theo hình thức (1-Trọn gói/2-Theo tháng/3-Đơn giá/..)
@@ -217,7 +217,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref : 'warehouse'
     },
-
+    
     /**
      * THÔNG TIN KHÁC
      */

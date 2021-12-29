@@ -7,6 +7,8 @@ const CONTRACT          = 'CONTRACT';
 const CONTACT           = 'CONTACT';
 const DEPARTMENT        = 'DEPARTMENT';
 const DOCTYPE           = 'DOCTYPE';
+const WAREHOUSE         = 'WAREHOUSE';
+
 
 const CF_ACTIONS_ITEM = {
     /**
@@ -36,6 +38,11 @@ const CF_ACTIONS_ITEM = {
      * CONTACT
      */
     CONTACT_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${CONTACT}_GET_INFO_AND_GET_LIST`,
+
+    /**
+     * WAREHOUSE
+     */
+    WAREHOUSE_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${WAREHOUSE}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

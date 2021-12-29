@@ -43,7 +43,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getList({
-                        companyID: company._id, projectID, lastestID, userID, type, keyword, limit, select, filter, populates
+                        companyID: company._id, projectID, lastestID, userID, type, keyword, limit, filter, populates
                     });
                 }
 

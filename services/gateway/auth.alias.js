@@ -466,12 +466,17 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST}`],
 
 
+		/**
+		 * WAREHOUSE
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.WAREHOUSES}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST}`],
+
 		//------------------------------END SEARVICE ITEM---------------------------//
 
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`]: 
 		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
-
 
 		// CONTRACT_IPC
 		[`POST ${CF_ROUTINGS_CMCS.CONTRACT_IPC}`]: 
@@ -500,11 +505,6 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_INFO_AND_GET_LIST}`],
 
 		//-------------------------------END SEARVICE CMCS---------------------------//
-
-
-		
-
-
 
 
 		//---------------------------🏁 START SEARVICE HUMAN (CONTACT) 🏁------------------------//

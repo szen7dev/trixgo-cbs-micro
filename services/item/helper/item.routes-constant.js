@@ -6,6 +6,7 @@ const DEPARTMENT = '/departments';
 const CONTRACT   = '/contracts';
 const DOCTYPE    = '/doctypes';
 const CONTACT    = '/contacts';
+const WAREHOUSE  = '/warehouses';
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
@@ -14,7 +15,6 @@ const CF_ROUTINGS_ITEM = {
     DEPARTMENTS                                : `${BASE_ROUTE}${DEPARTMENT}`,
 
     // ================================CONTRACT=======================================//
-    CONTRACT_GET_LIST                          : `${BASE_ROUTE}${CONTRACT}`,
     CONTRACTS                                  : `${BASE_ROUTE}${CONTRACT}`,
     
     // ================================DOCTYPE=======================================//
@@ -22,6 +22,9 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================CONTACT=======================================//
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
+
+    // ================================WAREHOUSE=======================================//
+    WAREHOUSES                                 : `${BASE_ROUTE}${WAREHOUSE}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

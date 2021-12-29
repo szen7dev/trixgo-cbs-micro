@@ -130,7 +130,7 @@ class Model extends BaseModel {
                     let infoPackage = await DOCUMENT__PACKAGE_COLL
                         .findById(packageID)
                         .select('_id contract');
-
+                    
                     if(infoPackage){
                         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
                             condition: { _id: infoPackage.contract },
