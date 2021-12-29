@@ -155,57 +155,6 @@ module.exports = {
         }
     },
 
-     /**
-	 * Dev: NPNguyen 🐸
-	 * Func: ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT	
-	 */
-    watchedMedia: {
-        params: {
-            mediaID: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID } = ctx.params;
-
-                const resultAfterCallHandler = await MEDIA_MODEL.watchedMedia({
-					userID, mediaID, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-      /**
-	 * Dev: NPNguyen 🐸
-	 * Func: LẤY DANH SÁCH CÁC USER ĐÃ XEM BÀI VIẾT
-	 */
-    getListWatchedMedia: {
-        params: {
-            mediaID             : { type: 'string', optional: true },
-            lastestID			: { type: 'string', optional: true },
-			limit			    : { type: 'string', optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-                const { mediaID, lastestID, limit } = ctx.params;
-
-                const resultAfterCallHandler = await MEDIA_MODEL.getListWatchedMedia({
-					mediaID, lastestID, limit, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-   
     /**
 	 * Dev: NPNguyen 🐸
 	 * Func: LƯU BÀI VIẾT

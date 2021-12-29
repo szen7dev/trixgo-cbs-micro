@@ -369,23 +369,36 @@ class Model extends BaseModel {
 					// ]
 				}
 
-				if(companyID && checkObjectIDs(companyID)){
-					conditionObj.company = companyID;
+				if(companyID && !checkObjectIDs(companyID)){
+					return resolve({ 
+						error: true, 
+						message: 'Request param companyID invalid', 
+						keyError: 'params_companyID_invalid',
+						status: 400 
+					});
 				}
 
-				if(departmentID && checkObjectIDs(departmentID)){
-					conditionObj.department = departmentID;
+				if(departmentID && !checkObjectIDs(departmentID)){
+					return resolve({ 
+						error: true, 
+						message: 'Request param departmentID invalid', 
+						keyError: 'params_departmentID_invalid',
+						status: 400 
+					});
 				}
 
 				switch (type) {
 					case 'company':
 						conditionObj.type = 1;
+						conditionObj.company = companyID;
 						break;
 					case 'just-me':
 						conditionObj.type = 2;
+						conditionObj.author = userID;
 						break;
 					case 'departments':
 						conditionObj.type = 3;
+						conditionObj.department = departmentID;
 						break;
 					case 'community':
 						conditionObj.type = 4;
@@ -395,6 +408,7 @@ class Model extends BaseModel {
 						break;
 					case 'internal-company':
 						conditionObj.type = { $in: [1,2,3] };
+						conditionObj.company = companyID;
 						break;
 					default:
 						break;
@@ -445,7 +459,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: NPNguyen 🐸
-	 * Func: XÓA BÀI VIẾT	
+	 * Func: THÔNG TIN BÀI VIẾT	
 	 */
 	getInfo({ mediaID }) {
         return new Promise(async resolve => {
@@ -480,6 +494,13 @@ class Model extends BaseModel {
 				if (!infoMedia) {
                     return resolve({ error: true, message: "Can't get info media", status: 403 });
 				}
+
+                // Cập nhật số lượng view
+				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+					$inc: {
+						totalView: 1
+					}
+				})
 
 				return resolve({ 
 					error: false,
@@ -584,134 +605,6 @@ class Model extends BaseModel {
             }
         })
 	}
-
-	/**
-	 * Dev: NPNguyen 🐸
-	 * Func: LẤY DANH SÁCH CÁC USER ĐÃ XEM BÀI VIẾT
-	 */
-	getListWatchedMedia({ mediaID, lastestID, limit }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let listUserWatched = [];
-				let sortBy = {
-					_id: -1,
-				};
-				
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([mediaID]))
-                    return resolve({ error: true, message: 'Request params media invalid', status: 400 });
-				
-				if(!limit || isNaN(limit))
-					limit = 10;
-
-				limit = +limit;
-
-				let conditionFind = {};
-                if(lastestID && checkObjectIDs(lastestID)) {
-					let infoSeenMedia = await MEDIA_SEEN_COLL.findById(lastestID)
-                    if(!infoSeenMedia)
-                        return resolve({ error: true, message: "Can't get info last user", status: 403 });
-
-					// let nextInfo = `${infoSeenMedia._id}`;
-					// let keys	 = ['_id__-1'];
-					let nextInfo = `${infoSeenMedia.createdAt}_${infoSeenMedia._id}`;
-					let keys	 = ['createdAt__-1', '_id__-1'];
-
-                    // let nextInfo = `${infoSeenMedia._id}`;
-					// let keys	 = ['_id__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-				
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				let infoSeenMedia = await MEDIA_SEEN_COLL.find({
-					media: { $in: [mediaID] }
-				}).lean();
-
-				if(!infoSeenMedia)
-					return resolve({ error: true, message: "Can't get list user seen media", status: 403 });
-			
-				let	listWatched = await MEDIA_SEEN_COLL
-					.find({
-						media: mediaID, 
-						...conditionFind
-					})
-					.select('userSeen')
-					.populate({
-						path: 'userSeen',
-						select: 'bizname fullname image',
-					})
-					.limit(limit)
-					.sort(sortBy)
-					.lean();
-
-                if(!listWatched)
-                    return resolve({ error: true, message: "Can't get list user seen media", status: 403 });
-
-				return resolve({ 
-					error: false, 
-					status: 200,
-					data: {
-						listUserWatched: listWatched,
-						limit,
-						totalUserWatched: infoSeenMedia.length
-					}
-				});
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-	/**
-	 * Dev: NPNguyen 🐸
-	 * Func: ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT	
-	 */
-	watchedMedia({ userID, mediaID }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
-
-				condition = {
-					userSeen: userID,
-					media: mediaID,
-
-				}
-
-				// CHECK USER HAVE SEEN MEDIA
-                let checkExistSaveMedia = await MEDIA_SEEN_COLL.findOne(condition).lean();
-
-				if(checkExistSaveMedia) {
-					return resolve({ error: true, message: 'You have already seen this post', status: 403 });
-				}
-
-				let infoMediaAfterInserted = await MEDIA_SEEN_COLL.create({ 
-					...condition
-				});
-
-                if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't watched media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
 	/**
 	 * Dev: NPNguyen 🐸

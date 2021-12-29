@@ -198,6 +198,7 @@ module.exports = {
 			senderID	    : { type: "string", optional: true },
             contractID	    : { type: "string", optional: true },
 			requestResponse : { type: "string", optional: true },
+			type            : { type: "number", optional: true },
 			marked          : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
@@ -208,12 +209,12 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { 
                     lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, 
-                    requestResponse, marked, keyword, limit, select, filter
+                    requestResponse, marked, type, keyword, limit, select, filter
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
                     lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, userID, 
-                    requestResponse, marked, keyword, limit, select, filter
+                    requestResponse, marked, type, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -257,10 +258,10 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Danh sách phân loại hồ sơ trong gói thầu (có hồ sơ)
+	 * Func: Danh sách nhóm phân loại hồ sơ
 	 * Date: 27/10/2021
 	 */
-    getListDoctypeByPackage: {
+    getListGroupDoctype: {
         params: {
 			companyID		: { type: "string", optional: true },
             departmentID	: { type: "string", optional: true },
@@ -272,7 +273,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { companyID, departmentID, packageID } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctypeByPackage({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListGroupDoctype({
                     userID, companyID, departmentID, packageID
                 });
 

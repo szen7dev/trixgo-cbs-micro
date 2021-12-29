@@ -10,6 +10,7 @@ const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.ac
  * import inter-coll, exter-coll
  */
 const MEDIA__COMMENT_COLL               = require('../database/media.comment-coll');
+const MEDIA_COLL                        = require('../database/media-coll');
 const { RANGE_BASE_PAGINATION }         = require('../../../tools/cursor_base/playground/index');
 
 /**
@@ -78,6 +79,13 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Cập nhật số lượng comment
+                await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+                    $inc: {
+                        totalComments: 1
+                    }
+                })
+
                 infoAterInsert = await MEDIA__COMMENT_COLL
                     .findById(infoAterInsert._id)
                     .populate({
@@ -132,6 +140,13 @@ class Model extends BaseModel {
 				if (!infoCommentAfterDelete) {
                     return resolve({ error: true, message: "Can't delete comment", status: 422 });
 				}
+
+                // Cập nhật số lượng comment
+                await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+                    $inc: {
+                        totalComments: -1
+                    }
+                })
 
 				return resolve({ 
 					error: false,

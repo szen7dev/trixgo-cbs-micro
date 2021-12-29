@@ -75,8 +75,8 @@ module.exports = {
 		// Danh sách gói thầu
 		[CF_ACTIONS_DOCUMENT.GET_LIST_PACKAGE]				: DOCUMENT__PACKAGE_HANDLER.getListPackage,
 
-		// Danh sách phân loại hồ sơ trong gói thầu
-		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE_BY_PACKAGE]	: DOCUMENT__DOC_HANDLER.getListDoctypeByPackage,
+		// Danh sách nhóm phân loại hồ sơ
+		[CF_ACTIONS_DOCUMENT.GET_LIST_GROUP_DOCTYPE]		: DOCUMENT__DOC_HANDLER.getListGroupDoctype,
 
 		// Danh sách tính chất văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE]				: DOCUMENT__DOC_HANDLER.getListDoctype,

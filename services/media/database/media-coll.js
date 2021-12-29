@@ -127,19 +127,19 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
 
     //_________Số lượng reaction của media
-    amountReaction: {
+    totalReactions: {
         type    :  Number,
         default : 0
     },
 
     //_________Số lượng comment của media
-    amountComment: {
+    totalComments: {
         type    :  Number,
         default : 0
     },
 
     //_________Số lượng lượt xem của media
-    amountView: {
+    totalView: {
         type    :  Number,
         default : 0
     },

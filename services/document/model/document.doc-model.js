@@ -89,6 +89,7 @@ class Model extends BaseModel {
                     author: userID,
                     company: companyID,
                     project: departmentID,
+                    package: packageID,
                     direction,
                     name,
                     sign,
@@ -112,7 +113,6 @@ class Model extends BaseModel {
                     dataInsert.type = +type;
                 }
 
-                (packageID  && checkObjectIDs(packageID))   && (dataInsert.package  = packageID);
                 (senderID   && checkObjectIDs(senderID))    && (dataInsert.sender   = senderID);
                 (receiverID && checkObjectIDs(receiverID))  && (dataInsert.receiver = receiverID);
                 (fieldID    && checkObjectIDs(fieldID))     && (dataInsert.field    = fieldID);
@@ -144,6 +144,15 @@ class Model extends BaseModel {
                     createAt: timeUtils.getCurrentTime(),
                     modifyAt: timeUtils.getCurrentTime()
                 });
+
+                // Cộng số lượng hồ sơ trong gói thầu
+                if(packageID && checkObjectIDs(packageID)){
+                    await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
+                        $inc: {
+                            numberOfDocs: 1
+                        }
+                    });
+                }
 
                 if(parentID) {
                     await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
@@ -462,7 +471,10 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách hồ sơ văn bản
 	 * Date: 26/10/2021
 	 */
-    getListDocument({ companyID, departmentID, packageID, doctypeID, senderID, contractID, userID, lastestID, requestResponse, marked, keyword, limit = 20, filter = {}, select = {} }){
+    getListDocument({ 
+        companyID, departmentID, packageID, doctypeID, senderID, contractID, userID, lastestID, 
+        requestResponse, marked, type, keyword, limit = 20, filter = {}, select = {} 
+    }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -508,7 +520,6 @@ class Model extends BaseModel {
 
 				let conditionObj 	= {};
 				let conditionFind 	= {};
-                let listPackage     = [];
 				let objSort 	 	= {};
                 let sortBy = {
                     modifyAt: -1,
@@ -534,18 +545,16 @@ class Model extends BaseModel {
                 companyID       && (conditionObj.company = companyID);
                 departmentID    && (conditionObj.project = departmentID);
 
-                if(companyID || departmentID){
-                    listPackage = await DOCUMENT__PACKAGE_COLL.find({
-                        ...conditionObj,
-                        members: { $in: [userID] }
-                    }).select('_id').lean();
+                let listPackage = await DOCUMENT__PACKAGE_COLL.find({
+                    members: { $in: [userID] }
+                }).select('_id').lean();
 
-                    if(!listPackage.length)
-                        return resolve({ error: true, message: "Permission denined", status: 403 });
+                if(!listPackage.length)
+                    return resolve({ error: true, message: "Permission denined", status: 403 });
 
-                    conditionObj.package = { $in: listPackage.map(item => item._id) };
-                }
+                conditionObj.package = { $in: listPackage.map(item => item._id) };
 
+                type            && (conditionObj.type            = type);
                 packageID       && (conditionObj.package         = packageID);
                 senderID        && (conditionObj.sender          = senderID);
                 doctypeID       && (conditionObj.property        = doctypeID);
@@ -718,10 +727,10 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Danh sách phân loại hồ sơ trong gói thầu (có hồ sơ)
+     * Func: Danh sách nhóm phân loại hồ sơ
      * Date: 27/10/2021
      */
-    getListDoctypeByPackage({ userID, companyID, departmentID, packageID }) {
+    getListGroupDoctype({ userID, companyID, departmentID, packageID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([userID])) {
@@ -787,8 +796,8 @@ class Model extends BaseModel {
                         $match: {
                             ...conditionObj,
                             createAt: {
-                                $gte: ISOdate(moment().startOf('year').format()),
-                                $lte: ISOdate(moment().endOf('year').format()),
+                                $gte: ISOdate(moment().startOf('week').format()),
+                                $lte: ISOdate(moment().endOf('week').format()),
                             }
                         }
                     },
@@ -806,11 +815,24 @@ class Model extends BaseModel {
                 if(listDoctypeGroupByType.length){
                     listDoctypeGroupByType.map(doctype => {
                         const doctypeHaveNewDocumentInWeek = listDoctypeGroupByWeek.find(newDoc => newDoc._id === doctype._id)
+                        let nameDoctype = 'Chung';
+
+                        switch (doctype._id) {
+                            case 2:
+                                nameDoctype = 'Hợp đồng';
+                                break;
+                            case 3:
+                                nameDoctype = 'Bản vẽ';
+                                break;
+                            default:
+                                break;
+                        }
 
                         listDoctype[listDoctype.length] = {
+                            name: nameDoctype,
                             type: doctype._id,
                             totalDocument: doctype.totalDocument,
-                            newTotalDocument: doctypeHaveNewDocumentInWeek ? doctypeHaveNewDocumentInWeek.totalDocument : 0
+                            totalDocumentNew: doctypeHaveNewDocumentInWeek ? doctypeHaveNewDocumentInWeek.totalDocument : 0
                         }
                     })
                 }
