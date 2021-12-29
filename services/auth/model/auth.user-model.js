@@ -860,14 +860,6 @@ class Model extends BaseModel {
 				let infoUser = await AUTH__USER_COLL
 					.findById(userID)
 					.select('conversationsPin')
-					// .populate({
-					// 	path: 'conversationsPin',
-					// 	populate: {
-					// 		path: 'lastMessage members',
-					// 		select: { ...select.lastMessage, ...select.members },
-					// 	},
-					// 	select: select.conversationsPin
-					// })
 					.lean();
 
 				if(!infoUser)
@@ -880,6 +872,102 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật pin cuộc hội thoại
+	 * Date: 10/08/2021
+	 */
+	updatePinMedia({ mediaID, userID, isPin }) {
+        return new Promise(async (resolve) => {
+            try {
+				if(!checkObjectIDs([mediaID, userID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params mediaID or userID invalid', 
+                        keyError: 'params_mediaID_or_userID_invalid',
+                        status: 400 
+                    });
+                }
+
+                let infoUser = await AUTH__USER_COLL.findById(userID);
+				if(!infoUser)
+					return resolve({ error: true, message: "User is not exist", status: 403 });
+
+				let infoUserAfterUpdated = null;
+
+				if(isPin){ // Pin media
+
+					if(infoUser.mediasPin.includes(mediaID))
+						return resolve({ error: true, message: "Media is pined", status: 400 });
+
+					// Pin tối đa 5 media (pull last, push first)
+					if(infoUser.mediasPin.length >= 5){
+						infoUserAfterUpdated = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+							$push: {
+								mediasPin: {
+									$each: [mediaID],
+									$position: 0,
+									$slice: 5
+								}
+							}
+						}, { new: true });
+					} else{
+						infoUserAfterUpdated = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+							$push: {
+								mediasPin: {
+									$each: [mediaID],
+									$position: 0
+								}
+							}
+						}, { new: true });
+					}
+
+				} else{ // Bỏ Pin media
+					infoUserAfterUpdated = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+						$pull: { mediasPin: mediaID }
+					}, { new: true });
+				}
+
+				if(!infoUserAfterUpdated)
+					return resolve({ error: true, message: "Can't update pin media", status: 403 });
+
+				return resolve({ error: false, data: infoUserAfterUpdated, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Danh sách pin media
+	 * Date: 29/12/2021
+	 */
+	getListPinMedia({ userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+				if(!checkObjectIDs([userID]))
+					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				let infoUser = await AUTH__USER_COLL
+					.findById(userID)
+					.select('mediasPin')
+					.lean();
+
+				if(!infoUser)
+					return resolve({ error: true, message: "User is not exist", status: 403 });
+
+                return resolve({ error: false, data: infoUser.mediasPin || [], status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
 
     // /**5t
     //  * Name: Cập nhật avatar

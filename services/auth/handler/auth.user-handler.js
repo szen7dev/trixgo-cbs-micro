@@ -590,8 +590,6 @@ module.exports = {
         }
     },
 
-  
-
 	updatePinConversation: {			
         params: {
             conversationID	: { type: "string" },
@@ -615,15 +613,51 @@ module.exports = {
     },
 
 	getListPinConversation: {			
+        params: {},
+        async handler(ctx) {
+			try {
+				let { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
+					userID
+				});
+
+				return resultAfterCallHandler;
+            } catch (error) {
+				return { error: true, message: error.message, status: 500 };
+            }
+        }
+    },
+
+    updatePinMedia: {			
         params: {
-            userID: { type: "string" },
+            mediaID	: { type: "string" },
+            isPin   : { type: "boolean" }
         },
         async handler(ctx) {
 			try {
                 await this.validateEntity(ctx.params);
-                let { userID } = ctx.params;
+				let { _id: userID } = ctx.meta.infoUser;
+                let { mediaID, isPin } = ctx.params;
 
-                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
+                let resultAfterCallHandler = await AUTH__USER_MODEL.updatePinMedia({ 
+					mediaID, userID, isPin
+				});
+
+				return resultAfterCallHandler;
+            } catch (error) {
+				return { error: true, message: error.message, status: 500 };
+            }
+        }
+    },
+
+    getListPinMedia: {			
+        params: {},
+        async handler(ctx) {
+			try {
+				let { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinMedia({ 
 					userID
 				});
 

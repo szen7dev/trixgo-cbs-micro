@@ -25,10 +25,7 @@ const { checkObjectIDs, isEmptyObject }			= require('../../../tools/utils/utils'
 const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA_FILE_COLL					    	= require('../database/media.file-coll');
 const MEDIA_SEEN_COLL					    	= require('../database/media.seen-coll');
-const MEDIA_COMMENT_COLL					    = require('../database/media.comment-coll');
-const MEDIA_REACTION_COLL					    = require('../database/media.reaction-coll');
 const MEDIA_SAVE_COLL					    	= require('../database/media.save-coll');
-const MEDIA_PIN_COLL					    	= require('../database/media.pin-coll');
 const MEDIA_COMMENT_IMAGE_COLL					= require('../database/media.comment_image-coll');
 
 
@@ -786,7 +783,6 @@ class Model extends BaseModel {
 				condition = {
 					userSave: author,
 					media: mediaID,
-
 				}
 
 				// CHECK USER HAVE SAVED MEDIA
@@ -851,42 +847,59 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
-	getListPinMedia({ userID, lastestID, limit, ctx }) {
+	getListPinMedia({ userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let sortBy = {
-					modifyAt: -1,
-					createAt: -1,
-					updateAt: -1
-				};
-
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs([userID]))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(!limit || isNaN(limit))
-					limit = 10;
+				let listMediaPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_MEDIA}`);
 
-				limit = +limit;
+				if(listMediaPin.data && listMediaPin.data.length){
+					listMediaPin = await MEDIA_COLL
+						.find({ _id: { $in: listMediaPin.data }})
+						.populate({
+							path: 'author',
+							select: 'fullname company department image',
+							populate: { 
+								path: 'company department', 
+								select: 'name sign'
+							}
+						})
+						.populate({
+							path: 'files',
+							select: '_id name url size type',
+						})
+						.populate({
+							path: 'images',
+							select: '_id name url size type',
+						})
+						.populate({
+							path: 'background',
+							select: '_id name url size type',
+						})
+						.populate({
+							path: 'tagFriends',
+							select: 'fullname',
+						})
+						.populate({
+							path: 'company',
+							select: 'name',
+						})
+						.lean()
+				} else{
+					listMediaPin = [];
+				}
 
-				let	listMediaHavedPin = await MEDIA_PIN_COLL.find({
-					userPin: { $in: userID },
+				return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listMediaPin,
+						totalRecords: listMediaPin.length
+					}
 				})
-				
-				if(!listMediaHavedPin)
-					return resolve({ error: true, message: "Can't get list media", status: 403 });
-
-				let listAfterFind = await this.getListWithCondition({
-					conditionObj: {
-						_id: [...listMediaHavedPin.map(item => item.media)]
-					},
-					limit,
-					sortBy,
-					lastestID,
-				});
-				return resolve(listAfterFind);
-				
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -897,15 +910,12 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: GHIM BÀI VIẾT
 	 */
-	pinMedia({ author, mediaID, ctx }) {
+	pinMedia({ userID, mediaID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+				if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if (!checkObjectIDs([mediaID])) {
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
@@ -916,26 +926,13 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Media don't exited", status: 400 });
 				}
 
-				condition = {
-					userPin: author,
-					media: mediaID,
-				}
-
-				// CHECK USER HAVE PIN MEDIA
-                let checkExistSaveMedia = await MEDIA_PIN_COLL.findOne(condition).lean();
-
-				if(checkExistSaveMedia) {
-					return resolve({ error: true, message: 'You have already pin this post', status: 403 });
-				}
-
-				let infoMediaAfterInserted = await MEDIA_PIN_COLL.create({ 
-					...condition
+				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
+					mediaID, userID, isPin: true
 				});
+				if(infoUserAfterUpdated.error)
+					return resolve(infoUserAfterUpdated);
 
-                if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't pin media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
+				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -946,33 +943,29 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: HỦY GHIM BÀI VIẾT
 	 */
-	deletePinMedia({ author, mediaID, ctx }) {
+	deletePinMedia({ userID, mediaID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+				if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if (!checkObjectIDs([mediaID])) {
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
-
-				condition = {
-					userPin: author,
-					media: mediaID,
 				}
 
-				let infoMediaAfterDelete = await MEDIA_PIN_COLL.findOneAndDelete({ 
-					...condition
+				let checkExisted = await MEDIA_COLL.findById(mediaID);
+				if (!checkExisted) {
+                    return resolve({ error: true, message: "Media don't exited", status: 400 });
+				}
+
+				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
+					mediaID, userID, isPin: false
 				});
+				if(infoUserAfterUpdated.error)
+					return resolve(infoUserAfterUpdated);
 
-                if(!infoMediaAfterDelete)
-                    return resolve({ error: true, message: "Can't delete pin media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterDelete, status: 200 });
+				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

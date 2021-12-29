@@ -82,7 +82,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         ref: 'file_core'
     }],
 
-     /**
+    /**
      * Background bài viết
      */
     background: {

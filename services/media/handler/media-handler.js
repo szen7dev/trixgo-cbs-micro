@@ -1,6 +1,8 @@
 /**
  * CONSTATNS
  */
+const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 
 /**
  * TOOLS
@@ -12,7 +14,6 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const MEDIA_MODEL                               = require('../model/media-model').MODEL;
 const COMMENT_MEDIA_MODEL                       = require('../model/media.comment-model').MODEL;
-// const COMMENT_MEDIA_IMAGE_MODEL                = require('../model/media.comment_image-model').MODEL;
 
 
 module.exports = {
@@ -281,23 +282,19 @@ module.exports = {
         }
     },
 
-     /**
+    /**
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
     getListPinMedia: {
-        params: {
-            lastestID 		: { type: "string", optional: true },
-			limit			: { type: 'string', optional: true },
-        },
+        params: {},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, limit } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getListPinMedia({
-					userID, lastestID, limit, ctx
+					userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -313,16 +310,16 @@ module.exports = {
 	 */
     pinMedia: {
         params: {
-            mediaID     : { type: "string" },
+            mediaID: { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: author } = ctx.meta.infoUser;
+				const { _id: userID } = ctx.meta.infoUser;
                 const { mediaID } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.pinMedia({
-					author, mediaID, ctx
+					userID, mediaID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -338,16 +335,16 @@ module.exports = {
 	 */
     deletePinMedia: {
         params: {
-            mediaID     : { type: "string" },
+            mediaID: { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: author } = ctx.meta.infoUser;
+				const { _id: userID } = ctx.meta.infoUser;
                 const { mediaID } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.deletePinMedia({
-					author, mediaID, ctx
+					userID, mediaID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
