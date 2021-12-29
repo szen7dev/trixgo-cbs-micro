@@ -41,7 +41,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
-	insert({ authorID, title, content, type, location, files, tagFriends, images, background, companyID, ctx }) {
+	insert({ authorID, title, content, type, location, files, tagFriends, images, background, companyID, departmentID, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -106,6 +106,13 @@ class Model extends BaseModel {
 					condition.company = companyID;
 				}
 
+				if (departmentID) {
+					if(!checkObjectIDs(departmentID))
+                    	return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+					condition.department = departmentID;
+				}
+
 				let infoMediaAfterInserted = await this.insertData(condition);
 
                 if(!infoMediaAfterInserted)
@@ -147,7 +154,7 @@ class Model extends BaseModel {
 						conditionReceiver = { company: companyID };
 						break;
 					case 3:
-						conditionReceiver = { department };
+						conditionReceiver = { department: departmentID };
 						break;
 					default:
 						break;
@@ -191,7 +198,7 @@ class Model extends BaseModel {
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
 	update({
-		mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, companyID, group
+		mediaID, authorID, title, content, type, location, files, tagFriends, images, background, companyID
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -264,28 +271,6 @@ class Model extends BaseModel {
 					condition.company = companyID;
 				}
 
-				if (filesDelete && filesDelete.length) {
-					if(!checkObjectIDs(filesDelete))
-                    	return resolve({ error: true, message: 'Request params filesDelete invalid', status: 400 });
-
-					condition = {
-						...condition,
-						$pullAll: {
-							files: filesDelete
-						},
-					}
-				}
-
-				if (imageDelete && imageDelete.length) {
-					if(!checkObjectIDs(imageDelete))
-                    	return resolve({ error: true, message: 'Request params imageDelete invalid', status: 400 });
-
-					condition.$pullAll = {
-						...condition.$pullAll,
-						images: imageDelete
-					}
-				}
-			
 				let infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, condition, { new: true });
 
                 if(!infoMediaAfterInserted)
@@ -334,7 +319,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
-    getListMedia({ userID, lastestID, companyID, type, limit = 20, ctx }){
+    getListMedia({ userID, lastestID, companyID, departmentID, type, limit = 20, ctx }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -389,6 +374,10 @@ class Model extends BaseModel {
 
 				if(companyID && checkObjectIDs(companyID)){
 					conditionObj.company = companyID;
+				}
+
+				if(departmentID && checkObjectIDs(departmentID)){
+					conditionObj.department = departmentID;
 				}
 
 				switch (type) {
@@ -540,10 +529,10 @@ class Model extends BaseModel {
 					// .select("author content type location files tagFriends images background company")
 					.populate({
 						path: 'author',
-						select: 'fullname company image',
+						select: 'fullname company department image',
 						populate: { 
-							path: 'company', 
-							select: 'name'
+							path: 'company department', 
+							select: 'name sign'
 						}
 					})
 					.populate({
@@ -570,124 +559,11 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-				let listMediaAfterSet = [];
 				let nextCursor	= null;
 				if (listMedia && listMedia.length) {
 					if(listMedia.length > limit){
 						nextCursor = listMedia[limit - 1]._id;
 						listMedia.length = limit;
-					}
-				}
-
-				if (listMedia && listMedia.length) {
-					for (let media of listMedia) {
-						let countUserWatched = await MEDIA_SEEN_COLL.countDocuments({
-							media: { $in: [media._id] }
-						});
-
-						let countComments = await MEDIA_COMMENT_COLL.countDocuments({
-							media: { $in: [media._id] }
-						});
-
-						let countReactions = await MEDIA_REACTION_COLL.countDocuments({
-							media: { $in: [media._id] }
-						});
-
-						listMediaAfterSet[listMediaAfterSet.length] = {
-							...media,
-							totalComments: countComments,
-							totalWatched: countUserWatched,
-							totalReactions: countReactions,
-						}
-						
-						// let listComment = await MEDIA_COMMENT_COLL.find({ media: { $in: [media._id] }, parent: { $exists: false } })
-						// 	.select('_id')
-						// 	.populate({
-						// 		path: 'author',
-						// 		select: 'fullname company image',
-						// 	})
-						// 	.populate({
-						// 		path: 'comment',
-						// 		select: 'content',
-						// 	})
-						// 	.sort(sortBy)
-						// 	.limit(2)
-						// 	.lean();
-
-						// let idxComment = 0;
-						// for (let comment of listComment) {
-						// 	let idxCommentChild = 0;
-						// 	let totalCommentChild 		= await MEDIA_COMMENT_COLL.count({ parent: comment._id })
-						// 	let totalReactionComment 	= await MEDIA_REACTION_COLL.count({ comment: comment.comment._id })
-						// 	let listCommnetChild 		= await MEDIA_COMMENT_COLL.find({ parent: comment._id })
-						// 		.select('_id')
-						// 		.populate({
-						// 			path: 'author',
-						// 			select: 'fullname company image',
-						// 		})
-						// 		.populate({
-						// 			path: 'comment',
-						// 			select: 'content'
-						// 		})
-						// 		.sort(sortBy)
-						// 		.limit(2)
-						// 		.lean();
-
-						// 	for (let commentChid of listCommnetChild) {
-						// 		let infoCommentChildFile 	= await MEDIA_COMMENT_FILE_COLL.find({ comment: commentChid.comment._id })
-						// 			.select('_id')
-						// 			.populate({
-						// 				path: 'file',
-						// 				select: 'name url',
-						// 			})
-						// 		let totalReactionCommentChild 	= await MEDIA_REACTION_COLL.count({ comment: commentChid.comment._id })
-
-						// 		listCommnetChild[idxCommentChild].comment = {
-						// 			...listCommnetChild[idxCommentChild].comment,
-						// 			totalReactionCommentChild,
-						// 			files: infoCommentChildFile
-						// 		}
-						// 		idxCommentChild ++;
-						// 	}
-
-						// 	let infoCommentFile = await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
-						// 		.select('_id')
-						// 		.populate({
-						// 			path: 'file',
-						// 			select: 'name url',
-						// 		})
-
-						// 	listComment[idxComment].comment = {
-						// 		...listComment[idxComment].comment,
-						// 		totalCommentChild,
-						// 		totalReactionComment,
-						// 		files: infoCommentFile,
-						// 		listCommnetChild,
-						// 	}
-						// 	idxComment++;
-						// }
-						// for(const comment of listComment) {
-
-						// 	let listComment2 = await MEDIA_REACTION_COLL.find({ comment: { $in: [comment._id] } })
-						// 		.populate({
-						// 			path: 'reaction',
-						// 			select: 'type',
-						// 		})
-						// 	console.log({listComment2})
-						// }
-
-						// TODO: Count total comment of User
-
-						// listMediaAfterSet = [
-						// 	...listMediaAfterSet,
-						// 	{
-						// 		...media,
-						// 		totalUserWatched: countUserWatched,
-						// 		totalComments: countComments,
-						// 		totalReactions: countReactions,
-						// 		listComment
-						// 	}
-						// ]
 					}
 				}
 
@@ -699,7 +575,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: { 
-						listRecords: listMediaAfterSet, 
+						listRecords: listMedia, 
 						limit: +limit,
 						totalRecord,
 						totalPages,

@@ -109,6 +109,14 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
 
     /**
+     * ID dự án phòng ban
+     */
+    department: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'department'
+    },
+
+    /**
      * 1: Mặc định
      * 2: Lưu bài viết
      * 3: Ghim bài viết

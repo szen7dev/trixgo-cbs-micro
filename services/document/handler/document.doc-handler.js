@@ -257,24 +257,23 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Danh sách phân loại hồ sơ trong gói thầu
+	 * Func: Danh sách phân loại hồ sơ trong gói thầu (có hồ sơ)
 	 * Date: 27/10/2021
 	 */
     getListDoctypeByPackage: {
         params: {
 			companyID		: { type: "string", optional: true },
             departmentID	: { type: "string", optional: true },
-            packageID	    : { type: "string" },
-            type	        : { type: "number", optional: true },
+            packageID	    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { companyID, departmentID, packageID, type } = ctx.params;
+                const { companyID, departmentID, packageID } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctypeByPackage({
-                    userID, companyID, departmentID, packageID, type
+                    userID, companyID, departmentID, packageID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

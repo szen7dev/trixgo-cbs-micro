@@ -37,10 +37,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { title, content, type, location, files, tagFriends, images, background, companyID, kind } = ctx.params;
+                const { title, content, type, location, files, tagFriends, images, background, companyID, departmentID, kind } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insert({
-					authorID, title, content, type, location, files, tagFriends, images, background, companyID, kind, ctx
+					authorID, title, content, type, location, files, tagFriends, images, background, companyID, departmentID, kind, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -59,15 +59,16 @@ module.exports = {
             limit: { type: 'string', optional: true },
             type: { type: 'string', optional: true },
             companyID: { type: 'string', optional: true },
+            departmentID: { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: userID } = ctx.meta.infoUser;
-                let { lastestID, limit, companyID, type } = ctx.params;
+                let { lastestID, limit, companyID, departmentID, type } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
-					userID, lastestID, limit, companyID, type, ctx
+					userID, lastestID, limit, companyID, departmentID, type, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -92,10 +93,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
-                let { mediaID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, companyID } = ctx.params;
+                let { mediaID, title, content, type, location, files, tagFriends, images, background, companyID } = ctx.params;
                
                 let resultAfterCallHandler = await MEDIA_MODEL.update({ 
-					mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, companyID, ctx
+					mediaID, authorID, title, content, type, location, files, tagFriends, images, background, companyID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

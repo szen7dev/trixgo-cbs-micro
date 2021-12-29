@@ -50,6 +50,11 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
     name: String,
     //_________Ký hiệu (nếu trùng với ký hiệu Hợp đồng => sẽ hiển thị được hồ sơ theo hợp đồng)
     sign: String,
+    // ________ Tổng số hồ sơ trong gói thầu
+    numberOfDocs: {
+        type: Number,
+        default: 0
+    },
     //_________Thành viên gói thầu
     members: [{
         type: Schema.Types.ObjectId,

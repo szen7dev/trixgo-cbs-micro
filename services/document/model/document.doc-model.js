@@ -4,6 +4,8 @@
  * EXTERNAL PACKAGE
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
+const moment                                  	    = require('moment');
+const ISOdate                                  	    = require('isodate');
 
 /**
  * CONSTANTS
@@ -54,14 +56,32 @@ class Model extends BaseModel {
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs([userID, companyID, departmentID, packageID]))
-					return resolve({ error: true, message: 'Request params companyID or departmentID or packageID invalid', status: 400 });
+				if (!checkObjectIDs([userID, companyID, departmentID, packageID])) {
+					return resolve({ 
+                        error: true, 
+                        message: 'Request params companyID or departmentID or packageID invalid', 
+                        keyError: 'params_companyID_or_departmentID_invalid',
+                        status: 400 
+                    });
+                }
 
-                if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction }))
-                    return resolve({ error: true, message: 'Request params direction invalid', status: 400 });
+                if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params direction invalid', 
+                        keyError: 'params_direction_invalid',
+                        status: 400 
+                    });
+                }
 
-                if (!checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse }))
-                    return resolve({ error: true, message: 'Request params requestResponse invalid', status: 400 });
+                if (!checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params requestResponse invalid', 
+                        keyError: 'params_requestResponse_invalid',
+                        status: 400 
+                    });
+                }
 
                 let suid = await stringUtils.randomAndCheckExists(DOCUMENT__DOC_COLL, 'suid');
                 let dataInsert = {
@@ -108,8 +128,14 @@ class Model extends BaseModel {
 
 				let infoAfterInsert = await this.insertData(dataInsert);
 
-				if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Can't create document", status: 422 });
+				if (!infoAfterInsert) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't create document",
+                        keyError: "create_document_failed",
+                        status: 422
+                    });
+                }
 
                 await DOCUMENT__USER_COLL.create({
                     document: infoAfterInsert._id,
@@ -145,7 +171,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
             }
         })
     }
@@ -162,14 +188,32 @@ class Model extends BaseModel {
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs([documentID, userUpdate]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+				if (!checkObjectIDs([documentID, userUpdate])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params documentID or userUpdate invalid', 
+                        keyError: 'params_documentID_or_userUpdate_invalid',
+                        status: 400
+                    });
+                }
 
-                if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction }))
-                    return resolve({ error: true, message: 'Request params direction invalid', status: 400 });
+                if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params direction invalid', 
+                        keyError: 'params_direction_invalid',
+                        status: 400 
+                    });
+                }
 
-                if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse }))
-                    return resolve({ error: true, message: 'Request params requestResponse invalid', status: 400 });
+                if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params requestResponse invalid', 
+                        keyError: 'paramas_requestResponse_invalid',
+                        status: 400 
+                    });
+                }
 
                 let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
@@ -177,9 +221,15 @@ class Model extends BaseModel {
                     permission: { $in: [1,3] }
                 }).lean()
 
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
-
+                if(!checkPermission) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Permission denined", 
+                        keyError: "permission_denined_document",
+                        status: 403
+                    });
+                }
+                    
                 let dataUpdate = {
                     name,
                     sign,
@@ -246,12 +296,18 @@ class Model extends BaseModel {
 
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
 
-				if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Can't update document", status: 422 });
+				if (!infoAfterUpdate) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't update document", 
+                        keyError: "update_document_failed",
+                        status: 422 
+                    });
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
             }
         })
     }
@@ -264,8 +320,14 @@ class Model extends BaseModel {
     deleteDocument({ documentID, userID }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs([documentID, userID]))
-					return resolve({ error: true, message: 'Request params documentID or userID invalid', status: 400 });
+                if (!checkObjectIDs([documentID, userID])) {
+                    return resolve({ 
+                        error: true,
+                        message: 'Request params documentID or userID invalid', 
+                        keyError: 'params_documentID_or_userID_invalid',
+                        status: 400 
+                    });
+                }
 
                 let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
@@ -273,17 +335,29 @@ class Model extends BaseModel {
                     permission: 1
                 }).lean()
 
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
+                if(!checkPermission) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Permission denined", 
+                        keyError: "permission_denined_document",
+                        status: 403 
+                    });
+                }
 
                 const infoAfterDelete = await DOCUMENT__DOC_COLL.findByIdAndDelete(documentID);
 
-                if(!infoAfterDelete)
-                    return resolve({ error: true, message: "Can't delete document", status: 422 });
+                if(!infoAfterDelete) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't delete document", 
+                        keyError: "delete_document_failed",
+                        status: 422 
+                    });
+                }
 
                 return resolve({ error: false, data: infoAfterDelete, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, keyError: "server_error", status: 500 });
             }
         })
     }
@@ -296,12 +370,24 @@ class Model extends BaseModel {
     getInfoDocumment({ userID, documentID, select }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs([documentID, userID]))
-					return resolve({ error: true, message: 'Request params documentID or userID invalid', status: 400 });
+                if (!checkObjectIDs([documentID, userID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params documentID or userID invalid', 
+                        keyError: 'params_documentID_or_userID_invalid',
+                        status: 400 
+                    });
+                }
 
                 if(select && typeof select === 'string'){
-                    if(!IsJsonString(select))
-                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+                    if(!IsJsonString(select)) {
+                        return resolve({ 
+                            error: true, 
+                            message: 'Request params select invalid', 
+                            keyError: 'params_select_invalid',
+                            status: 400 
+                        });
+                    }
 
                     select = JSON.parse(select);
                 }
@@ -313,8 +399,14 @@ class Model extends BaseModel {
                     })
                     .lean();
 
-                if(!checkPermission)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
+                if(!checkPermission) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Permission denined", 
+                        keyError: "permission_denined_document",
+                        status: 403 
+                    });
+                }
 
                 const infoDocument = await DOCUMENT__DOC_COLL
                     .findById(documentID)
@@ -333,8 +425,14 @@ class Model extends BaseModel {
                     .populate('childs', select.childs)
                     .lean();
 
-                if(!infoDocument)
-                    return resolve({ error: true, message: "Can't get info document", status: 400 });
+                if(!infoDocument) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't get info document", 
+                        keyError: "get_info_document_failed",
+                        status: 400 
+                    });
+                }
 
                 const listFilesAttachment = await DOCUMENT__FILE_COLL
                     .find({ document: documentID })
@@ -354,7 +452,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoDocument, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
             }
         })
     }
@@ -620,51 +718,111 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Danh sách phân loại hồ sơ trong gói thầu
+     * Func: Danh sách phân loại hồ sơ trong gói thầu (có hồ sơ)
      * Date: 27/10/2021
      */
-    getListDoctypeByPackage({ userID, companyID, departmentID, packageID, type }) {
+    getListDoctypeByPackage({ userID, companyID, departmentID, packageID }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                if(!checkObjectIDs([userID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params userID invalid',
+                        keyError: 'params_userID_invalid',
+                        status: 400 
+                    });
+                }
 
-               if(companyID && !checkObjectIDs([companyID]))
-                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+                if(companyID && !checkObjectIDs([companyID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params companyID invalid', 
+                        keyError: 'params_companyID_invalid',
+                        status: 400 
+                    });
+                }
 
-               if(departmentID && !checkObjectIDs([departmentID]))
-                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+                if(departmentID && !checkObjectIDs([departmentID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params departmentID invalid', 
+                        keyError: 'params_departmentID_invalid',
+                        status: 400 
+                    });
+                }
 
-                if(!checkObjectIDs([packageID]))
-                    return resolve({ error: true, message: 'Request params packageID invalid', status: 400 });
+                if(packageID && !checkObjectIDs([packageID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params packageID invalid', 
+                        keyError: 'params_packageID_invalid',
+                        status: 400 
+                    });
+                }
 
-                let conditionObj = { package: ObjectID(packageID) };
+                let conditionObj = {};
+                let listDoctype = [];
                 companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
-                type            && (conditionObj['property.type'] = +type);
+                packageID       && (conditionObj.package = ObjectID(packageID));
+                console.log({ conditionObj })
 
-                let	listDoctype = await DOCUMENT__DOC_COLL.aggregate([
-                    {
-                        $group: {
-                            _id: "$property",
-                            count: { $sum: 1 }
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "doctypes",
-                            localField: "property",
-                            foreignField: "_id",
-                            as: "property"
-                        }
-                    },
+                let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: conditionObj
+                    },
+                    {
+                        $group: {
+                            _id: "$type",
+                            totalDocument: { $sum: 1 }
+                        }
+                    },
+                    {
+                        $sort: { _id: 1 }
                     }
                 ])
 
-                if(!listDoctype)
-                    return resolve({ error: true, message: "Can't get list doctype", status: 403 });
+                let	listDoctypeGroupByWeek = await DOCUMENT__DOC_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionObj,
+                            createAt: {
+                                $gte: ISOdate(moment().startOf('year').format()),
+                                $lte: ISOdate(moment().endOf('year').format()),
+                            }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$type",
+                            totalDocument: { $sum: 1 }
+                        }
+                    },
+                    {
+                        $sort: { _id: 1 }
+                    }
+                ])
+
+                if(listDoctypeGroupByType.length){
+                    listDoctypeGroupByType.map(doctype => {
+                        const doctypeHaveNewDocumentInWeek = listDoctypeGroupByWeek.find(newDoc => newDoc._id === doctype._id)
+
+                        listDoctype[listDoctype.length] = {
+                            type: doctype._id,
+                            totalDocument: doctype.totalDocument,
+                            newTotalDocument: doctypeHaveNewDocumentInWeek ? doctypeHaveNewDocumentInWeek.totalDocument : 0
+                        }
+                    })
+                }
+
+                if(!listDoctype) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't get list doctype", 
+                        keyError: "get_list_doctype_failed",
+                        status: 403 
+                    });
+                }
 
                 return resolve({
                     error: false,
@@ -674,7 +832,7 @@ class Model extends BaseModel {
                     }
                 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 })
             }
         })
     }
