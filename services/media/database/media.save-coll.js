@@ -1,10 +1,7 @@
-"use strict";
-
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("media_save", {
-
     /**
      * Bài viết 
      */
@@ -15,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_save", {
     /**
      *  Người lưu bài viết
      */
-     userSave: {
+    userSave: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },

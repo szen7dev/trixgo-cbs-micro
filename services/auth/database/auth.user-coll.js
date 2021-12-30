@@ -122,6 +122,13 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         ref: 'message_conversation'
     }],
     /**
+     * Danh sách pin bài viết
+    */
+	mediasPin: [{
+        type: Schema.Types.ObjectId,
+        ref: 'media'
+    }],
+    /**
      * Cấu hình hiển thị view mặc định ở trang chủ
      * 1: Văn hoá doanh nghiệp
      * 2: Báo cáo quản trị theo phân quyền truy cập

@@ -68,12 +68,6 @@ module.exports = {
 
 		// ✅	CHI TIẾT BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
-
-		// ✅	ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT
-		[CF_ACTIONS_MEDIA.WATCHED_MEDIA] 		            			: MEDIA_HANDLER.watchedMedia,
-
-		// ✅	LẤY DANH SÁCH CÁC USER ĐÃ XEM BÀI VIẾT
-		[CF_ACTIONS_MEDIA.LIST_WATCHED_MEDIA] 		            		: MEDIA_HANDLER.getListWatchedMedia,
 		
 		// ✅	LƯU BÀI VIẾT
 		[CF_ACTIONS_MEDIA.SAVE_MEDIA] 		            				: MEDIA_HANDLER.saveMedia,

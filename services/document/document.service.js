@@ -60,6 +60,9 @@ module.exports = {
 		// Chi tiết hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_INFO_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getInfoDocumment,
 
+		// Đánh dấu hồ sơ
+		[CF_ACTIONS_DOCUMENT.MARK_DOCUMENT]					: DOCUMENT__DOC_HANDLER.updateMarkDocument,
+
 		// Chia sẻ văn bản
 		[CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.updateShareDocument,
 
@@ -75,8 +78,8 @@ module.exports = {
 		// Danh sách gói thầu
 		[CF_ACTIONS_DOCUMENT.GET_LIST_PACKAGE]				: DOCUMENT__PACKAGE_HANDLER.getListPackage,
 
-		// Danh sách phân loại hồ sơ trong gói thầu
-		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE_BY_PACKAGE]	: DOCUMENT__DOC_HANDLER.getListDoctypeByPackage,
+		// Danh sách nhóm phân loại hồ sơ
+		[CF_ACTIONS_DOCUMENT.GET_LIST_GROUP_DOCTYPE]		: DOCUMENT__DOC_HANDLER.getListGroupDoctype,
 
 		// Danh sách tính chất văn bản
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE]				: DOCUMENT__DOC_HANDLER.getListDoctype,

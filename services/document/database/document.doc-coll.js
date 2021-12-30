@@ -127,6 +127,11 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref: "signature"
     }],
+    //_________User đánh dấu văn bản
+    usersMarked: [{
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }],
     /**
      * CẤU TRÚC ĐỆ QUY
      */
@@ -141,15 +146,6 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     level: {
         type: Number,
         default: 1
-    },
-    /**
-     * Đánh dấu văn bản
-     * 1: Đánh dấu
-     * 2: Bỏ đánh dấu
-     */
-    mark: {
-        status: { type: Number },
-        updated: Date
     },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

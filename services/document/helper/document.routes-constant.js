@@ -10,6 +10,7 @@ const CF_ROUTINGS_DOCUMENT = {
     GET_INFO_DOCUMENT                     		: `${BASE_ROUTE}/info-document`,
     GET_LIST_DOCUMENT                     		: `${BASE_ROUTE}/list-document`,
     GET_LIST_STORAGE                     		: `${BASE_ROUTE}/list-storage`,
+    MARK_DOCUMENT                     		    : `${BASE_ROUTE}/mark-document`,
     SHARE_DOCUMENT                     		    : `${BASE_ROUTE}/share-document`,
     UPDATE_PERMISSION_SHARE                     : `${BASE_ROUTE}/update-permission-share`,
     ADD_FILE_ATTACHMENT                         : `${BASE_ROUTE}/add-file-attachment`,
@@ -20,7 +21,7 @@ const CF_ROUTINGS_DOCUMENT = {
 
     /// DOC_TYPE
     GET_LIST_DOCTYPE                     		: `${BASE_ROUTE}/list-doctype`,
-    GET_LIST_DOCTYPE_BY_PACKAGE            		: `${BASE_ROUTE}/list-doctype-by-package`,
+    GET_LIST_GROUP_DOCTYPE            		    : `${BASE_ROUTE}/list-group-doctype`,
 }
 
 exports.CF_ROUTINGS_DOCUMENT = CF_ROUTINGS_DOCUMENT;

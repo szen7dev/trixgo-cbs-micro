@@ -198,6 +198,7 @@ module.exports = {
 			senderID	    : { type: "string", optional: true },
             contractID	    : { type: "string", optional: true },
 			requestResponse : { type: "string", optional: true },
+			type            : { type: "string", optional: true },
 			marked          : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
@@ -208,12 +209,12 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { 
                     lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, 
-                    requestResponse, marked, keyword, limit, select, filter
+                    requestResponse, marked, type, keyword, limit, select, filter
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
                     lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, userID, 
-                    requestResponse, marked, keyword, limit, select, filter
+                    requestResponse, marked, type, keyword, limit, select, filter
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -257,24 +258,23 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Danh sách phân loại hồ sơ trong gói thầu
+	 * Func: Danh sách nhóm phân loại hồ sơ
 	 * Date: 27/10/2021
 	 */
-    getListDoctypeByPackage: {
+    getListGroupDoctype: {
         params: {
 			companyID		: { type: "string", optional: true },
             departmentID	: { type: "string", optional: true },
-            packageID	    : { type: "string" },
-            type	        : { type: "number", optional: true },
+            packageID	    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { companyID, departmentID, packageID, type } = ctx.params;
+                const { companyID, departmentID, packageID } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctypeByPackage({
-                    userID, companyID, departmentID, packageID, type
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListGroupDoctype({
+                    userID, companyID, departmentID, packageID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -306,6 +306,33 @@ module.exports = {
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListStorage({
                     userID, companyID, lastestID, keyword, limit, select, filter
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Đánh dấu hồ sơ
+	 * Date: 30/12/2021
+	 */  
+    updateMarkDocument: {
+        params: {
+			documentID: { type: "string" },
+			isMark: { type: "boolean" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { documentID, isMark } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateMarkDocument({
+                    userID, documentID, isMark
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -5,7 +5,7 @@ const BASE_ACTIONS = 'ACT_AUTH';
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
 const COMPANY = 'COMPANY',
-      USER     = 'USER', REGISTER_TRIAL = "REGISTER_TRIAL";
+      USER    = 'USER', REGISTER_TRIAL = "REGISTER_TRIAL";
 /**
  * nguyên tắc chuyển đổi từ method trong .handler
  *  VD: handler(insertFast) -> action(INSERT_FAST)
@@ -46,6 +46,12 @@ const CF_ACTIONS_AUTH = {
 	 */
     UPDATE_PIN_CONVERSATION            	: `${BASE_ACTIONS}_${USER}_UPDATE_PIN_CONVERSATION`,
     GET_LIST_PIN_CONVERSATION          	: `${BASE_ACTIONS}_${USER}_GET_LIST_PIN_CONVERSATION`,
+
+    /**
+	 * MEDIA
+	 */
+    UPDATE_PIN_MEDIA            	    : `${BASE_ACTIONS}_${USER}_UPDATE_PIN_MEDIA`,
+    GET_LIST_PIN_MEDIA          	    : `${BASE_ACTIONS}_${USER}_GET_LIST_PIN_MEDIA`,
 
     /**
 	 * COMPANY

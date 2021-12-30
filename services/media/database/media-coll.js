@@ -82,7 +82,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         ref: 'file_core'
     }],
 
-     /**
+    /**
      * Background bài viết
      */
     background: {
@@ -109,6 +109,14 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
 
     /**
+     * ID dự án phòng ban
+     */
+    department: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'department'
+    },
+
+    /**
      * 1: Mặc định
      * 2: Lưu bài viết
      * 3: Ghim bài viết
@@ -119,19 +127,19 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
 
     //_________Số lượng reaction của media
-    amountReaction: {
+    totalReactions: {
         type    :  Number,
         default : 0
     },
 
     //_________Số lượng comment của media
-    amountComment: {
+    totalComments: {
         type    :  Number,
         default : 0
     },
 
     //_________Số lượng lượt xem của media
-    amountView: {
+    totalView: {
         type    :  Number,
         default : 0
     },

@@ -53,8 +53,8 @@ module.exports = {
 		[CF_ACTIONS_CONTACT.INFO_CONTACT_DOCUMENT]					: CONTACT_DOCUMENT_HANDLER.getInfoContactDocument,
 
 		// ==================== CONTACT ACTIONS ========================
-		[CF_ACTIONS_CONTACT.GET_LIST_CONTACT] 						: CONTACT_HANDLER.getListContact,
-		[CF_ACTIONS_CONTACT.INFO_CONTACT] 							: CONTACT_HANDLER.getInfoContact,
+		// [CF_ACTIONS_CONTACT.GET_LIST_CONTACT] 						: CONTACT_HANDLER.getListContact,
+		// [CF_ACTIONS_CONTACT.INFO_CONTACT] 							: CONTACT_HANDLER.getInfoContact,
 	},
 
 	/**

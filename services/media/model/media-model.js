@@ -25,10 +25,7 @@ const { checkObjectIDs, isEmptyObject }			= require('../../../tools/utils/utils'
 const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA_FILE_COLL					    	= require('../database/media.file-coll');
 const MEDIA_SEEN_COLL					    	= require('../database/media.seen-coll');
-const MEDIA_COMMENT_COLL					    = require('../database/media.comment-coll');
-const MEDIA_REACTION_COLL					    = require('../database/media.reaction-coll');
 const MEDIA_SAVE_COLL					    	= require('../database/media.save-coll');
-const MEDIA_PIN_COLL					    	= require('../database/media.pin-coll');
 const MEDIA_COMMENT_IMAGE_COLL					= require('../database/media.comment_image-coll');
 
 
@@ -41,7 +38,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
-	insert({ authorID, title, content, type, location, files, tagFriends, images, background, companyID, ctx }) {
+	insert({ authorID, title, content, type, location, files, tagFriends, images, background, companyID, departmentID, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -106,6 +103,13 @@ class Model extends BaseModel {
 					condition.company = companyID;
 				}
 
+				if (departmentID) {
+					if(!checkObjectIDs(departmentID))
+                    	return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+					condition.department = departmentID;
+				}
+
 				let infoMediaAfterInserted = await this.insertData(condition);
 
                 if(!infoMediaAfterInserted)
@@ -147,7 +151,7 @@ class Model extends BaseModel {
 						conditionReceiver = { company: companyID };
 						break;
 					case 3:
-						conditionReceiver = { department };
+						conditionReceiver = { department: departmentID };
 						break;
 					default:
 						break;
@@ -191,7 +195,7 @@ class Model extends BaseModel {
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
 	update({
-		mediaID, authorID, title, content, type, location, files, filesDelete, tagFriends, images, imageDelete, background, companyID, group
+		mediaID, authorID, title, content, type, location, files, tagFriends, images, background, companyID
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -264,28 +268,6 @@ class Model extends BaseModel {
 					condition.company = companyID;
 				}
 
-				if (filesDelete && filesDelete.length) {
-					if(!checkObjectIDs(filesDelete))
-                    	return resolve({ error: true, message: 'Request params filesDelete invalid', status: 400 });
-
-					condition = {
-						...condition,
-						$pullAll: {
-							files: filesDelete
-						},
-					}
-				}
-
-				if (imageDelete && imageDelete.length) {
-					if(!checkObjectIDs(imageDelete))
-                    	return resolve({ error: true, message: 'Request params imageDelete invalid', status: 400 });
-
-					condition.$pullAll = {
-						...condition.$pullAll,
-						images: imageDelete
-					}
-				}
-			
 				let infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, condition, { new: true });
 
                 if(!infoMediaAfterInserted)
@@ -334,7 +316,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
-    getListMedia({ userID, lastestID, companyID, type, limit = 20, ctx }){
+    getListMedia({ userID, lastestID, companyID, departmentID, type, limit = 20, ctx }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -387,19 +369,36 @@ class Model extends BaseModel {
 					// ]
 				}
 
-				if(companyID && checkObjectIDs(companyID)){
-					conditionObj.company = companyID;
+				if(companyID && !checkObjectIDs(companyID)){
+					return resolve({ 
+						error: true, 
+						message: 'Request param companyID invalid', 
+						keyError: 'params_companyID_invalid',
+						status: 400 
+					});
+				}
+
+				if(departmentID && !checkObjectIDs(departmentID)){
+					return resolve({ 
+						error: true, 
+						message: 'Request param departmentID invalid', 
+						keyError: 'params_departmentID_invalid',
+						status: 400 
+					});
 				}
 
 				switch (type) {
 					case 'company':
 						conditionObj.type = 1;
+						conditionObj.company = companyID;
 						break;
 					case 'just-me':
 						conditionObj.type = 2;
+						conditionObj.author = userID;
 						break;
 					case 'departments':
 						conditionObj.type = 3;
+						conditionObj.department = departmentID;
 						break;
 					case 'community':
 						conditionObj.type = 4;
@@ -409,6 +408,7 @@ class Model extends BaseModel {
 						break;
 					case 'internal-company':
 						conditionObj.type = { $in: [1,2,3] };
+						conditionObj.company = companyID;
 						break;
 					default:
 						break;
@@ -459,7 +459,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: NPNguyen 🐸
-	 * Func: XÓA BÀI VIẾT	
+	 * Func: THÔNG TIN BÀI VIẾT	
 	 */
 	getInfo({ mediaID }) {
         return new Promise(async resolve => {
@@ -494,6 +494,13 @@ class Model extends BaseModel {
 				if (!infoMedia) {
                     return resolve({ error: true, message: "Can't get info media", status: 403 });
 				}
+
+                // Cập nhật số lượng view
+				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+					$inc: {
+						totalView: 1
+					}
+				})
 
 				return resolve({ 
 					error: false,
@@ -540,10 +547,10 @@ class Model extends BaseModel {
 					// .select("author content type location files tagFriends images background company")
 					.populate({
 						path: 'author',
-						select: 'fullname company image',
+						select: 'fullname company department image',
 						populate: { 
-							path: 'company', 
-							select: 'name'
+							path: 'company department', 
+							select: 'name sign'
 						}
 					})
 					.populate({
@@ -570,124 +577,11 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-				let listMediaAfterSet = [];
 				let nextCursor	= null;
 				if (listMedia && listMedia.length) {
 					if(listMedia.length > limit){
 						nextCursor = listMedia[limit - 1]._id;
 						listMedia.length = limit;
-					}
-				}
-
-				if (listMedia && listMedia.length) {
-					for (let media of listMedia) {
-						let countUserWatched = await MEDIA_SEEN_COLL.countDocuments({
-							media: { $in: [media._id] }
-						});
-
-						let countComments = await MEDIA_COMMENT_COLL.countDocuments({
-							media: { $in: [media._id] }
-						});
-
-						let countReactions = await MEDIA_REACTION_COLL.countDocuments({
-							media: { $in: [media._id] }
-						});
-
-						listMediaAfterSet[listMediaAfterSet.length] = {
-							...media,
-							totalComments: countComments,
-							totalWatched: countUserWatched,
-							totalReactions: countReactions,
-						}
-						
-						// let listComment = await MEDIA_COMMENT_COLL.find({ media: { $in: [media._id] }, parent: { $exists: false } })
-						// 	.select('_id')
-						// 	.populate({
-						// 		path: 'author',
-						// 		select: 'fullname company image',
-						// 	})
-						// 	.populate({
-						// 		path: 'comment',
-						// 		select: 'content',
-						// 	})
-						// 	.sort(sortBy)
-						// 	.limit(2)
-						// 	.lean();
-
-						// let idxComment = 0;
-						// for (let comment of listComment) {
-						// 	let idxCommentChild = 0;
-						// 	let totalCommentChild 		= await MEDIA_COMMENT_COLL.count({ parent: comment._id })
-						// 	let totalReactionComment 	= await MEDIA_REACTION_COLL.count({ comment: comment.comment._id })
-						// 	let listCommnetChild 		= await MEDIA_COMMENT_COLL.find({ parent: comment._id })
-						// 		.select('_id')
-						// 		.populate({
-						// 			path: 'author',
-						// 			select: 'fullname company image',
-						// 		})
-						// 		.populate({
-						// 			path: 'comment',
-						// 			select: 'content'
-						// 		})
-						// 		.sort(sortBy)
-						// 		.limit(2)
-						// 		.lean();
-
-						// 	for (let commentChid of listCommnetChild) {
-						// 		let infoCommentChildFile 	= await MEDIA_COMMENT_FILE_COLL.find({ comment: commentChid.comment._id })
-						// 			.select('_id')
-						// 			.populate({
-						// 				path: 'file',
-						// 				select: 'name url',
-						// 			})
-						// 		let totalReactionCommentChild 	= await MEDIA_REACTION_COLL.count({ comment: commentChid.comment._id })
-
-						// 		listCommnetChild[idxCommentChild].comment = {
-						// 			...listCommnetChild[idxCommentChild].comment,
-						// 			totalReactionCommentChild,
-						// 			files: infoCommentChildFile
-						// 		}
-						// 		idxCommentChild ++;
-						// 	}
-
-						// 	let infoCommentFile = await MEDIA_COMMENT_FILE_COLL.find({ comment: comment.comment._id })
-						// 		.select('_id')
-						// 		.populate({
-						// 			path: 'file',
-						// 			select: 'name url',
-						// 		})
-
-						// 	listComment[idxComment].comment = {
-						// 		...listComment[idxComment].comment,
-						// 		totalCommentChild,
-						// 		totalReactionComment,
-						// 		files: infoCommentFile,
-						// 		listCommnetChild,
-						// 	}
-						// 	idxComment++;
-						// }
-						// for(const comment of listComment) {
-
-						// 	let listComment2 = await MEDIA_REACTION_COLL.find({ comment: { $in: [comment._id] } })
-						// 		.populate({
-						// 			path: 'reaction',
-						// 			select: 'type',
-						// 		})
-						// 	console.log({listComment2})
-						// }
-
-						// TODO: Count total comment of User
-
-						// listMediaAfterSet = [
-						// 	...listMediaAfterSet,
-						// 	{
-						// 		...media,
-						// 		totalUserWatched: countUserWatched,
-						// 		totalComments: countComments,
-						// 		totalReactions: countReactions,
-						// 		listComment
-						// 	}
-						// ]
 					}
 				}
 
@@ -699,7 +593,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: { 
-						listRecords: listMediaAfterSet, 
+						listRecords: listMedia, 
 						limit: +limit,
 						totalRecord,
 						totalPages,
@@ -711,134 +605,6 @@ class Model extends BaseModel {
             }
         })
 	}
-
-	/**
-	 * Dev: NPNguyen 🐸
-	 * Func: LẤY DANH SÁCH CÁC USER ĐÃ XEM BÀI VIẾT
-	 */
-	getListWatchedMedia({ mediaID, lastestID, limit }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let listUserWatched = [];
-				let sortBy = {
-					_id: -1,
-				};
-				
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([mediaID]))
-                    return resolve({ error: true, message: 'Request params media invalid', status: 400 });
-				
-				if(!limit || isNaN(limit))
-					limit = 10;
-
-				limit = +limit;
-
-				let conditionFind = {};
-                if(lastestID && checkObjectIDs(lastestID)) {
-					let infoSeenMedia = await MEDIA_SEEN_COLL.findById(lastestID)
-                    if(!infoSeenMedia)
-                        return resolve({ error: true, message: "Can't get info last user", status: 403 });
-
-					// let nextInfo = `${infoSeenMedia._id}`;
-					// let keys	 = ['_id__-1'];
-					let nextInfo = `${infoSeenMedia.createdAt}_${infoSeenMedia._id}`;
-					let keys	 = ['createdAt__-1', '_id__-1'];
-
-                    // let nextInfo = `${infoSeenMedia._id}`;
-					// let keys	 = ['_id__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-				
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				let infoSeenMedia = await MEDIA_SEEN_COLL.find({
-					media: { $in: [mediaID] }
-				}).lean();
-
-				if(!infoSeenMedia)
-					return resolve({ error: true, message: "Can't get list user seen media", status: 403 });
-			
-				let	listWatched = await MEDIA_SEEN_COLL
-					.find({
-						media: mediaID, 
-						...conditionFind
-					})
-					.select('userSeen')
-					.populate({
-						path: 'userSeen',
-						select: 'bizname fullname image',
-					})
-					.limit(limit)
-					.sort(sortBy)
-					.lean();
-
-                if(!listWatched)
-                    return resolve({ error: true, message: "Can't get list user seen media", status: 403 });
-
-				return resolve({ 
-					error: false, 
-					status: 200,
-					data: {
-						listUserWatched: listWatched,
-						limit,
-						totalUserWatched: infoSeenMedia.length
-					}
-				});
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-	/**
-	 * Dev: NPNguyen 🐸
-	 * Func: ĐÁNH DẤU NGƯỜI XEM BÀI VIẾT	
-	 */
-	watchedMedia({ userID, mediaID }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
-
-				condition = {
-					userSeen: userID,
-					media: mediaID,
-
-				}
-
-				// CHECK USER HAVE SEEN MEDIA
-                let checkExistSaveMedia = await MEDIA_SEEN_COLL.findOne(condition).lean();
-
-				if(checkExistSaveMedia) {
-					return resolve({ error: true, message: 'You have already seen this post', status: 403 });
-				}
-
-				let infoMediaAfterInserted = await MEDIA_SEEN_COLL.create({ 
-					...condition
-				});
-
-                if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't watched media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
 	/**
 	 * Dev: NPNguyen 🐸
@@ -910,7 +676,6 @@ class Model extends BaseModel {
 				condition = {
 					userSave: author,
 					media: mediaID,
-
 				}
 
 				// CHECK USER HAVE SAVED MEDIA
@@ -975,42 +740,59 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
-	getListPinMedia({ userID, lastestID, limit, ctx }) {
+	getListPinMedia({ userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let sortBy = {
-					modifyAt: -1,
-					createAt: -1,
-					updateAt: -1
-				};
-
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs([userID]))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(!limit || isNaN(limit))
-					limit = 10;
+				let listMediaPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_MEDIA}`);
 
-				limit = +limit;
+				if(listMediaPin.data && listMediaPin.data.length){
+					listMediaPin = await MEDIA_COLL
+						.find({ _id: { $in: listMediaPin.data }})
+						.populate({
+							path: 'author',
+							select: 'fullname company department image',
+							populate: { 
+								path: 'company department', 
+								select: 'name sign'
+							}
+						})
+						.populate({
+							path: 'files',
+							select: '_id name url size type',
+						})
+						.populate({
+							path: 'images',
+							select: '_id name url size type',
+						})
+						.populate({
+							path: 'background',
+							select: '_id name url size type',
+						})
+						.populate({
+							path: 'tagFriends',
+							select: 'fullname',
+						})
+						.populate({
+							path: 'company',
+							select: 'name',
+						})
+						.lean()
+				} else{
+					listMediaPin = [];
+				}
 
-				let	listMediaHavedPin = await MEDIA_PIN_COLL.find({
-					userPin: { $in: userID },
+				return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listMediaPin,
+						totalRecords: listMediaPin.length
+					}
 				})
-				
-				if(!listMediaHavedPin)
-					return resolve({ error: true, message: "Can't get list media", status: 403 });
-
-				let listAfterFind = await this.getListWithCondition({
-					conditionObj: {
-						_id: [...listMediaHavedPin.map(item => item.media)]
-					},
-					limit,
-					sortBy,
-					lastestID,
-				});
-				return resolve(listAfterFind);
-				
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1021,15 +803,12 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: GHIM BÀI VIẾT
 	 */
-	pinMedia({ author, mediaID, ctx }) {
+	pinMedia({ userID, mediaID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+				if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if (!checkObjectIDs([mediaID])) {
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
@@ -1040,26 +819,13 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Media don't exited", status: 400 });
 				}
 
-				condition = {
-					userPin: author,
-					media: mediaID,
-				}
-
-				// CHECK USER HAVE PIN MEDIA
-                let checkExistSaveMedia = await MEDIA_PIN_COLL.findOne(condition).lean();
-
-				if(checkExistSaveMedia) {
-					return resolve({ error: true, message: 'You have already pin this post', status: 403 });
-				}
-
-				let infoMediaAfterInserted = await MEDIA_PIN_COLL.create({ 
-					...condition
+				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
+					mediaID, userID, isPin: true
 				});
+				if(infoUserAfterUpdated.error)
+					return resolve(infoUserAfterUpdated);
 
-                if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't pin media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
+				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1070,33 +836,29 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: HỦY GHIM BÀI VIẾT
 	 */
-	deletePinMedia({ author, mediaID, ctx }) {
+	deletePinMedia({ userID, mediaID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+				if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if (!checkObjectIDs([mediaID])) {
                     return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
-
-				condition = {
-					userPin: author,
-					media: mediaID,
 				}
 
-				let infoMediaAfterDelete = await MEDIA_PIN_COLL.findOneAndDelete({ 
-					...condition
+				let checkExisted = await MEDIA_COLL.findById(mediaID);
+				if (!checkExisted) {
+                    return resolve({ error: true, message: "Media don't exited", status: 400 });
+				}
+
+				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
+					mediaID, userID, isPin: false
 				});
+				if(infoUserAfterUpdated.error)
+					return resolve(infoUserAfterUpdated);
 
-                if(!infoMediaAfterDelete)
-                    return resolve({ error: true, message: "Can't delete pin media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterDelete, status: 200 });
+				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

@@ -20,8 +20,6 @@ const CF_ACTIONS_MEDIA = {
 	LIST_PIN_MEDIA                  				: `${BASE_ACTIONS}_LIST_PIN_MEDIA`,
 	PIN_MEDIA                  						: `${BASE_ACTIONS}_PIN_MEDIA`,
 	DELETE_PIN_MEDIA                  				: `${BASE_ACTIONS}_DELETE_PIN_MEDIA`,
-	WATCHED_MEDIA                  					: `${BASE_ACTIONS}_WATCHED_MEDIA`,
-	LIST_WATCHED_MEDIA                  			: `${BASE_ACTIONS}_LIST_WATCHED_MEDIA`,
 	REACTION_MEDIA                              	: `${BASE_ACTIONS}_REACTION_MEDIA`,
     GET_LIST_REACTION_MEDIA                     	: `${BASE_ACTIONS}_GET_LIST_REACTION_MEDIA`,
     REACTION_COMMENT               		        	: `${BASE_ACTIONS}_REACTION_COMMENT`,
