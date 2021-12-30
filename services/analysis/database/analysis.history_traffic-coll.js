@@ -9,7 +9,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_traffic", {
         type: Schema.Types.ObjectId,
         ref : 'app' 
     },
-
+    
     //_______Tính năng
     menu: {
         type: Schema.Types.ObjectId,

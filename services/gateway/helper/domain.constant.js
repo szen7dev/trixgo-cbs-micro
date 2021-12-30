@@ -17,6 +17,7 @@ let CF_DOMAIN_SERVICES = {
     TRAINING        : 'training',
     SUBJECT_PCM     : 'subject_pcm',
     OPERATION       : 'operation',
+    ANALYSIS        : 'analysis',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

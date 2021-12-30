@@ -11,6 +11,8 @@ const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-han
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
+const AUTH__APP_COLL				= require('./database/permission/auth.app-coll');
+const AUTH__APP_MENU_COLL			= require('./database/permission/auth.app_menu-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
@@ -18,6 +20,8 @@ module.exports = {
 		DbService(AUTH__COMPANY_COLL),
 		DbService(AUTH__USER_COLL),
 		DbService(AUTH__REGISTER_TRIAL_COLL),
+		DbService(AUTH__APP_COLL),
+		DbService(AUTH__APP_MENU_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**

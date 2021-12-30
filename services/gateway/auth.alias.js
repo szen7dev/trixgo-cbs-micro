@@ -25,6 +25,7 @@ const { CF_ROUTINGS_SUBJECT_PCM }	= require('../subject_pcm/helper/subject_pcm.r
 const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes-constant');
 const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notification.routes-constant');
 const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
+const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -46,6 +47,7 @@ const { CF_ACTIONS_SUBJECT_PCM } 	= require('../subject_pcm/helper/subject_pcm.a
 const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.actions-constant');
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
+const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -832,6 +834,32 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_GET_INFO_AND_GET_LIST}`],
 		
 		//---------------------------🏁 END SERVICE REACTION 🏁---------------------------//
+
+
+		//---------------------------🏁 START SERVICE ANALYSIS 🏁---------------------------//
+		[`POST ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFICS}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`],
+
+		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFICS}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_GET_INFO_AND_GET_LIST}`],
+
+
+		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_DEVICE_ACCESS_BY_YEAR}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_DEVICE_ACCESS_BY_YEAR}`],
+
+		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_BY_DEVICE_ACCESS}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_BY_DEVICE_ACCESS}`],
+
+		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP}`],
+
+		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_COMPANY}`],
+
+		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP_AND_DEVICE}`] :
+		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP_AND_DEVICE}`],
+
+		//---------------------------🏁 END SERVICE ANALYSIS   🏁---------------------------//
 
 	},
 
