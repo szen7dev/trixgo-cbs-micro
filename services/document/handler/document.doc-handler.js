@@ -198,7 +198,7 @@ module.exports = {
 			senderID	    : { type: "string", optional: true },
             contractID	    : { type: "string", optional: true },
 			requestResponse : { type: "string", optional: true },
-			type            : { type: "number", optional: true },
+			type            : { type: "string", optional: true },
 			marked          : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
