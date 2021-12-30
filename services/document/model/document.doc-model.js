@@ -561,9 +561,8 @@ class Model extends BaseModel {
                 requestResponse && (conditionObj.requestResponse = +requestResponse);
 
                 // Lấy danh sách đánh dấu sao
-                if(marked && [1,2].includes(+marked)){
-                    conditionObj["mark.status"] = +marked;
-                    sortBy = { "mark.updated": -1, ...sortBy };
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] };
                 }
 
 				// SEARCH TEXT
@@ -980,13 +979,13 @@ class Model extends BaseModel {
                 if(!usersID || !usersID.length || !checkObjectIDs(usersID))
                     return resolve({ error: true, message: 'Request params usersID invalid', status: 400 });
 
-                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
                     user: authorID,
                     permission: 1
                 }).lean()
 
-                if(!infoAuthorDocument)
+                if(!checkPermission)
                     return resolve({ error: true, message: "Permission denined", status: 403 });
 
                 let infoAfterShare = null;
@@ -1041,13 +1040,13 @@ class Model extends BaseModel {
                 if(![2,3].includes(permission))
                     return resolve({ error: true, message: 'Request params permission invalid', status: 400 });
 
-                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
                     user: authorID,
                     permission: 1
                 }).lean();
 
-                if(!infoAuthorDocument)
+                if(!checkPermission)
                     return resolve({ error: true, message: "Permission denined", status: 403 });
 
                 let infoUserShared = await DOCUMENT__USER_COLL.findOne({
@@ -1218,6 +1217,82 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Đánh dấu hồ sơ
+	 * Date: 30/12/2021
+	 */   
+    updateMarkDocument({ userID, documentID, isMark }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([userID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params userID invalid', 
+                        keyError: 'params_userID_invalid',
+                        status: 400 
+                    });
+                }
+
+                if(!checkObjectIDs([documentID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params documentID invalid', 
+                        keyError: 'params_documentID_invalid',
+                        status: 400 
+                    });
+                }
+
+                let checkPermission = await DOCUMENT__USER_COLL.findOne({
+                    document: documentID,
+                    user: userID,
+                }).lean()
+
+                if(!checkPermission) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Permission denined document', 
+                        keyError: 'permission_denined_document',
+                        status: 403
+                    });
+                }
+
+                let infoAfterUpdate = null;
+
+                if(isMark) {
+                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                        $addToSet: {
+                            usersMarked: userID
+                        }
+                    }, { new: true });
+                } else{
+                    infoAfterUpdate = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, {
+                        $pull: {
+                            usersMarked: userID
+                        }
+                    }, { new: true });
+                }
+
+                if(!infoAfterUpdate) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't highlight document", 
+                        keyError: 'highlight_document_failed',
+                        status: 422
+                    });
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: infoAfterUpdate
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
             }
         })
     }

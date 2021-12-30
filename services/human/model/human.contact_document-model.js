@@ -34,7 +34,7 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Danh sách hồ sơ nhân sự sắp hết hạn
+	 * Func: Danh sách hồ sơ nhân sự
 	 * Date: 26/11/2021
 	 */
 	getListContactDocument({ lastestID, userID, companyID, keyword, type, isExpire, limit = 20, filter = {}, select = {} }){
@@ -93,7 +93,7 @@ class Model extends BaseModel {
 				if(isExpire){
 					let currentDay = ISOdate(moment().endOf('day').format());
 					let currentDateAddFourMonth = ISOdate(moment().add(4, 'month').format());
-	
+
 					conditionObj.toDate = {
 						$lte: currentDateAddFourMonth,
 						$gte: currentDay

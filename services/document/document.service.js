@@ -60,6 +60,9 @@ module.exports = {
 		// Chi tiết hồ sơ văn bản
 		[CF_ACTIONS_DOCUMENT.GET_INFO_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getInfoDocumment,
 
+		// Đánh dấu hồ sơ
+		[CF_ACTIONS_DOCUMENT.MARK_DOCUMENT]					: DOCUMENT__DOC_HANDLER.updateMarkDocument,
+
 		// Chia sẻ văn bản
 		[CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT]				: DOCUMENT__DOC_HANDLER.updateShareDocument,
 

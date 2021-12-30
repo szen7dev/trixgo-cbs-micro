@@ -317,6 +317,33 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
+	 * Func: Đánh dấu hồ sơ
+	 * Date: 30/12/2021
+	 */  
+    updateMarkDocument: {
+        params: {
+			documentID: { type: "string" },
+			isMark: { type: "boolean" }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { documentID, isMark } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateMarkDocument({
+                    userID, documentID, isMark
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
 	 * Func: Chia sẻ văn bản
 	 * Date: 05/11/2021
 	 */

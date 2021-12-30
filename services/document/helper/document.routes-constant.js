@@ -10,6 +10,7 @@ const CF_ROUTINGS_DOCUMENT = {
     GET_INFO_DOCUMENT                     		: `${BASE_ROUTE}/info-document`,
     GET_LIST_DOCUMENT                     		: `${BASE_ROUTE}/list-document`,
     GET_LIST_STORAGE                     		: `${BASE_ROUTE}/list-storage`,
+    MARK_DOCUMENT                     		    : `${BASE_ROUTE}/mark-document`,
     SHARE_DOCUMENT                     		    : `${BASE_ROUTE}/share-document`,
     UPDATE_PERMISSION_SHARE                     : `${BASE_ROUTE}/update-permission-share`,
     ADD_FILE_ATTACHMENT                         : `${BASE_ROUTE}/add-file-attachment`,
