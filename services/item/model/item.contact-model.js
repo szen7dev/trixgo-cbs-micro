@@ -83,7 +83,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, type,
         keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -146,6 +146,10 @@ class Model extends BaseModel {
                 //____________Công ty
                 if(companyID){
                     conditionObj.company = companyID
+                }
+
+                if(type){
+                    conditionObj.type = type
                 }
 
                 // PHÂN TRANG KIỂU MỚI

@@ -18,6 +18,7 @@ module.exports = {
         params: {
             // Field bổ sung
             contactID           : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -30,7 +31,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactID, keyword, limit, lastestID, select, filter, populates } = ctx.params;
+                let { contactID, type, keyword, limit, lastestID, select, filter, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -40,7 +41,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID: company._id, lastestID, userID, keyword, limit, select, filter, populates
+                        companyID: company._id, type, lastestID, userID, keyword, limit, select, filter, populates
                     });
                 }
 

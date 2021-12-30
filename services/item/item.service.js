@@ -26,6 +26,7 @@ const ITEM__AREA_COLL					= require('./database/item.area-coll');
 const ITEM__DOCTYPE_COLL				= require('./database/item.doctype-coll');
 const ITEM__CONTACT_COLL				= require('./database/item.contact-coll');
 const ITEM__WAREHOUSE_COLL				= require('./database/item.warehouse-coll');
+const ITEM__POSITION_COLL				= require('./database/item.position-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
@@ -37,6 +38,7 @@ module.exports = {
 		DbService(ITEM__DOCTYPE_COLL),
 		DbService(ITEM__CONTACT_COLL),
 		DbService(ITEM__WAREHOUSE_COLL),
+		DbService(ITEM__POSITION_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ITEM])
     ],
 
