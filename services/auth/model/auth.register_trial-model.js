@@ -202,7 +202,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ registerTrialID }) { 
+    getInfo({ registerTrialID, select }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -222,7 +222,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterRemove = await AUTH__REGISTER_TRIAL_COLL.findById(registerTrialID);
+                let infoAterRemove = await AUTH__REGISTER_TRIAL_COLL.findById(registerTrialID).select(select);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", status: 403 });
  

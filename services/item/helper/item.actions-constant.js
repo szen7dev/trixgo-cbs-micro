@@ -37,6 +37,9 @@ const CF_ACTIONS_ITEM = {
      /**
      * CONTACT
      */
+    CONTACT_INSERT                          : `${BASE_ACTIONS}_${CONTACT}_INSERT`,
+    CONTACT_UPDATE                          : `${BASE_ACTIONS}_${CONTACT}_UPDATE`,
+    CONTACT_REMOVE                          : `${BASE_ACTIONS}_${CONTACT}_REMOVE`,
     CONTACT_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${CONTACT}_GET_INFO_AND_GET_LIST`,
 
     /**

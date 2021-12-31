@@ -40,6 +40,6 @@ const CF_ROUTINGS_AUTH = {
     /**
      * ĐĂNG KÝ DÙNG THỬ
      */
-    REGISTER_TRIAL                      : `${BASE_ROUTE}${REGISTER_TRIAL}`,
+    REGISTER_TRIAL                    : `${BASE_ROUTE}${REGISTER_TRIAL}`,
 }
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

@@ -8,7 +8,7 @@ const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playg
 
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const _isValid                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
@@ -26,6 +26,181 @@ class Model extends BaseModel {
 
     constructor() {
         super(ITEM__CONTACT_COLL);
+    }
+
+    /**
+     * Name: Thêm danh bạ, nhân sự ✅
+     * Author: Depv
+     * Code: 
+     */
+    insert({ company, authorID, parent, type, name, description, sign, address, area, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale }) {
+        return new Promise(async resolve => {
+            try {
+                if(!name || !_isValid(company) || !_isValid(authorID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                //___________Kiểm tra việc trùng mã hiệu
+                let conditionObj = {
+                    company: company
+                };
+                if((sign && sign != "") || (taxid && taxid != "")){
+                    conditionObj.$or = []
+                }
+                if((sign && sign != "")){
+                    conditionObj.$or.push({sign: sign})
+                }
+                if((taxid && taxid != "")){
+                    conditionObj.$or.push({taxid: taxid})
+                }
+                let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
+                if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
+                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+
+                let dataInsert = {
+                    company,
+                    inCRM: 1,
+                    inHuman: 0,
+                    inTimesheet: 0,
+                    inFinancial: 1,
+                    inDocument: 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
+                    name, 
+                    description,
+                    sign, 
+                    address, 
+                    taxid,
+                    birthday,
+                    phone,
+                    email,
+                    status: status ? Number(status) : Number(1)
+                }
+
+                if(gender && !isNaN(gender)){
+                    dataInsert.gender = gender;
+                }
+                if(department && _isValid(department)){
+                    dataInsert.department = department;
+                }
+                if(position && _isValid(position)){
+                    dataInsert.position = position;
+                }
+                if(linkUser && _isValid(linkUser)){
+                    dataInsert.linkUser = linkUser;
+                }
+                if(linkSale && _isValid(linkSale)){
+                    dataInsert.linkSale = linkSale;
+                }
+                if(field && _isValid(field)){
+                    dataInsert.field = field;
+                }
+                if(property && _isValid(property)){
+                    dataInsert.property = property;
+                }
+
+                if(parent && _isValid(parent)){
+                    dataInsert.parent = parent;
+                    let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
+                    dataInsert.level = infoMenuParent.level + 1;
+                }
+
+                let infoAfterInsert = await this.insertData(dataInsert, authorID);
+                if(parent) {
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
+                        $addToSet: { childs: infoAfterInsert._id } 
+                    }, { new: true });
+                }
+                
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+    
+    /**
+     * Name: update danh bạ, nhân sự ✅
+     * Author: Depv
+     * Code: 
+     */
+    update({ contactID, company, name, description, province, gender, type, authorID, sign, address, taxid, department, position, birthday, phone, email, status, field, property, linkSale }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!name || !_isValid(authorID) || !_isValid(contactID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                //___________Kiểm tra việc trùng mã hiệu
+                let conditionObj = {
+                    company: company,
+                    _id: {
+                        $ne: contactID
+                    }
+                };
+                if((sign && sign != "") || (taxid && taxid != "")){
+                    conditionObj.$or = []
+                }
+                if((sign && sign != "")){
+                    conditionObj.$or.push({sign: sign})
+                }
+                if((taxid && taxid != "")){
+                    conditionObj.$or.push({taxid: taxid})
+                }
+                let infoContact = await CONTACT_COLL.findOne(conditionObj);
+                if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
+                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+                let dataUpdate = {
+                    name, 
+                    description,
+                    userUpdate: authorID,
+                    sign,
+                    address,
+                    taxid,
+                    birthday, 
+                    phone, 
+                    email, 
+                    status: status ? Number(status) : Number(1),
+                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
+                }
+                
+                if(gender && Number(gender) > 0){
+                    dataUpdate.gender = gender;
+                }
+
+                if([1,2,3,4].includes(Number(type))){
+                    dataUpdate.type = Number(type);
+                }
+
+                if(department && _isValid(department)){
+                    dataUpdate.department = department;
+                }
+                
+                if(position && _isValid(position)){
+                    dataUpdate.position = position;
+                }
+
+                if(field && _isValid(field)){
+                    dataUpdate.field = field;
+                }
+
+                if(property && _isValid(property)){
+                    dataUpdate.property = property;
+                }
+
+                if(linkSale && _isValid(linkSale)){
+                    dataUpdate.linkSale = linkSale;
+                }
+
+                let infoAfterUpdate = await CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
+                // console.log(infoAfterUpdate)
+                    
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 
     /**

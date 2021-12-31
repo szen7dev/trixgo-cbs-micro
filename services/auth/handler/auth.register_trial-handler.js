@@ -26,7 +26,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { fullname, organization, type, email, phone, note } = ctx.params;
-
                 let resultAfterCallHandler = await AUTH__REGISTER_TRIAL.insert({
                     fullname, organization, type, email, phone, note
                 });
@@ -107,19 +106,21 @@ module.exports = {
         params: {
             registerTrialID : { type: "string", optional: true },
             type            : { type: "string", optional: true },
+
             keyword         : { type: "string", optional: true },
-            limit           : { type: "number", optional: true },
+            limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { registerTrialID, type, keyword, filter, limit, lastestID } = ctx.params;
+                let { registerTrialID, type, keyword, filter, select, limit, lastestID } = ctx.params;
                 let resultAfterCallHandler;
                 if(registerTrialID){
-                    resultAfterCallHandler = await AUTH__REGISTER_TRIAL.getInfo({ registerTrialID  });
+                    resultAfterCallHandler = await AUTH__REGISTER_TRIAL.getInfo({ registerTrialID, select });
                 }else{
                     resultAfterCallHandler = await AUTH__REGISTER_TRIAL.getList({  type, keyword, limit, lastestID, filter });
                 }

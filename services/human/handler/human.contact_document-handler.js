@@ -6,73 +6,47 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const CONTACT_DOCUMENT_MODEL                    = require('../model/human.contact_document-model').MODEL;
-
+const HUMAN__CONTACT_DOCUMENT_MODEL                    = require('../model/human.contact_document-model').MODEL;
 
 module.exports = {
-    /**
-	 * ============================ ****************** ===============================
-	 * ============================ 	 HUMAN  	   ===============================
-	 * ============================ ****************** ===============================
-	 */
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Danh sách hồ sơ nhân sự
-	 * Date: 26/11/2021
-	 */
-    getListContactDocument: {
-        params: {
-            lastestID           : { type: "string", optional: true },
-            keyword             : { type: "string", optional: true },
-			limit               : { type: "string", optional: true },
-			companyID           : { type: "string" },
-			type                : { type: "string", optional: true },
-			isExpire            : { type: "string", optional: true },
-			select              : { type: "string", optional: true },
-            filter              : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, companyID, type, isExpire, keyword, limit, select, filter } = ctx.params;
-
-                const resultAfterCallHandler = await CONTACT_DOCUMENT_MODEL.getListContactDocument({
-                    lastestID, companyID, userID, type, isExpire, keyword, limit, select, filter
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
     
     /**
-	 * Dev: MinhVH
-	 * Func: Chi tiết nhân sự
-	 * Date: 30/11/2021
+	 * Dev: Depv ✅
+	 * Func: Danh sách doctype
 	 */
-    getInfoContactDocument: {
+    getInfoAndGetList: {
         params: {
-			contactID  : { type: "string" },
-			type       : { type: "string" },
-			select     : { type: "string", optional: true },
+            contactDocumentID : { type: "string", optional: true },
+            type              : { type: "string", optional: true },
+            contactID         : { type: "string", optional: true },
+            
+            // Field mặc định
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { contactID, type, select } = ctx.params;
+                await this.validateEntity(ctx.params);
+                let { contactDocumentID, type, contactID, keyword, limit, lastestID, select, populates } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await CONTACT_DOCUMENT_MODEL.getInfoContactDocument({
-                    userID, contactID, type, select
-                });
+                let resultAfterCallHandler;
+                if(contactDocumentID){
+                    resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getInfo({
+                        contactDocumentID, select, populates
+                    });
+                }else{
+                    resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getList({
+                        companyID: company._id, type, contactID, lastestID, keyword, select, limit, populates
+                    });
+                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+                return { error: true, message: error.message };
             }
         }
     },

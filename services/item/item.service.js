@@ -64,7 +64,6 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_REMOVE] 						: ITEM__CONTRACT_HANDLER.remove,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
 
-
 		//==========================================  DEPARTMENT  ================================
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DEPARTMENT_UPDATE] 					: ITEM__DEPARTMENT_HANDLER.update,
@@ -74,8 +73,9 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
 
 		//==========================================  CONTACT  ==================================
+		[CF_ACTIONS_ITEM.CONTACT_INSERT] 						: ITEM__CONTACT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
-
+		
 		//==========================================  WAREHOUSE  ================================
 		[CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST] 		: ITEM__WAREHOUSE_HANDLER.getInfoAndGetList,
 	},
