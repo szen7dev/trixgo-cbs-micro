@@ -91,7 +91,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { 
-                    company: companyID
+                    // company: companyID
                 };
 
                 let conditionFind = { };
