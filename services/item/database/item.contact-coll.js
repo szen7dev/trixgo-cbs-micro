@@ -66,7 +66,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     name: String,
     //_________Mã hiệu
     sign: String,  
-    //_________Mô tả
+    //_________Mô tả (Thông tin khác)
     description: String,
     //_________Ghi chú
     note: String,
@@ -74,7 +74,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     gender: { type: Number, default: 1 },
     //_________Ngày sinh
     birthday: { type: Date, default: null },
-    //_________Căn cước/Chứng minh thư
+    //_________Căn cước/Chứng minh thư (Số định danh)
     identity: String,
     //_________Ngày cấp
     dateProvice: { type: Date, default: null },
@@ -88,7 +88,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     email: String,
     //_________Năm tốt nghiệp
     graduationYear: { type: Date, default: null },
-    //_________Địa chỉ thường chú
+    //_________Địa chỉ thường chú (Nơi ở)
     address: String,
     //_________Khu vực thường chú
     area: {
@@ -119,7 +119,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     province: { type: Number, default: 1 },
     //_________Tài khoản ngân hàng (tên ngân hàng, số tài khoản, người hưởng)
     bankAccount: String,
-    //_________Thông tin người thân (Tên, quan hệ, điện thoại, email, địa chỉ)
+    //_________Thông tin gia đình (Tên, quan hệ, điện thoại, email, địa chỉ)
     family: String,
     //_________Chính sách gia đình thương binh liệt sỹ
     familyPolicy:{ type: Number, default: 1 },
@@ -159,17 +159,17 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
      */
     //_________Tình trạng sổ bảo hiểm xã hội
     insuranceStatus: { type: Number, default: 1 },
-    //_________Số số bảo hiểm xã hội	
+    //_________Số số bảo hiểm xã hội 	
     insuranceNumber: String,
-    //_________Mã số bảo hiểm xã hội	
-    insuranceSign: String,
-    //_________Ngày nộp sổ
+    //_________Mã số bảo hiểm xã hội (Số bảo hiểm)	
+    insuranceSign: String, 
+    //_________Ngày nộp sổ (Ngày nộp bảo hiểm)
     insuranceDate: { type: Date, default: null },
     //_________Hệ số lương
     sallaryFactor: { type: Number, default: 1 },
     //_________Phụ cấp
     sallarySubFactor: { type: Number, default: 0 },
-    //_________Lương căn bản
+    //_________Lương căn bản (Mức đóng BH)
     sallaryBasic: { type: Number, default: 0 },
     /**
      * HỒ SƠ CHI TIẾT
@@ -230,11 +230,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default: 1 
     },
     /**
-     * _______Người ký xác nhận vào
+     * _______Người ký xác nhận vào (Người ký nhận)
      */
     signerIn: String,
      /**
-     * _______Người ký xác nhận chấm dứt
+     * _______Người ký xác nhận chấm dứt (Người ký xa thải)
      */
     signerOut: String,
 

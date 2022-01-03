@@ -492,6 +492,13 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.AREA}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`],
 
+
+		/**
+		 * Position
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.POSITION}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST}`],
+
 		//------------------------------END SEARVICE ITEM---------------------------//
 
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//

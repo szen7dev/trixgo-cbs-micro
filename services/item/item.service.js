@@ -17,6 +17,7 @@ const ITEM__DOCTYPE_HANDLER          	= require('./handler/item.doctype-handler'
 const ITEM__CONTACT_HANDLER          	= require('./handler/item.contact-handler');
 const ITEM__WAREHOUSE_HANDLER          	= require('./handler/item.warehouse-handler');
 const ITEM__AREA_HANDLER          		= require('./handler/item.area-handler');
+const ITEM__POSITION_HANDLER          	= require('./handler/item.position-handler');
 
 /**
  * COLLECTIONS
@@ -82,6 +83,9 @@ module.exports = {
 
 		//==========================================  AREA  ================================
 		[CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST] 		    : ITEM__AREA_HANDLER.getInfoAndGetList,
+
+		//==========================================  POSITION  ================================
+		[CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST] 		: ITEM__POSITION_HANDLER.getInfoAndGetList,
 	},
 
 	/**
