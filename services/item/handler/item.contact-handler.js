@@ -150,7 +150,7 @@ module.exports = {
                     sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
+                
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({
                     contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,

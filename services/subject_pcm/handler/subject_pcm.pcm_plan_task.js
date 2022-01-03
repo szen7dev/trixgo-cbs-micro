@@ -94,10 +94,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log({ ctx });
-
                 await this.validateEntity(ctx.params);
-
                 let {
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
@@ -150,7 +147,6 @@ module.exports = {
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
         },
@@ -160,7 +156,7 @@ module.exports = {
                 
                 let { 
                     taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
-                    keyword, limit, lastestID, select, filter, populates
+                    keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
@@ -174,7 +170,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
-                        keyword, limit, filter, lastestID, populates
+                        keyword, limit, select, lastestID, populates
                     });
                 }
                 

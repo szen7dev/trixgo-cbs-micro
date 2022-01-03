@@ -764,7 +764,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
-        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -820,14 +820,6 @@ class Model extends BaseModel {
                     { related: { $in: [userID] }},
                     { group: { $in: listGroups.map(item => item._id) }},
                 ]
-
-                // Kiểm tra điều kiện filter
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 
                 // Kiểm tra điều kiện populates
                 if(populates && typeof populates === 'string'){
@@ -1016,9 +1008,10 @@ class Model extends BaseModel {
                 }
 
                 // Bắt đầu query trong db
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
                     .lean();
                 

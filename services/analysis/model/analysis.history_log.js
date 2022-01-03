@@ -67,17 +67,18 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot_insert_history_log" })
-                console.log({ infoAfterInsert });
 
+                
                 if(parentCollection){
+                    // Cập nhật lastLog cho task
                     if(parentCollection.kind == "pcm_plan_task"){
-                        // let infoTaskAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_UPDATE}`, {
-                        //     taskID: parentCollection.item, lastLogID: infoAfterInsert._id
-                        // })
-                        let infoTaskAfterUpdate = await ctx.call(`subject_pcm.ACT_SUBJECT_PCM_PCM_PLAN_TASK_UPDATE`, {
-                            taskID: parentCollection.item, lastLogID: infoAfterInsert._id
-                        })
-                        console.log({ infoTaskAfterUpdate });
+                        try {
+                            let infoTaskAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_UPDATE}`, {
+                                taskID: parentCollection.item, lastLogID: `${infoAfterInsert._id}`
+                            })
+                        } catch (error) {
+                            console.log({ error });
+                        }
                     }
                 }
                 return resolve({ error: false, data: infoAfterInsert });
