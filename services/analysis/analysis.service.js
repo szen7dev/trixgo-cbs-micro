@@ -3,15 +3,24 @@ const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_ANALYSIS } 	        = require('./helper/analysis.actions-constant');
+/**
+ * HANDLERS
+ */
+const ANALYSIS__HISTORY_TRAFFIC_HANDLER  = require('./handler/analysis.history_traffic-hanlder');
+const ANALYSIS__HISTORY_LOG_HANDLER   	 = require('./handler/analysis.history_log-hanlder');
 
-const ANALYSIS__HISTORY_TRAFFIC_HANDLER   = require('./handler/analysis.history_traffic-hanlder');
-const ANALYSIS__HISTORY_TRAFFIC_COLL	  = require('./database/analysis.history_traffic-coll');
+/**
+ * COLLECTIONS
+ */
+const ANALYSIS__HISTORY_TRAFFIC_COLL	= require('./database/analysis.history_traffic-coll');
+const ANALYSIS__HISTORY_LOG_COLL	  	= require('./database/analysis.history_log-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ANALYSIS,
 	mixins: [
 		// gọi tất cả các function dùng ở đây
 		DbService(ANALYSIS__HISTORY_TRAFFIC_COLL),  
+		DbService(ANALYSIS__HISTORY_LOG_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.ANALYSIS])
     ],
 	
@@ -39,6 +48,9 @@ module.exports = {
 		[CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP] : ANALYSIS__HISTORY_TRAFFIC_HANDLER.statisticsAccessByApp,
 		[CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_COMPANY] : ANALYSIS__HISTORY_TRAFFIC_HANDLER.statisticsAccessByCompany,
 		[CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP_AND_DEVICE] : ANALYSIS__HISTORY_TRAFFIC_HANDLER.statisticsAccessByAppAndDevice,
+		//==========================================   HISTORY LOG ACTIONS   ================================
+		[CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT] 				: ANALYSIS__HISTORY_LOG_HANDLER.insert,
+		[CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST] : ANALYSIS__HISTORY_LOG_HANDLER.getInfoAndGetList,
 	},
 	
 	/**

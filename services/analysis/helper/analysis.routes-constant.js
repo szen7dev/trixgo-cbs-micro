@@ -2,7 +2,8 @@ const BASE_ROUTE = '/analysis';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
-const HISTORY_TRAFFICS        = '/history_traffics';
+const HISTORY_TRAFFICS          = '/history_traffics';
+const HISTORY_LOGS              = '/history_logs';
 
 const CF_ROUTINGS_ANALYSIS = {
     ORIGIN_APP: BASE_ROUTE,
@@ -14,6 +15,8 @@ const CF_ROUTINGS_ANALYSIS = {
     HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP: `${BASE_ROUTE}${HISTORY_TRAFFICS}/statistics_access_by_app`,
     HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_COMPANY: `${BASE_ROUTE}${HISTORY_TRAFFICS}/statistics_access_by_company`,
     HISTORY_TRAFFIC_STATISTICS_ACCESS_BY_APP_AND_DEVICE: `${BASE_ROUTE}${HISTORY_TRAFFICS}/statistics_access_by_app_and_device`,
+    // HISTORY_TRAFFIC
+    HISTORY_LOGS             : `${BASE_ROUTE}${HISTORY_LOGS}`,
 }
 
 exports.CF_ROUTINGS_ANALYSIS = CF_ROUTINGS_ANALYSIS;

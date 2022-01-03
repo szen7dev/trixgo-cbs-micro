@@ -131,5 +131,84 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: Depv ✅
+     * Func: Thống kê theo tổ chức
+     */
+    statisticsByType: {
+        auth: "required",
+        params: {
+            fromDate : { type: "string" },
+            toDate   : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  fromDate, toDate } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__REGISTER_TRIAL.statisticsByType({
+                    fromDate, toDate
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+
+    /**
+     * Dev: Depv ✅
+     * Func: Thống kê theo năm
+     */
+    statisticsByYear: {
+        auth: "required",
+        params: {
+            year : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { year } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__REGISTER_TRIAL.statisticsByYear({
+                    year
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+
+      /**
+     * Dev: Depv ✅
+     * Func: Thống kê theo công ty
+     */
+    statisticsByCompany: {
+        auth: "required",
+        params: {
+            fromDate : { type: "string" },
+            toDate   : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { fromDate, toDate } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__REGISTER_TRIAL.statisticsByCompany({
+                    fromDate, toDate
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
    
- }
+}

@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         type: Schema.Types.ObjectId,
         ref : 'contract' 
     },
-    
+        
     //_________Loại hành động(1-Xem/2-Thêm/3-Sửa/4-Xóa) thay bằng collection
     type: {
         type: Number,
@@ -23,15 +23,15 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
     },
     
     //_________Thực hiện trên collection nào(VD: Pcm_plan_task, Docs ...)
-    collection: {
+    parentCollection: {
         kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'field.kind' }
+        item: { type: Schema.Types.ObjectId, refPath: 'parentCollection.kind' }
     },
 
     //_________Tác động đến gì(VD: Comment, Phản hồi liên quan)
     subCollection: {
         kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'field.kind' }
+        item: { type: Schema.Types.ObjectId, refPath: 'subCollection.kind' }
     },
 
     //_________Nội dung thực thi hành động vd: Phan Văn Đệ-TRX đã xóa bình luận "Bạn bị làm sao í"

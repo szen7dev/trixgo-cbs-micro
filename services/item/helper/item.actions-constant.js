@@ -8,6 +8,7 @@ const CONTACT           = 'CONTACT';
 const DEPARTMENT        = 'DEPARTMENT';
 const DOCTYPE           = 'DOCTYPE';
 const WAREHOUSE         = 'WAREHOUSE';
+const AREA              = 'AREA';
 
 
 const CF_ACTIONS_ITEM = {
@@ -46,6 +47,11 @@ const CF_ACTIONS_ITEM = {
      * WAREHOUSE
      */
     WAREHOUSE_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${WAREHOUSE}_GET_INFO_AND_GET_LIST`,
+
+    /**
+     * AREA 
+     */
+    AREA_GET_INFO_AND_GET_LIST              : `${BASE_ACTIONS}_${AREA}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

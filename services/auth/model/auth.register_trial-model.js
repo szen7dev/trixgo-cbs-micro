@@ -1,10 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-
+const moment                            = require("moment");
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
@@ -48,7 +48,7 @@ class Model extends BaseModel {
                 if(!fullname)
                     return resolve({ error: true, message: 'Request params fullname invalid', status: 400 });
 
-                if(!organization)
+                if(!checkObjectIDs(organization))
                     return resolve({ error: true, message: 'Request params organization invalid', status: 400 });
 
                 if(!type)
@@ -344,6 +344,136 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name  : Thống kê theo type
+     * Author: Depv
+     * Code  :
+     */
+    statisticsByType({ fromDate, toDate }){
+        return new Promise(async resolve => { 
+            try {
+                if(!fromDate || !toDate)
+                    return resolve({ error: true, message: "Request params fromDate or toDate invalid" });
+
+                let infoData = await AUTH__REGISTER_TRIAL_COLL.aggregate([
+                    {
+                        $match: {
+                            createdAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { 
+                                type:  "$type"
+                            }, 
+                            amount: { $sum: 1 },
+                        } 
+                    },
+                    {
+                        $sort: {
+                            "_id.type": 1
+                        } 
+                    },
+                ])
+                return resolve({ error: false, data: infoData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+	 * Dev: Depv
+	 * Func: Thống kê theo năm
+	 * Date: 13/12/2021
+	 */
+    statisticsByYear({ year }){
+        return new Promise(async resolve => { 
+            try {
+                if(!year || isNaN(year))
+                    return resolve({ error: true, message: "Request params year invalid" });
+
+                let infoData = await AUTH__REGISTER_TRIAL_COLL.aggregate([
+                    {
+                        $match: {
+                            createdAt: { $gte: new Date(`${year}-01-01`), $lt: new Date(`${year}-12-31`) }
+                        }
+                    },
+                    { 
+                        $group: {
+                            _id: { 
+                                month: { $month: "$createdAt" },
+                            }, 
+                            amount: { $sum: 1 },
+                        } 
+                    },
+                    {
+                        $sort: {
+                            "_id.month": 1
+                        } 
+                    },
+                ])
+
+            return resolve({ error: false, data: infoData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+	 * Dev: Depv
+	 * Func: Thống kê theo công ty
+	 * Date: 13/12/2021
+	 */
+    statisticsByCompany({ fromDate, toDate }){
+        return new Promise(async resolve => { 
+            try {
+                if(!fromDate || !toDate)
+                    return resolve({ error: true, message: "Request params fromDate or toDate invalid" });
+
+                let infoData = await AUTH__REGISTER_TRIAL_COLL.aggregate([
+                    {
+                        $match: {
+                            createdAt: { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                        }
+                    },
+                    { 
+                        $group: {
+                            _id: { 
+                                company:  "$organization",
+                            }, 
+                            amount: { $sum: 1 },
+                          } 
+                    },
+                    { 
+                        $lookup: {
+                            from: "companies",
+                            localField:"_id.company",
+                            foreignField: "_id",
+                            as: "company"
+                        } 
+                    },
+                    {
+                        $unwind: "$company"
+                    },
+                    {
+                        $project: {
+                            "company.name": 1,
+                            "amount": 1,
+                            _id: 0
+                            
+                        }
+                    }
+                ])
+            return resolve({ error: false, data: infoData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

@@ -4,12 +4,13 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const _isValid                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
  */
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-constant');
 
 /**
  * TOOLS
@@ -26,6 +27,157 @@ class Model extends BaseModel {
 
     constructor() {
         super(HUMAN__CONTACT_DOCUMENT_COLL);
+    }
+
+    /**
+     * Name: Insert contactDocument ✅
+     * Author: Depv
+     * Code: 
+     */
+    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                if(!_isValid(contactID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                // call service item contact để lấy thông tin
+                let infoContact = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST}`, {
+                    contactID
+                })
+
+                if(!infoContact || infoContact.error)
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                //__________Khai báo và validate dữ liệu
+                let dataInsert = {
+                    userCreate,
+                    company: infoContact.data.company,
+                    contact: contactID,
+                    type: !isNaN(type) ? Number(type) : 1,
+                    number: !isNaN(number) ? Number(number) : 0,
+                    status: (!isNaN(status) && [1,2].includes(Number(status))) ? Number(status) : 1,
+                    certificateGrade: (!isNaN(certificateGrade) && [1,2,3,4].includes(Number(certificateGrade))) ? Number(certificateGrade) : 0,
+                    fromDate, 
+                    toDate, 
+                    workplace, 
+                    reference, 
+                    item, 
+                    project, 
+                    client, 
+                    name, 
+                    place, 
+                    description, 
+                    sign, 
+                    note, 
+                    store,
+                    timeMobilize :!isNaN(timeMobilize) ? Number(timeMobilize) : 0,
+                    factor  : !isNaN(factor) ? Number(factor) : 0
+                }
+
+                if(field2 && _isValid(field2)){
+                    dataInsert.field2 = field2;
+                }
+
+                if(position2 && _isValid(position2)){
+                    dataInsert.position2 = position2;
+                }
+
+                if(certificateType && _isValid(certificateType)){
+                    dataInsert.certificateType = certificateType;
+                }
+
+                if(certificateName && _isValid(certificateName)){
+                    dataInsert.certificateName = certificateName;
+                }
+                
+                if(educationalBackground2 && _isValid(educationalBackground2)){
+                    dataInsert.educationalBackground2 = educationalBackground2;
+                }
+
+                if(contract && _isValid(contract)){
+                    dataInsert.contract = contract;
+                }
+                // console.log(dataInsert)
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+                // console.log(infoAfterInsert)
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "cannot_insert" });
+
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+    
+    /**
+     * Name: Update contactDocument ✅
+     * Author: Depv
+     * Code: 
+     */
+    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!_isValid(authorID) || !_isValid(documentID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                let dataUpdate = {
+                    userUpdate: authorID,
+                    modifyAt: Date.now(),
+                    number: !isNaN(number) ? Number(number) : 0,
+                    status: (!isNaN(status) && [1,2].includes(Number(status))) ? Number(status) : 1,
+                    certificateGrade: (!isNaN(certificateGrade) && [0,1,2,3,4,5].includes(Number(certificateGrade))) ? Number(certificateGrade) : 0,
+                    fromDate, 
+                    toDate, 
+                    workplace, 
+                    reference, 
+                    item, 
+                    project, 
+                    client, 
+                    name, 
+                    place, 
+                    description, 
+                    sign, 
+                    note, 
+                    store,
+                    timeMobilize : !isNaN(timeMobilize) ? Number(timeMobilize) : 0,
+                    factor: !isNaN(factor) ? Number(factor) : 0,
+                }
+
+                if(field2 && _isValid(field2)){
+                    dataUpdate.field2 = field2;
+                }
+
+                if(position2 && _isValid(position2)){
+                    dataUpdate.position2 = position2;
+                }
+
+                if(certificateType && _isValid(certificateType)){
+                    dataUpdate.certificateType = certificateType;
+                }
+
+                if(certificateName && _isValid(certificateName)){
+                    dataUpdate.certificateName = certificateName;
+                }
+
+                if(educationalBackground2 && _isValid(educationalBackground2)){
+                    dataUpdate.educationalBackground2 = educationalBackground2;
+                }
+
+                if(contract && _isValid(contract)){
+                    dataUpdate.contract = contract;
+                }
+
+                let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 
     /**

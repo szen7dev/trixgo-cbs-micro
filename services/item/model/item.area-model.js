@@ -92,7 +92,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { 
-                    company: companyID
+                    level: 3
                 };
 
                 let conditionFind = { };
@@ -129,9 +129,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!checkObjectIDs(companyID))
-                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -161,8 +158,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                
-                let infoDataAfterGet = await ITEM__AREA_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await ITEM__AREA_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)

@@ -12,7 +12,7 @@ module.exports = {
     
     /**
 	 * Dev: Depv ✅
-	 * Func: Danh sách doctype
+	 * Func: Danh sách area
 	 */
     getInfoAndGetList: {
         params: {
@@ -29,7 +29,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { areaID,  keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
+                
                 let resultAfterCallHandler;
                 if(areaID){
                     resultAfterCallHandler = await ITEM__AREA_MODEL.getInfo({
