@@ -11,6 +11,8 @@ const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-han
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
+const AUTH__APP_COLL				= require('./database/permission/auth.app-coll');
+const AUTH__APP_MENU_COLL			= require('./database/permission/auth.app_menu-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
@@ -18,6 +20,8 @@ module.exports = {
 		DbService(AUTH__COMPANY_COLL),
 		DbService(AUTH__USER_COLL),
 		DbService(AUTH__REGISTER_TRIAL_COLL),
+		DbService(AUTH__APP_COLL),
+		DbService(AUTH__APP_MENU_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**
@@ -81,24 +85,23 @@ module.exports = {
 
 		[CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA] 							: AUTH__USER_HANDLER.updatePinMedia,
 		[CF_ACTIONS_AUTH.GET_LIST_PIN_MEDIA]						: AUTH__USER_HANDLER.getListPinMedia,
-
-		// KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
+		
+		// Khu vực viết theo cách mới
 		[CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST]				: AUTH__USER_HANDLER.getInfoAndGetList,
 		
-		/**
-		 * KHU VỰC DÀNH CHO COMPANY
-		 */
+		// Company
 		[CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
 		
-		/**
-		 * KHU VỰC DÀNH CHO REGISTER_TRIAL
-		 */
+		// Register trial
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT]						: AUTH__REGISTER_TRIAL_HANDLER.insert,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE]						: AUTH__REGISTER_TRIAL_HANDLER.update,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_REMOVE]						: AUTH__REGISTER_TRIAL_HANDLER.remove,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_GET_INFO_AND_GET_LIST]		: AUTH__REGISTER_TRIAL_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_TYPE]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByType,
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_YEAR]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByYear,
+		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_COMPANY]		: AUTH__REGISTER_TRIAL_HANDLER.statisticsByCompany,
 	},
-
+	
 	/**
 	* Events
 	*/

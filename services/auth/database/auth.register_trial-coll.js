@@ -9,11 +9,14 @@ module.exports  = DATABASE_MIDDLEWARE("register_trial", {
     //_______Họ và tên
     fullname: String,
 
-    //_______Tên công ty/tổ chức
-    organization: String,
-
+    //_______công ty/tổ chức
+    organization: {
+        type: Schema.Types.ObjectId,
+        ref: "company"
+    },
+    
     //_______Loại hình doanh nghiệp(1-Doanh nghiệp/2-Cơ quan hành chính công/3-Đại học, cao đẳng/ 4- Khác)
-    type: {
+    type: { 
         type: Number, default: 1,
     },
 
@@ -25,10 +28,4 @@ module.exports  = DATABASE_MIDDLEWARE("register_trial", {
 
     //_______Ghi chú
     note: String,
-
-    //_______Người cập nhật cuối cùng
-    userUpdate: {
-        type: Schema.Types.ObjectId,
-        ref: "user"
-    }
 })

@@ -92,7 +92,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         ref : "doctype"
     },
     //_________Hạng chứng chỉ (1/2/3/4-Nếu)
-    certificateGrade: { type: Number, default: 0 },
+    certificateGrade: { type: Number, default: 1 },
     // Thời gian quy động
     timeMobilize : {
         type: Number,

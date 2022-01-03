@@ -65,7 +65,7 @@ class Model extends BaseModel {
                     companyID = infoProject.data.company;
                     if(!companyID)
                         return res.json({ error: true, message: "company_invalid" }); 
-
+                    
                 }else{
                     // Lấy thông tin công ty theo công việc cha
                     let infoTaskParent = await this.getInfo({ taskID: parentID, userID });
@@ -437,7 +437,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
         contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
     }){ 
         return new Promise(async (resolve) => {
             try {   
@@ -685,6 +685,10 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
+                if(checkObjectIDs(lastLogID)){
+                    dataUpdate.lastLog = lastLogID;
+                }
+                
                 let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
                 
                 if(!infoAterUpdate)
@@ -760,7 +764,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
-        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -816,14 +820,6 @@ class Model extends BaseModel {
                     { related: { $in: [userID] }},
                     { group: { $in: listGroups.map(item => item._id) }},
                 ]
-
-                // Kiểm tra điều kiện filter
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 
                 // Kiểm tra điều kiện populates
                 if(populates && typeof populates === 'string'){
@@ -1012,9 +1008,10 @@ class Model extends BaseModel {
                 }
 
                 // Bắt đầu query trong db
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
                     .lean();
                 

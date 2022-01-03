@@ -1,6 +1,6 @@
 //FILE CONFIG || VARIABLE CONSTANT
 // exports.ONE_SIGNAL__APP_ID              = '79acfc09-966a-48f5-a9ea-44d90410014f';
-exports.ONESIGNAL_APP_TEASER                = process.env.ONESIGNAL_APP_TEASER  || '8d5db406-1628-4a23-bf40-8bb53bf582ba';
+exports.ONESIGNAL_APP_TEASER                = process.env.ONESIGNAL_APP_TEASER  || '79acfc09-966a-48f5-a9ea-44d90410014f';
 exports.ONESIGNAL_APP_CBS                   = process.env.ONESIGNAL_APP_CBS     || '79acfc09-966a-48f5-a9ea-44d90410014f';
 
 exports.NOTI_TYPE_MOBILE                = 'NOTI_TYPE_MOBILE';

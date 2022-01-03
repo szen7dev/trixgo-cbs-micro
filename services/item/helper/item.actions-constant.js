@@ -8,6 +8,8 @@ const CONTACT           = 'CONTACT';
 const DEPARTMENT        = 'DEPARTMENT';
 const DOCTYPE           = 'DOCTYPE';
 const WAREHOUSE         = 'WAREHOUSE';
+const AREA              = 'AREA';
+const POSITION          = 'POSITION';
 
 
 const CF_ACTIONS_ITEM = {
@@ -37,12 +39,25 @@ const CF_ACTIONS_ITEM = {
      /**
      * CONTACT
      */
+    CONTACT_INSERT                          : `${BASE_ACTIONS}_${CONTACT}_INSERT`,
+    CONTACT_UPDATE                          : `${BASE_ACTIONS}_${CONTACT}_UPDATE`,
+    CONTACT_REMOVE                          : `${BASE_ACTIONS}_${CONTACT}_REMOVE`,
     CONTACT_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${CONTACT}_GET_INFO_AND_GET_LIST`,
 
     /**
      * WAREHOUSE
      */
     WAREHOUSE_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${WAREHOUSE}_GET_INFO_AND_GET_LIST`,
+
+    /**
+     * AREA 
+     */
+    AREA_GET_INFO_AND_GET_LIST              : `${BASE_ACTIONS}_${AREA}_GET_INFO_AND_GET_LIST`,
+
+    /**
+     * POSITION 
+     */
+    POSITION_GET_INFO_AND_GET_LIST              : `${BASE_ACTIONS}_${POSITION}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

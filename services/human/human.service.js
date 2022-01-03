@@ -12,20 +12,17 @@ const { CF_ACTIONS_CONTACT }			= require('./helper/human.actions-constant');
 /**
  * HANDLERS
  */
-const CONTACT_HANDLER					= require('./handler/human.contact-hanlder');
 const CONTACT_DOCUMENT_HANDLER			= require('./handler/human.contact_document-handler');
 
 /**
  * COLLECTIONS
  */
-const CONTACT_COLL 						= require('./database/human.contact-coll');
 const CONTACT_DOCUMENT_COLL 			= require('./database/human.contact_document-coll');
 
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.HUMAN,
 	mixins: [
-		DbService(CONTACT_COLL),
 		DbService(CONTACT_DOCUMENT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.HUMAN])
     ],
@@ -49,14 +46,11 @@ module.exports = {
 	*/
 	actions: {
 		// ==================== CONTACT DOCUMENT ACTIONS ========================
-		[CF_ACTIONS_CONTACT.GET_LIST_CONTACT_DOCUMENT]				: CONTACT_DOCUMENT_HANDLER.getListContactDocument,
-		[CF_ACTIONS_CONTACT.INFO_CONTACT_DOCUMENT]					: CONTACT_DOCUMENT_HANDLER.getInfoContactDocument,
-
-		// ==================== CONTACT ACTIONS ========================
-		// [CF_ACTIONS_CONTACT.GET_LIST_CONTACT] 						: CONTACT_HANDLER.getListContact,
-		// [CF_ACTIONS_CONTACT.INFO_CONTACT] 							: CONTACT_HANDLER.getInfoContact,
+		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_GET_INFO_AND_GET_LIST] : CONTACT_DOCUMENT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_INSERT] : CONTACT_DOCUMENT_HANDLER.insert,
+		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_UPDATE] : CONTACT_DOCUMENT_HANDLER.update,
 	},
-
+	
 	/**
 	* Events
 	*/

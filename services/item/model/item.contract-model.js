@@ -1017,6 +1017,7 @@ class Model extends BaseModel {
                     let regSearch = new RegExp(keyword, 'i');
                     conditionObj.name = regSearch
                 }
+                
                 let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)

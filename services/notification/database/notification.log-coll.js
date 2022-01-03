@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("notification_logs", {
+module.exports  = DATABASE_MIDDLEWARE("notification_log", {
     /**
      * 1 - InApp (Socket)
      * 2 - Web Push (Service Worker)

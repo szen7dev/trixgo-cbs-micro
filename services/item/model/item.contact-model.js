@@ -8,7 +8,7 @@ const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playg
 
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const _isValid                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
@@ -26,6 +26,403 @@ class Model extends BaseModel {
 
     constructor() {
         super(ITEM__CONTACT_COLL);
+    }
+
+    /**
+     * Name: Thêm danh bạ, nhân sự ✅
+     * Author: Depv
+     * Code: 
+     */
+    insert({ company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+        insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+    }) {
+        return new Promise(async resolve => {
+            try {
+                if(!name || !_isValid(company) || !_isValid(authorID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                //___________Kiểm tra việc trùng mã hiệu
+                let conditionObj = {
+                    company: company
+                };
+                if((sign && sign != "") || (taxid && taxid != "")){
+                    conditionObj.$or = []
+                }
+                if((sign && sign != "")){
+                    conditionObj.$or.push({sign: sign})
+                }
+                if((taxid && taxid != "")){
+                    conditionObj.$or.push({taxid: taxid})
+                }
+                let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
+                if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
+                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+
+                let dataInsert = {
+                    company,
+                    inCRM: 1,
+                    inHuman: 0,
+                    inTimesheet: 0,
+                    inFinancial: 1,
+                    inDocument: 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
+                    name, 
+                    description,
+                    sign, 
+                    address, 
+                    taxid,
+                    birthday,
+                    phone,
+                    email,
+                    status: status ? Number(status) : Number(1)
+                }
+
+                if(gender && !isNaN(gender)){
+                    dataInsert.gender = gender;
+                }
+                if(department && _isValid(department)){
+                    dataInsert.department = department;
+                }
+                if(position && _isValid(position)){
+                    dataInsert.position = position;
+                }
+                if(linkUser && _isValid(linkUser)){
+                    dataInsert.linkUser = linkUser;
+                }
+                if(linkSale && _isValid(linkSale)){
+                    dataInsert.linkSale = linkSale;
+                }
+                if(field && _isValid(field)){
+                    dataInsert.field = field;
+                }
+                if(property && _isValid(property)){
+                    dataInsert.property = property;
+                }
+
+                if(parent && _isValid(parent)){
+                    dataInsert.parent = parent;
+                    let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
+                    dataInsert.level = infoMenuParent.level + 1;
+                }
+
+                if(workingStatus && _isValid(workingStatus)){
+                    dataInsert.workingStatus = workingStatus;
+                }
+
+                if(realStatus){
+                    dataInsert.realStatus = realStatus;
+                }
+
+                if(insuranceStatus){
+                    dataInsert.insuranceStatus = insuranceStatus;
+                }
+
+                if(familyPolicy){
+                    dataInsert.familyPolicy = familyPolicy;
+                }
+
+                if(contractType && _isValid(contractType)){
+                    dataInsert.contractType = contractType;
+                }
+
+                if(contractSign){
+                    dataInsert.contractSign = contractSign;
+                }
+
+                if(family){
+                    dataInsert.family = family;
+                }
+
+                if(identity){
+                    dataInsert.identity = identity;
+                }
+
+                if(dateProvice){
+                    dataInsert.dateProvice = dateProvice;
+                }
+
+                if(place){
+                    dataInsert.place = place;
+                }
+
+                if(area){
+                    dataInsert.area = area;
+                }
+
+                if(area1){
+                    dataInsert.area1 = area1;
+                }
+
+                if(area2){
+                    dataInsert.area2 = area2;
+                }
+
+                if(insuranceSign){
+                    dataInsert.insuranceSign = insuranceSign;
+                }
+                
+                if(insuranceDate){
+                    dataInsert.insuranceDate = insuranceDate;
+                }
+
+                if(sallaryFactor){
+                    dataInsert.sallaryFactor = sallaryFactor;
+                }
+
+                if(sallarySubFactor){
+                    dataInsert.sallarySubFactor = sallarySubFactor;
+                }
+
+                if(sallaryBasic){
+                    dataInsert.sallaryBasic = sallaryBasic;
+                }
+
+                if(signerIn){
+                    dataInsert.signerIn = signerIn;
+                }
+
+                if(signerOut){
+                    dataInsert.signerOut = signerOut;
+                }
+
+                if(workStartDate){
+                    dataInsert.workStartDate = workStartDate;
+                }
+
+                if(dayOff){
+                    dataInsert.dayOff = dayOff;
+                }
+
+                if(appointDate){
+                    dataInsert.appointDate = appointDate;
+                }
+
+                if(changeSallaryDate){
+                    dataInsert.changeSallaryDate = changeSallaryDate;
+                }
+
+                if(contractDate){
+                    dataInsert.contractDate = contractDate;
+                }
+
+                if(contractValid){
+                    dataInsert.contractValid = contractValid;
+                }
+
+                if(contractExpire){
+                    dataInsert.contractExpire = contractExpire;
+                }
+
+                let infoAfterInsert = await this.insertData(dataInsert, authorID);
+                if(parent) {
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
+                        $addToSet: { childs: infoAfterInsert._id } 
+                    }, { new: true });
+                }
+                
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+    
+    /**
+     * Name: update danh bạ, nhân sự ✅
+     * Author: Depv
+     * Code: 
+     */
+    update({ contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+        insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!name || !_isValid(company) || !_isValid(authorID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                //___________Kiểm tra việc trùng mã hiệu
+                let conditionObj = {
+                    company: company,
+                    _id: { $ne: contactID } 
+                };
+                if((sign && sign != "") || (taxid && taxid != "")){
+                    conditionObj.$or = []
+                }
+                if((sign && sign != "")){
+                    conditionObj.$or.push({sign: sign})
+                }
+                if((taxid && taxid != "")){
+                    conditionObj.$or.push({taxid: taxid})
+                }
+                
+                let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
+                if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
+                    return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+
+                let dataUpdate = {
+                    company,
+                    inCRM: 1,
+                    inHuman: 0,
+                    inTimesheet: 0,
+                    inFinancial: 1,
+                    inDocument: 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
+                    name, 
+                    description,
+                    sign, 
+                    address, 
+                    taxid,
+                    birthday,
+                    phone,
+                    email,
+                    status: status ? Number(status) : Number(1)
+                }
+
+                if(gender && !isNaN(gender)){
+                    dataUpdate.gender = gender;
+                }
+                if(department && _isValid(department)){
+                    dataUpdate.department = department;
+                }
+                if(position && _isValid(position)){
+                    dataUpdate.position = position;
+                }
+                if(linkUser && _isValid(linkUser)){
+                    dataUpdate.linkUser = linkUser;
+                }
+                if(linkSale && _isValid(linkSale)){
+                    dataUpdate.linkSale = linkSale;
+                }
+                if(field && _isValid(field)){
+                    dataUpdate.field = field;
+                }
+                if(property && _isValid(property)){
+                    dataUpdate.property = property;
+                }
+
+                if(parent && _isValid(parent)){
+                    dataUpdate.parent = parent;
+                    let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
+                    dataUpdate.level = infoMenuParent.level + 1;
+                }
+
+                if(workingStatus && _isValid(workingStatus)){
+                    dataUpdate.workingStatus = workingStatus;
+                }
+
+                if(realStatus){
+                    dataUpdate.realStatus = realStatus;
+                }
+
+                if(insuranceStatus){
+                    dataUpdate.insuranceStatus = insuranceStatus;
+                }
+
+                if(familyPolicy){
+                    dataUpdate.familyPolicy = familyPolicy;
+                }
+
+                if(contractType && _isValid(contractType)){
+                    dataUpdate.contractType = contractType;
+                }
+
+                if(contractSign){
+                    dataUpdate.contractSign = contractSign;
+                }
+
+                if(family){
+                    dataUpdate.family = family;
+                }
+
+                if(identity){
+                    dataUpdate.identity = identity;
+                }
+
+                if(dateProvice){
+                    dataUpdate.dateProvice = dateProvice;
+                }
+
+                if(place){
+                    dataUpdate.place = place;
+                }
+
+                if(area){
+                    dataUpdate.area = area;
+                }
+
+                if(area1){
+                    dataUpdate.area1 = area1;
+                }
+
+                if(area2){
+                    dataUpdate.area2 = area2;
+                }
+
+                if(insuranceSign){
+                    dataUpdate.insuranceSign = insuranceSign;
+                }
+                
+                if(insuranceDate){
+                    dataUpdate.insuranceDate = insuranceDate;
+                }
+
+                if(sallaryFactor){
+                    dataUpdate.sallaryFactor = sallaryFactor;
+                }
+
+                if(sallarySubFactor){
+                    dataUpdate.sallarySubFactor = sallarySubFactor;
+                }
+
+                if(sallaryBasic){
+                    dataUpdate.sallaryBasic = sallaryBasic;
+                }
+
+                if(signerIn){
+                    dataUpdate.signerIn = signerIn;
+                }
+
+                if(signerOut){
+                    dataUpdate.signerOut = signerOut;
+                }
+
+                if(workStartDate){
+                    dataUpdate.workStartDate = workStartDate;
+                }
+
+                if(dayOff){
+                    dataUpdate.dayOff = dayOff;
+                }
+
+                if(appointDate){
+                    dataUpdate.appointDate = appointDate;
+                }
+
+                if(changeSallaryDate){
+                    dataUpdate.changeSallaryDate = changeSallaryDate;
+                }
+
+                if(contractDate){
+                    dataUpdate.contractDate = contractDate;
+                }
+
+                if(contractValid){
+                    dataUpdate.contractValid = contractValid;
+                }
+
+                if(contractExpire){
+                    dataUpdate.contractExpire = contractExpire;
+                }
+
+                let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 
     /**
@@ -83,7 +480,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, type,
         keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -146,6 +543,10 @@ class Model extends BaseModel {
                 //____________Công ty
                 if(companyID){
                     conditionObj.company = companyID
+                }
+
+                if(type){
+                    conditionObj.type = type
                 }
 
                 // PHÂN TRANG KIỂU MỚI

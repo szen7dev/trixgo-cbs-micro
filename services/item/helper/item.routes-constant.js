@@ -7,6 +7,8 @@ const CONTRACT   = '/contracts';
 const DOCTYPE    = '/doctypes';
 const CONTACT    = '/contacts';
 const WAREHOUSE  = '/warehouses';
+const AREA       = '/areas';
+const POSITION   = '/positions';
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
@@ -25,6 +27,12 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================WAREHOUSE=======================================//
     WAREHOUSES                                 : `${BASE_ROUTE}${WAREHOUSE}`,
+
+    // ================================AREA=======================================//
+    AREA                                       : `${BASE_ROUTE}${AREA}`,
+
+    // ================================POSITION=======================================//
+    POSITION                                   : `${BASE_ROUTE}${POSITION}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;
