@@ -1550,7 +1550,11 @@ class Model extends BaseModel {
 					conditionObj._id = { $nin: listConversationPin.data };
 
 					listConversationPin = await CHATTING__CONVERSATION_COLL
-						.find({ _id: { $in: listConversationPin.data }, usersHide: { $nin: [userID] } }, filter)
+						.find({ 
+							_id: { $in: listConversationPin.dat },
+							members: { $in: [userID] },
+							usersHide: { $nin: [userID] } 
+						}, filter)
 						.populate('members', select.members)
 						.populate({
 							path: 'lastMessage',

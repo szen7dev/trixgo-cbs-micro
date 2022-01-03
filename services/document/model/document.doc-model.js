@@ -376,7 +376,7 @@ class Model extends BaseModel {
 	 * Func: Chi tiết hồ sơ văn bản
 	 * Date: 12/11/2021
 	 */
-    getInfoDocumment({ userID, documentID, select }){
+    getInfoDocumment({ userID, documentID, select, populates }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs([documentID, userID])) {
@@ -401,6 +401,19 @@ class Model extends BaseModel {
                     select = JSON.parse(select);
                 }
 
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates)) {
+                        return resolve({ 
+                            error: true, 
+                            message: 'Request params populates invalid', 
+                            keyError: 'params_populates_invalid',
+                            status: 400 
+                        });
+                    }
+
+					populates = JSON.parse(populates);
+				}
+
                 let checkPermission = await DOCUMENT__USER_COLL
                     .findOne({
                         document: documentID,
@@ -419,19 +432,7 @@ class Model extends BaseModel {
 
                 const infoDocument = await DOCUMENT__DOC_COLL
                     .findById(documentID)
-                    .populate('company', select.company)
-                    .populate('project', select.project)
-                    .populate('contract', select.contract)
-                    .populate('package', select.package)
-                    .populate('field', select.field)
-                    .populate('property', select.property)
-                    .populate('other', select.other)
-                    .populate('storage', select.storage)
-                    .populate('sender', select.sender)
-                    .populate('receiver', select.receiver)
-                    .populate('author', select.author)
-                    .populate('userUpdate', select.userUpdate)
-                    .populate('childs', select.childs)
+                    .populate(populates)
                     .lean();
 
                 if(!infoDocument) {
@@ -443,21 +444,21 @@ class Model extends BaseModel {
                     });
                 }
 
-                const listFilesAttachment = await DOCUMENT__FILE_COLL
-                    .find({ document: documentID })
-                    .select('file user')
-                    .populate({
-                        path: 'file',
-                        select: '_id name url size'
-                    })
-                    .populate({
-                        path: 'user',
-                        select: '_id bizname fullname image'
-                    })
-                    .sort({ createAt: -1 })
-                    .lean();
+                // const listFilesAttachment = await DOCUMENT__FILE_COLL
+                //     .find({ document: documentID })
+                //     .select('file user')
+                //     .populate({
+                //         path: 'file',
+                //         select: '_id name url size'
+                //     })
+                //     .populate({
+                //         path: 'user',
+                //         select: '_id bizname fullname image'
+                //     })
+                //     .sort({ createAt: -1 })
+                //     .lean();
 
-                infoDocument.files = listFilesAttachment;
+                // infoDocument.files = listFilesAttachment;
 
                 return resolve({ error: false, data: infoDocument, status: 200 });
             } catch (error) {
@@ -473,7 +474,7 @@ class Model extends BaseModel {
 	 */
     getListDocument({ 
         companyID, departmentID, packageID, doctypeID, senderID, contractID, userID, lastestID, 
-        requestResponse, marked, type, keyword, limit = 20, filter = {}, select = {} 
+        requestResponse, marked, type, keyword, limit = 20, filter = {}, select = {}, populates = {}
     }){
         return new Promise(async resolve => {
             try {
@@ -516,6 +517,19 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
 
 					select = JSON.parse(select);
+				}
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates)) {
+                        return resolve({ 
+                            error: true, 
+                            message: 'Request params populates invalid', 
+                            keyError: 'params_populates_invalid',
+                            status: 400 
+                        });
+                    }
+
+					populates = JSON.parse(populates);
 				}
 
 				let conditionObj 	= {};

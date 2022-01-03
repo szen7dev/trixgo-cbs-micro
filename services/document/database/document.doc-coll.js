@@ -122,6 +122,11 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref: "document_doc"
     }],
+    //_________File đính kèm hồ sơ
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: "file_core"
+    }],
     //_________Ký xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,

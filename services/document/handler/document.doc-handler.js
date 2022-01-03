@@ -162,16 +162,17 @@ module.exports = {
     getInfoDocumment: {
         params: {
 			documentID : { type: "string" },
+            populates  : { type: "string", optional: true },
 			select     : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { documentID, select } = ctx.params;
+                const { documentID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getInfoDocumment({
-                    userID, documentID, select
+                    userID, documentID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -200,6 +201,7 @@ module.exports = {
 			requestResponse : { type: "string", optional: true },
 			type            : { type: "string", optional: true },
 			marked          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
         },
@@ -209,12 +211,12 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { 
                     lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, 
-                    requestResponse, marked, type, keyword, limit, select, filter
+                    requestResponse, marked, type, keyword, limit, select, filter, populates
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDocument({
                     lastestID, departmentID, companyID, packageID, doctypeID, senderID, contractID, userID, 
-                    requestResponse, marked, type, keyword, limit, select, filter
+                    requestResponse, marked, type, keyword, limit, select, filter, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
