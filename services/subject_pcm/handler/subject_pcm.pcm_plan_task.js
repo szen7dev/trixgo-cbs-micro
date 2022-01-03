@@ -11,7 +11,7 @@ const SUBJECT_PCM__PCM_PLAN_TASK_MODEL            = require('../model/subject_pc
 module.exports = {
     /**
 	 * Dev: Depv ✅
-	 * Func: insert pcm_plan_report
+	 * Func: insert pcm_plan_task
 	 */
     insert: {
         auth: "required",
@@ -66,10 +66,10 @@ module.exports = {
 
     /**
 	 * Dev: Depv ✅
-	 * Func: update pcm_plan_report
+	 * Func: update pcm_plan_task
 	 */
     update: {
-        auth: "required",
+        // auth: "required",
         params: {
             taskID         : { type: "string" },
             sign           : { type: "string", optional: true },
@@ -87,30 +87,32 @@ module.exports = {
             draft          : { type: "number", optional: true },
             isproposal     : { type: "number", optional: true },
             userIDDelete   : { type: "number", optional: true },
-            typeUpdate    : { type: "number", optional: true },
-            flags         : { type: "array", optional: true },
-            related       : { type: "array", optional: true },
-            
+            typeUpdate     : { type: "number", optional: true },
+            flags          : { type: "array", optional: true },
+            related        : { type: "array", optional: true },
+            lastLogID      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
+                console.log({ ctx });
+
                 await this.validateEntity(ctx.params);
-                let { 
+
+                let {
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
                     contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-
                 // Bước check quyền
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
                     contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

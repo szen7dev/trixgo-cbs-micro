@@ -11,7 +11,7 @@ const moment                            = require('moment')
  * DOMAIN AND ACTIONS
  */
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
+const { CF_ACTIONS_SUBJECT_PCM } 	    = require('../../subject_pcm/helper/subject_pcm.actions-constant');
 
 /**
  * TOOLS
@@ -35,7 +35,7 @@ class Model extends BaseModel {
 	 * Func: Tạo history log
 	 * Date: 13/12/2021
 	 */
-	insert({ project, contract, type, parentCollection, subCollection, content, userCreate}){
+	insert({ project, contract, type, parentCollection, subCollection, content, userCreate, ctx}){
         return new Promise(async resolve => { 
             try {
                 let dataInsert = { userCreate }; 
@@ -65,6 +65,21 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Cannot_insert_history_log" })
+                console.log({ infoAfterInsert });
+
+                if(parentCollection){
+                    if(parentCollection.kind == "pcm_plan_task"){
+                        // let infoTaskAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_UPDATE}`, {
+                        //     taskID: parentCollection.item, lastLogID: infoAfterInsert._id
+                        // })
+                        let infoTaskAfterUpdate = await ctx.call(`subject_pcm.ACT_SUBJECT_PCM_PCM_PLAN_TASK_UPDATE`, {
+                            taskID: parentCollection.item, lastLogID: infoAfterInsert._id
+                        })
+                        console.log({ infoTaskAfterUpdate });
+                    }
+                }
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

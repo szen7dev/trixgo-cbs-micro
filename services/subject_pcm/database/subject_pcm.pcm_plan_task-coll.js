@@ -230,10 +230,14 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "file_core"
     }],
-    //_________Hoạt động cuối cùng
+    //_________Hoạt động cuối cùng(bỏ thay bằng history_log)
+    // lastLog: {
+    //     type   : Schema.Types.ObjectId,
+    //     ref: 'pcm_plan_log'
+    // },
     lastLog: {
         type   : Schema.Types.ObjectId,
-        ref: 'pcm_plan_log'
+        ref: 'history_log'
     },
     /**
      * THÔNG TIN VỀ THỜI HẠN
