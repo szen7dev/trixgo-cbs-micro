@@ -37,6 +37,12 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
     //_________Nội dung thực thi hành động vd: Phan Văn Đệ-TRX đã xóa bình luận "Bạn bị làm sao í"
     content: String,
 
+    //_________Công ty của người thực thi hành động
+    companyOfAuthor: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+
     //_________User thực thi hành động
     userCreate: {
         type    : Schema.Types.ObjectId,
