@@ -8,8 +8,8 @@ const Schema    = require('mongoose').Schema;
  */
 module.exports  = DATABASE_MIDDLEWARE("position", {
     /**
-         * Thuộc về công ty nào
-         */    
+     * Thuộc về công ty nào
+     */    
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"

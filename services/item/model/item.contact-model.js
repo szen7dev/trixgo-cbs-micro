@@ -33,7 +33,10 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ company, authorID, parent, type, name, description, sign, address, area, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale }) {
+    insert({ company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+        insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+    }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !_isValid(company) || !_isValid(authorID))
@@ -104,6 +107,114 @@ class Model extends BaseModel {
                     dataInsert.level = infoMenuParent.level + 1;
                 }
 
+                if(workingStatus && _isValid(workingStatus)){
+                    dataInsert.workingStatus = workingStatus;
+                }
+
+                if(realStatus){
+                    dataInsert.realStatus = realStatus;
+                }
+
+                if(insuranceStatus){
+                    dataInsert.insuranceStatus = insuranceStatus;
+                }
+
+                if(familyPolicy){
+                    dataInsert.familyPolicy = familyPolicy;
+                }
+
+                if(contractType && _isValid(contractType)){
+                    dataInsert.contractType = contractType;
+                }
+
+                if(contractSign){
+                    dataInsert.contractSign = contractSign;
+                }
+
+                if(family){
+                    dataInsert.family = family;
+                }
+
+                if(identity){
+                    dataInsert.identity = identity;
+                }
+
+                if(dateProvice){
+                    dataInsert.dateProvice = dateProvice;
+                }
+
+                if(place){
+                    dataInsert.place = place;
+                }
+
+                if(area){
+                    dataInsert.area = area;
+                }
+
+                if(area1){
+                    dataInsert.area1 = area1;
+                }
+
+                if(area2){
+                    dataInsert.area2 = area2;
+                }
+
+                if(insuranceSign){
+                    dataInsert.insuranceSign = insuranceSign;
+                }
+                
+                if(insuranceDate){
+                    dataInsert.insuranceDate = insuranceDate;
+                }
+
+                if(sallaryFactor){
+                    dataInsert.sallaryFactor = sallaryFactor;
+                }
+
+                if(sallarySubFactor){
+                    dataInsert.sallarySubFactor = sallarySubFactor;
+                }
+
+                if(sallaryBasic){
+                    dataInsert.sallaryBasic = sallaryBasic;
+                }
+
+                if(signerIn){
+                    dataInsert.signerIn = signerIn;
+                }
+
+                if(signerOut){
+                    dataInsert.signerOut = signerOut;
+                }
+
+                if(workStartDate){
+                    dataInsert.workStartDate = workStartDate;
+                }
+
+                if(dayOff){
+                    dataInsert.dayOff = dayOff;
+                }
+
+                if(appointDate){
+                    dataInsert.appointDate = appointDate;
+                }
+
+                if(changeSallaryDate){
+                    dataInsert.changeSallaryDate = changeSallaryDate;
+                }
+
+                if(contractDate){
+                    dataInsert.contractDate = contractDate;
+                }
+
+                if(contractValid){
+                    dataInsert.contractValid = contractValid;
+                }
+
+                if(contractExpire){
+                    dataInsert.contractExpire = contractExpire;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 if(parent) {
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
@@ -123,7 +234,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ contactID, company, name, description, province, gender, type, authorID, sign, address, taxid, department, position, birthday, phone, email, status, field, property, linkSale }){
+    update({ contactID, company, name, description, province, gender, type, authorID, sign, address, taxid, department, position, birthday, phone, email, status, field, property, linkSale,  }){
         return new Promise(async (resolve) => {
             try {
                 if(!name || !_isValid(authorID) || !_isValid(contactID))

@@ -30,7 +30,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ANALYSIS__HISTORY_LOG_MODEL.insert({
-                    project, contract, type, parentCollection, subCollection, content, userCreate: userID
+                    project, contract, type, parentCollection, subCollection, content, userCreate: userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

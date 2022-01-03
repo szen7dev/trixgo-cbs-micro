@@ -22,19 +22,19 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         default: 1
     },
     
-    //_________Thực hiện trên collection nào(VD: Pcm_plan_task, Docs ...)
+    //_________Thực hiện trên collection nào(VD: pcm_plan_task, document ...)
     parentCollection: {
         kind: String,
         item: { type: Schema.Types.ObjectId, refPath: 'parentCollection.kind' }
     },
-
+    
     //_________Tác động đến gì(VD: Comment, Phản hồi liên quan)
     subCollection: {
         kind: String,
         item: { type: Schema.Types.ObjectId, refPath: 'subCollection.kind' }
     },
 
-    //_________Nội dung thực thi hành động vd: Phan Văn Đệ-TRX đã xóa bình luận "Bạn bị làm sao í"
+    //_________Nội dung thực thi hành động VD: Phan Văn Đệ-TRX đã xóa bình luận "Bạn bị làm sao í"
     content: String,
 
     //_________Công ty của người thực thi hành động
