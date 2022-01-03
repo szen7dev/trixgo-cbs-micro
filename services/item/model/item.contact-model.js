@@ -234,18 +234,18 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ contactID, company, name, description, province, gender, type, authorID, sign, address, taxid, department, position, birthday, phone, email, status, field, property, linkSale,  }){
+    update({ contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+        insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire }){
         return new Promise(async (resolve) => {
             try {
-                if(!name || !_isValid(authorID) || !_isValid(contactID))
+                if(!name || !_isValid(company) || !_isValid(authorID))
                     return resolve({ error: true, message: 'param_not_valid' });
 
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
                     company: company,
-                    _id: {
-                        $ne: contactID
-                    }
+                    _id: { $ne: contactID } 
                 };
                 if((sign && sign != "") || (taxid && taxid != "")){
                     conditionObj.$or = []
@@ -256,58 +256,169 @@ class Model extends BaseModel {
                 if((taxid && taxid != "")){
                     conditionObj.$or.push({taxid: taxid})
                 }
-                let infoContact = await CONTACT_COLL.findOne(conditionObj);
+                
+                let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
+
                 let dataUpdate = {
+                    company,
+                    inCRM: 1,
+                    inHuman: 0,
+                    inTimesheet: 0,
+                    inFinancial: 1,
+                    inDocument: 1,
+                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
+                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
                     name, 
                     description,
-                    userUpdate: authorID,
-                    sign,
-                    address,
+                    sign, 
+                    address, 
                     taxid,
-                    birthday, 
-                    phone, 
-                    email, 
-                    status: status ? Number(status) : Number(1),
-                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
+                    birthday,
+                    phone,
+                    email,
+                    status: status ? Number(status) : Number(1)
                 }
-                
-                if(gender && Number(gender) > 0){
+
+                if(gender && !isNaN(gender)){
                     dataUpdate.gender = gender;
                 }
-
-                if([1,2,3,4].includes(Number(type))){
-                    dataUpdate.type = Number(type);
-                }
-
                 if(department && _isValid(department)){
                     dataUpdate.department = department;
                 }
-                
                 if(position && _isValid(position)){
                     dataUpdate.position = position;
                 }
-
+                if(linkUser && _isValid(linkUser)){
+                    dataUpdate.linkUser = linkUser;
+                }
+                if(linkSale && _isValid(linkSale)){
+                    dataUpdate.linkSale = linkSale;
+                }
                 if(field && _isValid(field)){
                     dataUpdate.field = field;
                 }
-
                 if(property && _isValid(property)){
                     dataUpdate.property = property;
                 }
 
-                if(linkSale && _isValid(linkSale)){
-                    dataUpdate.linkSale = linkSale;
+                if(parent && _isValid(parent)){
+                    dataUpdate.parent = parent;
+                    let infoMenuParent = await ITEM__CONTACT_COLL.findById(parent);
+                    dataUpdate.level = infoMenuParent.level + 1;
                 }
 
-                let infoAfterUpdate = await CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
+                if(workingStatus && _isValid(workingStatus)){
+                    dataUpdate.workingStatus = workingStatus;
+                }
 
-                // console.log(infoAfterUpdate)
-                    
-                return resolve({ error: false, data: infoAfterUpdate });
+                if(realStatus){
+                    dataUpdate.realStatus = realStatus;
+                }
+
+                if(insuranceStatus){
+                    dataUpdate.insuranceStatus = insuranceStatus;
+                }
+
+                if(familyPolicy){
+                    dataUpdate.familyPolicy = familyPolicy;
+                }
+
+                if(contractType && _isValid(contractType)){
+                    dataUpdate.contractType = contractType;
+                }
+
+                if(contractSign){
+                    dataUpdate.contractSign = contractSign;
+                }
+
+                if(family){
+                    dataUpdate.family = family;
+                }
+
+                if(identity){
+                    dataUpdate.identity = identity;
+                }
+
+                if(dateProvice){
+                    dataUpdate.dateProvice = dateProvice;
+                }
+
+                if(place){
+                    dataUpdate.place = place;
+                }
+
+                if(area){
+                    dataUpdate.area = area;
+                }
+
+                if(area1){
+                    dataUpdate.area1 = area1;
+                }
+
+                if(area2){
+                    dataUpdate.area2 = area2;
+                }
+
+                if(insuranceSign){
+                    dataUpdate.insuranceSign = insuranceSign;
+                }
+                
+                if(insuranceDate){
+                    dataUpdate.insuranceDate = insuranceDate;
+                }
+
+                if(sallaryFactor){
+                    dataUpdate.sallaryFactor = sallaryFactor;
+                }
+
+                if(sallarySubFactor){
+                    dataUpdate.sallarySubFactor = sallarySubFactor;
+                }
+
+                if(sallaryBasic){
+                    dataUpdate.sallaryBasic = sallaryBasic;
+                }
+
+                if(signerIn){
+                    dataUpdate.signerIn = signerIn;
+                }
+
+                if(signerOut){
+                    dataUpdate.signerOut = signerOut;
+                }
+
+                if(workStartDate){
+                    dataUpdate.workStartDate = workStartDate;
+                }
+
+                if(dayOff){
+                    dataUpdate.dayOff = dayOff;
+                }
+
+                if(appointDate){
+                    dataUpdate.appointDate = appointDate;
+                }
+
+                if(changeSallaryDate){
+                    dataUpdate.changeSallaryDate = changeSallaryDate;
+                }
+
+                if(contractDate){
+                    dataUpdate.contractDate = contractDate;
+                }
+
+                if(contractValid){
+                    dataUpdate.contractValid = contractValid;
+                }
+
+                if(contractExpire){
+                    dataUpdate.contractExpire = contractExpire;
+                }
+
+                let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

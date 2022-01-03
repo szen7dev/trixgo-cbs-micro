@@ -76,6 +76,7 @@ module.exports = {
 
 		//==========================================  CONTACT  ==================================
 		[CF_ACTIONS_ITEM.CONTACT_INSERT] 						: ITEM__CONTACT_HANDLER.insert,
+		[CF_ACTIONS_ITEM.CONTACT_UPDATE] 						: ITEM__CONTACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
 		
 		//==========================================  WAREHOUSE  ================================
