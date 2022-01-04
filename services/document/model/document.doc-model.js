@@ -32,11 +32,8 @@ const {
  */
 const DOCUMENT__DOC_COLL               				= require('../database/document.doc-coll');
 const DOCUMENT__FILE_COLL           				= require('../database/document.doc_file-coll');
-const DOCUMENT__DOCTYPE_COLL           				= require('../database/document.doctype-coll');
 const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
-const DOCUMENT__STORAGE_COLL           				= require('../database/document.storage-coll');
 const DOCUMENT__USER_COLL           				= require('../database/document.user_related-coll');
-
 
 class Model extends BaseModel {
 
@@ -45,22 +42,24 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH
+	 * Dev: Depv
 	 * Func: Tạo mới văn bản
 	 * Date: 26/10/2021
 	 */
-	insertDocument({
-		parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-        amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-        fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID, ctx
+
+    // Hiện đang thiếu fiel giá trị, tình trạng hoàn thành
+	insert({
+        parentID, projectID, companyID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate,
+        name, description, note, fieldID, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs([userID, companyID, departmentID, packageID])) {
+				if (!checkObjectIDs(projectID)) {
 					return resolve({ 
                         error: true, 
-                        message: 'Request params companyID or departmentID or packageID invalid', 
-                        keyError: 'params_companyID_or_departmentID_invalid',
+                        message: 'Request params projectID invalid', 
+                        keyError: 'params_projectID_invalid',
                         status: 400 
                     });
                 }
@@ -88,7 +87,8 @@ class Model extends BaseModel {
                     suid,
                     author: userID,
                     company: companyID,
-                    project: departmentID,
+                    project: projectID,
+                    contract: contractID,
                     package: packageID,
                     direction,
                     name,
@@ -136,14 +136,14 @@ class Model extends BaseModel {
                         status: 422
                     });
                 }
-
-                await DOCUMENT__USER_COLL.create({
-                    document: infoAfterInsert._id,
-                    user: userID,
-                    permission: 1,
-                    createAt: timeUtils.getCurrentTime(),
-                    modifyAt: timeUtils.getCurrentTime()
-                });
+                // Call model create document__user
+                // await DOCUMENT__USER_COLL.create({
+                //     document: infoAfterInsert._id,
+                //     user: userID,
+                //     permission: 1,
+                //     createAt: timeUtils.getCurrentTime(),
+                //     modifyAt: timeUtils.getCurrentTime()
+                // });
 
                 // Cộng số lượng hồ sơ trong gói thầu
                 if(packageID && checkObjectIDs(packageID)){
@@ -153,30 +153,30 @@ class Model extends BaseModel {
                         }
                     });
                 }
-
-                if(parentID) {
-                    await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
-                        $addToSet: { childs: infoAfterInsert._id }
-                    });
-                }
+                // Không đi theo hướng childs nữa
+                // if(parentID) {
+                //     await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
+                //         $addToSet: { childs: infoAfterInsert._id }
+                //     });
+                // }
 
                 // Update document for contract
-                if(type && !isNaN(type) && +type === 2){
-                    let infoPackage = await DOCUMENT__PACKAGE_COLL
-                        .findById(packageID)
-                        .select('_id contract');
+                // if(type && !isNaN(type) && +type === 2){
+                //     let infoPackage = await DOCUMENT__PACKAGE_COLL
+                //         .findById(packageID)
+                //         .select('_id contract');
                     
-                    if(infoPackage){
-                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
-                            condition: { _id: infoPackage.contract },
-                            update: {
-                                $addToSet: {
-                                    documents: infoAfterInsert._id
-                                }
-                            }
-                        });
-                    }
-                }
+                //     if(infoPackage){
+                //         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
+                //             condition: { _id: infoPackage.contract },
+                //             update: {
+                //                 $addToSet: {
+                //                     documents: infoAfterInsert._id
+                //                 }
+                //             }
+                //         });
+                //     }
+                // }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -186,22 +186,22 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH
+	 * Dev: Depv
 	 * Func: Cập nhật văn bản
 	 * Date: 28/10/2021
 	 */
-    updateDocument({
-		documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-        amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-        fieldID, propertyID, otherID, storageID, note, userUpdate, ctx
+    update({
+		documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate,
+        name, description, note, fieldID, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs([documentID, userUpdate])) {
+				if (!checkObjectIDs([documentID, userID])) {
                     return resolve({ 
                         error: true, 
-                        message: 'Request params documentID or userUpdate invalid', 
-                        keyError: 'params_documentID_or_userUpdate_invalid',
+                        message: 'Request params documentID or userID invalid', 
+                        keyError: 'params_documentID_or_userID_invalid',
                         status: 400
                     });
                 }
@@ -249,6 +249,7 @@ class Model extends BaseModel {
                     style,
                     status,
                     expiredResponse,
+                    contract: contractID,
                     note,
                     description,
                     userUpdate
@@ -280,28 +281,28 @@ class Model extends BaseModel {
                         .select('_id contract');
                 }
 
-                if(infoPackage && infoPackage.contract && type && !isNaN(type)){
-                    // Update document cho contract
-                    if(+type === 2){
-                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
-                            condition: { _id: infoPackage.contract },
-                            update: {
-                                $addToSet: {
-                                    documents: documentID
-                                }
-                            }
-                        });
-                    } else{
-                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
-                            condition: { _id: infoPackage.contract },
-                            update: {
-                                $pull: {
-                                    documents: documentID
-                                }
-                            }
-                        });
-                    }
-                }
+                // if(infoPackage && infoPackage.contract && type && !isNaN(type)){
+                //     // Update document cho contract
+                //     if(+type === 2){
+                //         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
+                //             condition: { _id: infoPackage.contract },
+                //             update: {
+                //                 $addToSet: {
+                //                     documents: documentID
+                //                 }
+                //             }
+                //         });
+                //     } else{
+                //         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
+                //             condition: { _id: infoPackage.contract },
+                //             update: {
+                //                 $pull: {
+                //                     documents: documentID
+                //                 }
+                //             }
+                //         });
+                //     }
+                // }
 
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
 
@@ -322,11 +323,11 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH
+	 * Dev: Depv
 	 * Func: Xóa văn bản
 	 * Date: 30/10/2021
 	 */
-    deleteDocument({ documentID, userID }){
+    remove({ documentID, userID }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs([documentID, userID])) {
@@ -371,372 +372,220 @@ class Model extends BaseModel {
         })
     }
 
-    /**
-	 * Dev: MinhVH
-	 * Func: Chi tiết hồ sơ văn bản
-	 * Date: 12/11/2021
-	 */
-    getInfoDocumment({ userID, documentID, select, populates }){
-        return new Promise(async resolve => {
+     /**
+     * Name: get Hợp đồng ✅
+     * Author: Depv
+     * Code: 
+     */
+    getInfo({ documentID, select, populates }) { 
+        return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([documentID, userID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params documentID or userID invalid', 
-                        keyError: 'params_documentID_or_userID_invalid',
-                        status: 400 
-                    });
-                }
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
 
-                if(select && typeof select === 'string'){
-                    if(!IsJsonString(select)) {
-                        return resolve({ 
-                            error: true, 
-                            message: 'Request params select invalid', 
-                            keyError: 'params_select_invalid',
-                            status: 400 
-                        });
-                    }
-
-                    select = JSON.parse(select);
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates)) {
-                        return resolve({ 
-                            error: true, 
-                            message: 'Request params populates invalid', 
-                            keyError: 'params_populates_invalid',
-                            status: 400 
-                        });
-                    }
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(documentID))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+                
+                 // populates
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-
-                let checkPermission = await DOCUMENT__USER_COLL
-                    .findOne({
-                        document: documentID,
-                        user: userID
-                    })
-                    .lean();
-
-                if(!checkPermission) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Permission denined", 
-                        keyError: "permission_denined_document",
-                        status: 403 
-                    });
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
-
-                const infoDocument = await DOCUMENT__DOC_COLL
-                    .findById(documentID)
-                    .populate(populates)
-                    .lean();
-
-                if(!infoDocument) {
-                    return resolve({ 
-                        error: true, 
-                        message: "Can't get info document", 
-                        keyError: "get_info_document_failed",
-                        status: 400 
-                    });
-                }
-
-                // const listFilesAttachment = await DOCUMENT__FILE_COLL
-                //     .find({ document: documentID })
-                //     .select('file user')
-                //     .populate({
-                //         path: 'file',
-                //         select: '_id name url size'
-                //     })
-                //     .populate({
-                //         path: 'user',
-                //         select: '_id bizname fullname image'
-                //     })
-                //     .sort({ createAt: -1 })
-                //     .lean();
-
-                // infoDocument.files = listFilesAttachment;
-
-                return resolve({ error: false, data: infoDocument, status: 200 });
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterGet = await DOCUMENT__DOC_COLL.findById(documentID)
+                                    .select(select)
+                                    .populate(populates)
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-
     /**
-	 * Dev: MinhVH
-	 * Func: Lấy danh sách hồ sơ văn bản
-	 * Date: 26/10/2021
-	 */
-    getListDocument({ 
-        companyID, departmentID, packageID, doctypeID, senderID, contractID, userID, lastestID, 
-        requestResponse, marked, type, keyword, limit = 20, filter = {}, select = {}, populates = {}
-    }){
-        return new Promise(async resolve => {
+     * Name  : Danh sách hợp đồng ✅
+     * Author: Depv
+     * Code  : 
+     */
+    getList({
+        companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
+        requestResponse, fieldID, fromDate, toDate,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
             try {
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { 
+                    company: companyID
+                };
 
-                if(companyID && !checkObjectIDs(companyID))
-                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-
-                if(departmentID && !checkObjectIDs(departmentID))
-                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
-
-                if(packageID && !checkObjectIDs(packageID))
-                    return resolve({ error: true, message: 'Request params packageID invalid', status: 400 });
-
-                if(doctypeID && !checkObjectIDs(doctypeID))
-                    return resolve({ error: true, message: 'Request params doctypeID invalid', status: 400 });
-
-                if(senderID && !checkObjectIDs(senderID))
-                    return resolve({ error: true, message: 'Request params senderID invalid', status: 400 });
-
-                if(contractID && !checkObjectIDs(contractID))
-                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
-
-				if(isNaN(limit)) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
-
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
+                let conditionFind = { };
+                let sortBy   = { createAt: -1 };
+				let objSort  = {};
+               
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+				
+                // POPULATE
                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates)) {
-                        return resolve({ 
-                            error: true, 
-                            message: 'Request params populates invalid', 
-                            keyError: 'params_populates_invalid',
-                            status: 400 
-                        });
-                    }
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-
-				let conditionObj 	= {};
-				let conditionFind 	= {};
-				let objSort 	 	= {};
-                let sortBy = {
-                    modifyAt: -1,
-					createAt: -1,
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+               
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                
+                // TRẠNG THÁI CÔNG VIỆC
+                //____________Công ty
+                if(companyID){
+                    conditionObj.company = companyID
                 }
 
-				// GET CONDITION PAGINATION
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoDocument = await DOCUMENT__DOC_COLL.findById(lastestID);
-                    if(!infoDocument)
-                        return resolve({ error: true, message: "Can't get info last document", status: 403 });
+                if(type){
+                    conditionObj.type = type
+                }
 
-                    let nextInfo = `${infoDocument.modifyAt}_${infoDocument._id}`;
-                    let keys 	 = ['modifyAt__-1', '_id__-1'];
+                if(fromDate && toDate){
+                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+                if(packageID){
+                    conditionObj.package = packageID
+                }
 
+                if(direction){
+                    conditionObj.direction = direction
+                }
+
+                if(checkObjectIDs(senderID)){
+                    conditionObj.sender = senderID
+                }
+
+                if(checkObjectIDs(receiverID)){
+                    conditionObj.receiver = receiverID
+                }
+
+                if(checkObjectIDs(propertyID)){
+                    conditionObj.property = propertyID
+                }
+
+                if(checkObjectIDs(contractID)){
+                    conditionObj.contract = contractID
+                }
+
+                if(checkObjectIDs(storageID)){
+                    conditionObj.storage = storageID
+                }
+
+                if(checkObjectIDs(requestResponse)){
+                    conditionObj.requestResponse = requestResponse
+                }
+
+                if(checkObjectIDs(fieldID)){
+                    conditionObj.field = fieldID
+                }
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
-                }
-
-                companyID       && (conditionObj.company = companyID);
-                departmentID    && (conditionObj.project = departmentID);
-
-                let listPackage = await DOCUMENT__PACKAGE_COLL.find({
-                    members: { $in: [userID] }
-                }).select('_id').lean();
-
-                if(!listPackage.length)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
-
-                conditionObj.package = { $in: listPackage.map(item => item._id) };
-
-                type            && (conditionObj.type            = type);
-                packageID       && (conditionObj.package         = packageID);
-                senderID        && (conditionObj.sender          = senderID);
-                doctypeID       && (conditionObj.property        = doctypeID);
-                requestResponse && (conditionObj.requestResponse = +requestResponse);
-
-                // Lấy danh sách đánh dấu sao
-                if(marked){
-                    conditionObj.usersMarked = { $in: [userID] };
-                }
-
-				// SEARCH TEXT
+					sortBy = dataPagingAndSort.data.sort;
+				}
+                
 				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+                
+                let infoDataAfterGet = await DOCUMENT__DOC_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
 
-                let listDocuments = await DOCUMENT__DOC_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-                    .populate('company', select.company)
-                    .populate('project', select.project)
-                    .populate('contract', select.contract)
-                    .populate('package', select.package)
-                    .populate('field', select.field)
-                    .populate('property', select.property)
-                    .populate('other', select.other)
-                    .populate('storage', select.storage)
-                    .populate('sender', select.sender)
-                    .populate('receiver', select.receiver)
-                    .populate('author', select.author)
-					.limit(limit + 1)
-					.sort(sortBy)
-					.lean();
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-				// GET TOTAL RECORD
-                let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObj);
-				let nextCursor	= null;
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
 
-				if(listDocuments && listDocuments.length){
-					if(listDocuments.length > limit){
-						nextCursor = listDocuments[limit - 1]._id;
-						listDocuments.length = limit;
-					}
-				}
+                let totalRecord = await DOCUMENT__DOC_COLL.countDocuments(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
-                return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: listDocuments,
-						limit: +limit,
-						totalRecord,
-						nextCursor
-					}
-				});
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
-    /**
- 	 * Dev: MinhVH
- 	 * Func: Danh sách tính chất văn bản
- 	 * Date: 27/10/2021
- 	 */
- 	getListDoctype({ lastestID, userID, companyID, departmentID, keyword, limit = 10, filter = {}, select = {} }) {
- 		return new Promise(async (resolve) => {
- 			try {
- 				if(!checkObjectIDs([userID]))
- 					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(companyID && !checkObjectIDs([companyID]))
- 					return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-                if(departmentID && !checkObjectIDs([departmentID]))
- 					return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
- 				if(isNaN(limit)){
- 					limit = 10;
- 				} else{
- 					limit = +limit;
- 				}
 
- 				if(filter && typeof filter === 'string'){
- 					if(!IsJsonString(filter))
- 						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
 
- 					filter = JSON.parse(filter);
- 				}
 
- 				if(select && typeof select === 'string'){
- 					if(!IsJsonString(select))
- 						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
- 					select = JSON.parse(select);
- 				}
-
- 				let conditionFind = {};
- 				let conditionObj  = {};
-                let objSort = {};
- 				let sortBy = {
- 					modifyAt: -1,
- 					createAt: -1,
- 				}
-
- 				if(lastestID && checkObjectIDs(lastestID)){
- 					let infoDoctype = await DOCUMENT__DOCTYPE_COLL.findById(lastestID);
- 					if(!infoDoctype)
- 						return resolve({ error: true, message: "Can't get info last doctype", status: 403 });
-
- 					let nextInfo = `${infoDoctype.modifyAt}_${infoDoctype._id}`;
- 					let keys	 = ['modifyAt__-1', '_id__-1'];  
-
- 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
- 					if(!dataPagingAndSort || dataPagingAndSort.error)
- 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
- 					conditionFind = dataPagingAndSort.data.find;
- 				}
-
-                companyID       && (conditionObj.company = companyID);
-                departmentID    && (conditionObj.project = departmentID);
-
-                 // SEARCH TEXT
- 				if(keyword){
- 					conditionObj.$text = { $search: keyword };
- 					objSort.score = { $meta: "textScore" };
- 					sortBy.score  = { $meta: "textScore" };
- 				}
-
- 				let	listDoctype = await DOCUMENT__DOCTYPE_COLL
- 					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-                    .populate('project', select.project)
-                    .populate('company', select.company)
- 					.limit(limit + 1)
- 					.sort(sortBy)
- 					.lean();
-
- 				if(!listDoctype)
- 					return resolve({ error: true, message: "Can't get list doctype", status: 403 });
-
- 				// GET TOTAL RECORD
- 				let totalRecord = await DOCUMENT__DOCTYPE_COLL.countDocuments(conditionObj);
- 				let nextCursor	= null;
-
- 				if(listDoctype && listDoctype.length){
- 					if(listDoctype.length > limit){
- 						nextCursor = listDoctype[limit - 1]._id;
- 						listDoctype.length = limit;
- 					}
- 				}
-
- 				return resolve({
- 					error: false,
- 					status: 200,
- 					data: {
- 						listRecords: listDoctype,
- 						limit: +limit,
- 						totalRecord,
- 						nextCursor
- 					}
- 				});
- 			} catch (error) {
- 				return resolve({ error: true, message: error.message, status: 500 })
- 			}
- 		})
- 	}
 
     /**
      * Dev: MinhVH
@@ -872,109 +721,6 @@ class Model extends BaseModel {
         })
     }
 
-    /**
- 	 * Dev: MinhVH
- 	 * Func: Danh sách lưu trữ hồ sơ văn bản
- 	 * Date: 27/10/2021
- 	 */
- 	getListStorage({ userID, companyID, lastestID, keyword, limit = 10, filter = {}, select = {} }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-               if(!checkObjectIDs([companyID]))
-                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-
-                if(isNaN(limit)){
-                    limit = 10;
-                } else{
-                    limit = +limit;
-                }
-
-                if(filter && typeof filter === 'string'){
-                    if(!IsJsonString(filter))
-                        return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-                    filter = JSON.parse(filter);
-                }
-
-                if(select && typeof select === 'string'){
-                    if(!IsJsonString(select))
-                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-                    select = JSON.parse(select);
-                }
-
-                let conditionFind = {};
-                let conditionObj  = { company: companyID };
-                let objSort = {};
-                let sortBy = {
-                    modifyAt: -1,
-                    createAt: -1,
-                }
-
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoStorage = await DOCUMENT__STORAGE_COLL.findById(lastestID);
-                    if(!infoStorage)
-                        return resolve({ error: true, message: "Can't get info last storage", status: 403 });
-
-                    let nextInfo = `${infoStorage.modifyAt}_${infoStorage._id}`;
-                    let keys	 = ['modifyAt__-1', '_id__-1'];  
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionFind = dataPagingAndSort.data.find;
-                }
-
-                // SEARCH TEXT
-                if(keyword){
-                    conditionObj.$text = { $search: keyword };
-                    objSort.score = { $meta: "textScore" };
-                    sortBy.score  = { $meta: "textScore" };
-                }
-
-                let	listStorage = await DOCUMENT__STORAGE_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-                    .populate('userCreate', select.userCreate)
-                    .populate('userUpdate', select.userUpdate)
-                    .populate('company', select.company)
-                    .populate('childs', select.childs)
-                    .limit(limit + 1)
-                    .sort(sortBy)
-                    .lean();
-
-                if(!listStorage)
-                    return resolve({ error: true, message: "Can't get list storage", status: 403 });
-
-                // GET TOTAL RECORD
-                let totalRecord = await DOCUMENT__STORAGE_COLL.countDocuments(conditionObj);
-                let nextCursor	= null;
-
-                if(listStorage && listStorage.length){
-                    if(listStorage.length > limit){
-                        nextCursor = listStorage[limit - 1]._id;
-                        listStorage.length = limit;
-                    }
-                }
-
-                return resolve({
-                    error: false,
-                    status: 200,
-                    data: {
-                        listRecords: listStorage,
-                        limit: +limit,
-                        totalRecord,
-                        nextCursor
-                    }
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
 
     /**
  	 * Dev: MinhVH

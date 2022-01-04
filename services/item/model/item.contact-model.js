@@ -426,7 +426,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get Hợp đồng ✅
+     * Name: Thông tin nhân sự ✅
      * Author: Depv
      * Code: 
      */
@@ -475,13 +475,13 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách hợp đồng ✅
+     * Name  : Danh sách nhân sự ✅
      * Author: Depv
      * Code  : 
      */
     getList({
         companyID, type,
-        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -494,31 +494,11 @@ class Model extends BaseModel {
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -576,9 +556,10 @@ class Model extends BaseModel {
                     ]
                 }
                 
-                let infoDataAfterGet = await ITEM__CONTACT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
                     .lean(); 
 

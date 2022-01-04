@@ -713,10 +713,9 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, type, userID,
-        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
-                console.log({  companyID, projectID, type, userID, });
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -743,14 +742,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -814,9 +805,10 @@ class Model extends BaseModel {
                     ]
                 }
                 
-                let infoDataAfterGet = await ITEM__DOCTYPE_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await ITEM__DOCTYPE_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
                     .lean(); 
 

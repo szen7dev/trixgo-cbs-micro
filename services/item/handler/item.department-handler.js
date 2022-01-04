@@ -210,13 +210,12 @@ module.exports = {
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  departmentID, companyID, type, keyword, limit, lastestID, select, filter, populates } = ctx.params;
+                let {  departmentID, companyID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler;
@@ -227,7 +226,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getList({
                         companyID, lastestID, userID, type, 
-                        keyword, limit, select, filter, populates
+                        keyword, limit, select, populates
                     });
                 }
 

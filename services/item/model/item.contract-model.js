@@ -838,7 +838,7 @@ class Model extends BaseModel {
     getList({
         companyID,projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
         date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
-        keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -864,14 +864,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -1005,11 +997,11 @@ class Model extends BaseModel {
                     let regSearch = new RegExp(keyword, 'i');
                     conditionObj.name = regSearch
                 }
-                console.log({ conditionObj });
                 
-                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
                     .lean(); 
 
@@ -1025,7 +1017,7 @@ class Model extends BaseModel {
                 }
 
                 let totalRecord = await ITEM__CONTRACT_COLL.countDocuments(conditionObj);
-                let totalPage   = Math.ceil(totalRecord/limit);
+                let totalPage   = Math.ceil(totalRecord/limit); 
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,

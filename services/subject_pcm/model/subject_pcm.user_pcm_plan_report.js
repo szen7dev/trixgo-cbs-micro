@@ -169,7 +169,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ userSubjectID, select, populates= {}, populates1 = {}, populates2 = {}, populates3 = {} }) { 
+    getInfo({ userSubjectID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -191,31 +191,12 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
                 
                 /**
                  * LOGIC STEP (3)
@@ -224,22 +205,7 @@ class Model extends BaseModel {
                  */
                 let infoUserSubject = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.findById(userSubjectID)
                     .select(select)    
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                    .populate(populates)
 
                 if(!infoUserSubject)
                     return resolve({ error: true, message: "Can't info user_pcm_plan_report", status: 403 });
@@ -256,7 +222,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getList({ keyword, limit = 10, lastestID, userID, parentID, filter = {}, populates= {}, populates1 = {}, populates2 = {}, populates3 = {} }) { 
+    getList({ userID, parentID,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -282,44 +249,18 @@ class Model extends BaseModel {
                     conditionObj.user = userID;
                 }
 
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
                 // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+                }else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -349,25 +290,10 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 
-                let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await SUBJECT__USER_PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
                     .sort(sortBy)
+                    .populate(populates)
                     .lean(); 
                 
                 // GET TOTAL RECORD
