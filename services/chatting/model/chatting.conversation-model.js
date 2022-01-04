@@ -713,7 +713,6 @@ class Model extends BaseModel {
 				let conditionObj 	= { conversation: conversationID };
 				let conditionFind 	= {};
 				let objSort 	 	= {};
-				let previousCursor	= '';
 				let sortBy = {
 					createAt: -1,
 					modifyAt: -1
@@ -803,7 +802,6 @@ class Model extends BaseModel {
 						listRecords: listMessages,
 						limit: +limit,
 						totalRecord,
-						previousCursor,
 						nextCursor
 					}
 				});
@@ -1333,9 +1331,6 @@ class Model extends BaseModel {
 						"usersMissMessage.$.amount": 0
 					}
 				}, { new: true })
-
-				if(!infoAfterUpdated)
-					return resolve({ error: true, message: "Can't mark read conversation", status: 403 });
 
 				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
 			} catch(error){
