@@ -57,8 +57,9 @@ module.exports = {
 	 */
     getListMedia: {
         params: {
-            limit: { type: 'string', optional: true },
             type: { type: 'string', optional: true },
+            mediaID: { type: 'string', optional: true },
+            isRelated: { type: 'string', optional: true },
             companyID: { type: 'string', optional: true },
             departmentID: { type: 'string', optional: true },
         },
@@ -66,10 +67,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				let { _id: userID } = ctx.meta.infoUser;
-                let { lastestID, limit, companyID, departmentID, type } = ctx.params;
+                let { lastestID, companyID, departmentID, mediaID, isRelated, type } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
-					userID, lastestID, limit, companyID, departmentID, type, ctx
+					userID, lastestID, companyID, departmentID, mediaID, isRelated, type, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

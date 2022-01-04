@@ -316,7 +316,7 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
-    getListMedia({ userID, lastestID, companyID, departmentID, type, limit = 20, ctx }){
+    getListMedia({ userID, lastestID, companyID, departmentID, mediaID, isRelated, type }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -387,6 +387,10 @@ class Model extends BaseModel {
 					});
 				}
 
+				if(isRelated) {
+					conditionObj._id = { $nin: [mediaID] };
+				}
+
 				switch (type) {
 					case 'company':
 						conditionObj.type = 1;
@@ -417,7 +421,7 @@ class Model extends BaseModel {
 
                 let listAfterFind = await this.getListWithCondition({
 					conditionObj,
-					limit,
+					limit: 10,
 					sortBy,
 					lastestID,
 				});
