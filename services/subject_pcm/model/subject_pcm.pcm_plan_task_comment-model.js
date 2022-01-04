@@ -5,6 +5,11 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }
 const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			= require('../../../tools/utils/calculate_current_page');
 
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_NOTIFICATION } 		= require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_SUBJECT_PCM } 		= require('../../subject_pcm/helper/subject_pcm.actions-constant');
+const { CF_ACTIONS_ANALYSIS } 		    = require('../../analysis/helper/analysis.actions-constant');
+
 /**
  * import inter-coll, exter-coll
  */
@@ -30,7 +35,7 @@ class Model extends BaseModel {
      * Name  : Thêm comment ✅
      * Author: Depv
      */
-    insert({ taskID, commentCoreID, parentID }) { 
+    insert({ taskID, commentCoreID, content, fullname, parentID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -62,6 +67,43 @@ class Model extends BaseModel {
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create comment task", status: 403 });
+                try {
+                    let infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
+                        taskID
+                    })
+                    if(infoTask.error)
+                        return resolve({ error: true, message: "task_not_exist"});
+
+                    let receivers = [ infoTask.data.author, infoTask.data.author,  ...infoTask.data.related];
+                    receivers = [...new Set(receivers)];
+
+                    // Gửi thông báo cho user
+                    let infoNotification = await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        title: `${fullname} Vừa thêm bình luận mới`,
+                        content,
+                        receivers,
+                        path: `/pcm/home?taskID=${taskID}`,
+                        type: 1
+                    })
+
+                    let infoHistoryLog = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        // project: "5e4785eb8b50843d34481d49",
+                        // contract: "5e3f93fa1969583819518362",
+                        type: 2,
+                        parentCollection: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        subCollection: {
+                            kind: "pcm_plan_task_comment",
+                            item: infoDataAfterInserted._id
+                        },
+                        content: `${fullname} Vừa thêm bình luận mới - ${content}`,
+                    })
+                    console.log({ infoHistoryLog });
+                } catch (error) {
+                    console.log({error});
+                }
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {

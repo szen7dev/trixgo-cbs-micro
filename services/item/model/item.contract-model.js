@@ -858,18 +858,7 @@ class Model extends BaseModel {
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
+              
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -904,7 +893,6 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 
-                // TRẠNG THÁI CÔNG VIỆC
                 if(companyID){
                     conditionObj.company = companyID
                 }
@@ -1017,6 +1005,7 @@ class Model extends BaseModel {
                     let regSearch = new RegExp(keyword, 'i');
                     conditionObj.name = regSearch
                 }
+                console.log({ conditionObj });
                 
                 let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)

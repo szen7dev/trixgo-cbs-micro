@@ -284,6 +284,7 @@ module.exports = {
             personInChargeID    : { type: "string", optional: true },
             debtStatusID        : { type: "string", optional: true },
             warehouseID         : { type: "string", optional: true },
+            companyID           : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -296,7 +297,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, 
+                let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, 
                     keyword, limit, lastestID, filter, select, populates
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
@@ -308,7 +309,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
-                        projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
+                        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
                         keyword, limit, lastestID, filter, populates
                     });
                 }

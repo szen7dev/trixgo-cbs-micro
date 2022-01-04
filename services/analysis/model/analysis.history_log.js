@@ -227,6 +227,8 @@ class Model extends BaseModel {
                 if(fromDate && toDate){
                     conditionObj.createdAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
+
+                console.log({ conditionObj });
                 
                 let infoDataAfterGet = await ANALYSIS__HISTORY_LOG_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
