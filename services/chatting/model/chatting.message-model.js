@@ -1760,12 +1760,12 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: infoAfterDeleteReactionMessage, status: 200 });
 				}
 
-				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_INSERT}`, {
+				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
 					type: typeReaction
 				});
 
 				if(infoAfterInsertReaction.error)
-					return resolve({ error: true, message: infoAfterInsertReaction.message, status: 403 });
+					return resolve(infoAfterInsertReaction);
 
 				if(checkExistReactionMessage) {
 					let infoReactionAfterUpdate = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndUpdate(checkExistReactionMessage._id, {
