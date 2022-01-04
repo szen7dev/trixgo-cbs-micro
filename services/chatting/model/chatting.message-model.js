@@ -1761,7 +1761,8 @@ class Model extends BaseModel {
 				}
 
 				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
-					type: typeReaction
+					type: typeReaction,
+					userID
 				});
 
 				if(infoAfterInsertReaction.error)
