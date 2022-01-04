@@ -468,7 +468,14 @@ exports.CHATTING_SOCKET = {
 					path: 'sender receivers usersAssigned',
 					select: '_id fullname bizname image'
 				})
-				.populate('parent reminder')
+				.populate({
+					path: 'parent',
+					populate: {
+						path: 'sender',
+						select: '_id bizname fullname image'
+					}
+				})
+				.populate('reminder')
 				.populate({
 					path: 'poll',
 					populate: {
@@ -485,6 +492,7 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 		}
+		console.log({ arrReceiver })
 
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
@@ -527,8 +535,6 @@ exports.CHATTING_SOCKET = {
 			default:
 				break;
 		}
-
-		console.log({ arrReceiver })
 
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
