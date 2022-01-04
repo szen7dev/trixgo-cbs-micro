@@ -551,7 +551,7 @@ class Model extends BaseModel {
 					// .select("author content type location files tagFriends images background company")
 					.populate({
 						path: 'author',
-						select: 'fullname company department image',
+						select: 'fullname company department position image',
 						populate: { 
 							path: 'company department', 
 							select: 'name sign'
