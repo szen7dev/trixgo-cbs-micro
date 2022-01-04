@@ -514,6 +514,12 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+
+    //______Số hồ sơ văn bản
+    numberFinishOfDocs: {
+        type: Number,
+        default : 0
+    },
     
     //______Số bản vẽ
     numberOfDrawings: {
@@ -561,5 +567,11 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     numberOfInspections: {
         type: Number,
         default : 0
+    },
+
+    //______Last log cuối cùng của dự án
+    lastLog: {
+        type: Schema.Types.ObjectId,
+        ref : 'history_log'
     },
 })

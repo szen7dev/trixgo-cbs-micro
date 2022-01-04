@@ -30,7 +30,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: authorID, fullname } = ctx.meta.infoUser;
                 const {  content, taskID , parentID, files, images } = ctx.params;
                 
                 // call service comment để insert comment_core
@@ -43,7 +43,7 @@ module.exports = {
 
                 let commentCoreID = infoCommentCore.data._id;
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.insert({
-					taskID, commentCoreID, parentID
+					taskID, commentCoreID, content, fullname, parentID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
