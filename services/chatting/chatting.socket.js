@@ -19,6 +19,7 @@ const CHATTING__MESSAGE_COLL 					= require('./database/chatting.message-coll');
 /**
  * MODELS
  */
+const CHATTING__CONVERSATION_MODEL				= require('./model/chatting.conversation-model').MODEL;
 const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').MODEL;
 
 
@@ -1090,6 +1091,31 @@ exports.CHATTING_SOCKET = {
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
 		})
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách cuộc hội thoại
+	 * Date: 04/01/2021
+	 */
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION]: async function(data, ack) { 
+        let socket           = this;
+        let listUserActive   = socket.$service.listUserConnected2;
+		let broker			 = socket.$service.broker;
+        let io               = socket.$service.io;
+		let userID			 = socket.client.user;
+		let { lastestID, filter, select, receiversID } = data;
+
+		const listConversation 	= await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
+			lastestID, userID, filter, select, ctx: broker
+		});
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver: receiversID,
+			data: listConversation, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
+		});
     },
 
 }

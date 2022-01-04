@@ -146,12 +146,13 @@ class Model extends BaseModel {
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configSendMessage === 2){
 					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
+
 					// User is not author of conversation
 					if(!listAuthorsID.includes(senderID))
 						return resolve({ error: true, message: "You don't have permission to send message", status: 403 });
 				}
 
-				if(!receiversID){
+				if(!receiversID || !receiversID.length){
 					receiversID = checkExistConversation.members;
 				} else{
 					if (!checkObjectIDs(receiversID))
@@ -177,38 +178,6 @@ class Model extends BaseModel {
 
 				// MESSAGE IMAGES, FILES
 				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
-
-					// let listFilesMessage = files.map(file => ({
-					// 	app: CF_DOMAIN_SERVICES.CHATTING,
-					// 	name: file.name,
-					// 	url: file.url,
-					// 	size: file.size,
-					// 	userID: senderID,
-					// }))
-
-					// const { results } = await PromisePool
-					// 	.for(listFilesMessage)
-					// 	.withConcurrency(2)
-					// 	.process(async file => {
-					// 		// Insert file core collection
-					// 		let infoFile = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, file);
-
-					// 		// Update status file core collection
-					// 		await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.UPDATE_STATUS_FILE}`, {
-					// 			fileID: infoFile.data && infoFile.data._id.toString(),
-					// 			status: "1",
-					// 			userID: senderID,
-					// 		});
-
-					// 		// Insert conversation file collection
-					// 		let infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
-					// 			conversationID,
-					// 			fileID: infoFile.data && infoFile.data._id
-					// 		});
-
-					// 		return { file: infoAfterInserted.data && infoAfterInserted.data._id }
-					// 	})
-
 					let listFilesMessage = files.map(file => ({
 						conversationID,
 						fileID: file
@@ -279,7 +248,7 @@ class Model extends BaseModel {
 						numberMissMessage 		 = results.length;
 						infoMessageAfterInserted = results[results.length - 1];
 						break;
-					default: // MESSAGE NORMAL
+					default: // MESSAGE NORMAL OR NOTI
 						infoMessageAfterInserted = await this.insertData(dataInsertMessage);
 						break;
 				}

@@ -278,16 +278,15 @@ module.exports = {
             conversationID	: { type: "string" },
 			lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
-			limit 			: { type: "string", optional: true }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, lastestID, limit, keyword, filter, select } = ctx.params;
+                let { conversationID, lastestID, keyword, filter, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
-					conversationID, lastestID, userID, limit, keyword, filter, select
+					conversationID, lastestID, userID, keyword, filter, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -338,18 +337,17 @@ module.exports = {
             fromDate		 : { type: "string", optional: true },
             toDate			 : { type: "string", optional: true },
             page			 : { type: "string", optional: true },
-            limit			 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
                 let { 
-					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit 
+					conversationID, typeMessage, senderID, dateCreate, fromDate, toDate, page 
 				} = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesMediaConversation({ 
-					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page, limit
+					conversationID, userID, typeMessage, senderID, dateCreate, fromDate, toDate, page
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -580,16 +578,15 @@ module.exports = {
         params: {
             lastestID : { type: "string", optional: true },
             keyword	  : { type: "string", optional: true },
-            limit	  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, keyword, limit, filter, select } = ctx.params;
+                const { lastestID, keyword, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-					lastestID, userID, keyword, limit, filter, select, ctx
+					lastestID, userID, keyword, filter, select, ctx
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -630,16 +627,42 @@ module.exports = {
 	getListConversationMissMessage: {
         params: {
 			lastestID 	: { type: "string", optional: true },
-            limit		: { type: "string", optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, limit, filter, select } = ctx.params;
+                const { lastestID, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
-					userID, lastestID, limit, filter, select
+					userID, lastestID, filter, select
+				})
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách file trong cuộc hội thoại
+	 * Date: 04/01/2022
+	 */
+	getListFileConversation: {
+        params: {
+			conversationID 	: { type: "string" },
+			lastestID 	    : { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { lastestID, conversationID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListFileConversation({ 
+					userID, lastestID, conversationID
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

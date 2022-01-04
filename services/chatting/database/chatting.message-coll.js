@@ -61,7 +61,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	location: GeoSchema,
 
     /**
-     * Các files được đính kèm trong cuộc hội thoại
+     * Các files được đính kèm trong tin nhắn
      */
     files: [{
         file: {

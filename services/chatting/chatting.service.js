@@ -128,6 +128,9 @@ module.exports = {
 		// Danh sách cuộc hội thoại chưa đọc
 		[CF_ACTIONS_CHATTING.GET_LIST_CONVERSATION_MISS_MESSAGE]				: CHATTING__CONVERSATION_HANDLER.getListConversationMissMessage,
 
+		// Danh sách file trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_FILE_CONVERSATION]						: CHATTING__CONVERSATION_HANDLER.getListFileConversation,
+
 
 		// =========================  MESSAGE  ============================
 

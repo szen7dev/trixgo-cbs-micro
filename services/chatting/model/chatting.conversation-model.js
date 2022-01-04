@@ -674,7 +674,7 @@ class Model extends BaseModel {
 	 * Date: 11/08/2021
 	 * Hàm chuẩn về lấy danh sách mẩu tin
 	 */
-	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 15, filter = {}, select = {} }){
+	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 5, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -713,6 +713,7 @@ class Model extends BaseModel {
 				let conditionObj 	= { conversation: conversationID };
 				let conditionFind 	= {};
 				let objSort 	 	= {};
+				let previousCursor	= '';
 				let sortBy = {
 					createAt: -1,
 					modifyAt: -1
@@ -787,6 +788,8 @@ class Model extends BaseModel {
 						listMessages.length = limit;
 					}
 
+					// (lastestID && checkObjectIDs(lastestID)) && (previousCursor = listMessages[0]._id);
+
 					if(!keyword){
 						listMessages = listMessages.reverse();
 						nextCursor	 = listMessages[0]._id;
@@ -800,6 +803,7 @@ class Model extends BaseModel {
 						listRecords: listMessages,
 						limit: +limit,
 						totalRecord,
+						previousCursor,
 						nextCursor
 					}
 				});
@@ -1365,20 +1369,19 @@ class Model extends BaseModel {
 					pullObj.authors = userID;
 				}
 
+				await CHATTING__MESSAGE_MODEL.insertMessage({
+					conversationID,
+					senderID: userID,
+					type: 107,
+					usersAssigned: [userID],
+				})
+
 				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$pull: pullObj
 				}, { new: true })
 
 				if(!infoAfterUpdated)
 					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
-
-				await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID,
-					senderID: userID,
-					type: 107,
-					usersAssigned: [userID],
-					receiversID: checkExistConversation.members,
-				})
 
 				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
 			} catch(error){
@@ -1551,7 +1554,7 @@ class Model extends BaseModel {
 
 					listConversationPin = await CHATTING__CONVERSATION_COLL
 						.find({ 
-							_id: { $in: listConversationPin.dat },
+							_id: { $in: listConversationPin.data },
 							members: { $in: [userID] },
 							usersHide: { $nin: [userID] } 
 						}, filter)
@@ -1672,7 +1675,6 @@ class Model extends BaseModel {
                 let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
                 };
 
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -1729,6 +1731,90 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listConversationMissMessage,
+						limit: +limit,
+						totalRecord,
+						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách file trong cuộc hội thoại
+	 * Date: 04/01/2022
+	 */
+	getListFileConversation({ lastestID, userID, conversationID, limit = 100 }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				if(!checkObjectIDs(conversationID))
+                    return resolve({ error: true, message: 'Request params conversationID invalid', status: 400 });
+
+				if(isNaN(limit)) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+
+				let conditionObj 	= { conversation: conversationID };
+				let conditionFind 	= {};
+                let sortBy = {
+					createAt: -1,
+                    modifyAt: -1,
+                }
+
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoFileConversation = await CHATTING__CONVERSATION_FILE_COLL.findById(lastestID);
+                    if(!infoFileConversation)
+                        return resolve({ error: true, message: "Can't get info last file conversation", status: 400 });
+
+                    let nextInfo = `${infoFileConversation.createAt}_${infoFileConversation._id}`;
+                    let keys 	 = ['createAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+
+					conditionFind = dataPagingAndSort.data.find;
+                }
+
+                let listFileConversation = await CHATTING__CONVERSATION_FILE_COLL
+					.find({ ...conditionObj, ...conditionFind })
+					.populate({
+						path: 'file',
+						populate: {
+							path: 'userCreate',
+							select: '_id fullname image',
+						},
+						select: '_id name nameOrg url type',
+					})
+					.limit(limit + 1)
+					.sort(sortBy)
+					.lean();
+
+				// GET TOTAL RECORD
+                let totalRecord = await CHATTING__CONVERSATION_FILE_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+
+				if(listFileConversation && listFileConversation.length){
+					if(listFileConversation.length > limit){
+						nextCursor = listFileConversation[limit - 1]._id;
+						listFileConversation.length = limit;
+					}
+				}
+
+                return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listFileConversation,
 						limit: +limit,
 						totalRecord,
 						nextCursor
