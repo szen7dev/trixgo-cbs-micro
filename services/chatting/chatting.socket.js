@@ -19,6 +19,7 @@ const CHATTING__MESSAGE_COLL 					= require('./database/chatting.message-coll');
 /**
  * MODELS
  */
+const CHATTING__CONVERSATION_MODEL				= require('./model/chatting.conversation-model').MODEL;
 const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').MODEL;
 
 
@@ -467,7 +468,14 @@ exports.CHATTING_SOCKET = {
 					path: 'sender receivers usersAssigned',
 					select: '_id fullname bizname image'
 				})
-				.populate('parent reminder')
+				.populate({
+					path: 'parent',
+					populate: {
+						path: 'sender',
+						select: '_id bizname fullname image'
+					}
+				})
+				.populate('reminder')
 				.populate({
 					path: 'poll',
 					populate: {
@@ -484,6 +492,7 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 		}
+		console.log({ arrReceiver })
 
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
@@ -526,8 +535,6 @@ exports.CHATTING_SOCKET = {
 			default:
 				break;
 		}
-
-		console.log({ arrReceiver })
 
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -1076,9 +1083,18 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizname fullname image'
 		});
 
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(infoMessage.conversation);
+		const { members, usersMute } = infoConversation;
+		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+
+		// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
+		const arrReceiver = members.filter(memberID => {
+			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+		});
+
         sendDataToMultilSocketsOfListUser({ 
 			io,
-			arrReceiver: [infoMessage.sender], 
+			arrReceiver, 
 			listUserConnected: listUserActive, 
 			data: {
 				error: false, 
@@ -1090,6 +1106,31 @@ exports.CHATTING_SOCKET = {
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
 		})
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Danh sách cuộc hội thoại
+	 * Date: 04/01/2021
+	 */
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION]: async function(data, ack) { 
+        let socket           = this;
+        let listUserActive   = socket.$service.listUserConnected2;
+		let broker			 = socket.$service.broker;
+        let io               = socket.$service.io;
+		let userID			 = socket.client.user;
+		let { lastestID, filter, select, receiversID } = data;
+
+		const listConversation 	= await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
+			lastestID, userID, filter, select, ctx: broker
+		});
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver: receiversID,
+			data: listConversation, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
+		});
     },
 
 }

@@ -15,18 +15,18 @@ module.exports = {
 	 * Date: 17/08/2021
 	 */
     insert: {
-        auth: "required",
         params: {
-			type : { type: "number" },
+			type    : { type: "number" },
+			userID  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { type } = ctx.params;
+				let _id = ctx.meta?.infoUser?._id;
+                let { type, userID } = ctx.params;
 
                 const resultAfterCallHandler = await REACTION_CORE_MODEL.insert({
-					type, userID
+					type, userID: _id || userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
