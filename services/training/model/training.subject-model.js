@@ -332,9 +332,6 @@ class Model extends BaseModel {
                     .sort(sortBy) 
                     .lean(); 
 
-                // GET TOTAL RECORD
-				// let totalRecord = await TRAINING__SUBJECT_COLL.count(conditionObj);
-                let totalCurrentPage = await TRAINING__SUBJECT_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get template docs", status: 403 });
                 
@@ -350,18 +347,12 @@ class Model extends BaseModel {
 					}
 				}
 
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
-                }
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {

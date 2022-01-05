@@ -383,7 +383,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -421,6 +420,7 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
      * Name  : Danh sách hợp đồng ✅
      * Author: Depv
@@ -436,7 +436,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { 
-                    company: companyID
                 };
 
                 let conditionFind = { };
@@ -544,7 +543,6 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-                
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -579,12 +577,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-
-
-
-
-
 
 
     /**
