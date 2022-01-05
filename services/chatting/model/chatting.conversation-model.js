@@ -674,7 +674,7 @@ class Model extends BaseModel {
 	 * Date: 11/08/2021
 	 * Hàm chuẩn về lấy danh sách mẩu tin
 	 */
-	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 5, filter = {}, select = {} }){
+	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
@@ -755,7 +755,15 @@ class Model extends BaseModel {
 					.populate('usersSeen', select.usersSeen)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('receivers', select.receivers)
-					.populate('parent', select.parent)
+					.populate({
+						path: 'parent',
+						select: select.parent,
+						populate: {
+							path: 'sender',
+							select: '_id bizname fullname image'
+						}
+					})
+					.populate('reminder')
 					.populate({
 						path: 'poll',
 						populate: {
@@ -786,8 +794,6 @@ class Model extends BaseModel {
 						nextCursor = listMessages[limit - 1]._id;
 						listMessages.length = limit;
 					}
-
-					// (lastestID && checkObjectIDs(lastestID)) && (previousCursor = listMessages[0]._id);
 
 					if(!keyword){
 						listMessages = listMessages.reverse();
@@ -1542,7 +1548,7 @@ class Model extends BaseModel {
 
 				conditionObj.usersHide = { $nin: [userID] };
 
-				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`);
+				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, { userID });
 
 				if(listConversationPin.data && listConversationPin.data.length){
 					conditionObj._id = { $nin: listConversationPin.data };

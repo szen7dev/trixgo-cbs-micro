@@ -492,7 +492,6 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 		}
-		console.log({ arrReceiver })
 
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
@@ -1084,17 +1083,10 @@ exports.CHATTING_SOCKET = {
 		});
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(infoMessage.conversation);
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
-
-		// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
 
         sendDataToMultilSocketsOfListUser({ 
 			io,
-			arrReceiver, 
+			arrReceiver: infoConversation.members, 
 			listUserConnected: listUserActive, 
 			data: {
 				error: false, 
@@ -1119,15 +1111,26 @@ exports.CHATTING_SOCKET = {
 		let broker			 = socket.$service.broker;
         let io               = socket.$service.io;
 		let userID			 = socket.client.user;
-		let { lastestID, filter, select, receiversID } = data;
+		let { filter, select, conversationID } = data;
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: infoConversation, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+			});
+		}
 
 		const listConversation 	= await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-			lastestID, userID, filter, select, ctx: broker
+			userID, filter, select, ctx: broker
 		});
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver: receiversID,
+			arrReceiver: infoConversation.members,
 			data: listConversation, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
 		});
