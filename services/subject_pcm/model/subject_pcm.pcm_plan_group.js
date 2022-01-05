@@ -33,61 +33,28 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ planGroupID, select, populates={}, populates1= {}, populates2={}, populates3 = {} }) {
+    getInfo({ planGroupID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(planGroupID))
                     return resolve({ error: true, message: 'param_invalid' });
                 
-                 // populate
-                 if(populates && typeof populates === 'string'){
+                // populate
+                if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populate cấp 1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populate cấp 2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-
-                // populate cấp 3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
             
                 let infoPlanGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(planGroupID)
-                .select(select)
-                .populate({
-                    path: populates?.value || "",
-                    select: populates?.select || "",
-                    populate: {
-                        path: populates1?.value || "",
-                        select: populates1?.select || "",
-                        populate: {
-                            path: populates2?.value || "",
-                            select: populates2?.select || "",
-                            populate: {
-                                path: populates3?.value || "",
-                                select: populates3?.select || "",
-                            }
-                        }
-                    }
-                })
+                                    .select(select)
+                                    .populate(populates)
 
                 if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get' });
 
@@ -103,7 +70,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ keyword, limit = 10, lastestID, userID, projectID, filter = {}, populates={}, populates1= {}, populates2={}, populates3 = {} }) { 
+    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -122,43 +89,20 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
+               
                 // populate
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populate cấp 1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populate cấp 2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-
-                // populate cấp 3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-                    
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -197,25 +141,11 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy) 
+                    .select(select)
+                    .populate(populates)
                     .lean(); 
                 
                 // GET TOTAL RECORD

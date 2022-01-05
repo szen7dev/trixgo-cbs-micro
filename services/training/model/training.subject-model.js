@@ -258,7 +258,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {state:1};
-                console.log({  keyword, limit, lastestID, type, parentID, filter, select });
 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;

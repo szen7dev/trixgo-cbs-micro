@@ -615,7 +615,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, limit = 10, lastestID, filter = {}, populates={} }) { 
+    getList({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
                 
@@ -661,13 +661,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -704,9 +697,10 @@ class Model extends BaseModel {
                 }
 
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy) 
+                    .select(select) 
                     .populate(populates)
                     .lean(); 
                 

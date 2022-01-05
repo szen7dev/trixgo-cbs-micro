@@ -17,31 +17,28 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+            projectID   : { type: "string", optional: true },
+            planGroupID : { type: "string", optional: true },
+            //========================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            projectID   : { type: "string", optional: true },
-            planGroupID : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1: { type: "string", optional: true },
-            populates2: { type: "string", optional: true },
-            populates3: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { keyword, limit, lastestID, projectID, planGroupID, filter, select, populates, populates1, populates2, populates3 } = ctx.params;
+                let {  projectID, planGroupID, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler; 
                 if(planGroupID){
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_GROUP_MODEL.getInfo({
-                        planGroupID, select, populates, populates1, populates2, populates3
+                        planGroupID, select, populates, 
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_GROUP_MODEL.getList({
-                        keyword, limit, userID, lastestID, projectID, filter, populates, populates1, populates2, populates3
+                        keyword, limit, userID, lastestID, projectID, select, populates, 
                     });
                 }
                 

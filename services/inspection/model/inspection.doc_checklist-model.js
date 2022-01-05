@@ -225,7 +225,6 @@ class Model extends BaseModel {
 
                 // GET TOTAL RECORD
 				let totalRecord = await INSPECTION__CHECKLIST_COLL.count(conditionObj);
-                let totalCurrentPage = await INSPECTION__CHECKLIST_COLL.count(conditionFind);
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get checklists", status: 403 });
@@ -240,18 +239,12 @@ class Model extends BaseModel {
 					}
 				}
 
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
-                }
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
 
             } catch (error) {

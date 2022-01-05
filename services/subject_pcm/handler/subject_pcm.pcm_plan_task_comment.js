@@ -143,8 +143,8 @@ module.exports = {
             limit           : { type: "string", optional: true },
             lastestIDComment: { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
-            taskID      : { type: "string", optional: true },
-            commentTemplateID    : { type: "string", optional: true },
+            taskID          : { type: "string", optional: true },
+            commentTemplateID: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

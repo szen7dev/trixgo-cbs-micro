@@ -290,7 +290,6 @@ module.exports = {
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
         },
@@ -298,7 +297,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, 
-                    keyword, limit, lastestID, filter, select, populates
+                    keyword, limit, lastestID, select, populates
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
@@ -310,7 +309,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
                         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
-                        keyword, limit, lastestID, filter, populates
+                        keyword, limit, lastestID, select, populates
                     });
                 }
                 

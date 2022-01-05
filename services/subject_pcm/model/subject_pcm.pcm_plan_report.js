@@ -195,7 +195,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02504
      */
-    getInfo({ reportID, select, filter = {}, populates= {}, populates1={}, populates2={}, populates3={} }) { 
+    getInfo({ reportID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -218,36 +218,7 @@ class Model extends BaseModel {
 
 					populates = JSON.parse(populates);
 				}
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
+              
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -255,24 +226,9 @@ class Model extends BaseModel {
                  */
 
                 let infoData = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findById(reportID)
-                .select(select)
-                .populate({//1
-                    path: populates?.value || "",
-                    select: populates?.select || "",
-                    populate: {//2
-                        path: populates1?.value || "",
-                        select: populates1?.select || "",
-                        populate: {//3
-                            path: populates2?.value || "",
-                            select: populates2?.select || "",
-                            populate: {//4
-                                path: populates3?.value || "",
-                                select: populates3?.select || "",
-                            }
-                        }
-                    }
-                })
-                .lean();
+                                .select(select)
+                                .populate(populates)
+                                .lean();
                 if(!infoData)
                     return resolve({ error: true, message: "Can't get info subject", status: 403 });
 
@@ -288,7 +244,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code:
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, userID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={} }) { 
+    getList({ keyword, limit = 10, lastestID, type, parentID, userID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -313,13 +269,6 @@ class Model extends BaseModel {
                 if(type){
                     conditionObj.type = type;
                 }
-
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // populates
                 if(populates && typeof populates === 'string'){
@@ -327,31 +276,13 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+               
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -386,25 +317,11 @@ class Model extends BaseModel {
                 let listSubjectAccess = listUserPcmPlanReportAccess.map(item => item.subject);   
                 // conditionObj._id = { $in: listSubjectAccess };
 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
-                    .populate({//1
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {//2
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {//3
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {//4
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                    .select(select)
+                    .populate(populates)
                     .lean();
                 
                 // GET TOTAL RECORD

@@ -103,34 +103,34 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+          
+            type        : { type: "string", optional: true },
+            parentID    : { type: "string", optional: true },
+            subjectID   : { type: "string", optional: true },
+            //==============================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            type        : { type: "string", optional: true },
-            parentID    : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
-            subjectID   : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1   : { type: "string", optional: true },
-            populates2   : { type: "string", optional: true },
-            populates3   : { type: "string", optional: true },
+         
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, keyword, limit, lastestID, type, parentID, filter, select, populates, populates1, populates2, populates3 } = ctx.params;
+                let { subjectID, type, parentID, 
+                    keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                     
                 let resultAfterCallHandler;
                 if(subjectID){
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getInfo({
-                        reportID: subjectID, select, filter, populates, populates1, populates2, populates3
+                        reportID: subjectID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getList({
-                        keyword, limit, lastestID, type, parentID, userID, filter, populates, populates1, populates2, populates3
-                    });
+                        type, parentID, userID, keyword, limit, lastestID, select, populates
+                    })
                 }
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

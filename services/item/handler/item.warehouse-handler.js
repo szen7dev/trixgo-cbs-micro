@@ -22,13 +22,12 @@ module.exports = {
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { warehouseID,  keyword, limit, lastestID, select, filter, populates } = ctx.params;
+                let { warehouseID,  keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -38,7 +37,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__WAREHOUSE_MODEL.getList({
-                        companyID: company._id, lastestID, keyword, limit, filter, populates
+                        companyID: company._id, lastestID, keyword, limit, select, populates
                     });
                 }
 

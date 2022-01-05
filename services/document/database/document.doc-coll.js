@@ -88,7 +88,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     },
     //_________Loại văn bản theo hệ thống quy định
     type: { type: Number, default: 1 },
-    //_________Nội dung văn bản
+    //_________Nội dung văn bản (Tiêu đề)
     name: String,
     //_________Mô tả
     description: String,
@@ -104,7 +104,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     status: String,
     //_________Ghi chú
     note: String,
-    //_________Người phê duyệt
+    //_________Người phê duyệt (Người ký)
     approver: String,
     //_________Số lượng nhận
     amount: { type: Number, default: 1 },
@@ -122,7 +122,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref: "document_doc"
     }],
-    //_________File đính kèm hồ sơ
+    //_________File đính kèm hồ sơ(sau sẽ Bỏ)
     files: [{
         type: Schema.Types.ObjectId,
         ref: "file_core"
