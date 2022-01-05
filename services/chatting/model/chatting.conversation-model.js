@@ -674,7 +674,7 @@ class Model extends BaseModel {
 	 * Date: 11/08/2021
 	 * Hàm chuẩn về lấy danh sách mẩu tin
 	 */
-	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 5, filter = {}, select = {} }){
+	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))

@@ -502,7 +502,7 @@ class Model extends BaseModel {
                 // Cập nhật số lượng view
 				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
 					$inc: {
-						totalView: 1
+						amountView: 1
 					}
 				})
 

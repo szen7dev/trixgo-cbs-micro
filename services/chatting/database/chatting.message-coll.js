@@ -178,8 +178,8 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     /**
      * Reaction message
      */
-    // reactions: [{
-    //     type    : Schema.Types.ObjectId,
-    //     ref     : 'reaction_core'
-    // }],
+    reactions: [{
+        type    : Schema.Types.ObjectId,
+        ref     : 'reaction_core'
+    }],
 })

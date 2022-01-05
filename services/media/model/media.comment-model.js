@@ -82,7 +82,7 @@ class Model extends BaseModel {
                 // Cập nhật số lượng comment
                 await MEDIA_COLL.findByIdAndUpdate(mediaID, {
                     $inc: {
-                        totalComments: 1
+                        amountComment: 1
                     }
                 })
 
@@ -144,7 +144,7 @@ class Model extends BaseModel {
                 // Cập nhật số lượng comment
                 await MEDIA_COLL.findByIdAndUpdate(mediaID, {
                     $inc: {
-                        totalComments: -1
+                        amountComment: -1
                     }
                 })
 
