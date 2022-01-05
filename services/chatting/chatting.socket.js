@@ -1112,7 +1112,18 @@ exports.CHATTING_SOCKET = {
 		let broker			 = socket.$service.broker;
         let io               = socket.$service.io;
 		let userID			 = socket.client.user;
-		let { lastestID, filter, select, receiversID } = data;
+		let { lastestID, filter, select, conversationID } = data;
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: infoConversation, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+			});
+		}
 
 		const listConversation 	= await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
 			lastestID, userID, filter, select, ctx: broker
@@ -1120,7 +1131,7 @@ exports.CHATTING_SOCKET = {
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver: receiversID,
+			arrReceiver: infoConversation.members,
 			data: listConversation, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
 		});

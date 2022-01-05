@@ -795,8 +795,6 @@ class Model extends BaseModel {
 						listMessages.length = limit;
 					}
 
-					// (lastestID && checkObjectIDs(lastestID)) && (previousCursor = listMessages[0]._id);
-
 					if(!keyword){
 						listMessages = listMessages.reverse();
 						nextCursor	 = listMessages[0]._id;
