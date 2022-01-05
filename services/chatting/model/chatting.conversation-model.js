@@ -1549,6 +1549,7 @@ class Model extends BaseModel {
 				conditionObj.usersHide = { $nin: [userID] };
 
 				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`);
+				console.log({ listConversationPin: listConversationPin.data })
 
 				if(listConversationPin.data && listConversationPin.data.length){
 					conditionObj._id = { $nin: listConversationPin.data };
