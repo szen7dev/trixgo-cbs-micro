@@ -72,7 +72,6 @@ module.exports = {
             }
         }
     },
-
     /**
 	 * Dev: MinhVH
 	 * Func: Cập nhật văn bản

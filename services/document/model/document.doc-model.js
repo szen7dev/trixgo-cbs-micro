@@ -46,7 +46,6 @@ class Model extends BaseModel {
 	 * Func: Tạo mới văn bản
 	 * Date: 26/10/2021
 	 */
-
     // Hiện đang thiếu fiel giá trị, tình trạng hoàn thành
 	insert({
         parentID, projectID, companyID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -373,7 +372,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: get Hợp đồng ✅
+     * Name: get văn bản ✅
      * Author: Depv
      * Code: 
      */
@@ -428,7 +427,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
-        requestResponse, fieldID, fromDate, toDate,
+        requestResponse, fieldID, fromDate, toDate, 
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {

@@ -505,6 +505,12 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.POSITION}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST}`],
 
+		/**
+		 * Storage
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.STORAGE}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST}`],
+
 		//------------------------------END SEARVICE ITEM---------------------------//
 
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
@@ -772,8 +778,8 @@ module.exports = {
 		/**
 		 * Code: A0155
 		 */
-		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_PACKAGE}`] :
-		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_PACKAGE}`],
+		[`GET ${CF_ROUTINGS_DOCUMENT.DOCUMENT_PACKAGE}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.DOCUMENT_PACKAGE_GET_INFO_AND_GET_LIST}`],
 
 		/**
 		 * Code: A0156

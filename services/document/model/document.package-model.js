@@ -30,86 +30,130 @@ class Model extends BaseModel {
         super(DOCUMENT__PACKAGE_COLL);
     }
 
+	/**
+	 * Name: get info document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+	getInfo({ documentPackageID, select, populates }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(documentPackageID))
+                    return resolve({ error: true, message: 'Request params documentPackageID invalid', status: 400 });
+                
+                 // populates
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterGet = await DOCUMENT__PACKAGE_COLL.findById(documentPackageID)
+                                    .select(select)
+                                    .populate(populates)
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterGet, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
     /**
 	 * Dev: MinhVH
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getListPackage({ departmentID, userID, lastestID, keyword, limit = 20, filter = {}, select = {} }){
+    getListPackage({ departmentID, userID, lastestID, keyword, limit = 10, select, populates = {} }){
         return new Promise(async resolve => {
             try {
+
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 if(departmentID && !checkObjectIDs(departmentID))
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 20;
-				} else{
-					limit = +limit;
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+						path: "",
+						select: ""
+					}
 				}
 
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
-				let conditionObj 	= { members: { $in: [userID] } };
-				let conditionFind 	= {};
+				let conditionObj    = { members: { $in: [userID] } };
+				let conditionFind   = {};
 				let objSort 	 	= {};
                 let sortBy = {
-                    modifyAt: -1,
-					createAt: -1,
+					createAt: -1
                 }
 
-				// GET CONDITION PAGINATION
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoPackage = await DOCUMENT__PACKAGE_COLL.findById(lastestID);
-                    if(!infoPackage)
-                        return resolve({ error: true, message: "Can't get info last package", status: 403 });
+				// PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__PACKAGE_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-                    let nextInfo = `${infoPackage.modifyAt}_${infoPackage._id}`;
-                    let keys 	 = ['modifyAt__-1', '_id__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
-
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
-                }
+					sortBy = dataPagingAndSort.data.sort;
+				}
 
                 departmentID && (conditionObj.project = departmentID);
 
 				// SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
 
                 let listPackages = await DOCUMENT__PACKAGE_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-					.populate('company', select.company)
-					.populate('project', select.project)
-					.populate('contract', select.contract)
-					.populate('members', select.members)
-					.populate('author', select.author)
+					.find({ ...conditionObj, ...conditionFind }, { ...objSort })
 					.limit(limit + 1)
-					.sort(sortBy)
+                    .sort(sortBy)
+					.populate(populates)
+					.select(select)
 					.lean();
 
 				// GET TOTAL RECORD
                 let totalRecord = await DOCUMENT__PACKAGE_COLL.count(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listPackages && listPackages.length){
@@ -126,6 +170,7 @@ class Model extends BaseModel {
 						listRecords: listPackages,
 						limit: +limit,
 						totalRecord,
+                        totalPage,
 						nextCursor
 					}
 				});
@@ -134,7 +179,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 }
 
 exports.MODEL = new Model;
