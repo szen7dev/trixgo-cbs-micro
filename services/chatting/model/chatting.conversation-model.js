@@ -755,7 +755,15 @@ class Model extends BaseModel {
 					.populate('usersSeen', select.usersSeen)
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('receivers', select.receivers)
-					.populate('parent', select.parent)
+					.populate({
+						path: 'parent',
+						select: select.parent,
+						populate: {
+							path: 'sender',
+							select: '_id bizname fullname image'
+						}
+					})
+					.populate('reminder')
 					.populate({
 						path: 'poll',
 						populate: {

@@ -1091,6 +1091,7 @@ exports.CHATTING_SOCKET = {
 		const arrReceiver = members.filter(memberID => {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
+		console.log({ arrReceiver })
 
         sendDataToMultilSocketsOfListUser({ 
 			io,
