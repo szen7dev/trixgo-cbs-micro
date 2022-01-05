@@ -1112,7 +1112,7 @@ exports.CHATTING_SOCKET = {
 		let broker			 = socket.$service.broker;
         let io               = socket.$service.io;
 		let userID			 = socket.client.user;
-		let { lastestID, filter, select, conversationID } = data;
+		let { filter, select, conversationID } = data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
@@ -1126,7 +1126,7 @@ exports.CHATTING_SOCKET = {
 		}
 
 		const listConversation 	= await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-			lastestID, userID, filter, select, ctx: broker
+			userID, filter, select, ctx: broker
 		});
 
 		sendDataToMultilSocketsOfListUser({ 

@@ -613,10 +613,17 @@ module.exports = {
     },
 
 	getListPinConversation: {			
-        params: {},
+        params: {
+            userID: { type: "string", optional: true },
+        },
         async handler(ctx) {
 			try {
-				let { _id: userID } = ctx.meta.infoUser;
+				let userID = ctx.meta?.infoUser?._id;
+                
+                if(!ctx.meta?.infoUser) {
+                    userID = ctx.params.userID;
+                }
+                console.log({ userID })
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
 					userID
