@@ -43,8 +43,10 @@ class Model extends BaseModel {
             try {
 
 				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
+				let dataInsert = {};
+				let dataUpdate = {};
 				let receiversNoti = [];
+				let conditionReceiver = {};
 
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs(authorID))
@@ -54,7 +56,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
 
-				condition = {
+				dataInsert = {
 					author: authorID,
 					title,
 					content,
@@ -62,19 +64,19 @@ class Model extends BaseModel {
 
 				switch (type) {
 					case 'company':
-						condition.type = 1;
+						dataInsert.type = 1;
 						break;
-					case 'just-me':
-						condition.type = 2;
+					case 'department':
+						dataInsert.type = 2;
 						break;
-					case 'departments':
-						condition.type = 3;
-						break;
-					case 'community':
-						condition.type = 4;
+					case 'digital-conversion':
+						dataInsert.type = 3;
 						break;
 					case 'system':
-						condition.type = 5;
+						dataInsert.type = 4;
+						break;
+					case 'just-me':
+						dataInsert.type = 5;
 						break;
 					default:
 						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
@@ -86,76 +88,80 @@ class Model extends BaseModel {
 						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
 					}
 
-					condition.location = locationOfMedia;
+					dataInsert.location = locationOfMedia;
 				}
 
 				if (tagFriends) {
 					if(!checkObjectIDs(tagFriends))
                     	return resolve({ error: true, message: 'Request params tagFriends invalid', status: 400 });
 
-					condition.tagFriends = tagFriends;
+					dataInsert.tagFriends = tagFriends;
 				}
 
 				if (companyID) {
 					if(!checkObjectIDs(companyID))
                     	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-					condition.company = companyID;
+					dataInsert.company = companyID;
 				}
 
 				if (departmentID) {
 					if(!checkObjectIDs(departmentID))
                     	return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
-					condition.department = departmentID;
+					dataInsert.department = departmentID;
 				}
 
-				let infoMediaAfterInserted = await this.insertData(condition);
+				console.log({ dataInsert })
+				let infoMediaAfterInserted = await this.insertData(dataInsert);
 
                 if(!infoMediaAfterInserted)
                     return resolve({ error: true, message: "Can't create media", status: 422 });
 
 				// INSERT FILE GỌI QUA FILE CORE SERVICE
-				let conditionObjUpdate = {};
 				let mediaID = infoMediaAfterInserted._id;
 
 				if (background) {
 					if(!checkObjectIDs(background))
 						return resolve({ error: true, message: 'Request background media failed', status: 403 });
 
-					conditionObjUpdate.background = background;
+					dataUpdate.background = background;
 				}
 
 				if (files && files.length) {
 					if(!checkObjectIDs(files))
 						return resolve({ error: true, message: 'Request files media failed', status: 403 });
 
-					conditionObjUpdate.files = files;
+					dataUpdate.files = files;
 				}
 
 				if (images && images.length) {
 					if(!checkObjectIDs(images))
 						return resolve({ error: true, message: 'Request images media failed', status: 403 });
 
-					conditionObjUpdate.images = images;
+					dataUpdate.images = images;
 				}
 
-				if (!isEmptyObject(conditionObjUpdate)) {
-					infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, conditionObjUpdate, { new: true });
+				if (!isEmptyObject(dataUpdate)) {
+					infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate, { new: true });
 				}
 
-				let conditionReceiver = {};
-
-				switch (condition.type) {
-					case 1:
+				switch (type) {
+					case 'company':
 						conditionReceiver = { company: companyID };
 						break;
-					case 3:
+					case 'department':
 						conditionReceiver = { department: departmentID };
+						break;
+					case 'digital-conversion':
+						break;
+					case 'system':
+						break;
+					case 'just-me':
 						break;
 					default:
 						break;
-				};
+				}
 
 				if(Object.keys(conditionReceiver).length){
 					const receivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
@@ -229,17 +235,17 @@ class Model extends BaseModel {
 					case 'company':
 						condition.type = 1;
 						break;
-					case 'just-me':
+					case 'department':
 						condition.type = 2;
 						break;
-					case 'departments':
+					case 'digital-conversion':
 						condition.type = 3;
-						break;
-					case 'community':
-						condition.type = 4;
 						break;
 					case 'system':
 						condition.type = 4;
+						break;
+					case 'just-me':
+						condition.type = 5;
 						break;
 					default:
 						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
@@ -396,27 +402,28 @@ class Model extends BaseModel {
 						conditionObj.type = 1;
 						conditionObj.company = companyID;
 						break;
-					case 'just-me':
+					case 'department':
 						conditionObj.type = 2;
-						conditionObj.author = userID;
+						conditionObj.company = companyID;
 						break;
-					case 'departments':
+					case 'digital-conversion':
 						conditionObj.type = 3;
-						conditionObj.department = departmentID;
-						break;
-					case 'community':
-						conditionObj.type = 4;
 						break;
 					case 'system':
+						conditionObj.type = 4;
+						break;
+					case 'just-me':
 						conditionObj.type = 5;
+						conditionObj.author = userID;
 						break;
 					case 'internal-company':
-						conditionObj.type = { $in: [1,2,3] };
+						conditionObj.type = { $in: [1,2] };
 						conditionObj.company = companyID;
 						break;
 					default:
-						break;
+						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
+
 				console.log({ conditionObj })
 
                 let listAfterFind = await this.getListWithCondition({
@@ -437,14 +444,19 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen 🐸
 	 * Func: XÓA BÀI VIẾT	
 	 */
-	remove({ mediaID }) {
+	remove({ mediaID, authorID }) {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(mediaID))
 					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
 
-				// let infoMediaAfterDelete = await MEDIA_COLL.findByIdAndUpdate(mediaID, { status: 2 }, { new: true });
-				let infoMediaAfterDelete = await MEDIA_COLL.findByIdAndDelete(mediaID);
+				if(!checkObjectIDs(authorID))
+					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+
+				let infoMediaAfterDelete = await MEDIA_COLL.findOneAndDelete({
+					_id: mediaID,
+					author: authorID
+				});
 
 				if (!infoMediaAfterDelete) {
                     return resolve({ error: true, message: "Can't delete media", status: 422 });

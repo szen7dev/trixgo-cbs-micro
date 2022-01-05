@@ -492,7 +492,6 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 		}
-		console.log({ arrReceiver })
 
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 

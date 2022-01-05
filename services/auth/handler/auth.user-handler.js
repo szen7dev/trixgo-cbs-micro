@@ -623,7 +623,6 @@ module.exports = {
                 if(!ctx.meta?.infoUser) {
                     userID = ctx.params.userID;
                 }
-                console.log({ userID })
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
 					userID

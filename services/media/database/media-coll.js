@@ -42,10 +42,10 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
    /**
      * Loại bài viết
      * 1: Bài viết công ty (Thành viên trong công ty)
-     * 2: Bài viết cá nhân
-     * 3: Dự án, phòng ban
-     * 4: Cộng đồng
-     * 5: Hệ thống
+     * 2: Dự án, phòng ban
+     * 3: Chuyển đổi số
+     * 4: Hệ thống
+     * 5: Bài viết cá nhân
      * ..... Sau bổ sung thêm vài loại bài viết
 	 */
     type: {

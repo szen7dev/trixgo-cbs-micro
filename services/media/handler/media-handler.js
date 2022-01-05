@@ -119,10 +119,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.remove({ 
-					mediaID
+					mediaID, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
