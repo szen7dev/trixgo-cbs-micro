@@ -1124,16 +1124,30 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		const listConversation 	= await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-			userID, filter, select, ctx: broker
-		});
+		let listConversationOfMembers = [];
+		console.log({ members: infoConversation.members })
+		for (const memberID of infoConversation.members) {
+			console.log({ memberID })
+			const listConversation = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
+				userID: memberID.toString(), filter, select, ctx: broker
+			});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
-			arrReceiver: infoConversation.members,
-			data: listConversation, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
-		});
+			listConversationOfMembers[listConversationOfMembers.length] = {
+				memberID,
+				listConversation
+			}
+		}
+
+		listConversationOfMembers.map(conversation => {
+			console.log({ conversation })
+			sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [conversation.memberID],
+				data: conversation.listConversation, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
+			});
+		})
+
     },
 
 }
