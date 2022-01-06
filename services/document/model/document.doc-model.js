@@ -48,23 +48,23 @@ class Model extends BaseModel {
 	 */
     // Hiện đang thiếu fiel giá trị, tình trạng hoàn thành
 	insert({
-        parentID, projectID, companyID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate,
-        name, description, note, fieldID, ctx
+        parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID,
+        name, description, note, fieldID, value, completeStatus, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs(projectID)) {
+				if (!checkObjectIDs(departmentID)) {
 					return resolve({ 
                         error: true, 
-                        message: 'Request params projectID invalid', 
-                        keyError: 'params_projectID_invalid',
+                        message: 'Request params departmentID invalid', 
+                        keyError: 'params_departmentID_invalid',
                         status: 400 
                     });
                 }
 
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
-                    return resolve({ 
+                    return resolve({
                         error: true, 
                         message: 'Request params direction invalid', 
                         keyError: 'params_direction_invalid',
@@ -72,21 +72,27 @@ class Model extends BaseModel {
                     });
                 }
 
-                if (!checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params requestResponse invalid', 
-                        keyError: 'params_requestResponse_invalid',
-                        status: 400 
-                    });
-                }
-
+                // if (!checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
+                //     return resolve({ 
+                //         error: true, 
+                //         message: 'Request params requestResponse invalid', 
+                //         keyError: 'params_requestResponse_invalid',
+                //         status: 400 
+                //     });
+                // }
+                let infoDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID
+                })
+                let companyID = infoDepartment.data.company;
+                if(!companyID)
+                    return res.json({ error: true, message: "company_invalid" }); 
                 let suid = await stringUtils.randomAndCheckExists(DOCUMENT__DOC_COLL, 'suid');
+
                 let dataInsert = {
                     suid,
                     author: userID,
                     company: companyID,
-                    project: projectID,
+                    project: departmentID,
                     contract: contractID,
                     package: packageID,
                     direction,
@@ -102,6 +108,8 @@ class Model extends BaseModel {
                     expiredResponse,
                     note,
                     description,
+                    value,
+                    completeStatus
                 }
 
                 amount          && (dataInsert.amount           = +amount || 1);
@@ -121,6 +129,13 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParent = await DOCUMENT__DOC_COLL.findById(parentID).select('level');
+                    if(!infoParent)
+                    return resolve({
+                        error: true, 
+                        message: "parentID invalid",
+                        keyError: "parentID_invalid",
+                        status: 422
+                    });
                     dataInsert.parent = parentID;
                     dataInsert.level = +infoParent.level + 1;
                 }
@@ -136,13 +151,13 @@ class Model extends BaseModel {
                     });
                 }
                 // Call model create document__user
-                // await DOCUMENT__USER_COLL.create({
-                //     document: infoAfterInsert._id,
-                //     user: userID,
-                //     permission: 1,
-                //     createAt: timeUtils.getCurrentTime(),
-                //     modifyAt: timeUtils.getCurrentTime()
-                // });
+                await DOCUMENT__USER_COLL.create({
+                    document: infoAfterInsert._id,
+                    user: userID,
+                    permission: 1,
+                    createAt: timeUtils.getCurrentTime(),
+                    modifyAt: timeUtils.getCurrentTime()
+                });
 
                 // Cộng số lượng hồ sơ trong gói thầu
                 if(packageID && checkObjectIDs(packageID)){
@@ -158,7 +173,7 @@ class Model extends BaseModel {
                 //         $addToSet: { childs: infoAfterInsert._id }
                 //     });
                 // }
-
+                // Không
                 // Update document for contract
                 // if(type && !isNaN(type) && +type === 2){
                 //     let infoPackage = await DOCUMENT__PACKAGE_COLL
@@ -192,7 +207,7 @@ class Model extends BaseModel {
     update({
 		documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate,
-        name, description, note, fieldID, ctx
+        name, description, note, fieldID, value, completeStatus, otherID, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -225,7 +240,7 @@ class Model extends BaseModel {
 
                 let checkPermission = await DOCUMENT__USER_COLL.findOne({
                     document: documentID,
-                    user: userUpdate,
+                    user: userID,
                     permission: { $in: [1,3] }
                 }).lean()
 
@@ -238,20 +253,66 @@ class Model extends BaseModel {
                     });
                 }
                     
-                let dataUpdate = {
-                    name,
-                    sign,
-                    storeSign,
-                    approver,
-                    date,
-                    receivedDate,
-                    style,
-                    status,
-                    expiredResponse,
-                    contract: contractID,
-                    note,
-                    description,
-                    userUpdate
+                let dataUpdate = { }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(storeSign){
+                    dataUpdate.storeSign = storeSign;
+                }
+
+                if(approver){
+                    dataUpdate.approver = approver;
+                }
+
+                if(date){
+                    dataUpdate.date = date;
+                }
+
+                if(receivedDate){
+                    dataUpdate.receivedDate = receivedDate;
+                }
+
+                if(style){
+                    dataUpdate.style = style;
+                }
+
+                if(status){
+                    dataUpdate.status = status;
+                }
+
+                if(expiredResponse){
+                    dataUpdate.expiredResponse = expiredResponse;
+                }
+
+                if(contractID){
+                    dataUpdate.contract = contractID;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(userID){
+                    dataUpdate.userUpdate = userID;
+                }
+
+                if(value){
+                    dataUpdate.value = value;
+                }
+
+                if(completeStatus){
+                    dataUpdate.completeStatus = completeStatus;
                 }
 
                 direction       && (dataUpdate.direction        = +direction || 1);
@@ -515,7 +576,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID
                 }
-                
+
                 if(marked){
                     conditionObj.usersMarked = { $in: [userID] }
                 }
