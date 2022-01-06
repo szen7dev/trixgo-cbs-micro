@@ -24,7 +24,6 @@ const CF_ROUTINGS_MEDIA = {
     REACTION_COMMENT_IMAGE               		 : `${BASE_ROUTE}/reaction-comment-images`,
     REPLY_COMMENT_IMAGE_MEDIA     		         : `${BASE_ROUTE}/reply-comment-images`,
 
-    //KHU VỰC NÀY ĐỆ VIẾT
     MEDIA_COMMENTS     		                     : `${BASE_ROUTE}${COMMENTS}`,
 }
 
