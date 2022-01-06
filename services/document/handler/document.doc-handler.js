@@ -37,7 +37,7 @@ module.exports = {
             status              : { type: "string" },
             amount              : { type: "number" },
             amountDelivery      : { type: "number" },
-            requestResponse     : { type: "number" },
+            requestResponse     : { type: "number", optional: true },
             expiredResponse     : { type: "string" },
             direction           : { type: "number" },
             packageID           : { type: "string", optional: true },
@@ -48,7 +48,8 @@ module.exports = {
             otherID             : { type: "string", optional: true },
             storageID           : { type: "string", optional: true },
             departmentID        : { type: "string" },
-            companyID           : { type: "string" },
+            value               : { type: "number", optional: true },
+            completeStatus      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -57,13 +58,13 @@ module.exports = {
                 const {
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, companyID
+                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, companyID, userID, ctx
+                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -103,6 +104,8 @@ module.exports = {
             propertyID          : { type: "string", optional: true },
             otherID             : { type: "string", optional: true },
             storageID           : { type: "string", optional: true },
+            value               : { type: "number", optional: true  },
+            completeStatus      : { type: "number", optional: true  },
         },
         async handler(ctx) {
             try {
@@ -111,16 +114,16 @@ module.exports = {
                 const {
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note
+                    fieldID, propertyID, otherID, storageID, note, value, completeStatus
                 } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.updateDocument({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.update({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, userUpdate, ctx
+                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, ctx
 				});
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });   
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }

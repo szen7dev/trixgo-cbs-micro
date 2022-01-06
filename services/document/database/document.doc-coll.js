@@ -56,12 +56,12 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
-    //_________Phân loại theo lĩnh vực
+    //_________Phân loại theo lĩnh vực(type = 1)
     field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Phân loại theo tính chất
+    //_________Phân loại theo tính chất(type=2)
     property: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
@@ -152,6 +152,19 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Number,
         default: 1
     },
+    //______________Các trường mới bổ sung
+    //_________Giá trị
+    value: {
+        type: Number,
+        default: 0
+    },
+    
+    //_________Trạng thái hoàn thành(0-Chưa hoàn thành/ 1-Hoàn thành)
+    completeStatus: {
+        type: Number,
+        default: 0
+    },
+
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
