@@ -107,6 +107,11 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
 		ref: 'user'
 	}],
 
+    isPrivate: {
+        type: Boolean,
+        default: false
+    },
+
 	/**
      * Cấu hình admin cuộc hội thoại
 	 * 1: Kích hoạt

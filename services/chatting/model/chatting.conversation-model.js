@@ -82,6 +82,7 @@ class Model extends BaseModel {
                 let infoConversationAfterInserted = await this.insertData({
 					name,
 					description,
+					isPrivate,
 					authors: [authorID],
 					members: [...new Set([authorID, ...membersID])]
 				});

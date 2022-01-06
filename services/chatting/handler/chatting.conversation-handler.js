@@ -453,7 +453,7 @@ module.exports = {
                 let { _id: userID } = ctx.meta.infoUser;
                 let { conversationID } = ctx.params;
 
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.markReadConversation({ 
+                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.markReadisPrivateConversation({ 
 					conversationID, userID
 				});
 
