@@ -682,7 +682,7 @@ class Model extends BaseModel {
                 companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
                 packageID       && (conditionObj.package = ObjectID(packageID));
-
+                
                 let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: conditionObj

@@ -61,7 +61,7 @@ module.exports = {
                     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus
                 } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus, ctx
@@ -449,6 +449,34 @@ module.exports = {
                     authorID, documentID, filesID
                 });
 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+    /**
+	 * Dev: Depv
+	 * Func: Thống kê theo type
+	 * Date: 13/11/2021
+	 */  
+    statisticalByType: {
+        params: {
+			departmentID: { type: "string", optional: true },
+			packageID   : { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company    } = ctx.meta.infoUser;
+                const { departmentID, packageID } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
+                    userID, companyID: company._id, departmentID, packageID
+                });
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
