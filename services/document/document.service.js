@@ -57,12 +57,15 @@ module.exports = {
 		[CF_ACTIONS_DOCUMENT.UPDATE_PERMISSION_SHARE]		: DOCUMENT__DOC_HANDLER.updatePermissionShare,
 		[CF_ACTIONS_DOCUMENT.GET_LIST_USER_SHARED]			: DOCUMENT__DOC_HANDLER.getListUserShared,
 		[CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT]				: DOCUMENT__DOC_HANDLER.getListDocument,
-		
-		//Gói thầu
+			
+		// Gói thầu
 		[CF_ACTIONS_DOCUMENT.DOCUMENT_PACKAGE_GET_INFO_AND_GET_LIST]: DOCUMENT__PACKAGE_HANDLER.getInfoAndGetList,
 
 		// Danh sách nhóm phân loại hồ sơ
 		[CF_ACTIONS_DOCUMENT.GET_LIST_GROUP_DOCTYPE]		: DOCUMENT__DOC_HANDLER.getListGroupDoctype,
+
+		// Thêm file đính kèm trong hồ sơ
+		[CF_ACTIONS_DOCUMENT.ADD_FILE_ATTACHMENT]			: DOCUMENT__DOC_HANDLER.addFileAttachment,
 
 		// Thêm file đính kèm trong hồ sơ
 		[CF_ACTIONS_DOCUMENT.ADD_FILE_ATTACHMENT]			: DOCUMENT__DOC_HANDLER.addFileAttachment,

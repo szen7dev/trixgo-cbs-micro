@@ -219,7 +219,7 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
-
+                
                 if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
                     return resolve({ 
                         error: true, 
@@ -642,13 +642,12 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
      * Dev: MinhVH
-     * Func: Danh sách nhóm phân loại hồ sơ
+     * Func: Thông kê số lượng văn bản theo type
      * Date: 27/10/2021
      */
-    getListGroupDoctype({ userID, companyID, departmentID, packageID }) {
+    statisticalByType({ userID, companyID, departmentID, packageID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([userID])) {
@@ -656,15 +655,6 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Request params userID invalid',
                         keyError: 'params_userID_invalid',
-                        status: 400 
-                    });
-                }
-
-                if(companyID && !checkObjectIDs([companyID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params companyID invalid', 
-                        keyError: 'params_companyID_invalid',
                         status: 400 
                     });
                 }
@@ -692,7 +682,6 @@ class Model extends BaseModel {
                 companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
                 packageID       && (conditionObj.package = ObjectID(packageID));
-                console.log({ conditionObj })
 
                 let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
                     {
@@ -733,21 +722,7 @@ class Model extends BaseModel {
                 if(listDoctypeGroupByType.length){
                     listDoctypeGroupByType.map(doctype => {
                         const doctypeHaveNewDocumentInWeek = listDoctypeGroupByWeek.find(newDoc => newDoc._id === doctype._id)
-                        let nameDoctype = 'Chung';
-
-                        switch (doctype._id) {
-                            case 2:
-                                nameDoctype = 'Hợp đồng';
-                                break;
-                            case 3:
-                                nameDoctype = 'Bản vẽ';
-                                break;
-                            default:
-                                break;
-                        }
-
                         listDoctype[listDoctype.length] = {
-                            name: nameDoctype,
                             type: doctype._id,
                             totalDocument: doctype.totalDocument,
                             totalDocumentNew: doctypeHaveNewDocumentInWeek ? doctypeHaveNewDocumentInWeek.totalDocument : 0
@@ -776,6 +751,112 @@ class Model extends BaseModel {
             }
         })
     }
+
+
+    /**
+ 	 * Dev: MinhVH
+ 	 * Func: Danh sách lưu trữ hồ sơ văn bản
+ 	 * Date: 27/10/2021
+ 	 */
+ 	getListStorage({ userID, companyID, lastestID, keyword, limit = 10, filter = {}, select = {} }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+               if(!checkObjectIDs([companyID]))
+                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+
+                if(isNaN(limit)){
+                    limit = 10;
+                } else{
+                    limit = +limit;
+                }
+
+                if(filter && typeof filter === 'string'){
+                    if(!IsJsonString(filter))
+                        return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+
+                    filter = JSON.parse(filter);
+                }
+
+                if(select && typeof select === 'string'){
+                    if(!IsJsonString(select))
+                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+                    select = JSON.parse(select);
+                }
+
+                let conditionFind = {};
+                let conditionObj  = { company: companyID };
+                let objSort = {};
+                let sortBy = {
+                    modifyAt: -1,
+                    createAt: -1,
+                }
+
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoStorage = await DOCUMENT__STORAGE_COLL.findById(lastestID);
+                    if(!infoStorage)
+                        return resolve({ error: true, message: "Can't get info last storage", status: 403 });
+
+                    let nextInfo = `${infoStorage.modifyAt}_${infoStorage._id}`;
+                    let keys	 = ['modifyAt__-1', '_id__-1'];  
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionFind = dataPagingAndSort.data.find;
+                }
+
+                // SEARCH TEXT
+                if(keyword){
+                    conditionObj.$text = { $search: keyword };
+                    objSort.score = { $meta: "textScore" };
+                    sortBy.score  = { $meta: "textScore" };
+                }
+
+                let	listStorage = await DOCUMENT__STORAGE_COLL
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                    .populate('userCreate', select.userCreate)
+                    .populate('userUpdate', select.userUpdate)
+                    .populate('company', select.company)
+                    .populate('childs', select.childs)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .lean();
+
+                if(!listStorage)
+                    return resolve({ error: true, message: "Can't get list storage", status: 403 });
+
+                // GET TOTAL RECORD
+                let totalRecord = await DOCUMENT__STORAGE_COLL.countDocuments(conditionObj);
+                let nextCursor	= null;
+
+                if(listStorage && listStorage.length){
+                    if(listStorage.length > limit){
+                        nextCursor = listStorage[limit - 1]._id;
+                        listStorage.length = limit;
+                    }
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: {
+                        listRecords: listStorage,
+                        limit: +limit,
+                        totalRecord,
+                        nextCursor
+                    }
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
 
 
     /**
