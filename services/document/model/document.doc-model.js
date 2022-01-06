@@ -46,7 +46,6 @@ class Model extends BaseModel {
 	 * Func: Tạo mới văn bản
 	 * Date: 26/10/2021
 	 */
-
     // Hiện đang thiếu fiel giá trị, tình trạng hoàn thành
 	insert({
         parentID, projectID, companyID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
@@ -373,7 +372,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: get Hợp đồng ✅
+     * Name: get văn bản ✅
      * Author: Depv
      * Code: 
      */
@@ -383,7 +382,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -421,6 +419,7 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
      * Name  : Danh sách hợp đồng ✅
      * Author: Depv
@@ -428,7 +427,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
-        requestResponse, fieldID, fromDate, toDate,
+        requestResponse, fieldID, fromDate, toDate, marked, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -436,7 +435,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { 
-                    company: companyID
                 };
 
                 let conditionFind = { };
@@ -517,6 +515,10 @@ class Model extends BaseModel {
                 if(checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID
                 }
+                
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] }
+                }
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -544,7 +546,6 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-                
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -579,12 +580,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-
-
-
-
-
 
 
     /**

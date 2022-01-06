@@ -87,7 +87,7 @@ module.exports = {
 				res.redirect('/ui');
 			});
 		},
-
+		
 		// async authenticate(ctx, route, req, res) {
 		// 	try {
 		// 		let accessToken = req.headers[ 'x-access-token' ] || req.headers.token || null;

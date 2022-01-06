@@ -17,11 +17,7 @@ const CF_ROUTINGS_DOCUMENT = {
     GET_LIST_USER_SHARED                        : `${BASE_ROUTE}/list-user-shared`,
 
     /// PACKAGE
-    GET_LIST_PACKAGE                     		: `${BASE_ROUTE}/list-package`,
-
-    /// DOC_TYPE
-    GET_LIST_DOCTYPE                     		: `${BASE_ROUTE}/list-doctype`,
-    GET_LIST_GROUP_DOCTYPE            		    : `${BASE_ROUTE}/list-group-doctype`,
+    DOCUMENT_PACKAGE                     		: `${BASE_ROUTE}/document_packages`,
 }
 
 exports.CF_ROUTINGS_DOCUMENT = CF_ROUTINGS_DOCUMENT;

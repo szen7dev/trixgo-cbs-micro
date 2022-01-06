@@ -18,28 +18,35 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Danh sách gói thầu
+	 * Func: Danh sách gói thầu hoặc chi tiết gói thầu
 	 * Date: 27/10/2021
 	 */
-    getListPackage: {
+    getInfoAndGetList: {
         params: {
+			departmentID     : { type: "string", optional: true },
+			documentPackageID: { type: "string", optional: true },
+            // =========================
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
-			limit           : { type: "number", optional: true },
-			departmentID    : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, departmentID, keyword, limit, select, filter } = ctx.params;
+                const { documentPackageID, lastestID, departmentID, keyword, select, populates } = ctx.params;
+                let resultAfterCallHandler;
                 
-                const resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
-                    lastestID, departmentID, userID, keyword, limit, select, filter
-                });
-
+                if(documentPackageID){
+                    resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getInfo({
+                        documentPackageID, select, populates
+                    });
+                }else{
+                    resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
+                        departmentID, userID, lastestID, keyword, select, populates
+                    });
+                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

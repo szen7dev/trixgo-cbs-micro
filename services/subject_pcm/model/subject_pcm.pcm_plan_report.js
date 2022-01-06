@@ -314,9 +314,6 @@ class Model extends BaseModel {
 
                 let listUserPcmPlanReportAccess = await SUBJECT_PCM__USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
 
-                let listSubjectAccess = listUserPcmPlanReportAccess.map(item => item.subject);   
-                // conditionObj._id = { $in: listSubjectAccess };
-
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -324,9 +321,6 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
                 
-                // GET TOTAL RECORD
-				// let totalRecord = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.count(conditionObj);
-                let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -341,18 +335,12 @@ class Model extends BaseModel {
 					}
 				}
 
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
-                }
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {

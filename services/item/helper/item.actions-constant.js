@@ -10,6 +10,7 @@ const DOCTYPE           = 'DOCTYPE';
 const WAREHOUSE         = 'WAREHOUSE';
 const AREA              = 'AREA';
 const POSITION          = 'POSITION';
+const STORAGE           = 'STORAGE';
 
 
 const CF_ACTIONS_ITEM = {
@@ -58,6 +59,11 @@ const CF_ACTIONS_ITEM = {
      * POSITION 
      */
     POSITION_GET_INFO_AND_GET_LIST              : `${BASE_ACTIONS}_${POSITION}_GET_INFO_AND_GET_LIST`,
+
+    /**
+     * STORAGE 
+     */
+    STORAGE_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${STORAGE}_GET_INFO_AND_GET_LIST`,
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

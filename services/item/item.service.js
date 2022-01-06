@@ -18,6 +18,7 @@ const ITEM__CONTACT_HANDLER          	= require('./handler/item.contact-handler'
 const ITEM__WAREHOUSE_HANDLER          	= require('./handler/item.warehouse-handler');
 const ITEM__AREA_HANDLER          		= require('./handler/item.area-handler');
 const ITEM__POSITION_HANDLER          	= require('./handler/item.position-handler');
+const ITEM__STORAGE_HANDLER          	= require('./handler/item.storage-handler');
 
 /**
  * COLLECTIONS
@@ -29,6 +30,7 @@ const ITEM__DOCTYPE_COLL				= require('./database/item.doctype-coll');
 const ITEM__CONTACT_COLL				= require('./database/item.contact-coll');
 const ITEM__WAREHOUSE_COLL				= require('./database/item.warehouse-coll');
 const ITEM__POSITION_COLL				= require('./database/item.position-coll');
+const ITEM__STORAGE_COLL				= require('./database/item.storage-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
@@ -41,6 +43,7 @@ module.exports = {
 		DbService(ITEM__CONTACT_COLL),
 		DbService(ITEM__WAREHOUSE_COLL),
 		DbService(ITEM__POSITION_COLL),
+		DbService(ITEM__STORAGE_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ITEM])
     ],
 
@@ -87,6 +90,9 @@ module.exports = {
 
 		//==========================================  POSITION  ================================
 		[CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST] 		: ITEM__POSITION_HANDLER.getInfoAndGetList,
+
+		//==========================================  STORAGE  ================================
+		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
 	},
 
 	/**
