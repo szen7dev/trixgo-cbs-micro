@@ -1,6 +1,5 @@
 "use strict";
 const { REDIS_SEPERATOR } 			= require('./tools/cache/cf_redis');
-
 /**
  * Moleculer ServiceBroker configuration file
  *
@@ -151,7 +150,7 @@ module.exports = {
 	},
 
 	// Disable built-in request & emit balancer. (Transporter must support it, as well.). More info: https://moleculer.services/docs/0.14/networking.html#Disabled-balancer
-	disableBalancer: false,
+	disableBalancer: false,	
 
 	// Settings of Service Registry. More info: https://moleculer.services/docs/0.14/registry.html
 	registry: {

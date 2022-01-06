@@ -427,7 +427,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
-        requestResponse, fieldID, fromDate, toDate, 
+        requestResponse, fieldID, fromDate, toDate, marked, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -514,6 +514,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID
+                }
+                
+                if(marked){
+                    conditionObj.usersMarked = { $in: [userID] }
                 }
 
                 // PHÂN TRANG KIỂU MỚI

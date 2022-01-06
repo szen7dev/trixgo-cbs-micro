@@ -458,7 +458,7 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.DOCTYPES}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST}`],
 
-		/**
+		/** 
 		 * Contract
 		 */
 		[`GET ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
@@ -472,7 +472,7 @@ module.exports = {
 
 		[`DELETE ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_REMOVE}`],
-
+		
 		/**
 		 * Contact
 		 */
@@ -497,7 +497,6 @@ module.exports = {
 		 */
 		[`GET ${CF_ROUTINGS_ITEM.AREA}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`],
-
 
 		/**
 		 * Position
@@ -562,7 +561,7 @@ module.exports = {
 
 
 		//---------------------------🏁 START SEARVICE TRAINING 🏁--------------------------------//
-		//TRAINING SUBJECT
+		//______traning subject
 		//F02504 || F02505
 		[`GET ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
 		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_GET_INFO_AND_GET_LIST}`],
@@ -579,7 +578,7 @@ module.exports = {
 		[`DELETE ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
 		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_REMOVE}`],
 		
-		//Training subject rating
+		//______training subject rating
 		// F02506
 		[`POST ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT_RATING}`] :
 		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_RATING_INSERT}`],
@@ -770,12 +769,6 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_DOCUMENT}`],
 
 		/**
-		 * Code: A0154
-		 */
-		[`GET ${CF_ROUTINGS_DOCUMENT.GET_LIST_DOCTYPE}`] :
-		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.GET_LIST_DOCTYPE}`],
-
-		/**
 		 * Code: A0155
 		 */
 		[`GET ${CF_ROUTINGS_DOCUMENT.DOCUMENT_PACKAGE}`] :
@@ -842,9 +835,7 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_OPERATION.UTILITY}`] :
 		[`${CF_DOMAIN_SERVICES.OPERATION}.${CF_ACTIONS_OPERATION.UTILITY_GET_INFO_AND_GET_LIST}`],
-
 		//---------------------------🏁 END SERVICE OPERATION 🏁---------------------------//
-
 
 
 
@@ -896,7 +887,6 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_LOGS}`] :
 		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST}`],
-
 		//---------------------------🏁 END SERVICE ANALYSIS   🏁---------------------------//
 	},
 

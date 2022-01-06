@@ -18,10 +18,6 @@ const CF_ROUTINGS_DOCUMENT = {
 
     /// PACKAGE
     DOCUMENT_PACKAGE                     		: `${BASE_ROUTE}/document_packages`,
-
-    /// DOC_TYPE
-    GET_LIST_DOCTYPE                     		: `${BASE_ROUTE}/list-doctype`,
-    GET_LIST_GROUP_DOCTYPE            		    : `${BASE_ROUTE}/list-group-doctype`,
 }
 
 exports.CF_ROUTINGS_DOCUMENT = CF_ROUTINGS_DOCUMENT;
