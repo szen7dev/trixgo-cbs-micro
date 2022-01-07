@@ -45,12 +45,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {  type, name, description, parent, sign, owner, address, startDate, endDate, pm, status, note,
-                    assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, admins, members } = ctx.params;
+                    assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, admins,
+                    members, numberOfDocs, numberFinishOfDocs } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
                     type, name, description, company, parent, sign, owner, address, startDate, endDate, pm, status, 
-                    note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID: userID, admins, members, ctx
+                    note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID: userID, admins,
+                    numberOfDocs, numberFinishOfDocs, members, ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -157,6 +159,7 @@ module.exports = {
             numberOfPunchLists             : { type: "number", optional: true },
             numberOfPhotos                 : { type: "number", optional: true },
             numberOfInspections            : { type: "number", optional: true },
+            numberFinishOfDocs             : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -172,8 +175,8 @@ module.exports = {
                     contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections } = ctx.params;
-
+                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs } = ctx.params;
+                    
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
                     departmentID, name, admins, adminRemove, members, memberRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
@@ -184,7 +187,7 @@ module.exports = {
                     contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections 
+                    numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

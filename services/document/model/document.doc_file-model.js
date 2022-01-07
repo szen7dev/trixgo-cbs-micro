@@ -60,7 +60,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */ 
-                let infoAterInsert = await this.insertData({ document: documentID, file: fileID, user: userID });
+                let infoAterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
                                   
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
@@ -106,7 +106,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
 	 * Name: get info doc file ✅
 	 * Author: Depv
