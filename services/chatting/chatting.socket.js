@@ -1067,7 +1067,25 @@ exports.CHATTING_SOCKET = {
         let io                   		= socket.$service.io;
 		let { messageID, typeReaction }	= data;
 
-		let infoMessage = await CHATTING__MESSAGE_COLL
+		let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID).select('_id');
+
+		if(!infoMessage){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info message" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+			});
+		}
+
+		await CHATTING__MESSAGE_MODEL.reactionMessage({
+			userID,
+			messageID,
+			typeReaction: +typeReaction,
+			ctx: broker
+		})
+
+		infoMessage = await CHATTING__MESSAGE_COLL
 			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
 			.populate({
 				path: 'sender receivers usersAssigned',
@@ -1108,22 +1126,6 @@ exports.CHATTING_SOCKET = {
 				},
 			})
 			.lean();
-
-		if(!infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info message" }, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
-			});
-		}
-
-		await CHATTING__MESSAGE_MODEL.reactionMessage({
-			userID,
-			messageID,
-			typeReaction: +typeReaction,
-			ctx: broker
-		})
 
         sendDataToMultilSocketsOfListUser({ 
 			arrReceiver: infoMessage?.conversation?.members, 
