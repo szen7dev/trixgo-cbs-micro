@@ -1059,7 +1059,7 @@ exports.CHATTING_SOCKET = {
         let io                   		= socket.$service.io;
 		let { messageID, typeReaction }	= data;
 
-		const infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
+		let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
 
 		if(!infoMessage){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -1070,30 +1070,38 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		const infoAfterReaction = await CHATTING__MESSAGE_MODEL.reactionMessage({
+		await CHATTING__MESSAGE_MODEL.reactionMessage({
 			userID,
 			messageID,
-			typeReaction,
+			typeReaction: +typeReaction,
 			ctx: broker
 		})
 
-		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-			userID,
-			select: '_id bizname fullname image'
-		});
-
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(infoMessage.conversation);
+		infoMessage = await CHATTING__MESSAGE_COLL
+			.findById(messageID)
+			.populate({
+				path: 'conversation',
+				select: 'members'
+			})
+			.populate({
+				path: 'reactions',
+				select: '_id type',
+				populate: {
+					path: 'userCreate',
+					select: '_id fullname iamge'
+				}
+			})
+			.lean();
 
         sendDataToMultilSocketsOfListUser({ 
 			io,
-			arrReceiver: infoConversation.members, 
+			arrReceiver: infoMessage?.conversation?.members, 
 			listUserConnected: listUserActive, 
 			data: {
 				error: false, 
 				data: {
-					infoSender,
-					infoMessage,
-					infoReaction: infoAfterReaction
+					listRecords: infoMessage.reactions,
+					totalRecord: infoMessage.reactions.length,
 				}
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
