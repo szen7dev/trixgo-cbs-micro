@@ -469,6 +469,14 @@ exports.CHATTING_SOCKET = {
 					select: '_id fullname bizname image'
 				})
 				.populate({
+					path: 'reactions',
+					select: '_id type',
+					populate: {
+						path: 'userCreate',
+						select: '_id fullname iamge'
+					}
+				})
+				.populate({
 					path: 'parent',
 					populate: {
 						path: 'sender',
@@ -1051,7 +1059,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Reaction 1 tin nhắn
 	 * Date: 26/10/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data) { 
         let socket               		= this;
 		let userID              		= socket.client.user;
 		let broker                      = socket.$service.broker;
@@ -1059,7 +1067,47 @@ exports.CHATTING_SOCKET = {
         let io                   		= socket.$service.io;
 		let { messageID, typeReaction }	= data;
 
-		let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
+		let infoMessage = await CHATTING__MESSAGE_COLL
+			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
+			.populate({
+				path: 'sender receivers usersAssigned',
+				select: '_id fullname bizname image'
+			})
+			.populate({
+				path: 'conversation',
+				select: 'members'
+			})
+			.populate({
+				path: 'reactions',
+				select: '_id type',
+				populate: {
+					path: 'userCreate',
+					select: '_id fullname iamge'
+				}
+			})
+			.populate({
+				path: 'parent',
+				populate: {
+					path: 'sender',
+					select: '_id bizname fullname image'
+				}
+			})
+			.populate('reminder')
+			.populate({
+				path: 'poll',
+				populate: {
+					path: 'options.usersVote',
+					select: '_id bizname fullname image'
+				}
+			})
+			.populate({
+				path: 'files.file',
+				populate: {
+					path: 'file',
+					select: 'name url size'
+				},
+			})
+			.lean();
 
 		if(!infoMessage){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -1077,34 +1125,14 @@ exports.CHATTING_SOCKET = {
 			ctx: broker
 		})
 
-		infoMessage = await CHATTING__MESSAGE_COLL
-			.findById(messageID)
-			.populate({
-				path: 'conversation',
-				select: 'members'
-			})
-			.populate({
-				path: 'reactions',
-				select: '_id type',
-				populate: {
-					path: 'userCreate',
-					select: '_id fullname iamge'
-				}
-			})
-			.lean();
-
         sendDataToMultilSocketsOfListUser({ 
-			io,
 			arrReceiver: infoMessage?.conversation?.members, 
 			listUserConnected: listUserActive, 
 			data: {
 				error: false, 
-				data: {
-					listRecords: infoMessage.reactions,
-					totalRecord: infoMessage.reactions.length,
-				}
+				data: infoMessage
 			}, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE]
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
 		})
     },
 
