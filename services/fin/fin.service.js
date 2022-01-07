@@ -2,7 +2,7 @@
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_CMCS } 	        	= require('./helper/cmcs.actions-constant');
+const { CF_ACTIONS_CMCS } 	        	= require('./helper/fin.actions-constant');
 
 const CMCS__CONTRACT_BILL_JOB_HANDLER   = require('./handler/cmcs.contract_bill_job-hanlder');
 // const CMCS__CONTRACT_BILL_JOB_COLL		= require('./database/cmcs.contract_bill_job-coll');

@@ -6,7 +6,7 @@
  /**
   * MODELS
   */
- const CMCS__CONTRACT_BILL_JOB_MODEL             = require('../model/cmcs.contract_bill_job-model').MODEL;
+ const CMCS__CONTRACT_BILL_JOB_MODEL             = require('../model/fin.contract_bill_job-model').MODEL;
 
 module.exports = {
     /**

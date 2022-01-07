@@ -11,7 +11,7 @@ module.exports  = DATABASE_MIDDLEWARE("file_core", {
     app     : { type: String, require: true },
     nameOrg : { type: String, require: true }, //Tên gốc
     name    : { type: String, require: true }, //uuidv1
-    //_____Trạng thái upload file
+    //_____Trạng thái upload file 
     status: { 
         type: Number, 
         enum:[FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],
@@ -28,5 +28,4 @@ module.exports  = DATABASE_MIDDLEWARE("file_core", {
         ref: 'user',
         require: true
     },
-    
 });

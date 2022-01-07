@@ -116,7 +116,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor }){
+    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  fileID, fileRemoveID }){
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(authorID) || !_isValid(documentID))
@@ -125,30 +125,80 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     userUpdate: authorID,
                     modifyAt: Date.now(),
-                    number: !isNaN(number) ? Number(number) : 0,
-                    status: (!isNaN(status) && [1,2].includes(Number(status))) ? Number(status) : 1,
-                    certificateGrade: (!isNaN(certificateGrade) && [0,1,2,3,4,5].includes(Number(certificateGrade))) ? Number(certificateGrade) : 0,
-                    fromDate, 
-                    toDate, 
-                    workplace, 
-                    reference, 
-                    item, 
-                    project, 
-                    client, 
-                    name, 
-                    place, 
-                    description, 
-                    sign, 
-                    note, 
-                    store,
-                    timeMobilize : !isNaN(timeMobilize) ? Number(timeMobilize) : 0,
-                    factor: !isNaN(factor) ? Number(factor) : 0,
                 }
 
-                if(field2 && _isValid(field2)){
+                if(!isNaN(number)){
+                    dataUpdate.number = number;
+                }
+
+                if(!isNaN(status)){
+                    dataUpdate.status = status;
+                }
+
+                if(!isNaN(certificateGrade) && [0,1,2,3,4,5].includes(Number(certificateGrade))){
+                    dataUpdate.certificateGrade = certificateGrade;
+                }
+
+                if(fromDate){
+                    dataUpdate.fromDate = fromDate;
+                }
+
+                if(toDate){
+                    dataUpdate.toDate = toDate;
+                }
+                
+                if(workplace){
+                    dataUpdate.workplace = workplace;
+                }
+
+                if(reference){
+                    dataUpdate.reference = reference;
+                }
+
+                if(item){
+                    dataUpdate.item = item;
+                }
+
+                if(project){
+                    dataUpdate.project = project;
+                }
+
+                if(client){
+                    dataUpdate.client = client;
+                }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(place){
+                    dataUpdate.place = place;
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
+                }
+
+                if(store){
+                    dataUpdate.store = store;
+                }
+
+                if(!isNaN(timeMobilize)){
+                    dataUpdate.timeMobilize = timeMobilize;
+                }
+
+                if(!checkObjectIDs(field2)){
                     dataUpdate.field2 = field2;
                 }
-
+               
                 if(position2 && _isValid(position2)){
                     dataUpdate.position2 = position2;
                 }
@@ -169,6 +219,18 @@ class Model extends BaseModel {
                     dataUpdate.contract = contract;
                 }
 
+                if(factor){
+                    dataUpdate.factor = factor;
+                }
+
+                if(fileID && _isValid(fileID)){
+                    dataUpdate.$addToSet = { files: fileID };
+                }   
+                
+                if(fileRemoveID && _isValid(fileRemoveID)){
+                    dataUpdate.$pull = { files: fileRemoveID };
+                }
+
                 let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update" });
@@ -179,6 +241,43 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+    * Name: Remove contactDocument ✅
+    * Author: Depv
+    * Code: 
+    */
+   remove({ contactDocumentID }) { 
+       return new Promise(async (resolve) => {
+           try {
+                /**
+                * DECALARTION VARIABLE (1)
+                */
+
+                /** 
+                * VALIDATION STEP (2)
+                *  - Kiểm tra valid từ các input
+                *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                */
+                if(!checkObjectIDs(contactDocumentID))
+                   return resolve({ error: true, message: 'Request params contactDocumentID invalid', status: 400 });
+             
+                /**
+                * LOGIC STEP (3)
+                * 3.1: Convert type + update name (ví dụ: string -> number)
+                * 3.2: Operation database
+                */
+                let infoAterRemove = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndDelete(contactDocumentID)
+
+                if(!infoAterRemove)
+                   return resolve({ error: true, message: "can't_remove", status: 403 });
+
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+       })
+   }
 
     /**
      * Name: get info contactDocument ✅
@@ -279,7 +378,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
+                
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 

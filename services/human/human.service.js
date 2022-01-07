@@ -19,7 +19,6 @@ const CONTACT_DOCUMENT_HANDLER			= require('./handler/human.contact_document-han
  */
 const CONTACT_DOCUMENT_COLL 			= require('./database/human.contact_document-coll');
 
-
 module.exports = {
 	name: CF_DOMAIN_SERVICES.HUMAN,
 	mixins: [
@@ -40,7 +39,7 @@ module.exports = {
 	dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
-
+		
 	/**
 	* Actions
 	*/
@@ -49,6 +48,7 @@ module.exports = {
 		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_GET_INFO_AND_GET_LIST] : CONTACT_DOCUMENT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_INSERT] : CONTACT_DOCUMENT_HANDLER.insert,
 		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_UPDATE] : CONTACT_DOCUMENT_HANDLER.update,
+		[CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_REMOVE] : CONTACT_DOCUMENT_HANDLER.remove,
 	},
 	
 	/**
