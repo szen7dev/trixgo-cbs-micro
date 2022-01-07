@@ -3,7 +3,7 @@ const BASE_ROUTE = '/document';
 const CF_ROUTINGS_DOCUMENT = {
 	// ======================== ROUTE - API ===============================
 
-    /// DOCUMENT
+    // DOCUMENT
     INSERT_DOCUMENT                     		: `${BASE_ROUTE}/insert-document`,
     UPDATE_DOCUMENT                     		: `${BASE_ROUTE}/update-document`,
     DELETE_DOCUMENT                     		: `${BASE_ROUTE}/delete-document`,
@@ -15,9 +15,12 @@ const CF_ROUTINGS_DOCUMENT = {
     UPDATE_PERMISSION_SHARE                     : `${BASE_ROUTE}/update-permission-share`,
     ADD_FILE_ATTACHMENT                         : `${BASE_ROUTE}/add-file-attachment`,
     GET_LIST_USER_SHARED                        : `${BASE_ROUTE}/list-user-shared`,
-
-    /// PACKAGE
+    STATISTICAL_BY_TYPE                         : `${BASE_ROUTE}/statistical_by_type`,
+    // PACKAGE
     DOCUMENT_PACKAGE                     		: `${BASE_ROUTE}/document_packages`,
+
+    // DOCUMENT_FILE
+    DOCUMENT_FILE                               : `${BASE_ROUTE}/document_files`,
 }
 
 exports.CF_ROUTINGS_DOCUMENT = CF_ROUTINGS_DOCUMENT;

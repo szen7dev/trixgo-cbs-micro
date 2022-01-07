@@ -24,30 +24,30 @@ module.exports = {
     insertDocument: {
         params: {
             parentID            : { type: "string", optional: true },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            storeSign           : { type: "string" },
-            type                : { type: "number" },
+            name                : { type: "string",                },
+            sign                : { type: "string", optional: true },
+            storeSign           : { type: "string", optional: true },
+            type                : { type: "number", optional: true },
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            approver            : { type: "string" },
-            date                : { type: "string" },
-            receivedDate        : { type: "string" },
-            style               : { type: "string" },
-            status              : { type: "string" },
-            amount              : { type: "number" },
-            amountDelivery      : { type: "number" },
+            approver            : { type: "string", optional: true },
+            date                : { type: "string", optional: true },
+            receivedDate        : { type: "string", optional: true },
+            style               : { type: "string", optional: true },
+            status              : { type: "string", optional: true },
+            amount              : { type: "number", optional: true },
+            amountDelivery      : { type: "number", optional: true },
             requestResponse     : { type: "number", optional: true },
-            expiredResponse     : { type: "string" },
-            direction           : { type: "number" },
-            packageID           : { type: "string", optional: true },
+            expiredResponse     : { type: "string", optional: true },
+            direction           : { type: "number",                },
+            packageID           : { type: "string",                },
             senderID            : { type: "string", optional: true },
             receiverID          : { type: "string", optional: true },
             fieldID             : { type: "string", optional: true },
             propertyID          : { type: "string", optional: true },
             otherID             : { type: "string", optional: true },
             storageID           : { type: "string", optional: true },
-            departmentID        : { type: "string" },
+            departmentID        : { type: "string",                },
             value               : { type: "number", optional: true },
             completeStatus      : { type: "number", optional: true },
         },
@@ -61,7 +61,7 @@ module.exports = {
                     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus
                 } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus, ctx
@@ -81,17 +81,17 @@ module.exports = {
     updateDocument: {
         params: {
             documentID          : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            storeSign           : { type: "string" },
-            type                : { type: "number" },
+            name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
+            storeSign           : { type: "string", optional: true },
+            type                : { type: "number", optional: true },
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             approver            : { type: "string", optional: true },
-            date                : { type: "string" },
-            receivedDate        : { type: "string" },
-            style               : { type: "string" },
-            status              : { type: "string" },
+            date                : { type: "string", optional: true },
+            receivedDate        : { type: "string", optional: true },
+            style               : { type: "string", optional: true },
+            status              : { type: "string", optional: true },
             amount              : { type: "number", optional: true },
             amountDelivery      : { type: "number", optional: true },
             requestResponse     : { type: "number", optional: true },
@@ -104,8 +104,8 @@ module.exports = {
             propertyID          : { type: "string", optional: true },
             otherID             : { type: "string", optional: true },
             storageID           : { type: "string", optional: true },
-            value               : { type: "number", optional: true  },
-            completeStatus      : { type: "number", optional: true  },
+            value               : { type: "number", optional: true },
+            completeStatus      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -276,7 +276,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { companyID, departmentID, packageID } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListGroupDoctype({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
                     userID, companyID, departmentID, packageID
                 });
 
@@ -449,6 +449,34 @@ module.exports = {
                     authorID, documentID, filesID
                 });
 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+    /**
+	 * Dev: Depv
+	 * Func: Thống kê theo type
+	 * Date: 13/11/2021
+	 */  
+    statisticalByType: {
+        params: {
+			departmentID: { type: "string", optional: true },
+			packageID   : { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company    } = ctx.meta.infoUser;
+                const { departmentID, packageID } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
+                    userID, companyID: company._id, departmentID, packageID
+                });
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

@@ -1,0 +1,259 @@
+"use strict";
+
+/**
+ * EXTERNAL PACKAGE
+ */
+
+/**
+ * CONSTANTS
+ */
+
+/**
+ * TOOLS
+ */
+const BaseModel                                 	= require('../../../tools/db/base_model');
+const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const {
+    checkObjectIDs,
+    IsJsonString,
+} = require('../../../tools/utils/utils');
+
+/**
+ * COLLECTIONS
+ */
+const DOCUMENT__DOC_FILE_COLL           		    = require('../database/document.doc_file-coll');
+
+
+class Model extends BaseModel {
+
+    constructor() {
+        super(DOCUMENT__DOC_FILE_COLL);
+    }
+
+    /**
+	 * Name: insert doc file ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+	insert({ documentID, fileID, userID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(documentID))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+                
+                if(!checkObjectIDs(fileID))
+                    return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
+
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */ 
+                let infoAterInsert = await this.insertData({ document: documentID, file: fileID, user: userID });
+                                  
+                if(!infoAterInsert)
+                    return resolve({ error: true, message: "can't_insert", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+     /**
+	 * Name: delete doc file ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+	delete({ docFileID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(docFileID))
+                    return resolve({ error: true, message: 'Request params docFileID invalid', status: 400 });
+                
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */ 
+                let infoAterInsert = await DOCUMENT__DOC_FILE_COLL.findByIdAndDelete(docFileID);
+                if(!infoAterInsert)
+                    return resolve({ error: true, message: "can't_delete", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Name: get info doc file ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+	getInfo({ docFileID, select, populates }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(docFileID))
+                    return resolve({ error: true, message: 'Request params docFileID invalid', status: 400 });
+                
+                 // populates
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterGet = await DOCUMENT__PACKAGE_COLL.findById(docFileID)
+                                    .select(select)
+                                    .populate(populates)
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterGet, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    /**
+	 * Dev: Depv
+	 * Func: Get list doc file
+	 * Date: 26/10/2021
+	 */
+    getList({ documentID, lastestID, keyword, limit = 10, select, populates = {} }){
+        return new Promise(async resolve => {
+            try {
+
+				if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                if(documentID && !checkObjectIDs(documentID))
+                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+						path: "",
+						select: ""
+					}
+				}
+
+				let conditionObj    = { document: documentID };
+				let conditionFind   = {};
+				let objSort 	 	= {};
+                let sortBy = {
+					createAt: -1
+                }
+
+				// PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__DOC_FILE_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy = dataPagingAndSort.data.sort;
+				}
+
+				// SEARCH TEXT
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+
+                let listPackages = await DOCUMENT__DOC_FILE_COLL
+					.find({ ...conditionObj, ...conditionFind }, { ...objSort })
+					.limit(limit + 1)
+                    .sort(sortBy)
+					.populate(populates)
+					.select(select)
+					.lean();
+
+				// GET TOTAL RECORD
+                let totalRecord = await DOCUMENT__DOC_FILE_COLL.count(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
+				let nextCursor	= null;
+
+				if(listPackages && listPackages.length){
+					if(listPackages.length > limit){
+						nextCursor = listPackages[limit - 1]._id;
+						listPackages.length = limit;
+					}
+				}
+
+                return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listPackages,
+						limit: +limit,
+						totalRecord,
+                        totalPage,
+						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+}
+
+exports.MODEL = new Model;
