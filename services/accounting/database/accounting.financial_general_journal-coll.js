@@ -17,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'funda'
     }, 
-    //_________Thuộc dự án phòng ban
+    //_________Thuộc dự án phòng ban (NEW***)
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
@@ -32,7 +32,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contract_ipc'
     }, 
-    //_________Phân loại khác
+    //_________Phân loại khác (NEW***)
     subtype: {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
@@ -82,7 +82,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
-    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
+    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher) (NEW***)
     date: { type: Date, default: Date.now },
     //_________Diễn giải nội dung
     name: String,
