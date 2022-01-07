@@ -7,7 +7,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 /**
  * import inter-coll, exter-coll
  */
-const CMCS__CONTRACT_BILL_JOB_COLL           = require('../database/cmcs.cash_flow_plan-coll');
+const CMCS__CONTRACT_BILL_JOB_COLL           = require('../database/fin.cash_flow_plan-coll');
 const { RANGE_BASE_PAGINATION } 		     = require('../../../tools/cursor_base/playground/index');
 
 /**
@@ -31,7 +31,7 @@ class Model extends BaseModel {
     getInfo({ contractBillJobID, select }) { 
         return new Promise(async (resolve) => {
             try {   
-
+                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
