@@ -509,13 +509,13 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         default : 0
     },
 
-    //______Số hồ sơ văn bản
+    //______Số lượng hồ sơ văn bản
     numberOfDocs: {
         type: Number,
         default : 0
     },
-
-    //______Số hồ sơ văn bản
+    
+    //______Số lượng hồ sơ văn bản đã hoàn thành
     numberFinishOfDocs: {
         type: Number,
         default : 0

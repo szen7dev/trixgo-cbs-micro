@@ -114,6 +114,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(members)){
                     dataInsert.members = members;
                 }
+                
 
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 return resolve({ error: false, data: infoAfterInsert });
@@ -127,7 +128,8 @@ class Model extends BaseModel {
      * Name: Cập nhật mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    update({ departmentID, name, admins, adminRemove, members, memberRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+    update({ 
+        departmentID, name, admins, adminRemove, members, memberRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
         pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -136,14 +138,14 @@ class Model extends BaseModel {
         contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
         closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-        numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections
+        numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
     }) {
         return new Promise(async resolve => {
             try {
                 let dataUpdate   = {};
                 let dataAddToSet = {};
                 let dataPull     = {};
-
+                
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: "Request params departmentID invalid" });
 
@@ -166,11 +168,7 @@ class Model extends BaseModel {
                 if(name){
                     dataUpdate.name = name;
                 }
-
-                if(name){
-                    dataUpdate.name = name;
-                }
-
+           
                 if(checkObjectIDs(admins)){
                     dataAddToSet.admins = admins;
                 }
@@ -286,7 +284,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(files)){
                     dataUpdate.files = files;
                 }
-
+                
                 if(checkObjectIDs(userUpdate)){
                     dataUpdate.userUpdate = userUpdate;
                 }
@@ -495,9 +493,9 @@ class Model extends BaseModel {
                     dataUpdate.numberOfMoms = numberOfMoms;
                 }
 
-                if(!isNaN(numberOfDocs)){
-                    dataUpdate.numberOfDocs = numberOfDocs;
-                }
+                // if(!isNaN(numberOfDocs)){
+                //     dataUpdate.numberOfDocs = numberOfDocs;
+                // }
 
                 if(!isNaN(numberOfDrawings)){
                     dataUpdate.numberOfDrawings = numberOfDrawings;
@@ -539,7 +537,18 @@ class Model extends BaseModel {
                     dataUpdate.$pull = dataPull;
                 }
 
-                console.log({ dataUpdate });
+                let dataInc = {};
+                if(numberOfDocs){
+                    dataInc.numberOfDocs = numberOfDocs;
+                }
+
+                if(numberFinishOfDocs){
+                    dataInc.numberFinishOfDocs = numberFinishOfDocs;
+                }
+
+                if(dataInc){
+                    dataUpdate.$inc = dataInc;
+                }
 
                 let infoAfterUpdate = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(departmentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
@@ -552,11 +561,8 @@ class Model extends BaseModel {
         })
     }
 
-    
-
-
     /**
-     * Name: Lấy thông tin department ✅
+     * Name: Lấy thông tin dự án/phòng ban ✅
      * Author: Depv
      * Code: F00401
      */
