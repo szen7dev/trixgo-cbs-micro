@@ -5,7 +5,7 @@ const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("reaction_core", {
     /**
-     * Loại tương tác, like, tim, haha ... (xem trong cf_constants: REACTION_TYPES)
+     * Loại tương tác, like, tim, haha ...
      *  { value: 1, text: 'Thả tim', image: '2764.png' },
         { value: 2, text: 'Cười sặc sụa', image: '1f606.png' },
         { value: 3, text: 'Ngạc nhiên', image: '1f62e.png' },

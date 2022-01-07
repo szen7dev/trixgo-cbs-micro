@@ -496,7 +496,7 @@ module.exports = {
 	reactionMessage: {
         params: {
 			messageID		: { type: 'string' },
-			typeReaction	: { type: 'string' },
+			typeReaction	: { type: 'number' },
 		},
         async handler(ctx) {
             try {
@@ -522,19 +522,16 @@ module.exports = {
 	 */
 	getListReactionByMessage: {
         params: {
-			messageID		: { type: 'string' },
-			lastestID 		: { type: 'string', optional: true },
-            typeReaction	: { type: 'string', optional: true },
-            limit			: { type: 'string', optional: true },
+			messageID: { type: 'string' },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { messageID, lastestID, limit, typeReaction } = ctx.params;
+                const { messageID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListReactionMessage({
-					messageID, userID, lastestID, limit, typeReaction
+					messageID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
