@@ -96,8 +96,15 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     commodity: String,
     //_________Ghi chú   
     note: String,
+    //_________Thành tiền
+    amount: { type: Number, default: 0 }, 
+    /**
+     * USD-NGOẠI TỆ
+     */ 
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
+    //_________Thành tiền ngoại tệ
+    fcuAmount: { type: Number, default: 0 }, 
      /**
      * DÀNH RIÊNG CHO BÁN HÀNG
      */    
@@ -120,13 +127,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     shipperName: String, 
     //_________Chi phí thuê giao vận
     shipperCost: { type: Number, default: 0 }, 
-    /**
-     * DÀNH RIÊNG CHO LƯU TRỮ
-     */  
-    //_________Tình trạng hồ sơ nghiệm thu
-    inspection: String,
-    //_________Tình trạng hồ sơ thanh lý
-    termination: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
