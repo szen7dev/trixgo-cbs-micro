@@ -1105,7 +1105,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Danh sách cuộc hội thoại
 	 * Date: 04/01/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION]: async function(data) { 
         let socket           = this;
         let listUserActive   = socket.$service.listUserConnected2;
 		let broker			 = socket.$service.broker;
@@ -1125,9 +1125,8 @@ exports.CHATTING_SOCKET = {
 		}
 
 		let listConversationOfMembers = [];
-		console.log({ members: infoConversation.members })
+
 		for (const memberID of infoConversation.members) {
-			console.log({ memberID })
 			const listConversation = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
 				userID: memberID.toString(), filter, select, ctx: broker
 			});
@@ -1139,7 +1138,6 @@ exports.CHATTING_SOCKET = {
 		}
 
 		listConversationOfMembers.map(conversation => {
-			console.log({ conversation })
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
 				arrReceiver: [conversation.memberID],

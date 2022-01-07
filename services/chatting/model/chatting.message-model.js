@@ -10,7 +10,7 @@ const moment										= require('moment');
 /**
  * CONSTANTS
  */
-const { REMINDER_NOTIFY_FOR, REMINDER_REPEAT }		= require('../helper/chatting.keys-constant');
+const { REMINDER_NOTIFY_FOR, REMINDER_REPEAT, REACTION_TYPES }		= require('../helper/chatting.keys-constant');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
@@ -1736,28 +1736,46 @@ class Model extends BaseModel {
 	reactionMessage({ userID, messageID, typeReaction, ctx }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([userID, messageID]))
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
+                    return resolve({
+						error: true, 
+						message: 'Request params type reaction invalid', 
+						keyError: 'params_typeReaction_invalid',
+						status: 400
+					});
+				}
 
-				// CHECK USER HAVE RAECTION MEDIA
-                let checkExistReactionMessage = await CHATTING__MESSAGE_REACTION_COLL
-					.findOne({
-						author: userID,
-						message: messageID
-					})
-					.populate({
-                        path: 'reaction',
-                        select: 'type'
-                    })
+				if(!checkObjectIDs([userID, messageID])) {
+                    return resolve({
+						error: true, 
+						message: 'Request params message ID or user ID invalid', 
+						keyError: 'params_messageID_or_userID_invalid',
+						status: 400
+					});
+				}
+
+				const infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.populate('reactions')
 					.lean();
 
-				if(checkExistReactionMessage && +typeReaction === +checkExistReactionMessage?.reaction?.type){
-					let infoAfterDeleteReactionMessage = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndDelete(checkExistReactionMessage._id);
-                    if (!infoAfterDeleteReactionMessage) {
-                        return resolve({ error: true, message: "Can't remove reaction", status: 403 });
-                    }
+				// Check Already reaction
+				const infoReaction = infoMessage?.reactions?.find(reaction => 
+					userID.toString() === reaction.userCreate.toString()
+				);
 
-                    return resolve({ error: false, data: infoAfterDeleteReactionMessage, status: 200 });
+				if(infoReaction && +infoReaction.type === typeReaction){
+					const infoAfterDeleteReaction = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+						$pull: {
+							reactions: infoReaction._id
+						}
+					}, { new: true });
+
+					return resolve({
+						error: false,
+						status: 200,
+						data: infoAfterDeleteReaction
+					});
 				}
 
 				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
@@ -1768,26 +1786,24 @@ class Model extends BaseModel {
 				if(infoAfterInsertReaction.error)
 					return resolve(infoAfterInsertReaction);
 
-				if(checkExistReactionMessage) {
-					let infoReactionAfterUpdate = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndUpdate(checkExistReactionMessage._id, {
-						reaction: infoAfterInsertReaction?.data?._id,
-						modifyAt: getCurrentTime()
+				if(infoReaction) {
+					await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+						$pull: {
+							reactions: infoReaction._id
+						}
 					});
-
-					return resolve({ error: false, data: infoReactionAfterUpdate, status: 200 });
 				}
 
-				let infoReactionAfterInsert = await CHATTING__MESSAGE_REACTION_COLL.create({
-					author: userID,
-					message: messageID,
-					reaction: infoAfterInsertReaction?.data?._id,
-					createAt: getCurrentTime()
-				});
+				const infoAfterUpdateReaction = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+					$addToSet: {
+						reactions: infoAfterInsertReaction?.data?._id
+					}
+				}, { new: true });
 
-                if(!infoReactionAfterInsert)
-                    return resolve({ error: true, message: "Can't reaction message", status: 403 });
+				if(!infoAfterUpdateReaction)
+                    return resolve({ error: true, message: "Can't reaction message", status: 422 });
 
-                return resolve({ error: false, data: infoReactionAfterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1799,127 +1815,43 @@ class Model extends BaseModel {
 	 * Func: Danh sách reaction của tin nhắn
 	 * Date: 02/09/2021
 	 */
-	getListReactionMessage({ userID, messageID, lastestID, typeReaction, limit = 20 }) {
+	getListReactionMessage({ messageID, userID }) {
 		return new Promise(async (resolve) => {
 			try {
-				// Check params
-				if(!checkObjectIDs([messageID, userID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
-
-				if(isNaN(limit)){
-					limit = 20;
-				} else{
-					limit = +limit;
+				if(!checkObjectIDs([userID, messageID])) {
+                    return resolve({
+						error: true, 
+						message: 'Request params message ID or user ID invalid', 
+						keyError: 'params_messageID_or_userID_invalid',
+						status: 400
+					});
 				}
 
-				let conditionFind = {};
-				let conditionObj = {
-					message: ObjectID(messageID),
-				};
-				let sortBy = {
-					modifyAt: -1,
-					createdAt: -1,
-				}
-
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoReaction = await CHATTING__MESSAGE_REACTION_COLL.findById(lastestID);
-					if(!infoReaction)
-						return resolve({ error: true, message: "Can't get info last reaction", status: 403 });
-
-					let nextInfo = `${infoReaction.updatedAt}_${infoReaction._id}`;
-					let keys	 = ['modifyAt__-1', '_id__-1'];
-
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-					conditionFind = dataPagingAndSort.data.find;
-				}
-
-				if(typeReaction){
-					conditionObj['reaction.type'] = +typeReaction;
-				}
-
-				let	listReactionMessage = await CHATTING__MESSAGE_REACTION_COLL.aggregate([
-					{
-						$lookup: {
-				            from: "users",
-				            localField: "author",
-				            foreignField: "_id",
-				            as: "author"
-				        }
-					},
-					{
-					  	$unwind: {
-					      	path: '$author',
-					      	preserveNullAndEmptyArrays: true
-					    }
-					},
-					{
-						$lookup: {
-				            from: "reaction_cores",
-				            localField: "reaction",
-				            foreignField: "_id",
-				            as: "reaction"
-				        }
-					},
-					{
-					  	$unwind: {
-					      	path: '$reaction',
-					      	preserveNullAndEmptyArrays: true
-					    }
-					},
-					{
-						$project: {
-							message: 1,
-							author: {
-								_id: 1,
-								fullname: 1,
-								bizname: 1,
-								image: 1
-							},
-							reaction: {
-								_id: 1,
-								type: 1,
-							}
+				let infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.populate({
+						path: 'reactions',
+						select: '_id type',
+						populate: {
+							path: 'userCreate',
+							select: '_id fullname iamge'
 						}
-					},
-					{
-						$match: {
-							...conditionObj,
-							...conditionFind
-						}
-					},
-					{ $limit: +limit + 1 },
-					{ $sort: sortBy }
-				])
+					})
+					.lean();
 
-				if(!listReactionMessage)
-					return resolve({ error: true, message: "Can't get list reaction message", status: 403 });
-
-				// GET TOTAL RECORD
-				let totalRecord = await CHATTING__MESSAGE_REACTION_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
-
-				if(listReactionMessage && listReactionMessage.length){
-					if(listReactionMessage.length > limit){
-						nextCursor = listReactionMessage[limit - 1]._id;
-						listReactionMessage.length = limit;
-					}
-				}
+				if(!infoMessage)
+					return resolve({ error: true, message: "Can't get info message", status: 403 });
 
 				return resolve({
 					error: false,
 					status: 200,
 					data: {
-						listRecords: listReactionMessage,
-						limit: +limit,
-						totalRecord,
-						nextCursor
+						listRecords: infoMessage.reactions,
+						totalRecord: infoMessage.reactions.length,
 					}
 				});
 			} catch (error) {
-				return resolve({ error: true, message: error.message, status: 500 })
+				return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 })
 			}
 		})
 	}
