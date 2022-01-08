@@ -473,7 +473,7 @@ exports.CHATTING_SOCKET = {
 					select: '_id type',
 					populate: {
 						path: 'userCreate',
-						select: '_id fullname iamge'
+						select: '_id fullname image'
 					}
 				})
 				.populate({
@@ -1100,7 +1100,7 @@ exports.CHATTING_SOCKET = {
 				select: '_id type',
 				populate: {
 					path: 'userCreate',
-					select: '_id fullname iamge'
+					select: '_id fullname image'
 				}
 			})
 			.populate({
