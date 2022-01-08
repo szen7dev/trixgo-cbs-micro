@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  Hợp đồng kinh tế
+ *  ĐƠN VỊ CƠ SỞ
  */
 module.exports  = DATABASE_MIDDLEWARE("funda", {
     //_________Công ty
@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     //_________Mã hiệu
     sign: {
         type: String,
-        default: 'SIGN' 
+        default: 'Sign' 
     },
     /**
      * Khóa dữ liệu trước khoảng thời gian không cho phép can thiệp:
@@ -37,20 +37,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Date,
         default: null
     },
-    /**
-     * ĐỆ QUY CHA CON
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "funda"
-    },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "funda"
-    }],
-    level: {
-        type: Number,
-        default: 1 
     },
     /**
      * PHÂN QUYỀN TRUY CẬP

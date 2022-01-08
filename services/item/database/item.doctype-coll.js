@@ -4,15 +4,20 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  Hợp đồng kinh tế
+ *  PHÂN LOẠI KHÁC
  */
 module.exports  = DATABASE_MIDDLEWARE("doctype", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    // suid : {
-    //     type   : String,
-    //     require:  true,
-    //     unique : true
-    // },
+    /**
+     * PHÂN LOẠI
+     * 1-Theo Lĩnh vực hồ sơ
+     * 2-Theo Tính chất hồ sơ
+     * 3-Theo lĩnh vực kinh doanh
+     * 4-Theo Loại khách hàng
+     * 5-Theo bộ môn
+     */
+    type: { type: Number, default: 1 },
+    //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
+    belongSystem: { type: Number, default: 0 },
     //_________Công ty 
     company: {
         type: Schema.Types.ObjectId,
@@ -23,43 +28,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         type: Schema.Types.ObjectId,
         ref : "department"                  
     },
-    /**
-     * CẤU TRÚC ĐỆ QUY
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
-    },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    }],
-    level: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * HỆ THỐNG QUẢN LÝ
-     */
-    //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
-    belongSystem: { type: Number, default: 0 },
-    //_________Bài viết của Doctype
-    posts: [{
-        type: Schema.Types.ObjectId,
-        ref: "social_post"
-    }],
-    /**
-     * THÔNG TIN CĂN BẢN
-     */
-    /**
-     * Phân loại
-     * 1-Theo Lĩnh vực hồ sơ
-     * 2-Theo Tính chất hồ sơ
-     * 3-Theo lĩnh vực kinh doanh
-     * 4-Theo Loại khách hàng
-     * 5-Theo bộ môn
-     */
-    type: { type: Number, default: 1 },
+    },    
     //_________Tên
     name: String,
     //_________Mô tả

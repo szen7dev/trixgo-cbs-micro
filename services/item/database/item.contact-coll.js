@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 /**
- * Danh bạ (khách hàng/nhà cung cấp/nhân viên)
+ * DANH BẠ (Nhân viên, Khách hàng, Đối tác)
  * https://insider.tophr.vn/4-loai-bao-cao-nhan-su-quan-trong-hr-can-biet-co-vi-du/
  * 1. Báo cáo về biến động nhân sự
  * Báo cáo biến động theo thâm niên

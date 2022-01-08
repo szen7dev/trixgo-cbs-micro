@@ -4,21 +4,34 @@ const DATABASE_MIDDLEWARE   = require('../../../../tools/db/database.middleware'
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("app_role_menu", {
-      /**
-     * BỔ SUNG -> TĂNG HIỆU SUẤT TRUY XUẤT
+    /**
+     * Công ty (đang truy cập vào công ty nào)
      */
-       app: {
+    company: {
+        type: Schema.Types.ObjectId,
+        ref : 'company' 
+    },
+    /**
+     * Ứng dụng (sử dụng theo nguyên tắc pre-cal để tăng hiệu suất truy vấn)
+     */
+    app: {
         type: Schema.Types.ObjectId,
         ref: "app"
     },
     /**
-     * DÙNG ĐỂ PHÂN BIỆT ĐANG TRUY CẬP VÀO CÔNG TY NÀO
-     */
-    company: {
+     * Dự án, phòng ban
+     */  
+    project : {
         type: Schema.Types.ObjectId,
-        ref : 'company'
+        ref : "department"
     },
-
+    /**
+     * Hợp đồng
+     */  
+    contract : {
+        type: Schema.Types.ObjectId,
+        ref : "contract"
+    },
     /**
      * Nhóm chức năng dự án
      */

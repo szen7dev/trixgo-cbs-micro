@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  Hợp đồng kinh tế
+ *  HỢP ĐỒNG KINH TẾ
  */
 module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
