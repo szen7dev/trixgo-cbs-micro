@@ -4,28 +4,18 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  Hợp đồng kinh tế
+ *  HÀNG HOÁ, SẢN PHẨM, TÀI SẢN, CÔNG CỤ DỤNG CỤ,...
  */
 module.exports  = DATABASE_MIDDLEWARE("goods", {
     //________Thuộc về công ty nào
-   company: {
+    company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    /**
-     * CẤU TRÚC ĐỆ QUY
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "goods"
-    },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "goods"
-    }],
-    level: {
-        type: Number,
-        default: 1
     },
     /**
      * HỆ THỐNG QUẢN LÝ

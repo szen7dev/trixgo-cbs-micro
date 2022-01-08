@@ -4,60 +4,29 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  Dụng cụ lưu trữ hồ sơ
+ *  Dụng cụ, thiết bị lưu trữ hồ sơ
  */
 module.exports  = DATABASE_MIDDLEWARE("storage", {
-   /**
-     * Thuộc về công ty nào
-     */    
+    //_________Thuộc về công ty nào  
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    /**
-     * Tên
-     */
-    name: String,
-    /**
-     * Mô tả
-     */
-    description: String,
-    /**
-     * Cha (sử dụng để hiển thị theo quy tắc đệ quy)
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
-        ref: "storage"
+        ref: "warehouse"
     },
-    /**
-     * Con
-     */
-    childs: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "storage"
-        }
-    ],
-    /**
-     * để tính được maxLevel(level cấp cao nhất)
-     * VD: maxLevel = 3 => for 3 lần
-     */
-    level: {
-        type: Number,
-        default: 1 
-    },
-    /**
-     * Người tạo
-     */
+    //_________Tên
+    name: String,
+    //_________Mô tả
+    description: String,
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-     /**
-     * Người cập nhật
-     */
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    },
+    }
 })

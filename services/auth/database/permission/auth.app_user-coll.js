@@ -5,12 +5,13 @@ const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("app_user", {
     /**
-     * Tài khoản
+     * Công ty chủ quản member (user)
+     * -> tiện xử lý lấy danh sách
      */
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    },
+     company: {
+        type : Schema.Types.ObjectId,
+        ref  : 'company'
+    },    
     /**
      * Ứng dụng được quyền truy cập
      */
@@ -19,12 +20,18 @@ module.exports  = DATABASE_MIDDLEWARE("app_user", {
         ref  : 'app'
     },
     /**
-     * Công ty chủ quản member (user)
-     * -> tiện xử lý lấy danh sách
+     * Tài khoản
      */
-    company: {
-        type : Schema.Types.ObjectId,
-        ref  : 'company'
+     user: {
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    },    
+    /**
+     * Thời hạn sử dụng (update form app_company)
+     */
+    endTime: {
+        type: Date,
+        default: Date.now
     },
     /**
      * Dùng để phân biệt Admin ứng dụng/thành viên thông thường

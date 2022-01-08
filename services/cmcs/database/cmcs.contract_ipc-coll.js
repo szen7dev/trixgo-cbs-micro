@@ -5,7 +5,7 @@ const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     //_________Phân loại(1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
-    type: { type: Number, default: 0 },
+    type: { type: Number, default: 1 },
 
     //_________ Công ty(*)
     company: {

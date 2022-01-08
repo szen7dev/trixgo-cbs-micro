@@ -49,6 +49,9 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     unit: String,
     //_________Ghi chú
     note: String,
+    /**
+     * KHỐI LƯỢNG
+     */
     //_________Khối lượng ban đầu
     orgQuantity: { type: Number, default: 0 },
     //_________Khối lượng cập nhật triển khai
@@ -56,18 +59,15 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
     //_________Khối lượng dự kiến còn lại
     estimateQuantity: { type: Number, default: 0 },
     /**
-     * Đơn giá ban đầu (chưa gồm VAT)
+     * ĐƠN GIÁ
      */
+    //_________Đơn giá ban đầu (chưa gồm VAT)
     orgUnitPrice: { type: Number, default: 0 },
     orgVatValue: { type: Number, default: 0 }, 
-    /**
-     * Đơn giá cập nhật triển khai (chưa gồm VAT)
-     */
+    //_________Đơn giá cập nhật triển khai (chưa gồm VAT)
     planUnitPrice: { type: Number, default: 0 },
     planVatValue: { type: Number, default: 0 }, 
-    /**
-     * Đơn giá ước tính còn lại (chưa gồm VAT)
-     */
+    //_________Đơn giá ước tính còn lại (chưa gồm VAT)
     estimateUnitPrice: { type: Number, default: 0 },
     estimateVatValue: { type: Number, default: 0 }, 
     //_________Đơn giá Thuế giá trị gia tăng (%)
@@ -77,31 +77,20 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
      */ 
     //_________Tỷ giá hối đoái
     fcuExRate: Number,
-    /**
-     * Đơn giá ban đầu (chưa gồm VAT)
-     */
+    //_________Đơn giá ban đầu (chưa gồm VAT)
     fcuOrgUnitPrice: Number,
     fcuOrgVatValue: Number, 
-    /**
-     * Đơn giá cập nhật triển khai (chưa gồm VAT)
-     */
+    //_________Đơn giá cập nhật triển khai (chưa gồm VAT)
     fcuPlanUnitPrice: Number,
     fcuPlanVatValue: Number, 
-    /**
-     * Đơn giá ước tính còn lại (chưa gồm VAT)
-     */
+    //_________Đơn giá ước tính còn lại (chưa gồm VAT)
     fcuEstimateUnitPrice: Number,
     fcuEstimateVatValue: Number, 
     //_________Link với công việc của ngân sách (BỎ)
-    linkBudget: {
-        type: Schema.Types.ObjectId,
-        ref : "budget_job"
-    },
-    //_________Chi tiết đã hoàn thành (BỎ)
-    finished:[{
-        type: Schema.Types.ObjectId,
-        ref: 'contract_ipc_detail'
-    }],  
+    // linkBudget: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "budget_job"
+    // }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
@@ -113,5 +102,4 @@ module.exports  = DATABASE_MIDDLEWARE("contract_bill_job", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
-    
 })
