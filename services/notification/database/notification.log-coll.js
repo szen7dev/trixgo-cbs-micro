@@ -16,12 +16,19 @@ module.exports  = DATABASE_MIDDLEWARE("notification_log", {
         require: true
     },
     /**
-     * -1: đã tạo, chưa gửi
-     *  1: đã gửi THÀNH CÔNG
-     *  2: đã gửi THẤT BẠI
+     * -1: Đã tạo, chưa gửi
+     *  1: Đã gửi THÀNH CÔNG
+     *  2: Đã gửi THẤT BẠI
      */
     status: {
         type: Number
+    },
+    /**
+     * Thuộc dự án, phòng ban nào (option)
+     */
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
     },
     sender: {
         type: Schema.Types.ObjectId,
@@ -39,5 +46,5 @@ module.exports  = DATABASE_MIDDLEWARE("notification_log", {
     },
     path: {
         type: String
-    },
+    }
 })
