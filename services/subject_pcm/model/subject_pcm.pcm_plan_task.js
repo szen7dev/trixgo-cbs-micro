@@ -779,7 +779,7 @@ class Model extends BaseModel {
                 };
 
                 let conditionFind = { };
-                let sortBy   = { actualFinishTime: 1 };
+                let sortBy   = { actualFinishTime: -1 };
 				let objSort  = {};
 
                 let start = new Date();
@@ -987,17 +987,18 @@ class Model extends BaseModel {
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+					let nextInfo = `${infoData.actualFinishTime}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['actualFinishTime__1', '_id__1'];
+					let keys	 = ['actualFinishTime__-1', '_id__-1'];
                     // console.log({ nextInfo });
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
+                    console.log({ sortBy, conditionFind: conditionFind.$or });
 				}
 
                 // Tìm kiếm theo keyword
@@ -1030,7 +1031,7 @@ class Model extends BaseModel {
 
                 // Tổng số việc tìm thấy
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
-
+                
                 // Tổng số việc tìm thấy
                 let totalPage   = Math.ceil(totalRecord/limit);
 

@@ -10,25 +10,25 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * THÔNG TIN VÀ GIÁ TRỊ THỰC HIỆN
      */
-    //_________(1)Giá trị hợp đồng
+    //_________(1)Giá trị trước VAT
     value: { type: Number, default: 0 },
 
-    //_________2)VAT GIÁ TRỊ
+    //_________2)Giá trị phần VAT
     vatValue: { type: Number, default: 0 },
 
-    //_________(3)Giá trị phát sinh
+    //_________(3)Phát sinh trước VAT
     plus: { type: Number, default: 0 },
 
     //_________(4)Phát sinh phần VAT
     vatPlus: { type: Number, default: 0 },
 
-    //_________(5)Giá trị tạm ứng
+    //_________(5)Tạm ứng theo hợp đồng
     advancePayment: { type: Number, default: 0 },
     
-    //_________(6)Sản lượng đã thực hiện
+    //_________(6)Sản lượng trước VAT
     produce: { type: Number, default: 0 },
   
-    //_________(7)Vat sản lượng
+    //_________(7)Sản lượng phần VAT
     vatProduce: { type: Number, default: 0 },
 
     //_________(8)Sản lượng phát sinh trước VAT
@@ -38,13 +38,13 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vatPlusProduce: { type: Number, default: 0 },
     
 
-    //_________(10)Nghiệm thu trước VAT
+    //_________(10)Giá trị nghiệm thu trước VAT
     acceptance: { type: Number, default: 0 },
 
-    //_________(11)VAT nghiệm thu
+    //_________(11)Giá trị nghiệm thu phần VAT
     vatAcceptance: { type: Number, default: 0 },
 
-    //_________(12)Nghiệm thu phát sinh trước VAT
+    //_________(12)Giá trị nghiệm thu phát sinh trước VAT
     plusAcceptance: { type: Number, default: 0 },
 
     //_________(13)Giá trị nghiệm thu phát sinh phần VAT
@@ -135,7 +135,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Dự án/phòng ban
+    //_________Dự án/phòng ban (Thuộc dự án)
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
@@ -167,13 +167,13 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * THÔNG TIN CỦA HỢP ĐỒNG
      */
-    //_________Phân loai(1-Chính thưc/2-Nháp) 
+    //_________Phân loai(1-Chính thưc/2-Nháp) (Phân loại chính thức)
     draft: {
         type: Number,
         default: 1
     },
    
-    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào)
+    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (Phân loại vào ra)
     outin: { type: Number, default: 1 },
     
     //_________Trạng thái triển khai (1-Đang triển khai/2-Đang bàn giao/3-Hoàn thành/4-Tạm dừng)
@@ -194,25 +194,25 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         ref : "doctype"
     },
 
-    //_________Chủ trì thực hiện hợp đồng
+    //_________Chủ trì thực hiện hợp đồng (Phân loại theo chủ trì)
     chair: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
 
-    //_________Phụ trách
+    //_________Phụ trách(Phân loại theo người phụ trách)
     personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
 
-    //_________Tình trạng công nợ
+    //_________Tình trạng công nợ(type = 16)
     debtStatus: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
 
-    //_________Kho vật tư lưu trữ
+    //_________Kho vật tư lưu trữ (Phân loại theo kho)
     warehouse: {
         type: Schema.Types.ObjectId,
         ref : 'warehouse'
@@ -221,7 +221,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * THÔNG TIN KHÁC
      */
-    //_________Tên
+    //_________Tên (Tên hợp đồng)
     name: String,
     //_________Mã hiệu
     sign: String,

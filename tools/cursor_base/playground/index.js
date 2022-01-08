@@ -75,10 +75,10 @@
    * @param {*} nextInfo nếu phân trang theo _id -> nextInfo=6093ca895ad4a270bce7234d, 
    *                     nếu nhiều field  -> nextInfo=2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d
    * @param {*} keys ['createAt__-1', '_id__-1']
-   * @returns { find: findObject, sort: sortObject }
+   * @returns { find: findObject, sort: sortObject } 
    */
 const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
-//   console.log({ nextInfo, keys })
+  console.log({ nextInfo, keys })
   return new Promise(async resolve => {
     let find = {};
     let sort = {};
