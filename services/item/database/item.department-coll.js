@@ -8,22 +8,15 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("department", {
-    //_________ Công ty  
+    //_________Công ty  
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    /**
-     * CẤU TRÚC ĐỆ QUY
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "department"
-    },
-  
-    level: {
-        type: Number,
-        default: 1
     },
     /**
      * PHÂN QUYỀN TRUY CẬP
@@ -36,9 +29,6 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-    /**
-     * PHÂN LOẠI PHỤC VỤ BÁO CÁO
-     */
     /**
      * Phân loại
      * 1-Phòng ban
@@ -106,21 +96,6 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     /**
      * THÔNG TIN CĂN BẢN
      */
-    //_________Hợp đồng (BỎ)
-    // contracts: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref : "contract"
-    // }],
-    //_________Nhóm công việc (BỎ)
-    // planGroups: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref : "pcm_plan_group"
-    // }],
-    //_________Gói văn bản/tài liệu (BỎ)
-    // packages: [{
-    //     type: Schema.Types.ObjectId, 
-    //     ref : "document_package"
-    // }],
     //_________Tên
     name: String,
     //_________Mô tả

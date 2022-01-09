@@ -8,24 +8,11 @@ const Schema                = require('mongoose').Schema;
  */
 
 module.exports  = DATABASE_MIDDLEWARE("area", {
-    /**
-     * CẤU TRÚC ĐỆ QUY
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "area"
     },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "area"
-    }],
-    level: {
-        type: Number,
-        default: 1
-    },
-    /**
-     * THÔNG TIN CĂN BẢN
-     */
     //_________Tên
     name: String,
     //_________Mã hiệu

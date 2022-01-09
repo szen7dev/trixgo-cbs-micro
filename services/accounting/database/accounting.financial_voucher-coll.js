@@ -17,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'funda'
     },
-    //_________Thuộc dự án phòng ban
+    //_________Thuộc dự án phòng ban (NEW***)
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
@@ -27,12 +27,17 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     },
-    //_________Kỳ thanh toán
+    //_________Kỳ thanh toán (NEW***)
     ipc: {
         type: Schema.Types.ObjectId,
         ref: 'contract_ipc'
     }, 
-    //_________Khoản mục phí
+    //_________Phân loại khác (NEW***)
+    subtype: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    }, 
+    //_________Khoản mục phí (NEW***)
     fee: {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
@@ -96,14 +101,14 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     commodity: String,
     //_________Ghi chú   
     note: String,
-    //_________Thành tiền
+    //_________Thành tiền (NEW***)
     amount: { type: Number, default: 0 }, 
     /**
      * USD-NGOẠI TỆ
      */ 
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
-    //_________Thành tiền ngoại tệ
+    //_________Thành tiền ngoại tệ (NEW***)
     fcuAmount: { type: Number, default: 0 }, 
      /**
      * DÀNH RIÊNG CHO BÁN HÀNG

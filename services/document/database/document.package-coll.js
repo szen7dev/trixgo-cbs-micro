@@ -4,15 +4,9 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 /**
- *  Hồ sơ văn bản
+ *  Gói thầu/Thư mục hồ sơ dự án
  */
 module.exports = DATABASE_MIDDLEWARE("document_package", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    suid: {
-        type   : String,
-        require:  true,
-        unique : true
-    },
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
@@ -28,20 +22,10 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
         type: Schema.Types.ObjectId,
         ref : "contract"                  
     },
-    /**
-     * CẤU TRÚC ĐỆ QUY
-     */
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "document_package"
-    },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "document_package"
-    }],
-    level: {
-        type: Number,
-        default: 1
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -50,12 +34,14 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
     name: String,
     //_________Ký hiệu (nếu trùng với ký hiệu Hợp đồng => sẽ hiển thị được hồ sơ theo hợp đồng)
     sign: String,
-    // ________ Tổng số hồ sơ trong gói thầu
+    //________ Tổng số hồ sơ trong gói thầu
     numberOfDocs: {
         type: Number,
         default: 0
     },
-    //_________Thành viên gói thầu
+    /**
+     * PHÂN QUYỀN TRUY CẬP
+     */
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"

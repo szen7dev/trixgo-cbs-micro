@@ -757,6 +757,14 @@ class Model extends BaseModel {
 					.populate('usersAssigned', select.usersAssigned)
 					.populate('receivers', select.receivers)
 					.populate({
+						path: 'reactions',
+						select: '_id type',
+						populate: {
+							path: 'userCreate',
+							select: '_id fullname image'
+						}
+					})
+					.populate({
 						path: 'parent',
 						select: select.parent,
 						populate: {

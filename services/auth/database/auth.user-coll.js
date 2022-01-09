@@ -33,8 +33,10 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     lastname: String,
     //_______Họ và tên (vd: Nguyễn Văn Nam)
     fullname: String,
-    //_______Họ và tên (vd: Nguyễn Văn Nam-TRX)
-    bizname: String,
+    //_______Tên trong doanh nghiệp (vd: Nam-TRX)
+    bizfirstname: String,
+    //_______Họ và tên trong doanh nghiệp (vd: Nguyễn Văn Nam-TRX)
+    bizfullname: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,
