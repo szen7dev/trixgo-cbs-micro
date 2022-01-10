@@ -554,6 +554,14 @@ class Model extends BaseModel {
                         { name: regSearch },
                         { sign: regSearch },
                     ]
+
+                    if(lastestID){
+                        conditionObj.$and = [
+                            { $or: conditionObj.$or },
+                            { $or: conditionFind.$or },
+                        ]
+                        delete conditionObj.$or;
+                    }
                 }
                 
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
