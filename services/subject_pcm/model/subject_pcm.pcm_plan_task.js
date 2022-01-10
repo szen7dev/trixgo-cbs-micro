@@ -764,7 +764,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 2, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -998,7 +998,12 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
-                    console.log({ sortBy, conditionFind: conditionFind.$or });
+
+                    conditionObj.$and = [
+                        { $or: conditionObj.$or },
+                        { $or: conditionFind.$or },
+                    ]
+                    delete conditionObj.$or;
 				}
 
                 // Tìm kiếm theo keyword
@@ -1009,14 +1014,14 @@ class Model extends BaseModel {
                 }
 
                 // Bắt đầu query trong db
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean();
                 
-                // Kiểm tra nếu sai
+                // Kiểm tra nếu không có dữ liệu
                 if(!infoDataAfterGet)
                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -1028,11 +1033,10 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }   
-
                 // Tổng số việc tìm thấy
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
+                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObj);
                 
-                // Tổng số việc tìm thấy
+                // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

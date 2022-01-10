@@ -102,7 +102,7 @@ const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
           ]
         } });
       } else { //* !!listParamsFind  == false -> có tồn tại phần tử từ listParamsFind
-
+        
         if (listParamsFind.length != keys.length) 
           return resolve({ error: true, message: 'param_invalid', valid_example: {
             nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`,

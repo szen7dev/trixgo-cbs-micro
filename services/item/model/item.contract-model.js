@@ -838,7 +838,7 @@ class Model extends BaseModel {
     getList({
         companyID,projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
         date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 2, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -856,7 +856,7 @@ class Model extends BaseModel {
                 };
 
                 let conditionFind = { };
-                let sortBy   = { createAt: -1 };
+                let sortBy   = { createAt: -1, _id: -1 };
 				let objSort  = {};
               
                 /** 
@@ -877,7 +877,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-              
                
                 /**
                  * LOGIC STEP (3)
@@ -973,12 +972,11 @@ class Model extends BaseModel {
                     conditionObj.lock = lock
                 }
 
-
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
@@ -989,8 +987,14 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
+                    
+                    conditionObj.$and = [
+                        { $or: conditionObj.$or },
+                        { $or: conditionFind.$or },
+                    ]
+                    delete conditionObj.$or;
 				}
-                
+
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -998,7 +1002,7 @@ class Model extends BaseModel {
                     conditionObj.name = regSearch
                 }
                 
-                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -1008,15 +1012,16 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
+                let nextCursor	    = null;
+
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-
-                let totalRecord = await ITEM__CONTRACT_COLL.countDocuments(conditionObj);
+                
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObj);
                 let totalPage   = Math.ceil(totalRecord/limit); 
 
                 return resolve({ error: false, data: {
@@ -1024,7 +1029,7 @@ class Model extends BaseModel {
                     limit: +limit,
                     totalRecord,
                     totalPage,
-                    nextCursor,
+                    nextCursor
                 }, status: 200 });
                 
             } catch (error) {
