@@ -480,7 +480,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type,
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -529,6 +529,30 @@ class Model extends BaseModel {
                     conditionObj.type = type
                 }
 
+                if(checkObjectIDs(departmentID)){
+                    conditionObj.department = departmentID
+                }
+
+                if(checkObjectIDs(positionID)){
+                    conditionObj.position = positionID
+                }
+                
+                if(checkObjectIDs(contractTypeID)){
+                    conditionObj.contractType = contractTypeID
+                }
+
+                if(checkObjectIDs(workingStatusID)){
+                    conditionObj.workingStatus = workingStatusID
+                }
+
+                if(gender){
+                    conditionObj.gender = gender
+                }
+
+                if(insuranceStatus){
+                    conditionObj.insuranceStatus = insuranceStatus
+                }
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
@@ -564,7 +588,7 @@ class Model extends BaseModel {
                     }
                 }
                 
-                let infoDataAfterGet = await ITEM__CONTACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
