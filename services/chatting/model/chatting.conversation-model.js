@@ -1770,7 +1770,7 @@ class Model extends BaseModel {
 				}
 
                 let listConversation = await CHATTING__CONVERSATION_COLL
-					.find({ ...conditionObj, ...conditionFind, isPrivate: true }, { ...objSort, ...filter })
+					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate('members', select.members)
 					.populate({
 						path: 'lastMessage',
