@@ -763,8 +763,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
-        keyword, limit = 2, lastestID, select, populates= {} }) { 
+    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
+        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID,
+        keyword, limit = 100, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -777,6 +778,8 @@ class Model extends BaseModel {
                     // Lấy những công việc chưa hoàn thành
                     status: { $ne: 3 }
                 };
+
+                let conditionObjOrg = {};
 
                 let conditionFind = { };
                 let sortBy   = { actualFinishTime: -1 };
@@ -983,6 +986,18 @@ class Model extends BaseModel {
                     conditionObj.companyOfAssignee = companyOfAssignee;
                 }
 
+                if(fieldID && checkObjectIDs(fieldID)){
+                    conditionObj.field = fieldID;
+                }
+
+                // Tìm kiếm theo keyword
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
@@ -996,22 +1011,15 @@ class Model extends BaseModel {
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
 
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
                     conditionObj.$and = [
                         { $or: conditionObj.$or },
                         { $or: conditionFind.$or },
                     ]
                     delete conditionObj.$or;
 				}
-
-                // Tìm kiếm theo keyword
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find(conditionObj)
@@ -1020,7 +1028,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean();
-                
+
                 // Kiểm tra nếu không có dữ liệu
                 if(!infoDataAfterGet)
                    return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -1033,12 +1041,12 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }   
+                console.log({ conditionObjOrg });
                 // Tổng số việc tìm thấy
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObj);
+                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,

@@ -854,6 +854,8 @@ class Model extends BaseModel {
                         }
                     ]
                 };
+                // Điều kiện gốc
+               let conditionObjOrg = {}
 
                 let conditionFind = { };
                 let sortBy   = { createAt: -1, _id: -1 };
@@ -972,6 +974,15 @@ class Model extends BaseModel {
                     conditionObj.lock = lock
                 }
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.name = regSearch
+                }
+
+                conditionObjOrg = { ...conditionObj }
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
@@ -995,12 +1006,7 @@ class Model extends BaseModel {
                     delete conditionObj.$or;
 				}
 
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.name = regSearch
-                }
+			
                 
                 let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
                     .limit(+limit+1)
@@ -1021,7 +1027,7 @@ class Model extends BaseModel {
                     }
                 }
                 
-                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObj);
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit); 
 
                 return resolve({ error: false, data: {

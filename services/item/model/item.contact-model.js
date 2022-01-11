@@ -587,7 +587,7 @@ class Model extends BaseModel {
                         delete conditionObj.$or;
                     }
                 }
-                console.log({ conditionObj });
+                
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find({ ...conditionObj, ...conditionFind })
                     .limit(+limit+1)
                     .sort(sortBy)

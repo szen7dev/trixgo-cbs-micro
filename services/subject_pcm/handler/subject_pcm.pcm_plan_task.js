@@ -143,6 +143,7 @@ module.exports = {
             parentID    : { type: "string", optional: true },
             companyOfAuthor  : { type: "string", optional: true },
             companyOfAssignee: { type: "string", optional: true },
+            fieldID          : { type: "string", optional: true },
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -155,7 +156,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
                 let { 
-                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
+                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, 
+                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
@@ -169,7 +171,8 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee,
+                        userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, 
+                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID,
                         keyword, limit, select, lastestID, populates
                     });
                 }
