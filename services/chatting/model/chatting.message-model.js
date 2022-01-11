@@ -3,7 +3,6 @@
 /**
  * EXTERNAL PACKAGE
  */
-const ObjectID                                  	= require('mongoose').Types.ObjectId;
 const PromisePool									= require('@supercharge/promise-pool');
 const moment										= require('moment');
 
@@ -12,7 +11,6 @@ const moment										= require('moment');
  */
 const { REMINDER_NOTIFY_FOR, REMINDER_REPEAT, REACTION_TYPES }		= require('../helper/chatting.keys-constant');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.actions-constant');
 
@@ -20,7 +18,6 @@ const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.ac
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
-const { getCurrentTime }							= require('../../../tools/utils/time_utils');
 const {
 	checkObjectIDs,
 	checkNumberIsValidWithRange,
@@ -38,7 +35,6 @@ const BaseModel                                     = require('../../../tools/db
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__MESSAGE_POLL_COLL                   = require('../database/chatting.message_poll-coll');
 const CHATTING__MESSAGE_REMINDER_COLL               = require('../database/chatting.message_reminder-coll');
-const CHATTING__MESSAGE_REACTION_COLL               = require('../database/chatting.message_reaction-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 
 /**

@@ -14,6 +14,7 @@ const CF_ROUTINGS_CHATTING = {
     /// CONVERSATION
     INSERT_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/create-conversation`,
     UPDATE_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/update-conversation`,
+    CHECK_EXISTS_CONVERSATION                     	: `${BASE_ROUTE}${CONVERSATION}/check-exists-conversation`,
     ADD_MEMBER_CONVERSATION              			: `${BASE_ROUTE}${CONVERSATION}/add-member-conversation`,
     REMOVE_MEMBER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/remove-member-conversation`,
 

@@ -77,104 +77,104 @@
    * @param {*} keys ['createAt__-1', '_id__-1']
    * @returns { find: findObject, sort: sortObject } 
    */
-const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
-  console.log({ nextInfo, keys })
-  return new Promise(async resolve => {
-    let find = {};
-    let sort = {};
-    let keysParse = keys.map(key => {
-      let [prop, sort] = key.split('__');
-      return { prop, sort };
-    });
-
-    const KEYWORD_RECOGNITE_VALID = '_';  //EXM: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
-    if (nextInfo && nextInfo.includes(KEYWORD_RECOGNITE_VALID)) { // other first page
-      const listParamsFind = nextInfo.split("_"); //['2021-05-06T10:13:15.000Z', '6093ca895ad4a270bce7234d']
-      if (listParamsFind.length == 0) { //* !!listParamsFind == true
-        return resolve({ error: true, message: 'param_invalid', valid_example: {
-          nextInfo: {
-            ['_id']: `6093ca895ad4a270bce7234d`,
-            ['-createAt-_id']: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
-          }, 
-          keys: [
-            'createAt__-1',
-            '_id__-1',
-          ]
-        } });
-      } else { //* !!listParamsFind  == false -> có tồn tại phần tử từ listParamsFind
-        
-        if (listParamsFind.length != keys.length) 
+   const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
+    console.log({ nextInfo, keys })
+    return new Promise(async resolve => {
+      let find = {};
+      let sort = {};
+      let keysParse = keys.map(key => {
+        let [prop, sort] = key.split('__');
+        return { prop, sort };
+      });
+  
+      const KEYWORD_RECOGNITE_VALID = '_';  //EXM: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
+      if (nextInfo && nextInfo.includes(KEYWORD_RECOGNITE_VALID)) { // other first page
+        const listParamsFind = nextInfo.split("_"); //['2021-05-06T10:13:15.000Z', '6093ca895ad4a270bce7234d']
+        if (listParamsFind.length == 0) { //* !!listParamsFind == true
           return resolve({ error: true, message: 'param_invalid', valid_example: {
-            nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`,
-            keys: [`createAt__-1`, '_id__-1']
+            nextInfo: {
+              ['_id']: `6093ca895ad4a270bce7234d`,
+              ['-createAt-_id']: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
+            }, 
+            keys: [
+              'createAt__-1',
+              '_id__-1',
+            ]
           } });
-
-        let listParmsAssignWithKey = listParamsFind.map((itemValue, index) => {
-          return {
-            key: keysParse[index].prop, value: itemValue // key: createAt, value: 2021-05-06T10:13:15.000z
-          }
-        });
-        // console.log({ listParmsAssignWithKey })
-        /**
-         * expected result: 
-         *  listParmsAssignWithKey:
-         *    key: createAt, value: '2021-05-06T10:13:15.000Z'
-         *    key: _id, value: '6093ca895ad4a270bce7234d'
-         * 
-         */
-
-        const ARRAY_HAVE_ONE_ITEM = 1;
-        if (listParmsAssignWithKey.length == ARRAY_HAVE_ONE_ITEM) { //nếu mảng chỉ có 1 item -> đang phân trang theo _id
-
-        } else { //nếu mảng có nhiều item, có thể rơi vào phân trang theo 1 trường bất kỳ (ví dụ: createAt)
-          let [firstItemInParam, ...rest] = listParmsAssignWithKey;
-
-          let firstItemInParmAfterFormatDate = new Date(firstItemInParam.value);
-
-          let secondObjInFindMethod = {
-            [firstItemInParam.key]: firstItemInParmAfterFormatDate,
-          }
-          rest.forEach(itemExcludeFirstItem => {
-            secondObjInFindMethod = {
-              ...secondObjInFindMethod,
-              [itemExcludeFirstItem.key]: {
-                $lt: itemExcludeFirstItem.value
-              }
+        } else { //* !!listParamsFind  == false -> có tồn tại phần tử từ listParamsFind
+          
+          if (listParamsFind.length != keys.length) 
+            return resolve({ error: true, message: 'param_invalid', valid_example: {
+              nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`,
+              keys: [`createAt__-1`, '_id__-1']
+            } });
+  
+          let listParmsAssignWithKey = listParamsFind.map((itemValue, index) => {
+            return {
+              key: keysParse[index].prop, value: itemValue // key: createAt, value: 2021-05-06T10:13:15.000z
             }
           });
-          //---------------------------------FIND Workspace -------------------//
-          find['$or'] = [
-            {
-              [firstItemInParam.key]: { $lt: firstItemInParmAfterFormatDate } //⚠️ cần check lại mốc thời gian
-            }, {
-              ...secondObjInFindMethod
+          // console.log({ listParmsAssignWithKey })
+          /**
+           * expected result: 
+           *  listParmsAssignWithKey:
+           *    key: createAt, value: '2021-05-06T10:13:15.000Z'
+           *    key: _id, value: '6093ca895ad4a270bce7234d'
+           * 
+           */
+  
+          const ARRAY_HAVE_ONE_ITEM = 1;
+          if (listParmsAssignWithKey.length == ARRAY_HAVE_ONE_ITEM) { //nếu mảng chỉ có 1 item -> đang phân trang theo _id
+  
+          } else { //nếu mảng có nhiều item, có thể rơi vào phân trang theo 1 trường bất kỳ (ví dụ: createAt)
+            let [firstItemInParam, ...rest] = listParmsAssignWithKey;
+  
+            let firstItemInParmAfterFormatDate = new Date(firstItemInParam.value);
+  
+            let secondObjInFindMethod = {
+              [firstItemInParam.key]: firstItemInParmAfterFormatDate,
             }
-          ];
+            rest.forEach(itemExcludeFirstItem => {
+              secondObjInFindMethod = {
+                ...secondObjInFindMethod,
+                [itemExcludeFirstItem.key]: {
+                  $lt: itemExcludeFirstItem.value
+                }
+              }
+            });
+            //---------------------------------FIND Workspace -------------------//
+            find['$or'] = [
+              {
+                [firstItemInParam.key]: { $lt: firstItemInParmAfterFormatDate } //⚠️ cần check lại mốc thời gian
+              }, {
+                ...secondObjInFindMethod
+              }
+            ];
+          }
         }
-      }
-    } else { // first page
-      
-    } 
-
-    //---------------------------------SORT Workspace -------------------//
-    let objectSort = {};
-    keysParse.forEach(itemExcludeFirstItem => {
-      objectSort = {
-        ...objectSort,
-        [itemExcludeFirstItem.prop]: [itemExcludeFirstItem.sort][0]
-      }
+      } else { // first page
+        
+      } 
+  
+      //---------------------------------SORT Workspace -------------------//
+      let objectSort = {};
+      keysParse.forEach(itemExcludeFirstItem => {
+        objectSort = {
+          ...objectSort,
+          [itemExcludeFirstItem.prop]: [itemExcludeFirstItem.sort][0]
+        }
+      });
+      sort = {
+        ...objectSort
+      };
+  
+      return resolve({ error: false, data: { find, sort }, params: { nextInfo, keys } });
     });
-    sort = {
-      ...objectSort
-    };
-
-    return resolve({ error: false, data: { find, sort }, params: { nextInfo, keys } });
-  });
-}
-
-// RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z`, keys: ['createAt__-1'] })
-// RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
-//   .then(result => console.log({ result }))
-//   .catch(err => console.log({ err }))
-
-exports.RANGE_BASE_PAGINATION = RANGE_BASE_PAGINATION;
+  }
+  
+  // RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z`, keys: ['createAt__-1'] })
+  // RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
+  //   .then(result => console.log({ result }))
+  //   .catch(err => console.log({ err }))
+  
+  exports.RANGE_BASE_PAGINATION = RANGE_BASE_PAGINATION;

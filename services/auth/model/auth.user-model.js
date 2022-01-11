@@ -32,6 +32,9 @@ const {
 }                                       = require('../helper/auth.keys-constant');
 const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_CHATTING }           = require('../../chatting/helper/chatting.actions-constant');
+
 // const ObjectID                      = require('mongoose').Types.ObjectId;
 
 // const BaseModel                     = require('../intalize/base_model');
@@ -214,8 +217,8 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let emailValid                           = email.toLowerCase().trim();
-                let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX]; 
+                let emailValid          = email.toLowerCase().trim();
+                let listPlatformValid   = [PLATFORM_TRIXGO, PLATFORM_WYNDIX]; 
 
                 /** 
                  * VALIDATION STEP (2)
@@ -225,7 +228,7 @@ class Model extends BaseModel {
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
                     return resolve({ error: true, message: 'platform_invalid' });
 
-                let isExist         = await AUTH__USER_COLL
+                let isExist = await AUTH__USER_COLL
                     .findOne({ email: emailValid })
                     .populate({
                         path: 'company',
@@ -234,20 +237,21 @@ class Model extends BaseModel {
 
                 if (!isExist)
                     return resolve({ error: true, message: 'email_not_exist' });
-                
+
                 const isMatchPass = await compare(password, isExist.password);
                 if (!isMatchPass) return resolve({
                     error: true,
                     message: 'password_not_exist'
                 });
 
-                  /**
+                /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
                 if (isExist.status == STATUS_BLOCK) 
                     return resolve({ error: true, message: 'user_blocked' });
+
                 if (isExist.status == STATUS_INACTIVE) 
                     return resolve({ error: true, message: 'user_not_active' });
                 
@@ -264,6 +268,7 @@ class Model extends BaseModel {
                     phone: isExist.phone,
                     name: isExist.name,
                     fullname: isExist.fullname,
+                    bizfullname: isExist.bizfullname,
                     // birthDay: isExist.birthDay,
                     company: isExist.company,
                     // department: isExist.department,
@@ -279,7 +284,6 @@ class Model extends BaseModel {
                     // deviceID: isExist.deviceID,
                     // registrationID: isExist.registrationID,
                     _id: isExist._id,
-                    // config: isExist.config
                 }
 
                 const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
@@ -1125,24 +1129,24 @@ class Model extends BaseModel {
      * Depv
      * 19/08/2021
      */
-    updateFullname({ userID, firstname, lastname, fullname }) {
+    updateFullname({ userID, firstname, lastname, fullname, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = {};
-                
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                     
+
                 if(!ObjectID.isValid(userID))
-                    return resolve({ error: true, message: "param_not_valid" });
-                
-                 /**
+                    return resolve({ error: true, message: "param_not_valid", status: 400 });
+
+                /**
                  * LOGIC STEP (3)
                  */ 
                 if(firstname){
@@ -1155,20 +1159,32 @@ class Model extends BaseModel {
 
                 if(fullname){
                     dataInsert.fullname = fullname;
-                    let infoUser = await AUTH__USER_COLL.findById(userID).populate({
-                        path: "company",
-                        select: "sign"
-                    });
 
-                    dataInsert.bizname = `${fullname}-${infoUser.company.sign}`;
+                    let infoUser = await AUTH__USER_COLL
+                        .findById(userID)
+                        .select('company')
+                        .populate({
+                            path: "company",
+                            select: "sign"
+                        })
+                        .lean();
+
+                    dataInsert.bizfullname = `${fullname}-${infoUser.company.sign}`;
                 }
+
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataInsert, { new: true })
                 if(!infoUserAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
-               
-                return resolve({ error: false, message: "update_fullname_success" });
+                    return resolve({ error: true, message: "cannot_update", status: 422 });
+
+                if(fullname) {
+                    await ctx.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_CONVERSATION_NAME_PRIVATE}`, {
+                        bizfullname: dataInsert.bizfullname
+                    });
+                }
+
+                return resolve({ error: false, message: "update_fullname_success", status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

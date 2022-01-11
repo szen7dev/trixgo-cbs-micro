@@ -381,11 +381,11 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
                 await this.validateEntity(ctx.params);
-                let { firstname, lastname, fullname }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateFullname({ userID, firstname, lastname, fullname });
+                let { _id: userID } = ctx.meta?.infoUser;
+                let { firstname, lastname, fullname } = ctx.params;
+                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateFullname({ userID, firstname, lastname, fullname, ctx });
+
                 return infoUserAfterUpdate;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -680,14 +680,12 @@ module.exports = {
     
     /**
 	 * Dev: Depv ✅
-	 * Func: getList and getInfo pcm_plan_report
+	 * Func: getList and getInfo user
 	 */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            // Field bổ sung
-            userID    : { type: "string", optional: true },
-            // Field mặc định
+            userID      : { type: "string", optional: true },
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
@@ -705,7 +703,6 @@ module.exports = {
                     userID,
                     keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
                 } = ctx.params;
-				// const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
                 
                 if(userID){
@@ -717,9 +714,10 @@ module.exports = {
                         companyID, keyword, limit, lastestID, filter, populates, populates1, populates2, populates3,
                     });
                 }
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
