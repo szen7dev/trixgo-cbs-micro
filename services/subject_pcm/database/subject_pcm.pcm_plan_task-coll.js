@@ -141,7 +141,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref : "contract"                  
     },
-    //_________Tính chất
+    //_________Tính chất(Phân loại khác TYPE = 2)
     field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"

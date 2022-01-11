@@ -763,8 +763,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, userID, parentID, companyOfAuthor, companyOfAssignee,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
+        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID,
+        keyword, limit = 100, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -778,8 +779,10 @@ class Model extends BaseModel {
                     status: { $ne: 3 }
                 };
 
+                let conditionObjOrg = {};
+
                 let conditionFind = { };
-                let sortBy   = { actualFinishTime: 1 };
+                let sortBy   = { actualFinishTime: -1 };
 				let objSort  = {};
 
                 let start = new Date();
@@ -983,22 +986,9 @@ class Model extends BaseModel {
                     conditionObj.companyOfAssignee = companyOfAssignee;
                 }
 
-                // Phân trang kiểu mới
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['actualFinishTime__1', '_id__1'];
-                    // console.log({ nextInfo });
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
+                if(fieldID && checkObjectIDs(fieldID)){
+                    conditionObj.field = fieldID;
+                }
 
                 // Tìm kiếm theo keyword
 				if(keyword){
@@ -1007,15 +997,39 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
+                conditionObjOrg = {...conditionObj};
+                // Phân trang kiểu mới
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+					let nextInfo = `${infoData.actualFinishTime}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                    // console.log({ nextInfo });
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+                    conditionObj.$and = [
+                        { $or: conditionObj.$or },
+                        { $or: conditionFind.$or },
+                    ]
+                    delete conditionObj.$or;
+				}
+
                 // Bắt đầu query trong db
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean();
-                
-                // Kiểm tra nếu sai
+
+                // Kiểm tra nếu không có dữ liệu
                 if(!infoDataAfterGet)
                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -1027,13 +1041,12 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }   
-
+                console.log({ conditionObjOrg });
                 // Tổng số việc tìm thấy
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.countDocuments(conditionObj);
-
-                // Tổng số việc tìm thấy
+                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+                
+                // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,

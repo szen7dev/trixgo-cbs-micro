@@ -165,13 +165,13 @@ class Model extends BaseModel {
         return new Promise(async resolve => { 
             try {
                 let dataInsert = {
-                    project: projectID, name, sign, date, userCreate: userID
+                    project: projectID, name, sign, date, userCreate: userID, members: [userID], admins: [userID]
                 }
 
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: projectID
                 })
-
+                
                 if(infoProject.error)
                     return resolve({ error: true, message: "Request params project invalid" });
                 
@@ -854,9 +854,11 @@ class Model extends BaseModel {
                         }
                     ]
                 };
+                // Điều kiện gốc
+               let conditionObjOrg = {}
 
                 let conditionFind = { };
-                let sortBy   = { createAt: -1 };
+                let sortBy   = { createAt: -1, _id: -1 };
 				let objSort  = {};
               
                 /** 
@@ -877,7 +879,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-              
                
                 /**
                  * LOGIC STEP (3)
@@ -973,12 +974,20 @@ class Model extends BaseModel {
                     conditionObj.lock = lock
                 }
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.name = regSearch
+                }
+
+                conditionObjOrg = { ...conditionObj }
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
@@ -989,16 +998,17 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
+                    
+                    conditionObj.$and = [
+                        { $or: conditionObj.$or },
+                        { $or: conditionFind.$or },
+                    ]
+                    delete conditionObj.$or;
 				}
+
+			
                 
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.name = regSearch
-                }
-                
-                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -1008,15 +1018,16 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
+                let nextCursor	    = null;
+
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-
-                let totalRecord = await ITEM__CONTRACT_COLL.countDocuments(conditionObj);
+                
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit); 
 
                 return resolve({ error: false, data: {
@@ -1024,7 +1035,7 @@ class Model extends BaseModel {
                     limit: +limit,
                     totalRecord,
                     totalPage,
-                    nextCursor,
+                    nextCursor
                 }, status: 200 });
                 
             } catch (error) {

@@ -30,7 +30,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Dự án/phòng ban
+    //_________Dự án/phòng ban (Thuộc dự án)
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
@@ -47,37 +47,37 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     },
     //_________Phân loại chính thức/nháp (1-Chính thức/2-Nháp) 
     draft: { type: Number, default: 1 },
-    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào)
+    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
     outin: { type: Number, default: 1 },
-    //_________Phân loại trạng thái (1-Đang triển khai/2-Đang bàn giao/3-Hoàn thành/4-Tạm dừng)
+    //_________Phân loại trạng thái (1-Đang triển khai/2-Đang bàn giao/3-Hoàn thành/4-Tạm dừng) (DEPARTMENT_STATUS in cf_constant)
     status: { type: Number, default: 1 },
-    //_________Phân loại NA (Thực/Gửi dấu)
+    //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
     real: { type: Number, default: 1 },
-    //_________Phân loại khác (1-Thông thường/2-Đặc biệt)  
+    //_________Phân loại khác (1-Thông thường/2-Đặc biệt) (CONTRACT_SUB_TYPES in cf_constant)
     subType: { type: Number, default: 1 },
-    //_________Phân loại theo hình thức hợp đồng (1-Trọn gói/2-Theo tháng/3-Đơn giá/..)
+    //_________Phân loại theo hình thức hợp đồng (1-Trọn gói/2-Theo tháng/3-Đơn giá/..) (CONTRACT_TYPES in cf_constant)
     type: { type: Number, default: 1 },
-    //_________Phân loại theo lĩnh vực
+    //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
     field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Phân loại theo chủ trì
+    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
     chair: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
-    //_________Phân loại theo phụ trách
+    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
     personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
-    //_________Phân loại theo trạng thái công nợ
+    //_________Phân loại theo trạng thái công nợ (POSTMAN ITEM -> DOCTYPE (type = 16))
     debtStatus: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Phân loại theo kho
+    //_________Phân loại theo kho(POSTMAN ITEM -> WAREHOUSE)
     warehouse: {
         type: Schema.Types.ObjectId,
         ref : 'warehouse'
@@ -86,7 +86,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * THÔNG TIN KHÁC
      */
-    //_________Tên
+    //_________Tên (Tên hợp đồng)
     name: String,
     //_________Mã hiệu
     sign: String,
@@ -104,14 +104,14 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     startTime: { type: Date, default: null },
     //_________Kết thúc thực hiện
     endTime: { type: Date, default: null },
-    //_________Bên mua
+    //_________Bên mua (POSTMAN ITEM > CONTACT)
     buyerInfo: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
     //_________Ngân hàng bên mua
     buyerBank: String,
-    //_________Bên bán
+    //_________Bên bán (POSTMAN ITEM > CONTACT)
     sellerInfo: {
         type: Schema.Types.ObjectId,
         ref: "contact"
@@ -126,29 +126,29 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * THÔNG TIN VÀ GIÁ TRỊ THỰC HIỆN
      */
-    //_________(1)Giá trị hợp đồng
+    //_________(1)Giá trị trước VAT
     value: { type: Number, default: 0 },
-    //_________2)VAT GIÁ TRỊ
+    //_________2)Giá trị phần VAT
     vatValue: { type: Number, default: 0 },
-    //_________(3)Giá trị phát sinh
+    //_________(3)Phát sinh trước VAT
     plus: { type: Number, default: 0 },
     //_________(4)Phát sinh phần VAT
     vatPlus: { type: Number, default: 0 },
-    //_________(5)Giá trị tạm ứng
+    //_________(5)Tạm ứng theo hợp đồng
     advancePayment: { type: Number, default: 0 },
-    //_________(6)Sản lượng đã thực hiện
+    //_________(6)Sản lượng trước VAT
     produce: { type: Number, default: 0 },
-    //_________(7)Vat sản lượng
+    //_________(7)Sản lượng phần VAT
     vatProduce: { type: Number, default: 0 },
     //_________(8)Sản lượng phát sinh trước VAT
     plusProduce: { type: Number, default: 0 },
     //_________(9)Sản lượng phát sinh phần VAT
     vatPlusProduce: { type: Number, default: 0 },
-    //_________(10)Nghiệm thu trước VAT
+    //_________(10)Giá trị nghiệm thu trước VAT
     acceptance: { type: Number, default: 0 },
-    //_________(11)VAT nghiệm thu
+    //_________(11)Giá trị nghiệm thu phần VAT
     vatAcceptance: { type: Number, default: 0 },
-    //_________(12)Nghiệm thu phát sinh trước VAT
+    //_________(12)Giá trị nghiệm thu phát sinh trước VAT
     plusAcceptance: { type: Number, default: 0 },
     //_________(13)Giá trị nghiệm thu phát sinh phần VAT
     vatPlusAcceptance: { type: Number, default: 0 },
