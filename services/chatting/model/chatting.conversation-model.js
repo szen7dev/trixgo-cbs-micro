@@ -176,23 +176,8 @@ class Model extends BaseModel {
                 description && (dataUpdate.description 	= description);
 
 				// Cập nhật avatar cuộc hội thoại
-				if(avatar){
-					let infoAvatarConversation = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-						app: CF_DOMAIN_SERVICES.CHATTING,
-						name: avatar.name,
-						url: avatar.url,
-						size: avatar.size,
-						userID,
-					});
-                
-					if(infoAvatarConversation.error)
-						return resolve({ error: true, message: 'Update avatar conversation failed', status: 403 });
-                
-					let infoAfterInserted = await CHATTING__CONVERSATION_FILE_COLL.create({
-						conversation: conversationID,
-						file: infoAvatarConversation.data._id
-					});
-					dataUpdate.avatar = infoAfterInserted && infoAfterInserted._id;
+				if(avatar && checkObjectIDs(avatar)){
+					dataUpdate.avatar = avatar;
 				}
 
 				let infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -1690,9 +1675,11 @@ class Model extends BaseModel {
 				}
 
 				let listConversationFiltered = [];
-				let conditionObj 	= { members: { $in: [userID] } };
-				let conditionFind 	= {};
-				let objSort 	 	= {};
+				let conditionObj 	= { 
+					members: { $in: [userID] },
+					usersHide: { $nin: [userID] }
+				};
+				let conditionFind = {};
                 let sortBy = {
                     modifyAt: -1,
 					createAt: -1,
@@ -1704,7 +1691,7 @@ class Model extends BaseModel {
 						return resolve({ 
 							error: true, 
 							message: "Không thể lấy thông tin cuộc hội thoại theo lastestID",
-							keyError: 'cannot_get_info_conversation_by_lastestID',
+							keyError: 'cannot_get_info_by_lastestID',
 							status: 403
 						});
 					}
@@ -1727,50 +1714,59 @@ class Model extends BaseModel {
 
 				// SEARCH TEXT
 				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-
-				conditionObj.usersHide = { $nin: [userID] };
+                    let key = keyword.split(" ");
+                    key = '.*' + key.join(".*") + '.*';
+                    conditionObj.name = new RegExp(key, 'i');
+                }
 
 				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, { 
 					userID
 				});
 
 				if(listConversationPin.data && listConversationPin.data.length){
-					conditionObj._id = { $nin: listConversationPin.data };
+					let listConversationIDPined = listConversationPin.data;
 
-					listConversationPin = await CHATTING__CONVERSATION_COLL
-						.find({ 
-							_id: { $in: listConversationPin.data },
-							members: { $in: [userID] },
-							usersHide: { $nin: [userID] } 
-						}, filter)
-						.populate('members', select.members)
-						.populate({
-							path: 'lastMessage',
-							populate: {
-								path: 'sender',
-								select: select.sender,
-							},
-							select: select.lastMessage,
+					// Nếu là trang đầu thì lấy danh sách conversation đã pin 
+					if(!lastestID) {
+						listConversationPin = await CHATTING__CONVERSATION_COLL
+							.find({ 
+								_id: { $in: listConversationPin.data },
+								...conditionObj
+							}, filter)
+							.populate('members', select.members)
+							.populate({
+								path: 'lastMessage',
+								populate: {
+									path: 'sender',
+									select: select.sender,
+								},
+								select: select.lastMessage,
+							})
+							.populate({
+								path: 'avatar',
+								populate: {
+									path: 'file',
+									select: 'name size url'
+								},
+								select: select.avatar
+							})
+							.lean();
+
+						listConversationPin = listConversationPin.map(conversationPined => {
+							conversationPined.isPin = true;
+							return conversationPined;
 						})
-						.populate({
-							path: 'avatar',
-							populate: {
-								path: 'file',
-								select: 'name size url'
-							},
-							select: select.avatar
-						})
-						.lean()
+					} else {
+						listConversationPin = [];
+					}
+
+					conditionObj._id = { $nin: listConversationIDPined };
 				} else{
 					listConversationPin = [];
 				}
 
                 let listConversation = await CHATTING__CONVERSATION_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+					.find({ ...conditionFind, ...conditionObj }, filter)
 					.populate('members', select.members)
 					.populate({
 						path: 'lastMessage',
@@ -1792,17 +1788,19 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
+				listConversation = [...listConversationPin, ...listConversation];
+
 				if(keyword) {
 					for (const conversation of listConversation) {
 						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
 						if(conversation.isPrivate && !conversation.isRename) {
-							const [name1, name2] = conversation.name.split('_');
+							const [memberName1st, memberName2st] = conversation.name.split('_');
 
-							if(bizfullname === name1 && name2.includes(keyword)) {
+							if(bizfullname === memberName1st && memberName2st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
 							}
 
-							if(bizfullname === name2 && name1.includes(keyword)) {
+							if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
 							}
 
@@ -1812,7 +1810,7 @@ class Model extends BaseModel {
 						listConversationFiltered[listConversationFiltered.length] = conversation;
 					}
 				} else{
-					listConversationFiltered = [...listConversation];
+					listConversationFiltered = listConversation;
 				}
 
 				// GET TOTAL RECORD
@@ -1830,7 +1828,6 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: {
-						listConversationPin,
 						listRecords: listConversationFiltered,
 						limit: +limit,
 						totalRecord,

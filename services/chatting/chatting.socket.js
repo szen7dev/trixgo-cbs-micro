@@ -589,13 +589,9 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 
-			const { members, usersMute } = infoConversation;
-			const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+			const { members } = infoConversation;
 
-			// Không gửi đến user tắt thông báo cuộc hội thoại
-			const arrReceiver = members.filter(memberID => {
-				return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-			});
+			const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
 
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
@@ -610,6 +606,46 @@ exports.CHATTING_SOCKET = {
 			});
 		})
 
+	},
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 11/01/2022
+	 */
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REVOKE_MESSAGE]: async function(data) {
+		let socket                      = this;
+		let listUserActive              = socket.$service.listUserConnected2;
+		let io                          = socket.$service.io;
+		let userID                      = socket.client.user;
+		let { conversationID, messagesID, filesID } = data;
+
+		if(!conversationID || !messagesID || !messagesID.length || !filesID || !filesID.length){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation or message" },
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
+			});
+		}
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.select('members')
+			.lean();
+
+		const infoAfterRevoke = await CHATTING__MESSAGE_COLL.revokeMessage({
+			userID, conversationID, messagesID, filesID
+		})
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver: infoConversation.members,
+			data: {
+				error: false,
+				data: infoAfterRevoke
+			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
+		});
 	},
 
 	/**
