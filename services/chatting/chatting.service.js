@@ -30,8 +30,8 @@ module.exports = {
     ],
 
 	/**
-	 	* Service settings
-	*/
+	 * Service settings
+	 */
 	// settings: {
 	// 	fields: ["_id", "name", "products"],
 	// 	populates : {
@@ -46,22 +46,22 @@ module.exports = {
 	// },
 
 	/**
-	* Service metadata
-	*/
+	 * Service metadata
+	 */
 	metadata: {
 
 	},
 
 	/**
-	* Service dependencies
-	*/
+	 * Service dependencies
+	 */
 	dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
 
 	/**
-	* Actions
-	*/
+	 * Actions
+	 */
 	actions: {
 		// ======================  CONVERSATION ===========================
 
@@ -70,6 +70,12 @@ module.exports = {
 
 		// Cập nhật cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION] 		            			: CHATTING__CONVERSATION_HANDLER.updateConversation,
+
+		// Kiểm tra tồn tại cuộc hội thoại
+		[CF_ACTIONS_CHATTING.CHECK_EXISTS_CONVERSATION]							: CHATTING__CONVERSATION_HANDLER.checkExistsConversation,
+
+		// Cập nhật tên cuộc hội thoại riêng tư (service call service)
+		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION_NAME_PRIVATE]					: CHATTING__CONVERSATION_HANDLER.updateConversationNamePrivate,
 
 		// Thêm thành viên cuộc hội thoại
 		[CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION] 		    				: CHATTING__CONVERSATION_HANDLER.addMembersToConversation,

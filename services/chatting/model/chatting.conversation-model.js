@@ -5,6 +5,7 @@
  */
 const ObjectID                                  	= require('mongoose').Types.ObjectId;
 const moment										= require('moment');
+const PromisePool									= require('@supercharge/promise-pool');
 
 /**
  * CONSTANTS
@@ -47,16 +48,28 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: MinhVH - 04/08/2021
 	 */
-	insertConversation({ name, description, authorID, membersID, isPrivate }) {
+	insertConversation({ name, description, bizfullname, authorID, membersID, isPrivate, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				if(!checkObjectIDs([authorID, ...membersID]) || !membersID || !membersID.length)
-                    return resolve({ error: true, message: 'Request params authorID or membersID invalid', status: 400 });
+				if(!checkObjectIDs([authorID, ...membersID]) || !membersID || !membersID.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số authorID or membersID không hợp lệ', 
+						keyError: 'params_authorID_or_membersID_invalid',
+						status: 400 
+					});
+				}
 
 				// Tạo cuộc hội thoại 2 người
 				if(isPrivate){
-					if(membersID.length > 1)
-						return resolve({ error: true, message: 'Number of membersID must equal 1', status: 400 });
+					if(membersID.length > 1) {
+						return resolve({ 
+							error: true, 
+							message: 'Cuộc hội thoại riêng tư không được lớn hơn 1 thành viên', 
+							keyError: 'number_of_members_must_equal_1',
+							status: 400
+						});
+					}
 
 					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
@@ -66,17 +79,45 @@ class Model extends BaseModel {
 								$size: 2
 							},
 						})
-						.lean()
+						.lean();
 
 					if(checkExistConversation)
 						return resolve({ error: false, data: checkExistConversation, status: 200 });
 
-				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
-					if(membersID.length <= 1)
-						return resolve({ error: true, message: 'Number of membersID must more than 1', status: 400 });
+					let infoMember = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+						userID: membersID[0],
+						select: 'bizfullname'
+					});
 
-					if(membersID.length >= 100)
-						return resolve({ error: true, message: 'Number of membersID over 100', status: 400 });
+					if(infoMember.error) {
+						return resolve({ 
+							error: true, 
+							message: 'Không tìm thấy thành viên', 
+							keyError: 'cannot_get_info_member',
+							status: 400
+						});
+					}
+
+					name = `${bizfullname}_${infoMember?.data?.bizfullname}`;
+
+				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
+					if(membersID.length <= 1) {
+						return resolve({ 
+							error: true, 
+							message: 'Số lượngg thành viên của nhóm chat phải lớn hơn 1', 
+							keyError: 'number_of_members_must_greater_than_1',
+							status: 400
+						});
+					}
+
+					if(membersID.length >= 100) {
+						return resolve({ 
+							error: true, 
+							message: 'Số lượng thành viên không được lớn hơn 100', 
+							keyError: 'number_of_members_over_100',
+							status: 400
+						});
+					}
 				}
 
                 let infoConversationAfterInserted = await this.insertData({
@@ -86,8 +127,15 @@ class Model extends BaseModel {
 					authors: [authorID],
 					members: [...new Set([authorID, ...membersID])]
 				});
-                if(!infoConversationAfterInserted)
-                    return resolve({ error: true, message: "Can't create conversation", status: 403 });
+
+                if(!infoConversationAfterInserted) {
+					return resolve({ 
+						error: true, 
+						message: 'Tạo cuộc hội thoại thất bại', 
+						keyError: 'can_not_create_conversation',
+						status: 422
+					});
+				}
 
                 return resolve({ error: false, data: infoConversationAfterInserted, status: 200 });
             } catch (error) {
@@ -161,6 +209,10 @@ class Model extends BaseModel {
 						conversationID,
 						type: 103
 					})
+
+					await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$set: { isRename: true }
+					});
 				}
 
 				if(avatar){
@@ -181,6 +233,96 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
+	 * Func: Kiểm tra tồn tại cuộc hội thoại
+	 * Date: 11/01/2022
+	 */
+	checkExistsConversation({ memberID, userID }) {
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([memberID, userID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số memberID hoặc userID không hợp lệ', 
+						keyError: 'params_memberID_or_userID_invalid',
+						status: 400 
+					});
+				}
+
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					isPrivate: true,
+					members: {
+						$elemMatch: {
+							$in: [memberID, userID]
+						}
+					}
+				}).lean();
+
+				if(checkExistConversation)
+					return resolve({ error: false, data: checkExistConversation, status: 200 });
+
+				return resolve({ 
+					error: true, 
+					message: 'Cuộc hội thoại không tồn tại', 
+					keyError: 'conversation_not_exitsts',
+					status: 400 
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật cuộc hội thoại theo điều kiện (service call service)
+	 * Date: 11/01/2022
+	 */
+	updateConversationNamePrivate({ userID, bizfullname }) {
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				let condition = {
+					isPrivate: true,
+					members: { $in: [userID] }
+				}
+
+				const listConversation = await CHATTING__CONVERSATION_COLL
+					.find(condition)
+					.select('_id members')
+					.populate('members', '_id bizfullname')
+					.lean();
+
+				const { results } = await PromisePool
+					.for(listConversation)
+					.withConcurrency(2)
+					.process(async conversation => {
+						let friend = conversation.members.find(member => member._id.toString() !== userID.toString());
+						let newNameConversationPrivate = `${friend && friend.bizfullname}_${bizfullname}`;
+
+						if(!friend) return;
+
+						// Update name for conversation private
+						const infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversation._id, {
+							name: newNameConversationPrivate
+						}, { new: true });
+
+						return infoAfterUpdated;
+					})
+
+				if(!results || !results.length)
+					return resolve({ error: true, message: "Can't update conversation", status: 422 });
+
+				return resolve({ error: false, data: results, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
 	 * Func: Thêm thành viên cuộc hội thoại
 	 * Date: 06/08/2021
 	 */
@@ -192,6 +334,7 @@ class Model extends BaseModel {
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
+					isPrivate: false,
 					authors: { $in: [authorID] }
 				}).populate('members');
 
@@ -270,6 +413,7 @@ class Model extends BaseModel {
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
+					isPrivate: false,
 					authors: { $in: [authorID] },
 					members: { $in: [memberID] }
 				});
@@ -333,6 +477,7 @@ class Model extends BaseModel {
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
+					isPrivate: false,
 					authors: { $in: [authorID] }
 				});
 
@@ -399,6 +544,7 @@ class Model extends BaseModel {
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
+					isPrivate: false,
 					authors: { $in: [authorID] }
 				});
 
@@ -1368,6 +1514,7 @@ class Model extends BaseModel {
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
+					isPrivate: false,
 					members: { $in: [userID] }
 				}).lean();
 
@@ -1498,11 +1645,17 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
 	 * Date: 23/08/2021
 	 */
-	getListConversationWithPage({ lastestID, userID, keyword, limit = 20, filter = {}, select = {}, ctx }){
+	getListConversationWithPage({ lastestID, userID, keyword, bizfullname, limit = 20, filter = {}, select = {}, ctx }){
         return new Promise(async resolve => {
             try {
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+				if(!checkObjectIDs(userID)) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số user ID không hợp lệ', 
+						keyError: 'params_userID_invalid',
+						status: 400 
+					});
+				}
 
 				if(isNaN(limit)) {
 					limit = 20;
@@ -1511,19 +1664,32 @@ class Model extends BaseModel {
 				}
 
 				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+					if(!IsJsonString(filter)) {
+						return resolve({ 
+							error: true, 
+							message: 'Tham số filter không hợp lệ', 
+							keyError: 'params_filter_invalid',
+							status: 400 
+						});
+					}
 
 					filter = JSON.parse(filter);
 				}
 
 				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+					if(!IsJsonString(select)) {
+						return resolve({ 
+							error: true, 
+							message: 'Tham số select không hợp lệ', 
+							keyError: 'params_select_invalid',
+							status: 400 
+						});
+					}
 
 					select = JSON.parse(select);
 				}
 
+				let listConversationFiltered = [];
 				let conditionObj 	= { members: { $in: [userID] } };
 				let conditionFind 	= {};
 				let objSort 	 	= {};
@@ -1532,18 +1698,29 @@ class Model extends BaseModel {
 					createAt: -1,
                 }
 
-				// GET CONDITION PAGINATION
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestID);
-                    if(!infoConversation)
-                        return resolve({ error: true, message: "Can't get info last conversation", status: 403 });
+                    if(!infoConversation) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể lấy thông tin cuộc hội thoại theo lastestID",
+							keyError: 'cannot_get_info_conversation_by_lastestID',
+							status: 403
+						});
+					}
 
                     let nextInfo = `${infoConversation.modifyAt}_${infoConversation._id}`;
                     let keys 	 = ['modifyAt__-1', '_id__-1'];
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+                    if(!dataPagingAndSort || dataPagingAndSort.error) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể lấy phạm vi phân trang", 
+							keyError: 'cannot_get_range_pagination',
+							status: 403
+						});
+					}
 
 					conditionFind = dataPagingAndSort.data.find;
                 }
@@ -1557,7 +1734,9 @@ class Model extends BaseModel {
 
 				conditionObj.usersHide = { $nin: [userID] };
 
-				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, { userID });
+				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, { 
+					userID
+				});
 
 				if(listConversationPin.data && listConversationPin.data.length){
 					conditionObj._id = { $nin: listConversationPin.data };
@@ -1591,7 +1770,7 @@ class Model extends BaseModel {
 				}
 
                 let listConversation = await CHATTING__CONVERSATION_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+					.find({ ...conditionObj, ...conditionFind, isPrivate: true }, { ...objSort, ...filter })
 					.populate('members', select.members)
 					.populate({
 						path: 'lastMessage',
@@ -1613,14 +1792,37 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
+				if(keyword) {
+					for (const conversation of listConversation) {
+						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
+						if(conversation.isPrivate && !conversation.isRename) {
+							const [name1, name2] = conversation.name.split('_');
+
+							if(bizfullname === name1 && name2.includes(keyword)) {
+								listConversationFiltered[listConversationFiltered.length] = conversation;
+							}
+
+							if(bizfullname === name2 && name1.includes(keyword)) {
+								listConversationFiltered[listConversationFiltered.length] = conversation;
+							}
+
+							continue;
+						}
+
+						listConversationFiltered[listConversationFiltered.length] = conversation;
+					}
+				} else{
+					listConversationFiltered = [...listConversation];
+				}
+
 				// GET TOTAL RECORD
-                let totalRecord = await CHATTING__CONVERSATION_COLL.count(conditionObj);
+                let totalRecord = await CHATTING__CONVERSATION_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
 
-				if(listConversation && listConversation.length){
-					if(listConversation.length > limit){
-						nextCursor = listConversation[limit - 1]._id;
-						listConversation.length = limit;
+				if(listConversationFiltered && listConversationFiltered.length){
+					if(listConversationFiltered.length > limit){
+						nextCursor = listConversationFiltered[limit - 1]._id;
+						listConversationFiltered.length = limit;
 					}
 				}
 
@@ -1629,7 +1831,7 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listConversationPin,
-						listRecords: listConversation,
+						listRecords: listConversationFiltered,
 						limit: +limit,
 						totalRecord,
 						nextCursor

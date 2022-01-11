@@ -27,21 +27,24 @@ module.exports = {
 	 * Dev: MinhVH
 	 * Func: Thêm cuộc hội thoại mới
 	 * Date: 03/08/2021
+	 * Updated: [
+     *  11/01/2022 - 13:55 - MinhVH
+     * ]
 	 */
     insertConversation: {
         params: {
-            name        : { type: "string" },
+            name        : { type: "string", optional: true },
             description : { type: "string", optional: true },
             isPrivate   : { type: "boolean" }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { name, description, membersID, isPrivate } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversation({
-					name, description, authorID, membersID, isPrivate
+					name, description, bizfullname, authorID, membersID, isPrivate, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,6 +78,56 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Kiểm tra tồn tại cuộc hội thoại
+	 * Date: 11/01/2022
+	 */
+	checkExistsConversation: {
+        params: {
+            memberID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { memberID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.checkExistsConversation({
+					memberID, userID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật tên cuộc hội thoại riêng tư (service call service)
+	 * Date: 11/01/2022
+	 */
+    updateConversationNamePrivate: {
+        params: {},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { bizfullname } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConversationNamePrivate({
+					userID, bizfullname
+				});
+
+                return resultAfterCallHandler;
+            } catch (error) {
+                return { error: true, message: error.message };
             }
         }
     },
@@ -582,11 +635,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, bizfullname } = ctx.meta.infoUser;
                 const { lastestID, keyword, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-					lastestID, userID, keyword, filter, select, ctx
+					lastestID, userID, keyword, bizfullname, filter, select, ctx
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

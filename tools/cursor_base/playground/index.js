@@ -70,15 +70,15 @@
   //     + lấy ảnh thumnail (EVENT) -> RABBITMQ (MESSAING - async task) HEAVY_TASK
   //     + save -> field
 
-  /**
-   * 
-   * @param {*} nextInfo nếu phân trang theo _id -> nextInfo=6093ca895ad4a270bce7234d, 
-   *                     nếu nhiều field  -> nextInfo=2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d
-   * @param {*} keys ['createAt__-1', '_id__-1']
-   * @returns { find: findObject, sort: sortObject }
-   */
+/**
+ * 
+ * @param {*} nextInfo nếu phân trang theo _id -> nextInfo=6093ca895ad4a270bce7234d, 
+ *                     nếu nhiều field  -> nextInfo=2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d
+ * @param {*} keys ['createAt__-1', '_id__-1']
+ * @returns { find: findObject, sort: sortObject } 
+ */
 const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
-//   console.log({ nextInfo, keys })
+  console.log({ nextInfo, keys })
   return new Promise(async resolve => {
     let find = {};
     let sort = {};
@@ -102,7 +102,7 @@ const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
           ]
         } });
       } else { //* !!listParamsFind  == false -> có tồn tại phần tử từ listParamsFind
-
+        
         if (listParamsFind.length != keys.length) 
           return resolve({ error: true, message: 'param_invalid', valid_example: {
             nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`,
