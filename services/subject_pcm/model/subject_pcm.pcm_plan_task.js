@@ -765,7 +765,7 @@ class Model extends BaseModel {
      */
     getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID,
-        keyword, limit = 100, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
