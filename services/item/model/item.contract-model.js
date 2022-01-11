@@ -838,7 +838,7 @@ class Model extends BaseModel {
     getList({
         companyID,projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
         date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
-        keyword, limit = 2, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
