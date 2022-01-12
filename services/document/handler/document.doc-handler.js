@@ -145,7 +145,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { documentID } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.deleteDocument({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.remove({
                     userID, documentID
                 });
 
@@ -210,14 +210,14 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { 
-                    companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                    companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id
                 }
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
-                    companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword, limit, lastestID, select, populates
+                    companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

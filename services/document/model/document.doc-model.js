@@ -429,7 +429,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                return resolve({ error: false, data: infoAfterDelete, status: 200 });
+                return resolve({ error: false, message: "Remove Success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, keyError: "server_error", status: 500 });
             }
@@ -486,13 +486,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng ✅
+     * Name  : Danh sách văn bản ✅
      * Author: Depv
      * Code  : 
      */
     getList({
         companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
-        requestResponse, fieldID, fromDate, toDate, marked, userID,
+        requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -579,6 +579,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID
+                }
+
+                if(checkObjectIDs(departmentID)){
+                    conditionObj.project = departmentID
                 }
 
                 if(marked){

@@ -631,13 +631,7 @@ class Model extends BaseModel {
                 let conditionObj = { 
                     members: { $in: [userID]}, 
                 };
-
-                companyID && (conditionObj.company = companyID);
- 
-                if(type){
-                    conditionObj.type = +type;
-                }
-                
+                    
                 let conditionFind = {};
                 let sortBy        = { createAt: -1 };
 				let objSort 	  = {};
@@ -647,18 +641,22 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
                 if(companyID && !checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+
+                companyID && (conditionObj.company = companyID);
+ 
+                if(type){
+                    conditionObj.type = +type;
+                }
 
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                // populate
+                //_____populate
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
 				}else{
                     populates = {
@@ -666,44 +664,35 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-                // GET CONDITION PAGINATION
+                
+                //______Phân trang theo kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__DEPARTMENT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+                    //_____Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
-                    // console.log({ nextInfo });
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
 
-                // SEARCH TEXT
-				// if(keyword){
-				// 	conditionObj.$text = { $search: keyword };
-				// 	objSort.score = { $meta: "textScore" };
-				// 	sortBy.score  = { $meta: "textScore" };
-				// }  
-
+                //_____Tìm kiếm theo từ khóa
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+                console.log({ conditionObj, conditionFind });
 
+                //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find({ ...conditionObj, ...conditionFind })
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .select(select) 
@@ -712,8 +701,8 @@ class Model extends BaseModel {
                 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
-                
-                let totalRecord = await ITEM__DEPARTMENT_COLL.countDocuments(conditionObj);
+
+                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObj);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
 
