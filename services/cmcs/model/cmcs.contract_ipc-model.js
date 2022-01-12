@@ -332,7 +332,7 @@ class Model extends BaseModel {
      * Code: 
      */
     getInfo({ contractIpcID, userID, 
-        select, populates, populates1, populates2, populates3 }){
+        select, populates }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(contractIpcID))
@@ -344,48 +344,16 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID)
                                 .select(select)
-                                .populate({
-                                    path: populates?.value || "",
-                                    select: populates?.select || "",
-                                    populate: {
-                                        path: populates1?.value ||"",
-                                        select: populates1?.select || "",
-                                        populate: {
-                                            path: populates2?.value || "",
-                                            select: populates2?.select || "",
-                                            populate: {
-                                                path: populates3?.value || "",
-                                                select: populates3?.select || "",
-                                            }
-                                        }
-                                    }
-                                })
+                                .populate(populates)
 
 				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
 
@@ -402,7 +370,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ type, projectID, contractID, userID,
-        keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -423,14 +391,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-            
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -438,30 +398,12 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // POPULATE 1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // POPULATE 2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // POPULATE 3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-               
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -482,6 +424,16 @@ class Model extends BaseModel {
                     conditionObj.contract = contractID;
                 }
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regExpSearch },
+                        { sign: regExpSearch }
+                    ]
+                }
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await CMCS__CONTRACT_IPC_COLL.findById(lastestID);
@@ -498,36 +450,12 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regExpSearch = RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regExpSearch },
-                        { sign: regExpSearch }
-                    ]
-                }
                 
                 let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
                     .limit(+limit+1)
                     .sort(sortBy)
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                    .select(select)
+                    .populate(populates)
                     .lean(); 
                 
                 // GET TOTAL RECORD

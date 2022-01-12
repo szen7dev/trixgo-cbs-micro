@@ -80,25 +80,21 @@ module.exports = {
             // Những trường thông tin mặc định
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             subjectID   : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1  : { type: "string", optional: true },
-            populates2  : { type: "string", optional: true },
-            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { commentID,
-                    keyword, limit, lastestID, filter, select, populates, populates1, populates2, populates3 } = ctx.params;
+                    keyword, limit, lastestID, select, populates} = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
                     
                 let resultAfterCallHandler;
                 if(commentID){
                     resultAfterCallHandler = await REACTION__COMMENT_MODEL.getInfo({
-                        commentID, select, populates, populates1, populates2, populates3 
+                        commentID, select, populates
                     });
                 }else{
                    // Hiện tại chưa có chức năng nào lấy danh sách comment core

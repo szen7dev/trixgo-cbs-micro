@@ -78,29 +78,25 @@ module.exports = {
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1  : { type: "string", optional: true },
-            populates2  : { type: "string", optional: true },
-            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    commentID, mediaID, parentID, limit, lastestID, select, filter,
-                    populates, populates1, populates2, populates3
+                    commentID, mediaID, parentID, limit, lastestID, select,
+                    populates
                 } = ctx.params;
                 let resultAfterCallHandler;
 
                 if(commentID){
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getInfo({
-                        commentID, select, populates, populates1, populates2, populates3
+                        commentID, select, populates
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, parentID, limit, lastestID, populates, populates1, populates2, populates3, filter
+                        mediaID, parentID, limit, lastestID, select, populates
                     });
                 }
 

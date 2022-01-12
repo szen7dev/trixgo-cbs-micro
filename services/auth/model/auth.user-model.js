@@ -2546,7 +2546,7 @@ class Model extends BaseModel {
      * Name: get info user ✅
      * Author: Depv
      */
-    getInfoV2({ userID, select, populates, populates1, populates2, populates3 }){
+    getInfoV2({ userID, select, populates }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(userID))
@@ -2558,50 +2558,20 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+					populates = {
+                        path  : "",
+                        select: ""
+                    }
+                }
 
                 let infoTask = await AUTH__USER_COLL.findById(userID)
                                 .select(select)
-                                .populate({
-                                    path: populates?.value || "",
-                                    select: populates?.select || "",
-                                    populate: {
-                                        path: populates1?.value ||"",
-                                        select: populates1?.select || "",
-                                        populate: {
-                                            path: populates2?.value || "",
-                                            select: populates2?.select || "",
-                                            populate: {
-                                                path: populates3?.value || "",
-                                                select: populates3?.select || "",
-                                            }
-                                        }
-                                    }
-                                }).lean();
+                                .populate(populates)
+                                .lean();
 
-				if (!infoTask) return resolve({ error: true, message: 'cannot_get' });
+				if (!infoTask) 
+                    return resolve({ error: true, message: 'Cannot get info', keyError: "cannot_get_info" });
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -2616,7 +2586,7 @@ class Model extends BaseModel {
      */
     getListV2({
         companyID,
-        keyword, limit = 10, lastestID, filter = {}, populates= {}, populates1={}, populates2={}, populates3={}, }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -2635,46 +2605,18 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-              
-               
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
 
-					filter = JSON.parse(filter);
-				}
-				
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // POPULATE 1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // POPULATE 2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // POPULATE 3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-               
+				}else{
+					populates = {
+                        path  : "",
+                        select: ""
+                    }
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -2700,38 +2642,17 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-
-                // SEARCH TEXT
-				// if(keyword){
-				// 	conditionObj.$text = { $search: keyword };
-				// 	objSort.score = { $meta: "textScore" };
-				// 	sortBy.score  = { $meta: "textScore" };
-				// }
+              
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 
-                let infoDataAfterGet = await AUTH__USER_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await AUTH__USER_COLL.find({...conditionObj, ...conditionFind })
                     .limit(+limit+1)
                     .sort(sortBy)
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                    .populate(populates)
                     .lean(); 
 
                 // GET TOTAL RECORD
