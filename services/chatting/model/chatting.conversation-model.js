@@ -1648,6 +1648,10 @@ class Model extends BaseModel {
 					limit = +limit;
 				}
 
+				if(limit > 20){
+					limit = 20;
+				}
+
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter)) {
 						return resolve({ 

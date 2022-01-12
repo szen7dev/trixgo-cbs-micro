@@ -385,17 +385,21 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    getListFriend({ userID, lastestID, keyword, limit = 20, select, populates = {} }){
+    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
 				if(isNaN(limit)) {
-					limit = 20;
+					limit = 10;
 				} else{
 					limit = +limit;
 				}
+
+                if(limit > 20){
+					limit = 20;
+                }
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -2604,7 +2608,9 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
+                if(limit > 20){
+                    limit = 20
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -2652,6 +2658,7 @@ class Model extends BaseModel {
                 let infoDataAfterGet = await AUTH__USER_COLL.find({...conditionObj, ...conditionFind })
                     .limit(+limit+1)
                     .sort(sortBy)
+                    .select(select)
                     .populate(populates)
                     .lean(); 
 
