@@ -144,26 +144,23 @@ module.exports = {
             select          : { type: "string", optional: true },
             filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
-            populates1      : { type: "string", optional: true },
-            populates2      : { type: "string", optional: true },
-            populates3      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
                     companyID,
-                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3 } = ctx.params;
+                    keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(companyID){
                     resultAfterCallHandler = await AUTH__COMPANY_MODEL.getInfoV2({
-                        companyID, select, populates, populates1, populates2, populates3
+                        companyID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__COMPANY_MODEL.getListV2({
-                        userID, keyword, limit, lastestID, filter, populates, populates1, populates2, populates3
+                        userID, keyword, limit, lastestID, select, populates
                     });
                 }
 

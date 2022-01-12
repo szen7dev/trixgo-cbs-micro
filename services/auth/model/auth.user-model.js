@@ -385,7 +385,7 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    getListFriend({ userID, lastestID, keyword, limit = 20, filter = {}, select = {} }){
+    getListFriend({ userID, lastestID, keyword, limit = 20, select, populates = {} }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
@@ -397,19 +397,16 @@ class Model extends BaseModel {
 					limit = +limit;
 				}
 
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
                 let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('friends');
 
@@ -439,14 +436,16 @@ class Model extends BaseModel {
 
 				// SEARCH TEXT
 				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
+					keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.fullname = new RegExp(keyword, 'i');
 				}
 
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .select(select)
                     .limit(limit + 1)
+                    .populate(populates)
                     .sort(sortBy)
 					.lean();
 

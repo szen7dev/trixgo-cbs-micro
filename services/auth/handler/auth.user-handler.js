@@ -120,15 +120,17 @@ module.exports = {
         params: {
             lastestID : { type: "string", optional: true },
 			keyword   : { type: "string", optional: true },
+			select    : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-				let { lastestID, keyword, filter, select } = ctx.params;
-
+				let { lastestID, keyword, filter, select, populates } = ctx.params;
+                console.log({ lastestID, keyword, filter, select, populates });
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListFriend({
-                    userID, lastestID, keyword, filter, select
+                    userID, lastestID, keyword, filter, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
