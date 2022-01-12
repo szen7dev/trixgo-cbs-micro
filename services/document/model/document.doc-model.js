@@ -491,7 +491,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
+        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
@@ -583,6 +583,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(departmentID)){
                     conditionObj.project = departmentID
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
                 }
 
                 if(marked){
