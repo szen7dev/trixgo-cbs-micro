@@ -14,6 +14,7 @@ const { CF_ACTIONS_DOCUMENT } 	        = require('./helper/document.actions-cons
  */
 const DOCUMENT__DOC_HANDLER    			= require('./handler/document.doc-handler');
 const DOCUMENT__PACKAGE_HANDLER    		= require('./handler/document.package-handler');
+const DOCUMENT__FILE_HANDLER    		= require('./handler/document.doc_file-handler');
 
 
 module.exports = {
@@ -69,6 +70,9 @@ module.exports = {
 
 		// Thống kê theo type
 		[CF_ACTIONS_DOCUMENT.STATISTICAL_BY_TYPE]			: DOCUMENT__DOC_HANDLER.statisticalByType,
+
+		// Document file
+		[CF_ACTIONS_DOCUMENT.DOCUMENT_FILE_GET_INFO_AND_GET_LIST] : DOCUMENT__FILE_HANDLER.getInfoAndGetList,
 	},
 	/**
 	* Events
