@@ -121,6 +121,7 @@ module.exports = {
                                 listUserConnected: listUserActive, 
                                 arrReceiver: listUserID, 
                                 data: {
+                                    data,
                                     message: "Hi Client!! I'm server...",
                                     userID,
                                     listUserActive
