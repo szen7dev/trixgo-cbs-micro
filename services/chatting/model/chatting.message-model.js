@@ -123,7 +123,7 @@ class Model extends BaseModel {
 	 * Date: 06/08/2021
 	 */
     insertMessage({
-		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -173,7 +173,7 @@ class Model extends BaseModel {
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
-				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
+				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type })){
 					let listFilesMessage = files.map(file => ({
 						conversationID,
 						fileID: file
@@ -212,6 +212,7 @@ class Model extends BaseModel {
 
 				let infoMessageAfterInserted = null;
 				let numberMissMessage		 = 1;
+				console.log({ dataInsertMessage })
 
 				switch (+type) {
 					case 6: // MESSAGE SHARE LOCATION

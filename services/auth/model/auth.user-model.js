@@ -310,13 +310,13 @@ class Model extends BaseModel {
         })
     }
     // implement by: KHANHNEY✅ 
-    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, env }) {
+    updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX]; 
+                let listPlatformValid = [PLATFORM_TRIXGO, PLATFORM_WYNDIX]; 
 
                 /** 
                  * VALIDATION STEP (2)
@@ -357,26 +357,38 @@ class Model extends BaseModel {
                                 oneSignalID     : oneSignalID,
                                 env
                             };
-                        } 
+                        }
                         newDevices.push(_device);
                     });
+
                     if (!newDevices.find(item => item.deviceID === itemNewDevice.deviceID)) 
                         newDevices.push(itemNewDevice)
+
                 } else {  
                     newDevices = [
                         itemNewDevice
                     ]
                 }
 
+                if(isRemove) {
+                    newDevices = newDevices.filter(device => 
+                        device.deviceID !== itemNewDevice.deviceID &&   
+                        device.deviceName !== itemNewDevice.deviceName &&   
+                        device.registrationID !== itemNewDevice.registrationID &&   
+                        device.oneSignalID !== itemNewDevice.oneSignalID &&   
+                        device.env !== itemNewDevice.env
+                    );
+                }
+
                 let infoAfterUpdateWithRegistration = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
-                    devices :  newDevices, 
+                    devices: newDevices, 
                     modifyAt: Date.now(),
                     lastLog: Date.now()
                 }, { new: true });
 
                 return resolve({
                     error: false,
-                    data : infoAfterUpdateWithRegistration
+                    data: infoAfterUpdateWithRegistration
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -671,12 +683,13 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid' });
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                   /**
+                /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database

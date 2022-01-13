@@ -460,6 +460,7 @@ exports.CHATTING_SOCKET = {
 		}
 
 		let infoMessage = null;
+		let amountMissMessage = 0;
 
 		if(infoMessageAfterInsert.data){
 			infoMessage = await CHATTING__MESSAGE_COLL
@@ -479,7 +480,11 @@ exports.CHATTING_SOCKET = {
 				.populate({
 					path: 'parent',
 					populate: {
-						path: 'sender',
+						path: 'sender files.file',
+						populate: {
+							path: 'file',
+							select: 'name url size'
+						},
 						select: '_id bizname fullname image'
 					}
 				})
@@ -501,30 +506,37 @@ exports.CHATTING_SOCKET = {
 				.lean();
 		}
 
+		const listConversation = await CHATTING__CONVERSATION_COLL.find({
+			members: { $in: [userID] }
+		}).select('usersMissMessage').lean();
+
+		listConversation.map(conversation => {
+			const user = conversation.usersMissMessage.find(user => 
+				user.userID.toString() === userID.toString());
+
+			user && (amountMissMessage += user.amount);
+		})
+
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
 			arrReceiver: members,
 			data: {
 				tmpid,
+				amountMissMessage,
 				usersTag,
 				infoMessage,
 			},
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
 		});
 
-		let description = infoMessage.content;
-		let senderFullname = '';
-
 		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: 'fullname'
+			select: 'fullname bizfullname'
 		});
 
-		if(members.length > 2){
-			senderFullname = infoSender.fullname;
-			description = `${senderFullname}: ${description}`;
-		}
+		let senderFullname = infoSender?.data?.bizfullname;
+		let description = `${senderFullname}: ${infoMessage.content}`;
 
 		switch (infoMessage.type) {
 			case 1:
@@ -546,7 +558,7 @@ exports.CHATTING_SOCKET = {
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 			users: arrReceiver,
-			title: members.length === 2 ? infoSender.fullname : infoConversation.name,
+			title: senderFullname,
 			description,
 			web_url: `https://facebook.com/hiepnh.trixgo`
 		});
