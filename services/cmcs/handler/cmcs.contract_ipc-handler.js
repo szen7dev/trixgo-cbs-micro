@@ -38,7 +38,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.insert({
                     type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
                 });
