@@ -13,7 +13,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
         ref : "company"
     },
 
-    //_________ Dự án(*)
+    //_________ Dự án(*) 
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
@@ -24,29 +24,29 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
-    
-    //_________Tên(*)
+
+    //_________Nội dung(*)
     name: String,
     
-    //_________Ký hiệu
+    //_________Mã hiệu
     sign: String,
 
     //_________Mô tả
     description: String,
 
-    //_________Ngày tháng IPC(*)
+    //_________Ngày hoạch toán(*)
     date: { type: Date, default: Date.now },
 
     //_________Ghi chú
     note: String,
 
-    //_________(1)Nghiệm thu trước VAT
+    //_________(1)Giá trị nghiệm thu trước VAT
     acceptance:  { type: Number, default: 0},
 
-    //_________(2)VAT nghiệm thu
+    //_________(2)Giá trị nghiệm thu phần VAT
     vatAcceptance:  { type: Number, default: 0},
 
-    //_________(3)Nghiệm thu phát sinh trước VAT
+    //_________(3)Giá trị nghiệm thu phát sinh trước VAT
     plusAcceptance:  { type: Number, default: 0},
 
     //_________(4)Giá trị nghiệm thu phát sinh phần VAT
@@ -72,7 +72,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
 
     //_________((11) = 8- 10) Còn lại chưa giải ngân
     remainingPayment:  { type: Number, default: 0},
-    
+
     /**
      * USD-NGOẠI TỆ
      */

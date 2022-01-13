@@ -1,12 +1,12 @@
 /**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
- /**
-  * MODELS
-  */
- const CMCS__CONTRACT_IPC_MODEL                 = require('../model/cmcs.contract_ipc-model').MODEL;
+/**
+ * MODELS
+ */
+const CMCS__CONTRACT_IPC_MODEL                 = require('../model/cmcs.contract_ipc-model').MODEL;
 
 module.exports = {
     /**
@@ -15,9 +15,8 @@ module.exports = {
 	 */
     insert: {
         params: {
-            type                : { type: "number" },
-            projectID           : { type: "string" },
-            contractID            : { type: "string" },
+            type                : { type: "string" },
+            contractID          : { type: "string" },
             name                : { type: "string" },
             sign                : { type: "string" },
             description         : { type: "string", optional: true },
@@ -59,9 +58,7 @@ module.exports = {
     update: {
         params: {
             contractIpcID       : { type: "string" },
-            type                : { type: "number", optional: true },
-            projectID           : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
@@ -81,11 +78,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractIpcID, type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
+                let { contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.update({
-                    contractIpcID, type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
+                    contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -128,7 +124,6 @@ module.exports = {
         params: {
             contractIpcID : { type: "string", optional: true },
             type          : { type: "number", optional: true },
-            projectID     : { type: "string", optional: true },
             contractID    : { type: "string", optional: true },
 
             // Field mặc định
@@ -141,7 +136,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractIpcID, type, projectID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { contractIpcID, type, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -151,7 +146,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getList({
-                        type, projectID, contractID, userID, keyword, limit, lastestID, select, populates
+                        type, contractID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 
