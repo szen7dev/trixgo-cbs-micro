@@ -19,7 +19,6 @@ module.exports = {
 		DbService(CMCS__CONTRACT_BILL_JOB_COLL),  
 		DbService(CMCS__CONTRACT_IPC_COLL),
 		DbService(CMCS__CONTRACT_PRODUCTION_COLL),  
-		
 		CacheCleaner([CF_DOMAIN_SERVICES.CMCS])
     ],
 
@@ -43,9 +42,9 @@ module.exports = {
 		[CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST]: CMCS__CONTRACT_BILL_JOB_HANDLER.getListAndGetInfoContractBillJob,
 
 		//==========================================   CONTRACT IPC   ================================
-		[CF_ACTIONS_CMCS.CONTRACT_IPC_INSERT]   		: CMCS__CONTRACT_IPC_HANDLER.insert,
-		[CF_ACTIONS_CMCS.CONTRACT_IPC_UPDATE]   		: CMCS__CONTRACT_IPC_HANDLER.update,
-		[CF_ACTIONS_CMCS.CONTRACT_IPC_REMOVE]			: CMCS__CONTRACT_IPC_HANDLER.remove,
+		[CF_ACTIONS_CMCS.CONTRACT_IPC_INSERT]   			 : CMCS__CONTRACT_IPC_HANDLER.insert,
+		[CF_ACTIONS_CMCS.CONTRACT_IPC_UPDATE]   			 : CMCS__CONTRACT_IPC_HANDLER.update,
+		[CF_ACTIONS_CMCS.CONTRACT_IPC_REMOVE]				 : CMCS__CONTRACT_IPC_HANDLER.remove,
 		[CF_ACTIONS_CMCS.CONTRACT_IPC_GET_INFO_AND_GET_LIST	]: CMCS__CONTRACT_IPC_HANDLER.getInfoAndGetList,
 
 		//==========================================   CONTRACT PRODUCTION   ================================

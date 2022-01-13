@@ -14,6 +14,7 @@ module.exports = {
 	 * Func: Thêm contract ipc
 	 */
     insert: {
+        auth: "required",
         params: {
             type                : { type: "string" },
             contractID          : { type: "string" },
@@ -55,6 +56,7 @@ module.exports = {
 	 * Func: Sửa contract ipc
 	 */
     update: {
+        auth: "required",
         params: {
             contractIpcID       : { type: "string" },
             type                : { type: "string", optional: true },
@@ -95,6 +97,7 @@ module.exports = {
      * Func: Xóa contract ipc
      */
     remove: {
+        auth: "required",
         params: {
             contractIpcID       : { type: "string" },
         },
@@ -103,7 +106,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { contractIpcID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.remove({
                     contractIpcID
                 });
@@ -120,6 +122,7 @@ module.exports = {
      * Func: get info and get list contract ipc
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             contractIpcID : { type: "string", optional: true },
             type          : { type: "number", optional: true },
