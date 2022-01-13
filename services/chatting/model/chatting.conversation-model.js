@@ -899,8 +899,12 @@ class Model extends BaseModel {
 						path: 'parent',
 						select: select.parent,
 						populate: {
-							path: 'sender',
-							select: '_id bizname fullname image'
+							path: 'sender files.file',
+							populate: {
+								path: 'file',
+								select: 'name url size'
+							},
+							select: `_id bizname fullname image ${select.files}`
 						}
 					})
 					.populate('reminder')

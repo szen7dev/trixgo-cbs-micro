@@ -206,18 +206,19 @@ module.exports = {
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
             oneSignalID         : { type: "string" },
+            isRemove            : { type: "boolean", optional: true },
             env                 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let infoUser = ctx.meta.infoUser;
-                let { platform, deviceID, deviceName, registrationID, oneSignalID, env } = ctx.params;
+                let { platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env } = ctx.params;
 
                 let userID = infoUser._id;
 
                 let infoUserAfterUpdate = await AUTH__USER_MODEL.updateDeviceLogin({
-                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, env
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env
                 });
                 return infoUserAfterUpdate;
             } catch (error) {
