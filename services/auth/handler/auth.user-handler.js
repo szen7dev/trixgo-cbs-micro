@@ -120,15 +120,17 @@ module.exports = {
         params: {
             lastestID : { type: "string", optional: true },
 			keyword   : { type: "string", optional: true },
+			select    : { type: "string", optional: true },
+			limit     : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-				let { lastestID, keyword, filter, select } = ctx.params;
-
+				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListFriend({
-                    userID, lastestID, keyword, filter, select
+                    userID, lastestID, keyword, filter, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -686,32 +688,29 @@ module.exports = {
         auth: "required",
         params: {
             userID      : { type: "string", optional: true },
+
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1  : { type: "string", optional: true },
-            populates2  : { type: "string", optional: true },
-            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
                     userID,
-                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
+                    keyword, limit, lastestID, select, populates
                 } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
-                        userID, select, populates, populates1, populates2, populates3
+                        userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
-                        companyID, keyword, limit, lastestID, filter, populates, populates1, populates2, populates3,
+                        companyID, keyword, limit, lastestID, select, populates,
                     });
                 }
 

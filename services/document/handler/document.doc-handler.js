@@ -145,7 +145,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { documentID } = ctx.params;
 
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.deleteDocument({
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.remove({
                     userID, documentID
                 });
 
@@ -191,8 +191,7 @@ module.exports = {
 	 */
     getListDocument: {
         params: {
-            lastestID       : { type: "string", optional: true },
-            keyword         : { type: "string", optional: true },
+			parentID        : { type: "string", optional: true },
 			companyID       : { type: "string", optional: true },
 			departmentID    : { type: "string", optional: true },
             packageID	    : { type: "string", optional: true },
@@ -202,6 +201,8 @@ module.exports = {
 			requestResponse : { type: "string", optional: true },
 			type            : { type: "string", optional: true },
 			marked          : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
         },
@@ -210,17 +211,17 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { 
-                    companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id
                 }
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
-                    companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword, limit, lastestID, select, populates
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword, limit, lastestID, select, populates
                 });
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx }); 
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }

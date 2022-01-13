@@ -998,6 +998,7 @@ class Model extends BaseModel {
                 }
 
                 conditionObjOrg = {...conditionObj};
+                
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);

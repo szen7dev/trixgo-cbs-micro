@@ -26,6 +26,7 @@ const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes
 const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notification.routes-constant');
 const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-constant');
+const { CF_ROUTINGS_TIMESHEET }		= require('../timesheet/helper/timesheet.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -48,6 +49,7 @@ const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.action
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
+const { CF_ACTIONS_TIMESHEET }		= require('../timesheet/helper/timesheet.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -828,6 +830,10 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_DOCUMENT.STATISTICAL_BY_TYPE}`] :
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.STATISTICAL_BY_TYPE}`],
 
+		//_____Document file
+		[`GET ${CF_ROUTINGS_DOCUMENT.DOCUMENT_FILE}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.DOCUMENT_FILE_GET_INFO_AND_GET_LIST}`],
+
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
 		[`POST ${CF_ROUTINGS_DOCUMENT.SHARE_DOCUMENT}`] :
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT}`],
@@ -899,6 +905,23 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_LOGS}`] :
 		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST}`],
 		//---------------------------🏁 END SERVICE ANALYSIS   🏁---------------------------//
+
+
+		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
+
+		[`POST ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_REMOVE}`],
+		
+		[`GET ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_GET_INFO_AND_GET_LIST}`],
+		
+		//---------------------------🏁 END SERVICE TIMESHEET 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions
