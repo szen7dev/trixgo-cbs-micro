@@ -12,6 +12,7 @@ const server                					= require('http').Server(app);
  * MODELS
  */
 const USER_MODEL           						= require('../../services/auth/model/auth.user-model').MODEL;
+const USER_COLL           						= require('../../services/auth/database/auth.user-coll');
 
 /**
  * TOOLS
@@ -105,6 +106,28 @@ module.exports = {
                         ...NOTIFICATION_SOCKET,
                         ...CHATTING_SOCKET,
                         ...MEDIA_SOCKET,
+
+                        'CLIENT_SEND_CHATTING_TEST': async function(data) { 
+                            let socket                      = this;
+                            let userID                      = socket.client.user;
+                            let listUserActive              = socket.$service.listUserConnected2;
+                            let io                          = socket.$service.io;
+                    
+                            const allUsers = await USER_COLL.find({}).select('_id').lean();
+                            const listUserID = allUsers.map(user => user._id);
+                            console.log({ data })
+                    
+                            sendDataToMultilSocketsOfListUser({ 
+                                listUserConnected: listUserActive, 
+                                arrReceiver: listUserID, 
+                                data: {
+                                    message: "Hi Client!! I'm server...",
+                                    userID,
+                                    listUserActive
+                                }, 
+                                event: 'SERVER_SEND_CHATTING_TEST', io
+                            })
+                        },
                         
                         'testing': function(data, ack) {
 							this.emit('HELLO_WORLD', data);
@@ -138,7 +161,7 @@ module.exports = {
         },
     },
     methods: {
-        async socketAuthorize(socket, eventHandler){
+        async socketAuthorize(socket){
             try {
                 let token = socket.handshake.query.token;
                 let accessKey = socket.handshake.query.access_key;
@@ -149,6 +172,7 @@ module.exports = {
                 }
 
                 let checkAuthorization = await this.broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
+
                 if(checkAuthorization.error){
                     return Promise.reject(checkAuthorization.message);
                 }

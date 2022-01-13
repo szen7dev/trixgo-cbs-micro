@@ -25,25 +25,25 @@ const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').M
 
 exports.CHATTING_SOCKET = {
 
-    'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
-        let socket                      = this;
-        let userID                      = socket.client.user;
-        let listUserActive              = socket.$service.listUserConnected2;
-        let io                          = socket.$service.io;
+    // 'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
+    //     let socket                      = this;
+    //     let userID                      = socket.client.user;
+    //     let listUserActive              = socket.$service.listUserConnected2;
+    //     let io                          = socket.$service.io;
 
-		console.log({ data })
+	// 	console.log({ data })
 
-        sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
-			arrReceiver: [userID], 
-			data: {
-				message: "Hi Client!! I'm server...",
-				userID,
-				listUserActive
-			}, 
-			event: 'SERVER_SEND_CHATTING_TEST', io
-		})
-    },
+    //     sendDataToMultilSocketsOfListUser({ 
+	// 		listUserConnected: listUserActive, 
+	// 		arrReceiver: [userID], 
+	// 		data: {
+	// 			message: "Hi Client!! I'm server...",
+	// 			userID,
+	// 			listUserActive
+	// 		}, 
+	// 		event: 'SERVER_SEND_CHATTING_TEST', io
+	// 	})
+    // },
 
     // =============================== CONVERSATION ==================================
 
