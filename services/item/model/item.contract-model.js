@@ -451,7 +451,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Request params contractID invalid" });
                
                 let dataUpdate = {
-                    project: projectID, name, sign, date
+                    name, sign, date
                 }
 
                 let dataAddToSet = {};
@@ -462,10 +462,14 @@ class Model extends BaseModel {
                         departmentID: projectID
                     })
 
-                    if(!infoProject.error)
+                    if(infoProject.error)
                         return resolve({ error: true, message: "Request params project invalid" });
                     //________company được lấy theo dự án
                     dataUpdate.company = infoProject.data.company;
+                }
+
+                if(checkObjectIDs(projectID)){
+                    dataUpdate.project = projectID;
                 }
                 
                 if(checkObjectIDs(parentID)){
