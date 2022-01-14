@@ -10,8 +10,8 @@ const {
     NOTI_TYPE,
     ONESIGNAL_APP_CBS,
     ONESIGNAL_APP_TEASER 
-}         = require('../helper/notification.keys-constant')
- 
+} = require('../helper/notification.keys-constant');
+
 class Model extends BaseModel {
     constructor() {
         super(NOTIFICATION__LOG_COLL);
@@ -42,7 +42,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params title invalid',
-                        key: 'params_title_invalid',
+                        keyError: 'params_title_invalid',
                         status: 400
                     });
                 }
@@ -51,7 +51,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params content invalid',
-                        key: 'params_content_invalid',
+                        keyError: 'params_content_invalid',
                         status: 400
                     });
                 }
@@ -60,7 +60,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params type notification invalid',
-                        key: 'params_type_notification_invalid',
+                        keyError: 'params_type_notification_invalid',
                         status: 400
                     });
                 }
@@ -69,7 +69,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params sender invalid',
-                        key: 'params_sender_invalid',
+                        keyError: 'params_sender_invalid',
                         status: 400
                     });
                 }
@@ -78,7 +78,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params receivers invalid',
-                        key: 'params_receivers_invalid',
+                        keyError: 'params_receivers_invalid',
                         status: 400,
                     })
                 }
@@ -94,7 +94,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Create notification failed',
-                        key: 'failed_create_notification',
+                        keyError: 'failed_create_notification',
                         status: 422
                     });
                 }
@@ -120,7 +120,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params status invalid',
-                        key: 'params_status_invalid',
+                        keyError: 'params_status_invalid',
                         status: 400
                     });
                 }
@@ -129,7 +129,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Request params notificationID invalid',
-                        key: 'params_notificationID_invalid',
+                        keyError: 'params_notificationID_invalid',
                         status: 400
                     });
                 }
@@ -140,7 +140,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Update status notification faled',
-                        key: 'failed_update_status_notification',
+                        keyError: 'failed_update_status_notification',
                         status: 422
                     });
                 }
@@ -164,7 +164,7 @@ class Model extends BaseModel {
 					return resolve({
                         error: true,
                         message: "Request param authorID invalid",
-                        key: 'param_authorID_invalid',
+                        keyError: 'param_authorID_invalid',
                         status: 400
                     });
                 }
