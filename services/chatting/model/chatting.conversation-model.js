@@ -1687,6 +1687,7 @@ class Model extends BaseModel {
 					members: { $in: [userID] },
 					usersHide: { $nin: [userID] }
 				};
+				let amountMissMessage = 0;
 				let conditionFind = {};
                 let sortBy = {
                     modifyAt: -1,
@@ -1821,6 +1822,17 @@ class Model extends BaseModel {
 					listConversationFiltered = listConversation;
 				}
 
+				const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
+					members: { $in: [userID] }
+				}).select('usersMissMessage').lean();
+
+				listAllConversation.map(conversation => {
+					const user = conversation.usersMissMessage.find(user => 
+						user.userID.toString() === userID.toString());
+
+					user && (amountMissMessage += user.amount);
+				})
+
 				// GET TOTAL RECORD
                 let totalRecord = await CHATTING__CONVERSATION_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
@@ -1839,6 +1851,7 @@ class Model extends BaseModel {
 						listRecords: listConversationFiltered,
 						limit: +limit,
 						totalRecord,
+						amountMissMessage,
 						nextCursor
 					}
 				});
