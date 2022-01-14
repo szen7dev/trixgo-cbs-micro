@@ -13,8 +13,6 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT IPC=======================================//
     CONTRACT_IPC                       : `${BASE_ROUTE}${CONTRACT_IPC}`, 
-
-
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;

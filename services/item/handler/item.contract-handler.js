@@ -73,10 +73,10 @@ module.exports = {
             type            : { type: "number", optional: true },
             subType         : { type: "number", optional: true },
             field           : { type: "string", optional: true },
-            chairID         : { type: "string", optional: true },
-            personInChargeID: { type: "string", optional: true },
-            debtStatusID    : { type: "string", optional: true },
-            warehouseID     : { type: "string", optional: true },
+            chair           : { type: "string", optional: true },
+            personInCharge  : { type: "string", optional: true },
+            debtStatus      : { type: "string", optional: true },
+            warehouse       : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
             storeSign       : { type: "string", optional: true },
@@ -86,7 +86,7 @@ module.exports = {
             date            : { type: "string", optional: true },
             startTime       : { type: "string", optional: true },
             endTime         : { type: "string", optional: true },
-            buyerInfoID     : { type: "string", optional: true },
+            buyerInfo       : { type: "string", optional: true },
             buyerBank       : { type: "string", optional: true },
             sellerBank      : { type: "string", optional: true },
             packageName     : { type: "string", optional: true },
@@ -127,14 +127,14 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name,
-                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, 
+                const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name,
+                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg  } = ctx.params;
                 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.insert({
-					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -166,10 +166,10 @@ module.exports = {
             type            : { type: "number", optional: true },
             subType         : { type: "number", optional: true },
             field           : { type: "string", optional: true },
-            chairID         : { type: "string", optional: true },
-            personInChargeID: { type: "string", optional: true },
-            debtStatusID    : { type: "string", optional: true },
-            warehouseID     : { type: "string", optional: true },
+            chair         : { type: "string", optional: true },
+            personInCharge  : { type: "string", optional: true },
+            debtStatus    : { type: "string", optional: true },
+            warehouse     : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
             storeSign       : { type: "string", optional: true },
@@ -179,7 +179,7 @@ module.exports = {
             date            : { type: "string", optional: true },
             startTime       : { type: "string", optional: true },
             endTime         : { type: "string", optional: true },
-            buyerInfoID     : { type: "string", optional: true },
+            buyerInfo     : { type: "string", optional: true },
             buyerBank       : { type: "string", optional: true },
             sellerBank      : { type: "string", optional: true },
             packageName     : { type: "string", optional: true },
@@ -220,15 +220,15 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID, projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name,
-                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, 
+                const { contractID, projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name,
+                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg  } = ctx.params;
                 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
-					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -280,10 +280,10 @@ module.exports = {
             subType             : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             field               : { type: "string", optional: true },
-            chairID             : { type: "string", optional: true },
-            personInChargeID    : { type: "string", optional: true },
-            debtStatusID        : { type: "string", optional: true },
-            warehouseID         : { type: "string", optional: true },
+            chair             : { type: "string", optional: true },
+            personInCharge    : { type: "string", optional: true },
+            debtStatus        : { type: "string", optional: true },
+            warehouse         : { type: "string", optional: true },
             companyID           : { type: "string", optional: true },
 
             // Field mặc định
@@ -296,7 +296,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, 
+                let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, 
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
@@ -308,7 +308,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
-                        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
+                        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID,
                         keyword, limit, lastestID, select, populates
                     });
                 }
