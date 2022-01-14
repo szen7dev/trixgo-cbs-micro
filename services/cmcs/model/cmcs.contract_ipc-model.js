@@ -50,8 +50,7 @@ class Model extends BaseModel {
                 let companyID;
                 let projectID;
                 if(contractID){
-                    // call service department để lấy thông tin
-                    
+                    // call service contract để lấy thông tin
                     let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                         contractID
                     })
@@ -59,10 +58,8 @@ class Model extends BaseModel {
                      * Company lấy theo company của project
                      * Chứ không phải lấy theo company của user tạo task
                      */ 
-                    companyID = infoContract.data.company;
-                    if(!companyID)
-                        return resolve({ error: true, message: "company_invalid" });
-                    projectID = infoContract.data.project;
+                    companyID = infoContract?.data?.company;
+                    projectID = infoContract?.data?.project;
                 }
 
                 if(companyID){
@@ -285,7 +282,6 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
      * Name: Remove contract ipc ✅
      * Author: Depv
@@ -321,8 +317,7 @@ class Model extends BaseModel {
             }
         })
     }
-
-
+    
     /**
      * Name: get info contract ipc ✅
      * Author: Depv

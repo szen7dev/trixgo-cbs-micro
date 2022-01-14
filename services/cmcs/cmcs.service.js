@@ -28,11 +28,12 @@ module.exports = {
 	metadata: {
 
 	},
-
 	/**
 	* Service dependencies
 	*/
-	dependencies: [],
+	dependencies: [
+		CF_DOMAIN_SERVICES.AUTH
+	],
 
 	/**
 	* Actions
@@ -85,6 +86,5 @@ module.exports = {
 	* Service stopped lifecycle event handler
 	*/
 	async stopped() {
-
 	}
 };
