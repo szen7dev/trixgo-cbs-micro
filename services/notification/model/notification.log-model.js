@@ -259,13 +259,12 @@ class Model extends BaseModel {
 		})
 	}
    
-    // sendNotiMobilePush({ users, title, description, objDataForSend, ctx }) {
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
         return new Promise(async (resolve) => {
              try {
                 const WEB_CBS           = 1;
                 const MOBILE_TEARSER    = 2;
-                 console.log({ users, title, description, objDataForSend })
+                console.log({ users, title, description, objDataForSend })
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -288,15 +287,12 @@ class Model extends BaseModel {
                 if (!infoAfterCall.error) {
                     let { data: { listRecords } } = infoAfterCall;
 
-                    let listOneSignalIDForMobilePush = [];
-
                     /**
                      * @param listDeviceFromMobile "danh sách device ENV: TEASER"
                      * @param listDeviceFromWebBrowser  "danh sách device ENV: CBS"
                      */
                     let listDeviceFromMobile        = [];
                     let listDeviceFromWebBrowser    = [];
-
 
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
@@ -327,12 +323,22 @@ class Model extends BaseModel {
                                 app_id: ONESIGNAL_APP_TEASER,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
+                                ios_badgeType: 'Increase', // SetTo
                                 ios_badgeCount: 1,
+                                include_player_ids: listDeviceFromMobile
+                            }
+
+                            let dataForMobilePushBadge = {
+                                ...dataForSend,
+                                data: objDataForSend,
+                                app_id: ONESIGNAL_APP_TEASER,
+                                ios_badgeType: 'SetTo',
+                                ios_badgeCount: 150,
                                 include_player_ids: listDeviceFromMobile
                             }
                             
                             sendNotificationviaOneSignal(dataForMobilePush)
+                            sendNotificationviaOneSignal(dataForMobilePushBadge)
                         } 
                         if (listDeviceFromWebBrowser.length > 0) {
                             // WEB PUSH
