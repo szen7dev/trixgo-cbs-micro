@@ -1005,7 +1005,6 @@ class Model extends BaseModel {
                 if(currentPass && newPass){
                     let { password } = await AUTH__USER_COLL.findById(userID);
                     let checkCurrentPass = await compare( currentPass, password);
-                    console.log({ currentPass, newPass, userID, checkCurrentPass });
                     if(!checkCurrentPass)
                         return resolve({ error: true, message: "current_password_faild" });
                     let hashpass = await hash(newPass, 8);
@@ -1038,7 +1037,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: "cannot_update" });
                     
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
-                return resolve({ error: false, message: "update_success" });
+                return resolve({ error: false, data: infoUserAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }

@@ -363,7 +363,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { currentPass, newPass, email, phone, birthDay, gender, lang } = ctx.params;
 				let { _id: userID, company } = ctx.meta.infoUser;
-
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, currentPass, newPass, email, phone, birthDay, gender, lang, ctx
                 });

@@ -36,7 +36,7 @@ class Model extends BaseModel {
     insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) { 
         return new Promise(async (resolve) => {
             try {
-                
+                    
                 /**
                  * DECALARTION VARIABLE (1)
                  */
