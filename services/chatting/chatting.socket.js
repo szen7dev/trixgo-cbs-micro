@@ -460,7 +460,7 @@ exports.CHATTING_SOCKET = {
 		}
 
 		let infoMessage = null;
-		let amountMissMessage = 0;
+		let listMemberWithAmountMissMessage = [];
 
 		if(infoMessageAfterInsert.data){
 			infoMessage = await CHATTING__MESSAGE_COLL
@@ -506,29 +506,40 @@ exports.CHATTING_SOCKET = {
 				.lean();
 		}
 
-		const listConversation = await CHATTING__CONVERSATION_COLL.find({
-			members: { $in: [userID] }
-		}).select('usersMissMessage').lean();
+		// Get member and amount miss message of member
+		for (const memberID of members) {
+			let amountMissMessage = 0;
+			const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
+				members: { $in: [memberID] }
+			}).select('usersMissMessage').lean();
 
-		listConversation.map(conversation => {
-			const user = conversation.usersMissMessage.find(user => 
-				user.userID.toString() === userID.toString());
+			listAllConversation.map(conversation => {
+				const user = conversation.usersMissMessage.find(user => 
+					user.userID.toString() === memberID.toString());
 
-			user && (amountMissMessage += user.amount);
-		})
+				user && (amountMissMessage += user.amount);
+			})
+
+			listMemberWithAmountMissMessage[listMemberWithAmountMissMessage.length] = {
+				memberID,
+				amountMissMessage
+			}
+		}
 
 		// SEND SOCKET
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
-			arrReceiver: members,
-			data: {
-				tmpid,
-				amountMissMessage,
-				usersTag,
-				infoMessage,
-			},
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
-		});
+		listMemberWithAmountMissMessage.map(member => {
+			sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [member.memberID],
+				data: {
+					tmpid,
+					amountMissMessage: member.amountMissMessage,
+					usersTag,
+					infoMessage,
+				},
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+			});
+		})
 
 		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,

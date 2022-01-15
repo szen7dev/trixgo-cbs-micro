@@ -1,8 +1,6 @@
 
 exports.sendNotificationviaOneSignal = function(data) {
-  //  console.log({
-  //   sendNotificationviaOneSignal: data
-  //  })
+
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz"
@@ -19,13 +17,13 @@ exports.sendNotificationviaOneSignal = function(data) {
     let https = require('https');
     let req = https.request(options, function(res) {  
         res.on('data', function(data) {
-            console.log("Response:");
-            console.log(JSON.parse(data));
+            // console.log("Response:");
+            // console.log({ data });
         });
     });
     
     req.on('error', function(e) {
-      console.error("ERROR:");
+      console.error("ERROR: (noti.send.js)");
       console.error(e);
     });
     
