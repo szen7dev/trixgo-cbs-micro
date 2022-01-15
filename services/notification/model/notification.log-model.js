@@ -328,18 +328,18 @@ class Model extends BaseModel {
                                 include_player_ids: listDeviceFromMobile
                             }
 
-                            let dataForMobilePushBadge = {
-                                ...dataForSend,
-                                data: objDataForSend,
-                                app_id: ONESIGNAL_APP_TEASER,
-                                ios_badgeType: 'SetTo',
-                                ios_badgeCount: 150,
-                                include_player_ids: listDeviceFromMobile
-                            }
-                            console.log({ dataForMobilePushBadge })
+                            // let dataForMobilePushBadge = {
+                            //     ...dataForSend,
+                            //     data: objDataForSend,
+                            //     app_id: ONESIGNAL_APP_TEASER,
+                            //     ios_badgeType: 'SetTo',
+                            //     ios_badgeCount: 150,
+                            //     include_player_ids: listDeviceFromMobile
+                            // }
+                            // console.log({ dataForMobilePushBadge })
                             
                             sendNotificationviaOneSignal(dataForMobilePush)
-                            sendNotificationviaOneSignal(dataForMobilePushBadge)
+                            // sendNotificationviaOneSignal(dataForMobilePushBadge)
                         } 
                         if (listDeviceFromWebBrowser.length > 0) {
                             // WEB PUSH
