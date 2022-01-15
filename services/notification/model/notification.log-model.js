@@ -336,6 +336,7 @@ class Model extends BaseModel {
                                 ios_badgeCount: 150,
                                 include_player_ids: listDeviceFromMobile
                             }
+                            console.log({ dataForMobilePushBadge })
                             
                             sendNotificationviaOneSignal(dataForMobilePush)
                             sendNotificationviaOneSignal(dataForMobilePushBadge)
