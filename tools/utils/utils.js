@@ -403,6 +403,49 @@ exports.checkParamsPopulate = (populates, populates1, populates2, populates3) =>
     return { error: false, message: 'pass', status: 200 }
 }
 
+exports._getLevelMaxInRecursiveByCompany = async (coll, companyID) => {
+    let levelMax = await coll.aggregate(
+        [
+            {
+                $match: {
+                    company: ObjectID(companyID),
+                }
+            },
+            {
+                $group:
+                {
+                    _id: null,
+                    maxLevel: { $max: "$level" }
+                }
+            }
+        ]
+    );
+    let levelForRecursive = Number(levelMax[0].maxLevel);
+    return levelForRecursive;
+}
 
+exports._isValid        = _isValid;
 exports.checkPointDotsAndRoundingNumberForPagingChatting = _checkPointDotsAndRoundingNumberForPagingChatting;
 exports.checkParametersModel = _checkParametersModel;
+
+/**
+ * Hàm populate tới các phần tử con bên trong một mẩu tin
+ * Level: là level max của các phần tử con
+ * Path: là điều kiện cho việc populate (gồm 1 hoặc nhiều trường)
+ * Author: Khanh/Modify: HiepNH
+ */
+exports._constructForAny = (level, path) => {
+    const oneLevel = () => ({ path });
+    let obj = oneLevel();
+
+    /**
+     * Số lần populate đảm bảo tới phần tử childs cuối (level-1)
+     * Số lần populate được từ phần tử childs cuối tới các bảng con của nó nếu có (level)
+     * Nếu muốn populate cho con->cháu thì cần tăng lên Level+1
+     */
+    var i
+    for (i = 1; i <= Number(level); i++) {
+        obj.populate = Object.assign({}, obj);
+    }
+    return obj;
+}

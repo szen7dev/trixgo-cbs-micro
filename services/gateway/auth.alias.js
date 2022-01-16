@@ -26,6 +26,7 @@ const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes
 const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notification.routes-constant');
 const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-constant');
+const { CF_ROUTINGS_ACCOUNTING }	= require('../accounting/helper/accounting.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -48,6 +49,7 @@ const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.action
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
+const { CF_ACTIONS_ACCOUNTING }	= require('../accounting/helper/accounting.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -896,6 +898,20 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_LOGS}`] :
 		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST}`],
 		//---------------------------🏁 END SERVICE ANALYSIS   🏁---------------------------//
+
+		//---------------------------🏁 START SERVICE ACCOUNTING 🏁---------------------------//
+		[`GET ${CF_ROUTINGS_ACCOUNTING.INSERT_VOUCHER}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_VOUCHER}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.UPDATE_VOUCHER}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.UPDATE_FULL_VOUCHER}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.INSERT_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_GENERAL_JOURNAL}`],
+
+		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
+
+
 	},
 
 	// Disable to call not-mapped actions
