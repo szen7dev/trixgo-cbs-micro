@@ -449,3 +449,24 @@ exports._constructForAny = (level, path) => {
     }
     return obj;
 }
+
+/**
+ * Hàm get maxlevel của các phần tử con/cháu của 1 collection
+ * Sử dụng để getList mẩu tin theo đệ quy + lấy nestedID của phần tử/phần tử con cháu của nó
+ * Author: Khanh/Modify: HiepNH
+ */
+exports._getLevelMaxInRecursive = async (coll) => {
+    let levelMax = await coll.aggregate(
+        [
+          {
+            $group:
+              {
+                _id: null,
+                maxLevel: { $max: "$level" }
+              }
+          }
+        ]
+    );
+    let levelForRecursive = Number(levelMax[0].maxLevel);
+    return levelForRecursive;
+}
