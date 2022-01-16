@@ -38,8 +38,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
 
-                let companyID;
-
                 if(!name){
                     return resolve({ 
                         error: true, 
