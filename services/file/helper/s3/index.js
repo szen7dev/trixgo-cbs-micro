@@ -10,9 +10,14 @@ AWS.config.update({
 let s3Object                    = new AWS.S3();
 
 // link từ s3 upload file
-let render_link_upload_file_s3 = ({ fileName, type }) =>{
+let render_link_upload_file_s3 = ({ fileName, type, typeUpload }) =>{
     try {
         let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH || 'root/test'}`;
+
+        //_____upload avatar user
+        if(typeUpload == "user"){
+            bucket = `${config.bucket}/files/db/users`
+        }
 
         let url = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
@@ -21,21 +26,20 @@ let render_link_upload_file_s3 = ({ fileName, type }) =>{
             ACL: "public-read",
             ContentType: type,
         });
-
         return url;
     } catch (error) {
         return { error: true, message: "Can't presign url" }
     }
 }
 
-function render_link_upload_s3(fileName, type) {
+function render_link_upload_s3(fileName, type, typeUpload) {
     return new Promise(async resolve => {
         try {
             if(!fileName || !type)
                 return resolve({ error: true, message: "params_invalid" });
-            let result = await render_link_upload_file_s3({fileName, type });
+            let result = await render_link_upload_file_s3({ fileName, type, typeUpload });
             if(!result.error){
-                return resolve({ error: false, data: result });
+                return resolve({ error: false, data: result, fileName });
             }else{
                 return resolve({ error: true, message: "Error" });
             }
