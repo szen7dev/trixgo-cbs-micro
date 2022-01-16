@@ -31,7 +31,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, parentID, name, date, type, note, projectID, assigneeID, ctx
+                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, projectID, assigneeID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

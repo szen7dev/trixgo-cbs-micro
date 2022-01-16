@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_role", {
     /**
      * Công ty
      */
-    company: {
+    company: { 
         type: Schema.Types.ObjectId,
         ref : 'company' 
     },
@@ -27,7 +27,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_role", {
     },
     /**
      * Dự án, phòng ban
-     */  
+     */
     project : {
         type: Schema.Types.ObjectId,
         ref : "department"
