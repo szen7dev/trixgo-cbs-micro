@@ -1245,4 +1245,41 @@ exports.CHATTING_SOCKET = {
 
     },
 
+	/**
+	 * Dev: MinhVH
+	 * Func: Bắn tin nhắn thông báo (thêm/xóa thành viên, ghim tin nhắn...)
+	 * Date: 16/01/2021
+	 */
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_FIRE_MESSAGE]: async function(data) { 
+        let socket              = this;
+		let userID				= socket.client.user;
+        let listUserActive      = socket.$service.listUserConnected2;
+        let io                  = socket.$service.io;
+		let { infoMessage }		= data;
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(infoMessage.conversation)
+			.select('members')
+			.lean();
+
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
+			});
+		}
+
+        sendDataToMultilSocketsOfListUser({ 
+			arrReceiver: infoConversation.members, 
+			listUserConnected: listUserActive, 
+			data: {
+				error: false, 
+				data: infoMessage
+			}, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
+		})
+    },
+
 }

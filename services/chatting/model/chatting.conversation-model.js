@@ -149,28 +149,47 @@ class Model extends BaseModel {
 	 * Func: Cập nhật thông tin cuộc hội thoại
 	 * Date: 04/08/2021
 	 */
-	updateConversation({ conversationID, userID, name, description, avatar, ctx }) {
+	updateConversation({ conversationID, userID, name, description, avatar }) {
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([conversationID, userID]))
-                    return resolve({ error: true, message: 'Request params conversationID or userID invalid', status: 400 });
+				if(!checkObjectIDs([conversationID, userID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số conversation ID không hợp lệ", 
+						keyError: 'params_conversationID_or_userID_invalid',
+						status: 403
+					});
+				}
 
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên cuộc hội thoại", 
+						keyError: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				// Check cấu hình admin cuộc hội thoại
 				if(checkExistConversation.config && checkExistConversation.config.configEditInfo === 2){
 					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!listAuthorsID.includes(userID))
-						return resolve({ error: true, message: "You don't have permission to edit conversation", status: 403 });
+					if(!listAuthorsID.includes(userID)) {
+						return resolve({ 
+							error: true, 
+							message: "Bạn không có quyền chỉnh sửa cuộc hội thoại", 
+							keyError: 'you_do_not_permission_to_edit_conversation',
+							status: 403
+						});
+					}
 				}
 
+				let infoMessageNotification = null;
 				let dataUpdate 	= {};
 				name 		&& (dataUpdate.name 		= name);
                 description && (dataUpdate.description 	= description);
@@ -188,7 +207,7 @@ class Model extends BaseModel {
 					return resolve({ error: true, message: "Can't update conversation", status: 403 });
 
 				if(name){
-					await CHATTING__MESSAGE_MODEL.insertMessage({
+					infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
 						senderID: userID,
 						receiversID: infoAfterUpdate.members,
 						conversationID,
@@ -201,7 +220,7 @@ class Model extends BaseModel {
 				}
 
 				if(avatar){
-					await CHATTING__MESSAGE_MODEL.insertMessage({
+					infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
 						senderID: userID,
 						receiversID: infoAfterUpdate.members,
 						conversationID,
@@ -209,7 +228,14 @@ class Model extends BaseModel {
 					})
 				}
 
-				return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+				return resolve({ 
+					error: false, 
+					data: {
+						infoConversation: infoAfterUpdate,
+						infoMessage: infoMessageNotification
+					}, 
+					status: 200
+				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
@@ -227,7 +253,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([memberID, userID])) {
 					return resolve({ 
 						error: true, 
-						message: 'Tham số memberID hoặc userID không hợp lệ', 
+						message: 'Tham số member ID hoặc user ID không hợp lệ', 
 						keyError: 'params_memberID_or_userID_invalid',
 						status: 400 
 					});
@@ -314,8 +340,14 @@ class Model extends BaseModel {
 	addMembersToConversation({ conversationID, authorID, membersID }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length)
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+                if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Request params invalid', 
+						keyError: 'params_invalid',
+						status: 400
+					});
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -323,14 +355,21 @@ class Model extends BaseModel {
 					authors: { $in: [authorID] }
 				}).populate('members');
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "You aren't author", 
+						keyError: 'you_are_not_author',
+						status: 403
+					});
+				}
 
 				for (const member of checkExistConversation.members) {
 					if(membersID.includes(member._id.toString())){
 						return resolve({
 							error: true,
 							message: `Member ${member.bizname || member.fullname} is existed in conversation`,
+							keyError: 'member_is_added_in_conversation',
 							status: 403
 						});
 					}
@@ -342,8 +381,14 @@ class Model extends BaseModel {
                     }
                 }, { new: true });
 
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: "Can't add member to conversation", status: 403 });
+                if(!infoConversationAfterUpdated) {
+					return resolve({
+						error: true,
+						message: "Can't add member to conversation",
+						keyError: 'cannot_add_member_to_conversation',
+						status: 422
+					});
+				}
 
 				// INSERT USER MISS MESSAGE (DEFAULT 0)
 				let usersMissMessage = membersID.map(memberID => ({ userID: memberID, amount: 0 }));
@@ -367,7 +412,7 @@ class Model extends BaseModel {
 				}
 
 				// INSERT MESSAGE ADD MEMBER TO CONVERSATION
-				await CHATTING__MESSAGE_MODEL.insertMessage({
+				const infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
 					usersAssigned: membersID,
@@ -375,7 +420,14 @@ class Model extends BaseModel {
 					type: 101
 				})
 
-                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+                return resolve({ 
+					error: false, 
+					data: {
+						infoConversation: infoConversationAfterUpdated,
+						infoMessage: infoMessageNotification
+					}, 
+					status: 200
+				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -390,11 +442,23 @@ class Model extends BaseModel {
 	removeMemberInConversation({ conversationID, authorID, memberID }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, authorID, memberID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+                if(!checkObjectIDs([conversationID, authorID, memberID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số không hợp lệ', 
+						keyError: 'params_invalid',
+						status: 400
+					});
+				}
 
-				if(memberID === authorID)
-					return resolve({ error: true, message: "You can't remove you from conversation", status: 400 });
+				if(memberID === authorID) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không thể xóa bạn khỏi cuộc hội thoại", 
+						keyError: 'you_cannot_remove_you_from_conversation',
+						status: 400
+					});
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -403,8 +467,14 @@ class Model extends BaseModel {
 					members: { $in: [memberID] }
 				});
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author or member don't belong to chat group", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại này", 
+						keyError: 'you_cannot_member_of_conversation',
+						status: 403
+					});
+				}
 
 				let pullMemberObj = {};
 
@@ -415,7 +485,12 @@ class Model extends BaseModel {
 						pullMemberObj.authors = [memberID];
 						pullMemberObj.members = [memberID];
 					} else{
-						return resolve({ error: true, message: "You don't have permission remove author", status: 403 });
+						return resolve({ 
+							error: true, 
+							message: "Bạn không có quyền xóa admin", 
+							keyError: 'you_do_not_permission_remove_admin',
+							status: 403
+						});
 					}
 
 				} else{
@@ -430,11 +505,17 @@ class Model extends BaseModel {
 					}
                 }, { new: true });
 
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: "Can't remove members in conversation", status: 403 });
+                if(!infoConversationAfterUpdated) {
+					return resolve({ 
+						error: true, 
+						message: "Không thể xóa thành viên khỏi cuộc hội thoại", 
+						keyError: 'remove_member_of_conversation_failed',
+						status: 422
+					});
+				}
 
 				// INSERT MESSAGE REMOVE MEMBER TO CONVERSATION
-				await CHATTING__MESSAGE_MODEL.insertMessage({
+				const infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
 					senderID: authorID,
 					receiversID: infoConversationAfterUpdated.members,
 					usersAssigned: [memberID],
@@ -442,7 +523,14 @@ class Model extends BaseModel {
 					type: 102
 				})
 
-                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+                return resolve({ 
+					error: false, 
+					data: {
+						infoConversation: infoConversationAfterUpdated,
+						infoMessage: infoMessageNotification
+					}, 
+					status: 200
+				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -457,8 +545,14 @@ class Model extends BaseModel {
 	updateAdminConversation({ conversationID, authorID, memberID, isSetAdmin }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, authorID, memberID]))
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+                if(!checkObjectIDs([conversationID, authorID, memberID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số không hợp lệ', 
+						keyError: 'params_invalid',
+						status: 400
+					});
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
@@ -466,16 +560,28 @@ class Model extends BaseModel {
 					authors: { $in: [authorID] }
 				});
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author conversation", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: 'Bạn không có quyền set admin cho cuộc hội thoại', 
+						keyError: 'you_are_not_author_conversation',
+						status: 403
+					});
+				}
 
 				let infoConversationAfterUpdated = null;
 				let typeMessage = 0;
 
 				// Cập nhật member thành admin
 				if(isSetAdmin){
-					if(checkExistConversation.authors.includes(memberID))
-						return resolve({ error: true, message: "Member is already an author", status: 403 });
+					if(checkExistConversation.authors.includes(memberID)) {
+						return resolve({ 
+							error: true, 
+							message: 'Thành viên đã được set admin', 
+							keyError: 'member_is_already_an_author',
+							status: 400
+						});
+					}
 
 					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$addToSet: {
@@ -486,8 +592,14 @@ class Model extends BaseModel {
 					typeMessage = 105; // Xét thêm admin cuộc hội thoại
 
 				} else{ // Cập nhật admin thành member
-					if(checkExistConversation.authors[0].toString() === memberID.toString())
-						return resolve({ error: true, message: "Can't remove author root", status: 403 });
+					if(checkExistConversation.authors[0].toString() === memberID.toString()) {
+						return resolve({ 
+							error: true, 
+							message: 'Không thể xóa người tạo cuộc hội thoại', 
+							keyError: 'cannot_remove_author_root',
+							status: 403
+						});
+					}
 
 					infoConversationAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pull: {
@@ -498,10 +610,16 @@ class Model extends BaseModel {
 					typeMessage = 106; // Xoá bỏ quyền admin của member trong cuộc hội thoại
 				}
 
-                if(!infoConversationAfterUpdated)
-                    return resolve({ error: true, message: "Can't update author for conversation", status: 403 });
+                if(!infoConversationAfterUpdated) {
+					return resolve({ 
+						error: true, 
+						message: 'Không thể cập nhật admin cho cuộc hội thoại', 
+						keyError: 'cannot_update_admin_for_conversation',
+						status: 422
+					});
+				}
 
-				await CHATTING__MESSAGE_MODEL.insertMessage({
+				const infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
 					conversationID,
 					senderID: authorID,
 					type: typeMessage,
@@ -509,7 +627,14 @@ class Model extends BaseModel {
 					receiversID: checkExistConversation.members,
 				})
 
-                return resolve({ error: false, data: infoConversationAfterUpdated, status: 200 });
+                return resolve({ 
+					error: false, 
+					data: {
+						infoConversation: infoConversationAfterUpdated,
+						infoMessage: infoMessageNotification
+					}, 
+					status: 200
+				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1497,8 +1622,14 @@ class Model extends BaseModel {
 	memberLeaveConversation({ conversationID, userID }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([conversationID, userID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
+				if(!checkObjectIDs([conversationID, userID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số không hợp lệ", 
+						keyError: 'params_conversationID_or_userID_invalid',
+						status: 400
+					});
+				}
 
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1507,29 +1638,48 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyError: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				let pullObj = { members: userID };
 				if(checkExistConversation.authors.includes(userID)){
 					pullObj.authors = userID;
 				}
 
-				await CHATTING__MESSAGE_MODEL.insertMessage({
+				const infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
 					conversationID,
 					senderID: userID,
 					type: 107,
 					usersAssigned: [userID],
 				})
 
-				let infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+				const infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$pull: pullObj
 				}, { new: true })
 
-				if(!infoAfterUpdated)
-					return resolve({ error: true, message: "Can't leave conversation", status: 403 });
+				if(!infoAfterUpdated) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyError: 'error_occurred',
+						status: 422
+					});
+				}
 
-				return resolve({ error: false, data: infoAfterUpdated, status: 200 })
+				return resolve({ 
+					error: false, 
+					data: {
+						infoConversation: infoAfterUpdated,
+						infoMessage: infoMessageNotification
+					}, 
+					status: 200 
+				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
@@ -1583,8 +1733,14 @@ class Model extends BaseModel {
 	deleteHistoryConversation({ conversationID, userID }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([conversationID, userID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
+				if(!checkObjectIDs([conversationID, userID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số không hợp lệ", 
+						keyEror: 'params_conversationID_or_userID_invalid',
+						status: 400
+					});
+				}
 
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1592,8 +1748,14 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				// Pull current user in array usersDeleteHistory if usersDeleteHistory.length > 0
 				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
@@ -1605,6 +1767,9 @@ class Model extends BaseModel {
 				}, {
 					$pull: {
 						usersDeleteHistory: { userID }
+					},
+					$set: {
+						lastMessage: null
 					}
 				})
 
@@ -1619,8 +1784,14 @@ class Model extends BaseModel {
 					}
 				}, { new: true });
 
-				if(!infoAfterDelete)
-					return resolve({ error: true, message: "Can't delete history conversation", status: 403 });
+				if(!infoAfterDelete) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				return resolve({ error: false, data: infoAfterDelete, status: 200 })
 			} catch(error){
