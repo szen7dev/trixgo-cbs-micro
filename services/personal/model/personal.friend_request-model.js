@@ -74,7 +74,7 @@ class Model extends BaseModel {
                     }
                 }).populate({
                     path: "user",
-                    select: "_id fullname sign image company email phone birthDay friends",
+                    select: "_id fullname sign image company email phone birthDay friends receiveFromFriends",
                     populate: {
                         path: "company",
                         select: "name"
