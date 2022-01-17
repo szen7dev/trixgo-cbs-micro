@@ -1255,14 +1255,12 @@ exports.CHATTING_SOCKET = {
 		let userID				= socket.client.user;
         let listUserActive      = socket.$service.listUserConnected2;
         let io                  = socket.$service.io;
-		let { conversation }	= data;
+		let { _id: messageID, conversation: conversationID } = data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL
-			.findById(conversation)
+			.findById(conversationID)
 			.select('members')
 			.lean();
-
-		console.log({ infoConversation })
 
 		if(!infoConversation){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -1273,12 +1271,39 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
+		const infoMessage = await CHATTING__MESSAGE_COLL
+			.findById(messageID)
+			.populate({
+				path: 'sender receivers usersAssigned',
+				select: '_id fullname bizname image'
+			})
+			.populate({
+				path: 'parent',
+				populate: {
+					path: 'sender files.file',
+					populate: {
+						path: 'file',
+						select: 'name url size'
+					},
+					select: '_id bizname fullname image'
+				}
+			})
+			.populate('reminder')
+			.populate({
+				path: 'poll',
+				populate: {
+					path: 'options.usersVote',
+					select: '_id bizname fullname image'
+				}
+			})
+			.lean();
+
         sendDataToMultilSocketsOfListUser({ 
 			arrReceiver: infoConversation.members, 
 			listUserConnected: listUserActive, 
 			data: {
 				error: false, 
-				data
+				data: infoMessage
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
 		})
