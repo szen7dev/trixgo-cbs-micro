@@ -643,7 +643,14 @@ exports.CHATTING_SOCKET = {
 		let userID                      = socket.client.user;
 		let { conversationID, messagesID, filesID } = data;
 
-		if(!conversationID || !messagesID || !messagesID.length){
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.select('members')
+			.lean();
+
+		console.log({ infoConversation })
+
+		if(!infoConversation || !messagesID || !messagesID.length){
 			return sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
 				arrReceiver: [userID],
@@ -651,11 +658,6 @@ exports.CHATTING_SOCKET = {
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
 			});
 		}
-
-		const infoConversation = await CHATTING__CONVERSATION_COLL
-			.findById(conversationID)
-			.select('members')
-			.lean();
 
 		const infoAfterRevoke = await CHATTING__MESSAGE_COLL.revokeMessage({
 			userID, conversationID, messagesID, filesID
