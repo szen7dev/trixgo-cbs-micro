@@ -7,7 +7,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_menu", {
     /**
      * Thuộc về ứng dụng nào
      */
-     app: {
+    app: {
         type: Schema.Types.ObjectId,
         ref: "app"
     },

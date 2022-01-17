@@ -34,11 +34,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ userCreate, parentID, name, date, type, note, projectID, assigneeID, ctx }) {
+    insert({ userCreate, companyID, parentID, name, date, type, note, projectID, assigneeID, ctx }) {
         return new Promise(async resolve => {
             try {
-
-                let companyID;
 
                 if(!name){
                     return resolve({ 
@@ -48,24 +46,24 @@ class Model extends BaseModel {
                     });
                 }
 
-                if(projectID){
-                    // call service department để lấy thông tin
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
+                // if(projectID){
+                //     // call service department để lấy thông tin
+                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                //         departmentID: projectID
+                //     })
 
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */ 
-                    companyID = infoProject.data.company;
-                    if(!companyID)
-                        return resolve({ 
-                            error: true, 
-                            message: "Company invalid",
-                            keyError: "company_invalid",
-                        });
-                }
+                //     /**
+                //      * Company lấy theo company của project
+                //      * Chứ không phải lấy theo company của user tạo task
+                //      */ 
+                //     companyID = infoProject.data.company;
+                //     if(!companyID)
+                //         return resolve({ 
+                //             error: true, 
+                //             message: "Company invalid",
+                //             keyError: "company_invalid",
+                //         });
+                // }
 
                 if(checkObjectIDs(parentID)){
                     let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID);
@@ -122,7 +120,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ expertTimesheetID, parentID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx  }){
+    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx  }){
         return new Promise(async (resolve) => {
             try {
 
@@ -141,23 +139,27 @@ class Model extends BaseModel {
                 }
 
                 if(projectID){
-                    // call service department để lấy thông tin
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */ 
-                    companyID = infoProject.data.company;
-                    if(!companyID)
-                        return resolve({ 
-                            error: true, 
-                            message: "Company invalid",
-                            keyError: "company_invalid",
-                        });
+                    dataUpdate.project = projectID;
                 }
+
+                // if(projectID){
+                //     // call service department để lấy thông tin
+                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                //         departmentID: projectID
+                //     })
+
+                //     /**
+                //      * Company lấy theo company của project
+                //      * Chứ không phải lấy theo company của user tạo task
+                //      */ 
+                //     companyID = infoProject.data.company;
+                //     if(!companyID)
+                //         return resolve({ 
+                //             error: true, 
+                //             message: "Company invalid",
+                //             keyError: "company_invalid",
+                //         });
+                // }
 
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;

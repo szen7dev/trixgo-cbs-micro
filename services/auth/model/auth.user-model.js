@@ -994,11 +994,11 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, ctx }) {
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID))
-                    return resolve({ error: true, message: "param_not_valid" });
+                    return resolve({ error: true, message: "UserID không hợp lệ", keyError: "param_not_valid" });
 
                 let dataUpdate = { userUpdate: userID };
                 // Cập nhật mật khẩu
@@ -1006,7 +1006,7 @@ class Model extends BaseModel {
                     let { password } = await AUTH__USER_COLL.findById(userID);
                     let checkCurrentPass = await compare( currentPass, password);
                     if(!checkCurrentPass)
-                        return resolve({ error: true, message: "current_password_faild" });
+                        return resolve({ error: true, message: "Mật khẩu cũ không đúng", keyError: "current_password_faild" });
                     let hashpass = await hash(newPass, 8);
                     dataUpdate.password = hashpass;
                 }
@@ -1031,10 +1031,18 @@ class Model extends BaseModel {
                 if(lang){
                     dataUpdate.lang = lang;
                 }
+
+                if(image){
+                    dataUpdate.image = image;
+                }
+
+                if(signature){
+                    dataUpdate.signature = signature;
+                }
                 
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataUpdate, { new: true });
                 if(!infoUserAfterUpdate)
-                    return resolve({ error: false, message: "cannot_update" });
+                    return resolve({ error: false, message: "Cập nhật thất bại", keyError: "cannot_update" });
                     
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
