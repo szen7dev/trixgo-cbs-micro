@@ -1262,6 +1262,8 @@ exports.CHATTING_SOCKET = {
 			.select('members')
 			.lean();
 
+		console.log({ infoConversation })
+
 		if(!infoConversation){
 			return sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
