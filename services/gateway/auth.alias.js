@@ -27,6 +27,7 @@ const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notificatio
 const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-constant');
 const { CF_ROUTINGS_TIMESHEET }		= require('../timesheet/helper/timesheet.routes-constant');
+const { CF_ROUTINGS_PERSONAL }		= require('../personal/helper/personal.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -50,6 +51,7 @@ const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_TIMESHEET }		= require('../timesheet/helper/timesheet.actions-constant');
+const { CF_ACTIONS_PERSONAL }		= require('../personal/helper/personal.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -891,6 +893,15 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_GET_INFO_AND_GET_LIST}`],
 		
 		//---------------------------🏁 END SERVICE TIMESHEET 🏁---------------------------//
+
+		//---------------------------🏁 BEGIN SERVICE PRERSONAL 🏁-------------------------//
+		[`GET ${CF_ROUTINGS_PERSONAL.GET_CODE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_GET_CODE}`],
+		
+		[`POST ${CF_ROUTINGS_PERSONAL.CHECK_CODE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_CHECK_CODE}`],
+		
+		//---------------------------🏁 END SERVICE PRERSONAL 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions

@@ -19,6 +19,7 @@ let CF_DOMAIN_SERVICES = {
     OPERATION       : 'operation',
     ANALYSIS        : 'analysis',
     TIMESHEET       : 'timesheet',
+    PERSONAL        : 'personal',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

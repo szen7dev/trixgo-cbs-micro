@@ -132,14 +132,9 @@ class Model extends BaseModel {
                     dataInsert.otherDeduction = otherDeduction;
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                if(recommendedPayment){
-                    let recommendedPaymentTemp  = (Number(acceptance) + Number(vatAcceptance) + Number(plusAcceptance) + Number(vatPlusAcceptance)) - (Number(retainedValue) + Number(advancePaymentDeduction) + Number(otherDeduction) )
+                let recommendedPaymentTemp  = (Number(acceptance) + Number(vatAcceptance) + Number(plusAcceptance) + Number(vatPlusAcceptance)) - (Number(retainedValue) + Number(advancePaymentDeduction) + Number(otherDeduction) )
+                dataInsert.recommendedPayment = recommendedPaymentTemp;
 
-                    if(recommendedPayment != recommendedPaymentTemp)
-                        return resolve({ error: true, message: "recommendedPayment_invalid", status: 403 });
- 
-                    dataInsert.recommendedPayment = recommendedPayment;
-                }
                 //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
                     dataInsert.timeForPayment = timeForPayment;
@@ -149,16 +144,12 @@ class Model extends BaseModel {
                     dataInsert.amountPaid = amountPaid;
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(remainingPayment){
-                    let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                    if(remainingPayment != remainingPaymentTemp)
-                        return resolve({ error: true, message: "remainingPayment_invalid", status: 403 });
-                    dataInsert.remainingPayment = remainingPayment;
-                }
-
+                let remainingPaymentTemp    = recommendedPayment - amountPaid;
+                dataInsert.remainingPayment = remainingPaymentTemp;
+                
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
+                    return resolve({ error: true, message: "can't_insert_contract_ipc ", status: 403 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -247,14 +238,8 @@ class Model extends BaseModel {
                     dataUpdate.otherDeduction = otherDeduction;
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                if(recommendedPayment){
-                    let recommendedPaymentTemp  = (Number(acceptance) + Number(vatAcceptance) + Number(plusAcceptance) + Number(vatPlusAcceptance)) - (Number(retainedValue) + Number(advancePaymentDeduction) + Number(otherDeduction) )
-
-                    if(recommendedPayment != recommendedPaymentTemp)
-                        return resolve({ error: true, message: "recommendedPayment_invalid", status: 403 });
- 
-                    dataUpdate.recommendedPayment = recommendedPayment;
-                }
+                let recommendedPaymentTemp  = (Number(acceptance) + Number(vatAcceptance) + Number(plusAcceptance) + Number(vatPlusAcceptance)) - (Number(retainedValue) + Number(advancePaymentDeduction) + Number(otherDeduction) )
+                dataUpdate.recommendedPayment = recommendedPaymentTemp;
                 //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
                     dataUpdate.timeForPayment = timeForPayment;
@@ -264,12 +249,8 @@ class Model extends BaseModel {
                     dataUpdate.amountPaid = amountPaid;
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(remainingPayment){
-                    let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                    if(remainingPayment != remainingPaymentTemp)
-                        return resolve({ error: true, message: "remainingPayment_invalid", status: 403 });
-                    dataUpdate.remainingPayment = remainingPayment;
-                }
+                let remainingPaymentTemp    = recommendedPayment - amountPaid;
+                dataUpdate.remainingPayment = remainingPaymentTemp;
 
                 let infoAterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(contractIpcID, dataUpdate, { new: true });
                 if(!infoAterUpdate)

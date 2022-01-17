@@ -357,14 +357,23 @@ module.exports = {
             birthDay      : { type: "string", optional: true },
             gender        : { type: "string", optional: true },
             lang          : { type: "string", optional: true },
+            image         : { type: "string", optional: true },
+            signature     : { type: "string", optional: true },
+            sendRequestToFriendID   : { type: "string", optional: true },
+            acceptFriendRequestID   : { type: "string", optional: true },
+            removeFriendRequestID   : { type: "string", optional: true },
+            unFriendID              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { currentPass, newPass, email, phone, birthDay, gender, lang } = ctx.params;
+                let { currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID } = ctx.params;
 				let { _id: userID, company } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
-                    userID, currentPass, newPass, email, phone, birthDay, gender, lang, ctx
+                    userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
