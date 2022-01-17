@@ -374,19 +374,32 @@ class Model extends BaseModel {
 								break;
 							case 1: // Delete message image
 							case 2: // Delete message file
-								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-									_id: message._id,
-									conversation: conversationID,
-									files: {
-										$elemMatch: {
-											file: { $in: filesID }
+
+								if(!filesID || !filesID.length) {
+									infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+										_id: message._id,
+										conversation: conversationID
+									}, {
+										$addToSet: {
+											usersDelete: userID
 										}
-									}
-								}, {
-									$addToSet: {
-										"files.$.usersDelete": userID
-									}
-								}, { new: true });
+									}, { new: true });
+								} else {
+									infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+										_id: message._id,
+										conversation: conversationID,
+										files: {
+											$elemMatch: {
+												file: { $in: filesID }
+											}
+										}
+									}, {
+										$addToSet: {
+											"files.$.usersDelete": userID
+										}
+									}, { new: true });
+								}
+
 								break;
 							default:
 								break;
