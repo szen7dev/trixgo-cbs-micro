@@ -132,8 +132,9 @@ class Model extends BaseModel {
                     dataInsert.otherDeduction = otherDeduction;
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                let recommendedPaymentTemp  = (Number(acceptance) + Number(vatAcceptance) + Number(plusAcceptance) + Number(vatPlusAcceptance)) - (Number(retainedValue) + Number(advancePaymentDeduction) + Number(otherDeduction) )
-                dataInsert.recommendedPayment = recommendedPaymentTemp;
+                if(recommendedPayment){
+                    dataInsert.recommendedPayment = recommendedPayment;
+                }
 
                 //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
@@ -144,8 +145,9 @@ class Model extends BaseModel {
                     dataInsert.amountPaid = amountPaid;
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                dataInsert.remainingPayment = remainingPaymentTemp;
+                if(remainingPayment){
+                    dataInsert.remainingPayment = remainingPayment;
+                }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
@@ -238,8 +240,9 @@ class Model extends BaseModel {
                     dataUpdate.otherDeduction = otherDeduction;
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                let recommendedPaymentTemp  = (Number(acceptance) + Number(vatAcceptance) + Number(plusAcceptance) + Number(vatPlusAcceptance)) - (Number(retainedValue) + Number(advancePaymentDeduction) + Number(otherDeduction) )
-                dataUpdate.recommendedPayment = recommendedPaymentTemp;
+                if(recommendedPayment){
+                    dataUpdate.recommendedPayment = recommendedPayment;
+                }
                 //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
                     dataUpdate.timeForPayment = timeForPayment;
@@ -249,8 +252,9 @@ class Model extends BaseModel {
                     dataUpdate.amountPaid = amountPaid;
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                dataUpdate.remainingPayment = remainingPaymentTemp;
+                if(remainingPayment){
+                    dataUpdate.remainingPayment = remainingPayment;
+                }
 
                 let infoAterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(contractIpcID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
