@@ -414,19 +414,37 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				// CHECK PARAMS
-                if (!checkObjectIDs([...messagesID, userID, conversationID]))
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số không hợp lệ', 
+						keyError: 'params_invalid',
+						status: 400
+					});
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $all: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: 'Bạn không phải thành viên của cuộc hội thoại', 
+						keyError: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
-				if(filesID && !checkObjectIDs(filesID))
-					return resolve({ error: true, message: "Request Params filesID Invalid", status: 400 });
+				if(filesID && !checkObjectIDs(filesID)) {
+					return resolve({ 
+						error: true, 
+						message: 'File ID không hợp lệ', 
+						keyError: 'params_filesID_invalid',
+						status: 400
+					});
+				}
 
 				// Get list message will delete
 				let listMessages = await CHATTING__MESSAGE_COLL
@@ -438,8 +456,14 @@ class Model extends BaseModel {
 					.select('_id type createAt')
 					.lean();
 
-				if(!listMessages || !listMessages.length)
-					return resolve({ error: true, message: "Message is not belong conversation", status: 403 });
+				if(!listMessages || !listMessages.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Tin nhắn không thuộc cuộc hội thoại này', 
+						keyError: 'message_is_not_belong_conversation',
+						status: 403
+					});
+				}
 
 				// Get list message not expire recall
 				let listMessagesNotExpire = [];
@@ -453,8 +477,14 @@ class Model extends BaseModel {
 				})
 
 				// Recall 1 message and message is expired recall
-				if(messagesID.length === 1 && !listMessagesNotExpire.length)
-					return resolve({ error: true, message: "Time to recall messages has expired (1 hour)", status: 403 });
+				if(messagesID.length === 1 && !listMessagesNotExpire.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Tin nhắn đã hết hạn thu hồi (1 tiếng)', 
+						keyError: 'time_to_recall_messages_has_expired',
+						status: 403
+					});
+				}
 
 				const { results: infoMessageAfterUpdated } = await PromisePool
 					.for(listMessagesNotExpire)
@@ -517,8 +547,14 @@ class Model extends BaseModel {
 						return infoMessageAfterUpdated;
 					})
 
-				if(!infoMessageAfterUpdated)
-					return resolve({ error: true, message: "Can't revoke message", status: 403 });
+				if(!infoMessageAfterUpdated || !infoMessageAfterUpdated.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Có lỗi xảy ra', 
+						keyError: 'error_occurs',
+						status: 422
+					});
+				}
 
 				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
 			} catch(error){

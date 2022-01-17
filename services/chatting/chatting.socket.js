@@ -648,8 +648,6 @@ exports.CHATTING_SOCKET = {
 			.select('members')
 			.lean();
 
-		console.log({ infoConversation })
-
 		if(!infoConversation || !messagesID || !messagesID.length){
 			return sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
