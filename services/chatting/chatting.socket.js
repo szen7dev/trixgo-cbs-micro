@@ -659,7 +659,7 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		const infoAfterRevoke = await CHATTING__MESSAGE_COLL.revokeMessage({
+		const infoAfterRevoke = await CHATTING__MESSAGE_MODEL.revokeMessage({
 			userID, conversationID, messagesID, filesID
 		})
 
