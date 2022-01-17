@@ -150,7 +150,7 @@ class Model extends BaseModel {
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
                 let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                dataUpdate.remainingPayment = remainingPaymentTemp;
+                dataInsert.remainingPayment = remainingPaymentTemp;
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
