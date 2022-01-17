@@ -65,7 +65,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     recommendedPayment: { type: Number, default: 0},
 
     //_________(9)Thời hạn thanh toán
-    timeForPayment:  { type: Number, default: 0},
+    timeForPayment:  { type: Date, default: 0},
 
     //_________(10)Đã giải ngân
     amountPaid:  { type: Number, default: 0},
