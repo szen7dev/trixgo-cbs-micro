@@ -63,7 +63,7 @@ exports.MEDIA_SOCKET = {
 
 		const infoSenderCall = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image friends'
+			select: '_id bizfullname fullname image friends'
 		});
 		const infoSender = infoSenderCall?.data
 
@@ -110,7 +110,7 @@ exports.MEDIA_SOCKET = {
 
 		const infoSenderCall = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 			condition: { _id: { $in: userID }, company: `${companyID}` },
-			select: '_id bizname fullname image friends'
+			select: '_id bizfullname fullname image friends'
 		});
 		const infoSender = infoSenderCall?.data[0]
 
@@ -155,7 +155,7 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const tagFriends = infoMedia?.tagFriends;
@@ -200,12 +200,12 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const infoAuthorMedia = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: `${infoMedia?.author}`,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		// Nếu người đăng bài viết tự reaction thì không gửi socket
@@ -253,12 +253,12 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const infoAuthorMedia = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: `${infoMedia?.author}`,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		// Nếu người đăng bài viết tự reaction thì không gửi socket
@@ -312,12 +312,12 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const infoAuthorMedia = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: `${infoMedia?.author}`,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		// Nếu người reaction là người viết comment thì sẽ không gửi socket
@@ -376,12 +376,12 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const infoAuthorMedia = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: `${infoMedia?.author}`,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		// Nếu người reply comment là người viết comment thì sẽ không gửi socket
@@ -438,12 +438,12 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const infoAuthorMedia = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: `${infoMedia?.author}`,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		// Nếu người viết comment là người tạo bài viết thì sẽ không gửi socket
@@ -497,12 +497,12 @@ exports.MEDIA_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const infoAuthorMedia = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: `${infoMedia?.author}`,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		// Nếu người viết comment là người tạo bài viết thì sẽ không gửi socket

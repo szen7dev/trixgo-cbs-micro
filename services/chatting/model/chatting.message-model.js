@@ -865,7 +865,7 @@ class Model extends BaseModel {
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: '_id bizname fullname image'
+							select: '_id bizfullname fullname image'
 						},
 						select: select.poll
 					})
@@ -1142,7 +1142,13 @@ class Model extends BaseModel {
 
 				let infoMessagePollAfterUpdate = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
-					.populate('poll')
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizfullname fullname image'
+						}
+					})
 					.lean();
 
 				if(!infoMessagePollAfterUpdate) {
@@ -1376,7 +1382,7 @@ class Model extends BaseModel {
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: '_id bizname fullname image'
+							select: '_id bizfullname fullname image'
 						},
 						select: select.poll
 					})

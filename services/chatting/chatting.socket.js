@@ -63,7 +63,7 @@ exports.CHATTING_SOCKET = {
 			.findById(conversationID)
 			.populate({
 				path: 'authors',
-				select: '_id fullname bizname image'
+				select: '_id fullname bizfullname image'
 			})
 			.lean();
 
@@ -162,11 +162,11 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 		const addedMembers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 			condition: { _id: { $in: membersID } },
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -218,11 +218,11 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 		const removedMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 			condition: { _id: memberID },
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -274,11 +274,11 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: memberID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -331,7 +331,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: memberID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -454,7 +454,7 @@ exports.CHATTING_SOCKET = {
 		if(usersTag && usersTag.length){
 			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 				condition: { _id: { $in: usersTag } },
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			});
 			usersTag = usersTag.data;
 		}
@@ -467,7 +467,7 @@ exports.CHATTING_SOCKET = {
 				.findById(infoMessageAfterInsert.data._id, { createdAt: 0, updatedAt: 0, __v: 0 })
 				.populate({
 					path: 'sender receivers usersAssigned',
-					select: '_id fullname bizname image'
+					select: '_id fullname bizfullname image'
 				})
 				.populate({
 					path: 'reactions',
@@ -485,7 +485,7 @@ exports.CHATTING_SOCKET = {
 							path: 'file',
 							select: 'name url size'
 						},
-						select: '_id bizname fullname image'
+						select: '_id bizfullname fullname image'
 					}
 				})
 				.populate('reminder')
@@ -493,7 +493,7 @@ exports.CHATTING_SOCKET = {
 					path: 'poll',
 					populate: {
 						path: 'options.usersVote',
-						select: '_id bizname fullname image'
+						select: '_id bizfullname fullname image'
 					}
 				})
 				.populate({
@@ -608,7 +608,7 @@ exports.CHATTING_SOCKET = {
 				})
 				.populate({
 					path: 'sender usersAssigned',
-					select: '_id bizname fullname image',
+					select: '_id bizfullname fullname image',
 				})
 				.lean();
 
@@ -697,7 +697,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: memberID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -741,7 +741,7 @@ exports.CHATTING_SOCKET = {
 			.populate('reminder')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -756,7 +756,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -800,7 +800,7 @@ exports.CHATTING_SOCKET = {
 			.populate('reminder')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -815,7 +815,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -859,7 +859,7 @@ exports.CHATTING_SOCKET = {
 			.populate('poll')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -874,7 +874,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -918,7 +918,7 @@ exports.CHATTING_SOCKET = {
 			.populate('poll')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -933,7 +933,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -984,7 +984,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -1034,7 +1034,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -1148,7 +1148,7 @@ exports.CHATTING_SOCKET = {
 			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
 			.populate({
 				path: 'sender receivers usersAssigned',
-				select: '_id fullname bizname image'
+				select: '_id fullname bizfullname image'
 			})
 			.populate({
 				path: 'conversation',
@@ -1166,7 +1166,7 @@ exports.CHATTING_SOCKET = {
 				path: 'parent',
 				populate: {
 					path: 'sender',
-					select: '_id bizname fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.populate('reminder')
@@ -1174,7 +1174,7 @@ exports.CHATTING_SOCKET = {
 				path: 'poll',
 				populate: {
 					path: 'options.usersVote',
-					select: '_id bizname fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.populate({
@@ -1275,7 +1275,7 @@ exports.CHATTING_SOCKET = {
 			.findById(messageID)
 			.populate({
 				path: 'sender receivers usersAssigned',
-				select: '_id fullname bizname image'
+				select: '_id fullname bizfullname image'
 			})
 			.populate({
 				path: 'parent',
@@ -1285,7 +1285,7 @@ exports.CHATTING_SOCKET = {
 						path: 'file',
 						select: 'name url size'
 					},
-					select: '_id bizname fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.populate('reminder')
@@ -1293,7 +1293,7 @@ exports.CHATTING_SOCKET = {
 				path: 'poll',
 				populate: {
 					path: 'options.usersVote',
-					select: '_id bizname fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.lean();
