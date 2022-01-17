@@ -368,7 +368,7 @@ class Model extends BaseModel {
 					if(membersID.includes(member._id.toString())){
 						return resolve({
 							error: true,
-							message: `Member ${member.bizname || member.fullname} is existed in conversation`,
+							message: `Member ${member.bizfullname || member.fullname} is existed in conversation`,
 							keyError: 'member_is_added_in_conversation',
 							status: 403
 						});
@@ -1029,7 +1029,7 @@ class Model extends BaseModel {
 								path: 'file',
 								select: 'name url size'
 							},
-							select: `_id bizname fullname image ${select.files}`
+							select: `_id bizfullname fullname image ${select.files}`
 						}
 					})
 					.populate('reminder')
@@ -1037,7 +1037,7 @@ class Model extends BaseModel {
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: '_id bizname fullname image'
+							select: '_id bizfullname fullname image'
 						},
 						select: select.poll
 					})
