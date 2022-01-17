@@ -488,7 +488,13 @@ exports.CHATTING_SOCKET = {
 						select: '_id bizfullname fullname image'
 					}
 				})
-				.populate('reminder')
+				.populate({
+					path: 'reminder',
+					populate: {
+						path: 'accepts rejects',
+						select: '_id bizfullname fullname image'
+					}
+				})
 				.populate({
 					path: 'poll',
 					populate: {
@@ -1288,7 +1294,13 @@ exports.CHATTING_SOCKET = {
 					select: '_id bizfullname fullname image'
 				}
 			})
-			.populate('reminder')
+			.populate({
+				path: 'reminder',
+				populate: {
+					path: 'accepts rejects',
+					select: '_id bizfullname fullname image'
+				}
+			})
 			.populate({
 				path: 'poll',
 				populate: {

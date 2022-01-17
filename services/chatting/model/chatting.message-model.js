@@ -1593,17 +1593,19 @@ class Model extends BaseModel {
 				})
 
 				// UPDATE LAST MESSAGE
-                let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: infoMessageNotify._id, modifyAt: Date.now()
-                }, { new: true });
-
-				if(!infoUpdateLastMessage) {
-					return resolve({ 
-						error: true, 
-						message: "Không thể cập nhật tin nhắn mới nhất", 
-						keyEror: 'cannot_update_last_message',
-						status: 422
-					});
+				if(infoMessageNotify) {
+					let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
+					}, { new: true });
+	
+					if(!infoUpdateLastMessage) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể cập nhật tin nhắn mới nhất", 
+							keyEror: 'cannot_update_last_message',
+							status: 422
+						});
+					}
 				}
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -1626,11 +1628,26 @@ class Model extends BaseModel {
 					})
 				}
 
+				const infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.populate({
+						path: 'sender receivers usersAssigned',
+						select: '_id fullname bizfullname image'
+					})
+					.populate({
+						path: 'reminder',
+						populate: {
+							path: 'accepts rejects',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.lean();
+
 				return resolve({
 					error: false,
 					status: 200,
 					data: {
-						infoReminder: infoReminderAfterUpdate,
+						infoMessage: infoMessage,
 						infoMessageNotification: infoMessageNotify
 					}
 				});
