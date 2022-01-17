@@ -527,13 +527,13 @@ exports.CHATTING_SOCKET = {
 		}
 
 		// SEND SOCKET
-		listMemberWithAmountMissMessage.map(member => {
+		listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
-				arrReceiver: [member.memberID],
+				arrReceiver: [memberID],
 				data: {
 					tmpid,
-					amountMissMessage: member.amountMissMessage,
+					amountMissMessage: amountMissMessage,
 					usersTag,
 					infoMessage,
 				},
@@ -643,7 +643,7 @@ exports.CHATTING_SOCKET = {
 		let userID                      = socket.client.user;
 		let { conversationID, messagesID, filesID } = data;
 
-		if(!conversationID || !messagesID || !messagesID.length || !filesID || !filesID.length){
+		if(!conversationID || !messagesID || !messagesID.length){
 			return sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
 				arrReceiver: [userID],

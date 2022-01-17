@@ -22,7 +22,7 @@ const NOTIFICATION_COLL 				        = require('./database/notification.log-coll'
 
 exports.NOTIFICATION_SOCKET = {
  
-    [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_CSS_ADD_MEDIA]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_CSS_ADD_MEDIA]: async function(data) { 
         let socket                      = this;
 		let broker						= socket.$service.broker;
         let listUserActive              = socket.$service.listUserConnected2;

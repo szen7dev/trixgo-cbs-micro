@@ -264,7 +264,7 @@ class Model extends BaseModel {
              try {
                 const WEB_CBS           = 1;
                 const MOBILE_TEARSER    = 2;
-                console.log({ users, title, description, objDataForSend })
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -323,7 +323,7 @@ class Model extends BaseModel {
                                 app_id: ONESIGNAL_APP_TEASER,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
-                                ios_badgeType: 'Increase', // SetTo
+                                ios_badgeType: 'Increase',
                                 ios_badgeCount: 1,
                                 include_player_ids: listDeviceFromMobile
                             }
@@ -339,7 +339,6 @@ class Model extends BaseModel {
                             // console.log({ dataForMobilePushBadge })
                             
                             sendNotificationviaOneSignal(dataForMobilePush)
-                            // sendNotificationviaOneSignal(dataForMobilePushBadge)
                         } 
                         if (listDeviceFromWebBrowser.length > 0) {
                             // WEB PUSH
@@ -349,6 +348,7 @@ class Model extends BaseModel {
                                 web_url,
                                 include_player_ids: listDeviceFromMobile
                             }
+
                             sendNotificationviaOneSignal(dataForWebPush)
                             console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
                         }
