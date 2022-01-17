@@ -22,6 +22,8 @@ const CF_ROUTINGS_AUTH = {
     SEARCH_WITH_FULL_TEXT               : `${BASE_ROUTE}${USER}/search-with-fulltext`,
     
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
+    GET_LIST_USER_SEND_TO_FRIENDS       : `${BASE_ROUTE}${USER}/list-user-send-to-friends`,
+    GET_LIST_USER_RECEIVE_FROM_FRIENDS  : `${BASE_ROUTE}${USER}/list-user-receiver-from-friends`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
     
     /**

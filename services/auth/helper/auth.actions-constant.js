@@ -26,8 +26,13 @@ const CF_ACTIONS_AUTH = {
     SEARCH_WITH_FIND                    : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FIND`,
     SEARCH_WITH_FULL_TEXT               : `${BASE_ACTIONS}_${USER}_SEARCH_WITH_FULL_TEXT`,
 
-
+    
     GET_LIST_FRIEND                     : `${BASE_ACTIONS}_${USER}_GET_LIST_FRIEND`,
+    //Danh sách user mà mình gửi yêu cầu kết bạn
+    GET_LIST_USER_SEND_TO_FRIENDS       : `${BASE_ACTIONS}_${USER}_GET_LIST_USER_SEND_TO_FRIENDS`,
+    //Danh sách user gửi lời mời kết bạn cho mình
+    GET_LIST_USER_RECEIVE_FROM_FRIENDS  : `${BASE_ACTIONS}_${USER}_GET_LIST_USER_RECEIVE_FROM_FRIENDS`,
+
     GET_LIST_USER                       : `${BASE_ACTIONS}_${USER}_GET_LIST_USER`,
     GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH: `${BASE_ACTIONS}_${USER}_GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH`,
    

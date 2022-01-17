@@ -1123,6 +1123,206 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+	 * Dev: Depv
+	 * Func: Danh sách user gửi lời mời kết bạn cho mình
+	 * Date: 14/01/2022
+	 */
+    getListUserReceiveFromFriends({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				if(isNaN(limit)) {
+					limit = 10;
+				} else{
+					limit = +limit;
+				}
+
+                if(limit > 20){
+					limit = 20;
+                }
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('receiveFromFriends');
+
+				let conditionObj 	= { _id: { $in: infoUserWithFriends.receiveFromFriends } };
+				let conditionFind 	= {};
+				let objSort 	 	= {};
+                let sortBy = {
+					createAt: -1,
+                    modifyAt: -1,
+                }
+
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
+                    if(!infoUser)
+                        return resolve({ error: true, message: "Can't get info last user receiveFromFriends", status: 403 });
+
+                    let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
+                    let keys 	 = ['createAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+
+					conditionFind = dataPagingAndSort.data.find;
+                }
+
+				// SEARCH TEXT
+				if(keyword){
+					keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.fullname = new RegExp(keyword, 'i');
+				}
+
+                const listFriends = await AUTH__USER_COLL
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .select(select)
+                    .limit(limit + 1)
+                    .populate(populates)
+                    .sort(sortBy)
+					.lean();
+
+				// GET TOTAL RECORD
+                let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+				let nextCursor	= null;
+
+				if(listFriends && listFriends.length){
+					if(listFriends.length > limit){
+						nextCursor = listFriends[limit - 1]._id;
+						listFriends.length = limit;
+					}
+				}
+
+                return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listFriends,
+						limit,
+						totalRecord,
+						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: Depv
+	 * Func: Danh sách user mà mình gửi yêu cầu kết bạn
+	 * Date: 14/01/2022
+	 */
+    getListUserSendToFriends({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+				if(isNaN(limit)) {
+					limit = 10;
+				} else{
+					limit = +limit;
+				}
+
+                if(limit > 20){
+					limit = 20;
+                }
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('sendToFriends');
+
+				let conditionObj 	= { _id: { $in: infoUserWithFriends.sendToFriends } };
+				let conditionFind 	= {};
+				let objSort 	 	= {};
+                let sortBy = {
+					createAt: -1,
+                    modifyAt: -1,
+                }
+
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
+                    if(!infoUser)
+                        return resolve({ error: true, message: "Can't get info last user lastestID", status: 403 });
+
+                    let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
+                    let keys 	 = ['createAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+
+					conditionFind = dataPagingAndSort.data.find;
+                }
+
+				// SEARCH TEXT
+				if(keyword){
+					keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.fullname = new RegExp(keyword, 'i');
+				}
+
+                const listFriends = await AUTH__USER_COLL
+                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .select(select)
+                    .limit(limit + 1)
+                    .populate(populates)
+                    .sort(sortBy)
+					.lean();
+
+				// GET TOTAL RECORD
+                let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+				let nextCursor	= null;
+
+				if(listFriends && listFriends.length){
+					if(listFriends.length > limit){
+						nextCursor = listFriends[limit - 1]._id;
+						listFriends.length = limit;
+					}
+				}
+
+                return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listFriends,
+						limit,
+						totalRecord,
+						nextCursor
+					}
+				});
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
     
     /**
      * Name: get info user ✅

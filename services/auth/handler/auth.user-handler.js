@@ -139,7 +139,66 @@ module.exports = {
             }
         }
     },
+    
+    /**
+     * Func: Lấy danh user mà gửi lời mời kết bạn cho mình
+     * Author: Depv
+     * Date: 12/10/2021
+     */
+    getListUserReceiveFromFriends: {
+        auth: "required",
+        params: {
+            lastestID : { type: "string", optional: true },
+			keyword   : { type: "string", optional: true },
+			select    : { type: "string", optional: true },
+			limit     : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListUserReceiveFromFriends({
+                    userID, lastestID, keyword, filter, limit, select, populates
+                });
 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+     * Func: Lấy danh user mà mình gửi lời mời kết bạn
+     * Author: Depv
+     * Date: 12/10/2021
+     */
+    getListUserSendToFriends: {
+        auth: "required",
+        params: {
+            lastestID : { type: "string", optional: true },
+			keyword   : { type: "string", optional: true },
+			select    : { type: "string", optional: true },
+			limit     : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListUserSendToFriends({
+                    userID, lastestID, keyword, filter, limit, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
     /**
      * Func: Lấy danh sách user
      * Author: MinhVH
