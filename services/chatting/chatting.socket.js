@@ -1255,10 +1255,10 @@ exports.CHATTING_SOCKET = {
 		let userID				= socket.client.user;
         let listUserActive      = socket.$service.listUserConnected2;
         let io                  = socket.$service.io;
-		let { infoMessage }		= data;
+		let { conversation }	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL
-			.findById(infoMessage.conversation)
+			.findById(conversation)
 			.select('members')
 			.lean();
 
@@ -1278,7 +1278,7 @@ exports.CHATTING_SOCKET = {
 			listUserConnected: listUserActive, 
 			data: {
 				error: false, 
-				data: infoMessage
+				data
 			}, 
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
 		})
