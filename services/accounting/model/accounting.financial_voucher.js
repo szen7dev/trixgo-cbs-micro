@@ -52,7 +52,7 @@ class AccountingFinancialVoucher extends BaseModel {
         if(!type || !Number.isNaN(Number(type)))
             return { error: true, message: 'type_invalid' };
 
-        if(authorID || !ObjectId.isValid(authorID))
+        if(!authorID || !ObjectId.isValid(authorID))
             return { error: true, message: 'authorID_invalid' };
 
         if(customerID || !ObjectId.isValid(customerID))
@@ -381,9 +381,6 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
-    //__________Cập nhật phiếu
-    // Author: HiepNH
-    //__________Cập nhật phiếu
     // Author: HiepNH
     //__________Cập nhật phiếu
     // Author: HiepNH
@@ -399,6 +396,7 @@ class AccountingFinancialVoucher extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID);
+                
                 if (!info) 
                     return resolve({ error: true, message: 'cannot_get_info' });
 
