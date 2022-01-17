@@ -994,7 +994,8 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, ctx }) {
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, 
+        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID))
@@ -1039,6 +1040,77 @@ class Model extends BaseModel {
                 if(signature){
                     dataUpdate.signature = signature;
                 }
+
+                // Gửi yêu cầu kết bạn tới người khác
+                if(checkObjectIDs(sendRequestToFriendID)){
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                        $addToSet: { sendToFriends: sendRequestToFriendID }
+                    }, { new: true })
+
+                    await AUTH__USER_COLL.findByIdAndUpdate(sendRequestToFriendID, {
+                        $addToSet: { receiveFromFriends: userID }
+                    }, { new: true })
+                }
+
+                // Chấp nhận kết bạn
+                if(checkObjectIDs(acceptFriendRequestID)){
+                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                        $pull: {
+                            receiveFromFriends: acceptFriendRequestID
+                        },
+                        $addToSet: {
+                            friends: acceptFriendRequestID
+                        }
+                    }, { new: true });
+                    // await cachingInfoUser(userID, session);
+
+                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(acceptFriendRequestID, {
+                        $pull: {
+                            sendToFriends: userID
+                        },
+                        $addToSet: {
+                            friends: userID
+                        }
+                    }, { new: true });
+
+                }
+
+                //Hủy lời mời kết bạn
+                if(checkObjectIDs(removeFriendRequestID)){
+                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                        $pull: {
+                            receiveFromFriends: removeFriendRequestID
+                        },
+                    }, { new: true });
+    
+                    // await cachingInfoUser(userID, session);
+                   
+                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(removeFriendRequestID, {
+                        $pull: {
+                            sendToFriends: userID
+                        },
+                    }, { new: true });
+                }
+
+                //Hủy kết bạn
+                if(checkObjectIDs(unFriendID)){
+                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                        $pull: {
+                            friends: unFriendID
+                        },
+                    }, { new: true });
+                    
+                    // await cachingInfoUser(userID, session);
+                   
+                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(unFriendID, {
+                        $pull: {
+                            friends: userID
+                        },
+                    }, { new: true });
+    
+                    // Xóa bạn bè nằm trong các group
+                    // let infoAfterRemove = await GROUP_OF_FRIEND_MODEL.removeFriendInGroups({ userID, unFriendID });
+                }
                 
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataUpdate, { new: true });
                 if(!infoUserAfterUpdate)
@@ -1046,7 +1118,7 @@ class Model extends BaseModel {
                     
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
-            } catch (error) {
+            } catch (error) { 
                 return resolve({ error: true, message: error.message })
             }
         })
