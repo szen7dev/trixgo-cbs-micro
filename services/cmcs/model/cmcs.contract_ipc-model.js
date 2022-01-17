@@ -149,12 +149,8 @@ class Model extends BaseModel {
                     dataInsert.amountPaid = amountPaid;
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(remainingPayment){
-                    let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                    if(remainingPayment != remainingPaymentTemp)
-                        return resolve({ error: true, message: "remainingPayment_invalid", status: 403 });
-                    dataInsert.remainingPayment = remainingPayment;
-                }
+                let remainingPaymentTemp    = recommendedPayment - amountPaid;
+                dataUpdate.remainingPayment = remainingPaymentTemp;
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
@@ -264,12 +260,8 @@ class Model extends BaseModel {
                     dataUpdate.amountPaid = amountPaid;
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(remainingPayment){
-                    let remainingPaymentTemp    = recommendedPayment - amountPaid;
-                    if(remainingPayment != remainingPaymentTemp)
-                        return resolve({ error: true, message: "remainingPayment_invalid", status: 403 });
-                    dataUpdate.remainingPayment = remainingPayment;
-                }
+                let remainingPaymentTemp    = recommendedPayment - amountPaid;
+                dataUpdate.remainingPayment = remainingPaymentTemp;
 
                 let infoAterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(contractIpcID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
