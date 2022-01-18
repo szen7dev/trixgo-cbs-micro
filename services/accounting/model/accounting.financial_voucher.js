@@ -706,6 +706,137 @@ class AccountingFinancialVoucher extends BaseModel {
             }
         });
     }
+
+    remove({ voucherID }){
+        return new Promise(async (resolve) => {
+            try {
+                if( !_isValid(voucherID))
+                    return resolve({ error: true, message: 'voucherID_invalid' });
+
+                const info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID);
+                if (!info) 
+                    return resolve({ error: true, message: 'cannot_get_info' });
+
+                // Remove doc
+                const infoAfterRemove = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndDelete(voucherID);
+                if(!infoAfterRemove)
+                    return resolve({ error: true, message: "cannot_remove" });
+
+                // Remove sub docs
+                const removeSubDocs = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.deleteMany({ voucher: voucherID });
+                if (!removeSubDocs) return resolve({ error: true, message: 'cannot_remove_sub_docs' }); 
+
+                // Xóa trong ngân sách
+
+                return resolve({ error: false, data: infoAfterRemove });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING][REMOVE_VOUCHER]: ${error}`);
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+     // Danh sách các phiếu của công ty
+     getListVoucherOfCompany({ companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
+        return new Promise(async (resolve) => {
+            try {
+                const page = Number(currentPage);
+                
+                let conditionObj;
+                if(!fundaID){
+                    if(!contractID){
+                        conditionObj = { 
+                            company: companyID,
+                            type: Number(type)
+                        }
+                    }else{
+                        conditionObj = { 
+                            company: companyID,
+                            contract: {$in: contractID },
+                            type: Number(type)
+                        }
+                    }
+                }else{
+                    if(!contractID){
+                        conditionObj = { 
+                            funda: fundaID,
+                            type: Number(type),
+                        }
+                    }else{
+                        conditionObj = { 
+                            funda: fundaID,
+                            contract: { $in: contractID },
+                            type: Number(type)
+                        }
+                    }
+                }
+                if(fromDate && toDate){
+                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                        // conditionObj.date = {
+                        //     $gte: startTime,// <=== fix ISODate here
+                        //     $lte: endTime // <=== fix ISODate here
+                        // }
+                        conditionObj.date  = { 
+                            $gte: moment(startTime).toDate(),
+                            $lte: moment(endTime).toDate()
+                        }
+                    }
+                }
+
+                // Số lượng tổng mẩu tin
+                let countDocs = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
+
+                let listData = null;
+                if(!currentPage){
+                    listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                    .populate({
+                        path: 'company customer staff contract warehouse',
+                        select: '_id name sign phone address'
+                    })
+                    .populate({
+                        path: 'userCreate userUpdate',
+                        select:'_id fullname image'
+                    })
+                    .populate({
+                        path: 'journals',
+                        populate: {
+                            path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                        }
+                    })
+                    .sort({date: 'desc'});
+                }else{
+                    listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                    .populate({
+                        path: 'company customer staff contract warehouse',
+                        select: '_id name sign phone address'
+                    })
+                    .populate({
+                        path: 'userCreate userUpdate',
+                        select:'_id fullname image'
+                    })
+                    .populate({
+                        path: 'journals',
+                        populate: {
+                            path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                        }
+                    })
+                    .skip((page * perPage) - perPage)
+                    .limit(perPage)
+                    .sort({date: 'desc'});
+                }
+
+                if(!listData)
+                    return resolve({ error: true, message: "cannot_get_list" });
+
+                return resolve({ error: false, data: listData, countDocs });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new AccountingFinancialVoucher;

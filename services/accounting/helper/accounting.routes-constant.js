@@ -12,9 +12,10 @@ const CF_ROUTINGS_ACCOUNTING = {
 
 	// ======================== ROUTE - API ===============================
 
-    /// VOUCHER
+    // VOUCHER
     INSERT_VOUCHER          : `${BASE_ROUTE}${VOUCHER}/insertFull`,
     UPDATE_VOUCHER          : `${BASE_ROUTE}${VOUCHER}/update`,
+    REMOVE_VOUCHER          : `${BASE_ROUTE}${VOUCHER}/remove`,
 
     INSERT_GENERAL_JOURNAL  : `${BASE_ROUTE}${GENERAL_JOURNAL}/insertFull`,
     // UPDATE_GENERAL_JOURNAL  : `${BASE_ROUTE}${GENERAL_JOURNAL}/update`,
