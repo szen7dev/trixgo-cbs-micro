@@ -553,28 +553,30 @@ exports.CHATTING_SOCKET = {
 		});
 
 		let senderFullname = infoSender?.data?.bizfullname;
-		let description = infoMessage.content;
-
-		if(!infoConversation.isPrivate) {
-			senderFullname = infoConversation.name;
-			description = `${senderFullname}: ${infoMessage.content}`;
-		}
+		let description = '';
 
 		switch (infoMessage.type) {
 			case 1:
-				description = `${senderFullname} đã gửi 1 ảnh`;
+				description = `đã gửi 1 ảnh`;
 				break;
 			case 2:
-				description = `${senderFullname} đã gửi 1 file`;
+				description = `đã gửi 1 file`;
 				break;
 			case 4:
-				description = `${senderFullname} đã tạo 1 nhắc hẹn`;
+				description = `đã tạo 1 nhắc hẹn`;
 				break;
 			case 5:
-				description = `${senderFullname} đã tạo 1 cuộc bình chọn`;
+				description = `đã tạo 1 cuộc bình chọn`;
 				break;
 			default:
+				description = infoMessage.content;
+					// : `${senderFullname}: ${infoMessage.content}`;
 				break;
+		}
+
+		if(!infoConversation.isPrivate) {
+			senderFullname = infoConversation.name;
+			description = `${senderFullname}: ${description}`;
 		}
 
 		console.log({ senderFullname, description })
