@@ -120,7 +120,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx  }){
+    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx  }){
         return new Promise(async (resolve) => {
             try {
 
@@ -169,6 +169,10 @@ class Model extends BaseModel {
                     dataUpdate.name = name;
                 }
 
+                if(date){
+                    dataUpdate.date = date;
+                }
+
                 if(type){
                     dataUpdate.type = type;
                 }
@@ -177,7 +181,7 @@ class Model extends BaseModel {
                     dataUpdate.hours = hours;
                 }
 
-                if(unitprice){
+                if(unitprice){ 
                     dataUpdate.unitprice = unitprice;
                 }
 
@@ -429,7 +433,7 @@ class Model extends BaseModel {
 
                 let totalRecord = await TIMESHEET__EXPERT_TIMESHEET_COLL.countDocuments(conditionObj);
                 let totalPage   = Math.ceil(totalRecord/limit);
-
+                
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,

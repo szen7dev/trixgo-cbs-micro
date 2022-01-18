@@ -50,6 +50,7 @@ module.exports = {
             expertTimesheetID       : { type: "string" },
             projectID               : { type: "string", optional: true },
             name                    : { type: "string", optional: true },
+            date                    : { type: "string", optional: true },
             type                    : { type: "string", optional: true },
             assigneeID              : { type: "string", optional: true },
             hours                   : { type: "string", optional: true },
@@ -68,11 +69,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3 } = ctx.params;
+                let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
-                    expertTimesheetID, userUpdate: userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx
+                    expertTimesheetID, userUpdate: userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
