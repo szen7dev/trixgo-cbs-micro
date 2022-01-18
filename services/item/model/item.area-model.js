@@ -94,7 +94,7 @@ class Model extends BaseModel {
                 let conditionObj = { 
                     level: 3
                 };
-
+                
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};

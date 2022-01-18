@@ -27,6 +27,8 @@ const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notificatio
 const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-constant');
 const { CF_ROUTINGS_ACCOUNTING }	= require('../accounting/helper/accounting.routes-constant');
+const { CF_ROUTINGS_TIMESHEET }		= require('../timesheet/helper/timesheet.routes-constant');
+const { CF_ROUTINGS_PERSONAL }		= require('../personal/helper/personal.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -50,6 +52,8 @@ const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ACCOUNTING }	= require('../accounting/helper/accounting.actions-constant');
+const { CF_ACTIONS_TIMESHEET }		= require('../timesheet/helper/timesheet.actions-constant');
+const { CF_ACTIONS_PERSONAL }		= require('../personal/helper/personal.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -90,41 +94,17 @@ module.exports = {
 		/**
 		 * Code: A0019
 		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_PASSWORD}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PASSWORD}`],
-
-		/**
-		 * Code: A00110
-		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_FULLNAME}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_FULLNAME}`],
-
-		/**
-		 * Code: A00111
-		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_EMAIL}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_EMAIL}`],
-
-		/**
-		 * Code: A00112
-		 */
-		// [`POST ${CF_ROUTINGS_AUTH.UPDATE_PHONE}`] :
-		// [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PHONE}`],
-
-		/**
-		 * Code: A00113
-		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_LANGUAGE}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_LANGUAGE}`],
-
-		/**
-		 * Code: A00114
-		 */
-		[`POST ${CF_ROUTINGS_AUTH.UPDATE_BIRTHDAY}`] :
-		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_BIRTHDAY}`],
+		[`PUT ${CF_ROUTINGS_AUTH.USERS}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_UPDATE}`],
 
 		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_FRIEND}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_FRIEND}`],
+
+		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_USER_SEND_TO_FRIENDS}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_SEND_TO_FRIENDS}`],
+		
+		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_USER_RECEIVE_FROM_FRIENDS}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_RECEIVE_FROM_FRIENDS}`],
 
 		[`GET ${CF_ROUTINGS_AUTH.GET_LIST_USER}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER}`],
@@ -162,6 +142,9 @@ module.exports = {
 
 		[`PUT ${CF_ROUTINGS_CHATTING.UPDATE_CONVERSATION}`] :
 		[`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_CONVERSATION}`],
+
+		[`GET ${CF_ROUTINGS_CHATTING.CHECK_EXISTS_CONVERSATION}`] :
+		[`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.CHECK_EXISTS_CONVERSATION}`],
 
 		[`POST ${CF_ROUTINGS_CHATTING.ADD_MEMBER_CONVERSATION}`] :
 		[`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION}`],
@@ -517,8 +500,7 @@ module.exports = {
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
 		[`GET ${CF_ROUTINGS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`]: 
 		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_BILL_JOB_GET_LIST}`],
-
-		// Contract_ipc
+		
 		[`POST ${CF_ROUTINGS_CMCS.CONTRACT_IPC}`]: 
 		[`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_INSERT}`],
 
@@ -827,6 +809,10 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_DOCUMENT.STATISTICAL_BY_TYPE}`] :
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.STATISTICAL_BY_TYPE}`],
 
+		//_____Document file
+		[`GET ${CF_ROUTINGS_DOCUMENT.DOCUMENT_FILE}`] :
+		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.DOCUMENT_FILE_GET_INFO_AND_GET_LIST}`],
+
 		//---------------------------🏁 END S015.DOCUMENT 🏁---------------------------//
 		[`POST ${CF_ROUTINGS_DOCUMENT.SHARE_DOCUMENT}`] :
 		[`${CF_DOMAIN_SERVICES.DOCUMENT}.${CF_ACTIONS_DOCUMENT.SHARE_DOCUMENT}`],
@@ -909,13 +895,41 @@ module.exports = {
 		[`POST ${CF_ROUTINGS_ACCOUNTING.REMOVE_VOUCHER}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REMOVE_VOUCHER}`],
 
-		
+		[`GET ${CF_ROUTINGS_ACCOUNTING.GET_LIST_VOUCHER_OF_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_LIST_VOUCHER_OF_COMPANY}`],
+
+
 		[`GET ${CF_ROUTINGS_ACCOUNTING.INSERT_GENERAL_JOURNAL}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_GENERAL_JOURNAL}`],
 
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 
 
+
+		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
+
+		[`POST ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_REMOVE}`],
+		
+		[`GET ${CF_ROUTINGS_TIMESHEET.EXPERT_TIMESHEET}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_TIMESHEET.EXPERT_TIMESHEET_GET_INFO_AND_GET_LIST}`],
+		
+		//---------------------------🏁 END SERVICE TIMESHEET 🏁---------------------------//
+
+		//---------------------------🏁 BEGIN SERVICE PRERSONAL 🏁-------------------------//
+		[`GET ${CF_ROUTINGS_PERSONAL.GET_CODE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_GET_CODE}`],
+		
+		[`POST ${CF_ROUTINGS_PERSONAL.CHECK_CODE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_CHECK_CODE}`],
+		
+		//---------------------------🏁 END SERVICE PRERSONAL 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions

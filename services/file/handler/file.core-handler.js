@@ -86,24 +86,25 @@ module.exports = {
             name : { type: "string" },
             app  : { type: "string", optional: true },
             size : { type: "number", optional: true },
+            //____(typeUpload == user)
+            typeUpload : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 let { _id: userID } = ctx.meta.infoUser;
 
                 await this.validateEntity(ctx.params);
-                let { type, app, name, size } = ctx.params;
+                let { type, app, name, size, typeUpload } = ctx.params;
                 let extension = getExtension(name);
-                let fileName = `${uuidv4()}.${extension}`;
-                let nameOrg = name;
+                let fileName  = `${uuidv4()}.${extension}`;
+                let nameOrg   = name;
 
-                let infoGenerateLink = await GENERATE_LINK_S3(fileName, type);
+                let infoGenerateLink = await GENERATE_LINK_S3(fileName, type, typeUpload);
 
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
                  */
-
                 let infoFileAfterInsert = null;
                 if(app && !infoGenerateLink.error){
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
@@ -122,7 +123,7 @@ module.exports = {
                     status: 200,
                     data: {
                         infoGenerateLink,
-                        infoFileAfterInsert: infoFileAfterInsert.data,
+                        infoFileAfterInsert: infoFileAfterInsert?.data,
                     }
                 };
             } catch (error) {

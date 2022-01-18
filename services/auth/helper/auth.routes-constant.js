@@ -10,9 +10,9 @@ const BASE_ROUTE = '/auth';
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
     /**
-     * USER
+    * USER
     */
-    USERS                               : `${BASE_ROUTE}${USER}`, // GET, POST /auth/users
+    USERS                               : `${BASE_ROUTE}${USER}`,
     ME                                  : `${BASE_ROUTE}${USER}/me`, //GET, PUT, DELETE /auth/users/me
     
     LOGIN                               : `${BASE_ROUTE}${USER}/login`,
@@ -20,16 +20,10 @@ const CF_ROUTINGS_AUTH = {
 
     SEARCH_WITH_FIND                    : `${BASE_ROUTE}${USER}/search-with-find`,
     SEARCH_WITH_FULL_TEXT               : `${BASE_ROUTE}${USER}/search-with-fulltext`,
-    UPDATE_PASSWORD                     : `${BASE_ROUTE}${USER}/update-password`,
-    UPDATE_FULLNAME                     : `${BASE_ROUTE}${USER}/update-fullname`,
-    UPDATE_EMAIL                        : `${BASE_ROUTE}${USER}/update-email`,
-    UPDATE_LANGUAGE                     : `${BASE_ROUTE}${USER}/update-language`,
-    UPDATE_BIRTHDAY                     : `${BASE_ROUTE}${USER}/update-birthday`,
-    SEND_OPT_RESET_PASSWORD             : `${BASE_ROUTE}${USER}/send-opt-reset-password`,
-    CONFIRM_CODE_RESET_PASSWORD         : `${BASE_ROUTE}${USER}/confirm-code-reset-password`,
-    UPDATE_PASSWORD_AFTER_FORGET        : `${BASE_ROUTE}${USER}/update-password-after-forget`,
-
+    
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
+    GET_LIST_USER_SEND_TO_FRIENDS       : `${BASE_ROUTE}${USER}/list-user-send-to-friends`,
+    GET_LIST_USER_RECEIVE_FROM_FRIENDS  : `${BASE_ROUTE}${USER}/list-user-receiver-from-friends`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
     
     /**

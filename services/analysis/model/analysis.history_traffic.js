@@ -75,25 +75,30 @@ class Model extends BaseModel {
                 let infoData = await ANALYSIS__HISTORY_TRAFFIC_COLL.aggregate([
                     {
                         $match: {
-                            createdAt: { $gte: new Date(`${year}-01-01`), $lt: new Date(`${year}-12-31`) }
+                            createAt: { $gte: new Date(`${year}-01-01`), $lt: new Date(`${year}-12-31`) }
                         }
                     },
                     { 
                         $group: {
                             _id: { 
-                                  month: { $month: "$createdAt" },
-                                  type:  "$type"
+                                month: { $month: "$createdAt" },
+                                type:  "$type"
                             }, 
                             amountAccesses: { $sum: 1 },
                         } 
                     },
-                    { 
-                      $group: {
+                    {
+                        $sort: { "_id.type": 1 }
+                    },
+                    {
+                    $group: {
                             _id: { 
                               month:  "$_id.month",
-                            }, 
-                            data: { $push:  { type: "$_id.type", amountAccesses: "$amountAccesses" } }
-                        } 
+                            },
+                            data: { 
+                                $push:  { type: "$_id.type", amountAccesses: "$amountAccesses" },
+                            },
+                        }
                     },
                     {
                         $sort: { "_id.month": 1 }
@@ -133,6 +138,9 @@ class Model extends BaseModel {
                             amountAccesses: { $sum: 1 },
                         } 
                     },
+                    {
+                        $sort: { "_id.type": 1 }
+                    }
                 ])
             return resolve({ error: false, data: infoData });
             } catch (error) {
@@ -161,7 +169,7 @@ class Model extends BaseModel {
                     { 
                         $group: {
                             _id: { 
-                                  app:  "$app"
+                                app:  "$app"
                             }, 
                             amountAccesses: { $sum: 1 },
                         } 
@@ -212,51 +220,52 @@ class Model extends BaseModel {
                     { 
                         $group: {
                             _id: { 
-                                  app:  "$app",
-                                  type: "$type"
+                                app:  "$app",
+                                type: "$type"
                             }, 
                             amountAccesses: { $sum: 1 },
-                          } 
-                      },
-                      
-                      { 
+                        } 
+                    },
+                    {
+                        $sort: { "_id.type": 1 }
+                    },
+                    { 
                         $group: {
                             _id: { 
-                                  app:  "$_id.app",
+                                app: "$_id.app",
                             }, 
                             data: { $push:  { type: "$_id.type", amountAccesses: "$amountAccesses" } }
-              
-                          } 
-                      },
-                      
-                      { 
-                          $lookup: {
-                               from: "apps",
-                               localField:"_id.app",
-                               foreignField: "_id",
-                               as: "app"
-                          } 
-                      },
-                       {
-                          $unwind: "$app"
-                      },
+                        } 
+                    },
+                    { 
+                        $lookup: {
+                            from: "apps",
+                            localField:"_id.app",
+                            foreignField: "_id",
+                            as: "app"
+                        } 
+                    },
                     {
-                      "$project": {
-                        "_id": 0,
-                        "app.name": 1,
-                        "amountAccesses": 1,
-                        "data": 1
-                      }
+                        $unwind: "$app"
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            "app.name": 1,
+                            amountAccesses: 1,
+                            data: 1
+                        }
                     }
                 ])
-            return resolve({ error: false, data: infoData });
+
+                return resolve({ error: false, data: infoData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
 
-      /**
+    /**
      * Name  : Danh sách history traffic ✅
      * Author: Depv
      * Code  : 
@@ -276,18 +285,6 @@ class Model extends BaseModel {
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input

@@ -3,7 +3,6 @@
 /**
  * EXTERNAL PACKAGE
  */
-const ObjectID                                  	= require('mongoose').Types.ObjectId;
 const PromisePool									= require('@supercharge/promise-pool');
 const moment										= require('moment');
 
@@ -12,7 +11,6 @@ const moment										= require('moment');
  */
 const { REMINDER_NOTIFY_FOR, REMINDER_REPEAT, REACTION_TYPES }		= require('../helper/chatting.keys-constant');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.actions-constant');
 
@@ -20,7 +18,6 @@ const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.ac
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
-const { getCurrentTime }							= require('../../../tools/utils/time_utils');
 const {
 	checkObjectIDs,
 	checkNumberIsValidWithRange,
@@ -38,7 +35,6 @@ const BaseModel                                     = require('../../../tools/db
 const CHATTING__MESSAGE_COLL                        = require('../database/chatting.message-coll');
 const CHATTING__MESSAGE_POLL_COLL                   = require('../database/chatting.message_poll-coll');
 const CHATTING__MESSAGE_REMINDER_COLL               = require('../database/chatting.message_reminder-coll');
-const CHATTING__MESSAGE_REACTION_COLL               = require('../database/chatting.message_reaction-coll');
 const CHATTING__CONVERSATION_COLL                   = require('../database/chatting.conversation-coll');
 
 /**
@@ -127,7 +123,7 @@ class Model extends BaseModel {
 	 * Date: 06/08/2021
 	 */
     insertMessage({
-		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -177,7 +173,7 @@ class Model extends BaseModel {
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
-				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type }) && ctx){
+				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type })){
 					let listFilesMessage = files.map(file => ({
 						conversationID,
 						fileID: file
@@ -216,6 +212,7 @@ class Model extends BaseModel {
 
 				let infoMessageAfterInserted = null;
 				let numberMissMessage		 = 1;
+				console.log({ dataInsertMessage })
 
 				switch (+type) {
 					case 6: // MESSAGE SHARE LOCATION
@@ -377,19 +374,32 @@ class Model extends BaseModel {
 								break;
 							case 1: // Delete message image
 							case 2: // Delete message file
-								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
-									_id: message._id,
-									conversation: conversationID,
-									files: {
-										$elemMatch: {
-											file: { $in: filesID }
+
+								if(!filesID || !filesID.length) {
+									infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+										_id: message._id,
+										conversation: conversationID
+									}, {
+										$addToSet: {
+											usersDelete: userID
 										}
-									}
-								}, {
-									$addToSet: {
-										"files.$.usersDelete": userID
-									}
-								}, { new: true });
+									}, { new: true });
+								} else {
+									infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
+										_id: message._id,
+										conversation: conversationID,
+										files: {
+											$elemMatch: {
+												file: { $in: filesID }
+											}
+										}
+									}, {
+										$addToSet: {
+											"files.$.usersDelete": userID
+										}
+									}, { new: true });
+								}
+
 								break;
 							default:
 								break;
@@ -417,19 +427,37 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				// CHECK PARAMS
-                if (!checkObjectIDs([...messagesID, userID, conversationID]))
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số không hợp lệ', 
+						keyError: 'params_invalid',
+						status: 400
+					});
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $all: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: 'Bạn không phải thành viên của cuộc hội thoại', 
+						keyError: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
-				if(filesID && !checkObjectIDs(filesID))
-					return resolve({ error: true, message: "Request Params filesID Invalid", status: 400 });
+				if(filesID && !checkObjectIDs(filesID)) {
+					return resolve({ 
+						error: true, 
+						message: 'File ID không hợp lệ', 
+						keyError: 'params_filesID_invalid',
+						status: 400
+					});
+				}
 
 				// Get list message will delete
 				let listMessages = await CHATTING__MESSAGE_COLL
@@ -441,8 +469,14 @@ class Model extends BaseModel {
 					.select('_id type createAt')
 					.lean();
 
-				if(!listMessages || !listMessages.length)
-					return resolve({ error: true, message: "Message is not belong conversation", status: 403 });
+				if(!listMessages || !listMessages.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Tin nhắn không thuộc cuộc hội thoại này', 
+						keyError: 'message_is_not_belong_conversation',
+						status: 403
+					});
+				}
 
 				// Get list message not expire recall
 				let listMessagesNotExpire = [];
@@ -456,8 +490,14 @@ class Model extends BaseModel {
 				})
 
 				// Recall 1 message and message is expired recall
-				if(messagesID.length === 1 && !listMessagesNotExpire.length)
-					return resolve({ error: true, message: "Time to recall messages has expired (1 hour)", status: 403 });
+				if(messagesID.length === 1 && !listMessagesNotExpire.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Tin nhắn đã hết hạn thu hồi (1 tiếng)', 
+						keyError: 'time_to_recall_messages_has_expired',
+						status: 403
+					});
+				}
 
 				const { results: infoMessageAfterUpdated } = await PromisePool
 					.for(listMessagesNotExpire)
@@ -520,8 +560,14 @@ class Model extends BaseModel {
 						return infoMessageAfterUpdated;
 					})
 
-				if(!infoMessageAfterUpdated)
-					return resolve({ error: true, message: "Can't revoke message", status: 403 });
+				if(!infoMessageAfterUpdated || !infoMessageAfterUpdated.length) {
+					return resolve({ 
+						error: true, 
+						message: 'Có lỗi xảy ra', 
+						keyError: 'error_occurs',
+						status: 422
+					});
+				}
 
 				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
 			} catch(error){
@@ -652,23 +698,41 @@ class Model extends BaseModel {
 	updatePinMessageConversation({ conversationID, messageID, userID, isPin }) {
         return new Promise(async (resolve) => {
             try {
-				if(!checkObjectIDs([conversationID, messageID, userID]))
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+				if(!checkObjectIDs([conversationID, messageID, userID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số không hợp lệ", 
+						keyEror: 'params_conversationID_or_messageID_invalid',
+						status: 400
+					});
+				}
 
                 let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+				if(!infoConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				// Check config admin conversation
 				if(infoConversation.config && infoConversation.config.configPinMessage === 2){
 					const listAuthorsID = infoConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!listAuthorsID.includes(userID))
-						return resolve({ error: true, message: "You don't have permission to pin message", status: 403 });
+					if(!listAuthorsID.includes(userID)) {
+						return resolve({ 
+							error: true, 
+							message: "Bạn không có quyền pin tin nhắn", 
+							keyEror: 'you_do_not_have_permission_to_pin_message',
+							status: 403
+						});
+					}
 				}
 
 				let infoConversationAfterUpdate = null;
@@ -676,8 +740,14 @@ class Model extends BaseModel {
 
 				if(isPin){
 
-					if(infoConversation.messagesPin.includes(messageID))
-						return resolve({ error: true, message: "Message is pined", status: 400 });
+					if(infoConversation.messagesPin.includes(messageID)) {
+						return resolve({ 
+							error: true, 
+							message: "Tin nhắn đã được pin", 
+							keyEror: 'message_is_pined',
+							status: 400
+						});
+					}
 
 					// Pin tối đa 20 tin nhắn (pull last, push first)
 					if(infoConversation.messagesPin.length >= 20){
@@ -711,10 +781,16 @@ class Model extends BaseModel {
 					typeMessage = 109; // Bỏ Pin 1 tin nhắn trong cuộc hội thoại
 				}
 
-				if(!infoConversationAfterUpdate)
-					return resolve({ error: true, message: "Can't update pin message", status: 403 });
+				if(!infoConversationAfterUpdate) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
-				await this.insertData({
+				const infoMessageNotification = await this.insertData({
 					conversation: conversationID,
 					sender: userID,
 					type: typeMessage,
@@ -724,7 +800,14 @@ class Model extends BaseModel {
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
 
-				return resolve({ error: false, data: infoConversationAfterUpdate, status: 200 });
+				return resolve({
+					error: false, 
+					data: {
+						infoConversation: infoConversationAfterUpdate,
+						infoMessage: infoMessageNotification
+					}, 
+					status: 200
+				});
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
@@ -782,7 +865,7 @@ class Model extends BaseModel {
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: '_id bizname fullname image'
+							select: '_id bizfullname fullname image'
 						},
 						select: select.poll
 					})
@@ -827,8 +910,14 @@ class Model extends BaseModel {
 	insertMessagePoll({ conversationID, name, options, userID }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([userID, conversationID]) || !name || !options.length)
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                if (!checkObjectIDs([userID, conversationID]) || !name || !options.length) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số không hợp lệ", 
+						keyEror: 'params_invalid',
+						status: 400
+					});
+				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -836,15 +925,27 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configCreatePoll === 2){
 					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
-					if(!listAuthorsID.includes(userID))
-						return resolve({ error: true, message: "You don't have permission to create poll conversation", status: 403 });
+					if(!listAuthorsID.includes(userID)) {
+						return resolve({ 
+							error: true, 
+							message: "Bạn không có quyền tạo poll", 
+							keyEror: 'you_do_not_have_permission_to_create_poll',
+							status: 403
+						});
+					}
 				}
 
 				// INSERT MESSAGE POLL
@@ -853,8 +954,14 @@ class Model extends BaseModel {
 					options
 				})
 
-				if(!infoPollAfterInsert)
-					return resolve({ error: true, message: "Can't create poll", status: 403 });
+				if(!infoPollAfterInsert) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				let dataInsertMessage = {
 					usersSeen: [userID],
@@ -876,8 +983,14 @@ class Model extends BaseModel {
 					type: 5
 				})
 
-				if(!infoMessagePoll)
-					return resolve({ error: true, message: "Can't create message poll", status: 403 });
+				if(!infoMessagePoll) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				// UPDATE LAST MESSAGE
                 let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -893,7 +1006,7 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoMessagePoll,
+					data: infoMessagePoll
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -909,8 +1022,14 @@ class Model extends BaseModel {
 	updateMessagePoll({ conversationID, messageID, newVotes, votesCancel, newOptions, userID }) {
 		return new Promise(async (resolve) => {
 			try {
-				if (!checkObjectIDs([messageID, userID, conversationID]))
-					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+				if (!checkObjectIDs([messageID, userID, conversationID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số không hợp lệ", 
+						keyEror: 'params_messageID_or_conversationID_invalid',
+						status: 400
+					});
+				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -918,16 +1037,28 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				let infoMessagePoll = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.select('_id poll')
 					.populate('poll');
 
-				if(!infoMessagePoll || !infoMessagePoll.poll)
-					return resolve({ error: true, message: "Can't get info message poll", status: 403 });
+				if(!infoMessagePoll || !infoMessagePoll.poll) {
+					return resolve({ 
+						error: true, 
+						message: "Tin nhắn không tồn tại", 
+						keyEror: 'message_is_not_exists',
+						status: 400
+					});
+				}
 
 				let { poll } = infoMessagePoll;
 
@@ -1011,11 +1142,23 @@ class Model extends BaseModel {
 
 				let infoMessagePollAfterUpdate = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
-					.populate('poll')
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizfullname fullname image'
+						}
+					})
 					.lean();
 
-				if(!infoMessagePollAfterUpdate)
-					return resolve({ error: true, message: "Can't get info message poll", status: 403 });
+				if(!infoMessagePollAfterUpdate) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				// UPDATE LAST MESSAGE
 				if(lastMessage){
@@ -1023,8 +1166,14 @@ class Model extends BaseModel {
 						lastMessage: lastMessage._id, modifyAt: Date.now()
 					}, { new: true });
 
-					if(!checkLastMessageAfterUpdated)
-						return resolve({ error: true, message: "Can't update last message", status: 403 });
+					if(!checkLastMessageAfterUpdated) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể cập nhật tin nhắn mới nhất", 
+							keyEror: 'cannot_update_last_message',
+							status: 422
+						});
+					}
 				}
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -1033,7 +1182,10 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoMessagePollAfterUpdate
+					data: {
+						infoMessage: infoMessagePollAfterUpdate,
+						infoMessageNotification: lastMessage
+					}
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1049,8 +1201,14 @@ class Model extends BaseModel {
 	closeMessagePoll({ conversationID, messageID, userID }) {
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs([messageID, userID, conversationID]))
-					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+				if (!checkObjectIDs([messageID, userID, conversationID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số message ID hoặc conversation ID không hợp lệ", 
+						keyEror: 'params_messageID_or_conversationID_invalid',
+						status: 400
+					});
+				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1058,21 +1216,39 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				let infoMessagePoll = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.select('_id poll')
 					.populate('poll');
 
-				if(!infoMessagePoll || !infoMessagePoll.poll)
-					return resolve({ error: true, message: "Can't get info message poll", status: 403 });
+				if(!infoMessagePoll || !infoMessagePoll.poll) {
+					return resolve({ 
+						error: true, 
+						message: "Tin nhắn không tồn tại", 
+						keyEror: 'message_is_not_exists',
+						status: 400
+					});
+				}
 
 				let { poll } = infoMessagePoll;
 
-				if(poll.status === 2)
-					return resolve({ error: true, message: "Poll is closed", status: 403 });
+				if(poll.status === 2) {
+					return resolve({ 
+						error: true, 
+						message: "Tin nhắn poll đã được đóng", 
+						keyEror: 'message_poll_is_closed',
+						status: 400
+					});
+				}
 
 				const infoPoll = await CHATTING__MESSAGE_POLL_COLL.findByIdAndUpdate(poll._id, {
 					$set: {
@@ -1080,11 +1256,17 @@ class Model extends BaseModel {
 					}
 				}, { new: true });
 
-				if(!infoPoll)
-					return resolve({ error: true, message: "Can't update status poll", status: 403 });
+				if(!infoPoll) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				// INSERT MESSAGE NOTIFY CLOSE POLL
-				const infoMessageNotify = await this.insertData({
+				const lastMessage = await this.insertData({
 					usersSeen: [userID],
 					sender: userID,
 					conversation: conversationID,
@@ -1094,13 +1276,19 @@ class Model extends BaseModel {
 				})
 
 				// UPDATE LAST MESSAGE
-				if(infoMessageNotify){
+				if(lastMessage){
 					let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
+						lastMessage: lastMessage._id, modifyAt: Date.now()
 					}, { new: true });
 
-					if(!checkLastMessageAfterUpdated)
-						return resolve({ error: true, message: "Can't update last message", status: 403 });
+					if(!checkLastMessageAfterUpdated) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể cập nhật tin nhắn mới nhất", 
+							keyEror: 'cannot_update_last_message',
+							status: 422
+						});
+					}
 				}
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -1111,7 +1299,7 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						infoPoll,
-						infoMessageNotify
+						infoMessageNotification: lastMessage
 					}
 				});
 			} catch (error) {
@@ -1194,7 +1382,7 @@ class Model extends BaseModel {
 						path: 'poll',
 						populate: {
 							path: 'options.usersVote',
-							select: '_id bizname fullname image'
+							select: '_id bizfullname fullname image'
 						},
 						select: select.poll
 					})
@@ -1242,7 +1430,7 @@ class Model extends BaseModel {
 	insertMessageReminder({ conversationID, content, notifyFor, remindTime, repeat, userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([userID, conversationID]))
+                if (!checkObjectIDs([userID, conversationID])) 
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
 				if(!REMINDER_NOTIFY_FOR.includes(notifyFor))
@@ -1279,8 +1467,14 @@ class Model extends BaseModel {
 					repeat
 				})
 
-				if(!infoReminderAfterInsert)
-					return resolve({ error: true, message: "Can't create reminder", status: 403 });
+				if(!infoReminderAfterInsert) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				let dataInsertMessage = {
 					usersSeen: [userID],
@@ -1301,9 +1495,6 @@ class Model extends BaseModel {
 					...dataInsertMessage,
 					type: 4
 				})
-
-				if(!infoMessageReminder)
-					return resolve({ error: true, message: "Can't create message reminder", status: 403 });
 
 				// UPDATE LAST MESSAGE
                 let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
@@ -1382,8 +1573,14 @@ class Model extends BaseModel {
 					}
 				}, { new: true })
 
-				if(!infoReminderAfterUpdate)
-					return resolve({ error: true, message: "Can't update reminder", status: 403 });
+				if(!infoReminderAfterUpdate) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				// INSERT MESSAGE NOTIFY UPDATE REMINDER
 				let infoMessageNotify = await this.insertData({
@@ -1395,16 +1592,21 @@ class Model extends BaseModel {
 					type: 115
 				})
 
-				if(!infoMessageNotify)
-					return resolve({ error: true, message: "Can't insert message notify update reminder", status: 403 });
-
 				// UPDATE LAST MESSAGE
-                let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: infoMessageNotify._id, modifyAt: Date.now()
-                }, { new: true });
-
-				if(!checkLastMessageAfterUpdated)
-					return resolve({ error: true, message: "Can't update last message", status: 403 });
+				if(infoMessageNotify) {
+					let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
+					}, { new: true });
+	
+					if(!infoUpdateLastMessage) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể cập nhật tin nhắn mới nhất", 
+							keyEror: 'cannot_update_last_message',
+							status: 422
+						});
+					}
+				}
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
@@ -1426,10 +1628,28 @@ class Model extends BaseModel {
 					})
 				}
 
+				const infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(messageID)
+					.populate({
+						path: 'sender receivers usersAssigned',
+						select: '_id fullname bizfullname image'
+					})
+					.populate({
+						path: 'reminder',
+						populate: {
+							path: 'accepts rejects',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.lean();
+
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoReminderAfterUpdate,
+					data: {
+						infoMessage: infoMessage,
+						infoMessageNotification: infoMessageNotify
+					}
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1445,8 +1665,14 @@ class Model extends BaseModel {
 	updateUsersJoinReminder({ conversationID, messageID, isJoin, userID }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([userID, conversationID, messageID]))
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                if (!checkObjectIDs([userID, conversationID, messageID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số conversation ID hoặc message ID không hợp lệ", 
+						keyEror: 'params_conversationID_or_messageID_invalid',
+						status: 422
+					});
+				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1454,15 +1680,27 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				let infoMessageReminder = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.populate('reminder');
 
-				if(!infoMessageReminder || !infoMessageReminder.reminder)
-					return resolve({ error: true, message: "Can't get info message reminder", status: 403 });
+				if(!infoMessageReminder || !infoMessageReminder.reminder) {
+					return resolve({ 
+						error: true, 
+						message: "Tin nhắn không tồn tại", 
+						keyEror: 'message_is_not_exists',
+						status: 400
+					});
+				}
 
 				let { reminder } 			= infoMessageReminder;
 				let infoReminderAfterUpdate = null;
@@ -1494,8 +1732,14 @@ class Model extends BaseModel {
 					typeMessage = 117; // Xác nhận không tham gia nhắc hẹn
 				}
 
-				if(!infoReminderAfterUpdate)
-					return resolve({ error: true, message: "Can't update user join reminder", status: 403 });
+				if(!infoReminderAfterUpdate) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				// INSERT MESSAGE NOTIFY UPDATE USER JOIN REMINDER
 				let infoMessageNotify = await this.insertData({
@@ -1507,16 +1751,19 @@ class Model extends BaseModel {
 					type: typeMessage
 				})
 
-				if(!infoMessageNotify)
-					return resolve({ error: true, message: "Can't insert message notify user join reminder", status: 403 });
-
 				// UPDATE LAST MESSAGE
                 let updateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: infoMessageNotify._id, modifyAt: Date.now()
                 }, { new: true });
 
-				if(!updateLastMessage)
-					return resolve({ error: true, message: "Can't update last message", status: 403 });
+				if(!updateLastMessage) {
+					return resolve({ 
+						error: true, 
+						message: "Không thể cập nhật tin nhắn mới nhất", 
+						keyEror: 'cannot_update_last_message',
+						status: 422
+					});
+				}
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
@@ -1524,7 +1771,10 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoReminderAfterUpdate
+					data: {
+						infoReminder: infoReminderAfterUpdate,
+						infoMessageNotification: infoMessageNotify
+					}
 				});
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1540,8 +1790,14 @@ class Model extends BaseModel {
 	deleteReminder({ conversationID, messageID, userID, ctx }) {
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs([messageID, userID, conversationID]))
-					return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+				if (!checkObjectIDs([messageID, userID, conversationID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số conversation ID hoặc message ID không hợp lệ", 
+						keyEror: 'params_conversationID_or_messageID_invalid',
+						status: 400
+					});
+				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1549,21 +1805,39 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
 
 				let infoMessageReminder = await CHATTING__MESSAGE_COLL
 					.findById(messageID)
 					.select('_id reminder')
 					.populate('reminder');
 
-				if(!infoMessageReminder || !infoMessageReminder.reminder)
-					return resolve({ error: true, message: "Can't get info message reminder", status: 403 });
+				if(!infoMessageReminder || !infoMessageReminder.reminder) {
+					return resolve({ 
+						error: true, 
+						message: "Tin nhắn không tồn tại", 
+						keyEror: 'message_is_not_exists',
+						status: 400
+					});
+				}
 
 				let { reminder } = infoMessageReminder;
 
-				if(reminder.status === 2)
-					return resolve({ error: true, message: "Reminder is deleted", status: 403 });
+				if(reminder.status === 2) {
+					return resolve({ 
+						error: true, 
+						message: "Reminder đã bị xóa", 
+						keyEror: 'reminder_is_deleted',
+						status: 403
+					});
+				}
 
 				const infoReminderAfterDelete = await CHATTING__MESSAGE_REMINDER_COLL.findByIdAndUpdate(reminder._id, {
 					$set: {
@@ -1571,8 +1845,14 @@ class Model extends BaseModel {
 					}
 				}, { new: true });
 
-				if(!infoReminderAfterDelete)
-					return resolve({ error: true, message: "Can't update status reminder", status: 403 });
+				if(!infoReminderAfterDelete) {
+					return resolve({ 
+						error: true, 
+						message: "Đã xảy ra lỗi", 
+						keyEror: 'error_occurred',
+						status: 422
+					});
+				}
 
 				// REMOVE OLD REMINDER JOB
 				await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_CONVERSATION}`, {
@@ -1592,12 +1872,18 @@ class Model extends BaseModel {
 
 				// UPDATE LAST MESSAGE
 				if(infoMessageNotify){
-					let checkLastMessageAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						lastMessage: infoMessageNotify._id, modifyAt: Date.now()
 					}, { new: true });
 
-					if(!checkLastMessageAfterUpdated)
-						return resolve({ error: true, message: "Can't update last message", status: 403 });
+					if(!infoUpdateLastMessage) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể cập nhật tin nhắn mới nhất", 
+							keyEror: 'cannot_update_last_message',
+							status: 422
+						});
+					}
 				}
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
@@ -1606,7 +1892,10 @@ class Model extends BaseModel {
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoReminderAfterDelete
+					data: {
+						infoReminder: infoReminderAfterDelete,
+						infoMessageNotification: infoMessageNotify
+					}
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });

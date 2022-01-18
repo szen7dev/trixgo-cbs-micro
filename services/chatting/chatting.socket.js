@@ -25,25 +25,25 @@ const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').M
 
 exports.CHATTING_SOCKET = {
 
-    'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
-        let socket                      = this;
-        let userID                      = socket.client.user;
-        let listUserActive              = socket.$service.listUserConnected2;
-        let io                          = socket.$service.io;
+    // 'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
+    //     let socket                      = this;
+    //     let userID                      = socket.client.user;
+    //     let listUserActive              = socket.$service.listUserConnected2;
+    //     let io                          = socket.$service.io;
 
-		console.log({ data })
+	// 	console.log({ data })
 
-        sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
-			arrReceiver: [userID], 
-			data: {
-				message: "Hi Client!! I'm server...",
-				userID,
-				listUserActive
-			}, 
-			event: 'SERVER_SEND_CHATTING_TEST', io
-		})
-    },
+    //     sendDataToMultilSocketsOfListUser({ 
+	// 		listUserConnected: listUserActive, 
+	// 		arrReceiver: [userID], 
+	// 		data: {
+	// 			message: "Hi Client!! I'm server...",
+	// 			userID,
+	// 			listUserActive
+	// 		}, 
+	// 		event: 'SERVER_SEND_CHATTING_TEST', io
+	// 	})
+    // },
 
     // =============================== CONVERSATION ==================================
 
@@ -63,7 +63,7 @@ exports.CHATTING_SOCKET = {
 			.findById(conversationID)
 			.populate({
 				path: 'authors',
-				select: '_id fullname bizname image'
+				select: '_id fullname bizfullname image'
 			})
 			.lean();
 
@@ -162,11 +162,11 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 		const addedMembers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 			condition: { _id: { $in: membersID } },
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -218,11 +218,11 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 		const removedMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 			condition: { _id: memberID },
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -274,11 +274,11 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: memberID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -331,7 +331,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: memberID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -389,7 +389,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
 	 * Date: 17/08/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data, ack) {
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data) {
         let socket                      = this;
 		let broker                      = socket.$service.broker;
         let listUserActive              = socket.$service.listUserConnected2;
@@ -399,7 +399,7 @@ exports.CHATTING_SOCKET = {
         let {
 			tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
 			notifyFor, remindTime, repeat,
-			name, options,
+			name, options
 		} = data;
 
 		let infoMessageAfterInsert = {};
@@ -447,26 +447,27 @@ exports.CHATTING_SOCKET = {
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
 		// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
+		// const arrReceiver = members.filter(memberID => {
+		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+		// });
 
 		if(usersTag && usersTag.length){
 			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
 				condition: { _id: { $in: usersTag } },
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			});
 			usersTag = usersTag.data;
 		}
 
 		let infoMessage = null;
+		let listMemberWithAmountMissMessage = [];
 
 		if(infoMessageAfterInsert.data){
 			infoMessage = await CHATTING__MESSAGE_COLL
 				.findById(infoMessageAfterInsert.data._id, { createdAt: 0, updatedAt: 0, __v: 0 })
 				.populate({
 					path: 'sender receivers usersAssigned',
-					select: '_id fullname bizname image'
+					select: '_id fullname bizfullname image'
 				})
 				.populate({
 					path: 'reactions',
@@ -479,16 +480,26 @@ exports.CHATTING_SOCKET = {
 				.populate({
 					path: 'parent',
 					populate: {
-						path: 'sender',
-						select: '_id bizname fullname image'
+						path: 'sender files.file',
+						populate: {
+							path: 'file',
+							select: 'name url size'
+						},
+						select: '_id bizfullname fullname image'
 					}
 				})
-				.populate('reminder')
+				.populate({
+					path: 'reminder',
+					populate: {
+						path: 'accepts rejects',
+						select: '_id bizfullname fullname image'
+					}
+				})
 				.populate({
 					path: 'poll',
 					populate: {
 						path: 'options.usersVote',
-						select: '_id bizname fullname image'
+						select: '_id bizfullname fullname image'
 					}
 				})
 				.populate({
@@ -501,55 +512,96 @@ exports.CHATTING_SOCKET = {
 				.lean();
 		}
 
-		// SEND SOCKET
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
-			arrReceiver: members,
-			data: {
-				tmpid,
-				usersTag,
-				infoMessage,
-			},
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
-		});
+		// Get member and amount miss message of member
+		for (const memberID of members) {
+			let amountMissMessage = 0;
+			const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
+				members: { $in: [memberID] }
+			}).select('usersMissMessage').lean();
 
-		let description = infoMessage.content;
-		let senderFullname = '';
+			listAllConversation.map(conversation => {
+				const user = conversation.usersMissMessage.find(user => 
+					user.userID.toString() === memberID.toString());
+
+				user && (amountMissMessage += user.amount);
+			})
+
+			listMemberWithAmountMissMessage[listMemberWithAmountMissMessage.length] = {
+				memberID,
+				amountMissMessage
+			}
+		}
 
 		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: 'fullname'
+			select: 'fullname bizfullname'
 		});
 
-		if(members.length > 2){
-			senderFullname = infoSender.fullname;
-			description = `${senderFullname}: ${description}`;
-		}
+		let senderFullname = infoSender?.data?.bizfullname;
+		let description = '';
 
 		switch (infoMessage.type) {
 			case 1:
-				description = `${senderFullname} đã gửi 1 ảnh`;
+				description = `đã gửi 1 ảnh`;
 				break;
 			case 2:
-				description = `${senderFullname} đã gửi 1 file`;
+				description = `đã gửi 1 file`;
 				break;
 			case 4:
-				description = `${senderFullname} đã tạo 1 nhắc hẹn`;
+				description = `đã tạo 1 nhắc hẹn`;
 				break;
 			case 5:
-				description = `${senderFullname} đã tạo 1 cuộc bình chọn`;
+				description = `đã tạo 1 cuộc bình chọn`;
 				break;
 			default:
+				description = infoMessage.content;
 				break;
 		}
 
-		// SEND CLOUD-MSG
-		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-			users: arrReceiver,
-			title: members.length === 2 ? infoSender.fullname : infoConversation.name,
-			description,
-			web_url: `https://facebook.com/hiepnh.trixgo`
-		});
+		if(!infoConversation.isPrivate) {
+			if(usersTag && usersTag.length) {
+				description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
+					const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
+					if (matchs) {
+						const fullName = matchs[1];
+
+						return `@${fullName}`;
+					} else {
+						return replacement;
+					}
+				})
+			}
+
+			description = `${senderFullname}: ${description}`;
+			senderFullname = infoConversation.name;
+		}
+
+		listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
+			// SEND SOCKET
+			sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [memberID],
+				data: {
+					tmpid,
+					amountMissMessage: amountMissMessage,
+					usersTag,
+					infoMessage,
+				},
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+			});
+
+			if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())) {
+				// SEND CLOUD-MSG
+				broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+					users: [memberID],
+					title: senderFullname,
+					description,
+					amountNoti: amountMissMessage,
+					conversationID: infoConversation._id,
+					web_url: `https://facebook.com/hiepnh.trixgo`
+				});
+			}
+		})
     },
 
 	/**
@@ -585,17 +637,13 @@ exports.CHATTING_SOCKET = {
 				})
 				.populate({
 					path: 'sender usersAssigned',
-					select: '_id bizname fullname image',
+					select: '_id bizfullname fullname image',
 				})
 				.lean();
 
-			const { members, usersMute } = infoConversation;
-			const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+			const { members } = infoConversation;
 
-			// Không gửi đến user tắt thông báo cuộc hội thoại
-			const arrReceiver = members.filter(memberID => {
-				return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-			});
+			const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
 
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
@@ -610,6 +658,46 @@ exports.CHATTING_SOCKET = {
 			});
 		})
 
+	},
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thu hồi tin nhắn của cuộc hội thoại (media, text)
+	 * Date: 11/01/2022
+	 */
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REVOKE_MESSAGE]: async function(data) {
+		let socket                      = this;
+		let listUserActive              = socket.$service.listUserConnected2;
+		let io                          = socket.$service.io;
+		let userID                      = socket.client.user;
+		let { conversationID, messagesID, filesID } = data;
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.select('members')
+			.lean();
+
+		if(!infoConversation || !messagesID || !messagesID.length){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation or message" },
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
+			});
+		}
+
+		const infoAfterRevoke = await CHATTING__MESSAGE_MODEL.revokeMessage({
+			userID, conversationID, messagesID, filesID
+		})
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver: infoConversation.members,
+			data: {
+				error: false,
+				data: infoAfterRevoke
+			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
+		});
 	},
 
 	/**
@@ -638,7 +726,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID: memberID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -682,7 +770,7 @@ exports.CHATTING_SOCKET = {
 			.populate('reminder')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -697,7 +785,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -741,7 +829,7 @@ exports.CHATTING_SOCKET = {
 			.populate('reminder')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -756,7 +844,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -800,7 +888,7 @@ exports.CHATTING_SOCKET = {
 			.populate('poll')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -815,7 +903,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -859,7 +947,7 @@ exports.CHATTING_SOCKET = {
 			.populate('poll')
 			.populate({
 				path: 'sender',
-				select: '_id bizname fullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.lean();
 
@@ -874,7 +962,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -925,7 +1013,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -975,7 +1063,7 @@ exports.CHATTING_SOCKET = {
 
 		const infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
-			select: '_id bizname fullname image'
+			select: '_id bizfullname fullname image'
 		});
 
 		const { members, usersMute } = infoConversation;
@@ -1089,7 +1177,7 @@ exports.CHATTING_SOCKET = {
 			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
 			.populate({
 				path: 'sender receivers usersAssigned',
-				select: '_id fullname bizname image'
+				select: '_id fullname bizfullname image'
 			})
 			.populate({
 				path: 'conversation',
@@ -1107,7 +1195,7 @@ exports.CHATTING_SOCKET = {
 				path: 'parent',
 				populate: {
 					path: 'sender',
-					select: '_id bizname fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.populate('reminder')
@@ -1115,7 +1203,7 @@ exports.CHATTING_SOCKET = {
 				path: 'poll',
 				populate: {
 					path: 'options.usersVote',
-					select: '_id bizname fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.populate({
@@ -1184,6 +1272,76 @@ exports.CHATTING_SOCKET = {
 			});
 		})
 
+    },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Bắn tin nhắn thông báo (thêm/xóa thành viên, ghim tin nhắn...)
+	 * Date: 16/01/2021
+	 */
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_FIRE_MESSAGE]: async function(data) { 
+        let socket              = this;
+		let userID				= socket.client.user;
+        let listUserActive      = socket.$service.listUserConnected2;
+        let io                  = socket.$service.io;
+		let { _id: messageID, conversation: conversationID } = data;
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.select('members')
+			.lean();
+
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
+			});
+		}
+
+		const infoMessage = await CHATTING__MESSAGE_COLL
+			.findById(messageID)
+			.populate({
+				path: 'sender receivers usersAssigned',
+				select: '_id fullname bizfullname image'
+			})
+			.populate({
+				path: 'parent',
+				populate: {
+					path: 'sender files.file',
+					populate: {
+						path: 'file',
+						select: 'name url size'
+					},
+					select: '_id bizfullname fullname image'
+				}
+			})
+			.populate({
+				path: 'reminder',
+				populate: {
+					path: 'accepts rejects',
+					select: '_id bizfullname fullname image'
+				}
+			})
+			.populate({
+				path: 'poll',
+				populate: {
+					path: 'options.usersVote',
+					select: '_id bizfullname fullname image'
+				}
+			})
+			.lean();
+
+        sendDataToMultilSocketsOfListUser({ 
+			arrReceiver: infoConversation.members, 
+			listUserConnected: listUserActive, 
+			data: {
+				error: false, 
+				data: infoMessage
+			}, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
+		})
     },
 
 }

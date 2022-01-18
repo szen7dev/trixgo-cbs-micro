@@ -33,15 +33,14 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) { 
+    insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) { 
         return new Promise(async (resolve) => {
             try {
-                
+                    
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { project: projectID, userCreate: userID };
-                console.log({ type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID });
+                let dataInsert = { userCreate: userID };
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -49,25 +48,28 @@ class Model extends BaseModel {
                  */
 
                 let companyID;
-                if(projectID){
-                    // call service department để lấy thông tin
-                    
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
+                let projectID;
+                if(contractID){
+                    // call service contract để lấy thông tin
+                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                        contractID
                     })
                     /**
                      * Company lấy theo company của project
                      * Chứ không phải lấy theo company của user tạo task
                      */ 
-                    companyID = infoProject.data.company;
-                    if(!companyID)
-                        return resolve({ error: true, message: "company_invalid" });
+                    companyID = infoContract?.data?.company;
+                    projectID = infoContract?.data?.project;
                 }
 
                 if(companyID){
                     dataInsert.company = companyID
                 }
-             
+
+                if(projectID){
+                    dataInsert.project = projectID
+                }
+                
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -101,54 +103,55 @@ class Model extends BaseModel {
                 if(note){
                     dataInsert.note = note;
                 }
-
+                //______Giá trị nghiệm thu trước VAT (1)
                 if(acceptance){
                     dataInsert.acceptance = acceptance;
                 }
-
+                //______Giá trị nghiệm thu phần VAT (2)
                 if(vatAcceptance){
                     dataInsert.vatAcceptance = vatAcceptance;
                 }
-
+                //______Giá trị nghiệm thu phát sinh trước VAT(3)
                 if(plusAcceptance){
                     dataInsert.plusAcceptance = plusAcceptance;
                 }
-
+                //_____Giá trị nghiệm thu phát sinh phần VAT(4)
                 if(vatPlusAcceptance){
                     dataInsert.vatPlusAcceptance = vatPlusAcceptance;
                 }
-
+                //_____Giá trị giữ lại (5)
                 if(retainedValue){
                     dataInsert.retainedValue = retainedValue;
                 }
-
+                //_____Thu hồi tạm ứng (6)
                 if(advancePaymentDeduction){
                     dataInsert.advancePaymentDeduction = advancePaymentDeduction;
                 }
-
+                //_____Khấu trừ khác (nếu có) (7)
                 if(otherDeduction){
                     dataInsert.otherDeduction = otherDeduction;
                 }
-
+                //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
                 if(recommendedPayment){
                     dataInsert.recommendedPayment = recommendedPayment;
                 }
 
+                //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
                     dataInsert.timeForPayment = timeForPayment;
                 }
-
+                //_____Đã giải ngân (10)
                 if(amountPaid){
                     dataInsert.amountPaid = amountPaid;
                 }
-
+                //_____Còn lại chưa giải ngân (11)=(8)-(10)
                 if(remainingPayment){
                     dataInsert.remainingPayment = remainingPayment;
                 }
-
+                
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
+                    return resolve({ error: true, message: "can't_insert_contract_ipc ", status: 403 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -163,7 +166,7 @@ class Model extends BaseModel {
      * Code: 
      */
     update({ 
-        contractIpcID, type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
+        contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {
@@ -171,34 +174,13 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { project: projectID, userCreate: userID };
+                let dataUpdate = { userUpdate: userID };
                 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
-                let companyID;
-                if(!projectID){
-                    // call service department để lấy thông tin
-                    
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */ 
-                    companyID = infoProject.data.company;
-                    if(!companyID)
-                        return res.json({ error: true, message: "company_invalid" }); 
-                }
-
-                if(companyID){
-                    dataUpdate.company = companyID
-                }
-             
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -207,10 +189,6 @@ class Model extends BaseModel {
 
                 if(type){
                     dataUpdate.type = type;
-                }
-
-                if(contractID){
-                    dataUpdate.contract = contractID;
                 }
 
                 if(name){
@@ -233,46 +211,47 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
+                //______Giá trị nghiệm thu trước VAT (1)
                 if(acceptance){
                     dataUpdate.acceptance = acceptance;
                 }
-
+                //______Giá trị nghiệm thu phần VAT (2)
                 if(vatAcceptance){
                     dataUpdate.vatAcceptance = vatAcceptance;
                 }
-
+                //______Giá trị nghiệm thu phát sinh trước VAT(3)
                 if(plusAcceptance){
                     dataUpdate.plusAcceptance = plusAcceptance;
                 }
-
+                //_____Giá trị nghiệm thu phát sinh phần VAT(4)
                 if(vatPlusAcceptance){
                     dataUpdate.vatPlusAcceptance = vatPlusAcceptance;
                 }
-
+                //_____Giá trị giữ lại (5)
                 if(retainedValue){
                     dataUpdate.retainedValue = retainedValue;
                 }
-
+                //_____Thu hồi tạm ứng (6)
                 if(advancePaymentDeduction){
                     dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
                 }
-
+                //_____Khấu trừ khác (nếu có) (7)
                 if(otherDeduction){
                     dataUpdate.otherDeduction = otherDeduction;
                 }
-
+                //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
                 if(recommendedPayment){
                     dataUpdate.recommendedPayment = recommendedPayment;
                 }
-
+                //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
                     dataUpdate.timeForPayment = timeForPayment;
                 }
-
+                //_____Đã giải ngân (10)
                 if(amountPaid){
                     dataUpdate.amountPaid = amountPaid;
                 }
-
+                //_____Còn lại chưa giải ngân (11)=(8)-(10)
                 if(remainingPayment){
                     dataUpdate.remainingPayment = remainingPayment;
                 }
@@ -288,8 +267,7 @@ class Model extends BaseModel {
         })
     }
 
-
-      /**
+    /**
      * Name: Remove contract ipc ✅
      * Author: Depv
      * Code: 
@@ -324,15 +302,14 @@ class Model extends BaseModel {
             }
         })
     }
-
-
+    
     /**
      * Name: get info contract ipc ✅
      * Author: Depv
      * Code: 
      */
     getInfo({ contractIpcID, userID, 
-        select, populates, populates1, populates2, populates3 }){
+        select, populates }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(contractIpcID))
@@ -344,48 +321,16 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populates1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // populates2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // populates3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID)
                                 .select(select)
-                                .populate({
-                                    path: populates?.value || "",
-                                    select: populates?.select || "",
-                                    populate: {
-                                        path: populates1?.value ||"",
-                                        select: populates1?.select || "",
-                                        populate: {
-                                            path: populates2?.value || "",
-                                            select: populates2?.select || "",
-                                            populate: {
-                                                path: populates3?.value || "",
-                                                select: populates3?.select || "",
-                                            }
-                                        }
-                                    }
-                                })
+                                .populate(populates)
 
 				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
 
@@ -401,10 +346,14 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ type, projectID, contractID, userID,
-        keyword, limit = 10, lastestID, populates2={}, populates3={}, filter = {}, populates= {}, populates1={} }) { 
+    getList({ type, contractID, userID,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
+
+                if(limit > 20){
+                    limit = 20
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -415,7 +364,6 @@ class Model extends BaseModel {
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
-
              
                 /** 
                  * VALIDATION STEP (2)
@@ -423,14 +371,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-            
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -438,30 +378,12 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // POPULATE 1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-                // POPULATE 2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-                
-                // POPULATE 3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
-               
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -472,14 +394,20 @@ class Model extends BaseModel {
                     conditionObj.type = type
                 }
 
-                // DỰ ÁN
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
-                }
-
                 // HỢP ĐỒNG
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj.contract = contractID;
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                    // conditionObj.$or = [
+                    //     { name: regExpSearch },
+                    //     { sign: regExpSearch }
+                    // ]
                 }
 
                 // PHÂN TRANG KIỂU MỚI
@@ -498,36 +426,12 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}
-
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regExpSearch = RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regExpSearch },
-                        { sign: regExpSearch }
-                    ]
-                }
                 
-                let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
+                let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find({...conditionObj, ...conditionFind })
                     .limit(+limit+1)
                     .sort(sortBy)
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                    .select(select)
+                    .populate(populates)
                     .lean(); 
                 
                 // GET TOTAL RECORD
@@ -542,7 +446,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await CMCS__CONTRACT_IPC_COLL.countDocuments(conditionObj);
+                let totalRecord = await CMCS__CONTRACT_IPC_COLL.count(conditionObj);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

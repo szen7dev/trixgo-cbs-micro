@@ -156,8 +156,8 @@ class Model extends BaseModel {
 	 * Func: Tạo hợp đồng
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
-        name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
+	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
         cgValue, expiredCg, agValue, expiredAg, userID, ctx
@@ -222,20 +222,20 @@ class Model extends BaseModel {
                     dataInsert.field = field;
                 }
 
-                if(chairID){
-                    dataInsert.chair = chairID;
+                if(chair){
+                    dataInsert.chair = chair;
                 }
 
-                if(personInChargeID){
-                    dataInsert.personInCharge = personInChargeID;
+                if(personInCharge){
+                    dataInsert.personInCharge = personInCharge;
                 }
 
-                if(debtStatusID){
-                    dataInsert.debtStatus = debtStatusID;
+                if(debtStatus){
+                    dataInsert.debtStatus = debtStatus;
                 }
 
-                if(warehouseID){
-                    dataInsert.warehouse = warehouseID;
+                if(warehouse){
+                    dataInsert.warehouse = warehouse;
                 }
 
                 if(name){
@@ -274,16 +274,16 @@ class Model extends BaseModel {
                     dataInsert.endTime = endTime;
                 }
 
-                if(checkObjectIDs(buyerInfoID)){
-                    dataInsert.buyerInfo = buyerInfoID;
+                if(checkObjectIDs(buyerInfo)){
+                    dataInsert.buyerInfo = buyerInfo;
                 }
 
                 if(buyerBank){
                     dataInsert.buyerBank = buyerBank;
                 }
 
-                if(checkObjectIDs(sellerInfoID)){
-                    dataInsert.sellerInfo = sellerInfoID;
+                if(checkObjectIDs(sellerInfo)){
+                    dataInsert.sellerInfo = sellerInfo;
                 }
                 
                 if(buyerBank){
@@ -439,23 +439,19 @@ class Model extends BaseModel {
 	 * Func: Cập nhật hợp đồng
 	 * Date: 13/12/2021
 	 */
-	update({ contractID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
-        name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
+	update({ contractID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-        cgValue, expiredCg, agValue, expiredAg
+        cgValue, expiredCg, agValue, expiredAg, ctx
          }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
-                console.log({ contractID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
-                    name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
-                    value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-                    budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-                    cgValue, expiredCg, agValue, expiredAg });
+               
                 let dataUpdate = {
-                    project: projectID, name, sign, date
+                    name, sign, date
                 }
 
                 let dataAddToSet = {};
@@ -466,10 +462,14 @@ class Model extends BaseModel {
                         departmentID: projectID
                     })
 
-                    if(!infoProject.error)
+                    if(infoProject.error)
                         return resolve({ error: true, message: "Request params project invalid" });
                     //________company được lấy theo dự án
                     dataUpdate.company = infoProject.data.company;
+                }
+
+                if(checkObjectIDs(projectID)){
+                    dataUpdate.project = projectID;
                 }
                 
                 if(checkObjectIDs(parentID)){
@@ -524,20 +524,20 @@ class Model extends BaseModel {
                     dataUpdate.field = field;
                 }
 
-                if(chairID){
-                    dataUpdate.chair = chairID;
+                if(chair){
+                    dataUpdate.chair = chair;
                 }
 
-                if(personInChargeID){
-                    dataUpdate.personInCharge = personInChargeID;
+                if(personInCharge){
+                    dataUpdate.personInCharge = personInCharge;
                 }
 
-                if(debtStatusID){
-                    dataUpdate.debtStatus = debtStatusID;
+                if(debtStatus){
+                    dataUpdate.debtStatus = debtStatus;
                 }
 
-                if(warehouseID){
-                    dataUpdate.warehouse = warehouseID;
+                if(warehouse){
+                    dataUpdate.warehouse = warehouse;
                 }
 
                 if(name){
@@ -576,16 +576,16 @@ class Model extends BaseModel {
                     dataUpdate.endTime = endTime;
                 }
 
-                if(checkObjectIDs(buyerInfoID)){
-                    dataUpdate.buyerInfo = buyerInfoID;
+                if(checkObjectIDs(buyerInfo)){
+                    dataUpdate.buyerInfo = buyerInfo;
                 }
 
                 if(buyerBank){
                     dataUpdate.buyerBank = buyerBank;
                 }
 
-                if(checkObjectIDs(sellerInfoID)){
-                    dataUpdate.sellerInfo = sellerInfoID;
+                if(checkObjectIDs(sellerInfo)){
+                    dataUpdate.sellerInfo = sellerInfo;
                 }
                 
                 if(buyerBank){
@@ -735,8 +735,9 @@ class Model extends BaseModel {
                 if(dataPull){
                     dataUpdate.$pull = dataPull;
                 }
-
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Cannot update contract" });
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -836,8 +837,8 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,projectID, parentID, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, warehouseID,
-        date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, lock, userID,
+        companyID,projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -854,9 +855,11 @@ class Model extends BaseModel {
                         }
                     ]
                 };
+                // Điều kiện gốc
+               let conditionObjOrg = {}
 
                 let conditionFind = { };
-                let sortBy   = { createAt: -1 };
+                let sortBy   = { createAt: -1, _id: -1 };
 				let objSort  = {};
               
                 /** 
@@ -877,7 +880,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-              
                
                 /**
                  * LOGIC STEP (3)
@@ -925,20 +927,20 @@ class Model extends BaseModel {
                     conditionObj.field = field
                 }
 
-                if(chairID){
-                    conditionObj.chair = chairID
+                if(chair){
+                    conditionObj.chair = chair
                 }
 
-                if(personInChargeID){
-                    conditionObj.personInCharge = personInChargeID
+                if(personInCharge){
+                    conditionObj.personInCharge = personInCharge
                 }
 
-                if(debtStatusID){
-                    conditionObj.debtStatus = debtStatusID
+                if(debtStatus){
+                    conditionObj.debtStatus = debtStatus
                 }
 
-                if(warehouseID){
-                    conditionObj.warehouse = warehouseID
+                if(warehouse){
+                    conditionObj.warehouse = warehouse
                 }
 
                 if(date){
@@ -953,16 +955,16 @@ class Model extends BaseModel {
                     conditionObj.endTime = endTime
                 }
 
-                if(buyerInfoID){
-                    conditionObj.buyerInfo = buyerInfoID
+                if(buyerInfo){
+                    conditionObj.buyerInfo = buyerInfo
                 }
 
                 if(buyerBank){
                     conditionObj.buyerBank = buyerBank
                 }
 
-                if(sellerInfoID){
-                    conditionObj.sellerInfo = sellerInfoID
+                if(sellerInfo){
+                    conditionObj.sellerInfo = sellerInfo
                 }
 
                 if(sellerBank){
@@ -973,12 +975,20 @@ class Model extends BaseModel {
                     conditionObj.lock = lock
                 }
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.name = regSearch
+                }
+
+                conditionObjOrg = { ...conditionObj }
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
@@ -989,16 +999,17 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 					conditionFind = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
+                    
+                    conditionObj.$and = [
+                        { $or: conditionObj.$or },
+                        { $or: conditionFind.$or },
+                    ]
+                    delete conditionObj.$or;
 				}
+
+			
                 
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.name = regSearch
-                }
-                
-                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -1008,15 +1019,16 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
+                let nextCursor	    = null;
+
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-
-                let totalRecord = await ITEM__CONTRACT_COLL.countDocuments(conditionObj);
+                
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit); 
 
                 return resolve({ error: false, data: {
@@ -1024,7 +1036,7 @@ class Model extends BaseModel {
                     limit: +limit,
                     totalRecord,
                     totalPage,
-                    nextCursor,
+                    nextCursor
                 }, status: 200 });
                 
             } catch (error) {

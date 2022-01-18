@@ -107,7 +107,18 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
 		ref: 'user'
 	}],
 
+    /**
+     * Cuộc hội thoại là riêng tư
+     */
     isPrivate: {
+        type: Boolean,
+        default: false
+    },
+
+    /**
+     * Cuộc hội thoại đã cập nhật tên
+     */
+    isRename: {
         type: Boolean,
         default: false
     },

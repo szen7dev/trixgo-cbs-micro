@@ -356,7 +356,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Date: 20/12/2021
      */
-    getInfoV2({ companyID, select, populates={}, populates1= {}, populates2={}, populates3 = {} }) {
+    getInfoV2({ companyID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID))
@@ -368,49 +368,16 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
-                // populate cấp 1
-                if(populates1 && typeof populates1 === 'string'){
-					if(!IsJsonString(populates1))
-						return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-					populates1 = JSON.parse(populates1);
-				}
-
-                // populate cấp 2
-                if(populates2 && typeof populates2 === 'string'){
-					if(!IsJsonString(populates2))
-						return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-					populates2 = JSON.parse(populates2);
-				}
-
-                // populate cấp 3
-                if(populates3 && typeof populates3 === 'string'){
-					if(!IsJsonString(populates3))
-						return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-					populates3 = JSON.parse(populates3);
-				}
+				}else{
+                    populates = {
+                        path  : "",
+                        select: ""
+                    }
+                }
             
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID)
-                .select(select)
-                .populate({
-                    path: populates?.value || "",
-                    select: populates?.select || "",
-                    populate: {
-                        path: populates1?.value || "",
-                        select: populates1?.select || "",
-                        populate: {
-                            path: populates2?.value || "",
-                            select: populates2?.select || "",
-                            populate: {
-                                path: populates3?.value || "",
-                                select: populates3?.select || "",
-                            }
-                        }
-                    }
-                })
+                    .select(select)
+                    .populate(populates)
 
                 if (!infoCompany) return resolve({ error: true, message: 'cannot_get' });
 
@@ -428,13 +395,15 @@ class Model extends BaseModel {
      */
     getListV2({ 
         userID, 
-        keyword, limit = 10, lastestID, filter = {}, populates={}, populates1= {}, populates2={}, populates3 = {} }) { 
+        keyword, limit = 10, lastestID, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {
+                };
+                let conditionObjOrg = {
                 };
                 
                 let conditionFind = {};
@@ -445,77 +414,23 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                console.log({ filter });
-                if(filter && typeof filter === 'string'){
-                    if(!IsJsonString(filter))
-                        return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-                    filter = JSON.parse(filter);
-                }
+             
                 // populate
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
                     populates = JSON.parse(populates);
-                }
-                // populate cấp 1
-                if(populates1 && typeof populates1 === 'string'){
-                    if(!IsJsonString(populates1))
-                        return resolve({ error: true, message: 'Request params populates1 invalid', status: 400 });
-
-                    populates1 = JSON.parse(populates1);
+                }else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
 
-                // populate cấp 2
-                if(populates2 && typeof populates2 === 'string'){
-                    if(!IsJsonString(populates2))
-                        return resolve({ error: true, message: 'Request params populates2 invalid', status: 400 });
-
-                    populates2 = JSON.parse(populates2);
-                }
-
-                // populate cấp 3
-                if(populates3 && typeof populates3 === 'string'){
-                    if(!IsJsonString(populates3))
-                        return resolve({ error: true, message: 'Request params populates3 invalid', status: 400 });
-
-                    populates3 = JSON.parse(populates3);
-                }
-                    
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                
-                // GET CONDITION PAGINATION
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await AUTH__COMPANY_COLL.findById(lastestID);
-                    if(!infoData)
-                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-                    let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-                    let keys	 = ['createAt__-1', '_id__-1'];
-                    // console.log({ nextInfo });
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-                    conditionFind = dataPagingAndSort.data.find;
-                    sortBy = dataPagingAndSort.data.sort;
-                }
-
-                // SEARCH TEXT
-                // if(keyword){
-                // 	conditionObj.$text = { $search: keyword };
-                // 	objSort.score = { $meta: "textScore" };
-                // 	sortBy.score  = { $meta: "textScore" };
-                // }
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
                     conditionObj.$or  = [
                         { name: new RegExp(keyword, 'i') },
                         { sign: new RegExp(keyword, 'i') },
@@ -523,32 +438,50 @@ class Model extends BaseModel {
                     ]
                 }
 
-                let infoDataAfterGet = await AUTH__COMPANY_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .populate({
-                        path: populates?.value || "",
-                        select: populates?.select || "",
-                        populate: {
-                            path: populates1?.value || "",
-                            select: populates1?.select || "",
-                            populate: {
-                                path: populates2?.value || "",
-                                select: populates2?.select || "",
-                                populate: {
-                                    path: populates3?.value || "",
-                                    select: populates3?.select || "",
-                                }
-                            }
-                        }
-                    })
+                conditionObjOrg = { ...conditionObj };
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+                // GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await AUTH__COMPANY_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+                    let keys	 = ['createAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    
+                    conditionFind = dataPagingAndSort.data.find;
+                    sortBy = dataPagingAndSort.data.sort;
+
+                    if(conditionObj.$or){
+                        conditionObj.$and = [
+                            { $or: conditionObj.$or },
+                            { $or: conditionFind.$or },
+                        ]
+                        delete conditionObj.$or;
+                        delete conditionFind.$or;
+                    }
+                }
+
+                let infoDataAfterGet = await AUTH__COMPANY_COLL.find({ ...conditionObj, ...conditionFind })
+                    .select(select)
                     .limit(+limit+1)
+                    .populate(populates)
                     .sort(sortBy) 
                     .lean(); 
                 
-                    let nextCursor	= null;
-                    // GET TOTAL RECORD
                     if(!infoDataAfterGet)
                       return resolve({ error: true, message: "Can't get data", status: 403 });
 
+                    let nextCursor	= null;
                     if(infoDataAfterGet && infoDataAfterGet.length){
                         if(infoDataAfterGet.length > limit){
                             nextCursor = infoDataAfterGet[limit - 1]._id;
@@ -556,7 +489,7 @@ class Model extends BaseModel {
                         }
                     }
     
-                    let totalRecord = await AUTH__COMPANY_COLL.countDocuments(conditionObj);
+                    let totalRecord = await AUTH__COMPANY_COLL.count(conditionObjOrg);
                     let totalPage   = Math.ceil(totalRecord/limit);
                     return resolve({ error: false, data: {
                         listRecords: infoDataAfterGet,

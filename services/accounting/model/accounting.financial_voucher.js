@@ -1,6 +1,7 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const ObjectId                                  = require('mongoose').Types.ObjectId;
+const ObjectId                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment')
 
 /**
  * DOMAIN AND ACTIONS
@@ -17,6 +18,7 @@ const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-consta
  * TOOLS
 */
 const { _isValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany }  = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 
 // update  phân trang sau
 // const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
@@ -736,12 +738,13 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
-     // Danh sách các phiếu của công ty
-     getListVoucherOfCompany({ companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
+    // Danh sách các phiếu của công ty
+    getListVoucherOfCompany({ companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
         return new Promise(async (resolve) => {
             try {
                 const page = Number(currentPage);
-                
+                perPage = Number(perPage);
+
                 let conditionObj;
                 if(!fundaID){
                     if(!contractID){
@@ -784,7 +787,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }
                 }
-
+                console.log({ conditionObj })
                 // Số lượng tổng mẩu tin
                 let countDocs = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
 
@@ -807,6 +810,13 @@ class AccountingFinancialVoucher extends BaseModel {
                     })
                     .sort({date: 'desc'});
                 }else{
+                    let keys = ['createAt__-1', '_id__-1'];
+                    let latestRecord = { _id: '6198727abc3b2e745ae5277c', createAt:"2021-11-20T03:58:50.000Z" }
+                    const result = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord })
+                    // console.log({ result, find: result.data.find['$or'], sort: result.data.sort });
+                    if(result.error){
+                        return resolve({ error: true, message: "cannot_get_list" });
+                    }
                     listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
                     .populate({
                         path: 'company customer staff contract warehouse',
@@ -822,9 +832,8 @@ class AccountingFinancialVoucher extends BaseModel {
                             path: 'debit credit customerDebit customerCredit goods warehouse contract'
                         }
                     })
-                    .skip((page * perPage) - perPage)
                     .limit(perPage)
-                    .sort({date: 'desc'});
+                    .sort(result.data.sort);
                 }
 
                 if(!listData)

@@ -120,16 +120,47 @@ module.exports = {
         params: {
             lastestID : { type: "string", optional: true },
 			keyword   : { type: "string", optional: true },
-			limit 	  : { type: "string", optional: true }
+			select    : { type: "string", optional: true },
+			limit     : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-				let { lastestID, limit, keyword, filter, select } = ctx.params;
-
+				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListFriend({
-                    userID, lastestID, limit, keyword, filter, select
+                    userID, lastestID, keyword, filter, limit, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+    
+    /**
+     * Func: Lấy danh user mà gửi lời mời kết bạn cho mình
+     * Author: Depv
+     * Date: 12/10/2021
+     */
+    getListUserReceiveFromFriends: {
+        auth: "required",
+        params: {
+            lastestID : { type: "string", optional: true },
+			keyword   : { type: "string", optional: true },
+			select    : { type: "string", optional: true },
+			limit     : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListUserReceiveFromFriends({
+                    userID, lastestID, keyword, filter, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -139,6 +170,35 @@ module.exports = {
         }
     },
 
+    /**
+     * Func: Lấy danh user mà mình gửi lời mời kết bạn
+     * Author: Depv
+     * Date: 12/10/2021
+     */
+    getListUserSendToFriends: {
+        auth: "required",
+        params: {
+            lastestID : { type: "string", optional: true },
+			keyword   : { type: "string", optional: true },
+			select    : { type: "string", optional: true },
+			limit     : { type: "string", optional: true },
+			populates : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListUserSendToFriends({
+                    userID, lastestID, keyword, filter, limit, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
     /**
      * Func: Lấy danh sách user
      * Author: MinhVH
@@ -205,18 +265,19 @@ module.exports = {
             deviceName          : { type: "string" },
             registrationID      : { type: "string" },
             oneSignalID         : { type: "string" },
+            isRemove            : { type: "boolean", optional: true },
             env                 : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let infoUser = ctx.meta.infoUser;
-                let { platform, deviceID, deviceName, registrationID, oneSignalID, env } = ctx.params;
+                let { platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env } = ctx.params;
 
                 let userID = infoUser._id;
 
                 let infoUserAfterUpdate = await AUTH__USER_MODEL.updateDeviceLogin({
-                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, env
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env
                 });
                 return infoUserAfterUpdate;
             } catch (error) {
@@ -343,217 +404,44 @@ module.exports = {
     /**
      * Code: F0017
      * Author: Depv
-     * Name: Thay đổi mật khẩu
+     * Name: Cập nhật thông tin user
      */
-    changePassword: {
+    update: {
         auth: "required",
         params: {
-            currentPass        : { type: "string" },
-            newPass            : { type: "string" },
+            currentPass   : { type: "string", optional: true },
+            newPass       : { type: "string", optional: true },
+            email         : { type: "string", optional: true },
+            phone         : { type: "string", optional: true },
+            birthDay      : { type: "string", optional: true },
+            gender        : { type: "string", optional: true },
+            lang          : { type: "string", optional: true },
+            image         : { type: "string", optional: true },
+            signature     : { type: "string", optional: true },
+            sendRequestToFriendID   : { type: "string", optional: true },
+            acceptFriendRequestID   : { type: "string", optional: true },
+            removeFriendRequestID   : { type: "string", optional: true },
+            unFriendID              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
-
                 await this.validateEntity(ctx.params);
-                let { currentPass, newPass }        = ctx.params;
-                // console.log({ email, password, platform })
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updatePassword({ userID, currentPass, newPass});
-                return infoUserAfterUpdate;
+                let { currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID } = ctx.params;
+				let { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await AUTH__USER_MODEL.update({
+                    userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
-
-     /**
-     * Code: F0018
-     * Name: Cập nhật họ và tên
-     * Author: Depv
-     */
-    changeFullname: {
-        auth: "required",
-        params: {
-            firstname : { type: "string" },
-            lastname : { type: "string" },
-            fullname : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
-                await this.validateEntity(ctx.params);
-                let { firstname, lastname, fullname }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateFullname({ userID, firstname, lastname, fullname });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0019
-     * Name: Cập nhật email
-     * Author: Depv
-     */
-    changeEmail: {
-        auth: "required",
-        params: {
-            email : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
-                await this.validateEntity(ctx.params);
-                let { email }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateEmail({ userID, email });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0020
-     * Name: Cập nhật phone
-     * Author: Depv
-     */
-    changePhone: {
-        auth: "required",
-        params: {
-            phone : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
-                await this.validateEntity(ctx.params);
-                let { phone }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updatePhone({ userID, phone });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0021
-     * Name: Cập nhật language
-     * Author: Depv
-     */
-    changeLanguage: {
-        auth: "required",
-        params: {
-            lang : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
-                await this.validateEntity(ctx.params);
-                let { lang }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateLanguage({ userID, lang });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0022
-     * Author: Depv
-     * Date: 19/08/2021
-     */
-    changeBirthDay: {
-        auth: "required",
-        params: {
-            birthDay : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                let infoUser = ctx.meta.infoUser;
-                let { _id: userID } = infoUser;
-                await this.validateEntity(ctx.params);
-                let { birthDay }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updateBirthDay({ userID, birthDay });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0023
-     * Name: Gửi OTP quên mật khẩu
-     * Author: Depv
-     */
-    sendOTPResetPassword: {
-        params: {
-            email : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { email }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.sendOTPResetPassword({ email });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0024
-     * Name: Xác thực code reset password
-     * Author: Depv
-     */
-    confirmCodeResetPassword: {
-        params: {
-            email : { type: "string" },
-            code : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { email, code }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.confirmCodeResetPassword({ email, code });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Code: F0024
-     * Author: Depv
-     * Date: 19/08/2021 
-     */
-    updatePasswordAfterForget: {
-        params: {
-            email : { type: "string" },
-            code : { type: "string" },
-            password : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { email, code, password }        = ctx.params;
-                let infoUserAfterUpdate = await AUTH__USER_MODEL.updatePasswordAfterReset({ email, code, password });
-                return infoUserAfterUpdate;
-            } catch (error) {
-                return { error:  true, message: error.message };
-            }
-        }
-    },
+    
     /**
      * Perform a textual search with 'find' method
      *  phương án này chỉ dùng cho các trường hợp đơn giản (ko có tìm kiếm+phân trang)
@@ -680,46 +568,41 @@ module.exports = {
     
     /**
 	 * Dev: Depv ✅
-	 * Func: getList and getInfo pcm_plan_report
+	 * Func: getList and getInfo user
 	 */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            // Field bổ sung
-            userID    : { type: "string", optional: true },
-            // Field mặc định
+            userID      : { type: "string", optional: true },
+
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-            populates1  : { type: "string", optional: true },
-            populates2  : { type: "string", optional: true },
-            populates3  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
                     userID,
-                    keyword, limit, lastestID, select, filter, populates, populates1, populates2, populates3
+                    keyword, limit, lastestID, select, populates
                 } = ctx.params;
-				// const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
                 
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
-                        userID, select, populates, populates1, populates2, populates3
+                        userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
-                        companyID, keyword, limit, lastestID, filter, populates, populates1, populates2, populates3,
+                        companyID, keyword, limit, lastestID, select, populates,
                     });
                 }
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },

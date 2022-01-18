@@ -84,7 +84,7 @@ module.exports = {
 	 */
 	deleteMessage: {
         params: {
-			conversationID : { type: 'string' },
+			conversationID: { type: 'string' },
         },
         async handler(ctx) {
             try {

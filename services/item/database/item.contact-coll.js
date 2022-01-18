@@ -137,7 +137,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
-    //_________Loại hợp đồng lao động
+    //_________Loại hợp đồng lao động()
     contractType:{
         type: Schema.Types.ObjectId,
         ref: 'doctype'

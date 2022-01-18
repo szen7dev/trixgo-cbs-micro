@@ -153,16 +153,16 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : String,
         default: "vi"
     },
-    //_______Yêu cầu gửi đi tới người khác
-    // sendToFriends: [{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
-    //_______Yêu cầu nhận được từ người khác gửi đến
-    // receiveFromFriends: [{ 
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
+    //_______Yêu cầu gửi đi tới người khác(Mình gửi đi)
+    sendToFriends: [{
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }],
+    //_______Yêu cầu nhận được từ người khác gửi đến(Người khác gửi đến)
+    receiveFromFriends: [{
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }],
     //_______Danh sách bạn bè
     friends: [{ 
         type: Schema.Types.ObjectId,

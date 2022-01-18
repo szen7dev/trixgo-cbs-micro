@@ -165,9 +165,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
 
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
                 if(documentID && !checkObjectIDs(documentID))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
 
@@ -208,22 +205,22 @@ class Model extends BaseModel {
 				}
 
 				// SEARCH TEXT
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
-                }
+                // if(keyword){
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     let regSearch = new RegExp(keyword, 'i');
+                //     conditionObj.$or = [
+                //         { name: regSearch },
+                //         { sign: regSearch },
+                //     ]
+                // }
 
-                let listPackages = await DOCUMENT__DOC_FILE_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                let listDocFile = await DOCUMENT__DOC_FILE_COLL
+					.find({ ...conditionObj, ...conditionFind })
 					.limit(limit + 1)
                     .sort(sortBy)
-					.populate(populates)
 					.select(select)
+					.populate(populates)
 					.lean();
 
 				// GET TOTAL RECORD
@@ -231,10 +228,10 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
-				if(listPackages && listPackages.length){
-					if(listPackages.length > limit){
-						nextCursor = listPackages[limit - 1]._id;
-						listPackages.length = limit;
+				if(listDocFile && listDocFile.length){
+					if(listDocFile.length > limit){
+						nextCursor = listDocFile[limit - 1]._id;
+						listDocFile.length = limit;
 					}
 				}
 
@@ -242,7 +239,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: {
-						listRecords: listPackages,
+						listRecords: listDocFile,
 						limit: +limit,
 						totalRecord,
                         totalPage,
