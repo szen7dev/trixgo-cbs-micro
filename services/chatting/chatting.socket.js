@@ -570,13 +570,12 @@ exports.CHATTING_SOCKET = {
 				break;
 			default:
 				description = infoMessage.content;
-					// : `${senderFullname}: ${infoMessage.content}`;
 				break;
 		}
 
 		if(!infoConversation.isPrivate) {
-			senderFullname = infoConversation.name;
 			description = `${senderFullname}: ${description}`;
+			senderFullname = infoConversation.name;
 		}
 
 		console.log({ senderFullname, description })
