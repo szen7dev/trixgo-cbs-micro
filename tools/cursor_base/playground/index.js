@@ -230,8 +230,8 @@
    * 
    * @params 
    *    1/ keys  (require)
-   *        VD: ['createAt__-1', '_id__-1']
-   *        VD: ['_id__-1'], ['_id__1']
+   *        VD:(non-unique) ['createAt__-1', '_id__-1']
+   *        VD(unique): ['_id__-1'], ['_id__1']
    *    2/ latestRecord (require)
    *    3/ objectQuery (optional)
    * 
@@ -326,14 +326,16 @@
             ...resultForReturn.find,
             $or: [
               {
-                [keysParse[0]['prop']]: {
+                [fieldNameOfKeysParse]: {
                   [operationWithConditionSort]: valueOfLatestRecordWithFieldName
                 }
               },
               {
-                [keysParse[0]['prop']]:  valueOfLatestRecordWithFieldName,
-                _id: {
-                  [operationWithConditionSort]: latestRecord['_id'] // <-- hard code
+                [fieldNameOfKeysParse]:  valueOfLatestRecordWithFieldName,
+                
+                // keysParse[1]['prop']: luôn luôn là _id
+                [keysParse[1]['prop']]: { 
+                  [operationWithConditionSort]: latestRecord[keysParse[1]['prop']] // <-- hard code
                 }
               }
             ]
@@ -363,22 +365,22 @@
   }
 
   exports.RANGE_BASE_PAGINATION     = RANGE_BASE_PAGINATION;
-  exports.RANGE_BASE_PAGINATION_V2  = RANGE_BASE_PAGINATION_V2;
+  // exports.RANGE_BASE_PAGINATION_V2  = RANGE_BASE_PAGINATION_V2;
 
 
-  //---------EXAMPLE USE V2------//
-  // // let keys = ['_id__-1']; ['username__1']
-  // let keys = ['createAt__-1', '_id__-1'];
-  // let latestRecord = { _id: '60b5114ce27803187c3e1bab', name: 'khanhney', createAt: '14/01/2012' }
-  // let objectQuery = {
-  //   username: 'lucde'
-  // }
-  // let result = RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery })
+  // ---------EXAMPLE USE V2------//
+  // let keys = ['_id__-1']; ['username__1']
+  let keys = ['createAt__-1', '_id__-1'];
+  let latestRecord = { _id: '60b5114ce27803187c3e1bab', name: 'khanhney', createAt: '14/01/2012' }
+  let objectQuery = {
+    username: 'lucde'
+  }
+  let result = RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery })
  
-  // /**
-  //  * expected: 
-  //  *  - find: { username: { $lt: "khanhney" } }
-  //  *  - sort: { username: -1 }
-  //  */
+  /**
+   * expected: 
+   *  - find: { username: { $lt: "khanhney" } }
+   *  - sort: { username: -1 }
+   */
 
-  // console.log("🚀 ~ file: index.js ~ line 298 ~ result", JSON.stringify(result))
+  console.log("🚀 ~ file: index.js ~ line 298 ~ result", JSON.stringify(result))
