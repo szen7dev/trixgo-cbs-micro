@@ -389,7 +389,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
 	 * Date: 17/08/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data, ack) {
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data) {
         let socket                      = this;
 		let broker                      = socket.$service.broker;
         let listUserActive              = socket.$service.listUserConnected2;
@@ -399,7 +399,7 @@ exports.CHATTING_SOCKET = {
         let {
 			tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
 			notifyFor, remindTime, repeat,
-			name, options,
+			name, options
 		} = data;
 
 		let infoMessageAfterInsert = {};
@@ -553,7 +553,12 @@ exports.CHATTING_SOCKET = {
 		});
 
 		let senderFullname = infoSender?.data?.bizfullname;
-		let description = `${senderFullname}: ${infoMessage.content}`;
+		let description = infoMessage.content;
+
+		if(!infoConversation.isPrivate) {
+			senderFullname = infoConversation.name;
+			description = `${senderFullname}: ${infoMessage.content}`;
+		}
 
 		switch (infoMessage.type) {
 			case 1:
@@ -571,6 +576,8 @@ exports.CHATTING_SOCKET = {
 			default:
 				break;
 		}
+
+		console.log({ senderFullname, description })
 
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
