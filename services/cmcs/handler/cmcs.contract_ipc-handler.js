@@ -58,8 +58,8 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            contractIpcID       : { type: "number" },
-            type                : { type: "string", optional: true },
+            contractIpcID       : { type: "string" },
+            type                : { type: "number", optional: true },
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
