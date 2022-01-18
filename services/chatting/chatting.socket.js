@@ -573,9 +573,20 @@ exports.CHATTING_SOCKET = {
 				break;
 		}
 
-		if(!infoConversation.isPrivate) {
+		if(!infoConversation.isPrivate) { // Chat group
 			description = `${senderFullname}: ${description}`;
 			senderFullname = infoConversation.name;
+		} else if(usersTag && usersTag.length){
+			description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
+				const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
+				if (matchs) {
+					const fullName = matchs[1];
+
+					return `@${fullName}`;
+				} else {
+					return replacement;
+				}
+			})
 		}
 
 		console.log({ senderFullname, description })
