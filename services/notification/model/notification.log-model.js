@@ -324,20 +324,15 @@ class Model extends BaseModel {
                                 app_id: ONESIGNAL_APP_TEASER,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
-                                ios_badgeType: 'SetTo', // 'Increase',
-                                ios_badgeCount: 150,
+                                ios_badgeType: 'Increase',
+                                ios_badgeCount: 1,
                                 include_player_ids: listDeviceFromMobile
                             }
 
-                            // let dataForMobilePushBadge = {
-                            //     ...dataForSend,
-                            //     data: objDataForSend,
-                            //     app_id: ONESIGNAL_APP_TEASER,
-                            //     ios_badgeType: 'SetTo',
-                            //     ios_badgeCount: 150,
-                            //     include_player_ids: listDeviceFromMobile
-                            // }
-                            // console.log({ dataForMobilePushBadge })
+                            if(objDataForSend.amountMissMessage) {
+                                dataForMobilePush.ios_badgeType = 'SetTo';
+                                dataForMobilePush.ios_badgeCount = objDataForSend.amountMissMessage;
+                            }
                             
                             sendNotificationviaOneSignal(dataForMobilePush)
                         } 

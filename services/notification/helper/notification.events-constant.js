@@ -44,7 +44,9 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             console.log("Metadata:", ctx.meta);
             console.log("The called event name:", ctx.eventName);
 
-            let { users: listRecievers, title, description, web_url } = ctx.params;
+            let { 
+                users: listRecievers, title, description, web_url, amountMissMessage, conversationID
+            } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
             await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({ 
@@ -52,7 +54,9 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
                 title: title,
                 description: description,
                 objDataForSend: {
-                    screenkey: 'DETAIL_PAGE'
+                    screenkey: 'DETAIL_PAGE',
+                    amountMissMessage,
+                    conversationID
                 }, 
                 web_url,
                 ctx

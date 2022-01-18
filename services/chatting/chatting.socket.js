@@ -447,9 +447,9 @@ exports.CHATTING_SOCKET = {
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
 		// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
+		// const arrReceiver = members.filter(memberID => {
+		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+		// });
 
 		if(usersTag && usersTag.length){
 			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
@@ -532,21 +532,6 @@ exports.CHATTING_SOCKET = {
 			}
 		}
 
-		// SEND SOCKET
-		listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [memberID],
-				data: {
-					tmpid,
-					amountMissMessage: amountMissMessage,
-					usersTag,
-					infoMessage,
-				},
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
-			});
-		})
-
 		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
 			userID,
 			select: 'fullname bizfullname'
@@ -591,15 +576,32 @@ exports.CHATTING_SOCKET = {
 			senderFullname = infoConversation.name;
 		}
 
-		// listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
+		listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
+			// SEND SOCKET
+			sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [memberID],
+				data: {
+					tmpid,
+					amountMissMessage: amountMissMessage,
+					usersTag,
+					infoMessage,
+				},
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+			});
 
-		// SEND CLOUD-MSG
-		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-			users: arrReceiver,
-			title: senderFullname,
-			description,
-			web_url: `https://facebook.com/hiepnh.trixgo`
-		});
+			if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())) {
+				// SEND CLOUD-MSG
+				broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+					users: [memberID],
+					title: senderFullname,
+					description,
+					amountMissMessage,
+					conversationID: infoConversation._id,
+					web_url: `https://facebook.com/hiepnh.trixgo`
+				});
+			}
+		})
     },
 
 	/**
