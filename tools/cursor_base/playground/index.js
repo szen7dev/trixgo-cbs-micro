@@ -177,4 +177,210 @@
   //   .then(result => console.log({ result }))
   //   .catch(err => console.log({ err }))
   
-  exports.RANGE_BASE_PAGINATION = RANGE_BASE_PAGINATION;
+
+  /**
+   * func thực hiện chuyển đổi:
+   *  sortValue: 1 -> $gt
+   *  sortValue: -1 -> $lt
+   */
+  const _getOperationWithSort = ({ sortValue }) => {
+    if (!Number.isNaN(Number(sortValue))) {
+      if (sortValue == 1) {
+        return '$gt';
+      } else if (sortValue == -1) {
+        return '$lt';
+      } else {
+        return '';  
+      }
+    } else {
+      return '';  
+    }
+  }
+  
+  /**
+   * ['createAt__-1', '_id__-1'] 
+   *  -> {
+   *         createAt: -1,
+   *         -id: -1
+   *     }
+   */
+  const _getObjSearchByKeys = ({ keysParse }) => {
+    let objectSort = {};
+    keysParse.forEach(itemExcludeFirstItem => {
+      objectSort = {
+          ...objectSort,
+          [itemExcludeFirstItem.prop]: [itemExcludeFirstItem.sort][0]
+      }
+    });
+
+    return objectSort;
+  }
+  
+  /**
+   * Func cập nhật các bugs liên quan
+   *  - không sortBy ngược lại
+   *  - không sortBy theo field khác ngoài field createAt
+   * --------------------------FLOW RẼ NHÁNH-------------------
+   *  - UNIQUE (là các field có giá trị không trùng lặp tại 1 collection) (VD: _id, username, email, ...)
+   *      + ONLY PAGINATION (func chỉ phân trang)
+   *      + QUERY & PAGNIATION (func gồm filter)
+   *  - NON_UNIQUE (VD: createAt, fullname, ...)
+   *      + ONLY PAGINATION (func chỉ phân trang)
+   *      + QUERY & PAGNIATION (func gồm filter)
+   * 
+   * @params 
+   *    1/ keys  (require)
+   *        VD:(non-unique) ['createAt__-1', '_id__-1']
+   *        VD(unique): ['_id__-1'], ['_id__1']
+   *    2/ latestRecord (require)
+   *    3/ objectQuery (optional)
+   * 
+   * @returns object {find, sort}
+   */
+
+  const RANGE_BASE_PAGINATION_V2 = ({ keys, latestRecord, objectQuery }) => {
+    let resultForReturn = {
+      find: {},
+      sort: {}
+    };
+    /**
+     * Kiểm tra keys có bao nhiêu phần tử
+     *  - 1: là unique field
+     *  - 2 || n: là non-unique field
+     */
+    const LENGTH_PARAMS_PAGINATION = keys && keys.length;
+    const IS_UNIQUE_FIELD          = LENGTH_PARAMS_PAGINATION == 1 ? true : false;
+    const IS_FIRST_PAGE            = (latestRecord && latestRecord.hasOwnProperty('_id')) ? false : true;
+    const IS_EXISTS_QUERY          = (objectQuery && (typeof objectQuery)) ? true : false;
+
+    /**
+     * tokenzation keys: là tách objectQuery
+     */
+    let keysParse = keys.map(key => {
+      let [prop, sort] = key.split('__');
+      return { prop, sort };
+    });
+    
+    if (IS_UNIQUE_FIELD) { // là unique field
+      if (IS_FIRST_PAGE) {
+        /**
+         * vì nếu là IS_UNIQUE_FIELD -> keysParse luôn luôn là 1 item, VD:
+         *   { username: -1 } hoặc { _id: -1 }
+         */
+        resultForReturn.sort = {
+          ...resultForReturn.sort,
+          [keysParse[0]['prop']]: keysParse[0]['sort']
+        }
+        resultForReturn.find = {
+          ...resultForReturn.find,
+        }
+      } else {
+        resultForReturn.sort = {
+          ...resultForReturn.sort,
+          [keysParse[0]['prop']]: keysParse[0]['sort']
+        }
+
+
+        //---------------CONVERT -> FIND (begin)--------//
+        /**
+         * keysParse: ['_id__-1']
+         * fieldNameKeysParse: '_id'
+         *  -> valueOfLatestRecordWithFieldName: 60b5114ce27803187c3e1b3e
+         */
+        let fieldNameOfKeysParse = keysParse[0]['prop']; //_id, hoặc unique_field khác
+        let ValueOfKeysParse     = keysParse[0]['sort']; // value của unique_field
+        let valueOfLatestRecordWithFieldName = latestRecord[fieldNameOfKeysParse];
+        let operationWithConditionSort = _getOperationWithSort({ sortValue: ValueOfKeysParse });
+
+        resultForReturn.find = {
+          ...resultForReturn.find,
+          [keysParse[0]['prop']]: {
+            [operationWithConditionSort]: valueOfLatestRecordWithFieldName
+          }
+        }
+      }
+    } else { //là non-unique field
+      //------convert string -> object sort
+      resultForReturn.sort = {
+        ...resultForReturn.sort,
+        ..._getObjSearchByKeys({ keysParse })
+      }
+      if (IS_FIRST_PAGE) {
+        //------(end)convert string -> object sort
+        resultForReturn.find = {
+          ...resultForReturn.find,
+        }
+      } else {
+        //---------------CONVERT -> FIND (begin)--------//
+         /**
+         * keysParse: ['_id__-1']
+         * fieldNameKeysParse: '_id'
+         *  -> valueOfLatestRecordWithFieldName: 60b5114ce27803187c3e1b3e
+         */
+          let fieldNameOfKeysParse = keysParse[0]['prop']; //_id, hoặc unique_field khác
+          let ValueOfKeysParse     = keysParse[0]['sort']; // value của unique_field
+          let valueOfLatestRecordWithFieldName = latestRecord[fieldNameOfKeysParse];
+          let operationWithConditionSort = _getOperationWithSort({ sortValue: ValueOfKeysParse });
+  
+          resultForReturn.find = {
+            ...resultForReturn.find,
+            $or: [
+              {
+                [fieldNameOfKeysParse]: {
+                  [operationWithConditionSort]: valueOfLatestRecordWithFieldName
+                }
+              },
+              {
+                [fieldNameOfKeysParse]:  valueOfLatestRecordWithFieldName,
+                
+                // keysParse[1]['prop']: luôn luôn là _id
+                [keysParse[1]['prop']]: { 
+                  [operationWithConditionSort]: latestRecord[keysParse[1]['prop']] // <-- hard code
+                }
+              }
+            ]
+          }
+      }
+    }
+
+    // TODO objectQuery: vì cả 2 đều dùng func này cho $and: []
+    if (IS_EXISTS_QUERY) {
+      let objectPaginationBefore = resultForReturn.find;
+
+      let objFindAfterAddQuery   = {
+        $and: [
+          {
+            ...objectQuery
+          },
+          {
+            ...objectPaginationBefore
+          }
+        ] 
+      }
+      return ({ error: false, data: { find: objFindAfterAddQuery, sort: resultForReturn.sort } });
+    } else {
+      return ({ error: false, data: { find: resultForReturn.find, sort: resultForReturn.sort } });
+    }
+
+  }
+
+  exports.RANGE_BASE_PAGINATION     = RANGE_BASE_PAGINATION;
+  // exports.RANGE_BASE_PAGINATION_V2  = RANGE_BASE_PAGINATION_V2;
+
+
+  // ---------EXAMPLE USE V2------//
+  // let keys = ['_id__-1']; ['username__1']
+  let keys = ['createAt__-1', '_id__-1'];
+  let latestRecord = { _id: '60b5114ce27803187c3e1bab', name: 'khanhney', createAt: '14/01/2012' }
+  let objectQuery = {
+    username: 'lucde'
+  }
+  let result = RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery })
+ 
+  /**
+   * expected: 
+   *  - find: { username: { $lt: "khanhney" } }
+   *  - sort: { username: -1 }
+   */
+
+  console.log("🚀 ~ file: index.js ~ line 298 ~ result", JSON.stringify(result))

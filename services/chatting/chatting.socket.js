@@ -389,7 +389,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
 	 * Date: 17/08/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data, ack) {
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data) {
         let socket                      = this;
 		let broker                      = socket.$service.broker;
         let listUserActive              = socket.$service.listUserConnected2;
@@ -399,7 +399,7 @@ exports.CHATTING_SOCKET = {
         let {
 			tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
 			notifyFor, remindTime, repeat,
-			name, options,
+			name, options
 		} = data;
 
 		let infoMessageAfterInsert = {};
@@ -553,24 +553,45 @@ exports.CHATTING_SOCKET = {
 		});
 
 		let senderFullname = infoSender?.data?.bizfullname;
-		let description = `${senderFullname}: ${infoMessage.content}`;
+		let description = '';
 
 		switch (infoMessage.type) {
 			case 1:
-				description = `${senderFullname} đã gửi 1 ảnh`;
+				description = `đã gửi 1 ảnh`;
 				break;
 			case 2:
-				description = `${senderFullname} đã gửi 1 file`;
+				description = `đã gửi 1 file`;
 				break;
 			case 4:
-				description = `${senderFullname} đã tạo 1 nhắc hẹn`;
+				description = `đã tạo 1 nhắc hẹn`;
 				break;
 			case 5:
-				description = `${senderFullname} đã tạo 1 cuộc bình chọn`;
+				description = `đã tạo 1 cuộc bình chọn`;
 				break;
 			default:
+				description = infoMessage.content;
 				break;
 		}
+
+		if(!infoConversation.isPrivate) {
+			if(usersTag && usersTag.length) {
+				description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
+					const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
+					if (matchs) {
+						const fullName = matchs[1];
+	
+						return `@${fullName}`;
+					} else {
+						return replacement;
+					}
+				})
+			}
+
+			description = `${senderFullname}: ${description}`;
+			senderFullname = infoConversation.name;
+		}
+
+		console.log({ senderFullname, description, usersTag })
 
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

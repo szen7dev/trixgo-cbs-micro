@@ -1,28 +1,20 @@
-"use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const _isValid                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment');
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-constant');
 
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
  */
 const PERSONAL__FRIEND_REQUEST_COLL      = require('../database/personal.friend_request-coll');
+
 
 class Model extends BaseModel {
 
@@ -31,7 +23,6 @@ class Model extends BaseModel {
     }
 
     insert({ userID }) {
-        const that = this;
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid.isValid(userID))
@@ -58,7 +49,6 @@ class Model extends BaseModel {
 
     // Kiểm tra code còn hợp lệ ko
     checkCodeValid({ code }) {
-        const that = this;
         return new Promise(async (resolve) => {
             try {
                 if(!code)
