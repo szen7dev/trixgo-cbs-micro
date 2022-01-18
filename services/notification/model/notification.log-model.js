@@ -306,7 +306,6 @@ class Model extends BaseModel {
                                 ...listDeviceFromWebBrowser,
                                 ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
                             ]
-
                         });
 
                         // định nghĩa obj onesignal dùng chung cho web và app
@@ -329,11 +328,12 @@ class Model extends BaseModel {
                                 include_player_ids: listDeviceFromMobile
                             }
 
-                            if(objDataForSend.amountMissMessage) {
+                            if(objDataForSend.amountNoti) {
                                 dataForMobilePush.ios_badgeType = 'SetTo';
-                                dataForMobilePush.ios_badgeCount = objDataForSend.amountMissMessage;
+                                dataForMobilePush.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            
+                            console.log({ dataForMobilePush })
+
                             sendNotificationviaOneSignal(dataForMobilePush)
                         } 
                         if (listDeviceFromWebBrowser.length > 0) {

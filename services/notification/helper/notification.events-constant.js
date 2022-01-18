@@ -45,7 +45,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             console.log("The called event name:", ctx.eventName);
 
             let { 
-                users: listRecievers, title, description, web_url, amountMissMessage, conversationID
+                users: listRecievers, title, description, web_url, amountNoti, conversationID
             } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
@@ -55,7 +55,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
                 description: description,
                 objDataForSend: {
                     screenkey: 'DETAIL_PAGE',
-                    amountMissMessage,
+                    amountNoti,
                     conversationID
                 }, 
                 web_url,

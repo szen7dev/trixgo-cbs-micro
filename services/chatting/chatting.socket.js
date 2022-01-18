@@ -596,7 +596,7 @@ exports.CHATTING_SOCKET = {
 					users: [memberID],
 					title: senderFullname,
 					description,
-					amountMissMessage,
+					amountNoti: amountMissMessage,
 					conversationID: infoConversation._id,
 					web_url: `https://facebook.com/hiepnh.trixgo`
 				});
