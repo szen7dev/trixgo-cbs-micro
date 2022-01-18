@@ -268,6 +268,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
@@ -323,8 +324,8 @@ class Model extends BaseModel {
                                 app_id: ONESIGNAL_APP_TEASER,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
-                                ios_badgeCount: 1,
+                                ios_badgeType: 'SetTo', // 'Increase',
+                                ios_badgeCount: 150,
                                 include_player_ids: listDeviceFromMobile
                             }
 

@@ -579,7 +579,7 @@ exports.CHATTING_SOCKET = {
 					const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
 					if (matchs) {
 						const fullName = matchs[1];
-	
+
 						return `@${fullName}`;
 					} else {
 						return replacement;
@@ -591,7 +591,7 @@ exports.CHATTING_SOCKET = {
 			senderFullname = infoConversation.name;
 		}
 
-		console.log({ senderFullname, description, usersTag })
+		// listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
 
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
