@@ -573,23 +573,25 @@ exports.CHATTING_SOCKET = {
 				break;
 		}
 
-		if(!infoConversation.isPrivate) { // Chat group
+		if(!infoConversation.isPrivate) {
+			if(usersTag && usersTag.length) {
+				description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
+					const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
+					if (matchs) {
+						const fullName = matchs[1];
+	
+						return `@${fullName}`;
+					} else {
+						return replacement;
+					}
+				})
+			}
+
 			description = `${senderFullname}: ${description}`;
 			senderFullname = infoConversation.name;
-		} else if(usersTag && usersTag.length){
-			description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
-				const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
-				if (matchs) {
-					const fullName = matchs[1];
-
-					return `@${fullName}`;
-				} else {
-					return replacement;
-				}
-			})
 		}
 
-		console.log({ senderFullname, description })
+		console.log({ senderFullname, description, usersTag })
 
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
