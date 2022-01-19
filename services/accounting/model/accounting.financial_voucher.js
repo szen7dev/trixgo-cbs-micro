@@ -38,7 +38,7 @@ const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accou
 // const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL     = require('../model/accounting.financial_general_journal').MODEL;
 
 class AccountingFinancialVoucher extends BaseModel {
-
+    
     constructor() {
         super(require('../database/accounting.financial_voucher-coll'));
     }
@@ -383,9 +383,9 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
-    // Author: HiepNH
-    //__________Cập nhật phiếu
-    // Author: HiepNH
+    // Author: HiepNH.
+    //__________Cập nhật phiếu.
+    // Author: HiepNH.
     update({ 
         ctx,voucherID, type, date, dateInvoice, 
         name, sign, signInvoice, customer, 
@@ -679,7 +679,7 @@ class AccountingFinancialVoucher extends BaseModel {
         return { error: false };  
     }
 
-    // Cập nhật một số trưởng như amout, fcuAmount, date khi có 1 chi tiết phiếu thay đổi thông tin
+    // Cập nhật một số trưởng như amout, fcuAmount, date khi có 1 chi tiết phiếu thay đổi thông tin.
     updateWithNewJournal({ voucherId, journalAmount, journalFcuAmount }){
         const that = this;
         return new Promise(async (resolve, reject) => {
@@ -738,8 +738,8 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
-    // Danh sách các phiếu của công ty
-    getListVoucherOfCompany({ companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
+    // Danh sách các phiếu của công ty.
+    getListVoucherOfCompany({ nextInfo, companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
         return new Promise(async (resolve) => {
             try {
                 const page = Number(currentPage);
@@ -787,54 +787,56 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }
                 }
-                console.log({ conditionObj })
+                let keys = ['createAt__-1', '_id__-1'];
+                let latestRecord = { _id: nextInfo._id, createAt: nextInfo.createAt };
+                const result = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
+                // console.log({ result, find: result.data.find['$or'], sort: result.data.sort });
+                if(result.error){
+                    return resolve({ error: true, message: "cannot_get_list" });
+                }
+
                 // Số lượng tổng mẩu tin
                 let countDocs = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
 
-                let listData = null;
-                if(!currentPage){
-                    listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
-                    .populate({
-                        path: 'company customer staff contract warehouse',
-                        select: '_id name sign phone address'
-                    })
-                    .populate({
-                        path: 'userCreate userUpdate',
-                        select:'_id fullname image'
-                    })
-                    .populate({
-                        path: 'journals',
-                        populate: {
-                            path: 'debit credit customerDebit customerCredit goods warehouse contract'
-                        }
-                    })
-                    .sort({date: 'desc'});
-                }else{
-                    let keys = ['createAt__-1', '_id__-1'];
-                    let latestRecord = { _id: '6198727abc3b2e745ae5277c', createAt:"2021-11-20T03:58:50.000Z" }
-                    const result = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord })
-                    // console.log({ result, find: result.data.find['$or'], sort: result.data.sort });
-                    if(result.error){
-                        return resolve({ error: true, message: "cannot_get_list" });
+                // let listData = null;
+
+                // if(!currentPage){
+                //     listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                //     .populate({
+                //         path: 'company customer staff contract warehouse',
+                //         select: '_id name sign phone address'
+                //     })
+                //     .populate({
+                //         path: 'userCreate userUpdate',
+                //         select:'_id fullname image'
+                //     })
+                //     .populate({
+                //         path: 'journals',
+                //         populate: {
+                //             path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                //         }
+                //     })
+                //     .sort({date: 'desc'});
+                // }else{
+                  
+                const listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(result.data.find)
+                .populate({
+                    path: 'company customer staff contract warehouse',
+                    select: '_id name sign phone address'
+                })
+                .populate({
+                    path: 'userCreate userUpdate',
+                    select:'_id fullname image'
+                })
+                .populate({
+                    path: 'journals',
+                    populate: {
+                        path: 'debit credit customerDebit customerCredit goods warehouse contract'
                     }
-                    listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
-                    .populate({
-                        path: 'company customer staff contract warehouse',
-                        select: '_id name sign phone address'
-                    })
-                    .populate({
-                        path: 'userCreate userUpdate',
-                        select:'_id fullname image'
-                    })
-                    .populate({
-                        path: 'journals',
-                        populate: {
-                            path: 'debit credit customerDebit customerCredit goods warehouse contract'
-                        }
-                    })
-                    .limit(perPage)
-                    .sort(result.data.sort);
-                }
+                })
+                .limit(perPage)
+                .sort(result.data.sort);
+                // }
 
                 if(!listData)
                     return resolve({ error: true, message: "cannot_get_list" });
@@ -846,6 +848,238 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
+    // Danh sách các phiếu VAT.
+    conditionObjSearchGetListVATVoucherOfCompany({
+        companyID, vat, fromDate, toDate, fundaID
+    }){
+        let conditionObj;
+
+        if(!fundaID){
+            conditionObj = { 
+                company: companyID,
+                vat: Number(vat),
+                forward: 0,
+                cancel: 0,
+                date: { 
+                    $gte: moment(fromDate).toDate(),
+                    $lte: moment(toDate).toDate(),
+                }
+            }
+        }else{
+            conditionObj = { 
+                funda: fundaID,
+                vat: Number(vat),
+                forward: 0,
+                cancel: 0,
+                date: { 
+                    $gte: moment(fromDate).toDate(),
+                    $lte: moment(toDate).toDate(),
+                }
+            }
+        }
+        return conditionObj;
+    }
+
+    // Author: HiepNH
+    getListVATVoucherOfCompany({ companyID, fundaID, fromDate, toDate, vat, nextInfo, perPage }){
+        return new Promise(async (resolve) => {
+            try {
+                const perPage = Number(perPage) || 20;
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy các phiếu có VAT = 1 và debit, credit in arrObjectID[]
+                 * 2. Không lấy các Phiếu kết chuyển + Phiếu hủy
+                */  
+                const conditionObj = this.conditionObjSearchGetListVATVoucherOfCompany({
+                    companyID, vat, fromDate, toDate, fundaID
+                });
+
+                const keys = ['createAt__-1', '_id__-1'];
+                const latestRecord = { _id: nextInfo._id, createAt: nextInfo.createAt };
+                const resultPagination = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj });
+                
+                if(resultPagination.eror)
+                    return resolve({ error: true, message: "cant_get_list_vat" });
+
+               
+                const listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(resultPagination.data.find)
+                .populate({
+                    path: 'company customer storage staff warehouse',
+                    select: '_id name sign taxid address',
+                })
+                .populate({
+                    path: 'contract',
+                    select: '_id name sign project',
+                    populate: {
+                        path: 'project',
+                        select: '_id name sign',
+                    }
+                })
+                .populate({
+                    path: 'journals',
+                    populate: {
+                        path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                    }
+                })
+                .sort(resultPagination.data.sort)
+                .limit(perPage);
+
+                if(!listData)
+                    return resolve({ error: true, message: "cannot_get_list" });
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING][getListVATVoucherOfCompany] ${error}`);
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // Tìm kiếm phiếu.
+    findVoucherInCompany({ key, type, customer, author, fromDate, toDate, fundaID, companyID }) {
+        return new Promise(async resolve => {
+            try {       
+                let sort = {}, conditionObj = {};
+                const perPage = 150;
+
+                /**
+                 * CONDITION
+                 */
+                if(key && key.length > 0){
+                    let keyword = key.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+
+                    conditionObj = {
+                        $or: [
+                            { name   :  new RegExp(keyword, 'i') },
+                            { sign:  new RegExp(keyword, 'i') },
+                        ]
+                    }
+                }
+
+                if(!fundaID){
+                    conditionObj.company = ObjectID(companyID)
+                }else{
+                    conditionObj.funda = ObjectID(fundaID)
+                }
+
+                if(type && Number(type) > 0){
+                    conditionObj.type = type;
+                }
+                
+                if(customer && ObjectID.isValid(customer)){
+                    conditionObj.customer = customer;
+                }
+
+                if(author && ObjectID.isValid(author)){
+                    conditionObj.userCreate = author;
+                }
+                
+                if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                    let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                    let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+
+                    conditionObj.date = {
+                        $gte: startTime,// <=== fix ISODate here
+                        $lte: endTime // <=== fix ISODate here
+                    }
+                }
+
+                const keys = ['createAt__-1', '_id__-1'];
+                const latestRecord = { _id: '6198727abc3b2e745ae5277c', createAt:"2021-11-20T03:58:50.000Z" }
+                const resultPagination = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
+                
+                if(resultPagination.eror)
+                    return resolve({ error: true, message: "cant_get_list_vat" });
+               
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(resultPagination.data.find)
+                    .populate('customer')
+                    .populate('warehouse')
+                    .populate({
+                        path: 'userCreate userUpdate',
+                        select:'_id fullname image'
+                    })
+                    .populate('journals')
+                    .limit(perPage)
+                    .sort(resultPagination.data.sort);
+
+                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
+                // console.log(listData)
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING][findVoucherInCompany] ${error}`);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+
+    // Danh sách các phiếu VAT
+    // Author: HiepNH
+    getListVATVoucherOfCompany({ companyID, fundaID, fromDate, toDate, vat }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy các phiếu có VAT = 1 và debit, credit in arrObjectID[]
+                 * 2. Không lấy các Phiếu kết chuyển + Phiếu hủy
+                 */  
+
+                let conditionObj;
+
+                if(!fundaID){
+                    conditionObj = { 
+                        company: companyID,
+                        vat: Number(vat),
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+                }else{
+                    conditionObj = { 
+                        funda: fundaID,
+                        vat: Number(vat),
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+                }
+
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                .populate({
+                    path: 'company customer storage staff warehouse',
+                    select: '_id name sign taxid address',
+                })
+                .populate({
+                    path: 'contract',
+                    select: '_id name sign project',
+                    populate: {
+                        path: 'project',
+                        select: '_id name sign',
+                    }
+                })
+                .populate({
+                    path: 'journals',
+                    populate: {
+                        path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                    }
+                })
+                .sort({date: 'asc'});
+                if(!listData)
+                    return resolve({ error: true, message: "cannot_get_list" });
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new AccountingFinancialVoucher;

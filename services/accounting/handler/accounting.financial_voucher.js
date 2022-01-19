@@ -189,5 +189,47 @@ module.exports = {
             return { error: true, message: error.message };
             }
         }
+    },
+
+    getListVATVoucherOfCompany:{
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // voucherID           : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const {  companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type  } = ctx.params;
+                // const voucherID = '61e43deaac5b40893b163750';
+                const result = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getListVATVoucherOfCompany({ companyID, fundaID, fromDate, toDate, vat, nextInfo, perPage })
+                return result;
+            } catch (error) {
+            return { error: true, message: error.message };
+            }
+        }
+    },
+
+    findVoucherInCompany:{
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // voucherID           : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const {  key, type, customer, author, fromDate, toDate, fundaID, companyID  } = ctx.params;
+                // const voucherID = '61e43deaac5b40893b163750';
+                const result = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.findVoucherInCompany({ key, type, customer, author, fromDate, toDate, fundaID, companyID })
+                return result;
+            } catch (error) {
+            return { error: true, message: error.message };
+            }
+        }
     }
 }
