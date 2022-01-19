@@ -123,7 +123,6 @@ class Model extends BaseModel {
     update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx  }){
         return new Promise(async (resolve) => {
             try {
-
                 if(!_isValid(expertTimesheetID))
                     return resolve({ 
                         error: true, 
@@ -172,7 +171,7 @@ class Model extends BaseModel {
                 if(unitprice){ 
                     dataUpdate.unitprice = unitprice;
                 }
-                
+
                 if(hours && unitprice){
                     let amount  = hours * unitprice;
                     dataUpdate.amount = amount
