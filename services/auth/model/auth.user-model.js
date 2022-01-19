@@ -1418,7 +1418,7 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
-
+                
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__USER_COLL.findById(lastestID);
