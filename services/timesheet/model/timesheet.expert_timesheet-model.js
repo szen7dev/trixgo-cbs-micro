@@ -124,14 +124,14 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 
-                let companyID;
-
                 if(!_isValid(expertTimesheetID))
                     return resolve({ 
                         error: true, 
                         message: 'expertTimesheetID invalid',
                         keyError: "expertTimesheetID_invalid"
                     });
+                
+                let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
 
                 let dataUpdate = {
                     userUpdate: userUpdate,
@@ -141,25 +141,7 @@ class Model extends BaseModel {
                 if(projectID){
                     dataUpdate.project = projectID;
                 }
-
-                // if(projectID){
-                //     // call service department để lấy thông tin
-                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                //         departmentID: projectID
-                //     })
-
-                //     /**
-                //      * Company lấy theo company của project
-                //      * Chứ không phải lấy theo company của user tạo task
-                //      */ 
-                //     companyID = infoProject.data.company;
-                //     if(!companyID)
-                //         return resolve({ 
-                //             error: true, 
-                //             message: "Company invalid",
-                //             keyError: "company_invalid",
-                //         });
-                // }
+               
 
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
@@ -179,14 +161,27 @@ class Model extends BaseModel {
 
                 if(hours){
                     dataUpdate.hours = hours;
+                    // Cập nhật hours cho parent
+                    if(infoTimeSheetID.parent){
+                        let hoursCurrent = infoTimeSheetID.hours;
+                        let hoursAfter   = hours - hoursCurrent;
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { hours: hoursAfter }})
+                    }
                 }
 
                 if(unitprice){ 
                     dataUpdate.unitprice = unitprice;
                 }
-
+                
                 if(hours && unitprice){
-                    dataUpdate.amount = hours * unitprice;
+                    let amount  = hours * unitprice;
+                    dataUpdate.amount = amount
+                    // Cập nhật amount cho parent
+                    if(infoTimeSheetID.parent){
+                        let amountCurrent = infoTimeSheetID.amount;
+                        let amountAfter   = amount - amountCurrent;
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { amount: amountAfter }})
+                    }
                 }
 
                 if(status){
