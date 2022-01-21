@@ -117,6 +117,7 @@ module.exports = {
                             const listUserID = allUsers.map(user => user._id);
                             console.log({ data })
                     
+                            // this.emit('HELLO_WORLD', data);
                             sendDataToMultilSocketsOfListUser({ 
                                 listUserConnected: listUserActive, 
                                 arrReceiver: listUserID, 
@@ -129,10 +130,6 @@ module.exports = {
                                 event: 'SERVER_SEND_CHATTING_TEST', io
                             })
                         },
-                        
-                        'testing': function(data, ack) {
-							this.emit('HELLO_WORLD', data);
-						},
 
                         // 'reconnect': async function(data, ack) { // write your handler function here.
                         //     console.log('reconnection')
