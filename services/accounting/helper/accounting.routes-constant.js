@@ -13,10 +13,13 @@ const CF_ROUTINGS_ACCOUNTING = {
 	// ======================== ROUTE - API ===============================
 
     // VOUCHER
-    INSERT_VOUCHER              : `${BASE_ROUTE}${VOUCHER}/insertFull`,
-    UPDATE_VOUCHER              : `${BASE_ROUTE}${VOUCHER}/update`,
-    REMOVE_VOUCHER              : `${BASE_ROUTE}${VOUCHER}/remove`,
-    GET_LIST_VOUCHER_OF_COMPANY : `${BASE_ROUTE}${VOUCHER}/list-voucher`,
+    INSERT_VOUCHER                          : `${BASE_ROUTE}${VOUCHER}/insertFull`,
+    UPDATE_VOUCHER                          : `${BASE_ROUTE}${VOUCHER}/update`,
+    REMOVE_VOUCHER                          : `${BASE_ROUTE}${VOUCHER}/remove`,
+    GET_LIST_VOUCHER_OF_COMPANY             : `${BASE_ROUTE}${VOUCHER}/list-voucher`,
+    GET_LIST_VAT_VOUCHER_OF_COMPANY         : `${BASE_ROUTE}${VOUCHER}/list-vat-voucher`,
+    FIND_VOUCHER_IN_COMPANY                 : `${BASE_ROUTE}${VOUCHER}/find-voucher`,
+    GET_INFO_VOUCHER                        : `${BASE_ROUTE}${VOUCHER}/get-info-voucher`,
 
 
     INSERT_GENERAL_JOURNAL  : `${BASE_ROUTE}${GENERAL_JOURNAL}/insertFull`,

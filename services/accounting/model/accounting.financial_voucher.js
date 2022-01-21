@@ -738,6 +738,39 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
+    getInfo({ voucherID }) {
+        return new Promise(async resolve => {
+            try {
+
+                if( !_isValid(voucherID))
+                    return resolve({ error: true, message: 'voucherID_invalid' });
+                const infoVoucher = await VOUCHER_COLL.findById(voucherID)
+                .populate('company customer contract storage staff')
+                .populate({
+                    path: 'journals',
+                    populate: {
+                        path: 'debit credit customerDebit customerCredit goods warehouse contract job'
+                    }
+                })
+                .populate({
+                    path: 'files',
+                    populate: {
+                        path: 'author'
+                    }
+                })
+                .populate({
+                    path: 'userCreate userUpdate',
+                    select:'_id fullname image'
+                })
+
+                return resolve({ error: false, data: infoVoucher })
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING][GET_INFO_VOUCHER]: ${error}`);
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
     // Danh sách các phiếu của công ty.
     getListVoucherOfCompany({ nextInfo, companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
         return new Promise(async (resolve) => {
@@ -1074,6 +1107,250 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(!listData)
                     return resolve({ error: true, message: "cannot_get_list" });
 
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // In các phiếu theo tra cứu [x]
+    getListVoucherOfCompanyBySearch({ companyID, fundaID, perPage, fromDate, toDate, type }){
+        return new Promise(async (resolve) => {
+            try {
+                // console.log({ __1_before__: { fromDate, toDate } });
+                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                // console.log({ __1__: { fromDate, toDate } });
+  
+
+                let pagination;
+                if(!perPage){
+                    pagination = ''
+                }else{
+                    pagination = perPage;
+                }
+
+                if(!fundaID){
+                    if(!_isValid(companyID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                    let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ 
+                        company: companyID,
+                        type: Number(type),
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        },
+                    })
+                    .populate('company customer staff')
+                    .populate('warehouse')
+                    .populate({
+                        path: 'journals',
+                        populate: {
+                            path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                        }
+                    })
+                    .limit(pagination)
+                    .sort({date: 'asc'});
+
+                    if(!listData)
+                        return resolve({ error: true, message: "cannot_get_list" });
+                    return resolve({ error: false, data: listData });
+                }else{
+                    if(!_isValid(fundaID))
+                    return resolve({ error: true, message: 'param_not_valid' });
+
+                    let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ 
+                        funda: fundaID,
+                        type: Number(type),
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        },
+                    })
+                    .populate('company customer staff')
+                    .populate('warehouse')
+                    .populate({
+                        path: 'journals',
+                        populate: {
+                            path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                        }
+                    })
+                    .limit(pagination)
+                    .sort({date: 'asc'});
+
+                    if(!listData)
+                        return resolve({ error: true, message: "cannot_get_list" });
+                    return resolve({ error: false, data: listData });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+     // Danh sách phiếu kèm theo chi tiết tải về [x]
+     getListVoucherOfCompanyForExport({ companyID, fundaID, fromDate, toDate }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!fundaID){
+                    if(!_isValid(companyID))
+                        return resolve({ error: true, message: 'param_not_valid' });
+                    
+                    let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ 
+                        company: companyID,
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte:  moment(toDate).toDate(),
+                        },
+                    })
+                    .populate({
+                        path: 'userCreate',
+                        select: '_id fullname image'
+                    })
+                    .populate({
+                        path: 'customer warehouse contract',
+                        select: '_id name sign address'
+                    })
+                    .populate({
+                        path: 'journals',
+                        populate: {
+                            path: 'debit credit customerDebit customerCredit contract goods warehouse'
+                        }
+                    })
+                    .sort({date: 'asc'});
+
+                    if(!listData)
+                        return resolve({ error: true, message: "cannot_get_list" });
+                    return resolve({ error: false, data: listData });
+                }else{
+                    if(!ObjectID.isValid(fundaID))
+                        return resolve({ error: true, message: 'param_not_valid' });
+                    
+                    let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ 
+                        funda: fundaID,
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte:  moment(toDate).toDate(),
+                        },
+                    })
+                    .populate({
+                        path: 'userCreate',
+                        select: '_id fullname image'
+                    })
+                    .populate({
+                        path: 'customer warehouse contract',
+                        select: '_id name sign address'
+                    })
+                    .populate({
+                        path: 'journals',
+                        populate: {
+                            path: 'debit credit customerDebit customerCredit contract goods warehouse'
+                        }
+                    })
+                    .sort({date: 'asc'});
+
+                    if(!listData)
+                        return resolve({ error: true, message: "cannot_get_list" });
+                    return resolve({ error: false, data: listData });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    // Author: HiepNH
+    getListOrderOfCompany({ companyID, fundaID, type, fromDate, toDate }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Nếu không tồn tại fundaID => lấy các đơn hàng thuộc công ty (tất cả đơn vị cơ sở)
+                 * 2. Nếu tồn tại fundaID => lấy các đơn hàng thuộc đơn vị cơ sở
+                 */
+                 // console.log({ __1_before__: { fromDate, toDate } });
+                 fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                 // console.log({ __1__: { fromDate, toDate } });
+ 
+
+                let conditionObj;
+                if(!fundaID){
+                    if(!type){
+                        conditionObj = {
+                            company: ObjectID(companyID),
+                            date: { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate(),
+                            }
+                        }
+                    }else{
+                        conditionObj = {
+                            company: ObjectID(companyID),
+                            type: Number(type),
+                            date: { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate(),
+                            }
+                        }
+                    }
+                }else{
+                    if(!type){
+                        conditionObj = {
+                            funda: ObjectID(fundaID),
+                            cancel: 0, // Không lấy phiếu hủy
+                            forward: 0, // Không lấy phiếu kết chuyển cuối kỳ
+                            date: { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate(),
+                            }
+                        }
+                    }else{
+                        conditionObj = {
+                            funda: ObjectID(fundaID),
+                            type: Number(type),
+                            cancel: 0, // Không lấy phiếu hủy
+                            forward: 0, // Không lấy phiếu kết chuyển cuối kỳ
+                            date: { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate(),
+                            }
+                        }
+                    }
+                }
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                    .populate({
+                        path: 'customer',
+                        select: '_id name sign address phone',
+                        populate: {
+                            path: 'property',
+                            select:'_id name sign'
+                        }
+                    })
+                    .populate({
+                        path: 'staff',
+                        select: '_id name sign',
+                    })
+                    .populate({
+                        path: 'userCreate',
+                        select: '_id fullname image'
+                    })
+                    .populate({
+                        path: 'journals',
+                        populate:{
+                            path: 'debit credit customerDebit customerCredit goods'
+                        }
+                    })
+                    .sort({date: 1, _id: 1});
+
+                if(!listData)
+                    return resolve({ error: true, message: "cannot_get_list" });
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

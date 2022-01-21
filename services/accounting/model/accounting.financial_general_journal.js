@@ -318,51 +318,6 @@ class Model extends BaseModel {
         })
     }
 
-    //_________DANH SÁCH TÀI KHOẢN VÀ CON CHÁU CỦA NÓ
-    // Author: HiepNH
-    getListNestedItem({ ctx, accountID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!accountID)
-                    return resolve({ error: true, message:'accountID_invalid' });
-                const { company } = await  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID}`,{ accountID }); 
-               
-                //__________Lấy levelMax của các phần tử
-                // let levelForRecursive = await _getLevelMaxInRecursive(ACCOUNT_COLL);
-                const levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL , company);
-
-                //__________Khai báo mảng chứa phần tử cha và các con
-                let arrObjectID = [];
-                let getListIDRecursiveForAny = (arr) => {
-                    for(const item of arr){
-                        arrObjectID.push(item._id)
-
-                        if (Array.isArray(item.childs) && item.childs.length) {
-                            getListIDRecursiveForAny(item.childs)
-                        }
-                    }
-                }
-
-                //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
-                let infoItemOrigin = await ACCOUNT_COLL.findById(accountID)
-                    .populate(
-                        _constructForAny(levelForRecursive, 'childs') 
-                    )
-                
-                //__________Gọi hàm đệ quy để lấy mảng nestedArray
-                getListIDRecursiveForAny([infoItemOrigin], levelForRecursive);
-
-                if (!arrObjectID)
-                    return resolve({ error: true, message: 'cannot_get_list' });
-                    
-                return resolve({ error: false, data: arrObjectID });
-            } catch (error) {
-                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListNestedItem]: ${error} `);
-                return resolve({ error: true, message: error.message });
-            }
-        });
-    }  
-
     update({
         journalID, debit, credit, customerDebit,
         customerCredit, goods, warehouse, quantity, 
@@ -466,6 +421,70 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message })
             }
         })
+    }
+
+
+    //_________DANH SÁCH TÀI KHOẢN VÀ CON CHÁU CỦA NÓ
+    // Author: HiepNH
+    getListNestedItem({ ctx, accountID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!accountID)
+                    return resolve({ error: true, message:'accountID_invalid' });
+                const { company } = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID}`,{ accountID }); 
+               
+                //__________Lấy levelMax của các phần tử
+                // let levelForRecursive = await _getLevelMaxInRecursive(ACCOUNT_COLL);
+                const levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL , company);
+
+                //__________Khai báo mảng chứa phần tử cha và các con
+                let arrObjectID = [];
+                let getListIDRecursiveForAny = (arr) => {
+                    for(const item of arr){
+                        arrObjectID.push(item._id)
+
+                        if (Array.isArray(item.childs) && item.childs.length) {
+                            getListIDRecursiveForAny(item.childs)
+                        }
+                    }
+                }
+
+                //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
+                let infoItemOrigin = await ACCOUNT_COLL.findById(accountID)
+                    .populate(
+                        _constructForAny(levelForRecursive, 'childs') 
+                    )
+                
+                //__________Gọi hàm đệ quy để lấy mảng nestedArray
+                getListIDRecursiveForAny([infoItemOrigin], levelForRecursive);
+
+                if (!arrObjectID)
+                    return resolve({ error: true, message: 'cannot_get_list' });
+                    
+                return resolve({ error: false, data: arrObjectID });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListNestedItem]: ${error} `);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }  
+
+    getInfo({ journalID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!_isValid(journalID))
+                    return { error: true, message: 'journalID_invalid' };
+                
+                const infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
+                if(!infoJournal)
+                    return resolve({ error: true, message: 'cant_get_info_journal' })
+                    
+                return resolve({ error: false, data: infoJournal })
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getInfo]: ${error} `);
+                return resolve({ error: true, message: error.message })
+            }
+        });
     }
 
 }

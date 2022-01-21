@@ -170,6 +170,27 @@ module.exports = {
         }
     },
 
+    getInfoVoucher:{
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // voucherID           : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const {  voucherID  } = ctx.params;
+                // const voucherID = '61e43deaac5b40893b163750';
+                const result = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({ voucherID })
+                return result;
+            } catch (error) {
+            return { error: true, message: error.message };
+            }
+        }
+    },
+
     getListVoucherOfCompany:{
         params: {
             // email           : { type: "string" },
@@ -202,7 +223,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const {  companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type  } = ctx.params;
+                const {  companyID, fundaID, fromDate, toDate, vat, nextInfo, perPage  } = ctx.params;
                 // const voucherID = '61e43deaac5b40893b163750';
                 const result = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getListVATVoucherOfCompany({ companyID, fundaID, fromDate, toDate, vat, nextInfo, perPage })
                 return result;
