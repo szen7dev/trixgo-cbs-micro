@@ -866,7 +866,7 @@ class Model extends BaseModel {
 							listGeneralConversation[listGeneralConversation.length] = {
 								name: conversationOfMember.name,
 								description: conversationOfMember.description,
-								members: conversationOfMember.members,
+								members: conversationOfMember.members.slice(0,3),
 								infoOwner: conversationOfMember.authors && conversationOfMember.authors[0],
 								avatar: conversationOfMember.avatar && conversationOfMember.avatar.url
 							};
