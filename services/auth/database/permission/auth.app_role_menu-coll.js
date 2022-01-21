@@ -18,20 +18,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_role_menu", {
         type: Schema.Types.ObjectId,
         ref: "app"
     },
-    /**
-     * Dự án, phòng ban
-     */  
-    project : {
-        type: Schema.Types.ObjectId,
-        ref : "department"
-    },
-    /**
-     * Hợp đồng
-     */  
-    contract : {
-        type: Schema.Types.ObjectId,
-        ref : "contract"
-    },
+    
     /**
      * Nhóm chức năng dự án
      */

@@ -38,18 +38,17 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                console.log({ abc: ctx.meta });
+                const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.insert({
                     type, projectID, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
                 });
-                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
-
 
     /**
 	 * Dev: Depv ✅
@@ -76,11 +75,12 @@ module.exports = {
             amountPaid             : { type: "number", optional: true },
             remainingPayment       : { type: "number", optional: true },
         },
-        async handler(ctx) {
+        async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
                 let { contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+               
+                const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.update({
                     contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
                 });
