@@ -77,7 +77,7 @@ class Model extends BaseModel {
 						.findOne({
 							members: {
 								$elemMatch: {
-									$in: [memberID, userID]
+									$in: [authorID, ...membersID]
 									// members: [authorID, ...membersID]
 								}
 								// $all: [authorID, ...membersID],
