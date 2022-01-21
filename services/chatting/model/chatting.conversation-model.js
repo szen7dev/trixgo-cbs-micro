@@ -76,7 +76,10 @@ class Model extends BaseModel {
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
 							members: {
-								$elemMatch: [authorID, ...membersID]
+								$elemMatch: {
+									$in: [memberID, userID]
+									// members: [authorID, ...membersID]
+								}
 								// $all: [authorID, ...membersID],
 								// $size: 2
 							},
