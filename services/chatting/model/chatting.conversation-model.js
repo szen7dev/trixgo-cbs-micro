@@ -59,6 +59,7 @@ class Model extends BaseModel {
 						status: 400 
 					});
 				}
+				console.log({ name, description, bizfullname, authorID, membersID, isPrivate })
 
 				// Tạo cuộc hội thoại 2 người
 				if(isPrivate){
@@ -80,6 +81,7 @@ class Model extends BaseModel {
 							},
 						})
 						.lean();
+					console.log({ checkExistConversation })
 
 					if(checkExistConversation)
 						return resolve({ error: false, data: checkExistConversation, status: 200 });

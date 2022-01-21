@@ -42,7 +42,6 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { name, description, membersID, isPrivate } = ctx.params;
-                console.log({ infoUser: ctx.meta.infoUser })
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversation({
 					name, description, bizfullname, authorID, membersID, isPrivate, ctx
