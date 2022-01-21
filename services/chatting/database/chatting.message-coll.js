@@ -154,7 +154,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	/**
      * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin) (Contact bạn bè - tin nhắn chia sẻ danh bạ)
      */
-	usersAssigned: [{
+    usersAssigned: [{
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }],

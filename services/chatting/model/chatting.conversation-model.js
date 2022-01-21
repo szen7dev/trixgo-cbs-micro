@@ -76,10 +76,10 @@ class Model extends BaseModel {
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
 							members: {
-								// $elemMatch: {
-								// 	$in: [authorID, ...membersID]
-								// }
-								$all: [authorID, ...membersID],
+								$elemMatch: {
+									$eq: [authorID, ...membersID]
+								}
+								// $all: [authorID, ...membersID],
 								// $size: 2
 							},
 						})
@@ -829,10 +829,10 @@ class Model extends BaseModel {
 							{ members: { $size: 2 }}
 						]
 					})
-					.select('_id name description authors avatar')
+					.select('_id name description authors members avatar')
 					.populate({
-						path: 'avatar authors',
-						select: '_id fullname username image',
+						path: 'avatar authors members',
+						select: '_id fullname username bizfullname image',
 						populate: {
 							path: 'file',
 							select: 'url'
@@ -849,14 +849,10 @@ class Model extends BaseModel {
 							{ members: { $size: 2 }}
 						]
 					})
-					.select('_id name description authors avatar')
+					.select('_id name description authors members avatar')
 					.populate({
-						path: 'avatar authors',
-						select: '_id fullname username image',
-						populate: {
-							path: 'file',
-							select: 'url'
-						}
+						path: 'avatar authors members',
+						select: '_id fullname username bizfullname image url',
 					})
 					.lean();
 
@@ -870,8 +866,9 @@ class Model extends BaseModel {
 							listGeneralConversation[listGeneralConversation.length] = {
 								name: conversationOfMember.name,
 								description: conversationOfMember.description,
+								members: conversationOfMember.members,
 								infoOwner: conversationOfMember.authors && conversationOfMember.authors[0],
-								avatar: (conversationOfMember.avatar && conversationOfMember.avatar.file) && conversationOfMember.avatar.file.url
+								avatar: conversationOfMember.avatar && conversationOfMember.avatar.url
 							};
 
 						}
