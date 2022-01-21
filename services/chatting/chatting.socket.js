@@ -467,7 +467,7 @@ exports.CHATTING_SOCKET = {
 				.findById(infoMessageAfterInsert.data._id, { createdAt: 0, updatedAt: 0, __v: 0 })
 				.populate({
 					path: 'sender receivers usersAssigned',
-					select: '_id fullname bizfullname image'
+					select: '_id fullname bizfullname image email phone'
 				})
 				.populate({
 					path: 'reactions',
@@ -637,7 +637,7 @@ exports.CHATTING_SOCKET = {
 				})
 				.populate({
 					path: 'sender usersAssigned',
-					select: '_id bizfullname fullname image',
+					select: '_id bizfullname fullname image email phone',
 				})
 				.lean();
 
