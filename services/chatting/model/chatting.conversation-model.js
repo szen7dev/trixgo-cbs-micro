@@ -59,6 +59,7 @@ class Model extends BaseModel {
 						status: 400 
 					});
 				}
+				console.log({ name, description, bizfullname, authorID, membersID, isPrivate })
 
 				// Tạo cuộc hội thoại 2 người
 				if(isPrivate){
@@ -75,11 +76,15 @@ class Model extends BaseModel {
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
 							members: {
-								$all: [authorID, ...membersID],
-								$size: 2
+								$elemMatch: {
+									$eq: [authorID, ...membersID]
+								}
+								// $all: [authorID, ...membersID],
+								// $size: 2
 							},
 						})
 						.lean();
+					console.log({ checkExistConversation, members: [authorID, ...membersID] })
 
 					if(checkExistConversation)
 						return resolve({ error: false, data: checkExistConversation, status: 200 });
@@ -88,6 +93,7 @@ class Model extends BaseModel {
 						userID: membersID[0],
 						select: 'bizfullname'
 					});
+					console.log({ infoMember, membersID })
 
 					if(infoMember.error) {
 						return resolve({ 
@@ -99,6 +105,7 @@ class Model extends BaseModel {
 					}
 
 					name = `${bizfullname}_${infoMember?.data?.bizfullname}`;
+					console.log({ name })
 
 				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
 					if(membersID.length <= 1) {
@@ -127,12 +134,13 @@ class Model extends BaseModel {
 					authors: [authorID],
 					members: [...new Set([authorID, ...membersID])]
 				});
+				console.log({ infoConversationAfterInserted })
 
                 if(!infoConversationAfterInserted) {
 					return resolve({ 
 						error: true, 
-						message: 'Tạo cuộc hội thoại thất bại', 
-						keyError: 'can_not_create_conversation',
+						message: 'Đã có lỗi xảy ra', 
+						keyError: 'error_occurs',
 						status: 422
 					});
 				}
@@ -203,8 +211,14 @@ class Model extends BaseModel {
 					$set: dataUpdate
 				}, { new: true });
 
-				if(!infoAfterUpdate)
-					return resolve({ error: true, message: "Can't update conversation", status: 403 });
+				if(!infoAfterUpdate) {
+					return resolve({ 
+						error: true, 
+						message: "Có lỗi xảy ra", 
+						keyError: 'error_occurs',
+						status: 422
+					});
+				}
 
 				if(name){
 					infoMessageNotification = await CHATTING__MESSAGE_MODEL.insertMessage({
@@ -343,7 +357,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length) {
 					return resolve({ 
 						error: true, 
-						message: 'Request params invalid', 
+						message: 'Tham số không hợp lệ', 
 						keyError: 'params_invalid',
 						status: 400
 					});
@@ -358,7 +372,7 @@ class Model extends BaseModel {
                 if(!checkExistConversation) {
 					return resolve({ 
 						error: true, 
-						message: "You aren't author", 
+						message: "Bạn không phải admin cuộc hội thoại", 
 						keyError: 'you_are_not_author',
 						status: 403
 					});
@@ -368,7 +382,7 @@ class Model extends BaseModel {
 					if(membersID.includes(member._id.toString())){
 						return resolve({
 							error: true,
-							message: `Member ${member.bizfullname || member.fullname} is existed in conversation`,
+							message: `Thành viên ${member.bizfullname || member.fullname} đã tồn tại trong cuộc hội thoại`,
 							keyError: 'member_is_added_in_conversation',
 							status: 403
 						});
@@ -384,8 +398,8 @@ class Model extends BaseModel {
                 if(!infoConversationAfterUpdated) {
 					return resolve({
 						error: true,
-						message: "Can't add member to conversation",
-						keyError: 'cannot_add_member_to_conversation',
+						message: "Có lỗi xảy ra",
+						keyError: 'error_occurs',
 						status: 422
 					});
 				}
@@ -547,9 +561,9 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs([conversationID, authorID, memberID])) {
 					return resolve({ 
-						error: true, 
-						message: 'Tham số không hợp lệ', 
-						keyError: 'params_invalid',
+						error: true,
+						message: 'Tham số không hợp lệ',
+						keyError: 'params_conversationID_or_authorID_or_memberID_invalid',
 						status: 400
 					});
 				}
@@ -782,14 +796,7 @@ class Model extends BaseModel {
 					})
 					.populate('lastMessage', select.lastMessage)
 					.populate('messagesPin', select.messagesPin)
-					.populate({
-						path: 'avatar',
-						populate: {
-							path: 'file',
-							select: 'name url size'
-						},
-						select: select.avatar
-					})
+					.populate('avatar', select.avatar)
 					.lean();
 
                 if (!infoConversation)
@@ -822,10 +829,10 @@ class Model extends BaseModel {
 							{ members: { $size: 2 }}
 						]
 					})
-					.select('_id name description authors avatar')
+					.select('_id name description authors members avatar')
 					.populate({
-						path: 'avatar authors',
-						select: '_id fullname username image',
+						path: 'avatar authors members',
+						select: '_id fullname username bizfullname image',
 						populate: {
 							path: 'file',
 							select: 'url'
@@ -842,14 +849,10 @@ class Model extends BaseModel {
 							{ members: { $size: 2 }}
 						]
 					})
-					.select('_id name description authors avatar')
+					.select('_id name description authors members avatar')
 					.populate({
-						path: 'avatar authors',
-						select: '_id fullname username image',
-						populate: {
-							path: 'file',
-							select: 'url'
-						}
+						path: 'avatar authors members',
+						select: '_id fullname username bizfullname image url',
 					})
 					.lean();
 
@@ -863,8 +866,9 @@ class Model extends BaseModel {
 							listGeneralConversation[listGeneralConversation.length] = {
 								name: conversationOfMember.name,
 								description: conversationOfMember.description,
+								members: conversationOfMember.members.slice(0,3),
 								infoOwner: conversationOfMember.authors && conversationOfMember.authors[0],
-								avatar: (conversationOfMember.avatar && conversationOfMember.avatar.file) && conversationOfMember.avatar.file.url
+								avatar: conversationOfMember.avatar && conversationOfMember.avatar.url
 							};
 
 						}
@@ -1007,7 +1011,8 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-				let listMessages = await CHATTING__MESSAGE_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+				let listMessages = await CHATTING__MESSAGE_COLL
+					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
 					.populate('sender', select.sender)
 					.populate('usersSeen', select.usersSeen)
 					.populate('usersAssigned', select.usersAssigned)
@@ -1032,7 +1037,6 @@ class Model extends BaseModel {
 							select: `_id bizfullname fullname image ${select.files}`
 						}
 					})
-					.populate('reminder')
 					.populate({
 						path: 'poll',
 						populate: {
@@ -1477,8 +1481,9 @@ class Model extends BaseModel {
 	updateHideConversation({ conversationID, userID, isHide }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([conversationID, userID]))
+				if(!checkObjectIDs([conversationID, userID])) {
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
+				}
 
 				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -1486,8 +1491,9 @@ class Model extends BaseModel {
 					members: { $in: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
+				if(!checkExistConversation) {
 					return resolve({ error: true, message: "You are't member of conversation", status: 403 });
+				}
 
 				let infoAfterUpdated = null;
 				if(isHide){

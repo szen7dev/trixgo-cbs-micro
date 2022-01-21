@@ -467,7 +467,7 @@ module.exports = {
 	 */
 	getListMessageReminder: {
         params: {
-			conversationID	: { type: 'string' },
+			conversationID	: { type: 'string', optional: true },
             lastestID 		: { type: 'string', optional: true },
             limit			: { type: 'string', optional: true },
 		},

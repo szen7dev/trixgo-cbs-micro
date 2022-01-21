@@ -332,7 +332,6 @@ class Model extends BaseModel {
                                 dataForMobilePush.ios_badgeType = 'SetTo';
                                 dataForMobilePush.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            console.log({ dataForMobilePush })
 
                             sendNotificationviaOneSignal(dataForMobilePush)
                         } 

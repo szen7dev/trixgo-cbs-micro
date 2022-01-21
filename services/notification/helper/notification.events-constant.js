@@ -44,7 +44,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             console.log("Metadata:", ctx.meta);
             console.log("The called event name:", ctx.eventName);
 
-            let { 
+            const { 
                 users: listRecievers, title, description, web_url, amountNoti, conversationID
             } = ctx.params;
 

@@ -47,7 +47,7 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
      */
     avatar: {
         type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation_file'
+        ref     : 'file_core'
     },
 
     /**

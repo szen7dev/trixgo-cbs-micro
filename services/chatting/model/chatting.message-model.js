@@ -1911,9 +1911,14 @@ class Model extends BaseModel {
 	getListMessageReminder({ conversationID, lastestID, userID, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
 			try {
-				// Check params
-				if(!checkObjectIDs([conversationID, userID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+				if(!checkObjectIDs([userID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số ID user', 
+						keyError: 'params_userID_invalid',
+						status: 400
+					});
+				}
 
 				if(isNaN(limit)) {
 					limit = 10;
@@ -1935,23 +1940,29 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $in: [userID] }
-				}).lean();
-
-				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
-
 				let conditionFind = {};
-				let conditionObj  = {
-					conversation: conversationID,
-					type: 4
-				};
+				let conditionObj  = { type: 4 };
 				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
+				}
+
+				if(conversationID && checkObjectIDs([conversationID])) {
+					let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
+						_id: conversationID,
+						members: { $in: [userID] }
+					}).lean();
+	
+					if(!infoConversation) {
+						return resolve({ 
+							error: true, 
+							message: 'Bạn không phải thành viên của cuộc hội thoại', 
+							keyError: 'you_are_not_member_of_conversation',
+							status: 403
+						});
+					}
+
+					conditionObj.conversation = conversationID
 				}
 
 				// GET CONDITION PAGINATION
@@ -1985,20 +1996,15 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-				if(!listMessagesReminder)
-					return resolve({ error: true, message: "Can't get list message reminder", status: 403 });
-
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
 
 				if(listMessagesReminder && listMessagesReminder.length){
-
 					if(listMessagesReminder.length > limit){
 						nextCursor = listMessagesReminder[limit - 1]._id;
 						listMessagesReminder.length = limit;
 					}
-
 				}
 
 				return resolve({
@@ -2012,7 +2018,7 @@ class Model extends BaseModel {
 					}
 				});
 			} catch (error) {
-				return resolve({ error: true, message: error.message, status: 500 })
+				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
 	}
