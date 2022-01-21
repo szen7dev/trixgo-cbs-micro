@@ -371,6 +371,7 @@ module.exports = {
         async handler(ctx) {
             await this.validateEntity(ctx.params);
             let { token }        = ctx.params;
+            console.log("🚀 ~ file: auth.user-handler.js ~ line 374 ~ handler ~ token", token)
 
             let infoUser = await AUTH__USER_MODEL.resolveToken({ token });
             console.log({ infoUser })

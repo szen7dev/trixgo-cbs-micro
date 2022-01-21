@@ -40,36 +40,33 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { userCreate: userID };
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                let dataInsert = { userCreate: userID, contract: contractID };
+
+                // Trường để update các giá trị vào hợp đồng
+                let updateContract = {};
 
                 let companyID;
                 let projectID;
-                if(contractID){
-                    // call service department để lấy thông tin
-                    
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
-                        contractID
-                    })
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */ 
-                    companyID = infoContract.data.company;
-                    projectID = infoContract.data.project;
-                    if(!companyID)
-                        return resolve({ error: true, message: "company_invalid" });
-                    if(!projectID)
-                        return resolve({ error: true, message: "project_invalid" });
-                }
+                if(!checkObjectIDs(contractID))
+                    return resolve({ error: true, message: "Mã hợp đồng không đúng", keyError: "contractID_invalid" });
 
-                if(contractID){
-                    dataInsert.contract = contractID;
-                }
+                // call service department để lấy thông tin
+                
+                let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                    contractID
+                })
+                /**
+                 * Company lấy theo company của project
+                 * Chứ không phải lấy theo company của user tạo task
+                 */ 
+                companyID = infoContract.data.company;
+                projectID = infoContract.data.project;
+                if(!companyID)
+                    return resolve({ error: true, message: "Mã công ty không đúng", keyError: "company_invalid" });
+
+                if(!projectID)
+                    return resolve({ error: true, message: "Mã dự án không đúng", keyError: "project_invalid" });
+                
 
                 if(companyID){
                     dataInsert.company = companyID
@@ -96,25 +93,33 @@ class Model extends BaseModel {
                 }
 
                 if(produce){
-                    dataInsert.produce = produce;
+                    dataInsert.produce     = produce;
+                    updateContract.produce = produce;
                 }
 
                 if(vatProduce){
-                    dataInsert.vatProduce = vatProduce;
+                    dataInsert.vatProduce     = vatProduce;
+                    updateContract.vatProduce = vatProduce;
                 }
 
                 if(plusProduce){
-                    dataInsert.plusProduce = plusProduce;
+                    dataInsert.plusProduce     = plusProduce;
+                    updateContract.plusProduce = plusProduce;
                 }
                 
                 if(vatPlusProduce){
-                    dataInsert.vatPlusProduce = vatPlusProduce;
+                    dataInsert.vatPlusProduce     = vatPlusProduce;
+                    updateContract.vatPlusProduce = vatPlusProduce;
                 }
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_contract_production", status: 403 });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: "can_not_insert_contract_production", status: 403 });
 
+                // update contract precalculated
+                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                    contractID, dataInc: updateContract
+                })
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -134,12 +139,17 @@ class Model extends BaseModel {
             try {
 
                 if(!checkObjectIDs(contractProductionID))
-                    return resolve({ error: true, message: "contractProductionID không hợp lệ", keyError: "contractProductionID_invalid" });
+                    return resolve({ error: true, message: "Mã sản lượng hợp đồng không đúng", keyError: "contractProductionID_invalid" });
                 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
+
+                // Object update contract ($inc)
+                let updateContract = {};
+                let infoContractProduction = await CMCS__CONTRACT_PRODUCTION_COLL.findById(contractProductionID);
+                let contractID = infoContractProduction.contract;
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -170,23 +180,63 @@ class Model extends BaseModel {
 
                 if(produce){
                     dataUpdate.produce = produce;
+                    // Giá trị produce hiện tại lúc chưa thay đổi
+                    let produceCurrent = infoContractProduction.produce;
+            
+                    // Giá trị chênh lệch khi thay đổi
+                    let produceAfter   = produce - produceCurrent;
+
+                    // Gán giá trị chênh lệch cho hợp đồng
+                    updateContract.produce = produceAfter;
                 }
 
                 if(vatProduce){
                     dataUpdate.vatProduce = vatProduce;
+
+                    // Giá trị vatProduce hiện tại lúc chưa thay đổi
+                    let vatProduceCurrent = infoContractProduction.vatProduce;
+        
+                    // Giá trị chênh lệch khi thay đổi
+                    let vatProduceAfter   = vatProduce - vatProduceCurrent;
+
+                    // Gán giá trị chênh lệch cho hợp đồng
+                    updateContract.vatProduce = vatProduceAfter;
                 }
 
                 if(plusProduce){
                     dataUpdate.plusProduce = plusProduce;
+
+                    // Giá trị plusProduce hiện tại lúc chưa thay đổi
+                    let plusProduceCurrent = infoContractProduction.plusProduce;
+    
+                    // Giá trị chênh lệch khi thay đổi
+                    let plusProduceAfter   = plusProduce - plusProduceCurrent;
+
+                    // Gán giá trị chênh lệch cho hợp đồng
+                    updateContract.plusProduce = plusProduceAfter;
                 }
                 
                 if(vatPlusProduce){
                     dataUpdate.vatPlusProduce = vatPlusProduce;
+
+                    // Giá trị vatPlusProduce hiện tại lúc chưa thay đổi
+                    let vatPlusProduceCurrent = infoContractProduction.vatPlusProduce;
+
+                    // Giá trị chênh lệch khi thay đổi
+                    let vatPlusProduceAfter   = vatPlusProduce - vatPlusProduceCurrent;
+
+                    // Gán giá trị chênh lệch cho hợp đồng
+                    updateContract.vatPlusProduce = vatPlusProduceAfter;
                 }
 
                 let infoAterUpdate = await CMCS__CONTRACT_PRODUCTION_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "can't_update_contract_ipc", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                // Cập nhật Hợp đồng (Precaculate)
+                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                    contractID: `${contractID}`, dataInc: updateContract
+                })
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {

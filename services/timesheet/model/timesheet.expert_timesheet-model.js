@@ -141,7 +141,6 @@ class Model extends BaseModel {
                     dataUpdate.project = projectID;
                 }
                
-
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
                 }
@@ -167,7 +166,7 @@ class Model extends BaseModel {
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { hours: hoursAfter }})
                     }
                 }
-
+                
                 if(unitprice){ 
                     dataUpdate.unitprice = unitprice;
                 }

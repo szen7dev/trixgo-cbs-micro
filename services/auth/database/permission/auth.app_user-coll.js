@@ -8,7 +8,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_user", {
      * Công ty chủ quản member (user)
      * -> tiện xử lý lấy danh sách
      */
-     company: {
+    company: {
         type : Schema.Types.ObjectId,
         ref  : 'company'
     },    
@@ -22,7 +22,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_user", {
     /**
      * Tài khoản
      */
-     user: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },    

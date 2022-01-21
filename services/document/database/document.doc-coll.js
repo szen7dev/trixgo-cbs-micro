@@ -46,7 +46,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
      * 3: Nội bộ
      */
     direction: { type: Number, default: 1 },
-    //_________Nơi ban hành
+    //_________Nơi ban hành(Chủ thể ban hành)
     sender: {
         type: Schema.Types.ObjectId,
         ref : "contact"
@@ -94,7 +94,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
     description: String,
     //_________Số hiệu văn bản
     sign: String,
-    //_________Số hiệu hồ sơ lưu
+    //_________Số hiệu hồ sơ lưu (Mã hiệu lưu)
     storeSign: String,
     //_________Số đến (xem xét chính là số hiệu hồ sơ lưu)
     receivedCount: String,

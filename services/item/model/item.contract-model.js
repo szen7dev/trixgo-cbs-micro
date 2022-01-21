@@ -443,8 +443,8 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-        cgValue, expiredCg, agValue, expiredAg, ctx
-         }){
+        cgValue, expiredCg, agValue, expiredAg, dataInc, ctx
+        }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(contractID))
@@ -735,6 +735,11 @@ class Model extends BaseModel {
                 if(dataPull){
                     dataUpdate.$pull = dataPull;
                 }
+                
+                if(dataInc){
+                    dataUpdate.$inc = dataInc;
+                }
+
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot update contract" });
