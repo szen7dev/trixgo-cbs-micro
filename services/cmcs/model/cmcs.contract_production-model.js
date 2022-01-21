@@ -33,14 +33,14 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ projectID, contractID, name, sign, description, date,produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx  }) { 
+    insert({ contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx  }) { 
         return new Promise(async (resolve) => {
             try {
                 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { project: projectID, userCreate: userID };
+                let dataInsert = { userCreate: userID };
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -48,33 +48,35 @@ class Model extends BaseModel {
                  */
 
                 let companyID;
-                if(projectID){
+                let projectID;
+                if(contractID){
                     // call service department để lấy thông tin
                     
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
+                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                        contractID
                     })
                     /**
                      * Company lấy theo company của project
                      * Chứ không phải lấy theo company của user tạo task
                      */ 
-                    companyID = infoProject.data.company;
+                    companyID = infoContract.data.company;
+                    projectID = infoContract.data.project;
                     if(!companyID)
                         return resolve({ error: true, message: "company_invalid" });
+                    if(!projectID)
+                        return resolve({ error: true, message: "project_invalid" });
+                }
+
+                if(contractID){
+                    dataInsert.contract = contractID;
                 }
 
                 if(companyID){
                     dataInsert.company = companyID
                 }
-             
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
 
-                if(contractID){
-                    dataInsert.contract = contractID;
+                if(projectID){
+                    dataInsert.project = projectID
                 }
 
                 if(name){
@@ -92,7 +94,6 @@ class Model extends BaseModel {
                 if(date){
                     dataInsert.date = date;
                 }
-                
 
                 if(produce){
                     dataInsert.produce = produce;
@@ -112,7 +113,7 @@ class Model extends BaseModel {
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
+                    return resolve({ error: true, message: "can't_insert_contract_production", status: 403 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -127,52 +128,30 @@ class Model extends BaseModel {
      * Code: 
      */
     update({ 
-        contractProductionID, projectID, contractID, name, sign, description, date,produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
+        contractProductionID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {
+
+                if(!checkObjectIDs(contractProductionID))
+                    return resolve({ error: true, message: "contractProductionID không hợp lệ", keyError: "contractProductionID_invalid" });
                 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { project: projectID, userCreate: userID };
+                let dataUpdate = { userUpdate: userID };
                 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
-                let companyID;
-                if(!projectID){
-                    // call service department để lấy thông tin
-                    
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */ 
-                    companyID = infoProject.data.company;
-                    if(!companyID)
-                        return resolve({ error: true, message: "company_invalid" });
-                }
-
-                if(companyID){
-                    dataUpdate.company = companyID
-                }
              
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-
-                if(contractID){
-                    dataUpdate.contract = contractID;
-                }
-
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -234,7 +213,7 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(contractProductionID))
-                    return resolve({ error: true, message: 'Request params contractProductionID invalid', status: 400 });
+                    return resolve({ error: true, message: "contractProductionID không hợp lệ", keyError: "contractProductionID_invalid" });
                     
                 /**
                  * LOGIC STEP (3)
@@ -263,7 +242,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(contractProductionID))
-                    return resolve({ error: true, message: 'param_invalid' });
+                    return resolve({ error: true, message: "contractProductionID không hợp lệ", keyError: "contractProductionID_invalid" });
 
                 // populates
                 if(populates && typeof populates === 'string'){
@@ -278,13 +257,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await CMCS__CONTRACT_PRODUCTION_COLL.findById(contractProductionID)
+                let infoContractProduction = await CMCS__CONTRACT_PRODUCTION_COLL.findById(contractProductionID)
                                 .select(select)
                                 .populate(populates)
 
-				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+				if (!infoContractProduction) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: infoContractProduction });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -310,8 +289,6 @@ class Model extends BaseModel {
                 let conditionFind = { };
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
-
-             
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -337,10 +314,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                // TRẠNG THÁI CÔNG VIỆC
-                if(type){
-                    conditionObj.type = type
-                }
 
                 // DỰ ÁN
                 if(projectID && checkObjectIDs(projectID)){
@@ -398,9 +371,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await CMCS__CONTRACT_PRODUCTION_COLL.countDocuments(conditionObj);
+                let totalRecord = await CMCS__CONTRACT_PRODUCTION_COLL.count(conditionObj);
                 let totalPage   = Math.ceil(totalRecord/limit);
-
+                
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,

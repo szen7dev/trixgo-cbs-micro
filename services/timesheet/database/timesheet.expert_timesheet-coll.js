@@ -36,6 +36,9 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         ref : "user"
     },
 
+    //_______Ngày hoàn thành
+    date: Date,
+
     //________Số giờ hoàn thành
     hours: {
         type: Number,
