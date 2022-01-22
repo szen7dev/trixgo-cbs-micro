@@ -8,13 +8,12 @@ exports.sendDataToMultilSocketsOfListUser = function ({ listUserConnected, arrRe
        console.log({ user_connected: listUserConnected[userID] })
         if(listUserConnected[userID]){
             let listSocket = listUserConnected[userID].sockets;
-            console.log({ listSocket })
+            console.log({ listSocket, sockets: sockets.length })
 
             if(listSocket){
                 let listIDSend = '';
 
                 listSocket.forEach(socketID => {
-					console.log({ socketID })
                     if(!listIDSend.includes(socketID)){
                         io.to(`${socketID}`).emit(event, data);
                         listIDSend += ` , ${socketID} `;

@@ -280,7 +280,7 @@ module.exports = {
 			// 	}
 			// })
 
-			// console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
+			console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
         },
 
         // Author: HUYNHVINH
