@@ -74,7 +74,8 @@ module.exports = {
                         // console.log({ newUser })
                         this.userID = newUser;
 
-                        this.addNewUserIntoListConnectedV2(newSocketID);
+                        await this.addNewUserIntoListConnectedV2(newSocketID);
+
                         // Xét user Online
                         let _infoUser =  await USER_MODEL.getDataById(newUser)
                         this.setUserOnline({ _infoUser })
@@ -169,7 +170,7 @@ module.exports = {
                     return Promise.resolve(this.userID);
                 }
 
-                let checkAuthorization = await this.broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
+                let checkAuthorization = await this.broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token });
 
                 if(checkAuthorization.error){
                     return Promise.reject(checkAuthorization.message);
@@ -197,23 +198,28 @@ module.exports = {
         },
 
         addNewUserIntoListConnectedV2(socketID){
-            let listUserConnected2 	= this.listUserConnected2;
-            let _userID 			= this.userID.toString();
-            socketID 				= socketID.toString();
+            return new Promise(async resolve => {
+                let listUserConnected2 	= this.listUserConnected2;
+                let _userID 			= this.userID.toString();
+                socketID 				= socketID.toString();
 
-            if(!listUserConnected2[_userID]){
-                listUserConnected2[_userID]          = {};
-                listUserConnected2[_userID].sockets  = [];
-                listUserConnected2[_userID].sockets  = [...listUserConnected2[_userID].sockets, socketID ];
-            }
+                console.log({ 'BEFORE': listUserConnected2 })
 
-            if(listUserConnected2[_userID]){
-                listUserConnected2[_userID].sockets = listUserConnected2[_userID].sockets.filter(_socketID => _socketID != socketID);
-                listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets, socketID];
-            }
+                if(!listUserConnected2[_userID]){
+                    listUserConnected2[_userID]          = {};
+                    listUserConnected2[_userID].sockets  = [];
+                    listUserConnected2[_userID].sockets  = [...listUserConnected2[_userID].sockets, socketID];
+                }
 
-            this.listUserConnected2 = listUserConnected2;
-            return listUserConnected2;
+                if(listUserConnected2[_userID]){
+                    listUserConnected2[_userID].sockets = listUserConnected2[_userID].sockets.filter(_socketID => _socketID != socketID);
+                    listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets, socketID];
+                }
+                console.log({ 'AFTER': listUserConnected2 })
+
+                this.listUserConnected2 = listUserConnected2;
+                return resolve(listUserConnected2);
+            })
         },
 
 		removeUserDisconnectIntoListConnected(socketDisconnectID){
@@ -237,7 +243,11 @@ module.exports = {
             return listUserConnected2;
         },
 
-        // Author: HUYNHVINH
+        /**
+         * Author: HUYNHVINH
+         * Updated: MinhVH
+         * @param {object} _infoUser
+         */
         setUserOnline({ _infoUser }){
             // Online
             // Khi vừa kết nối sẽ tìm ai đang online là bạn mình thì lấy ra và hiển thị
@@ -258,7 +268,7 @@ module.exports = {
             sendDataToMultilSocketsOfListUser({ 
 				io,
 				event: 'SSC_ONLINE_USER',
-				arrReceiver: listFriendOnline, // listFriendOnline,
+				arrReceiver: listFriendOnline,
 				listUserConnected: listUserActive,
 				data: { 
 					friendOnline: listFriendOnline,
@@ -266,19 +276,6 @@ module.exports = {
 					isFirstTime: false
 				}
 			})
-
-			// Lấy các người bạn đang online gửi đến chính mình
-			// sendDataToMultilSocketsOfListUser({
-			// 	io,
-			// 	event: 'SSC_LIST_USER_ONLINE',
-			// 	arrReceiver: [ _infoUser._id ], 
-			// 	listUserConnected: listUserActive, 
-			// 	data: {
-			// 		listFriendOnline,
-			// 		disconnect: false, 
-			// 		isFirstTime: true
-			// 	}
-			// })
 
 			console.log({ SOCKET_CURRENT_USER: listUserActive[_infoUser._id].sockets, userID: _infoUser._id })
 			// console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
