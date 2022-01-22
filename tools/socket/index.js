@@ -8,7 +8,7 @@ exports.sendDataToMultilSocketsOfListUser = function ({ listUserConnected, arrRe
        console.log({ user_connected: listUserConnected[userID] })
         if(listUserConnected[userID]){
             let listSocket = listUserConnected[userID].sockets;
-            console.log({ listSocket, sockets: sockets.length })
+            console.log({ listSocket, sockets: listSocket.length })
 
             if(listSocket){
                 let listIDSend = '';
