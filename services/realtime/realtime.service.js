@@ -135,7 +135,7 @@ module.exports = {
                         //     console.log('reconnection')
                         // },
 
-                        'disconnect': async function(data, ack) { // write your handler function here.
+                        'disconnect': async function() { // write your handler function here.
                             let socket                      = this;
                             let socketDisconnectID          = socket.id;
                             // let listUserConnected           = socket.$service.listUserConnected;
@@ -207,9 +207,9 @@ module.exports = {
                 listUserConnected2[_userID].sockets  = [...listUserConnected2[_userID].sockets, socketID ];
             }
 
-            if(listUserConnected2[_userID] ){
+            if(listUserConnected2[_userID]){
                 listUserConnected2[_userID].sockets = listUserConnected2[_userID].sockets.filter(_socketID => _socketID != socketID);
-                listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets,  socketID ];
+                listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets, socketID];
             }
 
             this.listUserConnected2 = listUserConnected2;
@@ -320,7 +320,7 @@ module.exports = {
         this.initSocketIO(server);
         const listUserConnected = [];
         this.listUserConnected 	= listUserConnected;
-        this.listUserConnected2 = [];
+        this.listUserConnected2 = listUserConnected;
         this.userID;
     },
     /**
