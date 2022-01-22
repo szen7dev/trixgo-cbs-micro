@@ -469,15 +469,16 @@ module.exports = {
         params: {
 			conversationID	: { type: 'string', optional: true },
             lastestID 		: { type: 'string', optional: true },
+            isJoined 		: { type: 'string', optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, lastestID, filter, select } = ctx.params;
+                const { conversationID, lastestID, isJoined, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListMessageReminder({
-					conversationID, lastestID, userID, filter, select
+					conversationID, lastestID, userID, isJoined, filter, select
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

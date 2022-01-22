@@ -3,6 +3,7 @@
 /**
  * EXTERNAL PACKAGE
  */
+const ObjectID                                  	= require('mongoose').Types.ObjectId;
 const PromisePool									= require('@supercharge/promise-pool');
 const moment										= require('moment');
 
@@ -1908,7 +1909,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 	 * Date: 02/09/2021
 	 */
-	getListMessageReminder({ conversationID, lastestID, userID, limit = 10, filter = {}, select = {} }) {
+	getListMessageReminder({ conversationID, lastestID, userID, isJoined, limit = 10 }) {
 		return new Promise(async (resolve) => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -1926,21 +1927,8 @@ class Model extends BaseModel {
 					limit = +limit;
 				}
 
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
 				let conditionFind = {};
+				let conditionJoined = {};
 				let conditionObj  = { type: 4 };
 				let sortBy = {
 					modifyAt: -1,
@@ -1962,7 +1950,7 @@ class Model extends BaseModel {
 						});
 					}
 
-					conditionObj.conversation = conversationID;
+					conditionObj.conversation = ObjectID(conversationID);
 				}
 
 				// GET CONDITION PAGINATION
@@ -1981,20 +1969,103 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 				}
 
-				let	listMessagesReminder = await CHATTING__MESSAGE_COLL
-					.find({ ...conditionObj, ...conditionFind }, filter)
-					.populate('sender', select.sender)
-					.populate({
-						path: 'reminder',
-						populate: {
-							path: 'accepts rejects',
-							select: select.user,
+				if(isJoined) {
+					conditionJoined["reminder.accepts"] = { $in: [ObjectID(userID)] };
+				}
+
+				let	listMessagesReminder = await CHATTING__MESSAGE_COLL.aggregate([
+					{
+						$match: { ...conditionObj, ...conditionFind }
+					},
+					{ $limit: limit + 1 },
+					{ $sort: sortBy },
+					{ 
+                        $lookup: {
+                            from: "users",
+                            localField: "sender",
+                            foreignField: "_id",
+                            as: "sender"
+                        } 
+                    },
+                    {
+                        $unwind: {
+							path: "$sender",
+							preserveNullAndEmptyArrays: true
 						},
-						select: select.reminder
-					})
-					.limit(limit + 1)
-					.sort(sortBy)
-					.lean();
+                    },
+					{ 
+                        $lookup: {
+                            from: "message_message_reminders",
+                            localField: "reminder",
+                            foreignField: "_id",
+                            as: "reminder"
+                        } 
+                    },
+                    {
+                        $unwind: {
+							path: "$reminder",
+							preserveNullAndEmptyArrays: true
+						},
+                    },
+					{
+						$match: conditionJoined
+					},
+					{ 
+                        $lookup: {
+                            from: "users",
+                            localField: "reminder.accepts",
+                            foreignField: "_id",
+                            as: "reminder.accepts"
+                        } 
+                    },
+					{ 
+                        $lookup: {
+                            from: "users",
+                            localField: "reminder.rejects",
+                            foreignField: "_id",
+                            as: "reminder.rejects"
+                        } 
+                    },
+					{
+                        $project: {
+                            _id: 1,
+							status: 1,
+							type: 1,
+							modifyAt: 1,
+							createAt: 1,
+                            "reminder.repeat": 1,
+                            "reminder.status": 1,
+                            "reminder.content": 1,
+                            "reminder.notifyFor": 1,
+                            "reminder.remindTime": 1,
+                            "reminder.createdAt": 1,
+                            "reminder.accepts._id": 1,
+                            "reminder.accepts.fullname": 1,
+                            "reminder.accepts.bizfullname": 1,
+							"reminder.rejects._id": 1,
+                            "reminder.rejects.fullname": 1,
+                            "reminder.rejects.bizfullname": 1,
+							"sender._id": 1,
+                            "sender.fullname": 1,
+                            "sender.bizfullname": 1,
+                        }
+                    }
+				])
+
+				// let	listMessagesReminder = await CHATTING__MESSAGE_COLL
+				// 	.find({ ...conditionObj, ...conditionFind }, filter)
+				// 	.populate('sender', select.sender)
+				// 	.populate({
+				// 		path: 'reminder',
+				// 		populate: {
+				// 			path: 'accepts rejects',
+				// 			select: select.user,
+				// 		},
+				// 		select: select.reminder
+				// 	})
+				// 	.limit(limit + 1)
+				// 	.sort(sortBy)
+				// 	.lean();
 
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);

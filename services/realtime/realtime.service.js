@@ -62,20 +62,19 @@ module.exports = {
                         /**
                          * newUser: lấy resp từ socketAuthorize
                          */
-                        let newUser             = socket.client.user;
-                        let newSocketID         = socket.id;
-                        // let listUserConnected   = this.addNewUserIntoListConnected(newUser, newSocketID, socket);
-                        // let listAllUserIgnoreSender = listUserConnected.filter(user => user.socketID != newSocketID);
+                        const newUser             = socket.client.user;
+                        const newSocketID         = socket.id;
+                        // const listUserConnected   = this.addNewUserIntoListConnected(newUser, newSocketID, socket);
+                        // const listAllUserIgnoreSender = listUserConnected.filter(user => user.socketID != newSocketID);
                         // listAllUserIgnoreSender.forEach(user => {
                         //     socket.to(user.socketID).emit("NEW_USER", {newUser, newSocketID});
                         // })
-                        // console.log({ newUser })
-                        this.userID = newUser;
 
+                        this.userID = newUser;
                         this.addNewUserIntoListConnectedV2(newSocketID);
 
                         // Xét user Online
-                        let _infoUser =  await USER_MODEL.getDataById(newUser)
+                        const _infoUser =  await USER_MODEL.getDataById(newUser)
                         this.setUserOnline({ _infoUser })
 
                         next();
@@ -129,10 +128,6 @@ module.exports = {
                                 event: 'SERVER_SEND_CHATTING_TEST', io
                             })
                         },
-
-                        // 'reconnect': async function(data, ack) { // write your handler function here.
-                        //     console.log('reconnection')
-                        // },
 
                         'disconnect': async function() { // write your handler function here.
                             let socket                      = this;
@@ -252,24 +247,18 @@ module.exports = {
                 }
             });
 
-            io.emit('SSC_ONLINE_USER', {
-                friendOnline: listFriendOnline,
-                disconnect: false,
-                isFirstTime: false
-            })
-
             // Gửi tín hiệu kết nối cho những người bạn 
-            // sendDataToMultilSocketsOfListUser({ 
-			// 	io,
-			// 	event: 'SSC_ONLINE_USER',
-			// 	arrReceiver: listFriendOnline,
-			// 	listUserConnected: listUserActive,
-			// 	data: { 
-			// 		friendOnline: listFriendOnline,
-			// 		disconnect: false,
-			// 		isFirstTime: false
-			// 	}
-			// })
+            sendDataToMultilSocketsOfListUser({ 
+				io,
+				event: 'SSC_ONLINE_USER',
+				arrReceiver: listFriendOnline,
+				listUserConnected: listUserActive,
+				data: { 
+					friendOnline: listFriendOnline,
+					disconnect: false,
+					isFirstTime: false
+				}
+			})
 
 			console.log({ SOCKET_CURRENT_USER: listUserActive[_infoUser._id].sockets, userID: _infoUser._id })
 			// console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
@@ -310,7 +299,6 @@ module.exports = {
     created() {
         this.initSocketIO(server);
         const listUserConnected = [];
-        // this.listUserConnected 	= listUserConnected;
         this.listUserConnected2 = listUserConnected;
         this.userID;
     },
