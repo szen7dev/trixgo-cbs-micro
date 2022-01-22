@@ -244,7 +244,7 @@ module.exports = {
             if(!_infoUser) return;
 
             let friends             = _infoUser && _infoUser.friends;
-            let listFriendOnline    = [_infoUser._id];
+            let listFriendOnline    = [];
             let listUserActive      = this.listUserConnected2 || [];
             let io                  = this.io;
 
@@ -280,7 +280,7 @@ module.exports = {
 			// 	}
 			// })
 
-			console.log({ connected: this.listUserConnected2, listFriendOnline, listUserActive, userID: _infoUser._id })
+			console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
         },
 
         // Author: HUYNHVINH
