@@ -203,7 +203,7 @@ module.exports = {
                 let _userID 			= this.userID.toString();
                 socketID 				= socketID.toString();
 
-                console.log({ 'BEFORE': listUserConnected2[_userID].sockets })
+                console.log({ 'BEFORE': listUserConnected2[_userID] && listUserConnected2[_userID].sockets })
 
                 if(!listUserConnected2[_userID]){
                     listUserConnected2[_userID]          = {};
@@ -215,7 +215,7 @@ module.exports = {
                     listUserConnected2[_userID].sockets = listUserConnected2[_userID].sockets.filter(_socketID => _socketID != socketID);
                     listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets, socketID];
                 }
-                console.log({ 'AFTER': listUserConnected2[_userID].sockets })
+                console.log({ 'AFTER': listUserConnected2[_userID] && listUserConnected2[_userID].sockets })
 
                 this.listUserConnected2 = listUserConnected2;
                 return resolve(listUserConnected2);
