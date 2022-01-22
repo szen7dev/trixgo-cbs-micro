@@ -516,6 +516,7 @@ exports.CHATTING_SOCKET = {
 		// Get member and amount miss message of member
 		for (const memberID of members) {
 			let amountMissMessage = 0;
+
 			const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
 				members: { $in: [memberID] }
 			}).select('usersMissMessage').lean();
