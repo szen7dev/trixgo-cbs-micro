@@ -187,7 +187,8 @@ exports.CHATTING_SOCKET = {
 					infoSender: infoSender.data,
 					addedMembers: addedMembers.data,
 				}
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_ADD_MEMBER_CONVERSATION], io
+			},
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_ADD_MEMBER_CONVERSATION], io
 		});
 
     },

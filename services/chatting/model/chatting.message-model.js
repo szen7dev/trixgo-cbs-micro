@@ -1914,7 +1914,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([userID])) {
 					return resolve({ 
 						error: true, 
-						message: 'Tham số ID user', 
+						message: 'Tham số user ID', 
 						keyError: 'params_userID_invalid',
 						status: 400
 					});
@@ -1952,7 +1952,7 @@ class Model extends BaseModel {
 						_id: conversationID,
 						members: { $in: [userID] }
 					}).lean();
-	
+
 					if(!infoConversation) {
 						return resolve({ 
 							error: true, 
@@ -1962,7 +1962,7 @@ class Model extends BaseModel {
 						});
 					}
 
-					conditionObj.conversation = conversationID
+					conditionObj.conversation = conversationID;
 				}
 
 				// GET CONDITION PAGINATION

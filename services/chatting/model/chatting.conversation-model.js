@@ -76,11 +76,11 @@ class Model extends BaseModel {
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
 							members: {
-								$elemMatch: {
-									$eq: [authorID, ...membersID]
-								}
-								// $all: [authorID, ...membersID],
-								// $size: 2
+								// $elemMatch: {
+								// 	$eq: [authorID, ...membersID]
+								// }
+								$all: [authorID, ...membersID],
+								$size: 2
 							},
 						})
 						.lean();
