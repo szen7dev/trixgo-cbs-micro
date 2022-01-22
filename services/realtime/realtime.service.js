@@ -252,18 +252,24 @@ module.exports = {
                 }
             });
 
+            io.emit('SSC_ONLINE_USER', {
+                friendOnline: listFriendOnline,
+                disconnect: false,
+                isFirstTime: false
+            })
+
             // Gửi tín hiệu kết nối cho những người bạn 
-            sendDataToMultilSocketsOfListUser({ 
-				io,
-				event: 'SSC_ONLINE_USER',
-				arrReceiver: listFriendOnline,
-				listUserConnected: listUserActive,
-				data: { 
-					friendOnline: listFriendOnline,
-					disconnect: false,
-					isFirstTime: false
-				}
-			})
+            // sendDataToMultilSocketsOfListUser({ 
+			// 	io,
+			// 	event: 'SSC_ONLINE_USER',
+			// 	arrReceiver: listFriendOnline,
+			// 	listUserConnected: listUserActive,
+			// 	data: { 
+			// 		friendOnline: listFriendOnline,
+			// 		disconnect: false,
+			// 		isFirstTime: false
+			// 	}
+			// })
 
 			console.log({ SOCKET_CURRENT_USER: listUserActive[_infoUser._id].sockets, userID: _infoUser._id })
 			// console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
