@@ -258,7 +258,7 @@ module.exports = {
             sendDataToMultilSocketsOfListUser({ 
 				io,
 				event: 'SSC_ONLINE_USER',
-				arrReceiver: listFriendOnline,
+				arrReceiver: [_infoUser._id], //listFriendOnline,
 				listUserConnected: listUserActive,
 				data: { 
 					friendOnline: listFriendOnline,
