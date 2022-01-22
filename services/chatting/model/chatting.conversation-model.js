@@ -58,7 +58,6 @@ class Model extends BaseModel {
 						status: 400 
 					});
 				}
-				console.log({ name, description, bizfullname, authorID, membersID, isPrivate })
 
 				// Tạo cuộc hội thoại 2 người
 				if(isPrivate){
@@ -79,16 +78,13 @@ class Model extends BaseModel {
 								{ members: [...membersID, authorID] },
 							]
 							// members: {
-							// 	// $elemMatch: {
-							// 	// 	$eq: [authorID, ...membersID]
-							// 	// }
 							// 	$all: [ObjectID(authorID), ...membersID],
 							// 	$size: 2
 							// },
 						})
 						.lean();
 
-					console.log({ checkExistConversation, members: [authorID, ...membersID] })
+					// console.log({ checkExistConversation, members: [authorID, ...membersID] })
 
 					if(checkExistConversation)
 						return resolve({ error: false, data: checkExistConversation, status: 200 });
@@ -97,7 +93,6 @@ class Model extends BaseModel {
 						userID: membersID[0],
 						select: 'bizfullname'
 					});
-					console.log({ infoMember, membersID })
 
 					if(infoMember.error) {
 						return resolve({ 
@@ -109,7 +104,6 @@ class Model extends BaseModel {
 					}
 
 					name = `${bizfullname}_${infoMember?.data?.bizfullname}`;
-					console.log({ name })
 
 				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
 					if(membersID.length <= 1) {
@@ -138,12 +132,11 @@ class Model extends BaseModel {
 					authors: [authorID],
 					members: [...new Set([authorID, ...membersID])]
 				});
-				console.log({ infoConversationAfterInserted })
 
                 if(!infoConversationAfterInserted) {
 					return resolve({ 
 						error: true, 
-						message: 'Đã có lỗi xảy ra', 
+						message: 'Đã xảy ra lỗi', 
 						keyError: 'error_occurs',
 						status: 422
 					});

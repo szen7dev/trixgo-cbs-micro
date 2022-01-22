@@ -244,7 +244,7 @@ module.exports = {
             if(!_infoUser) return;
 
             let friends             = _infoUser && _infoUser.friends;
-            let listFriendOnline    = [];
+            let listFriendOnline    = [_infoUser._id];
             let listUserActive      = this.listUserConnected2 || [];
             let io                  = this.io;
 
