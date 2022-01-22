@@ -11,7 +11,6 @@ const PromisePool									= require('@supercharge/promise-pool');
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_AUTH } 							= require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
 
@@ -72,6 +71,7 @@ class Model extends BaseModel {
 						});
 					}
 
+					membersID = membersID.map(memberID => ObjectID(memberID));
 					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
@@ -79,7 +79,7 @@ class Model extends BaseModel {
 								// $elemMatch: {
 								// 	$eq: [authorID, ...membersID]
 								// }
-								$all: [authorID, ...membersID],
+								$all: [ObjectID(authorID), ...membersID],
 								$size: 2
 							},
 						})
