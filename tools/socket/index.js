@@ -1,14 +1,12 @@
-// HUYNHVINH
 exports.sendDataToMultilSocketsOfListUser = function ({ listUserConnected, arrReceiver, data, event, io }) {
-   if(!listUserConnected || !event  || !io || !arrReceiver) {
-       console.log('param invalid', listUserConnected, event, arrReceiver);
-   }
+    if(!listUserConnected || !event  || !io || !arrReceiver) {
+        console.log('param invalid', listUserConnected, event, arrReceiver);
+    }
 
    arrReceiver && arrReceiver.forEach(userID => {
-       console.log({ user_connected: listUserConnected[userID] })
         if(listUserConnected[userID]){
             let listSocket = listUserConnected[userID].sockets;
-            console.log({ listSocket, sockets: listSocket.length })
+            console.log({ [userID]: listSocket })
 
             if(listSocket){
                 let listIDSend = '';
