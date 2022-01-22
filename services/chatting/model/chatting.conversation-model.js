@@ -71,19 +71,23 @@ class Model extends BaseModel {
 						});
 					}
 
-					membersID = membersID.map(memberID => ObjectID(memberID));
 					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
-							members: {
-								// $elemMatch: {
-								// 	$eq: [authorID, ...membersID]
-								// }
-								$all: [ObjectID(authorID), ...membersID],
-								$size: 2
-							},
+							$or: [
+								{ members: [authorID, ...membersID] },
+								{ members: [...membersID, authorID] },
+							]
+							// members: {
+							// 	// $elemMatch: {
+							// 	// 	$eq: [authorID, ...membersID]
+							// 	// }
+							// 	$all: [ObjectID(authorID), ...membersID],
+							// 	$size: 2
+							// },
 						})
 						.lean();
+
 					console.log({ checkExistConversation, members: [authorID, ...membersID] })
 
 					if(checkExistConversation)
