@@ -254,11 +254,11 @@ module.exports = {
                 }
             });
 
-            // Gửi tín hiệu kết nối cho những người bạn
+            // Gửi tín hiệu kết nối cho những người bạn 
             sendDataToMultilSocketsOfListUser({ 
 				io,
 				event: 'SSC_ONLINE_USER',
-				arrReceiver: [_infoUser._id], //listFriendOnline,
+				arrReceiver: [_infoUser._id], // listFriendOnline,
 				listUserConnected: listUserActive,
 				data: { 
 					friendOnline: listFriendOnline,
@@ -280,7 +280,8 @@ module.exports = {
 			// 	}
 			// })
 
-			console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
+			console.log({ SOCKET_CURRENT_USER: listUserActive[_infoUser._id].sockets, userID: _infoUser._id })
+			// console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
         },
 
         // Author: HUYNHVINH
