@@ -1,5 +1,4 @@
-// const mongoose = require('mongoose');
-// mongoose.Promise = global.Promise;
+const mongoose = require('mongoose');
 
 // mongoose.connect('mongodb://localhost/my_db', {
 //   useNewUrlParser: true,
@@ -8,10 +7,15 @@
 //   useFindAndModify: false,
 // });
 
-// const conn = mongoose.connection;
+const conn = mongoose.createConnection('mongodb://localhost/my_db', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  });
 
-// conn.on('error', () => console.error.bind(console, 'connection error'));
+conn.on('error', () => console.error.bind(console, 'connection error'));
 
-// conn.once('open', () => console.info('Connection to Database is successful'));
+conn.once('open', () => console.info('Connection to Database is successful'));
 
-// module.exports = conn;
+module.exports = conn;

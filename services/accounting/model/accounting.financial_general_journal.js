@@ -29,7 +29,7 @@ const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-consta
 /**
  * TOOLS
 */
-// const connection  = require('../helper/transaction-demo/connectionMongo');
+const connection  = require('../helper/transaction-demo/connectionMongo');
 
 
 // update  phân trang sau
@@ -260,8 +260,9 @@ class Model extends BaseModel {
     }) {
         const that = this;
         return new Promise(async (resolve) => {
-            // const session = await connection.startSession();
-            // session.startTransaction();  
+            let responseResultInsert = {};
+            const session = await connection.startSession();
+            await session.startTransaction();
             try {
                 const checkInput = this.checkInputInsertFull({  amount, voucher, companyID, authorID, fundaID, customerDebit, customerCredit });
                 if(checkInput.error)
@@ -298,7 +299,13 @@ class Model extends BaseModel {
                 const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherId: voucher, journalAmount : amount , journalFcuAmount: fcuAmountCalculate })
                 // await session.commitTransaction();
                 //---- Không cần check kĩ --> sẽ đưa qua trasaction//
-                
+                console.log({resultUpdate})
+                if(resultUpdate.error){
+                    responseResultInsert = { error: false, data: infoAfterInsert }
+                    await session.abortTransaction();
+                }else{
+                    responseResultInsert = { error: false, data: infoAfterInsert }
+                }
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
                 //1.butget service
@@ -307,14 +314,19 @@ class Model extends BaseModel {
                 //         $addToSet: { journals: infoAfterInsert._id } 
                 //     },{ new: true });
                 // }
-
-                return resolve({ error: false, data: infoAfterInsert });
+                // return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
-                // await session.abortTransaction();
-                return resolve({ error: true, message: error.message });
+                await session.abortTransaction();
+                responseResultInsert = { error: true, message: error.message };
+
+                // return resolve({ error: true, message: error.message });
             }
-            // session.endSession();
+            finally {
+                session.endSession();
+                await connection.close();
+                return resolve(responseResultInsert);
+            }
         })
     }
 
@@ -325,6 +337,9 @@ class Model extends BaseModel {
         contract, project, job, group, authorID 
     }){
         return new Promise(async (resolve) => {
+            let responseResultUpdate = {};
+            const session = await connection.startSession();
+            await session.startTransaction();
             try {
                 const info = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
                 if (!info) 
@@ -366,19 +381,29 @@ class Model extends BaseModel {
 
                 // step 1: update --> voucher info 
                 // step 2: transaction (after...)
-                await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterUpdate.voucher}`,journalAmount, journalFcuAmount })
+                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterUpdate.voucher}`,journalAmount, journalFcuAmount })
+                if(resultUpdateVoucher.error){
+                    responseResultUpdate = { error: false, data: infoAfterUpdate }
+                    await session.abortTransaction();
+                }else{
+                    responseResultUpdate = { error: false, data: infoAfterUpdate }
+                }
                 //___________UPDATE VÀO KHOẢN MỤC PHÍ MỚI
                 if(job && _isValid(job)){
                     // await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
                     //     $addToSet: { journals: journalID } 
                     // }, { new: true });
                 }
-                
-                return resolve({ error: false, data: infoAfterUpdate });
             
             } catch (error) {
+                await session.abortTransaction();
                 console.log(`ERROR [ACCOUNTING_JOURNAL][UPDATE_JOURNAL]: ${error}`);
-                return resolve({ error: true, message: error.message });
+                responseResultUpdate = { error: true, message: error.message };
+            }
+            finally {
+                session.endSession();
+                await connection.close();
+                return resolve(responseResultUpdate);
             }
         })
     }
@@ -387,6 +412,9 @@ class Model extends BaseModel {
     // Author: HiepNH
     remove({ journalID }){
         return new Promise(async (resolve) => {
+            let responseResultRemove = {};
+            const session = await connection.startSession();
+            await session.startTransaction();
             try {
                 if( !ObjectID.isValid(journalID))
                     return resolve({ error: true, message: 'param_invalid' });
@@ -406,8 +434,13 @@ class Model extends BaseModel {
 
                 // step 1: update --> voucher info 
                 // step 2: transaction (after...)
-                await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterRemove.voucher}`,journalAmount, journalFcuAmount })
-
+                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterRemove.voucher}`,journalAmount, journalFcuAmount })
+                if(resultUpdateVoucher.error){
+                    responseResultRemove = { error: false, data: infoAfterUpdate }
+                    await session.abortTransaction();
+                }else{
+                    responseResultRemove = { error: false, data: infoAfterUpdate }
+                }
                 //_________Xóa trong Ứng dụng quản lý chi phí
                 if(info.job && _isValid(info.job)){
                     await BUDGET_JOB_COLL.findByIdAndUpdate(info.job, {
@@ -420,6 +453,11 @@ class Model extends BaseModel {
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][REMOVE_JOURNAL]: ${error}`);
                 return resolve({ error: true, message: error.message })
+            }
+            finally {
+                session.endSession();
+                await connection.close();
+                return resolve(responseResultRemove);
             }
         })
     }

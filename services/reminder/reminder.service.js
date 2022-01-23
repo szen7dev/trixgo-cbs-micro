@@ -104,12 +104,12 @@ module.exports = {
 					const socket = require('socket.io-client')(`https://websocket-cbs.trixgo.com?token=${job.attrs.data.userID}&access_key=Y2JzX3Byb2plY3RAMjAyMQo=`);
 
 					socket.on("connect", () => {
-						// console.log({ 
-						// 	__MESSAGE: "Connection with the Gateway established", 
-						// 	__SOCKETID: socket.id, 
-						// 	__CONNECTED: socket.connected, 
-						// 	__DISCONNECTED: socket.disconnected 
-						// });
+						console.log({ 
+							__MESSAGE: "Connection with the Gateway established", 
+							__SOCKETID: socket.id, 
+							__CONNECTED: socket.connected, 
+							__DISCONNECTED: socket.disconnected 
+						});
 						socket.emit('CHATTING_CSS_NOTIFICATION_REMINDER', job.attrs.data);
 						socket.disconnect();
 					});
@@ -152,13 +152,14 @@ module.exports = {
 		// let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 		
 		const connectionOpts = {
-			db: { 	address:MONGODB_URL, 
-					collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
-					options: { useNewUrlParser: true }	
-				},
+			db: {
+				address: MONGODB_URL, 
+				collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
+				options: { useNewUrlParser: true }
+			},
 		};
 		// agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
-		let agenda = new Agenda(connectionOpts)
+		const agenda = new Agenda(connectionOpts);
 
 		runDefineTask().catch(error => {
 			console.error({ runDefineTask_error: error });
@@ -169,7 +170,5 @@ module.exports = {
 	/**
 	* Service stopped lifecycle event handler
 	*/
-	async stopped() {
-		
-	}
+	async stopped() { }
 };

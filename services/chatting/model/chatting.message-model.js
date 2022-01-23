@@ -3,6 +3,7 @@
 /**
  * EXTERNAL PACKAGE
  */
+const ObjectID                                  	= require('mongoose').Types.ObjectId;
 const PromisePool									= require('@supercharge/promise-pool');
 const moment										= require('moment');
 
@@ -584,17 +585,29 @@ class Model extends BaseModel {
 	autoDeleteMessagesConversation({ conversationID, userID, time, isDelete = false, ctx }){
 		return new Promise(async resolve => {
 			try {
-				// CHECK PARAMS
-                if (!checkObjectIDs([userID, conversationID]))
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+				console.log({ conversationID, userID, time, isDelete })
+                if (!checkObjectIDs([userID, conversationID])) {
+					return resolve({
+						error: true,
+						message: 'Tham số không hợp lệ',
+						keyError: 'params_userID_or_conversationID_invalid',
+						status: 400
+					})
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					authors: { $in: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author conversation", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({
+						error: true,
+						message: 'Bạn không phải admin cuộc hội thoại',
+						keyError: 'you_are_not_admin_of_conversation',
+						status: 403
+					})
+				}
 
 				if(isDelete){
 					await CHATTING__MESSAGE_COLL.deleteMany({
@@ -1908,12 +1921,17 @@ class Model extends BaseModel {
 	 * Func: Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 	 * Date: 02/09/2021
 	 */
-	getListMessageReminder({ conversationID, lastestID, userID, limit = 10, filter = {}, select = {} }) {
+	getListMessageReminder({ conversationID, lastestID, userID, isJoined, limit = 10 }) {
 		return new Promise(async (resolve) => {
 			try {
-				// Check params
-				if(!checkObjectIDs([conversationID, userID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+				if(!checkObjectIDs([userID])) {
+					return resolve({ 
+						error: true, 
+						message: 'Tham số user ID', 
+						keyError: 'params_userID_invalid',
+						status: 400
+					});
+				}
 
 				if(isNaN(limit)) {
 					limit = 10;
@@ -1921,37 +1939,30 @@ class Model extends BaseModel {
 					limit = +limit;
 				}
 
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
-				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $in: [userID] }
-				}).lean();
-
-				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
-
 				let conditionFind = {};
-				let conditionObj  = {
-					conversation: conversationID,
-					type: 4
-				};
+				let conditionJoined = {};
+				let conditionObj  = { type: 4 };
 				let sortBy = {
 					modifyAt: -1,
 					createAt: -1,
-					updateAt: -1
+				}
+
+				if(conversationID && checkObjectIDs([conversationID])) {
+					let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
+						_id: conversationID,
+						members: { $in: [userID] }
+					}).lean();
+
+					if(!infoConversation) {
+						return resolve({ 
+							error: true, 
+							message: 'Bạn không phải thành viên của cuộc hội thoại', 
+							keyError: 'you_are_not_member_of_conversation',
+							status: 403
+						});
+					}
+
+					conditionObj.conversation = ObjectID(conversationID);
 				}
 
 				// GET CONDITION PAGINATION
@@ -1970,35 +1981,113 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
 				}
 
-				let	listMessagesReminder = await CHATTING__MESSAGE_COLL
-					.find({ ...conditionObj, ...conditionFind }, filter)
-					.populate('sender', select.sender)
-					.populate({
-						path: 'reminder',
-						populate: {
-							path: 'accepts rejects',
-							select: select.user,
-						},
-						select: select.reminder
-					})
-					.limit(limit + 1)
-					.sort(sortBy)
-					.lean();
+				if(isJoined) {
+					conditionJoined["reminder.accepts"] = { $in: [ObjectID(userID)] };
+				}
 
-				if(!listMessagesReminder)
-					return resolve({ error: true, message: "Can't get list message reminder", status: 403 });
+				let	listMessagesReminder = await CHATTING__MESSAGE_COLL.aggregate([
+					{
+						$match: { ...conditionObj, ...conditionFind }
+					},
+					{ $limit: limit + 1 },
+					{ $sort: sortBy },
+					{ 
+                        $lookup: {
+                            from: "users",
+                            localField: "sender",
+                            foreignField: "_id",
+                            as: "sender"
+                        } 
+                    },
+                    {
+                        $unwind: {
+							path: "$sender",
+							preserveNullAndEmptyArrays: true
+						},
+                    },
+					{ 
+                        $lookup: {
+                            from: "message_message_reminders",
+                            localField: "reminder",
+                            foreignField: "_id",
+                            as: "reminder"
+                        } 
+                    },
+                    {
+                        $unwind: {
+							path: "$reminder",
+							preserveNullAndEmptyArrays: true
+						},
+                    },
+					{
+						$match: conditionJoined
+					},
+					{ 
+                        $lookup: {
+                            from: "users",
+                            localField: "reminder.accepts",
+                            foreignField: "_id",
+                            as: "reminder.accepts"
+                        } 
+                    },
+					{ 
+                        $lookup: {
+                            from: "users",
+                            localField: "reminder.rejects",
+                            foreignField: "_id",
+                            as: "reminder.rejects"
+                        } 
+                    },
+					{
+                        $project: {
+                            _id: 1,
+							status: 1,
+							type: 1,
+							modifyAt: 1,
+							createAt: 1,
+                            "reminder.repeat": 1,
+                            "reminder.status": 1,
+                            "reminder.content": 1,
+                            "reminder.notifyFor": 1,
+                            "reminder.remindTime": 1,
+                            "reminder.createdAt": 1,
+                            "reminder.accepts._id": 1,
+                            "reminder.accepts.fullname": 1,
+                            "reminder.accepts.bizfullname": 1,
+							"reminder.rejects._id": 1,
+                            "reminder.rejects.fullname": 1,
+                            "reminder.rejects.bizfullname": 1,
+							"sender._id": 1,
+                            "sender.fullname": 1,
+                            "sender.bizfullname": 1,
+                        }
+                    }
+				])
+
+				// let	listMessagesReminder = await CHATTING__MESSAGE_COLL
+				// 	.find({ ...conditionObj, ...conditionFind }, filter)
+				// 	.populate('sender', select.sender)
+				// 	.populate({
+				// 		path: 'reminder',
+				// 		populate: {
+				// 			path: 'accepts rejects',
+				// 			select: select.user,
+				// 		},
+				// 		select: select.reminder
+				// 	})
+				// 	.limit(limit + 1)
+				// 	.sort(sortBy)
+				// 	.lean();
 
 				// GET TOTAL RECORD
 				let totalRecord = await CHATTING__MESSAGE_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
 
 				if(listMessagesReminder && listMessagesReminder.length){
-
 					if(listMessagesReminder.length > limit){
 						nextCursor = listMessagesReminder[limit - 1]._id;
 						listMessagesReminder.length = limit;
 					}
-
 				}
 
 				return resolve({
@@ -2012,7 +2101,7 @@ class Model extends BaseModel {
 					}
 				});
 			} catch (error) {
-				return resolve({ error: true, message: error.message, status: 500 })
+				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
 	}

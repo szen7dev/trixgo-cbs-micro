@@ -15,7 +15,6 @@ module.exports = {
 	 */
     insert: {
         params: {
-            projectID           : { type: "string" },
             contractID          : { type: "string" },
             name                : { type: "string" },
             sign                : { type: "string" },
@@ -25,16 +24,15 @@ module.exports = {
             vatProduce          : { type: "number", optional: true },
             plusProduce         : { type: "number", optional: true },
             vatPlusProduce      : { type: "number", optional: true },
-          
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { projectID, contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, } = ctx.params;
+                let { contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PRODUCTION_MODEL.insert({
-                    projectID, contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
+                   contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -51,12 +49,10 @@ module.exports = {
     update: {
         params: {
             contractProductionID: { type: "string" },
-            projectID           : { type: "string" },
-            contractID          : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
+            name                : { type: "string", optional: true },
+            sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
-            date                : { type: "string" },
+            date                : { type: "string", optional: true },
             produce             : { type: "number", optional: true },
             vatProduce          : { type: "number", optional: true },
             plusProduce         : { type: "number", optional: true },
@@ -65,11 +61,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractProductionID, projectID, contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce } = ctx.params;
+                let { contractProductionID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PRODUCTION_MODEL.update({
-                    contractProductionID, projectID, contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
+                    contractProductionID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -111,8 +107,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             contractProductionID : { type: "string", optional: true },
-            projectID     : { type: "string", optional: true },
-            contractID    : { type: "string", optional: true },
+            contractID           : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -124,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractProductionID, projectID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { contractProductionID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -134,7 +129,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await CMCS__CONTRACT_PRODUCTION_MODEL.getList({
-                        projectID, contractID, userID, keyword, limit, lastestID, select, populates
+                        contractID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 

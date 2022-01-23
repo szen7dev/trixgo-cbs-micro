@@ -166,10 +166,10 @@ module.exports = {
             type            : { type: "number", optional: true },
             subType         : { type: "number", optional: true },
             field           : { type: "string", optional: true },
-            chair         : { type: "string", optional: true },
+            chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
-            debtStatus    : { type: "string", optional: true },
-            warehouse     : { type: "string", optional: true },
+            debtStatus      : { type: "string", optional: true },
+            warehouse       : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
             storeSign       : { type: "string", optional: true },
@@ -179,7 +179,7 @@ module.exports = {
             date            : { type: "string", optional: true },
             startTime       : { type: "string", optional: true },
             endTime         : { type: "string", optional: true },
-            buyerInfo     : { type: "string", optional: true },
+            buyerInfo       : { type: "string", optional: true },
             buyerBank       : { type: "string", optional: true },
             sellerBank      : { type: "string", optional: true },
             packageName     : { type: "string", optional: true },
@@ -215,6 +215,7 @@ module.exports = {
             expiredCg              : { type: "string", optional: true },
             agValue                : { type: "number", optional: true },
             expiredAg              : { type: "string", optional: true },
+            dataInc                : { type: "object", optional: true },
         },
         async handler(ctx) {
             try {
@@ -224,11 +225,11 @@ module.exports = {
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
-                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg  } = ctx.params;
-                
+                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc } = ctx.params;
+                      
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
-					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, dataInc, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

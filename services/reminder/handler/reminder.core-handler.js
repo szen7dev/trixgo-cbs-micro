@@ -5,14 +5,16 @@ let agenda;
 const { MONGODB_URL } 	= require('../../../tools/db/utils');
 
 (async function run() {
-    let client = await MongoClient.connect(MONGODB_URL);
+    // let client = await MongoClient.connect(MONGODB_URL);
 
 	const connectionOpts = {
-		db: { 	address:MONGODB_URL, 
-				collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
-				options: { useNewUrlParser: true }	
-			},
+		db: {
+			address: MONGODB_URL, 
+			collection: process.env.AGENDA_COLLECTION || "agenda_jobs",
+			options: { useNewUrlParser: true }
+		},
 	};
+	console.log({ connectionOpts })
     // agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
     agenda = new Agenda(connectionOpts)
   
@@ -89,7 +91,7 @@ module.exports = {
 				if(!conversationID || !userID)
 					throw new Error("Request params conversationID or userID invalid");
 
-				const listJob = await agenda.agenda_jobs({
+				const listJob = await agenda.jobs({
 					name: "update_mute_conversation",
 					"data.conversationID": conversationID,
 					"data.userID": userID,
@@ -178,7 +180,7 @@ module.exports = {
 				if(!conversationID || !messageID)
 					throw new Error("Request params conversationID or messageID invalid");
 
-				const listJob = await agenda.agenda_jobs({
+				const listJob = await agenda.jobs({
 					name: "add_reminder_conversation",
 					"data.conversationID": conversationID,
 					"data.messageID": messageID,
@@ -250,7 +252,7 @@ module.exports = {
 				if(!conversationID)
 					throw new Error("Request params conversationID invalid");
 
-				const listJob = await agenda.agenda_jobs({
+				const listJob = await agenda.jobs({
 					name: "auto_delete_message_conversation",
 					"data.conversationID": conversationID
 				});

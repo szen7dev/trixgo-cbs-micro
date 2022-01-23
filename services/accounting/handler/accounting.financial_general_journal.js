@@ -47,10 +47,9 @@ module.exports = {
                     credit: "5f697dd0de339308feba62c5",
                     date: "2021-11-20T10:58:50.297+07:00",
                 });
-
-                console.log({resultAfterCallHandler});
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][INSERT_FULL] ${error}`);
                 return { error: true, message: error.message };
             }
         }
@@ -72,6 +71,27 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][REMOVE_BY_ID] ${error}`);
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    getInfo: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const { journalID } = ctx.params;
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getInfo({ journalID })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][GET_INFO] ${error}`);
                 return { error: true, message: error.message };
             }
         }

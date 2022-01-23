@@ -476,6 +476,9 @@ class Model extends BaseModel {
 					}
 				}
 
+                // Tổng số trang
+                let totalPage   = Math.ceil(totalRecord/limit);
+
                 return resolve({
 					error: false,
 					status: 200,
@@ -483,6 +486,7 @@ class Model extends BaseModel {
 						listRecords: listFriends,
 						limit,
 						totalRecord,
+                        totalPage,
 						nextCursor
 					}
 				});
@@ -1207,7 +1211,8 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-
+                // Tổng số trang
+                let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({
 					error: false,
 					status: 200,
@@ -1215,6 +1220,7 @@ class Model extends BaseModel {
 						listRecords: listFriends,
 						limit,
 						totalRecord,
+                        totalPage,
 						nextCursor
 					}
 				});
@@ -1308,6 +1314,8 @@ class Model extends BaseModel {
 					}
 				}
 
+                // Tổng số trang
+                let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({
 					error: false,
 					status: 200,
@@ -1315,6 +1323,7 @@ class Model extends BaseModel {
 						listRecords: listFriends,
 						limit,
 						totalRecord,
+                        totalPage,
 						nextCursor
 					}
 				});
@@ -1409,7 +1418,7 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
-
+                
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__USER_COLL.findById(lastestID);

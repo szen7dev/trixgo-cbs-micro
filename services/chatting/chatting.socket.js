@@ -187,7 +187,8 @@ exports.CHATTING_SOCKET = {
 					infoSender: infoSender.data,
 					addedMembers: addedMembers.data,
 				}
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_ADD_MEMBER_CONVERSATION], io
+			},
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_ADD_MEMBER_CONVERSATION], io
 		});
 
     },
@@ -467,7 +468,7 @@ exports.CHATTING_SOCKET = {
 				.findById(infoMessageAfterInsert.data._id, { createdAt: 0, updatedAt: 0, __v: 0 })
 				.populate({
 					path: 'sender receivers usersAssigned',
-					select: '_id fullname bizfullname image'
+					select: '_id fullname bizfullname image email phone'
 				})
 				.populate({
 					path: 'reactions',
@@ -515,6 +516,7 @@ exports.CHATTING_SOCKET = {
 		// Get member and amount miss message of member
 		for (const memberID of members) {
 			let amountMissMessage = 0;
+
 			const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
 				members: { $in: [memberID] }
 			}).select('usersMissMessage').lean();
@@ -637,7 +639,7 @@ exports.CHATTING_SOCKET = {
 				})
 				.populate({
 					path: 'sender usersAssigned',
-					select: '_id bizfullname fullname image',
+					select: '_id bizfullname fullname image email phone',
 				})
 				.lean();
 

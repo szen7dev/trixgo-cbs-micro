@@ -86,7 +86,7 @@ class AccountingFinancialVoucher extends BaseModel {
         returning, forward, cancel, source, orderNew, pricePolicy,
         discountCost, otherCost, shipperName, shipperCost, staff, 
         fcuExRate, selectedJournals, isImport, voucherSign, companyID,
-        ipc, subtype, fee }){
+        ipc, subtype, fee, project }){
         //_________Khai báo dữ liệu
         let dataInsertVoucher = {
             company: companyID, 
@@ -161,7 +161,7 @@ class AccountingFinancialVoucher extends BaseModel {
         cancel, source, orderNew, pricePolicy,
         discountCost, otherCost, shipperName,
         shipperCost, fcuExRate, staff, contract,
-        storage
+        storage, project, ipc, subtype, fee
     }){
         let dataUpdateVoucher = {
             userUpdate: authorID, 
@@ -190,7 +190,8 @@ class AccountingFinancialVoucher extends BaseModel {
             shipperName: shipperName ? shipperName : null,
             shipperCost: shipperCost ? Number(shipperCost) : 0,
             fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
-            staff
+            staff, 
+            ipc, project, subtype, fee
         }
 
         //_________Kiểm tra xem có VAT, lưu trữ hồ sơ không
@@ -205,7 +206,42 @@ class AccountingFinancialVoucher extends BaseModel {
         }else{
             dataUpdateVoucher.storage = null
         }
-        
+        // function checkInputObejctId(value, messageError){
+        //     if(value){
+        //         if(!ObjectId.isValid(value)){
+        //             return { error: true, message: messageError }
+        //         }
+        //         dataUpdateVoucher[value] = value;
+        //     }
+        // }
+        // New field
+        if(project){
+            if(!ObjectId.isValid(project)){
+                return { error: true, message: "project_invalid" }
+            }
+            dataUpdateVoucher.project = project;
+        }
+
+        if(ipc){
+            if(!ObjectId.isValid(ipc)){
+                return { error: true, message: "ipc_invalid" }
+            }
+            dataUpdateVoucher.ipc = ipc;
+        }
+
+        if(subtype){
+            if(!ObjectId.isValid(subtype)){
+                return { error: true, message: "subtype_invalid" }
+            }
+            dataUpdateVoucher.subtype = subtype;
+        }
+
+        if(fee){
+            if(!ObjectId.isValid(fee)){
+                return { error: true, message: "fee_invalid" }
+            }
+            dataUpdateVoucher.fee = fee;
+        }
         return dataUpdateVoucher;
     }
 
@@ -219,7 +255,7 @@ class AccountingFinancialVoucher extends BaseModel {
         returning, forward, cancel, source, orderNew, pricePolicy,
         discountCost, otherCost, shipperName, shipperCost, staff, 
         fcuExRate, selectedJournals, isImport,
-        ipc
+        ipc, fee, subtype, project
     }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -266,8 +302,8 @@ class AccountingFinancialVoucher extends BaseModel {
                     storage, inspection, termination, advancePayment,
                     returning, forward, cancel, source, orderNew, pricePolicy,
                     discountCost, otherCost, shipperName, shipperCost, staff, 
-                    fcuExRate, selectedJournals, isImport,
-                    ipc, voucherSign, companyID
+                    fcuExRate, selectedJournals, isImport, voucherSign, companyID,
+                    ipc, subtype, fee, project
                 });
 
                 if(dataInsertVoucher.error)
@@ -393,7 +429,7 @@ class AccountingFinancialVoucher extends BaseModel {
         storage, inspection, termination, advancePayment,
         returning, forward, cancel, selectedJournals, deletedJournals,
         source, orderNew, pricePolicy, discountCost, otherCost, shipperName,
-        shipperCost, staff, fcuExRate, authorID, companyID, fundaID
+        shipperCost, staff, fcuExRate, authorID, companyID, fundaID, project, subtype, fee
     }){
         return new Promise(async (resolve) => {
             try {
@@ -425,7 +461,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     cancel, source, orderNew, pricePolicy,
                     discountCost, otherCost, shipperName,
                     shipperCost, fcuExRate, staff, contract,
-                    storage
+                    storage, project, subtype, fee
                 });
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true });
@@ -640,11 +676,6 @@ class AccountingFinancialVoucher extends BaseModel {
                             listJorID.push(resultUpdate.data._id);
                         }
                     }
-
-                    let infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID,{ journals : listJorID }, { new: true });
-                    // console.log(infoAfterUpdate)
-                    if(!infoAfterUpdate)
-                        return resolve({ error: true, message: "cannot_update" });
                 }
                 
                 //_________Tiến hành xóa chi tiết_________//
@@ -687,8 +718,11 @@ class AccountingFinancialVoucher extends BaseModel {
                 const checkInput = this.checkInputUpdateWithNewJournals({ voucherId, journalAmount, journalFcuAmount })
                 if(checkInput.error)
                     return resolve(checkInput);
-            
+                
                 const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherId);
+                const infoVoucher2 = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find().limit(10);
+
+                console.log({voucherId, infoVoucher, infoVoucher2 })
                 if(!infoVoucher)
                     return resolve({ erorr: true, message:'voucher_exits', data: null });
                 
@@ -744,14 +778,8 @@ class AccountingFinancialVoucher extends BaseModel {
 
                 if( !_isValid(voucherID))
                     return resolve({ error: true, message: 'voucherID_invalid' });
-                const infoVoucher = await VOUCHER_COLL.findById(voucherID)
+                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                 .populate('company customer contract storage staff')
-                .populate({
-                    path: 'journals',
-                    populate: {
-                        path: 'debit credit customerDebit customerCredit goods warehouse contract job'
-                    }
-                })
                 .populate({
                     path: 'files',
                     populate: {
@@ -759,11 +787,19 @@ class AccountingFinancialVoucher extends BaseModel {
                     }
                 })
                 .populate({
-                    path: 'userCreate userUpdate',
+                path: 'userCreate userUpdate',
                     select:'_id fullname image'
                 })
+                
+                if(!infoVoucher)
+                    return resolve({ error: true, message: 'voucher_exits' })
 
-                return resolve({ error: false, data: infoVoucher })
+                // get list journal
+                let resultGetListJoural = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
+                if(!resultGetListJoural)
+                    resultGetListJoural = [];
+
+                return resolve({ error: false, data: { infoVoucher, resultGetListJoural } })
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][GET_INFO_VOUCHER]: ${error}`);
                 return resolve({ error: true, message: error.message })
@@ -821,7 +857,13 @@ class AccountingFinancialVoucher extends BaseModel {
                     }
                 }
                 let keys = ['createAt__-1', '_id__-1'];
-                let latestRecord = { _id: nextInfo._id, createAt: nextInfo.createAt };
+                let latestRecord = {};
+                if(nextInfo._id){
+                    latestRecord._id =  nextInfo._id
+                }
+                if(nextInfo.createAt){
+                    latestRecord.createAt =  nextInfo.createAt
+                }
                 const result = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
                 // console.log({ result, find: result.data.find['$or'], sort: result.data.sort });
                 if(result.error){
@@ -876,6 +918,7 @@ class AccountingFinancialVoucher extends BaseModel {
 
                 return resolve({ error: false, data: listData, countDocs });
             } catch (error) {
+                console.log(`ERROR [ACCOUNTING][getListVoucherOfCompany] ${error}`);
                 return resolve({ error: true, message: error.message });
             }
         })
@@ -969,7 +1012,7 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // Tìm kiếm phiếu.
-    findVoucherInCompany({ key, type, customer, author, fromDate, toDate, fundaID, companyID }) {
+    findVoucherInCompany({ nextInfo, key, type, customer, author, fromDate, toDate, fundaID, companyID }) {
         return new Promise(async resolve => {
             try {       
                 let sort = {}, conditionObj = {};
@@ -991,9 +1034,9 @@ class AccountingFinancialVoucher extends BaseModel {
                 }
 
                 if(!fundaID){
-                    conditionObj.company = ObjectID(companyID)
+                    conditionObj.company = companyID
                 }else{
-                    conditionObj.funda = ObjectID(fundaID)
+                    conditionObj.funda = fundaID
                 }
 
                 if(type && Number(type) > 0){
@@ -1011,35 +1054,45 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
                     let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
                     let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-
-                    conditionObj.date = {
-                        $gte: startTime,// <=== fix ISODate here
-                        $lte: endTime // <=== fix ISODate here
+                    if(`${startTime}` != 'Invalid Date' && `${endTime}` != 'Invalid Date'){
+                        conditionObj.date = {
+                            $gte: startTime,// <=== fix ISODate here
+                            $lte: endTime // <=== fix ISODate here
+                        }
                     }
                 }
-
                 const keys = ['createAt__-1', '_id__-1'];
-                const latestRecord = { _id: '6198727abc3b2e745ae5277c', createAt:"2021-11-20T03:58:50.000Z" }
+                let latestRecord = {};
+                if(nextInfo._id){
+                    latestRecord._id =  nextInfo._id
+                }
+                if(nextInfo.createAt){
+                    latestRecord.createAt =  nextInfo.createAt
+                }
                 const resultPagination = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
                 
                 if(resultPagination.eror)
                     return resolve({ error: true, message: "cant_get_list_vat" });
                
-                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(resultPagination.data.find)
+                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne(resultPagination.data.find)
                     .populate('customer')
                     .populate('warehouse')
                     .populate({
                         path: 'userCreate userUpdate',
                         select:'_id fullname image'
                     })
-                    .populate('journals')
                     .limit(perPage)
                     .sort(resultPagination.data.sort);
 
-                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
-                // console.log(listData)
+                if(!infoVoucher)
+                    return resolve({ error: true, message: 'voucher_exits' })
 
-                return resolve({ error: false, data: listData });
+                // get list journal
+                let resultGetListJoural = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: infoVoucher._id })
+                if(!resultGetListJoural)
+                    resultGetListJoural = [];
+
+                return resolve({ error: false, data: { infoVoucher,listJoural: resultGetListJoural} });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][findVoucherInCompany] ${error}`);
                 return resolve({ error: true, message: error.message });
