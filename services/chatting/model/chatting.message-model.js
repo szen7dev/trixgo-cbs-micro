@@ -585,17 +585,29 @@ class Model extends BaseModel {
 	autoDeleteMessagesConversation({ conversationID, userID, time, isDelete = false, ctx }){
 		return new Promise(async resolve => {
 			try {
-				// CHECK PARAMS
-                if (!checkObjectIDs([userID, conversationID]))
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+				console.log({ conversationID, userID, time, isDelete })
+                if (!checkObjectIDs([userID, conversationID])) {
+					return resolve({
+						error: true,
+						message: 'Tham số không hợp lệ',
+						keyError: 'params_userID_or_conversationID_invalid',
+						status: 400
+					})
+				}
 
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					authors: { $in: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't author conversation", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({
+						error: true,
+						message: 'Bạn không phải admin cuộc hội thoại',
+						keyError: 'you_are_not_admin_of_conversation',
+						status: 403
+					})
+				}
 
 				if(isDelete){
 					await CHATTING__MESSAGE_COLL.deleteMany({
