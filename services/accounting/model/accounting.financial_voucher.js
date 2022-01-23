@@ -680,7 +680,7 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // Cập nhật một số trưởng như amout, fcuAmount, date khi có 1 chi tiết phiếu thay đổi thông tin.
-    updateWithNewJournal({ voucherId, journalAmount, journalFcuAmount }){
+    updateWithChangingJournal({ voucherId, journalAmount, journalFcuAmount }){
         const that = this;
         return new Promise(async (resolve, reject) => {
             try {

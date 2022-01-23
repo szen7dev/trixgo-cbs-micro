@@ -295,7 +295,7 @@ class Model extends BaseModel {
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN PHIẾU
                 // Cập nhật: amount, fcuAmount
-                const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithNewJournal({ voucherId: voucher, journalAmount : amount , journalFcuAmount: fcuAmountCalculate })
+                const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherId: voucher, journalAmount : amount , journalFcuAmount: fcuAmountCalculate })
                 // await session.commitTransaction();
                 //---- Không cần check kĩ --> sẽ đưa qua trasaction//
                 
@@ -366,7 +366,7 @@ class Model extends BaseModel {
 
                 // step 1: update --> voucher info 
                 // step 2: transaction (after...)
-                await ACCOUNTING__FINANCIAL_VOUCHER.updateWithNewJournal({  voucherId: `${infoAfterUpdate.voucher}`,journalAmount, journalFcuAmount })
+                await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterUpdate.voucher}`,journalAmount, journalFcuAmount })
                 //___________UPDATE VÀO KHOẢN MỤC PHÍ MỚI
                 if(job && _isValid(job)){
                     // await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
@@ -406,7 +406,7 @@ class Model extends BaseModel {
 
                 // step 1: update --> voucher info 
                 // step 2: transaction (after...)
-                await ACCOUNTING__FINANCIAL_VOUCHER.updateWithNewJournal({  voucherId: `${infoAfterRemove.voucher}`,journalAmount, journalFcuAmount })
+                await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterRemove.voucher}`,journalAmount, journalFcuAmount })
 
                 //_________Xóa trong Ứng dụng quản lý chi phí
                 if(info.job && _isValid(info.job)){
@@ -414,6 +414,7 @@ class Model extends BaseModel {
                         $pull: { journals: journalID } 
                     }, { new: true });
                 }
+                // Cập nhật lại VOUCHER 
 
                 return resolve({ error: false, data: infoAfterRemove });
             } catch (error) {

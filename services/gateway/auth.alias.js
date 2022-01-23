@@ -886,6 +886,7 @@ module.exports = {
 		//---------------------------🏁 END SERVICE ANALYSIS   🏁---------------------------//
 
 		//---------------------------🏁 START SERVICE ACCOUNTING 🏁---------------------------//
+		//accounting voucher
 		[`GET ${CF_ROUTINGS_ACCOUNTING.INSERT_VOUCHER}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_VOUCHER}`],
 
@@ -909,9 +910,12 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_INFO_VOUCHER}`],
 
 
-
+		//accouting journal
 		[`GET ${CF_ROUTINGS_ACCOUNTING.INSERT_GENERAL_JOURNAL}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_GENERAL_JOURNAL}`],
+
+		[`POST ${CF_ROUTINGS_ACCOUNTING.REMOVE_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REMOVE_GENERAL_JOURNAL}`],
 
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 

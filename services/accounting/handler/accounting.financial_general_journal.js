@@ -1,7 +1,7 @@
 /**
  * TOOLS
  */
-// const { renderStatusCodeAndResponse } 			= require('../../../tools/utils/status_code')
+const { renderStatusCodeAndResponse } 			= require('../../../tools/utils/status_code')
 
 /**
  * MODEL
@@ -24,7 +24,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const result = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
                     updown: 1,
                     advancePayment: 0,
                     quantity: 1,
@@ -48,12 +48,32 @@ module.exports = {
                     date: "2021-11-20T10:58:50.297+07:00",
                 });
 
-                console.log({result});
-                return infoUser;
+                console.log({resultAfterCallHandler});
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
             }
         }
     },
 
+    removeById: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const { journalID } = ctx.params;
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.remove({ journalID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][REMOVE_BY_ID] ${error}`);
+                return { error: true, message: error.message };
+            }
+        }
+    }
 }
