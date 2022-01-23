@@ -60,22 +60,18 @@ module.exports = {
                     authorization: true,
                     middlewares: [async function(socket, next){
                         /**
-                         * newUser: lấy resp từ socketAuthorize
+                         * userID: lấy resp từ socketAuthorize
                          */
-                        const newUser             = socket.client.user;
-                        const newSocketID         = socket.id;
-                        // const listUserConnected   = this.addNewUserIntoListConnected(newUser, newSocketID, socket);
-                        // const listAllUserIgnoreSender = listUserConnected.filter(user => user.socketID != newSocketID);
-                        // listAllUserIgnoreSender.forEach(user => {
-                        //     socket.to(user.socketID).emit("NEW_USER", {newUser, newSocketID});
-                        // })
+                        const userID        = socket.client.user;
+                        const newSocketID   = socket.id;
 
-                        this.userID = newUser;
-                        this.addNewUserIntoListConnectedV2(newSocketID);
+                        this.userID = userID;
+                        this.addNewUserIntoListConnected(newSocketID);
 
                         // Xét user Online
-                        const _infoUser =  await USER_MODEL.getDataById(newUser)
-                        this.setUserOnline({ _infoUser })
+                        const _infoUser =  await USER_MODEL.getDataById(userID);
+                        this.setUserOnline({ _infoUser });
+                        this.sendUserOnline({ _infoUser });
 
                         next();
                     }],
@@ -108,7 +104,7 @@ module.exports = {
                         'CLIENT_SEND_CHATTING_TEST': async function(data) { 
                             let socket                      = this;
                             let userID                      = socket.client.user;
-                            let listUserActive              = socket.$service.listUserConnected2;
+                            let listUserActive              = socket.$service.listUserConnected;
                             let io                          = socket.$service.io;
                     
                             const allUsers = await USER_COLL.find({}).select('_id').lean();
@@ -130,23 +126,21 @@ module.exports = {
                         },
 
                         'disconnect': async function() { // write your handler function here.
-                            let socket                      = this;
-                            let socketDisconnectID          = socket.id;
-                            // let listUserConnected           = socket.$service.listUserConnected;
-							console.log({ socketDisconnectID })
+                            const socketDisconnectID = this.id;
 
-                            socket.$service.removeUserDisconnectIntoListConnectedV2(socketDisconnectID);
-                            // socket.$service.removeUserDisconnectIntoListConnected(socketDisconnectID);
+							console.log({ ['disconnect']: socketDisconnectID });
+                            this.$service.removeUserDisconnectIntoListConnected(socketDisconnectID);
 
-                            // Xét user Online
-                            let userID    = socket.client.user;
-                            let _infoUser = await USER_MODEL.getDataById(userID);
+                            // Xét user Offline
+                            const userID    = this.client.user;
+                            const _infoUser = await USER_MODEL.getDataById(userID);
 
-                            socket.$service.setUserOffline({ _infoUser });
+                            this.$service.setUserOffline({ _infoUser });
 
                             // ---> ví dụ emit
-                            // socket.$service.io.to(user.socketID).emit("USER_LOGOUT", {listUserConnected, socketLogout});
+                            // this.$service.io.to(user.socketID).emit("USER_LOGOUT", {listUserConnected, socketLogout});
                         },
+
                     }
                 }
             }
@@ -180,7 +174,7 @@ module.exports = {
             }
         },
 
-        // addNewUserIntoListConnected(user, socketID){
+        // addNewUserIntoListConnectedV1(user, socketID){
         //     let listUserConnected                   = this.listUserConnected;
         //     // console.log({ ['trước khi add vào connected']: listUserConnected });
         //     let listUserAfterInsertNewUserConnect   = [...listUserConnected, { user, socketID }];
@@ -190,7 +184,7 @@ module.exports = {
         //     return listUserAfterInsertNewUserConnect;
         // },
 
-        // removeUserDisconnectIntoListConnected(socketDisconnectID){
+        // removeUserDisconnectIntoListConnectedV1(socketDisconnectID){
         //     let listUserConnected   = this.listUserConnected;
         //     // TODO: xem lại trường hợp nếu user có nhiều socket -> cần xoá socket trong mảng socketID:[]
         //     let listUserAfterFilterUserDisconnect = listUserConnected.filter(user => user.socketID != socketDisconnectID);
@@ -201,44 +195,40 @@ module.exports = {
         //     return listUserAfterFilterUserDisconnect;
         // },
 
-        addNewUserIntoListConnectedV2(socketID){
-            let listUserConnected2 	= this.listUserConnected2;
+        addNewUserIntoListConnected(socketID){
+            let listUserConnected 	= this.listUserConnected;
             let _userID 			= this.userID.toString();
             socketID 				= socketID.toString();
 
-            if(!listUserConnected2[_userID]){
-                listUserConnected2[_userID]          = {};
-                listUserConnected2[_userID].sockets  = [];
-                listUserConnected2[_userID].sockets  = [...listUserConnected2[_userID].sockets, socketID];
+            if(!listUserConnected[_userID]){
+                listUserConnected[_userID]          = {};
+                listUserConnected[_userID].sockets  = [];
+                listUserConnected[_userID].sockets  = [...listUserConnected[_userID].sockets, socketID];
             }
 
-            if(listUserConnected2[_userID]){
-                listUserConnected2[_userID].sockets = listUserConnected2[_userID].sockets.filter(_socketID => _socketID != socketID);
-                listUserConnected2[_userID].sockets = [...listUserConnected2[_userID].sockets, socketID];
+            if(listUserConnected[_userID]){
+                listUserConnected[_userID].sockets = listUserConnected[_userID].sockets.filter(_socketID => _socketID != socketID);
+                listUserConnected[_userID].sockets = [...listUserConnected[_userID].sockets, socketID];
             }
 
-            this.listUserConnected2 = listUserConnected2;
-            return listUserConnected2;
+            this.listUserConnected = listUserConnected;
+            return listUserConnected;
         },
 
-        removeUserDisconnectIntoListConnectedV2(socketDisconnectID){
-            let listUserConnected2                              = this.listUserConnected2;
-            socketDisconnectID                                  = socketDisconnectID && socketDisconnectID.toString();
-            listUserConnected2[this.userID.toString()].sockets  = listUserConnected2[this.userID.toString()].sockets.filter(_socketID => _socketID != socketDisconnectID);
-            // console.log(`---------list user connected sau khi disconnect  VVVV2------`);
-            // console.log({ socketDisconnectID, listUserConnected2 });
+        removeUserDisconnectIntoListConnected(socketDisconnectID){
+            let listUserConnected                              = this.listUserConnected;
+            socketDisconnectID                                 = socketDisconnectID && socketDisconnectID.toString();
+            listUserConnected[this.userID.toString()].sockets  = listUserConnected[this.userID.toString()].sockets.filter(_socketID => _socketID != socketDisconnectID);
 
-            return listUserConnected2;
+            return listUserConnected;
         },
 
         setUserOnline({ _infoUser }){
-            // Online
-            // Khi vừa kết nối sẽ tìm ai đang online là bạn mình thì lấy ra và hiển thị
             if(!_infoUser) return;
 
             let friends             = _infoUser && _infoUser.friends;
             let listFriendOnline    = [];
-            let listUserActive      = this.listUserConnected2 || [];
+            let listUserActive      = this.listUserConnected || [];
             let io                  = this.io;
 
 			friends && friends.forEach(friendID => {
@@ -251,7 +241,7 @@ module.exports = {
             sendDataToMultilSocketsOfListUser({ 
 				io,
 				event: 'SSC_ONLINE_USER',
-				arrReceiver: listFriendOnline,
+				arrReceiver: [_infoUser._id],
 				listUserConnected: listUserActive,
 				data: { 
 					friendOnline: listFriendOnline,
@@ -260,26 +250,31 @@ module.exports = {
 				}
 			})
 
-			console.log({ SOCKET_CURRENT_USER: listUserActive[_infoUser._id].sockets, userID: _infoUser._id })
+			// console.log({ SOCKET_CURRENT_USER: listUserActive[_infoUser._id].sockets, userID: _infoUser._id })
 			// console.log({ listFriendOnline, listUserActive, userID: _infoUser._id })
         },
 
         setUserOffline({ _infoUser }){
-            // Khi user Mất kết nối 
             if(!_infoUser) return;
 
-            let listUserActive = this.listUserConnected2 || [];
-            let io             = this.io;
+            let friends             = _infoUser && _infoUser.friends;
+            let listFriendOnline    = [];
+            let listUserActive      = this.listUserConnected || [];
+            let io                  = this.io;
 
             // Xử lý hiển thị offline khi disconect
             if(listUserActive[_infoUser._id]){
-                // let time = Date.now();
-                // let infoUser = await USER_COLL.findById(userDisconnect.userID);
-                // let updateTimeOffline = await DB_MESSAGE_CONVERSATION_MODEL.updateUserOffline({  userID : userDisconnect.userID, time });
+
+                friends && friends.forEach(friendID => {
+                    if(listUserActive[friendID]){
+                        listFriendOnline[listFriendOnline.length] = friendID;
+                    }
+                });
+
                 sendDataToMultilSocketsOfListUser({ 
 					io,
 					event: 'SSC_OFFLINE_USER',
-					arrReceiver: _infoUser.friends, 
+					arrReceiver: listFriendOnline, 
 					listUserConnected: listUserActive, 
 					data: { 
 						friendOffline: _infoUser._id,
@@ -288,20 +283,52 @@ module.exports = {
 					}
 				})
             }
-        }
+
+        },
+
+        sendUserOnline({ _infoUser }){
+            if(!_infoUser) return;
+
+            let friends             = _infoUser && _infoUser.friends;
+            let listFriendOnline    = [];
+            let listUserActive      = this.listUserConnected || [];
+            let io                  = this.io;
+
+			friends && friends.forEach(friendID => {
+                if(listUserActive[friendID]){
+					listFriendOnline[listFriendOnline.length] = friendID;
+                }
+            });
+
+            // Gửi tín hiệu kết nối cho những người bạn 
+            sendDataToMultilSocketsOfListUser({ 
+				io,
+				event: 'SSC_USER_ONLINE',
+				arrReceiver: listFriendOnline,
+				listUserConnected: listUserActive,
+				data: { 
+					friendOnline: _infoUser._id,
+					disconnect: false,
+					isFirstTime: false
+				}
+			})
+        },
+
     },
+
     dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
+
     /**
      * Service created lifecycle event handler
      */
     created() {
         this.initSocketIO(server);
-        const listUserConnected = [];
-        this.listUserConnected2 = listUserConnected;
+        this.listUserConnected = [];
         this.userID;
     },
+
     /**
      * Service started lifecycle event handler
      */
@@ -314,9 +341,9 @@ module.exports = {
 
         server.listen(4000);
     },
+
     /**
      * Service stopped lifecycle event handler
      */
-    async stopped() {
-    }
+    async stopped() {}
 };

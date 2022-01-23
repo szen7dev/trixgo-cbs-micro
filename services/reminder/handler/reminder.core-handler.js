@@ -1,11 +1,11 @@
 const Agenda            = require('agenda');
 const ObjectID 			= require('mongodb').ObjectID;
-const { MongoClient }   = require('mongodb');
-let agenda;
 const { MONGODB_URL } 	= require('../../../tools/db/utils');
+let agenda;
 
 (async function run() {
     // let client = await MongoClient.connect(MONGODB_URL);
+    // agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 
 	const connectionOpts = {
 		db: {
@@ -14,8 +14,6 @@ const { MONGODB_URL } 	= require('../../../tools/db/utils');
 			options: { useNewUrlParser: true }
 		},
 	};
-	console.log({ connectionOpts })
-    // agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
     agenda = new Agenda(connectionOpts)
   
 	await new Promise(resolve => agenda.once('ready', resolve));
