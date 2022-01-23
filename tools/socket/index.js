@@ -1,9 +1,10 @@
 exports.sendDataToMultilSocketsOfListUser = function ({ listUserConnected, arrReceiver, data, event, io }) {
-    if(!listUserConnected || !event  || !io || !arrReceiver) {
-        console.log('param invalid', listUserConnected, event, arrReceiver);
-    }
+    console.log('param invalid', listUserConnected, event, arrReceiver);
 
-   arrReceiver && arrReceiver.forEach(userID => {
+    if(!listUserConnected || !event  || !io) return;
+    if(!arrReceiver || !arrReceiver.length) return;
+
+    arrReceiver.forEach(userID => {
         if(listUserConnected[userID]){
             let listSocket = listUserConnected[userID].sockets;
             // console.log({ [userID]: listSocket })
