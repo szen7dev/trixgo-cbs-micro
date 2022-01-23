@@ -71,7 +71,7 @@ module.exports = {
                         // Xét user Online
                         const _infoUser =  await USER_MODEL.getDataById(userID);
                         this.setUserOnline({ _infoUser });
-                        this.sendUserOnline({ _infoUser });
+                        // this.sendUserOnline({ _infoUser });
 
                         next();
                     }],
@@ -299,6 +299,16 @@ module.exports = {
 					listFriendOnline[listFriendOnline.length] = friendID;
                 }
             });
+            console.log({ 
+                    event: 'SSC_USER_ONLINE',
+                    arrReceiver: listFriendOnline,
+                    listUserConnected: listUserActive,
+                    data: {
+                        friendOnline: _infoUser._id,
+                        disconnect: false,
+                        isFirstTime: false
+                    }
+                })
 
             // Gửi tín hiệu kết nối cho những người bạn 
             sendDataToMultilSocketsOfListUser({ 
@@ -306,14 +316,13 @@ module.exports = {
 				event: 'SSC_USER_ONLINE',
 				arrReceiver: listFriendOnline,
 				listUserConnected: listUserActive,
-				data: { 
+				data: {
 					friendOnline: _infoUser._id,
 					disconnect: false,
 					isFirstTime: false
 				}
 			})
         },
-
     },
 
     dependencies: [

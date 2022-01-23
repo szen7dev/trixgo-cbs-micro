@@ -213,7 +213,6 @@ class Model extends BaseModel {
 
 				let infoMessageAfterInserted = null;
 				let numberMissMessage		 = 1;
-				console.log({ dataInsertMessage })
 
 				switch (+type) {
 					case 6: // MESSAGE SHARE LOCATION
