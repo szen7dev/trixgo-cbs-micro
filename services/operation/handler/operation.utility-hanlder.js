@@ -60,7 +60,6 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { utilityID, name, description, latitude, longtitude } = ctx.params;
-                console.log({ utilityID, name, description, latitude, longtitude });
                 const resultAfterCallHandler = await OPERATION__UTILITY_MODEL.update({
                     utilityID, name, description, latitude, longtitude, userID
 				});

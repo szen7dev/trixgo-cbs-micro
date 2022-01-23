@@ -688,7 +688,6 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                console.log({ conditionObj, conditionFind });
 
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL

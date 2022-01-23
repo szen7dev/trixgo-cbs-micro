@@ -227,7 +227,6 @@ class Model extends BaseModel {
 					let nextInfo = `${infoData.createAt}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
-                    // console.log({ nextInfo });
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
@@ -312,7 +311,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                console.log({ filter });
                 let infoAfterHandel = await INSPECTION__TEMPLATE_DOC_COLL.findById(templateID).select(filter);
 
                 if(!infoAfterHandel)

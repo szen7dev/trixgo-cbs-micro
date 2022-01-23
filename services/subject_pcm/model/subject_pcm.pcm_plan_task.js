@@ -386,7 +386,6 @@ class Model extends BaseModel {
                             arrChecklistCopy.push(checkListAfterInsert.data._id);
                         }
                     })()
-                    // console.log({ arrChecklistCopy, taskID });
                     // Update checklist cho task
                     // await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { checklists: arrChecklistCopy });
                     await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
@@ -1008,7 +1007,6 @@ class Model extends BaseModel {
 					let nextInfo = `${infoData.actualFinishTime}_${infoData._id}`;
                     // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                    // console.log({ nextInfo });
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
@@ -1042,7 +1040,6 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }   
-                console.log({ conditionObjOrg });
                 // Tổng số việc tìm thấy
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 
@@ -1178,7 +1175,6 @@ class Model extends BaseModel {
                         companyOfAssignee: task.assignee.company, 
                     }, { new: true });
                     amount++;
-                    console.log({ amount });
                 }
 
                 return resolve({ error: false, message: "Vui lòng đợi" });

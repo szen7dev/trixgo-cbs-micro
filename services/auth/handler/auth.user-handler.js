@@ -374,7 +374,6 @@ module.exports = {
             console.log("🚀 ~ file: auth.user-handler.js ~ line 374 ~ handler ~ token", token)
 
             let infoUser = await AUTH__USER_MODEL.resolveToken({ token });
-            console.log({ infoUser })
             return infoUser;
         }
     },

@@ -112,7 +112,6 @@ class Model extends BaseModel {
 					dataInsert.department = departmentID;
 				}
 
-				console.log({ dataInsert })
 				let infoMediaAfterInserted = await this.insertData(dataInsert);
 
                 if(!infoMediaAfterInserted)
@@ -423,8 +422,6 @@ class Model extends BaseModel {
 					default:
 						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
 				}
-
-				console.log({ conditionObj })
 
                 let listAfterFind = await this.getListWithCondition({
 					conditionObj,

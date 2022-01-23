@@ -55,7 +55,6 @@ module.exports = {
 
                         // Inser file vào collection template_doc_comment_file-coll
                         const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: resultAfterCallHandler.data._id, template: templateID, file: infoFileCore.data._id });
-                        console.log({ resultAfterCallModel });
                     }
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -105,7 +104,6 @@ module.exports = {
 
                         // Inser file vào collection template_doc_comment_file-coll
                         const resultAfterCallModel = await INSPECTION__TEMPLATE_DOC_COMMENT_FILE_MODEL.insert({ comment: infoCommentCore.data._id, template: templateID, file: infoFileCore.data._id });
-                        console.log({ infoFileCore, resultAfterCallModel });
                     }
                 }
 
