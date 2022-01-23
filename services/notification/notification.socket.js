@@ -25,7 +25,7 @@ exports.NOTIFICATION_SOCKET = {
     [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_CSS_ADD_MEDIA]: async function(data) { 
         let socket                      = this;
 		let broker						= socket.$service.broker;
-        let listUserActive              = socket.$service.listUserConnected2;
+        let listUserActive              = socket.$service.listUserConnected;
         let userID                      = socket.client.user;
         let io                          = socket.$service.io;
 		let { receivers }				= data;
