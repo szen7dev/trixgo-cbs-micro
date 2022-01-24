@@ -1378,7 +1378,7 @@ class Model extends BaseModel {
 									select: '_id file',
 									populate: {
 										path: 'file',
-										select: '_id name url size'
+										select: '_id name nameOrg url size'
 									}
 								})
 								.lean());
@@ -1928,7 +1928,7 @@ class Model extends BaseModel {
 								path: 'avatar',
 								populate: {
 									path: 'file',
-									select: 'name size url'
+									select: 'name nameOrg size url'
 								},
 								select: select.avatar
 							})
@@ -1962,7 +1962,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'name size url'
+							select: 'name nameOrg size url'
 						},
 						select: select.avatar
 					})
@@ -2107,7 +2107,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'name size url'
+							select: 'name nameOrg size url'
 						},
 						select: select.avatar
 					})
