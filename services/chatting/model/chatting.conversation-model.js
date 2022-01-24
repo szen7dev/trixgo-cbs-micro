@@ -76,6 +76,7 @@ class Model extends BaseModel {
 							$or: [
 								{ members: [authorID, ...membersID] },
 								{ members: [...membersID, authorID] },
+								{ members: [authorID] },
 							]
 							// members: {
 							// 	$all: [ObjectID(authorID), ...membersID],
@@ -1979,9 +1980,7 @@ class Model extends BaseModel {
 
 							if(bizfullname === memberName1st && memberName2st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
-							}
-
-							if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
+							} else if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
 							}
 

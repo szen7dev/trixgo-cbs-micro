@@ -10,7 +10,8 @@
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-const { MEDIA_TYPES } 							= require('../helper/media.keys-constant');
+const { CF_ACTIONS_REACTION }					= require('../../reaction/helper/reaction.actions-constant');
+const { MEDIA_TYPES, REACTION_TYPES }			= require('../helper/media.keys-constant');
 
 /**
  * TOOLS
@@ -23,10 +24,8 @@ const { checkObjectIDs, isEmptyObject }			= require('../../../tools/utils/utils'
  * COLLECTIONS
  */
 const MEDIA_COLL					        	= require('../database/media-coll');
-const MEDIA_FILE_COLL					    	= require('../database/media.file-coll');
-const MEDIA_SEEN_COLL					    	= require('../database/media.seen-coll');
+const MEDIA_REACTION_COLL					    = require('../database/media.reaction-coll');
 const MEDIA_SAVE_COLL					    	= require('../database/media.save-coll');
-const MEDIA_COMMENT_IMAGE_COLL					= require('../database/media.comment_image-coll');
 
 
 class Model extends BaseModel {
@@ -879,36 +878,120 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
-	 * Func: COMMENT ẢNH TRONG BÀI VIẾT
+	 * Dev: MinhVH 🐸
+	 * Func: REACTION BÀI VIẾT
 	 */
-	getInfoImageMedia({ imageID, ctx }){
+	reactionMedia({ authorID, mediaID, typeReaction, ctx }) {
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([imageID]))
-					return resolve({ error: true, message: 'Request params invalid', status: 400 });
+				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
+                    typeReaction = 1;
+				}
 
-				let infoImage = await MEDIA_FILE_COLL.findOne({_id: imageID})
-					.select("_id")
-					.populate({
-						path: 'file',
-						select: 'url'
-					})
+				if(!checkObjectIDs([authorID, mediaID])) {
+                    return resolve({
+						error: true, 
+						message: 'Tham số media ID hoặc author ID không hợp lệ', 
+						keyError: 'params_messageID_or_authorID_invalid',
+						status: 400
+					});
+				}
+
+				const infoMedia = await MEDIA_COLL
+					.findById(mediaID)
 					.lean();
 
-
-
-				let totalCommentImages  = await MEDIA_COMMENT_IMAGE_COLL.count({ image: imageID })
-
-				infoImage = {
-					...infoImage,
-					totalCommentImages,
+				if(!infoMedia) {
+					return resolve({
+						error: true, 
+						message: 'ID media không tồn tại', 
+						keyError: 'media_is_not_exists',
+						status: 400
+					});
 				}
-				
-				if(!infoImage)
-                    return resolve({ error: true, message: "Can't get info image", status: 403 });
 
-				return resolve({ error: false, data: infoImage, status: 200 });
+				// Kiểm tra đã thả cảm xúc trên bài viết
+				const infoReaction = await MEDIA_REACTION_COLL
+					.findOne({
+						media: mediaID,
+						file: { $exists: false },
+						comment: { $exists: false },
+						userCreate: authorID
+					})
+					.populate('reaction')
+					.lean();
+
+				if(infoReaction && +infoReaction?.reaction?.type === typeReaction){
+					const infoAfterDeleteReaction = await MEDIA_REACTION_COLL.findByIdAndDelete(infoReaction._id);
+
+					await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+						$inc: {
+							amountReaction: -1
+						}
+					})
+
+					return resolve({
+						error: false,
+						status: 200,
+						data: infoAfterDeleteReaction
+					});
+				}
+
+				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
+					type: typeReaction,
+					userID: authorID
+				});
+
+				if(infoAfterInsertReaction.error)
+					return resolve(infoAfterInsertReaction);
+
+				if(infoReaction) {
+					await MEDIA_REACTION_COLL.findByIdAndDelete(infoReaction._id);
+				}
+
+				const infoAfterUpdateReaction = await MEDIA_REACTION_COLL.create({
+					media: mediaID,
+					reaction: infoAfterInsertReaction?.data?._id,
+					userCreate: authorID,
+				})
+
+				if(!infoAfterUpdateReaction) {
+					return resolve({
+						error: true, 
+						message: 'Đã có lỗi xảy ra', 
+						keyError: 'error_occurs',
+						status: 422
+					});
+				}
+
+				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+					$inc: {
+						amountReaction: 1
+					}
+				})
+
+                return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH 🐸
+	 * Func: DANH SÁCH REACTION BÀI VIẾT
+	 */
+	getListReactionMedia({ userID, mediaID, lastestID }) {
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([userID, mediaID])) {
+                    return resolve({
+						error: true, 
+						message: 'Tham số media ID or user ID không hợp lệ', 
+						keyError: 'params_messageID_or_userID_invalid',
+						status: 400
+					});
+				}
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}

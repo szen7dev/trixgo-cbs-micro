@@ -39,7 +39,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
 		default: ''
     },
 
-   /**
+    /**
      * Loại bài viết
      * 1: Bài viết công ty (Thành viên trong công ty)
      * 2: Dự án, phòng ban
