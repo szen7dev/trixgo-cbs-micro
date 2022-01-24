@@ -1989,6 +1989,7 @@ class Model extends BaseModel {
 							continue;
 						}
 
+						console.log({ ['GET_LIST_CONVERSATION_BY_KEYWORD']: conversation })
 						listConversationFiltered[listConversationFiltered.length] = conversation;
 					}
 				} else{
@@ -2017,9 +2018,11 @@ class Model extends BaseModel {
 					}
 				}
 
+				console.log('==========================================================')
 				listConversationFiltered.map(conversation => {
 					console.log({ ['GET_LIST_CONVERSATION_BY_KEYWORD']: conversation })
 				})
+				console.log({ keyword })
 
                 return resolve({
 					error: false,
