@@ -1972,6 +1972,10 @@ class Model extends BaseModel {
 
 				listConversation = [...listConversationPin, ...listConversation];
 
+				listConversation.map(conversation => {
+					console.log({ conversation })
+				})
+
 				if(keyword) {
 					for (const conversation of listConversation) {
 						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
