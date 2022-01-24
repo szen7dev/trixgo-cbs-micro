@@ -722,29 +722,18 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
-        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
+        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    $or: [
-                        {
-                            members: { $in: [userID] },
-                        },
-                        {
-                            admins: { $in: [userID] },
-                        }
-                    ]
-                };
+                let conditionObj = {};
                 // Điều kiện gốc
-               let conditionObjOrg = {}
-
+                let conditionObjOrg = {}
                 let conditionFind = { };
                 let sortBy   = { createAt: -1, _id: -1 };
-				let objSort  = {};
               
                 /** 
                  * VALIDATION STEP (2)
@@ -862,6 +851,10 @@ class Model extends BaseModel {
                 // Theo giỏi bảo lảnh
                 if(isExpiredAg == 1){
                     conditionObj.expiredAg = { $exists: true, $ne: null } 
+                }
+
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID] }
                 }
                 
                 if(keyword){

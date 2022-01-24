@@ -627,15 +627,13 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {};
+                let conditionObj  = {};
                 let conditionFind = {};
                 let sortBy        = { createAt: -1 };
-				let objSort 	  = {};
 
                 if(isMember == 1){
                     conditionObj.members = { $in: [userID]}
                 }
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
