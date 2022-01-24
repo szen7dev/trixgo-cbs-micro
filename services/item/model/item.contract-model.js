@@ -863,7 +863,6 @@ class Model extends BaseModel {
                     let regSearch = new RegExp(keyword, 'i');
                     conditionObj.name = regSearch
                 }
-
                 conditionObjOrg = { ...conditionObj }
 
                 // PHÂN TRANG KIỂU MỚI
@@ -878,16 +877,11 @@ class Model extends BaseModel {
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-                    
-                    conditionObj.$and = [
-                        { $or: conditionObj.$or },
-                        { $or: conditionFind.$or },
-                    ]
-                    delete conditionObj.$or;
+					conditionFind = dataPagingAndSort?.data?.find;
+					sortBy = dataPagingAndSort?.data?.sort;
+                    conditionObj.$or = conditionFind?.$or;
+                    // delete conditionObj?.$or;
 				}
-                
                 let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)

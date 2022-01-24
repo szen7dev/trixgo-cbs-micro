@@ -631,6 +631,10 @@ class Model extends BaseModel {
                 let conditionFind = {};
                 let sortBy        = { createAt: -1 };
 
+                if(limit > 20){
+                    limit = 20;
+                }
+
                 if(isMember == 1){
                     conditionObj.members = { $in: [userID]}
                 }
@@ -675,9 +679,8 @@ class Model extends BaseModel {
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
+					conditionFind = dataPagingAndSort?.data?.find;
+					sortBy        = dataPagingAndSort?.data?.sort;
 				}
 
                 //_____Tìm kiếm theo từ khóa
