@@ -1982,7 +1982,6 @@ class Model extends BaseModel {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
 							} else if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
-
 							}
 
 							continue;
