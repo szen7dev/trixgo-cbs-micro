@@ -70,13 +70,13 @@ class Model extends BaseModel {
 						});
 					}
 
-					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
+					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người hoặc chính mình thì không tạo nữa
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
 							$or: [
 								{ members: [authorID, ...membersID] },
 								{ members: [...membersID, authorID] },
-								{ members: [authorID] },
+								{ members: [...new Set([authorID, ...membersID])] },
 							]
 							// members: {
 							// 	$all: [ObjectID(authorID), ...membersID],
