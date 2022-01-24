@@ -17,7 +17,6 @@ const CF_ROUTINGS_MEDIA = {
     REACTION_COMMENT               		        : `${BASE_ROUTE}/reaction-comment`,
     REPLY_COMMENT_MEDIA     		            : `${BASE_ROUTE}/reply-comment`,
 
-    IMAGE_MEDIA                                  : `${BASE_ROUTE}/images`,
     REACTION_IMAGE_MEDIA                         : `${BASE_ROUTE}/reaction-images`,
     COMMENT_IMAGE_MEDIA     		             : `${BASE_ROUTE}/comment-images`,
     DETAIL_COMMENT_IMAGE_MEDIA     		         : `${BASE_ROUTE}/detail-comment-images`,

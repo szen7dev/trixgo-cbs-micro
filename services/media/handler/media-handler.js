@@ -305,22 +305,23 @@ module.exports = {
         }
     },
 
-     /**
+    /**
 	 * Dev: NPNguyen 🐸
-	 * Func: LẤY CHI TIẾT ẢNH TRONG BÀI VIẾT
+	 * Func: THẢ CẢM XÚC TRONG BÀI VIẾT
 	 */
-    getInfoImage: {
+    reactionMedia: {
         params: {
-            imageID     : { type: "string" },
+            mediaID         : { type: "string" },
+            typeReaction    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: author } = ctx.meta.infoUser;
-                const { imageID } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { mediaID, typeReaction } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getInfoImageMedia({
-					imageID, ctx
+                const resultAfterCallHandler = await MEDIA_MODEL.reactionMedia({
+					authorID, mediaID, typeReaction, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -332,48 +333,21 @@ module.exports = {
 
     /**
 	 * Dev: NPNguyen 🐸
-	 * Func: THẢ CẢM XÚC TRONG BÀI VIẾT
-	 */
-    reactionMedia: {
-        params: {
-            mediaID         : { type: "string" },
-            typeReaction    : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const { mediaID, typeReaction } = ctx.params;
-
-                const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.reactionMedia({
-					authorID, mediaID, typeReaction, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-   /**
-	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG BÀI VIẾT
 	 */
     getListReactionMedia: {
         params: {
             mediaID     : { type: "string" },
             lastestID 	: { type: "string", optional: true },
-            limit 		: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID, lastestID, limit } = ctx.params;
+                const { mediaID, lastestID } = ctx.params;
 
-                const resultAfterCallHandler = await COMMENT_MEDIA_MODEL.getListReactionMedia({
-					userID, mediaID, lastestID, limit
+                const resultAfterCallHandler = await MEDIA_MODEL.getListReactionMedia({
+					userID, mediaID, lastestID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

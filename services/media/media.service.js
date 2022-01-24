@@ -87,9 +87,6 @@ module.exports = {
 		// ✅	HỦY GHIM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.DELETE_PIN_MEDIA] 		            		: MEDIA_HANDLER.deletePinMedia,
 
-		// ✅	CHI TIẾT ẢNH TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.IMAGE_MEDIA] 		            				: MEDIA_HANDLER.getInfoImage,
-
 		// ================================  MEDIA COMMENT  ================================ //
 
 		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   							: MEDIA__COMMENT_HANDLER.insert,
