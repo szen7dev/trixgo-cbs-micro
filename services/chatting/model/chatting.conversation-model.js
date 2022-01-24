@@ -1974,18 +1974,15 @@ class Model extends BaseModel {
 
 				if(keyword) {
 					for (const conversation of listConversation) {
-						console.log({ ['GET_LIST_CONVERSATION_BY_KEYWORD']: conversation })
-
 						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
 						if(conversation.isPrivate && !conversation.isRename) {
 							const [memberName1st, memberName2st] = conversation.name.split('_');
 
 							if(bizfullname === memberName1st && memberName2st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
-							}
-
-							if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
+							} else if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
+
 							}
 
 							continue;
@@ -2018,11 +2015,6 @@ class Model extends BaseModel {
 						listConversationFiltered.length = limit;
 					}
 				}
-
-				console.log('==========================================================')
-				listConversationFiltered.map(conversation => {
-					console.log({ ['listConversationFiltered']: conversation })
-				})
 
                 return resolve({
 					error: false,
