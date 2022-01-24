@@ -2,7 +2,7 @@
 
 const NOTIFICATION__LOG_COLL                    = require('../database/notification.log-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs }                        = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { sendNotificationviaOneSignal }          = require('../../../tools/cloudmsg/noti.send');
@@ -16,9 +16,10 @@ class Model extends BaseModel {
     constructor() {
         super(NOTIFICATION__LOG_COLL);
 
-        this.NOT_SEND = -1;
+        this.NOT_SEND     =-1;
         this.SEND_SUCCESS = 1;
-        this.SEND_FAILED = 2;
+        this.SEND_FAILED  = 2;
+        this.SEEN         = 3;
     }
 
     /**
@@ -26,7 +27,7 @@ class Model extends BaseModel {
 	 * Func: Thêm thông báo
 	 * Date: 17/12/2021
 	 */
-    insertNotification({ type, title, content, path, sender, receivers }){
+    insert({ type, title, content, path, sender, receivers }){
         return new Promise(async resolve => {
             try {
                 const dataInsert = {
@@ -111,10 +112,10 @@ class Model extends BaseModel {
 	 * Func: Cập nhật trạng thái thông báo
 	 * Date: 17/12/2021
 	 */
-    updateStatus({ notificationID, status }){
+    update({ notificationID, status }){
         return new Promise(async resolve => {
             try {
-                const statusValid = [this.SEND_SUCCESS, this.SEND_FAILED];
+                const statusValid = [this.SEND_SUCCESS, this.SEND_FAILED, this.SEEN];
 
                 if(!statusValid.includes(status)) {
                     return resolve({
@@ -140,7 +141,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Update status notification faled',
-                        keyError: 'failed_update_status_notification',
+                        keyError: 'failed_UPDATE_NOTIFICATION',
                         status: 422
                     });
                 }
@@ -157,7 +158,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách thông báo
 	 * Date: 17/12/2021
 	 */
-    getListNotification({ authorID, lastestID, keyword, limit = 15, filter = {}, select = {} }){
+    getList({ authorID, lastestID, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs(authorID)) {
@@ -175,19 +176,20 @@ class Model extends BaseModel {
 					limit = +limit;
 				}
 
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
+                if(limit > 20){
+					limit = 20;
+                }
 
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+                        path: "", 
+                        select: ""
+                    }
+                }
 
 				// Init condition object
 				let conditionObj 	= { 
@@ -225,11 +227,11 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-				let listNotifications = await NOTIFICATION__LOG_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
-					.populate('sender', select.sender)
-					.populate('receiver', select.receiver)
-					.sort(sortBy)
+				let listNotifications = await NOTIFICATION__LOG_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort })
 					.limit(limit + 1)
+					.select(select)
+					.populate(populates)
+					.sort(sortBy)
 					.lean();
 
 				// GET TOTAL RECORD
@@ -259,6 +261,7 @@ class Model extends BaseModel {
 		})
 	}
    
+
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
         return new Promise(async (resolve) => {
              try {

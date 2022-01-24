@@ -21,7 +21,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_traffic", {
         type: Number,
         default: 1
     },
-
+    
     //_________Công ty của người truy cập
     companyOfAuthor: {
         type: Schema.Types.ObjectId,
