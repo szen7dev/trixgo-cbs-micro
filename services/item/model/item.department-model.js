@@ -621,20 +621,20 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
+    getList({ companyID, keyword, type, userID, isMember, limit = 10, lastestID, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
-                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    members: { $in: [userID]}, 
-                };
-                    
+                let conditionObj = {};
                 let conditionFind = {};
                 let sortBy        = { createAt: -1 };
 				let objSort 	  = {};
+
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID]}
+                }
 
                 /** 
                  * VALIDATION STEP (2)
