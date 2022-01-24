@@ -1973,7 +1973,7 @@ class Model extends BaseModel {
 				listConversation = [...listConversationPin, ...listConversation];
 
 				listConversation.map(conversation => {
-					console.log({ conversation })
+					console.log({ ['GET_LIST_CONVERSATION_BY_KEYWORD']: conversation })
 				})
 
 				if(keyword) {
