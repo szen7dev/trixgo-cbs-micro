@@ -13,7 +13,7 @@ const moment                            = require('moment')
 const { CF_DOMAIN_SERVICES } 	= require('../../gateway/helper/domain.constant');
 const { VOUCHER_TYPES }         = require('../config/accounting.financial_config');
 const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-constant');
-
+const PERPAGE_CORE              = 20;
 /**
  * TOOLS
 */
@@ -720,9 +720,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve(checkInput);
                 
                 const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherId);
-                const infoVoucher2 = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find().limit(10);
 
-                console.log({voucherId, infoVoucher, infoVoucher2 })
                 if(!infoVoucher)
                     return resolve({ erorr: true, message:'voucher_exits', data: null });
                 
@@ -795,11 +793,11 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve({ error: true, message: 'voucher_exits' })
 
                 // get list journal
-                let resultGetListJoural = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
-                if(!resultGetListJoural)
-                    resultGetListJoural = [];
+                let resultGetListJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
+                if(!resultGetListJournal)
+                    resultGetListJournal = [];
 
-                return resolve({ error: false, data: { infoVoucher, resultGetListJoural } })
+                return resolve({ error: false, data: { infoVoucher, listJournal: resultGetListJournal } })
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][GET_INFO_VOUCHER]: ${error}`);
                 return resolve({ error: true, message: error.message })
@@ -808,11 +806,16 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // Danh sách các phiếu của công ty.
-    getListVoucherOfCompany({ nextInfo, companyID, fundaID, contractID, currentPage, perPage, fromDate, toDate, type }){
+    getListVoucherOfCompany({ nextInfo, companyID, fundaID, contractID, limit = PERPAGE_CORE, perPage, fromDate, toDate, type }){
         return new Promise(async (resolve) => {
             try {
-                const page = Number(currentPage);
-                perPage = Number(perPage);
+
+                if(!limit){
+                    limit = PERPAGE_CORE;
+                }
+                if(limit > PERPAGE_CORE){
+                    limit = PERPAGE_CORE
+                }
 
                 let conditionObj;
                 if(!fundaID){
@@ -870,9 +873,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve({ error: true, message: "cannot_get_list" });
                 }
 
-                // Số lượng tổng mẩu tin
-                let countDocs = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
-
+              
                 // let listData = null;
 
                 // if(!currentPage){
@@ -894,7 +895,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 //     .sort({date: 'desc'});
                 // }else{
                   
-                const listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(result.data.find)
+                const listVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(result.data.find)
                 .populate({
                     path: 'company customer staff contract warehouse',
                     select: '_id name sign phone address'
@@ -909,14 +910,29 @@ class AccountingFinancialVoucher extends BaseModel {
                         path: 'debit credit customerDebit customerCredit goods warehouse contract'
                     }
                 })
-                .limit(perPage)
+                .limit(limit+1)
                 .sort(result.data.sort);
                 // }
 
-                if(!listData)
+                if(!listVoucher)
                     return resolve({ error: true, message: "cannot_get_list" });
 
-                return resolve({ error: false, data: listData, countDocs });
+                const totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
+                let nextCursor	= null;
+
+                if(listVoucher && listVoucher.length){
+                    if(listVoucher.length > limit){
+                        nextCursor = listVoucher[limit - 1]._id;
+                        listVoucher.length = limit;
+                    }
+                }
+                return resolve({ error: false,
+                     data: {
+                        listVoucher: listVoucher || [],
+                        nextCursor,
+                        totalRecord,
+                        limit
+                     },  });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][getListVoucherOfCompany] ${error}`);
                 return resolve({ error: true, message: error.message });
@@ -1012,11 +1028,16 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // Tìm kiếm phiếu.
-    findVoucherInCompany({ nextInfo, key, type, customer, author, fromDate, toDate, fundaID, companyID }) {
+    findVoucherInCompany({ nextInfo, key, type, customer, author, fromDate, toDate, fundaID, companyID, limit = PERPAGE_CORE }) {
         return new Promise(async resolve => {
             try {       
                 let sort = {}, conditionObj = {};
-                const perPage = 150;
+                if(!limit){
+                    limit = PERPAGE_CORE;
+                }
+                if(limit > PERPAGE_CORE){
+                    limit = PERPAGE_CORE
+                }
 
                 /**
                  * CONDITION
@@ -1043,11 +1064,11 @@ class AccountingFinancialVoucher extends BaseModel {
                     conditionObj.type = type;
                 }
                 
-                if(customer && ObjectID.isValid(customer)){
+                if(customer && _isValid(customer)){
                     conditionObj.customer = customer;
                 }
 
-                if(author && ObjectID.isValid(author)){
+                if(author && _isValid(author)){
                     conditionObj.userCreate = author;
                 }
                 
@@ -1074,25 +1095,38 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(resultPagination.eror)
                     return resolve({ error: true, message: "cant_get_list_vat" });
                
-                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne(resultPagination.data.find)
+                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(resultPagination.data.find)
                     .populate('customer')
                     .populate('warehouse')
                     .populate({
                         path: 'userCreate userUpdate',
                         select:'_id fullname image'
                     })
-                    .limit(perPage)
+                    .limit(limit+1)
                     .sort(resultPagination.data.sort);
 
                 if(!infoVoucher)
                     return resolve({ error: true, message: 'voucher_exits' })
 
-                // get list journal
-                let resultGetListJoural = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: infoVoucher._id })
-                if(!resultGetListJoural)
-                    resultGetListJoural = [];
+                const totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
 
-                return resolve({ error: false, data: { infoVoucher,listJoural: resultGetListJoural} });
+				if(infoVoucher && infoVoucher.length){
+					if(infoVoucher.length > limit){
+						nextCursor = infoVoucher[limit - 1]._id;
+						infoVoucher.length = limit;
+					}
+
+				}
+            
+                return resolve({ error: false, 
+                    data: { 
+                        infoVoucher,
+                        nextCursor, 
+                        limit: +limit || 0 ,
+                        totalRecord
+                    } 
+                });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][findVoucherInCompany] ${error}`);
                 return resolve({ error: true, message: error.message });
@@ -1280,7 +1314,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         return resolve({ error: true, message: "cannot_get_list" });
                     return resolve({ error: false, data: listData });
                 }else{
-                    if(!ObjectID.isValid(fundaID))
+                    if(!_isValid(fundaID))
                         return resolve({ error: true, message: 'param_not_valid' });
                     
                     let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ 
@@ -1337,7 +1371,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(!fundaID){
                     if(!type){
                         conditionObj = {
-                            company: ObjectID(companyID),
+                            company: companyID,
                             date: { 
                                 $gte: moment(fromDate).toDate(),
                                 $lte: moment(toDate).toDate(),
@@ -1345,7 +1379,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }else{
                         conditionObj = {
-                            company: ObjectID(companyID),
+                            company: companyID,
                             type: Number(type),
                             date: { 
                                 $gte: moment(fromDate).toDate(),
@@ -1356,7 +1390,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 }else{
                     if(!type){
                         conditionObj = {
-                            funda: ObjectID(fundaID),
+                            funda: fundaID,
                             cancel: 0, // Không lấy phiếu hủy
                             forward: 0, // Không lấy phiếu kết chuyển cuối kỳ
                             date: { 
@@ -1366,7 +1400,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }else{
                         conditionObj = {
-                            funda: ObjectID(fundaID),
+                            funda: fundaID,
                             type: Number(type),
                             cancel: 0, // Không lấy phiếu hủy
                             forward: 0, // Không lấy phiếu kết chuyển cuối kỳ

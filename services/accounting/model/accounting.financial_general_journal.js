@@ -173,7 +173,7 @@ class Model extends BaseModel {
         amountCalculate, fcuExRate, fcuAmountCalculate,
         note, project,
         updown, advancePayment, debit, credit,
-        goods, contract, job, journalID
+        goods, contract, job, journalID, amount
     }){
         // TẠO CHI TIẾT CHỨNG TỪ
         let dataUpdate = {
@@ -187,9 +187,11 @@ class Model extends BaseModel {
             updown: (!isNaN(updown) && [1,-1].includes(Number(updown))) ? Number(updown) : 1,
             advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
             customerDebit,
-            customerCredit
+            customerCredit,
         }
-
+        if(amount && Number(amount)){
+            dataUpdate.amount = Number(amount);
+        }
         //_________Kiểm tra xem có tài khoản nợ/có không
         //_________Nếu không thì lấy giá trị null
         if(debit && _isValid(debit)){
@@ -249,13 +251,14 @@ class Model extends BaseModel {
             //     $pull: { journals: journalID }
             // }, { new: true });
         }
+        return dataUpdate;
     }
     //_________Tạo chi tiết chứng từ (OK)
     // Author: HiepNH
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
-        customerCredit, goods, warehouse, quantity, amount, fcuExRate, contract, 
-        project, job, group, cash, vat, note, updown, advancePayment , 
+        customerCredit, goods, quantity, amount, fcuExRate, contract, 
+        project, job, cash, vat, note, updown, advancePayment , 
         date, subtype, 
     }) {
         const that = this;
@@ -299,7 +302,6 @@ class Model extends BaseModel {
                 const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherId: voucher, journalAmount : amount , journalFcuAmount: fcuAmountCalculate })
                 // await session.commitTransaction();
                 //---- Không cần check kĩ --> sẽ đưa qua trasaction//
-                console.log({resultUpdate})
                 if(resultUpdate.error){
                     responseResultInsert = { error: false, data: infoAfterInsert }
                     await session.abortTransaction();
@@ -319,12 +321,12 @@ class Model extends BaseModel {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
                 await session.abortTransaction();
                 responseResultInsert = { error: true, message: error.message };
-
                 // return resolve({ error: true, message: error.message });
             }
             finally {
                 session.endSession();
-                await connection.close();
+                const resultC = await connection.close();
+                console.log({resultC})
                 return resolve(responseResultInsert);
             }
         })
@@ -332,9 +334,9 @@ class Model extends BaseModel {
 
     update({
         journalID, debit, credit, customerDebit,
-        customerCredit, goods, warehouse, quantity, 
+        customerCredit, goods, quantity, 
         amount, fcuExRate, note, updown, advancePayment,
-        contract, project, job, group, authorID 
+        contract, project, job, authorID 
     }){
         return new Promise(async (resolve) => {
             let responseResultUpdate = {};
@@ -355,7 +357,6 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: 'debit/credit is duplicated' });
             
                 const infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
-                console.log({infoJournal})
                 if(!infoJournal)
                     return resolve({ error: false, message: 'finacial_journal_exit' });
 
@@ -369,7 +370,7 @@ class Model extends BaseModel {
                     quantityCalculate, unitpriceCalculate,
                     amountCalculate, fcuExRate, fcuAmountCalculate,
                     note, project, updown, advancePayment, debit, credit,
-                    goods, contract, job, journalID
+                    goods, contract, job, journalID, amount
                 })
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findByIdAndUpdate(journalID, dataUpdate , { new: true });
@@ -436,10 +437,10 @@ class Model extends BaseModel {
                 // step 2: transaction (after...)
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterRemove.voucher}`,journalAmount, journalFcuAmount })
                 if(resultUpdateVoucher.error){
-                    responseResultRemove = { error: false, data: infoAfterUpdate }
+                    responseResultRemove = { error: true, data: infoAfterRemove, message: resultUpdateVoucher.message }
                     await session.abortTransaction();
                 }else{
-                    responseResultRemove = { error: false, data: infoAfterUpdate }
+                    responseResultRemove = { error: false, data: infoAfterRemove, message: "Remove success" }
                 }
                 //_________Xóa trong Ứng dụng quản lý chi phí
                 if(info.job && _isValid(info.job)){
@@ -447,9 +448,6 @@ class Model extends BaseModel {
                         $pull: { journals: journalID } 
                     }, { new: true });
                 }
-                // Cập nhật lại VOUCHER 
-
-                return resolve({ error: false, data: infoAfterRemove });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][REMOVE_JOURNAL]: ${error}`);
                 return resolve({ error: true, message: error.message })
@@ -461,7 +459,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 
     //_________DANH SÁCH TÀI KHOẢN VÀ CON CHÁU CỦA NÓ
     // Author: HiepNH
@@ -524,6 +521,460 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message })
             }
         });
+    }
+
+    //_________SỐ DƯ ĐẦU KỲ CỦA 1 TÀI KHOẢN (OK)
+    // Tính năng sử dụng: Sổ chi tiết tài khoản
+    // Author: HiepNH
+    getOpeningBalanceOfCompany({ companyID, fundaID, contractID, accountID, fromDate, arrAccountObjectID }) {
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
+                 * 2. Lấy năm của ngày đầu kỳ
+                 * 3. Lấy số liệu đầu kỳ = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
+                 */
+
+                //_________Get nestedArray of account
+                // let arrObjectID = await that.getListNestedItem({accountID});
+                const arrObjectID = arrAccountObjectID;
+                let conditionObj1;
+                let conditionObj2;
+                
+                if(!fundaID){
+                    if(!contractID){
+                        conditionObj1 = {
+                            company: companyID,
+                            debit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            company: companyID,
+                            credit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }else{
+                        conditionObj1 = {
+                            company: companyID,
+                            contract: contractID,
+                            debit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            company: companyID,
+                            contract: contractID,
+                            credit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }
+                }else{
+                    if(!contractID){
+                        conditionObj1 = {
+                            funda: fundaID,
+                            debit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            funda: fundaID,
+                            credit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }else{
+                        conditionObj1 = {
+                            funda: fundaID,
+                            contract: contractID,
+                            debit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            funda:fundaID,
+                            contract: contractID,
+                            credit: {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }
+                }
+                //____________Lấy năm của ngày đầu kỳ
+                let year = moment(fromDate).toDate().getFullYear() //!!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm)
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
+
+                //____________Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (31/12/2019-1/1/2020)
+                let listDataS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $lookup: {
+                                        from: 'financial_vouchers',
+                                        localField: 'voucher',
+                                        foreignField: '_id',
+                                        as:         'voucher'
+                                    }
+                                },
+                                {
+                                    $unwind : "$voucher"
+                                },
+                                {
+                                    $project : { 
+                                        year : {$year : "$voucher.date"},
+                                        forward: '$voucher.forward',
+                                        cancel: '$voucher.cancel',
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        "forward": 1,
+                                        "cancel": 0
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                    
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $lookup: {
+                                        from: 'financial_vouchers',
+                                        localField: 'voucher',
+                                        foreignField: '_id',
+                                        as:         'voucher'
+                                    }
+                                },
+                                {
+                                    $unwind : "$voucher"
+                                },
+                                {
+                                    $project : { 
+                                        year : {$year : "$voucher.date"},
+                                        forward: '$voucher.forward',
+                                        cancel: '$voucher.cancel',
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        "forward": 1,
+                                        "cancel": 0
+                                    }
+                                },  
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                            
+                        }
+                    } 
+                ]);
+
+                //____________Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $lookup: {
+                                        from: 'financial_vouchers',
+                                        localField: 'voucher',
+                                        foreignField: '_id',
+                                        as:         'voucher'
+                                    }
+                                },
+                                {
+                                    $unwind : "$voucher"
+                                },
+                                {
+                                    $match: {
+                                        "voucher.forward": 0,
+                                        "voucher.cancel": 0,
+                                        "voucher.date": { 
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                    
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $lookup: {
+                                        from: 'financial_vouchers',
+                                        localField: 'voucher',
+                                        foreignField: '_id',
+                                        as:         'voucher'
+                                    }
+                                },
+                                {
+                                    $unwind : "$voucher"
+                                },
+                                {
+                                    $match: {
+                                        "voucher.forward": 0,
+                                        "voucher.cancel": 0,
+                                        "voucher.date": { 
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                            
+                        }
+                    } 
+                ]);
+
+                let openingBalanceS = listDataS[0], openingBalance = listData[0]
+                let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0;
+
+                if(openingBalance._debit.length > 0){
+                    totalOpeningDebit = openingBalance._debit[0].amountPrice;
+                }
+                if(openingBalance._credit.length > 0){
+                    totalOpeningCredit = openingBalance._credit[0].amountPrice;
+                }
+                if(openingBalanceS._debit.length > 0){
+                    totalOpeningDebitS = openingBalanceS._debit[0].amountPrice;
+                }
+                if(openingBalanceS._credit.length > 0){
+                    totalOpeningCreditS = openingBalanceS._credit[0].amountPrice;
+                }
+
+                return resolve({ error: false, data: (Number(totalOpeningDebit + totalOpeningDebitS - totalOpeningCreditS - totalOpeningCredit)) });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getOpeningBalanceOfCompany]: ${error} `);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    } 
+
+     //_________CHI TIẾT GIAO DỊCH TRONG KỲ CỦA 1 TÀI KHOẢN (OK)
+    // Tính năng sử dụng: Sổ chi tiết tài khoản
+    // Author: HiepNH
+    getListJournalOfCompany({ companyID, fundaID, contractID, accountID, fromDate, toDate, arrAccountObjectID }) {
+        // console.log({fromDate})
+        // console.log({toDate})
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
+                 * 2. Số liệu trong kỳ không gồm các Phiếu kết chuyển+Phiếu hủy
+                 */
+
+                // Get nestedArray of account
+                // let arrObjectID = await that.getListNestedItem({accountID});
+                const arrObjectID = arrAccountObjectID;
+
+                let conditionObj1;
+                
+                if(!fundaID){
+                    if(!contractID){
+                        conditionObj1 = {
+                            company: companyID,
+                            $or: [
+                                { debit:   {
+                                    $in: arrObjectID.data
+                                }},
+                                { credit:  {
+                                    $in: arrObjectID.data
+                                } },
+                            ],
+                        }
+                    }else{
+                        conditionObj1 = {
+                            company: companyID,
+                            contract: contractID,
+                            $or: [
+                                { debit:   {
+                                    $in: arrObjectID.data
+                                }},
+                                { credit:  {
+                                    $in: arrObjectID.data
+                                } },
+                            ],
+                        }
+                    }
+                }else{
+                    if(!contractID){
+                        conditionObj1 = {
+                            funda: fundaID,
+                            $or: [
+                                { debit:   {
+                                    $in: arrObjectID.data
+                                }},
+                                { credit:  {
+                                    $in: arrObjectID.data
+                                } },
+                            ],
+                        }
+                    }else{
+                        conditionObj1 = {
+                            funda: fundaID,
+                            contract: contractID,
+                            $or: [
+                                { debit:   {
+                                    $in: arrObjectID.data
+                                }},
+                                { credit:  {
+                                    $in: arrObjectID.data
+                                } },
+                            ],
+                        }
+                    }
+                }
+
+                // Lấy giao dịch của tài khoản và các tài khoản con của nó
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
+                    {
+                        $match: conditionObj1
+                    }, 
+                    {
+                        $lookup: {
+                            from: 'financial_vouchers',
+                            localField: 'voucher',
+                            foreignField: '_id',
+                            as:         'voucher'
+                        }
+                    },
+                    {
+                        $unwind : "$voucher"
+                    },
+                    {
+                        $match: {
+                            "voucher.forward": 0,
+                            "voucher.cancel": 0,
+                            "voucher.date": { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate(),
+                            },
+                        }
+                    },    
+                ]).sort({'voucher.date':'asc'});
+
+                if (!listData) return resolve({ error: true, message: 'cannot_get_list' });
+
+                let listData1 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData, {
+                    path: 'debit',
+                    select: '_id name description',
+                    model: 'account',
+                });
+                if (!listData1) return resolve({ error: true, message: 'cannot_get_list' });
+
+                let listData2 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData1, {
+                    path: 'credit',
+                    select: '_id name description',
+                    model: 'account',
+                });
+                if (!listData2) return resolve({ error: true, message: 'cannot_get_list' });
+
+                let listData3 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData2, {
+                    path: 'voucher.customer',
+                    select: '_id name',
+                    model: 'contact',
+                });
+                if (!listData3) return resolve({ error: true, message: 'cannot_get_list' });
+
+                let listData4 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData3, {
+                    path: 'contract',
+                    select: '_id name',
+                    model: 'contract',
+                });
+                if (!listData4) return resolve({ error: true, message: 'cannot_get_list' });
+
+                return resolve({ error: false, data: listData4 });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListJournalOfCompany]: ${error} `);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+
+    getListJournalOfAccount({ ctx, accountID, fromDate, toDate,fundaID }){
+        return new Promise(async resolve => {
+            try {
+                if(!_isValid(accountID))
+                    return { error: true, message: 'accountID_invalid' };
+               
+                const [ infoAccount, listNestedAccount ] = await Promise.all([
+                    ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID}`,{ accountID }),
+                    ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }),
+                ]);
+                [infoAccount, listNestedAccount ].forEach(item=>{
+                    if(item.error){
+                        return resolve(item);
+                    }
+                })
+                const nestedAccount = listNestedAccount.data.map(item => item.toString());
+                const [ openingBalance, listJournals ] = await Promise.all([
+                    this.getOpeningBalanceOfCompany({ fundaID, accountID, fromDate, arrAccountObjectID: listNestedAccount }),
+                    this.getListJournalOfCompany({ fundaID, accountID, fromDate, toDate, arrAccountObjectID: listNestedAccount })
+                ]);
+
+                [ openingBalance, listJournals ].forEach(item=>{
+                    if(item.error){
+                        return resolve(item);
+                    }
+                })
+                return resolve({
+                    error: false, 
+                    data:{
+                        fromDate, toDate,
+                        infoAccount: infoAccount.data,
+                        nestedAccount, accountID,
+                        openingBalance: openingBalance.data,
+                        listJournals: listJournals.data
+                    }
+                });
+
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListJournalOfAccount]: ${error} `);
+                return resolve({ error: true, message: error.message })
+            }
+        });  
     }
 
 }

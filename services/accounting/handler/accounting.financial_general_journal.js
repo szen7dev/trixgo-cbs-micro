@@ -1,3 +1,6 @@
+const { CF_DOMAIN_SERVICES } 	= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-constant');
+
 /**
  * TOOLS
  */
@@ -6,7 +9,7 @@ const { renderStatusCodeAndResponse } 			= require('../../../tools/utils/status_
 /**
  * MODEL
  */
-const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL                         	= require('../model/accounting.financial_general_journal').MODEL;
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL   = require('../model/accounting.financial_general_journal').MODEL;
 
 module.exports = {
     /**
@@ -24,28 +27,16 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                const { fundaID, voucher, debit, credit, customerDebit,
+                    customerCredit, goods, quantity, amount, fcuExRate, contract, 
+                    project, job, cash, vat, note, updown, advancePayment , 
+                    date, subtype } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
-                    updown: 1,
-                    advancePayment: 0,
-                    quantity: 1,
-                    unitprice: 1929500,
-                    amount: 1929500,
-                    amountPayment: 0,
-                    fcuType: 1,
-                    fcuExRate: 0,
-                    fcuAmount: 1929500,
-                    cash: 1,
-                    vat: 0,
-                    companyID: "5e8415e651d84b60937abe71",
-                    fundaID: "5e846addd7e3490be59ae8d5",
-                    authorID: "5f2cc4bd039d212061a13986",
-                    voucher: "6198727abc3b2e745ae5277c",
-                    customerDebit: "5fb37ee7e5c18a7517c3aa5a",
-                    customerCredit: "5f159c873799c005a52b7de2",
-                    note: "ssss",
-                    debit: "5efc0e3ebf8da144aecfe59b",
-                    credit: "5f697dd0de339308feba62c5",
-                    date: "2021-11-20T10:58:50.297+07:00",
+                    authorID: userID, companyID: company._id, fundaID, voucher, debit, credit, customerDebit,
+                    customerCredit, goods, quantity, amount, fcuExRate, contract, 
+                    project, job, cash, vat, note, updown, advancePayment , 
+                    date, subtype, 
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -55,6 +46,35 @@ module.exports = {
         }
     },
 
+    update: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const { journalID, debit, credit, customerDebit,
+                    customerCredit, goods, quantity, 
+                    amount, fcuExRate, note, updown, advancePayment,
+                    contract, project, job } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update({
+                    journalID, debit, credit, customerDebit,
+                    customerCredit, goods, quantity, 
+                    amount, fcuExRate, note, updown, advancePayment,
+                    contract, project, job, authorID: userID
+                });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][INSERT_FULL] ${error}`);
+                return { error: true, message: error.message };
+            }
+        }
+    },
     removeById: {
         params: {
             // email           : { type: "string" },
@@ -92,6 +112,27 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][GET_INFO] ${error}`);
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    getListJournalOfAccount: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const { accountID, fromDate, toDate,fundaID  } = ctx.params;
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getListJournalOfAccount({ ctx, accountID, fromDate, toDate,fundaID })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);
                 return { error: true, message: error.message };
             }
         }
