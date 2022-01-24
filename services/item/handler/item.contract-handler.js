@@ -300,7 +300,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
-                    debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, isExpiredAg,
+                    debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, isExpiredAg, isMember,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
@@ -308,7 +308,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id;
                 }
-                
+
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
@@ -317,7 +317,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
                         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
-                        debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
+                        debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
                         keyword, limit, lastestID, select, populates
                     });
                 }

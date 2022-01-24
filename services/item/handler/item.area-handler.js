@@ -16,7 +16,7 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-            areaID     : { type: "string", optional: true },
+            areaID          : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },

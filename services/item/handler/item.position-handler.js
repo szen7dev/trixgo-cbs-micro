@@ -16,7 +16,8 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-            positionID     : { type: "string", optional: true },
+            positionID      : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -29,7 +30,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { positionID,  keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
                 let resultAfterCallHandler;
                 if(positionID){
                     resultAfterCallHandler = await ITEM__POSITION_MODEL.getInfo({
@@ -37,7 +42,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__POSITION_MODEL.getList({
-                        companyID: company._id, lastestID, keyword, select, limit, populates
+                        companyID, lastestID, keyword, select, limit, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

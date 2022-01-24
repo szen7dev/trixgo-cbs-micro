@@ -179,6 +179,7 @@ module.exports = {
             workingStatusID     : { type: "string", optional: true },
             gender              : { type: "string", optional: true },
             insuranceStatus     : { type: "string", optional: true },
+            companyID           : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -190,8 +191,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, contactID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler;
                 if(contactID){
@@ -200,7 +205,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID: company._id, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, lastestID, userID, keyword, limit, select, populates
+                        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, lastestID, userID, keyword, limit, select, populates
                     });
                 }
 
