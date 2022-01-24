@@ -15,8 +15,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant')
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 /**
  * COLLECTIONS
@@ -722,10 +721,8 @@ class Model extends BaseModel {
                 let conditionObj = { 
                     company: companyID
                 };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let keys	 = ['createAt__-1', '_id__-1'];
+                let sortBy;
 
                 /** 
                  * VALIDATION STEP (2)
@@ -754,7 +751,13 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj }
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -762,23 +765,18 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
+                    conditionObj = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
-				}
-                
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await ITEM__WAREHOUSE_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await ITEM__WAREHOUSE_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -796,7 +794,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await ITEM__WAREHOUSE_COLL.countDocuments(conditionObj);
+                let totalRecord = await ITEM__WAREHOUSE_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

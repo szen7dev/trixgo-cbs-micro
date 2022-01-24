@@ -15,7 +15,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant')
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
@@ -91,24 +91,14 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    level: 3
-                };
-                
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-				
-                // POPULATE
+
+                let sortBy;
+                let conditionObj = { level: 3 };
+                let keys	 = ['createAt__-1', '_id__-1'];
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
 				}else{
                     populates = {
@@ -116,13 +106,14 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
+               
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
                 
+                let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -130,22 +121,18 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-                
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
                 }
-                let infoDataAfterGet = await ITEM__AREA_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                
+                let infoDataAfterGet = await ITEM__AREA_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -163,7 +150,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await ITEM__AREA_COLL.countDocuments(conditionObj);
+                let totalRecord = await ITEM__AREA_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

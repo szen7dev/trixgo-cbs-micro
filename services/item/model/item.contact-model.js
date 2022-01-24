@@ -487,13 +487,13 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    company: companyID
-                };
+                let conditionObj = {  company: companyID };
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
 
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                if(limit > 20){
+                    limit = 20
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -562,6 +562,7 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
@@ -570,15 +571,16 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
                     conditionObj = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy       = dataPagingAndSort.data.sort;
+                }
                 
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
                     .limit(+limit+1)

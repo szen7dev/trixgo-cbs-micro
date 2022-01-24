@@ -10,7 +10,7 @@ const _isValid                          = require("mongoose").Types.ObjectId;
  * import inter-coll, exter-coll
  */
 const ITEM__DEPARTMENT_COLL                 = require('../database/item.department-coll');
-const { RANGE_BASE_PAGINATION } 		    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 		    = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -628,8 +628,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj  = {};
-                let conditionFind = {};
-                let sortBy        = { createAt: -1 };
+                let sortBy;
+                let keys	      = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
@@ -666,33 +666,35 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
-                //______Phân trang theo kiểu mới
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await ITEM__DEPARTMENT_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    //_____Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort?.data?.find;
-					sortBy        = dataPagingAndSort?.data?.sort;
-				}
-
-                //_____Tìm kiếm theo từ khóa
-                if(keyword){
+                 //_____Tìm kiếm theo từ khóa
+                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
+                let conditionObjOrg = { ...conditionObj }
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__DEPARTMENT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort?.data?.find;
+					sortBy        = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort?.data?.sort;
+                }
+               
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
-                    .find({ ...conditionObj, ...conditionFind })
+                    .find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .select(select) 
@@ -702,7 +704,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
-                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObj);
+                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
 

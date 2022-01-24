@@ -28,8 +28,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { storageID,  keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, storageID, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+                
                 if(!companyID){
                     companyID = company._id;
                 }
