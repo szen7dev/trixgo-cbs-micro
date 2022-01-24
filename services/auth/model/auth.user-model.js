@@ -1139,12 +1139,6 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 10;
-				} else{
-					limit = +limit;
-				}
-
                 if(limit > 20){
 					limit = 20;
                 }
@@ -1162,41 +1156,38 @@ class Model extends BaseModel {
 
                 let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('receiveFromFriends');
 
-				let conditionObj 	= { _id: { $in: infoUserWithFriends.receiveFromFriends } };
-				let conditionFind 	= {};
-				let objSort 	 	= {};
-                let sortBy = {
-					createAt: -1,
-                    modifyAt: -1,
-                }
+				let conditionObj = { _id: { $in: infoUserWithFriends.receiveFromFriends } };
+                let keys 	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
 
-				// GET CONDITION PAGINATION
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
-                    if(!infoUser)
-                        return resolve({ error: true, message: "Can't get info last user receiveFromFriends", status: 403 });
-
-                    let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
-                    let keys 	 = ['createAt__-1', '_id__-1'];
-
-                    // let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: { _id: lastestID }, objectQuery: conditionObj });
-                    
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
-                    conditionObj  = dataPagingAndSort.data.find;
-					sortBy        = dataPagingAndSort.data.sort;
-                }
-
-				// SEARCH TEXT
+                // SEARCH TEXT
 				if(keyword){
 					keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.fullname = new RegExp(keyword, 'i');
 				}
 
+                let conditionObjOrg = { ...conditionObj };
+
+
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
+                    if(!infoUser)
+                        return resolve({ error: true, message: "Can't get info last user receiveFromFriends", status: 403 });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoUser, objectQuery: conditionObjOrg });
+                    
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj }, { ...objSort })
+                    .find(conditionObj)
                     .select(select)
                     .limit(limit + 1)
                     .populate(populates)
@@ -1204,7 +1195,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-                let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+                let totalRecord = await AUTH__USER_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -1243,12 +1234,6 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 10;
-				} else{
-					limit = +limit;
-				}
-
                 if(limit > 20){
 					limit = 20;
                 }
@@ -1267,38 +1252,37 @@ class Model extends BaseModel {
                 let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('sendToFriends');
 
 				let conditionObj 	= { _id: { $in: infoUserWithFriends.sendToFriends } };
-				let conditionFind 	= {};
-				let objSort 	 	= {};
-                let sortBy = {
-					createAt: -1,
-                    modifyAt: -1,
-                }
+                let sortBy;
+                let keys 	 = ['createAt__-1', '_id__-1'];
 
-				// GET CONDITION PAGINATION
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
-                    if(!infoUser)
-                        return resolve({ error: true, message: "Can't get info last user lastestID", status: 403 });
-
-                    let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
-                    let keys 	 = ['createAt__-1', '_id__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
-
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				// SEARCH TEXT
+                // SEARCH TEXT
 				if(keyword){
 					keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.fullname = new RegExp(keyword, 'i');
 				}
 
+                let conditionObjOrg = { ...conditionObj };
+				// GET CONDITION PAGINATION
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoUser = await AUTH__USER_COLL.findById(lastestID);
+                    if(!infoUser)
+                        return resolve({ error: true, message: "Can't get info last user lastestID", status: 403 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoUser, objectQuery: conditionObjOrg });
+
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort.data.sort;
+                }
+
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find(conditionObj)
                     .select(select)
                     .limit(limit + 1)
                     .populate(populates)
@@ -1387,10 +1371,8 @@ class Model extends BaseModel {
                  */
                 let conditionObj = { 
                 };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let keys	 = ['createAt__-1', '_id__-1'];
+                let sortBy;
                
                 /** 
                  * VALIDATION STEP (2)
@@ -1420,6 +1402,14 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
                 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1427,23 +1417,18 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
+
+                    conditionObj = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
-				}
-              
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await AUTH__USER_COLL.find({...conditionObj, ...conditionFind })
+                let infoDataAfterGet = await AUTH__USER_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
