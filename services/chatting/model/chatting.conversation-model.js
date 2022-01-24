@@ -76,6 +76,7 @@ class Model extends BaseModel {
 							$or: [
 								{ members: [authorID, ...membersID] },
 								{ members: [...membersID, authorID] },
+								{ members: [authorID] },
 							]
 							// members: {
 							// 	$all: [ObjectID(authorID), ...membersID],
