@@ -22,7 +22,7 @@ const { randomStringFixLengthCode }
 const timeUtils                         = require('../../../tools/utils/time_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
-const { RANGE_BASE_PAGINATION }         = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 }         = require('../../../tools/cursor_base/playground/index');
 const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }                
                                         = require('../../../tools/utils/utils');
 const { 
@@ -1179,11 +1179,13 @@ class Model extends BaseModel {
                     let nextInfo = `${infoUser.createAt}_${infoUser._id}`;
                     let keys 	 = ['createAt__-1', '_id__-1'];
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    // let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: { _id: lastestID }, objectQuery: conditionObj });
+                    
                     if(!dataPagingAndSort || dataPagingAndSort.error)
                         return resolve({ error: true, message: "Can't get range pagination", status: 403 });
-
-					conditionFind = dataPagingAndSort.data.find;
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
                 }
 
 				// SEARCH TEXT
@@ -1194,7 +1196,7 @@ class Model extends BaseModel {
 				}
 
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find({ ...conditionObj }, { ...objSort })
                     .select(select)
                     .limit(limit + 1)
                     .populate(populates)

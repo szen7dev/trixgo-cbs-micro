@@ -815,7 +815,7 @@ class Model extends BaseModel {
                     listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
                  }
                  
-                 // Lấy công việc mà mình được quyền truy cập
+                // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },

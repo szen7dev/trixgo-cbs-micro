@@ -734,6 +734,10 @@ class Model extends BaseModel {
                 let conditionObjOrg = {}
                 let conditionFind = { };
                 let sortBy   = { createAt: -1, _id: -1 };
+                
+                if(limit > 20){
+                    limit = 20
+                }
               
                 /** 
                  * VALIDATION STEP (2)
