@@ -150,7 +150,7 @@ module.exports = {
 
 		// let client = await MongoClient.connect(MONGODB_URL);
 		// let agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
-		
+
 		const connectionOpts = {
 			db: {
 				address: MONGODB_URL, 
@@ -158,7 +158,6 @@ module.exports = {
 				options: { useNewUrlParser: true }
 			},
 		};
-		// agenda = new Agenda().mongo(client.db(process.env.MONGO_DB || "agendatest"), process.env.AGENDA_COLLECTION || "agenda_jobs");
 		const agenda = new Agenda(connectionOpts);
 
 		runDefineTask().catch(error => {

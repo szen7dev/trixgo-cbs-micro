@@ -2,6 +2,7 @@
 
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+
 /**
  * DOMAIN AND ACTIONS
  */
@@ -37,7 +38,6 @@ const ITEM__STORAGE_COLL				= require('./database/item.storage-coll');
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
 	mixins: [
-		// gọi tất cả các function dùng ở đây
 		DbService(ITEM__CONTRACT_COLL),
 		DbService(ITEM__DEPARTMENT_COLL),
 		DbService(ITEM__AREA_COLL),
@@ -107,10 +107,11 @@ module.exports = {
 	* Events
 	*/
 	events: {
+
 	},
 
 	/**
-	 	* Methods
+	* Methods
 	*/
 	methods: {
 
@@ -131,7 +132,7 @@ module.exports = {
 	},
 
 	/**
-	 	* Service stopped lifecycle event handler
+	* Service stopped lifecycle event handler
 	*/
 	async stopped() {
 

@@ -116,7 +116,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { limit, lastestID, templateID, checklistID, keyword, filter, select } = ctx.params;
                 let resultAfterCallHandler;
-                console.log({ limit, lastestID, templateID, checklistID, keyword, filter, select });
                 if(checklistID){
                     resultAfterCallHandler = await INSPECTION__TEMPLATE_CHECKLIST_MODEL.getInfo({
                         checklistID, filter

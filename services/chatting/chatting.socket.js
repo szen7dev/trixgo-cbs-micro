@@ -28,10 +28,8 @@ exports.CHATTING_SOCKET = {
     // 'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
     //     let socket                      = this;
     //     let userID                      = socket.client.user;
-    //     let listUserActive              = socket.$service.listUserConnected2;
+    //     let listUserActive              = socket.$service.listUserConnected;
     //     let io                          = socket.$service.io;
-
-	// 	console.log({ data })
 
     //     sendDataToMultilSocketsOfListUser({ 
 	// 		listUserConnected: listUserActive, 
@@ -54,7 +52,7 @@ exports.CHATTING_SOCKET = {
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NEW_CONVERSATION]: async function(data, ack) { 
         let socket                      = this;
-        let listUserActive              = socket.$service.listUserConnected2;
+        let listUserActive              = socket.$service.listUserConnected;
         let userID                      = socket.client.user;
         let io                          = socket.$service.io;
 		let { conversationID } 			= data;
@@ -103,7 +101,7 @@ exports.CHATTING_SOCKET = {
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_INFO_CONVERSATION]: async function(data, ack) { 
         let socket                 	= this;
-        let listUserActive         	= socket.$service.listUserConnected2;
+        let listUserActive         	= socket.$service.listUserConnected;
         let io                     	= socket.$service.io;
         let userID                 	= socket.client.user;
         let { conversationID } 		= data;
@@ -144,7 +142,7 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_ADD_MEMBER_CONVERSATION]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { conversationID, membersID } 	= data;
@@ -201,7 +199,7 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MEMBER_CONVERSATION]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
 		let { conversationID, memberID } 	= data;
@@ -257,7 +255,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_ADMIN_CONVERSATION]: async function(data, ack) { 
 		let socket                         	= this;
 		let broker                      	= socket.$service.broker;
-		let listUserActive                 	= socket.$service.listUserConnected2;
+		let listUserActive                 	= socket.$service.listUserConnected;
 		let userID                         	= socket.client.user;
 		let io                             	= socket.$service.io;
 		let { conversationID, memberID, isSetAdmin } = data;
@@ -314,7 +312,7 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_MEMBER_LEAVE_CONVERSATION]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let userID                      	= socket.client.user;
         let io                          	= socket.$service.io;
         let { conversationID, memberID } 	= data; 
@@ -363,7 +361,7 @@ exports.CHATTING_SOCKET = {
 	 */
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_CONVERSATION]: async function(data, ack) { 
         let socket               = this;
-        let listUserActive       = socket.$service.listUserConnected2;
+        let listUserActive       = socket.$service.listUserConnected;
         let userID               = socket.client.user;
         let io                   = socket.$service.io;
         let { infoConversation } = data;
@@ -393,7 +391,7 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data) {
         let socket                      = this;
 		let broker                      = socket.$service.broker;
-        let listUserActive              = socket.$service.listUserConnected2;
+        let listUserActive              = socket.$service.listUserConnected;
         let io                          = socket.$service.io;
         let userID                      = socket.client.user;
 
@@ -613,7 +611,7 @@ exports.CHATTING_SOCKET = {
 	 */
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SHARE_MESSAGE]: async function(data, ack) {
 		let socket                      = this;
-		let listUserActive              = socket.$service.listUserConnected2;
+		let listUserActive              = socket.$service.listUserConnected;
 		let io                          = socket.$service.io;
 		let userID                      = socket.client.user;
 		let { conversationsID, messagesID } = data;
@@ -669,7 +667,7 @@ exports.CHATTING_SOCKET = {
 	 */
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REVOKE_MESSAGE]: async function(data) {
 		let socket                      = this;
-		let listUserActive              = socket.$service.listUserConnected2;
+		let listUserActive              = socket.$service.listUserConnected;
 		let io                          = socket.$service.io;
 		let userID                      = socket.client.user;
 		let { conversationID, messagesID, filesID } = data;
@@ -710,7 +708,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_USER_JOIN_REMINDER]: async function(data, ack) { 
 		let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-		let listUserActive              	= socket.$service.listUserConnected2;
+		let listUserActive              	= socket.$service.listUserConnected;
 		let userID                      	= socket.client.user;
 		let io                          	= socket.$service.io;
 		let { conversationID, memberID, isJoin } = data; 
@@ -761,7 +759,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_REMINDER]: async function(data, ack) { 
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
-		let listUserActive      			= socket.$service.listUserConnected2;
+		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
 		let { conversationID, messageID }	= data; 
@@ -820,7 +818,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_REMINDER]: async function(data, ack) { 
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
-		let listUserActive      			= socket.$service.listUserConnected2;
+		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
 		let { conversationID, messageID } 	= data; 
@@ -879,7 +877,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_POLL]: async function(data, ack) { 
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
-		let listUserActive      			= socket.$service.listUserConnected2;
+		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
 		let { conversationID, messageID }	= data; 
@@ -938,7 +936,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_POLL]: async function(data, ack) { 
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
-		let listUserActive      			= socket.$service.listUserConnected2;
+		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
 		let { conversationID, messageID } 	= data; 
@@ -997,7 +995,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_PIN_MESSAGE]: async function(data, ack) { 
 		let socket              = this;
 		let broker              = socket.$service.broker;
-		let listUserActive      = socket.$service.listUserConnected2;
+		let listUserActive      = socket.$service.listUserConnected;
 		let userID              = socket.client.user;
 		let io                  = socket.$service.io;
 		let { conversationID } 	= data; 
@@ -1047,7 +1045,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UNPIN_MESSAGE]: async function(data, ack) { 
 		let socket              = this;
 		let broker              = socket.$service.broker;
-		let listUserActive      = socket.$service.listUserConnected2;
+		let listUserActive      = socket.$service.listUserConnected;
 		let userID              = socket.client.user;
 		let io                  = socket.$service.io;
 		let { conversationID } 	= data; 
@@ -1096,7 +1094,7 @@ exports.CHATTING_SOCKET = {
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER]: async function(data, ack) { 
         let socket               					= this;
-        let listUserActive       					= socket.$service.listUserConnected2;
+        let listUserActive       					= socket.$service.listUserConnected;
         let io                   					= socket.$service.io;
 		let { conversationID, messageID, userID }	= data;
 
@@ -1153,7 +1151,7 @@ exports.CHATTING_SOCKET = {
         let socket               		= this;
 		let userID              		= socket.client.user;
 		let broker                      = socket.$service.broker;
-        let listUserActive       		= socket.$service.listUserConnected2;
+        let listUserActive       		= socket.$service.listUserConnected;
         let io                   		= socket.$service.io;
 		let { messageID, typeReaction }	= data;
 
@@ -1235,7 +1233,7 @@ exports.CHATTING_SOCKET = {
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION]: async function(data) { 
         let socket           = this;
-        let listUserActive   = socket.$service.listUserConnected2;
+        let listUserActive   = socket.$service.listUserConnected;
 		let broker			 = socket.$service.broker;
         let io               = socket.$service.io;
 		let userID			 = socket.client.user;
@@ -1284,7 +1282,7 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_FIRE_MESSAGE]: async function(data) { 
         let socket              = this;
 		let userID				= socket.client.user;
-        let listUserActive      = socket.$service.listUserConnected2;
+        let listUserActive      = socket.$service.listUserConnected;
         let io                  = socket.$service.io;
 		let { _id: messageID, conversation: conversationID } = data;
 

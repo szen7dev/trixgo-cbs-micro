@@ -21,7 +21,7 @@ exports.MEDIA_SOCKET = {
     'CLIENT_SEND_MEDIA_TEST': async function(data, ack) { 
         let socket                      = this;
         let userID                      = socket.client.user;
-        let listUserActive              = socket.$service.listUserConnected2;
+        let listUserActive              = socket.$service.listUserConnected;
         let io                          = socket.$service.io;
 
         sendDataToMultilSocketsOfListUser({ 
@@ -45,7 +45,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_NEW_FOR_ALL_FRIENDS]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID } 					= data;
@@ -91,7 +91,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_NEW_FOR_FIREND_IN_COMPANY]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID, companyID } 			= data;
@@ -138,7 +138,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_TAG_FRIEND]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID, friendsID } 			= data;
@@ -181,7 +181,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_REACTION]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID } 					= data;
@@ -234,7 +234,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_REACTION_IMAGE]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID, imageID } 		    = data;
@@ -288,7 +288,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_REACTION_COMMENT]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID, commentID } 			= data;
@@ -347,7 +347,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_REPLY_COMMENT]: async function(data, ack) { 
         let socket                      			= this;
 		let broker                      			= socket.$service.broker;
-        let listUserActive              			= socket.$service.listUserConnected2;
+        let listUserActive              			= socket.$service.listUserConnected;
         let io                          			= socket.$service.io;
         let userID                      			= socket.client.user;
         let { mediaID, commentID, replyCommentID } 	= data;
@@ -414,7 +414,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_COMMENT]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID, commentID } 			= data;
@@ -473,7 +473,7 @@ exports.MEDIA_SOCKET = {
     [EVENT_SOCKET_CONSTANT_MEDIA.MEDIA_CSS_COMMENT_IMAGE]: async function(data, ack) { 
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected2;
+        let listUserActive              	= socket.$service.listUserConnected;
         let io                          	= socket.$service.io;
         let userID                      	= socket.client.user;
         let { mediaID, commentID, imageID } = data;

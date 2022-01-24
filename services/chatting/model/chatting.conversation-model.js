@@ -84,8 +84,6 @@ class Model extends BaseModel {
 						})
 						.lean();
 
-					// console.log({ checkExistConversation, members: [authorID, ...membersID] })
-
 					if(checkExistConversation)
 						return resolve({ error: false, data: checkExistConversation, status: 200 });
 

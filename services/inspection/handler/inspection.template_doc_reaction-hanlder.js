@@ -83,8 +83,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { limit, lastestIDReaction, templateID }        = ctx.params;
-                console.log({ limit, lastestIDReaction, templateID });
+                let { limit, lastestIDReaction, templateID } = ctx.params;
 
                 const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_REACTION_MODEL.getListTemplateDoc({
 					templateID, limit, lastestIDReaction

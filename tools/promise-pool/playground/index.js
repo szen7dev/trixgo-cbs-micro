@@ -32,7 +32,7 @@ const fakePromise = (user, timeer) => {
 async function run(users) {
     const { results, errors } = await PromisePool  
         .for(users)
-        .withConcurrency(2) //concurrency: 2
+        .withConcurrency(2)
         .process(async data => {
             const newData = await fakePromise(data);
             console.log({ newData })

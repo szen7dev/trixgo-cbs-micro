@@ -114,7 +114,6 @@
               key: keysParse[index].prop, value: itemValue // key: createAt, value: 2021-05-06T10:13:15.000z
             }
           });
-          // console.log({ listParmsAssignWithKey })
           /**
            * expected result: 
            *  listParmsAssignWithKey:

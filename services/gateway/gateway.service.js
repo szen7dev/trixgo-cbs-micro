@@ -117,30 +117,33 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		async authorize(ctx, _, req) {
-			let token;
 			console.log(`--------------TOKEN: ----------`);
-			// if (req.headers.authorization) {
-			// 	let type = req.headers.authorization.split(" ")[0];
-			// 	if (type === "Token" || type === "Bearer")
-			// 		token = req.headers.authorization.split(" ")[1];
-			// }
+			let token;
 
-			// try {
-			// 	let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token })
-			// 	// console.log({ checkAuthorization, token })
-			// 	if(checkAuthorization.error){
-			// 		return Promise.reject(checkAuthorization.message);
-			// 	}
-			// 	let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
-			// 	// exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
-			// 	this.logger.info("Authenticated via JWT: ", infoUser.username);
-			// 	// Reduce user fields (it will be transferred to other nodes)
-			// 	ctx.meta.infoUser = infoUser;
-			// 	ctx.meta.token 	  = token;
-			// 	return infoUser;
-			// } catch (error) {
-			// 	console.error(error)
-			// }
+			if (req.headers.authorization) {
+				let type = req.headers.authorization.split(" ")[0];
+				if (type === "Token" || type === "Bearer")
+					token = req.headers.authorization.split(" ")[1];
+			}
+
+			try {
+				let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token });
+
+				if(checkAuthorization.error){
+					return Promise.reject(checkAuthorization.message);
+				}
+				let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
+				// exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
+				this.logger.info("Authenticated via JWT: ", infoUser.username);
+
+				// Reduce user fields (it will be transferred to other nodes)
+				ctx.meta.infoUser = infoUser;
+				ctx.meta.token 	  = token;
+
+				return infoUser;
+			} catch (error) {
+				console.error(error);
+			}
 
 			// return console.log({ checkAuthorization, [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`]: `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}` })
 

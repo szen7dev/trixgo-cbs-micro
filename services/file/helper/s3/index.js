@@ -54,10 +54,10 @@ const uploadFile = (pathFile, key) => {
         try {
             // Read content from the file
             // const fileContent = fs.readFileSync(pathFile);
-            // console.log({ pathFile });
-            let parseBase64ToBuffer = Buffer.from(pathFile.replace(/^data:image\/\w+;base64,/, ""),'base64')
-            // console.log({ fileContent });
-            let bucket = `${config.bucket}/root`;
+
+            const parseBase64ToBuffer = Buffer.from(pathFile.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+            const bucket = `${config.bucket}/root`;
+
             // Setting up S3 upload parameters
             const params = {
                 ContentEncoding: 'base64',
@@ -69,16 +69,13 @@ const uploadFile = (pathFile, key) => {
             };
 
             // Uploading files to the bucket
-            let result = s3Object.upload(params, function(err, data) {
-                if (err) {
-                    throw err;
-                }
-                // console.log({ ____data: data });
+            const result = s3Object.upload(params, function(err) {
+                if (err) throw err;
             });
-            // console.log({ result })
-            return resolve({ error: false, data: result })
+
+            return resolve({ error: false, data: result });
         } catch (error) {
-            return resolve({ error: true, message: error.message })
+            return resolve({ error: true, message: error.message });
         }
     })
 
