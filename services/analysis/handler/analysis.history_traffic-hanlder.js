@@ -173,6 +173,7 @@ module.exports = {
             type            : { type: "string", optional: true },
             appID           : { type: "string", optional: true },
             menuID          : { type: "string", optional: true },
+            userID          : { type: "string", optional: true },
             // Field mặc định
             fromDate           : { type: "string", optional: true },
             toDate           : { type: "string", optional: true },
@@ -186,9 +187,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { historyTrafficID, companyID, type, appID, menuID, fromDate, toDate,  keyword, limit, lastestID, select, filter, populates } = ctx.params;
-                const { _id: userID, company } = ctx.meta.infoUser;
-
+                let { historyTrafficID, companyID, type, appID, menuID, fromDate, toDate, userID, keyword, limit, lastestID, select, filter, populates } = ctx.params;
+                // const { _id: userID, company } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
                 if(historyTrafficID){
                     resultAfterCallHandler = await ANALYSIS__HISTORY_TRAFFIC_MODEL.getInfo({
@@ -196,7 +196,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ANALYSIS__HISTORY_TRAFFIC_MODEL.getList({
-                        companyID, type, appID, menuID, fromDate, toDate, lastestID, keyword, limit, filter, populates
+                        companyID, type, appID, menuID, userID, fromDate, toDate, lastestID, keyword, limit, filter, populates
                     });
                 }
 

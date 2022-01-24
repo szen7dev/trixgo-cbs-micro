@@ -4,10 +4,8 @@ const BASE_ROUTE = '/notifications';
  */
 
 const CF_ROUTINGS_NOTIFICATION = {
-    ORIGIN_APP: BASE_ROUTE,
-
-    GET_LIST_NOTIFICATION               : `${BASE_ROUTE}/list-notifications`,
-    UPDATE_STATUS_NOTIFICATION          : `${BASE_ROUTE}/update-status-notification`,
+    ORIGIN_APP                 : BASE_ROUTE,
+    NOTIFICATION               : BASE_ROUTE,
 }
 
 exports.CF_ROUTINGS_NOTIFICATION = CF_ROUTINGS_NOTIFICATION;

@@ -1,0 +1,315 @@
+"use strict";
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
+                                        = require('../../../tools/utils/utils');
+const stringUtils					    = require('../../../tools/utils/string_utils');
+const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const moment                            = require("moment");
+
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+
+
+/**s
+ * import inter-coll, exter-coll
+ */
+const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
+const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
+const { template }                          = require('lodash');
+
+/**
+ * import inter-model, exter-model
+ */
+class Model extends BaseModel {               
+
+    constructor() {
+        super(AUTH__APP_ROLE_COLL);
+    }
+
+    /**
+     * Name: insert app role ✅
+     * Author: Depv
+     * Code: 
+     */
+    insert({ type, company, app, name, description, userID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                
+                if(!type)
+                    return resolve({ error: true, message: "Type không hợp lệ", keyError: "type_invalid", status: 400 });
+
+                if(name)
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "name_invalid", status: 400 });
+
+                if(!checkObjectIDs(company))
+                    return resolve({ error: true, message: "Mã công ty không hợp lệ", keyError: "company_invalid", status: 400 });
+
+                if(!checkObjectIDs(app))
+                    return resolve({ error: true, message: "Mã ứng dụng không hợp lệ", keyError: "app_invalid", status: 400 });
+
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: "Người tạo không hợp lệ", keyError: "userID_invalid", status: 400 });
+
+                let dataInsert = { type, company, app, name, userCreate: userID };
+
+                if(description){
+                    dataInsert.description = description;
+                }
+
+                let infoAterInsert = await this.insertData(dataInsert);
+                if(!infoAterInsert)
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: "cannot_insert", status: 422 });
+ 
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: update app role ✅
+     * Author: Depv
+     * Code: 
+     */
+    update({ appRoleID, type, company, app, name, description, userID, membersAddID, membersRemoveID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                
+                if(!checkObjectIDs(appRoleID))
+                    return resolve({ error: true, message: "Mã nhóm chức năng không hợp lệ", keyError: "appRoleID_invalid", status: 403 });
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+                if(type){
+                    dataUpdate.type = type;
+                }
+
+                if(company){
+                    dataUpdate.company = company;
+                }
+
+                if(app){
+                    dataUpdate.app = app;
+                }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(membersAddID){
+                    dataUpdate.$addToSet = {
+                        members: membersAddID
+                    }
+                }
+
+                if(membersRemoveID){
+                    dataUpdate.$pull = {
+                        members: membersRemoveID
+                    }
+                }
+                
+                let infoAterUpdate = await AUTH__APP_ROLE_COLL.findByIdAndUpdate(appRoleID, dataUpdate, { new: true });
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "cannot_update", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Remove app role ✅
+     * Author: Depv
+     * Code: 
+     */
+    remove({ appRoleID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(appRoleID))
+                    return resolve({ error: true, message: 'Mã nhóm chức năng không hợp lệ', keyError: "appRoleID_invalid", status: 400 });
+                    
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await AUTH__APP_ROLE_COLL.findByIdAndDelete(appRoleID);
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: 'Xóa thất bại', keyError: "cannot_remove", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: get app role ✅
+     * Author: Depv
+     * Code: 
+     */
+    getInfo({ appRoleID, select }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(appRoleID))
+                    return resolve({ error: true, message: "Mã nhóm chức năng không hợp lệ",keyError: 'appRoleID_invalid', status: 400 });
+                    
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await AUTH__APP_ROLE_COLL.findById(appRoleID).select(select);
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "can't_remove", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    /**
+     * Name  : Danh sách app role✅
+     * Author: Depv
+     * Code  : 
+     */
+    getList({ type, company, app,
+        keyword, limit = 10, lastestID, select, populates = {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { 
+                    // state: 1,
+                };
+
+                let conditionFind = { };
+                let sortBy   = { createAt: -1 };
+              
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                if(type){
+                    conditionObj.type = type;
+                }
+
+                if(company){
+                    conditionObj.company = company;
+                }
+
+                if(app){
+                    conditionObj.app = app;
+                }
+
+                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+               
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await AUTH__APP_ROLE_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+					let nextInfo = `${infoData.createAt}_${infoData._id}`;
+                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
+					let keys	 = ['createAt__-1', '_id__-1'];
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+					conditionFind = dataPagingAndSort.data.find;
+					sortBy = dataPagingAndSort.data.sort;
+				}
+
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+                
+                let infoDataAfterGet = await AUTH__APP_ROLE_COLL.find({...conditionObj, ...conditionFind })
+                    .select(select)
+                    .limit(+limit+1)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await AUTH__APP_ROLE_COLL.countDocuments(conditionObj);
+                let totalPage = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+}
+
+exports.MODEL = new Model;

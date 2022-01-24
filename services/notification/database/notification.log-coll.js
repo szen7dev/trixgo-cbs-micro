@@ -16,9 +16,10 @@ module.exports  = DATABASE_MIDDLEWARE("notification_log", {
         require: true
     },
     /**
-     * -1: Đã tạo, chưa gửi
+     * -1: Đã tạo, chưa gửi 
      *  1: Đã gửi THÀNH CÔNG
      *  2: Đã gửi THẤT BẠI
+     *  3: Đã xem thông báo
      */
     status: {
         type: Number
