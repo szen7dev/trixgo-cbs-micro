@@ -1972,10 +1972,6 @@ class Model extends BaseModel {
 
 				listConversation = [...listConversationPin, ...listConversation];
 
-				listConversation.map(conversation => {
-					console.log({ ['GET_LIST_CONVERSATION_BY_KEYWORD']: conversation })
-				})
-
 				if(keyword) {
 					for (const conversation of listConversation) {
 						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
@@ -1992,6 +1988,8 @@ class Model extends BaseModel {
 
 							continue;
 						}
+
+						console.log({ ['GET_LIST_CONVERSATION_BY_KEYWORD']: conversation })
 
 						listConversationFiltered[listConversationFiltered.length] = conversation;
 					}
