@@ -17,10 +17,10 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             // Field bổ sung
-            // companyID       : { type: "string", optional: true },
             projectID       : { type: "string", optional: true },
             type            : { type: "string", optional: true },
             doctypeID       : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -35,6 +35,10 @@ module.exports = {
                 let { doctypeID, projectID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
+                if(!companyID){
+                    companyID = company._id
+                }
+                
                 let resultAfterCallHandler;
                 if(doctypeID){
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getInfo({
@@ -42,7 +46,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getList({
-                        companyID: company._id, projectID, lastestID, userID, type, keyword, limit, select, populates
+                        companyID, projectID, lastestID, userID, type, keyword, limit, select, populates
                     });
                 }
 

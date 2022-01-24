@@ -219,7 +219,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {  departmentID, companyID, type, keyword, limit, lastestID, select, populates } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                if(!companyID){
+                    companyID = company._id;
+                }
                 
                 let resultAfterCallHandler;
                 if(departmentID){

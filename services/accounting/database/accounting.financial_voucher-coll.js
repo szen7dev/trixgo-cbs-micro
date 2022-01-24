@@ -32,11 +32,13 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'contract_ipc'
     }, 
-    //_________Phân loại khác (NEW***)
-    subtype: {
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    }, 
+    /**
+     * Loại khoản mục (NEW***)
+     * 1-Chung
+     * 2-Chi phí
+     * 3-Doanh thu
+     */
+    feeType: { type: Number, default: 1 },
     //_________Khoản mục phí (NEW***)
     fee: {
         type: Schema.Types.ObjectId,

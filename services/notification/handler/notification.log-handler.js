@@ -56,17 +56,17 @@ module.exports = {
       * Func: Cập nhật trạng thái gửi thông báo
       * Date: 16/12/2021
       */
-    updateStatus: {
+    update: {
         params: {
             notificationID  : { type: "string" },
-            status          : { type: "number" },
+            status          : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { notificationID, status } = ctx.params;
 
-                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.updateStatus({
+                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.update({
                     notificationID, status
                 });
 
@@ -82,22 +82,29 @@ module.exports = {
       * Func: Lấy danh sách thông báo
       * Date: 16/12/2021
       */
-    getListNotification: {
+    getInfoAndGetList: {
         params: {
+            notificationID  : { type: "string", optional: true },
+
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
-			limit 			: { type: "string", optional: true }
+			limit 			: { type: "string", optional: true },
+			select 			: { type: "string", optional: true },
+			populates 	    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { lastestID, keyword, limit, filter, select } = ctx.params;
-
-                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getListNotification({
-                    authorID, lastestID, keyword, limit, filter, select
-                });
-
+                const { notificationID, lastestID, keyword, limit, populates, select } = ctx.params;
+                let resultAfterCallHandler;
+                if(notificationID){
+                    
+                }else{
+                    resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
+                        authorID, lastestID, keyword, limit, select, populates
+                    });
+                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

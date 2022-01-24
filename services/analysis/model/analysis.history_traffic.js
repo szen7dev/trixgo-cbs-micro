@@ -270,7 +270,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, app, menu, fromDate, toDate,
+        companyID, type, app, menu, fromDate, toDate, userID,
         keyword, limit = 10, lastestID, filter = {}, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -310,9 +310,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
-    
-
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -359,6 +356,10 @@ class Model extends BaseModel {
 
                 if(fromDate && toDate){
                     conditionObj.createdAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+
+                if(checkObjectIDs(userID)){
+                    conditionObj.userCreate = userID;
                 }
                 
                 let infoDataAfterGet = await ANALYSIS__HISTORY_TRAFFIC_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })

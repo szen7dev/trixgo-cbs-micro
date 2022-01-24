@@ -621,21 +621,23 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
+    getList({ companyID, keyword, type, userID, isMember, limit = 10, lastestID, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
-                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    members: { $in: [userID]}, 
-                };
-                    
+                let conditionObj  = {};
                 let conditionFind = {};
                 let sortBy        = { createAt: -1 };
-				let objSort 	  = {};
 
+                if(limit > 20){
+                    limit = 20;
+                }
+
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID]}
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -677,9 +679,8 @@ class Model extends BaseModel {
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
+					conditionFind = dataPagingAndSort?.data?.find;
+					sortBy        = dataPagingAndSort?.data?.sort;
 				}
 
                 //_____Tìm kiếm theo từ khóa

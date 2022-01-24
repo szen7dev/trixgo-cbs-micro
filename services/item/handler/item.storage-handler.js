@@ -16,7 +16,8 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-            storageID     : { type: "string", optional: true },
+            storageID       : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -29,7 +30,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { storageID,  keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                
+                if(!companyID){
+                    companyID = company._id;
+                }
                 let resultAfterCallHandler;
                 if(storageID){
                     resultAfterCallHandler = await ITEM__STORAGE_MODEL.getInfo({
@@ -37,7 +40,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__STORAGE_MODEL.getList({
-                        companyID: company._id, lastestID, keyword, limit, select, populates
+                        companyID, lastestID, keyword, limit, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

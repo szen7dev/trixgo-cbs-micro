@@ -16,7 +16,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
-const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 
 /**
@@ -76,14 +76,11 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                
                 let conditionObj = {
                     members: { $in: [userID]}, 
                 };
                 
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let sortBy   = { createAt: -1, _id: -1 };
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -111,48 +108,40 @@ class Model extends BaseModel {
                 if(projectID){
                     conditionObj.project = projectID;
                 }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
                 
-                // GET CONDITION PAGINATION
+                let conditionObjOrg = { ...conditionObj};
+                
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
 					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
 				}
-
-                // SEARCH TEXT
-				// if(keyword){
-				// 	conditionObj.$text = { $search: keyword };
-				// 	objSort.score = { $meta: "textScore" };
-				// 	sortBy.score  = { $meta: "textScore" };
-				// }
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
-
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .select(select)
                     .populate(populates)
                     .lean(); 
                 
-                // GET TOTAL RECORD
-                let totalCurrentPage = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.countDocuments(conditionObj);
+                let totalRecord = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     
@@ -163,18 +152,12 @@ class Model extends BaseModel {
 					}
 				}
 
-                let currentPage = getCurrentPage({ totalRecord, totalCurrentPage, limit }) + 1;
-                if(!lastestID){
-                    currentPage =  1
-                }
-
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
-                    currentPage
                 }, status: 200 });
                 
             } catch (error) {

@@ -70,12 +70,13 @@ class Model extends BaseModel {
 						});
 					}
 
-					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người thì không tạo nữa
+					// Kiểm tra nếu tồn tại cuộc hội thoại của hai người hoặc chính mình thì không tạo nữa
 					let checkExistConversation = await CHATTING__CONVERSATION_COLL
 						.findOne({
 							$or: [
 								{ members: [authorID, ...membersID] },
 								{ members: [...membersID, authorID] },
+								{ members: [...new Set([authorID, ...membersID])] },
 							]
 							// members: {
 							// 	$all: [ObjectID(authorID), ...membersID],
@@ -1377,7 +1378,7 @@ class Model extends BaseModel {
 									select: '_id file',
 									populate: {
 										path: 'file',
-										select: '_id name url size'
+										select: '_id name nameOrg url size'
 									}
 								})
 								.lean());
@@ -1927,7 +1928,7 @@ class Model extends BaseModel {
 								path: 'avatar',
 								populate: {
 									path: 'file',
-									select: 'name size url'
+									select: 'name nameOrg size url'
 								},
 								select: select.avatar
 							})
@@ -1961,7 +1962,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'name size url'
+							select: 'name nameOrg size url'
 						},
 						select: select.avatar
 					})
@@ -1979,9 +1980,7 @@ class Model extends BaseModel {
 
 							if(bizfullname === memberName1st && memberName2st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
-							}
-
-							if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
+							} else if(bizfullname === memberName2st && memberName1st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
 							}
 
@@ -2108,7 +2107,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'name size url'
+							select: 'name nameOrg size url'
 						},
 						select: select.avatar
 					})

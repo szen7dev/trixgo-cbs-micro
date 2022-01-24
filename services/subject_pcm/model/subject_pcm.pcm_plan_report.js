@@ -250,10 +250,8 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { state: 1 };
-                let conditionFind = {};
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let conditionObj = {  };
+                let sortBy   = { createAt: -1, _id: -1 };
 
                 /** 
                  * VALIDATION STEP (2)
@@ -300,8 +298,8 @@ class Model extends BaseModel {
 					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
 				}
 
                 // SEARCH TEXT
@@ -313,7 +311,7 @@ class Model extends BaseModel {
 
                 let listUserPcmPlanReportAccess = await SUBJECT_PCM__USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)

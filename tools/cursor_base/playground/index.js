@@ -1,6 +1,6 @@
 // const { kdf } = require("crypto-js");
 
-// let app = express()();
+let _ = require('lodash');
 
 // /**
 //  * @param limit query param
@@ -238,6 +238,7 @@
    */
 
   const RANGE_BASE_PAGINATION_V2 = ({ keys, latestRecord, objectQuery }) => {
+  console.log("🚀 ~ file: index.js ~ line 241 ~ latestRecord", latestRecord)
     let resultForReturn = {
       find: {},
       sort: {}
@@ -247,9 +248,11 @@
      *  - 1: là unique field
      *  - 2 || n: là non-unique field
      */
+    
     const LENGTH_PARAMS_PAGINATION = keys && keys.length;
     const IS_UNIQUE_FIELD          = LENGTH_PARAMS_PAGINATION == 1 ? true : false;
-    const IS_FIRST_PAGE            = (latestRecord && latestRecord.hasOwnProperty('_id')) ? false : true;
+    const IS_FIRST_PAGE            = (latestRecord && _.get(latestRecord, '_id', 0) != 0) ? false : true;
+    console.log("🚀 ~ file: index.js ~ line 255 ~ IS_FIRST_PAGE", IS_FIRST_PAGE)
     const IS_EXISTS_QUERY          = (objectQuery && (typeof objectQuery)) ? true : false;
 
     /**
@@ -369,12 +372,12 @@
 
   // ---------EXAMPLE USE V2------//
   // let keys = ['_id__-1']; ['username__1']
-  let keys = ['createAt__-1', '_id__-1'];
-  let latestRecord = { _id: '60b5114ce27803187c3e1bab', name: 'khanhney', createAt: '14/01/2012' }
-  let objectQuery = {
-    username: 'lucde'
-  }
-  let result = RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery })
+  // let keys = ['createAt__-1', '_id__-1'];
+  // let latestRecord = { _id: '60b5114ce27803187c3e1bab', name: 'khanhney', createAt: '14/01/2012' }
+  // let objectQuery = {
+  //   username: 'lucde'
+  // }
+  // let result = RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery })
  
   /**
    * expected: 
@@ -382,4 +385,4 @@
    *  - sort: { username: -1 }
    */
 
-  console.log("🚀 ~ file: index.js ~ line 298 ~ result", JSON.stringify(result))
+  // console.log("🚀 ~ file: index.js ~ line 298 ~ result", JSON.stringify(result))
