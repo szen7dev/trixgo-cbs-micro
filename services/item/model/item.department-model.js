@@ -727,6 +727,88 @@ class Model extends BaseModel {
             }
         })
     }
+
+     /**
+     * Name  : Thống kê theo tiến độ ngân sách
+     * Author: DePV ✅
+     * Code  : 
+     */
+    analysisOntimeOnbudget({ userID }){
+        return new Promise(async resolve => {
+            let dataBlock1 = await ITEM__DEPARTMENT_COLL.aggregate([
+                {
+                    $match: {
+                        members : { $in: [_isValid(userID)] },
+                        ontime  : { $exists: true },
+                        onbudget: { $exists: true },
+                    },
+                },
+                { 
+                    $group: {
+                        _id: { 
+                            ontime  :  "$ontime",
+                            onbudget:  "$onbudget",
+                        }, 
+                        amount: { $sum: 1 },
+                      } 
+                },
+                {
+                    $sort: { 
+                        "_id.ontime": 1,
+                        "_id.onbudget": 1
+                    }
+                },
+            ])
+
+            let dataBlock2 = await ITEM__DEPARTMENT_COLL.aggregate([
+                {
+                    $match: {
+                        members : { $in: [_isValid(userID)] },
+                    },
+                },
+                { 
+                    $group: {
+                        _id: null,
+                        budget: { $sum: "$budget" },
+                        forecastBudget: { $sum: "$forecastBudget" },
+                        contractValueContractPlusValueContractVatValue: { $sum: { $multiply: [ "$contractValue", "$contractPlusValue", "contractVatValue" ]} },
+                        contractAmountPaid: { $sum: "$contractAmountPaid" },
+                    } 
+                }
+            ])
+
+            let dataBlock3 = await ITEM__DEPARTMENT_COLL.aggregate([
+                {
+                    $match: {
+                        members : { $in: [_isValid(userID)] },
+                        stage: { $ne: null}
+                    },
+                },
+                { 
+                    $group: {
+                        _id: {
+                            stage: "$stage",
+                        },
+                        amount: { $sum: 1 },
+                    } 
+                },
+                {
+                    $sort: { 
+                        "_id.stage": 1,
+                    }
+                },
+            ])
+
+            return resolve({ 
+                error: false, 
+                data: { 
+                    dataBlock1, dataBlock2, dataBlock3
+                }
+            });
+        })
+    }
+    
+    
 }
 
 exports.MODEL = new Model;
