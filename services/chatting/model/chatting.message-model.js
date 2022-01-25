@@ -747,6 +747,8 @@ class Model extends BaseModel {
 					}
 				}
 
+				const TYPE_PIN_MESSAGE = 108;
+				const TYPE_UNPIN_MESSAGE = 109;
 				let infoConversationAfterUpdate = null;
 				let typeMessage = 0;
 
@@ -783,14 +785,14 @@ class Model extends BaseModel {
 						}, { new: true });
 					}
 
-					typeMessage = 108; // Pin 1 tin nhắn trong cuộc hội thoại
+					typeMessage = TYPE_PIN_MESSAGE;
 
 				} else{
 					infoConversationAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pull: { messagesPin: messageID }
 					}, { new: true });
 
-					typeMessage = 109; // Bỏ Pin 1 tin nhắn trong cuộc hội thoại
+					typeMessage = TYPE_UNPIN_MESSAGE;
 				}
 
 				if(!infoConversationAfterUpdate) {
@@ -811,6 +813,17 @@ class Model extends BaseModel {
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID, numberMissMessage: 1 });
+
+				infoConversationAfterUpdate = await CHATTING__CONVERSATION_COLL
+					.findById(conversationID)
+					.populate({
+						path: 'messagesPin',
+						populate: {
+							path: 'sender',
+							select: '_id fullname bizfullname email image'
+						},
+					})
+					.lean();
 
 				return resolve({
 					error: false, 
@@ -2198,7 +2211,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([userID, messageID])) {
                     return resolve({
 						error: true, 
-						message: 'Request params message ID or user ID invalid', 
+						message: 'Tham số message ID hoặc user ID không hợp lệ', 
 						keyError: 'params_messageID_or_userID_invalid',
 						status: 400
 					});
@@ -2216,8 +2229,14 @@ class Model extends BaseModel {
 					})
 					.lean();
 
-				if(!infoMessage)
-					return resolve({ error: true, message: "Can't get info message", status: 403 });
+				if(!infoMessage) {
+					return resolve({
+						error: true,
+						message: 'Đã có lỗi xảy ra',
+						keyError: 'error_occurs',
+						status: 422
+					})
+				}
 
 				return resolve({
 					error: false,
@@ -2228,7 +2247,7 @@ class Model extends BaseModel {
 					}
 				});
 			} catch (error) {
-				return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 })
+				return resolve({ error: true, message: error.message, status: 500 })
 			}
 		})
 	}
