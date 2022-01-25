@@ -7,14 +7,6 @@ const Schema                = require('mongoose').Schema;
  *  Hồ sơ văn bản
  */
 module.exports  = DATABASE_MIDDLEWARE("document_doc", {
-    /**
-     * Mã hiệu bằng số do hệ thống tự phát sinh
-     */
-    suid: {
-        type   : String,
-        require: true,
-        unique : true
-    },
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
@@ -56,12 +48,12 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
-    //_________Phân loại theo lĩnh vực(type = 1)
+    //_________Phân loại theo lĩnh vực (type=1)
     field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Phân loại theo tính chất(type=2)
+    //_________Phân loại theo tính chất (type=2)
     property: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
@@ -117,16 +109,6 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Date,
         default: null
     },
-    //_________Các văn bản liên đới
-    linkDocument: [{
-        type: Schema.Types.ObjectId,
-        ref: "document_doc"
-    }],
-    //_________File đính kèm hồ sơ(sau sẽ Bỏ)
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref: "file_core"
-    }],
     //_________Ký xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,
@@ -144,27 +126,20 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref: "document_doc"
     },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "document_doc"
-    }],
     level: {
         type: Number,
         default: 1
     },
-    //______________Các trường mới bổ sung
     //_________Giá trị
     value: {
         type: Number,
         default: 0
     },
-    
-    //_________Trạng thái hoàn thành(0-Chưa hoàn thành/ 1-Hoàn thành)
+    //_________Trạng thái hoàn thành (0-Chưa hoàn thành/ 1-Hoàn thành)
     completeStatus: {
         type: Number,
         default: 0
     },
-
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
