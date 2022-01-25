@@ -511,7 +511,25 @@ class Model extends BaseModel {
                 if(!_isValid(journalID))
                     return { error: true, message: 'journalID_invalid' };
                 
-                const infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
+                const infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID)
+                .populate({
+                    path: 'files',
+                    populate: {
+                        path: 'author'
+                    }
+                })
+                .populate({
+                    path: 'customerCredit customerDebit contact  contract  warehouse ipc',
+                    select:'_id  name'
+                })
+                // .populate({
+                //     path: 'goods',
+                //     select:'_id name unit'
+                // })
+                .populate({
+                    path: 'debit credit ',
+                    select:'_id description sign'
+                });
                 if(!infoJournal)
                     return resolve({ error: true, message: 'cant_get_info_journal' })
                     

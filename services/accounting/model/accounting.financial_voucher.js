@@ -794,6 +794,29 @@ class AccountingFinancialVoucher extends BaseModel {
 
                 // get list journal
                 let resultGetListJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
+                .populate({
+                    path: 'files',
+                    populate: {
+                        path: 'author'
+                    }
+                })
+                .populate({
+                    path: 'customerCredit customerDebit contact  warehouse ipc',
+                    select:'_id  name'
+                })
+                .populate({
+                    path: 'contract',
+                    select:'_id  date name sign'
+                })
+                // .populate({
+                //     path: 'goods',
+                //     select:'_id name unit'
+                // })
+                .populate({
+                    path: 'debit credit',
+                    select:'_id description sign'
+                });
+
                 if(!resultGetListJournal)
                     resultGetListJournal = [];
 
@@ -904,12 +927,6 @@ class AccountingFinancialVoucher extends BaseModel {
                     path: 'userCreate userUpdate',
                     select:'_id fullname image'
                 })
-                .populate({
-                    path: 'journals',
-                    populate: {
-                        path: 'debit credit customerDebit customerCredit goods warehouse contract'
-                    }
-                })
                 .limit(limit+1)
                 .sort(result.data.sort);
                 // }
@@ -931,7 +948,8 @@ class AccountingFinancialVoucher extends BaseModel {
                         listVoucher: listVoucher || [],
                         nextCursor,
                         totalRecord,
-                        limit
+                        limit, 
+                        VOUCHER_TYPES
                      },  });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][getListVoucherOfCompany] ${error}`);
