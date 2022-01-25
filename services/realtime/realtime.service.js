@@ -299,16 +299,17 @@ module.exports = {
 					listFriendOnline[listFriendOnline.length] = friendID;
                 }
             });
-            console.log({ 
-                    event: 'SSC_USER_ONLINE',
-                    arrReceiver: listFriendOnline,
-                    listUserConnected: listUserActive,
-                    data: {
-                        friendOnline: _infoUser._id,
-                        disconnect: false,
-                        isFirstTime: false
-                    }
-                })
+
+            // console.log({ 
+            //     event: 'SSC_USER_ONLINE',
+            //     arrReceiver: listFriendOnline,
+            //     listUserConnected: listUserActive,
+            //     data: {
+            //         friendOnline: _infoUser._id,
+            //         disconnect: false,
+            //         isFirstTime: false
+            //     }
+            // })
 
             // Gửi tín hiệu kết nối cho những người bạn 
             sendDataToMultilSocketsOfListUser({ 

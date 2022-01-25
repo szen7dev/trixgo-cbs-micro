@@ -16,6 +16,7 @@ const CF_ROUTINGS_ITEM = {
     
     // ================================DEPARTMENT=======================================//
     DEPARTMENTS                                : `${BASE_ROUTE}${DEPARTMENT}`,
+    DEPARTMENTS_ANALYSIS_ONTIME_ONBUDGET       : `${BASE_ROUTE}${DEPARTMENT}/analysis`,
 
     // ================================CONTRACT=======================================//
     CONTRACTS                                  : `${BASE_ROUTE}${CONTRACT}`,

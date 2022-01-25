@@ -6,6 +6,8 @@ const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { sendNotificationviaOneSignal }          = require('../../../tools/cloudmsg/noti.send');
+const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
+
 const { 
     NOTI_TYPE,
     ONESIGNAL_APP_CBS,
@@ -161,6 +163,7 @@ class Model extends BaseModel {
     getList({ authorID, lastestID, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
+
 				if(!checkObjectIDs(authorID)) {
 					return resolve({
                         error: true,
@@ -196,13 +199,10 @@ class Model extends BaseModel {
                     status: this.SEND_SUCCESS,
                     receiver: authorID
                 };
-				let conditionFind 	= {};
-				let objSort 	 	= {};
-				let sortBy = {
-                    _id: -1,
-					createAt: -1,
-					modifyAt: -1
-				};
+
+                let keys	        = ['_id__-1', 'createAt__-1'];
+				let sortBy;
+                let conditionObjOrg = { ...conditionObj }
 
 				// GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -210,24 +210,27 @@ class Model extends BaseModel {
 					if(!infoNotification)
 						return resolve({ error: true, message: "Can't get info last notification", status: 400 });
 
-					let nextInfo = `${infoNotification._id}_${infoNotification.createAt}`;
-					let keys	 = ['_id__-1', 'createAt__-1'];
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-					conditionFind = dataPagingAndSort.data.find;
-				}
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
 
 				// SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.title = regSearch
+                }
 
-				let listNotifications = await NOTIFICATION__LOG_COLL.find({ ...conditionObj, ...conditionFind }, { ...objSort })
+				let listNotifications = await NOTIFICATION__LOG_COLL.find(conditionObj)
 					.limit(limit + 1)
 					.select(select)
 					.populate(populates)
@@ -235,7 +238,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-				let totalRecord = await NOTIFICATION__LOG_COLL.countDocuments(conditionObj);
+				let totalRecord = await NOTIFICATION__LOG_COLL.count(conditionObjOrg);
 				let nextCursor  = null;
 
 				if(listNotifications && listNotifications.length){

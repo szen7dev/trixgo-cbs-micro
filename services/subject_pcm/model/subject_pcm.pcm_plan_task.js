@@ -778,8 +778,8 @@ class Model extends BaseModel {
                     status: { $ne: 3 }
                 };
 
-                let conditionObjOrg = {};
-                let sortBy   = { actualFinishTime: -1 };
+                let sortBy;
+                let keys	 = ['actualFinishTime__-1', '_id__-1'];
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
@@ -993,31 +993,30 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
-                conditionObjOrg = {...conditionObj};
-                
+                let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoData.actualFinishTime}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['actualFinishTime__-1', '_id__-1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
                     conditionObj  = dataPagingAndSort.data.find;
 					sortBy        = dataPagingAndSort.data.sort;
-				}
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(+limit+1)
-                    .sort(sortBy)
                     .select(select)
                     .populate(populates)
+                    .sort(sortBy)
                     .lean();
 
                 // Kiểm tra nếu không có dữ liệu

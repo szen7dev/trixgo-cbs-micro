@@ -202,6 +202,7 @@ module.exports = {
 	 * Func: Danh sách dự án mà user được quyền truy cập
 	 */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             // Field bổ sung
             type            : { type: "string", optional: true },
@@ -236,6 +237,29 @@ module.exports = {
                     });
                 }
 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+
+     /**
+	 * Dev: Depv ✅
+	 * Func: Thống kê theo tiến độ, ngân sách
+	 */
+    analysisOntimeOnbudget: {
+        auth: "required",
+        params: {
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.analysisOntimeOnbudget({
+                    userID
+                });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

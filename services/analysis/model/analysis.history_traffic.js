@@ -438,7 +438,6 @@ class Model extends BaseModel {
                             "company.name": 1,
                             "amountAccesses": 1,
                             _id: 0
-                            
                         }
                     }
                 ])
