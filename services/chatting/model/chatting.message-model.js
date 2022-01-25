@@ -819,9 +819,14 @@ class Model extends BaseModel {
 					.populate({
 						path: 'messagesPin',
 						populate: {
-							path: 'sender',
-							select: '_id fullname bizfullname email image'
+							path: 'sender poll reminder files.file',
+							select: '_id fullname bizfullname email image name options status content',
+							populate: {
+								path: 'options.usersVote file',
+								select: '_id bizfullname fullname image name url size'
+							},
 						},
+						select: select.messagesPin
 					})
 					.lean();
 
