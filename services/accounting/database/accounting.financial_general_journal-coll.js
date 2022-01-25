@@ -32,12 +32,12 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contract_ipc'
     }, 
-/**
- * Loại khoản mục (NEW***)
- * 1-Chung
- * 2-Chi phí
- * 3-Doanh thu
- */
+    /**
+     * Loại khoản mục (NEW***)
+     * 1-Chung
+     * 2-Chi phí
+     * 3-Doanh thu
+     */
     feeType: { type: Number, default: 1 },
     //_________Khoản mục phí (NEW***)
     fee: {

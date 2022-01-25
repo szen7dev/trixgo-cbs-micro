@@ -4,7 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -487,13 +487,13 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    company: companyID
-                };
+                let conditionObj = {  company: companyID };
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
 
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                if(limit > 20){
+                    limit = 20
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -553,23 +553,7 @@ class Model extends BaseModel {
                     conditionObj.insuranceStatus = insuranceStatus
                 }
 
-                // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-                
-				if(keyword){
+                if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
@@ -577,17 +561,28 @@ class Model extends BaseModel {
                         { name: regSearch },
                         { sign: regSearch },
                     ]
+                }
 
-                    if(lastestID){
-                        conditionObj.$and = [
-                            { $or: conditionObj.$or },
-                            { $or: conditionFind.$or },
-                        ]
-                        delete conditionObj.$or;
-                    }
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy       = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await ITEM__CONTACT_COLL.find({ ...conditionObj, ...conditionFind })
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -605,7 +600,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await ITEM__CONTACT_COLL.countDocuments(conditionObj);
+                let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

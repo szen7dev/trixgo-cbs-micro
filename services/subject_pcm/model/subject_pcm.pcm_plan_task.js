@@ -17,7 +17,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  */
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL       = require('../database/subject_pcm.pcm_plan_task-coll');
 const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
-const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
 /**
@@ -778,11 +778,8 @@ class Model extends BaseModel {
                     status: { $ne: 3 }
                 };
 
-                let conditionObjOrg = {};
-
-                let conditionFind = { };
-                let sortBy   = { actualFinishTime: -1 };
-				let objSort  = {};
+                let sortBy;
+                let keys	 = ['actualFinishTime__-1', '_id__-1'];
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
@@ -815,7 +812,7 @@ class Model extends BaseModel {
                     listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
                  }
                  
-                 // Lấy công việc mà mình được quyền truy cập
+                // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
                     { assignee: userID },
@@ -996,36 +993,30 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
-                conditionObjOrg = {...conditionObj};
-                
+                let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoData.actualFinishTime}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['actualFinishTime__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-					conditionFind = dataPagingAndSort.data.find;
+                    conditionObj  = dataPagingAndSort.data.find;
 					sortBy        = dataPagingAndSort.data.sort;
-                    conditionObj.$and = [
-                        { $or: conditionObj.$or },
-                        { $or: conditionFind.$or },
-                    ]
-                    delete conditionObj.$or;
-				}
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(+limit+1)
-                    .sort(sortBy)
                     .select(select)
                     .populate(populates)
+                    .sort(sortBy)
                     .lean();
 
                 // Kiểm tra nếu không có dữ liệu

@@ -4,7 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -730,11 +730,12 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
-                // Điều kiện gốc
-                let conditionObjOrg = {}
-                let conditionFind = { };
-                let sortBy   = { createAt: -1, _id: -1 };
-              
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                
+                if(limit > 20){
+                    limit = 20
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -864,7 +865,7 @@ class Model extends BaseModel {
                     conditionObj.name = regSearch
                 }
 
-                conditionObjOrg = { ...conditionObj }
+                let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -872,22 +873,17 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-                    
-                    conditionObj.$and = [
-                        { $or: conditionObj.$or },
-                        { $or: conditionFind.$or },
-                    ]
-                    delete conditionObj.$or;
-				}
-                
+
+					conditionObj = dataPagingAndSort?.data?.find;
+					sortBy       = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort?.data?.sort;
+                }
+
                 let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -899,7 +895,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
                 let nextCursor	    = null;
-
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
