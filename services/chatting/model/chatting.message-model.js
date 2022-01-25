@@ -826,7 +826,6 @@ class Model extends BaseModel {
 								select: '_id bizfullname fullname image name url size'
 							},
 						},
-						select: select.messagesPin
 					})
 					.lean();
 
