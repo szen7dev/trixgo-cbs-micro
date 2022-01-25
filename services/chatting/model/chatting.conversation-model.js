@@ -791,7 +791,14 @@ class Model extends BaseModel {
 						select: select.authors
 					})
 					.populate('lastMessage', select.lastMessage)
-					.populate('messagesPin', select.messagesPin)
+					.populate({
+						path: 'messagesPin',
+						populate: {
+							path: 'sender',
+							select: '_id fullname bizfullname email image'
+						},
+						select: select.messagesPin
+					})
 					.populate('avatar', select.avatar)
 					.lean();
 
