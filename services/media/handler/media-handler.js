@@ -339,15 +339,18 @@ module.exports = {
         params: {
             mediaID     : { type: "string" },
             lastestID 	: { type: "string", optional: true },
+            limit 	    : { type: "string", optional: true },
+            select 	    : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID, lastestID } = ctx.params;
+                const { mediaID, lastestID, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getListReactionMedia({
-					userID, mediaID, lastestID
+					userID, mediaID, lastestID, limit, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

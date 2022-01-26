@@ -146,16 +146,16 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         },
         name: String,
     }],
-    //_________Hình ảnh đại diện
+    //_________Ảnh đại diện
     image: {
         type: String,
         defautl: 'project_default.png'
     },
-    //_________Hình ảnh đại diện (2021)
-    files: {
+    //_________Hình ảnh gần đây
+    photos: [{
         type: Schema.Types.ObjectId,
         ref: 'file',
-    },
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
@@ -454,7 +454,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     //______Đầu mối kết nối
     transactionContacts: {
         type: Schema.Types.ObjectId,
-        ref : 'contract'
+        ref : 'contact'
     },
 
     //______Khả năng thành công

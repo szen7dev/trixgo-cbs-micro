@@ -981,7 +981,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH 🐸
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReactionMedia({ userID, mediaID, lastestID }) {
+	getListReactionMedia({ userID, mediaID, lastestID, limit = 20, select = {}, populates = {} }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID, mediaID])) {
@@ -992,6 +992,110 @@ class Model extends BaseModel {
 						status: 400
 					});
 				}
+
+				if(isNaN(limit) || limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates)) {
+						return resolve({ 
+							error: true, 
+							message: 'Tham số populates không hợp lệ', 
+							keyError: 'params_populates_invalid',
+							status: 400 
+						});
+					}
+
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: '',
+						select: ''
+					}
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select)) {
+						return resolve({ 
+							error: true, 
+							message: 'Tham số select không hợp lệ', 
+							keyError: 'params_select_invalid',
+							status: 400 
+						});
+					}
+
+					select = JSON.parse(select);
+				}
+
+				let conditionObj = { 
+					media: mediaID,
+					file: { $exists: false },
+					comment: { $exists: false },
+				};
+				let conditionFind = {};
+                let sortBy = {
+					createAt: -1,
+                    _id: -1,
+                }
+
+				if(lastestID && checkObjectIDs(lastestID)){
+                    let infoReaction = await MEDIA_REACTION_COLL.findById(lastestID);
+                    if(!infoReaction) {
+						return resolve({ 
+							error: true, 
+							message: "lastestID không tồn tại",
+							keyError: 'cannot_get_info_by_lastestID',
+							status: 403
+						});
+					}
+
+                    let nextInfo = `${infoReaction.createAt}_${infoReaction._id}`;
+                    let keys 	 = ['createAt__-1', '_id__-1'];
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    if(!dataPagingAndSort || dataPagingAndSort.error) {
+						return resolve({ 
+							error: true, 
+							message: "Không thể lấy phạm vi phân trang", 
+							keyError: 'cannot_get_range_pagination',
+							status: 403
+						});
+					}
+
+					conditionFind = dataPagingAndSort.data.find;
+                }
+
+				const listReactionMedia = await MEDIA_REACTION_COLL
+					.find({ ...conditionObj, ...conditionFind })
+					.limit(limit + 1)
+					.sort(sortBy)
+					.populate(populates)
+					.lean();
+
+				// GET TOTAL RECORD
+				let totalRecord = await MEDIA_REACTION_COLL.countDocuments(conditionObj);
+				let nextCursor	= null;
+
+				if(listReactionMedia && listReactionMedia.length){
+					if(listReactionMedia.length > limit){
+						nextCursor = listReactionMedia[limit - 1]._id;
+						listReactionMedia.length = limit;
+					}
+				}
+
+				return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listReactionMedia,
+						limit,
+						totalRecord,
+						nextCursor
+					}
+				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}

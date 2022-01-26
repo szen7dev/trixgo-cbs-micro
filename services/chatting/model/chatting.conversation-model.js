@@ -794,8 +794,12 @@ class Model extends BaseModel {
 					.populate({
 						path: 'messagesPin',
 						populate: {
-							path: 'sender',
-							select: '_id fullname bizfullname email image'
+							path: 'sender poll reminder files.file',
+							select: '_id fullname bizfullname email image name options status content',
+							populate: {
+								path: 'options.usersVote file',
+								select: '_id bizfullname fullname image name url size'
+							},
 						},
 						select: select.messagesPin
 					})
@@ -867,6 +871,7 @@ class Model extends BaseModel {
 						if(conversationOfUser._id.toString() === conversationOfMember._id.toString()){
 
 							listGeneralConversation[listGeneralConversation.length] = {
+								conversationID: conversationOfMember._id,
 								name: conversationOfMember.name,
 								description: conversationOfMember.description,
 								members: conversationOfMember.members.slice(0,4),
@@ -1826,14 +1831,10 @@ class Model extends BaseModel {
 					});
 				}
 
-				if(isNaN(limit)) {
+				if(isNaN(limit) || limit > 20) {
 					limit = 20;
 				} else{
 					limit = +limit;
-				}
-
-				if(limit > 20){
-					limit = 20;
 				}
 
 				if(filter && typeof filter === 'string'){
