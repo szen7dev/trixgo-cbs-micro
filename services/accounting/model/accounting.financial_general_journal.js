@@ -886,64 +886,49 @@ class Model extends BaseModel {
                 }
 
                 // Lấy giao dịch của tài khoản và các tài khoản con của nó
-                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
-                    {
-                        $match: conditionObj1
-                    }, 
-                    {
-                        $lookup: {
-                            from: 'financial_vouchers',
-                            localField: 'voucher',
-                            foreignField: '_id',
-                            as:         'voucher'
-                        }
-                    },
-                    {
-                        $unwind : "$voucher"
-                    },
-                    {
-                        $match: {
-                            "voucher.forward": 0,
-                            "voucher.cancel": 0,
-                            "voucher.date": { 
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.find({
+                    $and: [
+                        conditionObj1,
+                        {
+                            "date": { 
                                 $gte: moment(fromDate).toDate(),
-                                $lte: moment(toDate).toDate(),
-                            },
+                                $lte: moment(toDate).toDate()
+                            }
                         }
-                    },    
-                ]).sort({'voucher.date':'asc'});
+                    ]
+                }).sort({'voucher.date':'asc'});
 
                 if (!listData) return resolve({ error: true, message: 'cannot_get_list' });
 
-                let listData1 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData, {
-                    path: 'debit',
-                    select: '_id name description',
-                    model: 'account',
-                });
-                if (!listData1) return resolve({ error: true, message: 'cannot_get_list' });
+                // let listData1 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData, {
+                //     path: 'debit',
+                //     select: '_id name description',
+                //     model: 'account',
+                // });
+                // if (!listData1) return resolve({ error: true, message: 'cannot_get_list' });
 
-                let listData2 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData1, {
-                    path: 'credit',
-                    select: '_id name description',
-                    model: 'account',
-                });
-                if (!listData2) return resolve({ error: true, message: 'cannot_get_list' });
+                // let listData2 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData1, {
+                //     path: 'credit',
+                //     select: '_id name description',
+                //     model: 'account',
+                // });
+                // if (!listData2) return resolve({ error: true, message: 'cannot_get_list' });
 
-                let listData3 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData2, {
-                    path: 'voucher.customer',
-                    select: '_id name',
-                    model: 'contact',
-                });
-                if (!listData3) return resolve({ error: true, message: 'cannot_get_list' });
+                // let listData3 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData2, {
+                //     path: 'voucher.customer',
+                //     select: '_id name',
+                //     model: 'contact',
+                // });
+                // if (!listData3) return resolve({ error: true, message: 'cannot_get_list' });
 
-                let listData4 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData3, {
-                    path: 'contract',
-                    select: '_id name',
-                    model: 'contract',
-                });
-                if (!listData4) return resolve({ error: true, message: 'cannot_get_list' });
+                // let listData4 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData3, {
+                //     path: 'contract',
+                //     select: '_id name',
+                //     model: 'contract',
+                // });
+                // if (!listData4) return resolve({ error: true, message: 'cannot_get_list' });
 
-                return resolve({ error: false, data: listData4 });
+                return resolve({ error: false, data: listData });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOUNRAL][getListJournalOfCompany]: ${error} `);
                 return resolve({ error: true, message: error.message });
@@ -998,3 +983,4 @@ class Model extends BaseModel {
 }
 exports.MODEL = new Model;
 var ACCOUNTING__FINANCIAL_VOUCHER     = require('../model/accounting.financial_voucher').MODEL;
+
