@@ -12,6 +12,7 @@ else {
     MONGODB_URL = `${databaseConfig.development._mongod_user === '' ? 'mongodb://' + databaseConfig.development._mongodb_host + ':' + databaseConfig.development._mongodb_port + '/' + databaseConfig.development._mongod_name :
             'mongodb://' + databaseConfig.development._mongod_user + ':' + databaseConfig.development._mongodb_pass + '@' + databaseConfig.development._mongodb_host + ':' + databaseConfig.development._mongodb_port + '/' + databaseConfig.development._mongod_name}`;
 }
+console.log({MONGODB_URL})
 
 exports.MONGODB_URL = MONGODB_URL;
 exports.DATABASE_MODE = DATABASE_MODE;

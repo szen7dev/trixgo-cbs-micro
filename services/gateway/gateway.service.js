@@ -119,7 +119,6 @@ module.exports = {
 		async authorize(ctx, _, req) {
 			console.log(`--------------TOKEN: ----------`);
 			let token;
-
 			if (req.headers.authorization) {
 				let type = req.headers.authorization.split(" ")[0];
 				if (type === "Token" || type === "Bearer")
@@ -143,6 +142,7 @@ module.exports = {
 				return infoUser;
 			} catch (error) {
 				console.error(error);
+				return Promise.reject(error.message)
 			}
 
 			// return console.log({ checkAuthorization, [`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`]: `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}` })

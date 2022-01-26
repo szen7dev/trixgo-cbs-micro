@@ -26,6 +26,7 @@ const { CF_ROUTINGS_OPERATION }		= require('../operation/helper/operation.routes
 const { CF_ROUTINGS_NOTIFICATION }	= require('../notification/helper/notification.routes-constant');
 const { CF_ROUTINGS_REACTION }		= require('../reaction/helper/reaction.routes-constant');
 const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-constant');
+const { CF_ROUTINGS_ACCOUNTING }	= require('../accounting/helper/accounting.routes-constant');
 const { CF_ROUTINGS_TIMESHEET }		= require('../timesheet/helper/timesheet.routes-constant');
 const { CF_ROUTINGS_PERSONAL }		= require('../personal/helper/personal.routes-constant');
 
@@ -50,6 +51,7 @@ const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.action
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
+const { CF_ACTIONS_ACCOUNTING }	= require('../accounting/helper/accounting.actions-constant');
 const { CF_ACTIONS_TIMESHEET }		= require('../timesheet/helper/timesheet.actions-constant');
 const { CF_ACTIONS_PERSONAL }		= require('../personal/helper/personal.actions-constant');
 
@@ -882,6 +884,48 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ANALYSIS.HISTORY_LOGS}`] :
 		[`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_GET_INFO_AND_GET_LIST}`],
 		//---------------------------🏁 END SERVICE ANALYSIS   🏁---------------------------//
+
+		//---------------------------🏁 START SERVICE ACCOUNTING 🏁---------------------------//
+		//accounting voucher
+		[`POST ${CF_ROUTINGS_ACCOUNTING.INSERT_VOUCHER}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_VOUCHER}`],
+
+		[`POST ${CF_ROUTINGS_ACCOUNTING.UPDATE_VOUCHER}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.UPDATE_FULL_VOUCHER}`],
+
+		[`POST ${CF_ROUTINGS_ACCOUNTING.REMOVE_VOUCHER}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REMOVE_VOUCHER}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.GET_LIST_VOUCHER_OF_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_LIST_VOUCHER_OF_COMPANY}`],
+		
+		[`GET ${CF_ROUTINGS_ACCOUNTING.GET_LIST_VAT_VOUCHER_OF_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_LIST_VAT_VOUCHER_OF_COMPANY}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.FIND_VOUCHER_IN_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.FIND_VOUCHER_IN_COMPANY}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.GET_INFO_VOUCHER}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_INFO_VOUCHER}`],
+
+		//accouting journal
+		[`POST ${CF_ROUTINGS_ACCOUNTING.INSERT_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.INSERT_FULL_GENERAL_JOURNAL}`],
+
+		[`POST ${CF_ROUTINGS_ACCOUNTING.UPDATE_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.UPDATE_GENERAL_JOURNAL}`],
+
+		[`POST ${CF_ROUTINGS_ACCOUNTING.REMOVE_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REMOVE_GENERAL_JOURNAL}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.GET_INFO_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_INFO_GENERAL_JOURNAL_BY_ID}`],
+		
+		[`GET ${CF_ROUTINGS_ACCOUNTING.GET_LIST_OF_ACCOUNT_GENERAL_JOURNAL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_LIST_OF_ACCOUNT_GENERAL_JOURNAL}`],
+
+		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
+
 
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
