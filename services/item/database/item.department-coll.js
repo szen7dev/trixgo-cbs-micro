@@ -195,7 +195,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     //______Hình ảnh gần đây nhất của dự án
     images: [{
         type: Schema.Types.ObjectId,
-        ref : 'file_core'
+        ref : 'file'
     }],
     //______Bình luận cuối cùng
     lastComment: {

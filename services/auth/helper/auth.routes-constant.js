@@ -5,7 +5,10 @@ const BASE_ROUTE = '/auth';
  */
  const COMPANY           = '/companies',
        USER              = '/users',
-       REGISTER_TRIAL    = '/register_trials';
+       REGISTER_TRIAL    = '/register_trials',
+       APP_MENU          = '/app_menus',
+       APP_ROLE_MENU     = '/app_role_menus'
+       APP_ROLE          = '/app_roles'
 
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
@@ -29,7 +32,23 @@ const CF_ROUTINGS_AUTH = {
     /**
      * COMPANY
      */
-    COMPANY                           : `${BASE_ROUTE}${COMPANY}`,
+    COMPANY                            : `${BASE_ROUTE}${COMPANY}`,
+
+    /**
+     * APP_MENU
+     */
+    APP_MENU                           : `${BASE_ROUTE}${APP_MENU}`,
+    
+    /**
+     * APP_ROLE
+     */
+    APP_ROLE                           : `${BASE_ROUTE}${APP_ROLE}`,
+
+    /**
+     * APP_ROLE_MENU
+     */
+    APP_ROLE_MENU                      : `${BASE_ROUTE}${APP_ROLE_MENU}`,
+    APP_ROLE_MENU_PERMISSION            : `${BASE_ROUTE}${APP_ROLE_MENU}/permission`,
 
     /**
      * ĐĂNG KÝ DÙNG THỬ

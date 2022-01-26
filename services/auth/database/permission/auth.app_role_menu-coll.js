@@ -5,14 +5,14 @@ const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("app_role_menu", {
     /**
-     * Công ty (đang truy cập vào công ty nào)
+     * Công ty (đang truy cập vào công ty nào) (lấy theo role))
      */
     company: {
         type: Schema.Types.ObjectId,
         ref : 'company' 
     },
     /**
-     * Ứng dụng (sử dụng theo nguyên tắc pre-cal để tăng hiệu suất truy vấn)
+     * Ứng dụng (sử dụng theo nguyên tắc pre-cal để tăng hiệu suất truy vấn)(lấy theo role)
      */
     app: {
         type: Schema.Types.ObjectId,
