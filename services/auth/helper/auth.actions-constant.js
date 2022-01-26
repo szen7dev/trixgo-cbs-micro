@@ -4,8 +4,12 @@ const BASE_ACTIONS = 'ACT_AUTH';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
-const COMPANY = 'COMPANY',
-      USER    = 'USER', REGISTER_TRIAL = "REGISTER_TRIAL";
+const COMPANY       = 'COMPANY',
+    USER            = 'USER',
+    APP_MENU        = 'APP_MENU',
+    APP_ROLE        = 'APP_ROLE',
+    APP_ROLE_MENU   = 'APP_ROLE_MENU',
+    REGISTER_TRIAL  = "REGISTER_TRIAL";
 /**
  * nguyên tắc chuyển đổi từ method trong .handler
  *  VD: handler(insertFast) -> action(INSERT_FAST)
@@ -55,7 +59,27 @@ const CF_ACTIONS_AUTH = {
     /**
 	 * COMPANY
 	 */
-    GET_INFO_AND_GET_LIST_COMPANY        : `${BASE_ACTIONS}_${COMPANY}_GET_INFO_AND_GET_LIST_COMPANY`,
+    GET_INFO_AND_GET_LIST_COMPANY        : `${BASE_ACTIONS}_${COMPANY}_GET_INFO_AND_GET_LIST`,
+
+    /**
+	 * APP_MENU
+	 */
+    APP_MENU_GET_INFO_AND_GET_LIST        : `${BASE_ACTIONS}_${APP_MENU}_GET_INFO_AND_GET_LIST`,
+
+    /**
+	 * APP_ROLE
+	 */
+    APP_ROLE_INSERT : `${BASE_ACTIONS}_${APP_ROLE}_INSERT`,
+    APP_ROLE_UPDATE : `${BASE_ACTIONS}_${APP_ROLE}_UPDATE`,
+    APP_ROLE_REMOVE : `${BASE_ACTIONS}_${APP_ROLE}_REMOVE`,
+    APP_ROLE_GET_INFO_AND_GET_LIST: `${BASE_ACTIONS}_${APP_ROLE}_GET_INFO_AND_GET_LIST`,
+
+    /**
+	 * APP_ROLE_MENU
+	 */
+    APP_ROLE_MENU_INSERT                : `${BASE_ACTIONS}_${APP_ROLE_MENU}_INSERT`,
+    APP_ROLE_MENU_GET_INFO_AND_GET_LIST : `${BASE_ACTIONS}_${APP_ROLE_MENU}_GET_INFO_AND_GET_LIST`,
+    APP_ROLE_MENU_GET_PERMISSION        : `${BASE_ACTIONS}_${APP_ROLE_MENU}_PERMISSION`,
     
     /**
 	 * REGISTER TRIAL

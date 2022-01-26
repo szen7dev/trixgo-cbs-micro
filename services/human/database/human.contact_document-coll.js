@@ -106,7 +106,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     //_________Tài liệu đính kèm
     files: [{
         type: Schema.Types.ObjectId,
-        ref : "file_core"
+        ref : "file"
     }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

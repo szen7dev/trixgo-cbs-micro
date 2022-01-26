@@ -9,7 +9,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment_image", {
      */
     image: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'file_core'
+        ref     : 'file'
     },
     
     /**

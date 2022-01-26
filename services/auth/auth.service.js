@@ -7,12 +7,17 @@ const { CF_ACTIONS_AUTH } 	        = require('./helper/auth.actions-constant');
 const AUTH__USER_HANDLER			= require('./handler/auth.user-handler');
 const AUTH__COMPANY_HANDLER			= require('./handler/auth.company-handler');
 const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-handler');
+const AUTH__APP_MENU_HANDLER 		= require('./handler/auth.app_menu-handler');
+const AUTH__APP_ROLE_HANDLER 		= require('./handler/auth.app_role-handler');
+const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handler');
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
 const AUTH__APP_COLL				= require('./database/permission/auth.app-coll');
 const AUTH__APP_MENU_COLL			= require('./database/permission/auth.app_menu-coll');
+const AUTH__APP_ROLE_COLL			= require('./database/permission/auth.app_role-coll');
+const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_role_menu-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
@@ -21,7 +26,9 @@ module.exports = {
 		DbService(AUTH__USER_COLL),
 		DbService(AUTH__REGISTER_TRIAL_COLL),
 		DbService(AUTH__APP_COLL),
+		DbService(AUTH__APP_ROLE_COLL),
 		DbService(AUTH__APP_MENU_COLL),
+		DbService(AUTH__APP_ROLE_MENU_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**
@@ -86,7 +93,21 @@ module.exports = {
 		
 		// Company
 		[CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
+
+		// App menu
+		[CF_ACTIONS_AUTH.APP_MENU_GET_INFO_AND_GET_LIST]			: AUTH__APP_MENU_HANDLER.getInfoAndGetList,
 		
+		// App role
+		[CF_ACTIONS_AUTH.APP_ROLE_INSERT]							: AUTH__APP_ROLE_HANDLER.insert,
+		[CF_ACTIONS_AUTH.APP_ROLE_UPDATE]							: AUTH__APP_ROLE_HANDLER.update,
+		[CF_ACTIONS_AUTH.APP_ROLE_REMOVE]							: AUTH__APP_ROLE_HANDLER.remove,
+		[CF_ACTIONS_AUTH.APP_ROLE_GET_INFO_AND_GET_LIST]			: AUTH__APP_ROLE_HANDLER.getInfoAndGetList,
+
+		// App role menu
+		[CF_ACTIONS_AUTH.APP_ROLE_MENU_INSERT]						: AUTH__APP_ROLE_MENU_HANDLER.insert,
+		[CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_INFO_AND_GET_LIST]		: AUTH__APP_ROLE_MENU_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_PERMISSION]				: AUTH__APP_ROLE_MENU_HANDLER.getPermissionToAccessListMenuOfApp,
+
 		// Register trial
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT]						: AUTH__REGISTER_TRIAL_HANDLER.insert,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE]						: AUTH__REGISTER_TRIAL_HANDLER.update,

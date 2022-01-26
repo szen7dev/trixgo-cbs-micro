@@ -26,7 +26,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_reaction", {
      */
     file: {
         type    : Schema.Types.ObjectId,
-        ref     : 'file_core'  
+        ref     : 'file'  
     },
 
     /**

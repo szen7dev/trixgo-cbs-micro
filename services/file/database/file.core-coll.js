@@ -6,7 +6,7 @@ const {
     FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS
 }                           = require('../helper/file.keys-constant');
 
-module.exports  = DATABASE_MIDDLEWARE("file_core", {
+module.exports  = DATABASE_MIDDLEWARE("file", {
     //_____list app CONSTANT
     app     : { type: String, require: true },
     nameOrg : { type: String, require: true }, //Tên gốc

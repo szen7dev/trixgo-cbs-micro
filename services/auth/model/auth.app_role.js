@@ -9,12 +9,11 @@ const moment                            = require("moment");
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
-
-/**s
+/**
  * import inter-coll, exter-coll
  */
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
-const { RANGE_BASE_PAGINATION } 	        = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
 /**
@@ -38,7 +37,7 @@ class Model extends BaseModel {
                 if(!type)
                     return resolve({ error: true, message: "Type không hợp lệ", keyError: "type_invalid", status: 400 });
 
-                if(name)
+                if(!name)
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "name_invalid", status: 400 });
 
                 if(!checkObjectIDs(company))
@@ -50,7 +49,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: "Người tạo không hợp lệ", keyError: "userID_invalid", status: 400 });
 
-                let dataInsert = { type, company, app, name, userCreate: userID };
+                let dataInsert = { type, company, app, name, userCreate: userID, members: [userID] };
 
                 if(description){
                     dataInsert.description = description;
@@ -72,7 +71,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ appRoleID, type, company, app, name, description, userID, membersAddID, membersRemoveID }) { 
+    update({ appRoleID, name, description, userID, membersAddID, membersRemoveID }) { 
         return new Promise(async (resolve) => {
             try {
                 
@@ -83,18 +82,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                if(type){
-                    dataUpdate.type = type;
-                }
-
-                if(company){
-                    dataUpdate.company = company;
-                }
-
-                if(app){
-                    dataUpdate.app = app;
-                }
-
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -103,14 +90,14 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                if(membersAddID){
+                if(checkObjectIDs(membersAddID)){
                     dataUpdate.$addToSet = {
                         members: membersAddID
                     }
                 }
 
-                if(membersRemoveID){
-                    dataUpdate.$pull = {
+                if(checkObjectIDs(membersRemoveID)){
+                    dataUpdate.$pullAll = {
                         members: membersRemoveID
                     }
                 }
@@ -154,7 +141,9 @@ class Model extends BaseModel {
                 let infoAterRemove = await AUTH__APP_ROLE_COLL.findByIdAndDelete(appRoleID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: 'Xóa thất bại', keyError: "cannot_remove", status: 403 });
- 
+               
+                //Bước tiếp theo xóa app_role_menu
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -167,12 +156,25 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ appRoleID, select }) { 
+    getInfo({ appRoleID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
+                console.log({  appRoleID, select, populates });
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
                 /** 
                  * VALIDATION STEP (2)
@@ -187,7 +189,9 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterRemove = await AUTH__APP_ROLE_COLL.findById(appRoleID).select(select);
+                let infoAterRemove = await AUTH__APP_ROLE_COLL.findById(appRoleID)
+                                    .select(select)
+                                    .populate(populates)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", status: 403 });
  
@@ -203,19 +207,16 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ type, company, app,
+    getList({ type, company, app, isMember, userID,
         keyword, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    // state: 1,
-                };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
+                let conditionObj = { };
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
               
                 /** 
                  * VALIDATION STEP (2)
@@ -235,7 +236,10 @@ class Model extends BaseModel {
                     conditionObj.app = app;
                 }
 
-                // LẤY NHỮNG TRƯỜNG CẦN THIẾT
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID] }
+                }
+                
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -254,29 +258,29 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__APP_ROLE_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
+                    conditionObj = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
-				}
-
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await AUTH__APP_ROLE_COLL.find({...conditionObj, ...conditionFind })
+                let infoDataAfterGet = await AUTH__APP_ROLE_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .populate(populates)
@@ -294,9 +298,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await AUTH__APP_ROLE_COLL.countDocuments(conditionObj);
+                let totalRecord = await AUTH__APP_ROLE_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord/limit);
-
+                
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
