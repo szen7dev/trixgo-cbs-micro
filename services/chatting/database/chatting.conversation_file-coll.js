@@ -10,6 +10,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_file", {
     },
     file: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'file_core'
+        ref     : 'file'
     },
 })

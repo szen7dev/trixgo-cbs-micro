@@ -10,13 +10,13 @@ module.exports  = DATABASE_MIDDLEWARE("comment_core", {
     //_________Các files được đính kèm trong bài viết
     files: [{
         type: Schema.Types.ObjectId,
-        ref: 'file_core'
+        ref: 'file'
     }],
     
     //_________Các ảnh được đính kèm trong bài viết
     images: [{
         type: Schema.Types.ObjectId,
-        ref: 'file_core'
+        ref: 'file'
     }],
 
     //_________Người comment

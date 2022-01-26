@@ -17,6 +17,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment_file", {
     //________File
     file: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'file_core'
+        ref     : 'file'
     }
 })

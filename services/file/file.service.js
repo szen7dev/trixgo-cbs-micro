@@ -8,7 +8,7 @@ const FILE__CORE_HANDLER            = require('./handler/file.core-handler');
 module.exports = {
 	name: CF_DOMAIN_SERVICES.FILE,
 	mixins: [
-		DbService('file_cores'),  
+		DbService('files'),  
 		CacheCleaner([CF_DOMAIN_SERVICES.FILE])
     ],
 

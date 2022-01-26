@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
     //_________file core
     file: {
         type: Schema.Types.ObjectId,
-        ref: "file_core"
+        ref: "file"
     },
     //_________Author
     userCreate: {
