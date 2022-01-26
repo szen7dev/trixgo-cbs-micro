@@ -1,7 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
@@ -17,8 +16,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  */
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL       = require('../database/subject_pcm.pcm_plan_task-coll');
 const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
-const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
-const { template }                          = require('lodash');
+const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -34,7 +32,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ projectID, groupID, authorID, name, description, sign, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx  }) { 
+    insert({ projectID, groupID, authorID, name, description, sign, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 
@@ -68,14 +66,21 @@ class Model extends BaseModel {
                     
                 }else{
                     // Lấy thông tin công ty theo công việc cha
-                    let infoTaskParent = await this.getInfo({ taskID: parentID, userID });
-                    let { author, company } = infoTaskParent.data;
+                    let infoTaskParent = await this.getInfo({ 
+                        taskID: parentID, 
+                        userID: authorID,
+                        populates: JSON.stringify({
+                            path: 'author assignee',
+                            select: '_id'
+                        })
+                    });
+                    let { author, assignee, company, isproposal } = infoTaskParent.data;
                     /**   
                      * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
                      * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
                      */
-                    if(Number(infoTaskParent.data.isproposal) != 1){
-                        if(author._id.toString() != userID.toString() && infoTaskParent.data.assignee._id.toString() != userID.toString())
+                    if(Number(isproposal) != 1){
+                        if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
                             return resolve({ error: true, message: 'permission_denied' })
                     }
                     companyID = company._id;
@@ -109,6 +114,10 @@ class Model extends BaseModel {
                     expiredTime,
                     actualFinishTime: expiredTime,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
                 }
                 
                 //_______File của người tạo việc
@@ -434,7 +443,7 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-        contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+        contractID, draft, isproposal, usersDeleteID, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
     }){ 
@@ -532,8 +541,8 @@ class Model extends BaseModel {
                 }
 
                 //_________User xóa task
-                if(checkObjectIDs(usersDelete)){
-                    dataAddToset = { ...dataAddToset, usersDelete}
+                if(checkObjectIDs(usersDeleteID)){
+                    dataAddToset = { ...dataAddToset, usersDelete: usersDeleteID }
                 }
 
                 //_________Người liên quan
@@ -762,24 +771,29 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
-        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ 
+        projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
+        isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
+        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
+        keyword, limit = 10, lastestID, select, populates = {}
+    }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-
                 let conditionObj = { 
                     // Lấy những công việc mình chưa xóa
                     usersDelete: { $nin: [userID] },
                     // Lấy những công việc chưa hoàn thành
-                    status: { $ne: 3 }
+                    // status: { $ne: 3 }
                 };
 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
+                if(isSortChecklist == 1){
+                    keys = ['createAt__1', '_id__1'];
+                }
 
                 let start = new Date();
                 start.setHours(0,0,0,0);

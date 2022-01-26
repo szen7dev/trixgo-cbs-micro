@@ -51,7 +51,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
 				let { _id: userID } = ctx.meta.infoUser;
-                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID  } = ctx.params;
+                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID } = ctx.params;
 
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.insert({
                     projectID, groupID, authorID: userID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, ctx
@@ -144,6 +144,8 @@ module.exports = {
             companyOfAuthor  : { type: "string", optional: true },
             companyOfAssignee: { type: "string", optional: true },
             fieldID          : { type: "string", optional: true },
+            isSortChecklist  : { type: "string", optional: true },
+            
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -157,12 +159,12 @@ module.exports = {
                 
                 let { 
                     taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, 
-                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID,
+                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler;
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
@@ -172,7 +174,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, 
-                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID,
+                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
                         keyword, limit, select, lastestID, populates
                     });
                 }

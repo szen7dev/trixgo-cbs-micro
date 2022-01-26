@@ -31,7 +31,6 @@ const CF_ACTIONS_SUBJECT_PCM = {
    */
    PCM_PLAN_TASK_INSERT                 : `${BASE_ACTIONS}_${PCM_PLAN_TASK}_INSERT`,
    PCM_PLAN_TASK_UPDATE                 : `${BASE_ACTIONS}_${PCM_PLAN_TASK}_UPDATE`,
-   PCM_PLAN_TASK_REMOVE                 : `${BASE_ACTIONS}_${PCM_PLAN_TASK}_REMOVE`,
    PCM_PLAN_TASK_GET_INFO_AND_GET_LIST  : `${BASE_ACTIONS}_${PCM_PLAN_TASK}_GET_INFO_AND_GET_LIST`,
    PCM_PLAN_TASK_GET_AMOUNT             : `${BASE_ACTIONS}_${PCM_PLAN_TASK}_GET_AMOUNT`, // Lấy số lượng công việc hiển thị ngoài trang chủ
 

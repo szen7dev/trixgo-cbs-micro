@@ -871,6 +871,7 @@ class Model extends BaseModel {
 						if(conversationOfUser._id.toString() === conversationOfMember._id.toString()){
 
 							listGeneralConversation[listGeneralConversation.length] = {
+								conversationID: conversationOfMember._id,
 								name: conversationOfMember.name,
 								description: conversationOfMember.description,
 								members: conversationOfMember.members.slice(0,4),
