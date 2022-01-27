@@ -18,7 +18,7 @@ const { MEDIA_TYPES, REACTION_TYPES }			= require('../helper/media.keys-constant
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { RANGE_BASE_PAGINATION } 				= require('../../../tools/cursor_base/playground/index');
-const { checkObjectIDs, isEmptyObject }			= require('../../../tools/utils/utils');
+const { checkObjectIDs, isEmptyObject, IsJsonString } = require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
@@ -981,14 +981,14 @@ class Model extends BaseModel {
 	 * Dev: MinhVH 🐸
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReactionMedia({ userID, mediaID, lastestID, limit = 20, select = {}, populates = {} }) {
+	getListReaction({ userID, mediaID, lastestID, limit = 20, select = {}, populates = {} }) {
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([userID, mediaID])) {
+				if(!checkObjectIDs([userID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số media ID or user ID không hợp lệ', 
-						keyError: 'params_messageID_or_userID_invalid',
+						message: 'Tham số or user ID không hợp lệ', 
+						keyError: 'params_userID_invalid',
 						status: 400
 					});
 				}
@@ -1030,15 +1030,11 @@ class Model extends BaseModel {
 					select = JSON.parse(select);
 				}
 
-				let conditionObj = { 
-					media: mediaID,
-					file: { $exists: false },
-					comment: { $exists: false },
-				};
+				let conditionObj = {};
 				let conditionFind = {};
                 let sortBy = {
-					createAt: -1,
                     _id: -1,
+					createAt: -1,
                 }
 
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1052,8 +1048,8 @@ class Model extends BaseModel {
 						});
 					}
 
-                    let nextInfo = `${infoReaction.createAt}_${infoReaction._id}`;
-                    let keys 	 = ['createAt__-1', '_id__-1'];
+                    let nextInfo = `${infoReaction._id}_${infoReaction.createAt}`;
+                    let keys 	 = ['_id__-1', 'createAt__-1'];
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
                     if(!dataPagingAndSort || dataPagingAndSort.error) {
@@ -1067,6 +1063,12 @@ class Model extends BaseModel {
 
 					conditionFind = dataPagingAndSort.data.find;
                 }
+
+				if(mediaID && !checkObjectIDs([mediaID])) {
+                    conditionObj.media = mediaID;
+                    conditionObj.file = { $exists: false };
+                    conditionObj.comment = { $exists: false };
+				}
 
 				const listReactionMedia = await MEDIA_REACTION_COLL
 					.find({ ...conditionObj, ...conditionFind })
@@ -1085,6 +1087,7 @@ class Model extends BaseModel {
 						listReactionMedia.length = limit;
 					}
 				}
+				console.log({ listReactionMedia })
 
 				return resolve({
 					error: false,
@@ -1097,6 +1100,7 @@ class Model extends BaseModel {
 					}
 				});
 			} catch (error) {
+				console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
