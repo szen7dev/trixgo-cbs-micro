@@ -823,7 +823,7 @@ class Model extends BaseModel {
 							select: '_id fullname bizfullname email image name options status content',
 							populate: {
 								path: 'options.usersVote file',
-								select: '_id bizfullname fullname image name url size'
+								select: '_id bizfullname fullname image name nameOrg url size'
 							},
 						},
 					})

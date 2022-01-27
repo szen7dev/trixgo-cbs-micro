@@ -798,7 +798,7 @@ class Model extends BaseModel {
 							select: '_id fullname bizfullname email image name options status content',
 							populate: {
 								path: 'options.usersVote file',
-								select: '_id bizfullname fullname image name url size'
+								select: '_id bizfullname fullname image name nameOrg url size'
 							},
 						},
 						select: select.messagesPin
@@ -1040,7 +1040,7 @@ class Model extends BaseModel {
 							path: 'sender files.file',
 							populate: {
 								path: 'file',
-								select: 'name url size'
+								select: 'name nameOrg url size'
 							},
 							select: `_id bizfullname fullname image ${select.files}`
 						}
@@ -1058,7 +1058,7 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name url size'
+							select: 'name nameOrg url size'
 						},
 						select: select.files
 					})
@@ -1165,7 +1165,7 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name url size'
+							select: 'name nameOrg url size'
 						},
 						select: select.files
 					})
@@ -1186,7 +1186,7 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name url size'
+							select: 'name nameOrg url size'
 						},
 						select: select.files
 					})
@@ -1206,7 +1206,7 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name url size'
+							select: 'name nameOrg url size'
 						},
 						select: select.files
 					})
