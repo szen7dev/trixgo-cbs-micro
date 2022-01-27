@@ -207,7 +207,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     //_________Tài liệu đính kèm
     files: [{
         type: Schema.Types.ObjectId,
-        ref: 'file_core'
+        ref: 'file'
     }],
     //_________Ảnh đại diện
     image: {

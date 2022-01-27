@@ -13,7 +13,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_file", {
     
     file: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'file_core'
+        ref     : 'file'
     },
     //_________Số lượng reaction của media
     amountReaction: {

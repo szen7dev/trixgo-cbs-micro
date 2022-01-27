@@ -11,7 +11,8 @@ const WAREHOUSE         = 'WAREHOUSE';
 const AREA              = 'AREA';
 const POSITION          = 'POSITION';
 const STORAGE           = 'STORAGE';
-
+const ACCOUNT           = 'STORAGE';
+const FUNDA             = 'FUNDA';
 
 const CF_ACTIONS_ITEM = {
     /**
@@ -64,7 +65,20 @@ const CF_ACTIONS_ITEM = {
     /**
      * STORAGE 
      */
-    STORAGE_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${STORAGE}_GET_INFO_AND_GET_LIST`,
+    STORAGE_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${STORAGE}_GET_INFO_AND_GET_LIST`, 
+    
+    /**
+    * ACCOUNT  
+    */
+    ACCOUNT_GET_INFO_WITH_NAME         : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_INFO_WITH_NAME`,
+    ACCOUNT_GET_INFO_WITH_ID           : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_INFO_WITH_ID`,
+    ACCOUNT_GET_LIST_NESTED            : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_LIST_NESTED`,
+    
+    /**
+    * FUNDA  
+    */
+   FUNDA_GET_LIST_BY_COMPANY_USER       : `${BASE_ACTIONS}_${FUNDA}_FUNDA_GET_LIST_BY_COMPANY_USER`
+
 }
 
 exports.CF_ACTIONS_ITEM = CF_ACTIONS_ITEM;

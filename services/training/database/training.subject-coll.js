@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("training_subject", {
     //_________logo cho chủ đề
     logo: {
         type    : Schema.Types.ObjectId,
-        ref     : 'file_core'
+        ref     : 'file'
     },
     //_________Số lượng bài viết
     amountLessions: {

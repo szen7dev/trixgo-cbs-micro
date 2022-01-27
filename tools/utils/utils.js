@@ -363,5 +363,110 @@ exports.getExtension = path => {
     return basename.slice(pos + 1);
 }
 
+/**
+ * Func: check params populate
+ * Create: 20/09/2021
+*/
+exports.checkParamsPopulate = (populates, populates1, populates2, populates3) => {
+    
+    // populates
+    if(populates && typeof populates === 'string'){
+        if(!this.IsJsonString(populates))
+            return { error: true, message: 'Request params populates invalid', status: 400 }
+
+        populates = JSON.parse(populates);
+    }
+
+    // populates1
+    if(populates1 && typeof populates1 === 'string'){
+        if(!this.IsJsonString(populates1))
+            return { error: true, message: 'Request params populates1 invalid', status: 400 }
+
+        populates1 = JSON.parse(populates1);
+    }
+
+    // populates2
+    if(populates2 && typeof populates2 === 'string'){
+        if(!this.IsJsonString(populates2))
+            return { error: true, message: 'Request params populates2 invalid', status: 400 }
+
+        populates2 = JSON.parse(populates2);
+    }
+
+    // populates3
+    if(populates3 && typeof populates3 === 'string'){
+        if(!this.IsJsonString(populates3))
+            return { error: true, message: 'Request params populates3 invalid', status: 400 }
+
+        populates3 = JSON.parse(populates3);
+    }
+    return { error: false, message: 'pass', status: 200 }
+}
+
+exports._getLevelMaxInRecursiveByCompany = async (coll, companyID) => {
+    let levelMax = await coll.aggregate(
+        [
+            {
+                $match: {
+                    company: ObjectID(companyID),
+                }
+            },
+            {
+                $group:
+                {
+                    _id: null,
+                    maxLevel: { $max: "$level" }
+                }
+            }
+        ]
+    );
+    let levelForRecursive = Number(levelMax[0].maxLevel);
+    return levelForRecursive;
+}
+
+exports._isValid        = _isValid;
 exports.checkPointDotsAndRoundingNumberForPagingChatting = _checkPointDotsAndRoundingNumberForPagingChatting;
 exports.checkParametersModel = _checkParametersModel;
+
+/**
+ * Hàm populate tới các phần tử con bên trong một mẩu tin
+ * Level: là level max của các phần tử con
+ * Path: là điều kiện cho việc populate (gồm 1 hoặc nhiều trường)
+ * Author: Khanh/Modify: HiepNH
+ */
+exports._constructForAny = (level, path) => {
+    const oneLevel = () => ({ path });
+    let obj = oneLevel();
+
+    /**
+     * Số lần populate đảm bảo tới phần tử childs cuối (level-1)
+     * Số lần populate được từ phần tử childs cuối tới các bảng con của nó nếu có (level)
+     * Nếu muốn populate cho con->cháu thì cần tăng lên Level+1
+     */
+    var i
+    for (i = 1; i <= Number(level); i++) {
+        obj.populate = Object.assign({}, obj);
+    }
+    return obj;
+}
+
+/**
+ * Hàm get maxlevel của các phần tử con/cháu của 1 collection
+ * Sử dụng để getList mẩu tin theo đệ quy + lấy nestedID của phần tử/phần tử con cháu của nó
+ * Author: Khanh/Modify: HiepNH
+ */
+exports._getLevelMaxInRecursive = async (coll) => {
+    let levelMax = await coll.aggregate(
+        [
+          {
+            $group:
+              {
+                _id: null,
+                maxLevel: { $max: "$level" }
+              }
+          }
+        ]
+    );
+    let levelForRecursive = Number(levelMax[0].maxLevel);
+    return levelForRecursive;
+}
