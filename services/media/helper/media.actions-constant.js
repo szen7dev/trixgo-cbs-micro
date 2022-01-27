@@ -21,7 +21,7 @@ const CF_ACTIONS_MEDIA = {
 	PIN_MEDIA                  						: `${BASE_ACTIONS}_PIN_MEDIA`,
 	DELETE_PIN_MEDIA                  				: `${BASE_ACTIONS}_DELETE_PIN_MEDIA`,
 	REACTION_MEDIA                              	: `${BASE_ACTIONS}_REACTION_MEDIA`,
-    GET_LIST_REACTION_MEDIA                     	: `${BASE_ACTIONS}_GET_LIST_REACTION_MEDIA`,
+    GET_LIST_REACTION                     	        : `${BASE_ACTIONS}_GET_LIST_REACTION`,
     REACTION_COMMENT               		        	: `${BASE_ACTIONS}_REACTION_COMMENT`,
     GET_LIST_REACTION_COMMENT     		        	: `${BASE_ACTIONS}_GET_LIST_REACTION_COMMENT`,
 	REACTION_IMAGE_MEDIA                            : `${BASE_ACTIONS}_REACTION_IMAGE_MEDIA`,

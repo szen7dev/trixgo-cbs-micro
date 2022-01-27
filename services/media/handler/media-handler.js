@@ -335,7 +335,7 @@ module.exports = {
 	 * Dev: NPNguyen 🐸
 	 * Func: LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG BÀI VIẾT
 	 */
-    getListReactionMedia: {
+    getListReaction: {
         params: {
             mediaID     : { type: "string" },
             lastestID 	: { type: "string", optional: true },
@@ -349,7 +349,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { mediaID, lastestID, limit, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getListReactionMedia({
+                const resultAfterCallHandler = await MEDIA_MODEL.getListReaction({
 					userID, mediaID, lastestID, limit, select, populates
 				});
 

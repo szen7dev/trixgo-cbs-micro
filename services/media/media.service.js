@@ -15,21 +15,14 @@ const { CF_ACTIONS_MEDIA } 	            = require('./helper/media.actions-consta
 const MEDIA_HANDLER    					= require('./handler/media-handler');
 const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
 
-/**
- * COLL
- */
-const MEDIA__COMMENT_COLL    			= require('./database/media.comment-coll');
-
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
 	mixins: [
-		DbService('media_post'),
-		DbService('media_comment_image'),
-		DbService('media_post_file'),  
-		DbService('media_reaction_image'),  
+		DbService('media'),
+		DbService('media_file'),  
 		DbService('media_reaction'),  
-		DbService('media_user_seen'),  
-		DbService(MEDIA__COMMENT_COLL),  
+		DbService('media_comment'),  
+		DbService('media_comment_image'),
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -105,7 +98,7 @@ module.exports = {
 		[CF_ACTIONS_MEDIA.REACTION_MEDIA] 		            			: MEDIA_HANDLER.reactionMedia,
 
 		// ✅	LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_MEDIA]            			: MEDIA_HANDLER.getListReactionMedia,
+		[CF_ACTIONS_MEDIA.GET_LIST_REACTION]							: MEDIA_HANDLER.getListReaction,
 
 
 		// ================================  MEDIA IMAGE COMMENT  ================================ //

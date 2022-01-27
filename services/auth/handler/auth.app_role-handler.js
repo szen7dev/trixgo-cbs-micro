@@ -34,7 +34,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                let resultAfterCallHandler = await AUTH__APP_ROLE.insert({ type, company, app: appID, name, description, userID });
+                let resultAfterCallHandler = await AUTH__APP_ROLE.insert({ type, company: companyID, app: appID, name, description, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
