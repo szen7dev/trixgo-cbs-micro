@@ -10,6 +10,8 @@ const WAREHOUSE  = '/warehouses';
 const AREA       = '/areas';
 const POSITION   = '/positions';
 const STORAGE    = '/storages';
+const ACCOUNT    = '/_accounts';
+
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
@@ -38,6 +40,9 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================STORAGE=======================================//
     STORAGE                                    : `${BASE_ROUTE}${STORAGE}`,
+
+    // ================================STORAGE=======================================//
+    ACCOUNT_SEARCH_WITH_KEY                    : `${BASE_ROUTE}${ACCOUNT}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

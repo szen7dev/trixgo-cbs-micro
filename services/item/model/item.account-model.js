@@ -400,6 +400,38 @@ class Model extends BaseModel {
         });
     } 
 
+    /**
+     * Tìm kiếm
+     * Hiepnh [x]
+     */
+    getListWithKey({ companyID, key }) {
+        return new Promise(async resolve => {
+            try {
+                let keyword;
+                if(key && key.length > 0){
+                    keyword = key.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                }
+                let listData = await ITEM__ACCOUNT_COLL.find({
+                    company: companyID,
+                    $or: [
+                        {name: new RegExp(keyword, 'i')},
+                        {description: new RegExp(keyword, 'i')},
+                    ]
+                })
+                .select('_id name description')
+                .sort({_id: 'asc'});
+
+                if (!listData)
+                    return resolve({ error: true, message: 'cannot_get_data' });
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+    
 }
 
 exports.MODEL = new Model;

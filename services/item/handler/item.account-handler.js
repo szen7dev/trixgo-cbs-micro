@@ -71,4 +71,26 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: HuynhVinh ✅
+	 * Func:
+    */
+    getListWithKey: {
+        params: {
+            accountID     : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { key } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                const resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListWithKey({ companyID:company._id, key })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+
 }

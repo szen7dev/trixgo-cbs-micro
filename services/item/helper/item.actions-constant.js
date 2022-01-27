@@ -11,7 +11,7 @@ const WAREHOUSE         = 'WAREHOUSE';
 const AREA              = 'AREA';
 const POSITION          = 'POSITION';
 const STORAGE           = 'STORAGE';
-const ACCOUNT           = 'STORAGE';
+const ACCOUNT           = 'ACCOUNT';
 const FUNDA             = 'FUNDA';
 
 const CF_ACTIONS_ITEM = {
@@ -73,7 +73,7 @@ const CF_ACTIONS_ITEM = {
     ACCOUNT_GET_INFO_WITH_NAME         : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_INFO_WITH_NAME`,
     ACCOUNT_GET_INFO_WITH_ID           : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_INFO_WITH_ID`,
     ACCOUNT_GET_LIST_NESTED            : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_LIST_NESTED`,
-    
+    ACCOUNT_SEARCH_WITH_KEY            : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_SEARCH_WITH_KEY`,
     /**
     * FUNDA  
     */
