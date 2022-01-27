@@ -18,6 +18,7 @@ let CF_DOMAIN_SERVICES = {
     SUBJECT_PCM     : 'subject_pcm',
     OPERATION       : 'operation',
     ANALYSIS        : 'analysis',
+    ACCOUNTING      : 'accounting',
     TIMESHEET       : 'timesheet',
     PERSONAL        : 'personal',
 }

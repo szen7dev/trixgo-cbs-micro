@@ -7,8 +7,10 @@ const Schema                = require('mongoose').Schema;
  * TÀI KHOẢN KẾ TOÁN
  */
 
-module.exports  = DATABASE_MIDDLEWARE("area", { 
-    //_________Thuộc về công ty nào
+module.exports  = DATABASE_MIDDLEWARE("account", { 
+     /**
+     * Thuộc về công ty nào
+     */    
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -27,6 +29,7 @@ module.exports  = DATABASE_MIDDLEWARE("area", {
         type: Number,
         default: 1
     },
+
     // Cấu hình hiển thị cho báo cáo quản trị (Đang phát triển)
     showInReportMonth: {
         type: Number,
@@ -66,4 +69,7 @@ module.exports  = DATABASE_MIDDLEWARE("area", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
+}, {
+    isRecursive: true,
+    paths: ['childs']
 })
