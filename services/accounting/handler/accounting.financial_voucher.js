@@ -1,3 +1,6 @@
+const { CF_DOMAIN_SERVICES } 	= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-constant');
+
 /**
  * TOOLS
  */
@@ -23,7 +26,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const { fundaID, type, date, 
+                let { fundaID, type, date, 
                     dateInvoice, name, sign, signInvoice, 
                     customer, receiver, note, vat, contract, 
                     storage, inspection, termination, advancePayment,
@@ -32,7 +35,15 @@ module.exports = {
                     fcuExRate, selectedJournals, isImport,
                     ipc, fee, subtype, project } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insertFull({ 
+                let  resultAfterCallHandler;
+
+                let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+                if(infoFundaCompany.error){
+                    resultAfterCallHandler.message = 'Not found funda comany ';
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                }
+                fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
+                resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insertFull({ 
                     authorID : userID, companyID: company._id, ctx,
                     fundaID, type, date, 
                     dateInvoice, name, sign, signInvoice, 
@@ -143,10 +154,16 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const {  fundaID, currentPage, perPage, fromDate, toDate, type, _id, createAt  } = ctx.params;
+                const {  fundaID, currentPage, perPage, fromDate, toDate, type, _id, createAt, limit } = ctx.params;
                 // const voucherID = '61e43deaac5b40893b163750';
                 const nextInfo = { _id, createAt }
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getListVoucherOfCompany({ fundaID, currentPage, perPage, fromDate, toDate, type, nextInfo })
+                if(!fundaID){
+                    const infoCompany          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
+                }
+
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getListVoucherOfCompany({ fundaID , currentPage, 
+                perPage, fromDate, toDate, type, nextInfo, limit })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][VOUCHER_HANDLER][GET_LIST_VOUCHER_OF_COMPANY] ${error}`);

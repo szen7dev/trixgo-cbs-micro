@@ -672,12 +672,20 @@ class AccountingFinancialVoucher extends BaseModel {
 
                             //_________Tiến hành cập nhật chi tiết_________//
                             let resultUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.update(dataUpdate);
-                            console.log({resultUpdate})
                             listJorID.push(resultUpdate.data._id);
                         }
                     }
                 }
-                
+                const listJunral = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID });
+                if(listJunral){
+                    let arrayUpdateJounral  = []
+                    listJunral.forEach(journal=>{
+                        arrayUpdateJounral.push(
+                            ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(journal._id,{  date: infoAfterUpdate.date })
+                        )
+                    });
+                    await Promise.all(arrayUpdateJounral);
+                }
                 //_________Tiến hành xóa chi tiết_________//
                 // if(deletedJournals){
                 //     // console.log('==============Xóa==============>')
@@ -832,14 +840,13 @@ class AccountingFinancialVoucher extends BaseModel {
     getListVoucherOfCompany({ nextInfo, companyID, fundaID, contractID, limit = PERPAGE_CORE, perPage, fromDate, toDate, type }){
         return new Promise(async (resolve) => {
             try {
-
+                limit = Number(limit);
                 if(!limit){
                     limit = PERPAGE_CORE;
                 }
                 if(limit > PERPAGE_CORE){
                     limit = PERPAGE_CORE
                 }
-
                 let conditionObj;
                 if(!fundaID){
                     if(!contractID){
@@ -947,9 +954,8 @@ class AccountingFinancialVoucher extends BaseModel {
                      data: {
                         listVoucher: listVoucher || [],
                         nextCursor,
-                        totalRecord,
-                        limit, 
-                        VOUCHER_TYPES
+                        totalPage: totalRecord,
+                        limit
                      },  });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][getListVoucherOfCompany] ${error}`);
@@ -1142,7 +1148,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         infoVoucher,
                         nextCursor, 
                         limit: +limit || 0 ,
-                        totalRecord
+                        totalPage: totalRecord
                     } 
                 });
             } catch (error) {

@@ -21,6 +21,8 @@ const ITEM__AREA_HANDLER          		= require('./handler/item.area-handler');
 const ITEM__POSITION_HANDLER          	= require('./handler/item.position-handler');
 const ITEM__STORAGE_HANDLER          	= require('./handler/item.storage-handler');
 const ITEM__ACCOUNT_HANDLER          	= require('./handler/item.account-handler');
+const ITEM__FUNDA_HANDLER          		= require('./handler/item.funda-handler');
+
 
 
 /**
@@ -101,6 +103,8 @@ module.exports = {
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME] 			: ITEM__ACCOUNT_HANDLER.getInfoAccountWithName,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID] 				: ITEM__ACCOUNT_HANDLER.getInfoAccount,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED] 				: ITEM__ACCOUNT_HANDLER.getListNestedItem,
+		//==========================================  FUNDA  ================================
+		[CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER] 		: ITEM__FUNDA_HANDLER.getListByUserCompany,
 
 	},
 

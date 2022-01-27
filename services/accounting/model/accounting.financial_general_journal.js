@@ -326,7 +326,6 @@ class Model extends BaseModel {
             finally {
                 session.endSession();
                 const resultC = await connection.close();
-                console.log({resultC})
                 return resolve(responseResultInsert);
             }
         })
@@ -564,7 +563,7 @@ class Model extends BaseModel {
                 if(!fundaID){
                     if(!contractID){
                         conditionObj1 = {
-                            company: companyID,
+                            company: ObjectID(companyID),
                             debit: {
                                 $in: arrObjectID.data
                             }
@@ -577,15 +576,15 @@ class Model extends BaseModel {
                         }
                     }else{
                         conditionObj1 = {
-                            company: companyID,
-                            contract: contractID,
+                            company: ObjectID(companyID),
+                            contract: ObjectID(contractID),
                             debit: {
                                 $in: arrObjectID.data
                             }
                         }
                         conditionObj2 = {
-                            company: companyID,
-                            contract: contractID,
+                            company: ObjectID(companyID),
+                            contract: ObjectID(contractID),
                             credit: {
                                 $in: arrObjectID.data
                             }
@@ -594,28 +593,28 @@ class Model extends BaseModel {
                 }else{
                     if(!contractID){
                         conditionObj1 = {
-                            funda: fundaID,
+                            funda: ObjectID(fundaID),
                             debit: {
                                 $in: arrObjectID.data
                             }
                         }
                         conditionObj2 = {
-                            funda: fundaID,
+                            funda: ObjectID(fundaID),
                             credit: {
                                 $in: arrObjectID.data
                             }
                         }
                     }else{
                         conditionObj1 = {
-                            funda: fundaID,
-                            contract: contractID,
+                            funda: ObjectID(fundaID),
+                            contract: ObjectID(contractID),
                             debit: {
                                 $in: arrObjectID.data
                             }
                         }
                         conditionObj2 = {
-                            funda:fundaID,
-                            contract: contractID,
+                            funda: ObjectID(fundaID),
+                            contract: ObjectID(contractID),
                             credit: {
                                 $in: arrObjectID.data
                             }
@@ -625,7 +624,6 @@ class Model extends BaseModel {
                 //____________Lấy năm của ngày đầu kỳ
                 let year = moment(fromDate).toDate().getFullYear() //!!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm)
                 let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
-
                 //____________Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (31/12/2019-1/1/2020)
                 let listDataS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
                     {
@@ -634,32 +632,21 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
-                                {
-                                    $project : { 
-                                        year : {$year : "$voucher.date"},
-                                        forward: '$voucher.forward',
-                                        cancel: '$voucher.cancel',
-                                        amount: 1,
-                                    }
-                                },
-                                {
-                                    $match: {
-                                        "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
-                                        "forward": 1,
-                                        "cancel": 0
-                                    }
-                                }, 
+                                // {
+                                //     $project : { 
+                                //         year : {$year : "$voucher.date"},
+                                //         forward: '$voucher.forward',
+                                //         cancel: '$voucher.cancel',
+                                //         amount: 1,
+                                //     }
+                                // },
+                                // {
+                                //     $match: {
+                                //         "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                //         "forward": 1,
+                                //         "cancel": 0
+                                //     }
+                                // }, 
                                 {
                                     $group: {
                                         _id: { },
@@ -672,17 +659,6 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj2
                                 }, 
-                                {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
                                 {
                                     $project : { 
                                         year : {$year : "$voucher.date"},
@@ -708,7 +684,7 @@ class Model extends BaseModel {
                             
                         }
                     } 
-                ]);
+                ])
 
                 //____________Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển
                 let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
@@ -719,21 +695,8 @@ class Model extends BaseModel {
                                     $match: conditionObj1
                                 }, 
                                 {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
-                                {
                                     $match: {
-                                        "voucher.forward": 0,
-                                        "voucher.cancel": 0,
-                                        "voucher.date": { 
+                                        date: { 
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                                         },
@@ -752,21 +715,8 @@ class Model extends BaseModel {
                                     $match: conditionObj2
                                 }, 
                                 {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
-                                {
                                     $match: {
-                                        "voucher.forward": 0,
-                                        "voucher.cancel": 0,
-                                        "voucher.date": { 
+                                        "date": { 
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                                         },
@@ -783,7 +733,7 @@ class Model extends BaseModel {
                         }
                     } 
                 ]);
-
+                console.log({listData, listDataS } )
                 let openingBalanceS = listDataS[0], openingBalance = listData[0]
                 let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0;
 
