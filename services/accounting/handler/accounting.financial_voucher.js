@@ -154,16 +154,18 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const {  fundaID, currentPage, perPage, fromDate, toDate, type, _id, createAt, limit } = ctx.params;
+                const {   currentPage, perPage, fromDate, toDate, type, lastestID, limit } = ctx.params;
                 // const voucherID = '61e43deaac5b40893b163750';
-                const nextInfo = { _id, createAt }
+                let fundaID =null;
+                //get funda from cache
+
                 if(!fundaID){
-                    const infoCompany          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+                    const infoFundaCompany          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
                     fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
                 }
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getListVoucherOfCompany({ fundaID , currentPage, 
-                perPage, fromDate, toDate, type, nextInfo, limit })
+                perPage, fromDate, toDate, type, lastestID, limit })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][VOUCHER_HANDLER][GET_LIST_VOUCHER_OF_COMPANY] ${error}`);
@@ -207,11 +209,10 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const { key, type, customer, fromDate, toDate, fundaID, _id, createAt } = ctx.params;
+                const { key, type, customer, fromDate, toDate, fundaID, limit, lastestID  } = ctx.params;
                 // const voucherID = '61e43deaac5b40893b163750';
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const nextInfo = { _id, createAt }
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.findVoucherInCompany({ nextInfo, key, type, customer, author: userID, fromDate, toDate, fundaID, companyID: company._id })
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.findVoucherInCompany({ limit, lastestID, key, type, customer, author: userID, fromDate, toDate, fundaID, companyID: company._id })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][VOUCHER_HANDLER][FIND_VOUCHER_IN_COMPANY] ${error}`);

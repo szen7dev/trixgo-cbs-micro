@@ -63,3 +63,5 @@ typings/
 
 # JetBrains IDE
 .idea
+
+tools/db/cf_database.js

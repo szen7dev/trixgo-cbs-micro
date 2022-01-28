@@ -530,6 +530,19 @@ module.exports = {
 		 */
 		[`GET ${CF_ROUTINGS_ITEM.STORAGE}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST}`],
+	
+		/**
+		 * Account
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.ACCOUNT_SEARCH_WITH_KEY}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_SEARCH_WITH_KEY}`],
+
+		/**
+		 * Goods
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.GOOD_SEARCH_WITH_KEY}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.GOOD_SEARCH_WITH_KEY}`],
+
 
 		//------------------------------END SEARVICE ITEM---------------------------//
 
