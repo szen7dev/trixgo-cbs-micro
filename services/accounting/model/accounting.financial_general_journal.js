@@ -57,35 +57,35 @@ class Model extends BaseModel {
     // -------------------- start function check params for add, update, remove, search -----------
     checkInputInputJournal({ amount, authorID }){
         if(Number.isNaN(Number(amount)))
-            return { error: true, message: 'amount_invalid' };
+            return { error: true, message: 'amount_invalid', status: 400 };
 
         if(!_isValid(authorID))
-            return { error: true, message: 'authorID_invalid' };
+            return { error: true, message: 'authorID_invalid', status: 400 };
     }
 
     checkInputInsertFull({ amount, voucher, companyID, authorID, fundaID, customerDebit, customerCredit }){
         // if(Number.isNaN(Number(amount)) || !_isValid(journalID) || !_isValid(authorID)){
         this.checkInputInputJournal({ amount, authorID });
         if(Number.isNaN(Number(amount)))
-            return { error: true, message: 'amount_invalid' };
+            return { error: true, message: 'amount_invalid', status: 400 };
 
         if(!_isValid(authorID))
-            return { error: true, message: 'authorID_invalid' };
+            return { error: true, message: 'authorID_invalid', status: 400 };
             
         if(!_isValid(voucher))
-            return { error: true, message: 'voucher_invalid' };
+            return { error: true, message: 'voucher_invalid', status: 400 };
 
         if(!_isValid(companyID))
-            return { error: true, message: 'companyID_invalid' };
+            return { error: true, message: 'companyID_invalid', status: 400 };
 
         if(!_isValid(fundaID))
-            return { error: true, message: 'fundaID_invalid' };
+            return { error: true, message: 'fundaID_invalid', status: 400 };
 
         if(!_isValid(customerDebit))
-            return { error: true, message: 'customerDebit_invalid' };
+            return { error: true, message: 'customerDebit_invalid', status: 400 };
         
         if(!_isValid(customerCredit))
-            return { error: true, message: 'customerCredit_invalid' };
+            return { error: true, message: 'customerCredit_invalid', status: 400 };
 
         return { error: false }
     }
@@ -94,7 +94,7 @@ class Model extends BaseModel {
         // if(Number.isNaN(Number(amount)) || !_isValid(journalID) || !_isValid(authorID)){
         this.checkInputInputJournal({ amount, authorID });
         if(!_isValid(journalID))
-            return { error: true, message: 'journalID_invalid' };
+            return { error: true, message: 'journalID_invalid', status: 400 };
 
         return { error: false }
     }
@@ -273,7 +273,7 @@ class Model extends BaseModel {
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
                 // Kiểm tra check trùng tài khoản đối ứng
                 if(debit && credit && debit.toString() === credit.toString())
-                    return resolve({ error: false, message: 'debit/credit is duplicated' });
+                    return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
 
                 // Fix: nếu amount == 0 -> result = NaN (insert into db throw error)
                 const quantityCalculate       = Number(Number(quantity).toFixed(3)) || 0;
@@ -294,7 +294,7 @@ class Model extends BaseModel {
                 // console.log(dataInsert)
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "cannot_insert", status: 400 });
                 
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN PHIẾU
@@ -303,10 +303,10 @@ class Model extends BaseModel {
                 // await session.commitTransaction();
                 //---- Không cần check kĩ --> sẽ đưa qua trasaction//
                 if(resultUpdate.error){
-                    responseResultInsert = { error: false, data: infoAfterInsert }
+                    responseResultInsert = { error: false, data: infoAfterInsert, status: 400 }
                     await session.abortTransaction();
                 }else{
-                    responseResultInsert = { error: false, data: infoAfterInsert }
+                    responseResultInsert = { error: false, data: infoAfterInsert, status: 200}
                 }
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
@@ -320,7 +320,7 @@ class Model extends BaseModel {
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
                 await session.abortTransaction();
-                responseResultInsert = { error: true, message: error.message };
+                responseResultInsert = { error: true, message: error.message, status: 400 };
                 // return resolve({ error: true, message: error.message });
             }
             finally {
@@ -344,7 +344,7 @@ class Model extends BaseModel {
             try {
                 const info = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
                 if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                    return resolve({ error: true, message: 'cannot_get_info', status: 400 });
 
                 const checkInputUpdate = this.checkInputUpdate({ amount, journalID, authorID })
                 if(checkInputUpdate.error)
@@ -353,11 +353,11 @@ class Model extends BaseModel {
 
                 // Kiểm tra check trùng tài khoản đối ứng
                 if(debit && credit && debit.toString() === credit.toString())
-                    return resolve({ error: false, message: 'debit/credit is duplicated' });
+                    return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
             
                 const infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
                 if(!infoJournal)
-                    return resolve({ error: false, message: 'finacial_journal_exit' });
+                    return resolve({ error: false, message: 'finacial_journal_exit', status: 400 });
 
                 // Fix: Nếu amount == 0 -> result = NaN (insert into db throw error)
                 const quantityCalculate       = Number(Number(quantity).toFixed(3)) || 0;
@@ -374,7 +374,7 @@ class Model extends BaseModel {
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findByIdAndUpdate(journalID, dataUpdate , { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
+                    return resolve({ error: true, message: "cannot_update", status: 400 });
                 
                 const journalAmount = Number(infoAfterUpdate.amount || 0) - Number(infoJournal.amount ||0) || 0;
                 const journalFcuAmount = Number(infoAfterUpdate.fcuAmount || 0) - Number(infoJournal.fcuAmount ||0) || 0;
@@ -383,10 +383,10 @@ class Model extends BaseModel {
                 // step 2: transaction (after...)
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterUpdate.voucher}`,journalAmount, journalFcuAmount })
                 if(resultUpdateVoucher.error){
-                    responseResultUpdate = { error: false, data: infoAfterUpdate }
+                    responseResultUpdate = { error: false, data: infoAfterUpdate, status: 400 }
                     await session.abortTransaction();
                 }else{
-                    responseResultUpdate = { error: false, data: infoAfterUpdate }
+                    responseResultUpdate = { error: false, data: infoAfterUpdate, status: 200 }
                 }
                 //___________UPDATE VÀO KHOẢN MỤC PHÍ MỚI
                 if(job && _isValid(job)){
@@ -398,7 +398,7 @@ class Model extends BaseModel {
             } catch (error) {
                 await session.abortTransaction();
                 console.log(`ERROR [ACCOUNTING_JOURNAL][UPDATE_JOURNAL]: ${error}`);
-                responseResultUpdate = { error: true, message: error.message };
+                responseResultUpdate = { error: true, message: error.message, status: 400 };
             }
             finally {
                 session.endSession();
@@ -417,16 +417,16 @@ class Model extends BaseModel {
             await session.startTransaction();
             try {
                 if( !ObjectID.isValid(journalID))
-                    return resolve({ error: true, message: 'param_invalid' });
+                    return resolve({ error: true, message: 'param_invalid', status: 400 });
 
                 let info = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID);
                 if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                    return resolve({ error: true, message: 'cannot_get_info', status: 400 });
 
                 //_________Xóa chi tiết
                 let infoAfterRemove = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findByIdAndDelete(journalID);
                 if(!infoAfterRemove)
-                    return resolve({ error: true, message: "cannot_remove" });
+                    return resolve({ error: true, message: "cannot_remove", status: 400 });
 
                 //Cập nhật thông tin trong phiếu
                 const journalAmount =   0 - (Number(infoAfterRemove.amount || 0) || 0);
@@ -436,10 +436,10 @@ class Model extends BaseModel {
                 // step 2: transaction (after...)
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterRemove.voucher}`,journalAmount, journalFcuAmount })
                 if(resultUpdateVoucher.error){
-                    responseResultRemove = { error: true, data: infoAfterRemove, message: resultUpdateVoucher.message }
+                    responseResultRemove = { error: true, data: infoAfterRemove, message: resultUpdateVoucher.message, status: 400 }
                     await session.abortTransaction();
                 }else{
-                    responseResultRemove = { error: false, data: infoAfterRemove, message: "Remove success" }
+                    responseResultRemove = { error: false, data: infoAfterRemove, message: "Remove success", status: 200 }
                 }
                 //_________Xóa trong Ứng dụng quản lý chi phí
                 if(info.job && _isValid(info.job)){
@@ -449,7 +449,7 @@ class Model extends BaseModel {
                 }
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][REMOVE_JOURNAL]: ${error}`);
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 400 })
             }
             finally {
                 session.endSession();
@@ -508,7 +508,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(journalID))
-                    return { error: true, message: 'journalID_invalid' };
+                    return { error: true, message: 'journalID_invalid', status: 400 };
                 
                 const infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(journalID)
                 .populate({
@@ -530,12 +530,12 @@ class Model extends BaseModel {
                     select:'_id description sign'
                 });
                 if(!infoJournal)
-                    return resolve({ error: true, message: 'cant_get_info_journal' })
+                    return resolve({ error: true, message: 'cant_get_info_journal', status: 400 })
                     
-                return resolve({ error: false, data: infoJournal })
+                return resolve({ error: false, data: infoJournal, status: 200 })
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOUNRAL][getInfo]: ${error} `);
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 400 })
             }
         });
     }

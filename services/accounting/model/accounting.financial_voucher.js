@@ -46,25 +46,25 @@ class AccountingFinancialVoucher extends BaseModel {
     // -------------------- start function check params for add, update, remove, search -----------
     checkInputVoucher({ date, name, type, authorID, customerID }){
         if(!date)
-            return { error: true, message: 'date_invalid' };
+            return { error: true, message: 'date_invalid', status: 400 };
             
         if(!name)
-            return { error: true, message: 'name_invalid' };
+            return { error: true, message: 'name_invalid', status: 400 };
 
         if(!type || !Number.isNaN(Number(type)))
-            return { error: true, message: 'type_invalid' };
+            return { error: true, message: 'type_invalid', status: 400 };
 
         if(!authorID || !ObjectId.isValid(authorID))
-            return { error: true, message: 'authorID_invalid' };
+            return { error: true, message: 'authorID_invalid', status: 400};
 
         if(customerID || !ObjectId.isValid(customerID))
-            return { error: true, message: 'type_invalid' };
+            return { error: true, message: 'type_invalid', status: 400 };
     }
 
     checkInputInsertFull({ date, name, type, fundaID, authorID, customerID }){
         this.checkInputVoucher({ date, name, type, authorID, customerID });
         if(!fundaID || !ObjectId.isValid(fundaID))
-            return { error: true, message: 'fundaId_invalid' };
+            return { error: true, message: 'fundaId_invalid', status: 400};
 
         return { error: false }; 
     }
@@ -72,7 +72,7 @@ class AccountingFinancialVoucher extends BaseModel {
     checkInputUpdate({ date, name, type, voucherID, authorID, customerID }){
         this.checkInputVoucher({ date, name, type, authorID, customerID });
         if(!voucherID || !ObjectId.isValid(voucherID))
-            return { error: true, message: 'voucherID_invalid' };
+            return { error: true, message: 'voucherID_invalid', status: 400 };
 
         return { error: false }; 
     }
@@ -131,21 +131,21 @@ class AccountingFinancialVoucher extends BaseModel {
 
         if(ipc){
             if(!ObjectId.isValid(ipc)){
-                return { error: true, message: "ipc_invalid" }
+                return { error: true, message: "ipc_invalid", status: 400 }
             }
             dataInsertVoucher.ipc = ipc;
         }
 
         if(subtype){
             if(!ObjectId.isValid(subtype)){
-                return { error: true, message: "subtype_invalid" }
+                return { error: true, message: "subtype_invalid", status: 400}
             }
             dataInsertVoucher.subtype = subtype;
         }
 
         if(fee){
             if(!ObjectId.isValid(fee)){
-                return { error: true, message: "fee_invalid" }
+                return { error: true, message: "fee_invalid", status: 400 }
             }
             dataInsertVoucher.fee = fee;
         }
@@ -217,28 +217,28 @@ class AccountingFinancialVoucher extends BaseModel {
         // New field
         if(project){
             if(!ObjectId.isValid(project)){
-                return { error: true, message: "project_invalid" }
+                return { error: true, message: "project_invalid", status: 400 }
             }
             dataUpdateVoucher.project = project;
         }
 
         if(ipc){
             if(!ObjectId.isValid(ipc)){
-                return { error: true, message: "ipc_invalid" }
+                return { error: true, message: "ipc_invalid", status: 400 }
             }
             dataUpdateVoucher.ipc = ipc;
         }
 
         if(subtype){
             if(!ObjectId.isValid(subtype)){
-                return { error: true, message: "subtype_invalid" }
+                return { error: true, message: "subtype_invalid", status: 400 }
             }
             dataUpdateVoucher.subtype = subtype;
         }
 
         if(fee){
             if(!ObjectId.isValid(fee)){
-                return { error: true, message: "fee_invalid" }
+                return { error: true, message: "fee_invalid", status: 400 }
             }
             dataUpdateVoucher.fee = fee;
         }
@@ -311,7 +311,7 @@ class AccountingFinancialVoucher extends BaseModel {
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher.data);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "cannot_insert", status: 400 });
                 
                 if(selectedJournals && selectedJournals.length >0){
                     //_________Get ID của phiếu vừa tạo để tiến hành tạo chi tiết chứng từ
@@ -410,11 +410,11 @@ class AccountingFinancialVoucher extends BaseModel {
                     }
                 }
 
-                return resolve({ error: false, data: infoAfterInsert });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
 
                 console.log(`ERROR [ACCOUNTING][INSERT_FULL_VOUCHER]: ${error}`);
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 400 });
             }
         })
     }
@@ -436,7 +436,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID);
                 
                 if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                    return resolve({ error: true, message: 'cannot_get_info', status: 400 });
 
                 const checkParams  = this.checkInputUpdate({ date, name, type, voucherID, authorID, customerID: customer});
                 if(checkParams.error){
@@ -451,7 +451,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 }).select('_id')
 
                 if(infoVoucher)
-                    return resolve({ error: true, message: "Mã phiếu đã tồn tại" }); 
+                    return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 }); 
 
                 const dataUpdateVoucher = this.collectDataForUpdate({
                     authorID, type, date, dateInvoice, 
@@ -467,7 +467,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true });
                 // console.log(infoAfterUpdate)
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
+                    return resolve({ error: true, message: "cannot_update", status: 400 });
 
                 // Cần hỏi ý kiến ---!
                 // //_________Thông tin về tài khoản thuế phải nộp/được khấu trừ
@@ -694,25 +694,25 @@ class AccountingFinancialVoucher extends BaseModel {
                 //     }
                 // }
                     
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER]: ${error}`);
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 400 });
             }
         })
     }
 
     checkInputUpdateWithNewJournals({ voucherId, journalAmount, journalFcuAmount }){
         if(!ObjectId.isValid(voucherId)){
-            return { error : true, message:'invalid_voucherId' }
+            return { error : true, message:'invalid_voucherId', status: 400 }
         }
 
         if(Number.isNaN(Number(journalAmount))){
-            return { error : true, message:'invalid_journalAmount' }
+            return { error : true, message:'invalid_journalAmount', status: 400 }
         }
 
         if(Number.isNaN(Number(journalFcuAmount))){
-            return { error : true, message:'invalid_journalFcuAmount' }
+            return { error : true, message:'invalid_journalFcuAmount', status: 400 }
         }
 
         return { error: false };  
@@ -730,7 +730,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherId);
 
                 if(!infoVoucher)
-                    return resolve({ erorr: true, message:'voucher_exits', data: null });
+                    return resolve({ erorr: true, message:'voucher_exits', data: null, status: 400 });
                 
                 const dataUpdateVoucher = {
                     amount: Number(infoVoucher.amount || 0) + Number(journalAmount || 0), 
@@ -738,13 +738,13 @@ class AccountingFinancialVoucher extends BaseModel {
                 }
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherId,dataUpdateVoucher);
                 if(!resultUpdateVoucher)
-                    return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher });
+                    return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400});
             
-                return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher });
+                return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 });
 
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`);
-                return resolve({ erorr: true, message: 'update_voucher_fail' });
+                return resolve({ erorr: true, message: 'update_voucher_fail', status: 400});
             }
         });
     }
@@ -753,27 +753,27 @@ class AccountingFinancialVoucher extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if( !_isValid(voucherID))
-                    return resolve({ error: true, message: 'voucherID_invalid' });
+                    return resolve({ error: true, message: 'voucherID_invalid', status: 400 });
 
                 const info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID);
                 if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                    return resolve({ error: true, message: 'cannot_get_info', status: 400 });
 
                 // Remove doc
                 const infoAfterRemove = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndDelete(voucherID);
                 if(!infoAfterRemove)
-                    return resolve({ error: true, message: "cannot_remove" });
+                    return resolve({ error: true, message: "cannot_remove", status: 400 });
 
                 // Remove sub docs
                 const removeSubDocs = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.deleteMany({ voucher: voucherID });
-                if (!removeSubDocs) return resolve({ error: true, message: 'cannot_remove_sub_docs' }); 
+                if (!removeSubDocs) return resolve({ error: true, message: 'cannot_remove_sub_docs', status: 400 }); 
 
                 // Xóa trong ngân sách
 
-                return resolve({ error: false, data: infoAfterRemove });
+                return resolve({ error: false, data: infoAfterRemove, status: 200 });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][REMOVE_VOUCHER]: ${error}`);
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 400 })
             }
         })
     }
@@ -783,7 +783,7 @@ class AccountingFinancialVoucher extends BaseModel {
             try {
 
                 if( !_isValid(voucherID))
-                    return resolve({ error: true, message: 'voucherID_invalid' });
+                    return resolve({ error: true, message: 'voucherID_invalid', status: 400 });
                 const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                 .populate('company customer contract storage staff')
                 .populate({
@@ -798,7 +798,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 })
                 
                 if(!infoVoucher)
-                    return resolve({ error: true, message: 'voucher_exits' })
+                    return resolve({ error: true, message: 'voucher_exits', status: 400 })
 
                 // get list journal
                 let resultGetListJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
@@ -828,20 +828,20 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(!resultGetListJournal)
                     resultGetListJournal = [];
 
-                return resolve({ error: false, data: { infoVoucher, listJournal: resultGetListJournal } })
+                return resolve({ error: false, data: { infoVoucher, listJournal: resultGetListJournal }, status: 200 })
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][GET_INFO_VOUCHER]: ${error}`);
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 400})
             }
         });
     }
 
     // Danh sách các phiếu của công ty.
-    getListVoucherOfCompany({ nextInfo, companyID, fundaID, contractID, limit = PERPAGE_CORE, perPage, fromDate, toDate, type }){
+    getListVoucherOfCompany({ lastestID, companyID, fundaID, contractID, limit = PERPAGE_CORE, perPage, fromDate, toDate, type }){
         return new Promise(async (resolve) => {
             try {
                 limit = Number(limit);
-                if(!limit){
+                if(!limit || limit<0){
                     limit = PERPAGE_CORE;
                 }
                 if(limit > PERPAGE_CORE){
@@ -889,18 +889,20 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }
                 }
+                // lastestID
+                let latestRecord = null;
+                if(lastestID && ObjectId(lastestID)){
+                    const checkExitLastRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(lastestID);
+                    if(!checkExitLastRecord)
+                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+                    
+                    latestRecord = checkExitLastRecord;
+                }
                 let keys = ['createAt__-1', '_id__-1'];
-                let latestRecord = {};
-                if(nextInfo._id){
-                    latestRecord._id =  nextInfo._id
-                }
-                if(nextInfo.createAt){
-                    latestRecord.createAt =  nextInfo.createAt
-                }
                 const result = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
                 // console.log({ result, find: result.data.find['$or'], sort: result.data.sort });
                 if(result.error){
-                    return resolve({ error: true, message: "cannot_get_list" });
+                    return resolve({ error: true, message: "cannot_get_list", status: 400 });
                 }
 
               
@@ -939,7 +941,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 // }
 
                 if(!listVoucher)
-                    return resolve({ error: true, message: "cannot_get_list" });
+                    return resolve({ error: true, message: "cannot_get_list", status: 400 });
 
                 const totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
                 let nextCursor	= null;
@@ -950,16 +952,23 @@ class AccountingFinancialVoucher extends BaseModel {
                         listVoucher.length = limit;
                     }
                 }
-                return resolve({ error: false,
-                     data: {
+
+                const totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ 
+                    error: false,
+                    data: {
                         listVoucher: listVoucher || [],
                         nextCursor,
-                        totalPage: totalRecord,
-                        limit
-                     },  });
+                        totalPage,
+                        totalRecord,
+                        limit,
+                    },
+                    status: 200
+                });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][getListVoucherOfCompany] ${error}`);
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 400 });
             }
         })
     }
@@ -1052,11 +1061,12 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // Tìm kiếm phiếu.
-    findVoucherInCompany({ nextInfo, key, type, customer, author, fromDate, toDate, fundaID, companyID, limit = PERPAGE_CORE }) {
+    findVoucherInCompany({ lastestID, key, type, customer, author, fromDate, toDate, fundaID, companyID, limit = PERPAGE_CORE }) {
         return new Promise(async resolve => {
             try {       
                 let sort = {}, conditionObj = {};
-                if(!limit){
+                limit = Number(limit);
+                if(!limit || limit<0){
                     limit = PERPAGE_CORE;
                 }
                 if(limit > PERPAGE_CORE){
@@ -1106,18 +1116,21 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }
                 }
+                
+                let latestRecord = null;
+                if(lastestID && ObjectId(lastestID)){
+                    const checkExitLastRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(lastestID);
+                    if(!checkExitLastRecord)
+                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+                    
+                    latestRecord = checkExitLastRecord;
+                }
+
                 const keys = ['createAt__-1', '_id__-1'];
-                let latestRecord = {};
-                if(nextInfo._id){
-                    latestRecord._id =  nextInfo._id
-                }
-                if(nextInfo.createAt){
-                    latestRecord.createAt =  nextInfo.createAt
-                }
                 const resultPagination = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
                 
                 if(resultPagination.eror)
-                    return resolve({ error: true, message: "cant_get_list_vat" });
+                    return resolve({ error: true, message: "cant_get_list_vat",  status: 400 });
                
                 const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(resultPagination.data.find)
                     .populate('customer')
@@ -1130,9 +1143,9 @@ class AccountingFinancialVoucher extends BaseModel {
                     .sort(resultPagination.data.sort);
 
                 if(!infoVoucher)
-                    return resolve({ error: true, message: 'voucher_exits' })
+                    return resolve({ error: true, message: 'voucher_exits', status: 400 });
 
-                const totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.countDocuments(conditionObj);
+                const totalRecord = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count(conditionObj);
 				let nextCursor	= null;
 
 				if(infoVoucher && infoVoucher.length){
@@ -1140,20 +1153,23 @@ class AccountingFinancialVoucher extends BaseModel {
 						nextCursor = infoVoucher[limit - 1]._id;
 						infoVoucher.length = limit;
 					}
-
 				}
-            
-                return resolve({ error: false, 
+                const totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ 
+                    error: false, 
                     data: { 
                         infoVoucher,
                         nextCursor, 
-                        limit: +limit || 0 ,
-                        totalPage: totalRecord
-                    } 
+                        limit: +limit || 0,
+                        totalRecord,
+                        totalPage,
+                    },
+                    status : 200,
                 });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][findVoucherInCompany] ${error}`);
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 400 });
             }
         });
     }

@@ -537,6 +537,13 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.ACCOUNT_SEARCH_WITH_KEY}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_SEARCH_WITH_KEY}`],
 
+		/**
+		 * Goods
+		 */
+		[`GET ${CF_ROUTINGS_ITEM.GOOD_SEARCH_WITH_KEY}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.GOOD_SEARCH_WITH_KEY}`],
+
+
 		//------------------------------END SEARVICE ITEM---------------------------//
 
 		//---------------------------🏁 START SEARVICE CMCS 🏁---------------------------//
