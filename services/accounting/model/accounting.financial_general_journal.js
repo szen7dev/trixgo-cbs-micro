@@ -632,21 +632,16 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                // {
-                                //     $project : { 
-                                //         year : {$year : "$voucher.date"},
-                                //         forward: '$voucher.forward',
-                                //         cancel: '$voucher.cancel',
-                                //         amount: 1,
-                                //     }
-                                // },
-                                // {
-                                //     $match: {
-                                //         "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
-                                //         "forward": 1,
-                                //         "cancel": 0
-                                //     }
-                                // }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                    }
+                                }, 
                                 {
                                     $group: {
                                         _id: { },
@@ -661,17 +656,12 @@ class Model extends BaseModel {
                                 }, 
                                 {
                                     $project : { 
-                                        year : {$year : "$voucher.date"},
-                                        forward: '$voucher.forward',
-                                        cancel: '$voucher.cancel',
-                                        amount: 1,
+                                        year : {$year : "$date"},
                                     }
                                 },
                                 {
                                     $match: {
                                         "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
-                                        "forward": 1,
-                                        "cancel": 0
                                     }
                                 },  
                                 {
@@ -733,7 +723,6 @@ class Model extends BaseModel {
                         }
                     } 
                 ]);
-                console.log({listData, listDataS } )
                 let openingBalanceS = listDataS[0], openingBalance = listData[0]
                 let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0;
 
