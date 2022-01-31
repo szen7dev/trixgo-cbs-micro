@@ -1513,12 +1513,6 @@ class Model extends BaseModel {
 					reminder: infoReminderAfterInsert._id
 				}
 
-				// INSERT MESSAGE NOTIFY CREATE REMINDER
-				// await this.insertData({
-				// 	...dataInsertMessage,
-				// 	type: 114
-				// })
-
 				// INSERT MESSAGE REMINDER
 				let infoMessageReminder = await this.insertData({
 					...dataInsertMessage,
