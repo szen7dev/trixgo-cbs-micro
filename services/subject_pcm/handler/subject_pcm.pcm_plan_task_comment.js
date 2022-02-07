@@ -5,10 +5,10 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REACTION } 				    = require('../../reaction/helper/reaction.actions-constant');
 
- /**
-  * MODELS
-  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL        = require('../model/subject_pcm.pcm_plan_task_comment-model').MODEL;
+/**
+ * MODELS
+ */
+const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL  = require('../model/subject_pcm.pcm_plan_task_comment-model').MODEL;
 
 module.exports = {
     /**
