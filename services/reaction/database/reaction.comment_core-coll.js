@@ -30,7 +30,7 @@ module.exports  = DATABASE_MIDDLEWARE("comment_core", {
         default : 0
     },
 
-    //_________Số lượng comment con của comment cha
+    //_________Số lượng reaction con của comment cha
     amountReaction: {
         type    :  Number,
         default : 0

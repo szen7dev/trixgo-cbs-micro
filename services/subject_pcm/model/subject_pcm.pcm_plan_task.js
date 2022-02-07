@@ -41,8 +41,8 @@ class Model extends BaseModel {
                  */
                 let dataInsert = { };
                 let suid = await stringUtils.randomAndCheckExists(SUBJECT_PCM__PCM_PLAN_TASK_COLL, 'suid');
-                let dateConcatnate = setTimeZone(new Date(`${expiredTime} ${expiredHour}:00`)).format('Y-MM-DD H:m:sZ');
                 let infoGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type')
+                // let dateConcatnate = setTimeZone(new Date(`${expiredTime} ${expiredHour}:00`)).format('Y-MM-DD H:m:sZ');
                 
                 /** 
                  * VALIDATION STEP (2)
