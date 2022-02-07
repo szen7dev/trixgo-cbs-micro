@@ -156,7 +156,7 @@ module.exports = {
 					agenda.schedule(timeScheduler, 'add_reminder_conversation', {
 						conversationID, messageID, userID 
 					});
-					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${repeat} - ${notifyFor}`);
+					console.log(`agenda: add_reminder_conversation added - ${new Date(remindTime)} - ${remindTime} - ${repeat} - ${notifyFor}`);
 				}
 
                 return { error: false, message: 'success' }

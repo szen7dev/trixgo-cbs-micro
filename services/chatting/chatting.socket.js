@@ -1098,10 +1098,11 @@ exports.CHATTING_SOCKET = {
         let io                   					= socket.$service.io;
 		let { conversationID, messageID, userID }	= data;
 
-		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID).select('members');
 		const infoMessage 		= await CHATTING__MESSAGE_COLL
 			.findById(messageID)
-			.populate('reminder');
+			.populate('reminder')
+			.lean();
 
 		if(!infoConversation || !infoMessage){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -1129,9 +1130,7 @@ exports.CHATTING_SOCKET = {
 
 		// Lọc user không phải member của conversation
 		const listMembersIDConversation = members.map(memberID => memberID.toString());
-		const arrReceiver = accepts.filter(memberID => {
-			return listMembersIDConversation.includes(memberID.toString())
-		});
+		const arrReceiver = accepts.filter(memberID => listMembersIDConversation.includes(memberID.toString()));
 
         sendDataToMultilSocketsOfListUser({ 
 			io,

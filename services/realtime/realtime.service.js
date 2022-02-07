@@ -3,7 +3,7 @@
 const ApiService            					= require("moleculer-web");
 const SocketIOService       					= require('moleculer-io');
 const redis                 					= require('redis');
-const redisAdapter          					= require('socket.io-redis')
+const redisAdapter          					= require('socket.io-redis');
 const express               					= require('express');
 const app                   					= express();
 const server                					= require('http').Server(app);
@@ -125,7 +125,7 @@ module.exports = {
                             })
                         },
 
-                        'disconnect': async function() { // write your handler function here.
+                        'disconnect': async function() {
                             const socketDisconnectID = this.id;
 
 							console.log({ ['disconnect']: socketDisconnectID });
@@ -152,7 +152,7 @@ module.exports = {
                 let token = socket.handshake.query.token;
                 let accessKey = socket.handshake.query.access_key;
 
-                if(accessKey === 'Y2JzX3Byb2plY3RAMjAyMQo='){
+                if(accessKey === 'Y2JzX3Byb2plY3RAMjAyMQo'){
                     this.userID = token;
                     return Promise.resolve(this.userID);
                 }

@@ -1087,7 +1087,6 @@ class Model extends BaseModel {
 						listReactionMedia.length = limit;
 					}
 				}
-				console.log({ listReactionMedia })
 
 				return resolve({
 					error: false,
