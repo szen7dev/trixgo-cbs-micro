@@ -116,7 +116,7 @@ module.exports = {
             projectID         : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
             
-            // Field mặc định
+            // Field mặc định 
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },

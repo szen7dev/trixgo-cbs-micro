@@ -18,7 +18,7 @@ const AUTH__APP_COLL				= require('./database/permission/auth.app-coll');
 const AUTH__APP_MENU_COLL			= require('./database/permission/auth.app_menu-coll');
 const AUTH__APP_ROLE_COLL			= require('./database/permission/auth.app_role-coll');
 const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_role_menu-coll');
-
+ 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
 	mixins: [

@@ -12,6 +12,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
      * 4-Giải pháp (task)
      */
     type: { type: Number, default: 1 },
+
+    //_________Đánh dấu 
     isMarked: { type: Boolean, default: false },
 
     //_________taskID
@@ -42,4 +44,5 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
+  
 }) 
