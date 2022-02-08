@@ -2,8 +2,7 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
-
+const { RANGE_BASE_PAGINATION_V2 }      = require('../../../tools/cursor_base/playground/index');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 		= require('../../subject_pcm/helper/subject_pcm.actions-constant');
@@ -13,8 +12,8 @@ const { PCM_COMMENT_TYPE }              = require('../helper/subject_pcm.keys-co
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL       = require('../database/subject_pcm.pcm_plan_task_comment-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
+const SUBJECT_PCM__PCM_PLAN_TASK_COLL           = require('../database/subject_pcm.pcm_plan_task-coll');
+const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL   = require('../database/subject_pcm.pcm_plan_task_comment-coll');
 
 class Model extends BaseModel {
 
@@ -129,7 +128,7 @@ class Model extends BaseModel {
                     $inc: {
                         amountResponse: 1
                     }
-                })
+                });
 
                 // infoDataAfterInserted = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
                 //     .findById(infoDataAfterInserted._id)
@@ -148,6 +147,54 @@ class Model extends BaseModel {
                 //     .lean();
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật đánh dấu response ✅
+     * Author: Depv
+     */
+    updateMarkResponse({ taskID, commentID, isMarked }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([taskID, commentID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tham số commentID hoặc taskID không hợp lệ', 
+                        keyError: 'params_commentID_or_taskID_invalid', 
+                        status: 400
+                    });
+                }
+
+                const infoResponse = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findById(commentID).lean();
+                if(!infoResponse) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Không thể lấy thông tin response', 
+                        keyError: 'cannot_get_info_response', 
+                        status: 403
+                    });
+                }
+
+                let dataUpdate = { isMarked };
+                let valueCalculate = -1;
+
+                if(isMarked) {
+                    valueCalculate = 1;
+                }
+
+                await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                    $inc: {
+                        amountResponseMarked: valueCalculate
+                    }
+                });
+
+                const infoAfterUpdated = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
+
+                return resolve({ error: false, data: infoAfterUpdated, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -245,8 +292,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
+                let keys = ['createAt__1', '_id__1'];
+                let sortBy = { createAt: 1 };
 
                 /** 
                  * VALIDATION STEP (2)
@@ -256,6 +303,8 @@ class Model extends BaseModel {
 
                 if(limit > 20 || isNaN(limit)){
 					limit = 20;
+                } else {
+                    limit = +limit;
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -283,27 +332,32 @@ class Model extends BaseModel {
                     conditionObj.parent = parentID;
                 }
 
-				if(lastestID && checkObjectIDs(lastestID)){
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-					let keys	 = ['createAt__-1', '_id__-1'];
-
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-					conditionFind = dataPagingAndSort.data.find;
-				}
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find({...conditionObj, ...conditionFind })
+                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObj)
                     .limit(limit + 1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 422 });
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -313,15 +367,14 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 422 });
-
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObj);
+                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord / limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit,
                     totalRecord,
+                    totalPage,
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
