@@ -629,7 +629,6 @@ exports.CHATTING_SOCKET = {
 		for (const conversationID of conversationsID) {
 			const infoConversation 	 = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
-				.populate('members')
 				.populate({
 					path: 'lastMessage',
 					populate: {
