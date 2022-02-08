@@ -647,18 +647,13 @@ exports.CHATTING_SOCKET = {
 				listMessagesShared
 			}
 		}
-		console.log({ listConversationShare__LENGTH: listConversationShare.length, conversationsID__LENGTH: conversationsID.length })
 
 		listConversationShare.map(item => {
 			const { infoConversation, listMessagesShared } = item;
-			const { members } = infoConversation;
-
-			const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
-			console.log({ arrReceiver })
 
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
-				arrReceiver,
+				arrReceiver: infoConversation.members,
 				data: {
 					error: false,
 					data: {
