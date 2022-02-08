@@ -615,6 +615,7 @@ exports.CHATTING_SOCKET = {
 		let io                          = socket.$service.io;
 		let userID                      = socket.client.user;
 		let { conversationsID, messagesID } = data;
+		let listConversationShare = [];
 
 		if(!conversationsID || !conversationsID.length || !messagesID || !messagesID.length){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -625,8 +626,8 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		conversationsID.map(async conversationID => {
-			const infoConversation 	 = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		for (const conversationID of conversationsID) {
+			const infoConversation 	 = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
 			const listMessagesShared = await CHATTING__MESSAGE_COLL
 				.find({
 					_id: { $in: messagesID }
@@ -641,13 +642,18 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 
-			const { members } = infoConversation;
+			listConversationShare[listConversationShare.length] = {
+				infoConversation,
+				listMessagesShared
+			}
+		}
 
-			const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
+		listConversationShare.map(item => {
+			const { infoConversation, listMessagesShared } = item;
 
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
-				arrReceiver,
+				arrReceiver: infoConversation.members,
 				data: {
 					error: false,
 					data: {

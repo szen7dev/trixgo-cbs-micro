@@ -4,14 +4,13 @@ const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
-/**s
+/**
  * import inter-coll, exter-coll
  */
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL       = require('../database/subject_pcm.pcm_plan_task-coll');
@@ -41,8 +40,8 @@ class Model extends BaseModel {
                  */
                 let dataInsert = { };
                 let suid = await stringUtils.randomAndCheckExists(SUBJECT_PCM__PCM_PLAN_TASK_COLL, 'suid');
-                let dateConcatnate = setTimeZone(new Date(`${expiredTime} ${expiredHour}:00`)).format('Y-MM-DD H:m:sZ');
                 let infoGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type')
+                // let dateConcatnate = setTimeZone(new Date(`${expiredTime} ${expiredHour}:00`)).format('Y-MM-DD H:m:sZ');
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -1071,19 +1070,18 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 /**
-                    *   { value: 0, text: 'Việc thông thường', sign: 'Tasks', key: 'task' },
-                        { value: 1, text: 'Yêu cầu thông tin', sign: 'RFis', key: 'rfi' },
-                        { value: 2, text: 'Yêu cầu phê duyệt', sign: 'RFa', key: 'rfa' },
-                        { value: 3, text: 'Thanh toán', sign: 'CRFa', key: 'crfa' },
-                        { value: 4, text: 'Lựa chọn nhà thầu', sign: 'BRFa', key: 'brfa' },
-                        { value: 5, text: 'Nghiệm thu chất lượng', sign: 'QRFa', key: 'inspection' },
-                        { value: 6, text: 'Yêu cầu sửa chữa', sign: 'Punch', key: 'punch' },
-                        { value: 7, text: 'Yêu cầu thay đổi', sign: 'RFc', key: 'rfc' },
-                        { value: 8, text: 'Yêu cầu thực hiện', sign: 'RFe', key: 'rfe' },
-                        { value: 9, text: 'Báo cáo', sign: 'Report', key: 'report' },
-                        { value: 10, text: 'Tiến độ', sign: 'Schedule', key: 'schedule' },
-                        { value: 11, text: 'Họp', sign: 'MOM', key: 'mom' },
-                    *   
+                    { value: 0, text: 'Việc thông thường', sign: 'Tasks', key: 'task' },
+                    { value: 1, text: 'Yêu cầu thông tin', sign: 'RFis', key: 'rfi' },
+                    { value: 2, text: 'Yêu cầu phê duyệt', sign: 'RFa', key: 'rfa' },
+                    { value: 3, text: 'Thanh toán', sign: 'CRFa', key: 'crfa' },
+                    { value: 4, text: 'Lựa chọn nhà thầu', sign: 'BRFa', key: 'brfa' },
+                    { value: 5, text: 'Nghiệm thu chất lượng', sign: 'QRFa', key: 'inspection' },
+                    { value: 6, text: 'Yêu cầu sửa chữa', sign: 'Punch', key: 'punch' },
+                    { value: 7, text: 'Yêu cầu thay đổi', sign: 'RFc', key: 'rfc' },
+                    { value: 8, text: 'Yêu cầu thực hiện', sign: 'RFe', key: 'rfe' },
+                    { value: 9, text: 'Báo cáo', sign: 'Report', key: 'report' },
+                    { value: 10, text: 'Tiến độ', sign: 'Schedule', key: 'schedule' },
+                    { value: 11, text: 'Họp', sign: 'MOM', key: 'mom' },
                  */
                 /**
                  * Tổng số lượng công việc của tôi
@@ -1092,7 +1090,6 @@ class Model extends BaseModel {
                     assignee: userID, 
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    // type: 1
                 })
 
                 /**
@@ -1103,7 +1100,6 @@ class Model extends BaseModel {
                     isproposal: 2,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    // type: 1
                 })
 
                 /**
@@ -1114,7 +1110,6 @@ class Model extends BaseModel {
                     isproposal: 1,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    // type: 1
                 })
 
                 /**
@@ -1125,7 +1120,6 @@ class Model extends BaseModel {
                        $in: [userID]
                     },
                     usersDelete: { $nin: [userID] },
-                    // type: 1
                 });
 
                 /**
@@ -1135,7 +1129,6 @@ class Model extends BaseModel {
                     author: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    // type: 1
                 });
 
                 /**
@@ -1148,7 +1141,6 @@ class Model extends BaseModel {
                     ],
                     draft: 1,
                     usersDelete: { $nin: [userID] },
-                    // type: 1
                 });
 
                 return resolve({ error: false, data: {
