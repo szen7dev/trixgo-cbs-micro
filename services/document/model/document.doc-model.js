@@ -167,36 +167,14 @@ class Model extends BaseModel {
                         }
                     });
                 }
-                // Cập nhật số lượng document cho dự án
-                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
-                    departmentID, numberOfDocs: 1
-                })
- 
-                // Không đi theo hướng childs nữa
-                // if(parentID) {
-                //     await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
-                //         $addToSet: { childs: infoAfterInsert._id }
-                //     });
-                // }
-                // Không
-                // Update document for contract
-                // if(type && !isNaN(type) && +type === 2){
-                //     let infoPackage = await DOCUMENT__PACKAGE_COLL
-                //         .findById(packageID)
-                //         .select('_id contract');
-                    
-                //     if(infoPackage){
-                //         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
-                //             condition: { _id: infoPackage.contract },
-                //             update: {
-                //                 $addToSet: {
-                //                     documents: infoAfterInsert._id
-                //                 }
-                //             }
-                //         });
-                //     }
-                // }
 
+                // Chỉ cập nhật numberOfDocs khi tạo văn bản cha
+                if(!parentID){
+                    // Cập nhật số lượng document cho dự án
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID, numberOfDocs: 1
+                    })
+                }
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });

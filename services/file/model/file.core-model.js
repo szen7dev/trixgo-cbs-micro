@@ -62,7 +62,7 @@ class Model extends BaseModel {
         })
     }
 
-    /**
+    /** 
      * 
     // cập nhật trạng thái thành công hoặc thất bại
      * @param {*} fileID
