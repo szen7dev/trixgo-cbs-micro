@@ -159,14 +159,7 @@ class Model extends BaseModel {
                     modifyAt: timeUtils.getCurrentTime()
                 });
 
-                // Cộng số lượng hồ sơ trong gói thầu
-                if(packageID && checkObjectIDs(packageID)){
-                    await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
-                        $inc: {
-                            numberOfDocs: 1
-                        }
-                    });
-                }
+             
 
                 // Chỉ cập nhật numberOfDocs khi tạo văn bản cha
                 if(!parentID){
@@ -174,6 +167,15 @@ class Model extends BaseModel {
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
                         departmentID, numberOfDocs: 1
                     })
+                    
+                    // Cập nhật số lượng document cho gói thầu
+                    if(packageID && checkObjectIDs(packageID)){
+                        await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
+                            $inc: {
+                                numberOfDocs: 1
+                            }
+                        });
+                    }
                 }
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {

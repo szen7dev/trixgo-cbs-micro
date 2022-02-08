@@ -12,7 +12,7 @@
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 const {
     checkObjectIDs,
     IsJsonString,
@@ -22,7 +22,6 @@ const {
  * COLLECTIONS
  */
 const DOCUMENT__PACKAGE_COLL           				= require('../database/document.package-coll');
-
 
 class Model extends BaseModel {
 
@@ -87,12 +86,21 @@ class Model extends BaseModel {
     getListPackage({ departmentID, userID, lastestID, keyword, limit = 10, select, populates = {} }){
         return new Promise(async resolve => {
             try {
+                let conditionObj    = { members: { $in: [userID] } };
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1'];
+
+                if(limit > 20){
+                    limit = 20;
+                }
 
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 if(departmentID && !checkObjectIDs(departmentID))
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+                    
+                conditionObj.project = departmentID
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -106,32 +114,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				let conditionObj    = { members: { $in: [userID] } };
-				let conditionFind   = {};
-				let objSort 	 	= {};
-                let sortBy = {
-					createAt: -1
-                }
-
-				// PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await DOCUMENT__PACKAGE_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-
-                departmentID && (conditionObj.project = departmentID);
-
-				// SEARCH TEXT
+                // SEARCH TEXT
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -142,16 +125,32 @@ class Model extends BaseModel {
                     ]
                 }
 
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__PACKAGE_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy        = dataPagingAndSort.data.sort;
+                }
+
                 let listPackages = await DOCUMENT__PACKAGE_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort })
+					.find(conditionObj)
 					.limit(limit + 1)
-                    .sort(sortBy)
-					.populate(populates)
 					.select(select)
+					.populate(populates)
+                    .sort(sortBy)
 					.lean();
 
 				// GET TOTAL RECORD
-                let totalRecord = await DOCUMENT__PACKAGE_COLL.count(conditionObj);
+                let totalRecord = await DOCUMENT__PACKAGE_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
