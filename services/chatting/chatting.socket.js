@@ -627,7 +627,25 @@ exports.CHATTING_SOCKET = {
 		}
 
 		for (const conversationID of conversationsID) {
-			const infoConversation 	 = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
+			const infoConversation 	 = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.populate('members')
+				.populate({
+					path: 'lastMessage',
+					populate: {
+						path: 'sender',
+						select: '_id fullname bizfullname image email phone',
+					},
+				})
+				.populate({
+					path: 'avatar',
+					populate: {
+						path: 'file',
+						select: 'name nameOrg size url'
+					},
+				})
+				.lean();
+
 			const listMessagesShared = await CHATTING__MESSAGE_COLL
 				.find({
 					_id: { $in: messagesID }

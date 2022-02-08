@@ -1057,7 +1057,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

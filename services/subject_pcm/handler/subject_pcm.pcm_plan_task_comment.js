@@ -61,30 +61,24 @@ module.exports = {
         auth: "required",
         params: {
 			commentTemplateID   : { type: "string" },
-			commentCoreID       : { type: "string" },
 			taskID              : { type: "string" },
-            type                : { type: "number" },
-            parentID            : { type: "string", optional: true },
-            files               : { type: "array", optional: true },
-            images              : { type: "array", optional: true },
+            isMarked            : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				// const { _id: authorID } = ctx.meta.infoUser;
-                // const { commentTemplateID, commentCoreID, content, files } = ctx.params;
+                const { taskID, commentTemplateID, isMarked } = ctx.params;
 
-                // // Call service comment core để cập nhật
+                // Call service comment core để cập nhật
                 // let infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
 				// 	commentID: commentCoreID, content
 				// });
 
-                // let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.update({
-				// 	taskID, commentCoreID, parentID, authorID, type, content, bizfullname, ctx
-				// });
+                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.updateMarkResponse({
+					taskID, commentID: commentTemplateID, isMarked
+				});
 
-                // return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-                return renderStatusCodeAndResponse({ ctx, error_message: 'nothing' });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
