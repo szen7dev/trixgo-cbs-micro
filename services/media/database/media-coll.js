@@ -117,6 +117,14 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
 
     /**
+     * ID Chủ đề chuyển đổi số
+     */
+    other: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'doctype'
+    },
+
+    /**
      * 1: Mặc định
      * 2: Lưu bài viết
      * 3: Ghim bài viết
