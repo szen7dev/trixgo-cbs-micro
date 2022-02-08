@@ -36,7 +36,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_user", {
     /**
      * Dùng để phân biệt Admin ứng dụng/thành viên thông thường
      * 0: Admin
-     * 1: Thành viên thường
+     * 1: Thành viên thường                   
      */
     level: {
         type    : Number,

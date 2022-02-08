@@ -12,30 +12,34 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
      * 4-Giải pháp (task)
      */
     type: { type: Number, default: 1 },
+    
     //_________taskID
     task: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_plan_task'
     },
-    //_________ID comment core
-    comment: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'comment_core'
-    },
+
     //_________ID comment cha
     parent: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_plan_task_comment'
     },
 
-    //_________Số lượng comment con
-    amountChilds: {
-        type: Number,
-        default: 0
+    //_________ID comment core
+    comment: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'comment_core'
     },
-    //_________Số lượng reaction
-    amountReactions: {
-        type: Number,
-        default: 0
+
+    //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
+    lastestReplyID: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'media_comment'
     },
+
+    userCreate: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },
+  
 }) 
