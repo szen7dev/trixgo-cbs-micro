@@ -647,6 +647,7 @@ exports.CHATTING_SOCKET = {
 				listMessagesShared
 			}
 		}
+		console.log({ listConversationShare__LENGTH: listConversationShare.length, conversationsID__LENGTH: conversationsID.length })
 
 		listConversationShare.map(item => {
 			const { infoConversation, listMessagesShared } = item;
