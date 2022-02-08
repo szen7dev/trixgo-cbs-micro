@@ -134,7 +134,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, limit, parentID, lastestID, commentTemplateID } = ctx.params;
+                let { taskID, limit, parentID, lastestID, commentTemplateID, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
 
                 if(commentTemplateID){

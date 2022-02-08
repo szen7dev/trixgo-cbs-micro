@@ -1,9 +1,8 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs }                = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		= require('../../notification/helper/notification.actions-constant');
@@ -16,11 +15,6 @@ const { PCM_COMMENT_TYPE }              = require('../helper/subject_pcm.keys-co
  */
 const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL       = require('../database/subject_pcm.pcm_plan_task_comment-coll');
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
-
-/**
- * import inter-model, exter-model
- */
-
 
 class Model extends BaseModel {
 
@@ -244,7 +238,7 @@ class Model extends BaseModel {
      * Name   : Danh sách comment ✅
      * Author : Depv
      */
-    getList({ taskID, parentID, limit = 10, lastestID, select, populates = {} }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
