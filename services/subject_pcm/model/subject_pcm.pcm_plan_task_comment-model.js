@@ -130,21 +130,14 @@ class Model extends BaseModel {
                     }
                 });
 
-                // infoDataAfterInserted = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
-                //     .findById(infoDataAfterInserted._id)
-                //     .populate({
-                //         path: 'comment',
-                //         select: '_id fullname image content files images amountCommentReply amountReaction createAt',
-                //         populate: {
-                //             path: 'files images comment userCreate lastestReplyID',
-                //             select: '_id name url size type fullname image content files images amountCommentReply amountReaction',
-                //             populate: {
-                //                 path: 'files images',
-                //                 select: '_id name url size type'
-                //             }
-                //         }
-                //     })
-                //     .lean();
+                infoDataAfterInserted = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
+                    .findById(infoDataAfterInserted._id)
+                    .select('comment isMarked type task userCreate createAt')
+                    .populate({
+                        path: "comment userCreate",
+                        select: "_id bizfullname fullname image files images content",
+                    })
+                    .lean();
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
@@ -292,8 +285,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
-                let keys = ['createAt__1', '_id__1'];
-                let sortBy = { createAt: 1 };
+                let keys = ['createAt__-1', '_id__-1'];
+                let sortBy = { createAt: -1 };
 
                 /** 
                  * VALIDATION STEP (2)
@@ -369,6 +362,8 @@ class Model extends BaseModel {
 
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
+
+                infoDataAfterGet = infoDataAfterGet.reverse();
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
