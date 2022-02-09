@@ -136,6 +136,14 @@ class Model extends BaseModel {
                     .populate({
                         path: "comment userCreate",
                         select: "_id bizfullname fullname image files images content",
+                        populate: {
+                            path: 'images files',
+                            select: '_id name nameOrg url description createAt userCreate',
+                            populate: {
+                                path: 'userCreate',
+                                select: '_id bizfullname'
+                            }
+                        }
                     })
                     .lean();
 
