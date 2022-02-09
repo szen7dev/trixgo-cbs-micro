@@ -11,7 +11,8 @@ const AREA       = '/areas';
 const POSITION   = '/positions';
 const STORAGE    = '/storages';
 const ACCOUNT    = '/accounts';
-const GOOD       = '/goods';
+const GOODS       = '/goods';
+const FUNDA       = '/fundas';
 
 
 const CF_ROUTINGS_ITEM = {
@@ -43,10 +44,13 @@ const CF_ROUTINGS_ITEM = {
     STORAGE                                    : `${BASE_ROUTE}${STORAGE}`,
 
     // ================================ACCOUNT=======================================//
-    ACCOUNT_SEARCH_WITH_KEY                    : `${BASE_ROUTE}${ACCOUNT}/search-account/:key`,
-
+    ACCOUNT                                    : `${BASE_ROUTE}${ACCOUNT}`,
+    
     // ================================GOOD=======================================//
-    GOOD_SEARCH_WITH_KEY                       : `${BASE_ROUTE}${GOOD}/search-goods/:key`,
+    GOODS                                      : `${BASE_ROUTE}${GOODS}`,
+
+    // ================================FUNDA=======================================//
+    FUNDA                                      : `${BASE_ROUTE}${FUNDA}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

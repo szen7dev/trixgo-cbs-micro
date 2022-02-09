@@ -114,8 +114,6 @@ class Model extends BaseModel {
                 }
                 
                 let conditionObjOrg = { ...conditionObj };
-
-                // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__AREA_COLL.findById(lastestID);
 					if(!infoData)

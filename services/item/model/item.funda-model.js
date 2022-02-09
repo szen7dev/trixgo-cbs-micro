@@ -15,96 +15,159 @@ const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant')
 /**
  * TOOLS
  */
-// const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
  */
-// const ITEM__POSITION_COLL            				= require('../database/item.position-coll');
-const ITEM__FUNDA_COLL            				    = require('../database/item.funda-coll');
+const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 
 class Model extends BaseModel {
-
+    
     constructor() {
-        super(require('../database/item.funda-coll'));
+        super(ITEM__FUNDA_COLL);
     }
 
-    getListFundaOfCompany({ companyID }){
+    /**
+     * Name: get info funda ✅
+     * Author: Depv
+     * Code: 
+     */
+    getInfo({ fundaID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                if(!ObjectID(companyID))
-                    return resolve({ error: true, message: 'param_not_valid' });
-                let fundas = await ITEM__FUNDA_COLL.find({ company: companyID }).sort({_id: 'asc'});
-                if(!fundas)
-                    return resolve({ error: true, message: "cannot_get_list" });
-                return resolve({ error: false, data: fundas });
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(fundaID))
+                    return resolve({ error: true, message: 'Request params fundaID invalid', status: 400 });
+                
+                 // populates
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterGet = await ITEM__FUNDA_COLL.findById(fundaID)
+                                    .select(select)
+                                    .populate(populates)
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+    
+    /**
+     * Name  : Danh sách funda ✅
+     * Author: Depv
+     * Code  : 
+     */
+    getList({
+        companyID,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let sortBy;
+                let conditionObj = { };
+                let keys	 = ['createAt__-1', '_id__-1'];
 
-//     getListByCompany({ companyID }){
-//         return new Promise(async (resolve) => {
-//             try {
-//                 if( !ObjectID.isValid(companyID))
-//                        return resolve({ error: true, message: 'param_not_valid' });
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
-//                 let constructPopulateConfigObj = (level, path) => {
-//                     /**
-//                      * populate multiple paths
-//                      * populate: {
-//                      *  path: 'childs pm'
-//                      * }
-//                      */
-//                     const oneLevel = () => ({ path });
-//                     let obj = oneLevel();
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = companyID;
+                }
+                
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+                
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__FUNDA_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-//                     while (level) {
-//                         if (level !== 1) {
-//                             obj.populate = Object.assign({}, obj);
-//                         }
-//                         obj = Object.assign({}, obj);
-//                         --level;
-//                     }
-                    
-//                     return obj;
-//                 };
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-//                 let levelMax = await ITEM__FUNDA_COLL.aggregate(
-//                     [
-//                       {
-//                         $group:
-//                           {
-//                             _id: null,
-//                             maxLevel: { $max: "$level" }
-//                           }
-//                       }
-//                     ]
-//                 )
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+                
+                let infoDataAfterGet = await ITEM__FUNDA_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean(); 
 
-//                 let listAppMenuParent = await ITEM__FUNDA_COLL.find({ company: companyID,   
-//                     $or: [
-//                         {
-//                             parent: {
-//                                 $exists: false
-//                             }  
-//                         },
-//                         {
-//                             parent: null
-//                         }
-//                     ]
-//                 })
-//                 .populate(
-//                     constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
-//                 )
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-//                 return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) });
-//             } catch (error) {
-//                 return resolve({ error: true, message: error.message })
-//             }
-//         })
-//     }
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__FUNDA_COLL.countDocuments(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

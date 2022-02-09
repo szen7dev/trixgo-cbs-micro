@@ -12,7 +12,7 @@
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 const {
     checkObjectIDs,
     IsJsonString,
@@ -75,7 +75,7 @@ class Model extends BaseModel {
      /**
 	 * Name: delete doc file ✅
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
 	delete({ docFileID }) { 
         return new Promise(async (resolve) => {
@@ -118,6 +118,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -126,8 +127,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(docFileID))
                     return resolve({ error: true, message: 'Request params docFileID invalid', status: 400 });
                 
-                 // populates
-                 if(populates && typeof populates === 'string'){
+                if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
@@ -164,7 +164,6 @@ class Model extends BaseModel {
     getList({ documentID, lastestID, keyword, limit = 10, select, populates = {} }){
         return new Promise(async resolve => {
             try {
-
                 if(documentID && !checkObjectIDs(documentID))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
 
@@ -181,41 +180,29 @@ class Model extends BaseModel {
 				}
 
 				let conditionObj    = { document: documentID };
-				let conditionFind   = {};
-				let objSort 	 	= {};
-                let sortBy = {
-					createAt: -1
-                }
+                let sortBy;
+                let keys	        = ['createAt__-1', '_id__-1'];
 
+                let conditionObjOrg = { ...conditionObj };
 				// PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__DOC_FILE_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-				// SEARCH TEXT
-                // if(keyword){
-                //     keyword = keyword.split(" ");
-                //     keyword = '.*' + keyword.join(".*") + '.*';
-                //     let regSearch = new RegExp(keyword, 'i');
-                //     conditionObj.$or = [
-                //         { name: regSearch },
-                //         { sign: regSearch },
-                //     ]
-                // }
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy       = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
 
                 let listDocFile = await DOCUMENT__DOC_FILE_COLL
-					.find({ ...conditionObj, ...conditionFind })
+					.find(conditionObj)
 					.limit(limit + 1)
                     .sort(sortBy)
 					.select(select)
@@ -223,7 +210,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-                let totalRecord = await DOCUMENT__DOC_FILE_COLL.count(conditionObj);
+                let totalRecord = await DOCUMENT__DOC_FILE_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
