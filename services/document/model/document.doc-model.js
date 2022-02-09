@@ -675,7 +675,7 @@ class Model extends BaseModel {
                 companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
 
-                // User phải nằm trong member của gói thầu.
+                // User phải nằm trong members của gói thầu.
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
                 if(listPackageAccess.length){
                     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}

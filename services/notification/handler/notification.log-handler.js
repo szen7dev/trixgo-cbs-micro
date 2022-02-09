@@ -40,7 +40,7 @@ module.exports = {
                 const { _id: authorID } = ctx.meta.infoUser;
                 const { type, title, content, path, receivers } = ctx.params;
 
-                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insertNotification({
+                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insert({
                     type, title, content, path, sender: authorID, receivers
                 });
 
@@ -85,7 +85,6 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             notificationID  : { type: "string", optional: true },
-
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
 			limit 			: { type: "string", optional: true },

@@ -584,7 +584,6 @@ class Model extends BaseModel {
 	autoDeleteMessagesConversation({ conversationID, userID, time, isDelete = false, ctx }){
 		return new Promise(async resolve => {
 			try {
-				console.log({ conversationID, userID, time, isDelete })
                 if (!checkObjectIDs([userID, conversationID])) {
 					return resolve({
 						error: true,
@@ -1340,7 +1339,7 @@ class Model extends BaseModel {
 	/**
 	 * Dev: MinhVH
 	 * Func: Danh sách tin nhắn bình chọn trong cuộc hội thoại
-	 * Date: 30/08/2021
+	 * Date: 30/08/2n021
 	 */
 	getListMessagePoll({ conversationID, lastestID, userID, limit = 10, filter = {}, select = {} }) {
 		return new Promise(async (resolve) => {
