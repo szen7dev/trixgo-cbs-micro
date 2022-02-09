@@ -11,25 +11,44 @@ const ITEM__GOODS_MODEL                    = require('../model/item.good-model')
 module.exports = {
 
     /**
-	 * Dev: HuynhVinh ✅
-	 * Func:
-    */
-    getListWithKey: {
+	 * Dev: Depv ✅
+	 * Func: Danh sách goods
+	 */
+    getInfoAndGetList: {
         params: {
-            accountID     : { type: "string", optional: true },
+            goodsID         : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            // Field mặc định
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { key, belongSystem, limit, lastestID } = ctx.params;
+                let { goodsID, companyID, keyword, limit, lastestID, select, populates } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.getListWithKey({ lastestID, companyID: company._id, key, belongSystem, limit })
+
+                if(!companyID){
+                    companyID = company._id
+                }
+                
+                let resultAfterCallHandler;
+                if(goodsID){
+                    resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfo({
+                        goodsID, select, populates
+                    });
+                }else{
+                    resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({
+                        companyID, lastestID, keyword, select, limit, populates
+                    });
+                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
             }
         }
     },
-
-
 }

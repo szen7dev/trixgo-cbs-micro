@@ -13,105 +13,161 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 
 /**
- * CONSTANTS
-*/
-const PERPAGE_CORE              = 20;
-/**
  * TOOLS
  */
-// const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
  */
-const ITEM__GOODS_COLL            				    = require('../database/item.goods-coll');
+const ITEM__GOODS_COLL            				= require('../database/item.goods-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(require('../database/item.goods-coll'));
+        super(ITEM__GOODS_COLL);
     }
-     /**
-     * Tìm kiếm
-     * Hiepnh [x]
+
+    /**
+     * Name: get info goods ✅
+     * Author: Depv
+     * Code: 
      */
-    getListWithKey({ companyID, key, belongSystem, limit = PERPAGE_CORE, lastestID }) {
-        return new Promise(async resolve => {
+    getInfo({ goodsID, select, populates }) { 
+        return new Promise(async (resolve) => {
             try {
-                if(!limit){
-                    limit = PERPAGE_CORE;
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(goodsID))
+                    return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
+                
+                 // populates
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
-                if(limit > PERPAGE_CORE){
-                    limit = PERPAGE_CORE
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterGet = await ITEM__GOODS_COLL.findById(goodsID)
+                                    .select(select)
+                                    .populate(populates)
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterGet, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    /**
+     * Name  : Danh sách goods ✅
+     * Author: Depv
+     * Code  : 
+     */
+    getList({
+        companyID,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let sortBy;
+                let conditionObj = { };
+                let keys	 = ['createAt__-1', '_id__-1'];
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
 
-                let conditionObj = {};
-                if(!companyID){
-                    conditionObj.company = companyID;
-                    conditionObj.belongSystem = belongSystem;
-                }else{
+                if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
                 }
-
-                if(key && key.length > 0){
-                    let keyword = key.split(" ");
+                
+                if(keyword){
+                    keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 
-                let latestRecord = null;
-                if(lastestID && ObjectID(lastestID)){
-                    const checkExitLastRecord = await ITEM__GOODS_COLL.findById(lastestID);
-                    if(!checkExitLastRecord)
-                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
-                    
-                    latestRecord = checkExitLastRecord;
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__GOODS_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
                 }
-               
-                const keys = ['createAt__-1', '_id__-1'];
-                const resultPagination = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj });
                 
-                if(resultPagination.eror)
-                    return resolve({ error: true, message: "cant_get_list_vat", status: 400 });
+                let infoDataAfterGet = await ITEM__GOODS_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean(); 
 
-                const listGood = await ITEM__GOODS_COLL.find(resultPagination.data.find)
-                .select('_id name')
-                .sort(resultPagination.data.sort)
-                .limit(limit+1);
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                if (!listGood)
-                    return resolve({ error: true, message: 'cannot_get_data', status: 400  });
-                
-                const totalRecord = await ITEM__GOODS_COLL.count(conditionObj);
                 let nextCursor	= null;
-
-                if(listGood && listGood.length){
-                    if(listGood.length > limit){
-                        nextCursor = listGood[limit - 1]._id;
-                        listGood.length = limit;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
                     }
                 }
 
+                let totalRecord = await ITEM__GOODS_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
-                return resolve({ 
-                    error: false,
-                    data: {
-                        listGood,
-                        nextCursor, 
-                        limit: +limit || 0 ,
-                        totalRecord,
-                        totalPage,
-                    }, 
-                    status: 200
-                });
-            } catch (error) {
-                console.log(`[ITEM][GOOD]getListWithKey ${error.message}`);
-                return resolve({ error: true, message: error.message, status: 400 });
-            }
-        });
-    }
 
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
