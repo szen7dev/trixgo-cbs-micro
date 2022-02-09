@@ -16,7 +16,6 @@ const DOCUMENT__DOC_HANDLER    			= require('./handler/document.doc-handler');
 const DOCUMENT__PACKAGE_HANDLER    		= require('./handler/document.package-handler');
 const DOCUMENT__FILE_HANDLER    		= require('./handler/document.doc_file-handler');
 
-
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DOCUMENT,
 	mixins: [
