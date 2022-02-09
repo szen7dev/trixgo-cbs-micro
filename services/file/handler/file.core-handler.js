@@ -21,26 +21,27 @@ module.exports = {
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
 
-    updateStatus: {
+    update: {
         params: {
             fileID: { type: "string" },
             status: { type: "string", optional: true },
-            userID: { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            description: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fileID, status, userID }        = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                let { fileID, status, description } = ctx.params;
 
-                let infoFileAfterUpdate = await FILE__CORE_MODEL.updateStatus({ fileID, status, userID });
+                let infoFileAfterUpdate = await FILE__CORE_MODEL.update({ fileID, status, description, userID });
                 return infoFileAfterUpdate;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -52,12 +53,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fileID, userID }        = ctx.params;
+                let { fileID, userID } = ctx.params;
 
                 let infoFile = await FILE__CORE_MODEL.getInfoFile({ fileID, userID });
                 return infoFile;
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -70,7 +71,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { status, userID }        = ctx.params;
+                let { status, userID } = ctx.params;
 
                 let listFiles = await FILE__CORE_MODEL.getListFileWithStatus({ status, userID });
                 return listFiles;

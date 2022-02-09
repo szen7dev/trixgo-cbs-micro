@@ -66,17 +66,21 @@ class Model extends BaseModel {
      * 
     // cập nhật trạng thái thành công hoặc thất bại
      * @param {*} fileID
-     * @param {*} status: chỉ có giá trị FILE_PROCESSING là valid 
+     * @param {*} status
+     * @param {*} description
+     * @param {*} userID
      * @returns 
      */
-    updateStatus({ fileID, status, userID }) {
+    update({ fileID, status, description, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let listStatusForUpdateValid = [FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS]; // chỉ có các file_processing -> mới được update
-                 /** 
+                let dataUpdate = { modifyAt: Date.now() };
+
+                /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -84,25 +88,32 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'object_invalid' });
 
-                if (!checkNumberIsValidWithRange({ arrValid: listStatusForUpdateValid, val: status }))
-                    return resolve({ error: true, message: 'status_invalid' });
-
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */    
-                let fileIsProcessing = await FILE__CORE_COLL.findOne({ _id: fileID, status: FILE_PROCESSING });
-                if (!fileIsProcessing)
-                    return resolve({ error: true, message: 'file_not_processing' });
+                 */  
+                const infoFile = await FILE__CORE_COLL.findById(fileID).lean();
 
-                if (fileIsProcessing.userCreate != userID)
-                    return resolve({ error: true, message: 'file_not_auth' });
+                if(status) {
+                    if (!checkNumberIsValidWithRange({ arrValid: listStatusForUpdateValid, val: status }))
+                        return resolve({ error: true, message: 'status_invalid' });
 
-                let infoAfterUpdate = await FILE__CORE_COLL.findByIdAndUpdate(fileID, {
-                    status,
-                    modifyAt: Date.now()
-                }, { new: true })
+                    // let fileIsProcessing = await FILE__CORE_COLL.findOne({ _id: fileID, status: FILE_PROCESSING });
+                    if (infoFile.status === FILE_PROCESSING)
+                        return resolve({ error: true, message: 'file_not_processing' });
+
+                    if (infoFile.userCreate != userID)
+                        return resolve({ error: true, message: 'file_not_auth' });
+
+                    dataUpdate.status = status;
+                }
+                
+                if(description) {
+                    dataUpdate.description = description;
+                }
+
+                let infoAfterUpdate = await FILE__CORE_COLL.findByIdAndUpdate(fileID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: 'cannot_insert' });
 
