@@ -118,6 +118,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             taskID              : { type: "string", optional: true },
+            isMarked            : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
@@ -128,7 +129,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, limit, parentID, lastestID, commentTemplateID, select, populates } = ctx.params;
+                let { taskID, limit, parentID, lastestID, commentTemplateID, isMarked, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
 
                 if(commentTemplateID){
@@ -139,9 +140,37 @@ module.exports = {
                 } else{
                     // Get list
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.getList({
-                        taskID, parentID, limit, lastestID, select, populates
+                        taskID, parentID, limit, lastestID, isMarked, select, populates
                     });
                 }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+     * Name   : Danh sách comment theo filter
+     * Author : MinhVH
+     */
+    searchCommentById: {
+        params: {
+            taskID      : { type: "string" },
+            commentID   : { type: "string" },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                let { taskID, commentID, select, populates } = ctx.params;
+
+                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.searchCommentById({
+                    taskID, authorID, commentID, select, populates
+                });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

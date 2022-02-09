@@ -179,7 +179,7 @@ class Model extends BaseModel {
 							content: content.length > 200 ? content.substring(0, 200) : content,
 							receivers: receiversNoti,
 							path: `/social/post/${mediaID}`,
-							type: 1
+							type: 1 // InApp (Socket)
 						});
 					}
 				}

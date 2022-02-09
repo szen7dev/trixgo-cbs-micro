@@ -64,7 +64,7 @@ class Model extends BaseModel {
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create comment task", status: 403 });
-                
+
                 let infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
                     taskID
                 });
@@ -72,8 +72,8 @@ class Model extends BaseModel {
                 if(infoTask.error)
                     return resolve({ error: true, message: "task_not_exist", status: 403 });
 
-                let { author, related } = infoTask.data;
-                let receivers = [...new Set([author, ...related])];
+                let { author, assignee, related } = infoTask.data;
+                let receivers = [...new Set([author, assignee, ...related])];
                 let contentLog = '';
                 let title = '';
 
@@ -100,13 +100,14 @@ class Model extends BaseModel {
                         break;
                 }
 
+                receivers = receivers.filter(receiverID => receiverID.toString() !== authorID.toString());
                 // Gửi thông báo cho user
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     title,
                     content,
                     receivers,
-                    path: `/pcm/detail/${taskID}`,
-                    type: 1
+                    path: `/pcm/detail/${taskID}#${infoDataAfterInserted._id}`,
+                    type: 1 // InApp (Socket)
                 })
 
                 // Ghi log cho khi comment
@@ -147,7 +148,10 @@ class Model extends BaseModel {
                     })
                     .lean();
 
-                return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
+                return resolve({ error: false, data: {
+                    result: infoDataAfterInserted,
+                    receivers
+                }, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -187,6 +191,7 @@ class Model extends BaseModel {
                     valueCalculate = 1;
                 }
 
+                console.log({ commentID, isMarked, valueCalculate, dataUpdate })
                 await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                     $inc: {
                         amountResponseMarked: valueCalculate
@@ -286,7 +291,7 @@ class Model extends BaseModel {
      * Name   : Danh sách comment ✅
      * Author : Depv
      */
-    getList({ taskID, parentID, limit = 10, lastestID, select, populates }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, isMarked, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -331,6 +336,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
+                }
+
+                if(isMarked === 'true') {
+                    conditionObj.isMarked = true;
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -385,6 +394,99 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name   : Danh sách comment theo filter ✅
+     * Author : MinhVH
+     */
+	searchCommentById({ taskID, authorID, commentID, select, populates = {} }){
+		return new Promise(async resolve => {
+			try {
+				// Check params
+				if(!checkObjectIDs([taskID, commentID, authorID])) {
+                    return resolve({
+                        error: true,
+                        message: 'Tham số task ID hoặc commentID không hợp lệ',
+                        keyError: 'params_taskID_or_commentID_invalid',
+                        status: 400
+                    })
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+				let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskID).lean();
+
+				if(!infoTask) {
+                    return resolve({
+                        error: true,
+                        message: 'Công việc không tồn tại',
+                        keyError: 'cannot_get_info_task',
+                        status: 403
+                    })
+                }
+
+				let conditionObjFrontList 		= { _id: { $lt: commentID }, task: taskID };
+				let conditionObjBackList 		= { _id: { $gt: commentID }, task: taskID };
+				let conditionObjSearchMessage 	= { _id: commentID, task: taskID };
+				let sortBy = {
+					createAt: -1,
+					_id: -1
+				};
+
+				let infoComment = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
+					.findOne(conditionObjSearchMessage)
+                    .select(select)
+                    .populate(populates)
+					.lean();
+
+				if(!infoComment) {
+                    return resolve({
+                        error: true,
+                        message: 'Phản hồi không tồn tại',
+                        keyError: 'cannot_get_info_comment',
+                        status: 403
+                    })
+                }
+
+				let listCommentsFront = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObjFrontList)
+                    .sort(sortBy)
+                    .limit(5)
+                    .select(select)
+                    .populate(populates)
+					.lean();
+
+				let listCommentsBack = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObjBackList)
+                    .sort(sortBy)
+					.limit(5)
+                    .select(select)
+                    .populate(populates)
+					.lean();
+
+				let listComments = [...listCommentsFront.reverse(), infoComment, ...listCommentsBack.reverse()];
+
+				return resolve({
+					error: false,
+					status: 200,
+					data: {
+						listRecords: listComments,
+						totalRecord: listComments.length
+					}
+				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
 }
 
 exports.MODEL = new Model; 
