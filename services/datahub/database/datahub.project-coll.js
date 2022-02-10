@@ -42,7 +42,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_project", {
     //_________Nhóm dự án
     projectType: { type: Number, default: 1 },
     //_________Cấp công trình
-    grade: { type: Number, default: 0 },
+    grade: { type: Number, default: 1 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
