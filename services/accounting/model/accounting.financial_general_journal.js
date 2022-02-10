@@ -459,50 +459,7 @@ class Model extends BaseModel {
         })
     }
 
-    //_________DANH SÁCH TÀI KHOẢN VÀ CON CHÁU CỦA NÓ
-    // Author: HiepNH
-    getListNestedItem({ ctx, accountID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!accountID)
-                    return resolve({ error: true, message:'accountID_invalid' });
-                const { company } = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID}`,{ accountID }); 
-               
-                //__________Lấy levelMax của các phần tử
-                // let levelForRecursive = await _getLevelMaxInRecursive(ACCOUNT_COLL);
-                const levelForRecursive = await _getLevelMaxInRecursiveByCompany(ACCOUNT_COLL , company);
-
-                //__________Khai báo mảng chứa phần tử cha và các con
-                let arrObjectID = [];
-                let getListIDRecursiveForAny = (arr) => {
-                    for(const item of arr){
-                        arrObjectID.push(item._id)
-
-                        if (Array.isArray(item.childs) && item.childs.length) {
-                            getListIDRecursiveForAny(item.childs)
-                        }
-                    }
-                }
-
-                //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
-                let infoItemOrigin = await ACCOUNT_COLL.findById(accountID)
-                    .populate(
-                        _constructForAny(levelForRecursive, 'childs') 
-                    )
-                
-                //__________Gọi hàm đệ quy để lấy mảng nestedArray
-                getListIDRecursiveForAny([infoItemOrigin], levelForRecursive);
-
-                if (!arrObjectID)
-                    return resolve({ error: true, message: 'cannot_get_list' });
-                    
-                return resolve({ error: false, data: arrObjectID });
-            } catch (error) {
-                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListNestedItem]: ${error} `);
-                return resolve({ error: true, message: error.message });
-            }
-        });
-    }  
+   
 
     getInfo({ journalID }) {
         return new Promise(async resolve => {
@@ -543,7 +500,7 @@ class Model extends BaseModel {
     //_________SỐ DƯ ĐẦU KỲ CỦA 1 TÀI KHOẢN (OK)
     // Tính năng sử dụng: Sổ chi tiết tài khoản
     // Author: HiepNH
-    getOpeningBalanceOfCompany({ companyID, fundaID, contractID, accountID, fromDate, arrAccountObjectID }) {
+    getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate, arrAccountObjectID }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -556,8 +513,11 @@ class Model extends BaseModel {
 
                 //_________Get nestedArray of account
                 // let arrObjectID = await that.getListNestedItem({accountID});
-                const arrObjectID =  [ ObjectID("5efc0e3ebf8da144aecfe585") ] //arrAccountObjectID.data.map(item=>ObjectID(item))
-                console.log({arrObjectID})
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+               
+                arrObjectID = arrObjectID.data || []
+                //ACCOUNT_GET_LIST_NESTED
+                // const arrObjectID =  [ ObjectID("5efc0e3ebf8da144aecfe585") ] //arrAccountObjectID.data.map(item=>ObjectID(item))
 
                 let conditionObj1;
                 let conditionObj2;
@@ -941,7 +901,7 @@ class Model extends BaseModel {
                 })
                 const nestedAccount = listNestedAccount.data.map(item => item.toString());
                 const [ openingBalance, listJournals ] = await Promise.all([
-                    this.getOpeningBalanceOfCompany({ fundaID, accountID, fromDate, arrAccountObjectID: listNestedAccount }),
+                    this.getOpeningBalanceOfCompany({ ctx, fundaID, accountID, fromDate, arrAccountObjectID: listNestedAccount }),
                     this.getListJournalOfCompany({ fundaID, accountID, fromDate, toDate, arrAccountObjectID: listNestedAccount })
                 ]);
 

@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany }                        
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -387,6 +387,20 @@ class Model extends BaseModel {
             }
         });
     } 
+
+    getInfoAccount({ accountID }) {
+        return new Promise(async resolve => {
+            try {
+                let infoAccount = await ITEM__ACCOUNT_COLL.findById(accountID)
+
+                if (!infoAccount) return resolve({ error: true, message: 'cannot_get_info_account' });
+
+                return resolve({ error: false, data: infoAccount });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
     
 
