@@ -556,7 +556,9 @@ class Model extends BaseModel {
 
                 //_________Get nestedArray of account
                 // let arrObjectID = await that.getListNestedItem({accountID});
-                const arrObjectID = arrAccountObjectID;
+                const arrObjectID =  [ ObjectID("5efc0e3ebf8da144aecfe585") ] //arrAccountObjectID.data.map(item=>ObjectID(item))
+                console.log({arrObjectID})
+
                 let conditionObj1;
                 let conditionObj2;
                 
@@ -565,13 +567,13 @@ class Model extends BaseModel {
                         conditionObj1 = {
                             company: ObjectID(companyID),
                             debit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                         conditionObj2 = {
                             company: companyID,
                             credit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                     }else{
@@ -579,14 +581,14 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             contract: ObjectID(contractID),
                             debit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                         conditionObj2 = {
                             company: ObjectID(companyID),
                             contract: ObjectID(contractID),
                             credit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                     }
@@ -595,13 +597,13 @@ class Model extends BaseModel {
                         conditionObj1 = {
                             funda: ObjectID(fundaID),
                             debit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                         conditionObj2 = {
                             funda: ObjectID(fundaID),
                             credit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                     }else{
@@ -609,21 +611,21 @@ class Model extends BaseModel {
                             funda: ObjectID(fundaID),
                             contract: ObjectID(contractID),
                             debit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                         conditionObj2 = {
                             funda: ObjectID(fundaID),
                             contract: ObjectID(contractID),
                             credit: {
-                                $in: arrObjectID.data
+                                $in: arrObjectID
                             }
                         }
                     }
                 }
                 //____________Lấy năm của ngày đầu kỳ
                 let year = moment(fromDate).toDate().getFullYear() //!!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm)
-                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
                 //____________Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (31/12/2019-1/1/2020)
                 let listDataS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
                     {
@@ -632,14 +634,30 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
+                                // {
+                                //     $lookup: {
+                                //         from: 'financial_vouchers',
+                                //         localField: 'voucher',
+                                //         foreignField: '_id',
+                                //         as:         'voucher'
+                                //     }
+                                // },
+                                // {
+                                //     $unwind : "$voucher"
+                                // },
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
+                                        amount: 1,
                                     }
                                 },
                                 {
                                     $match: {
                                         "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        "forward": 1,
+                                        "cancel": 0
                                     }
                                 }, 
                                 {
@@ -654,14 +672,30 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj2
                                 }, 
+                                // {
+                                //     $lookup: {
+                                //         from: 'financial_vouchers',
+                                //         localField: 'voucher',
+                                //         foreignField: '_id',
+                                //         as:         'voucher'
+                                //     }
+                                // },
+                                // {
+                                //     $unwind : "$voucher"
+                                // },
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
+                                        amount: 1,
                                     }
                                 },
                                 {
                                     $match: {
                                         "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        "forward": 1,
+                                        "cancel": 0
                                     }
                                 },  
                                 {
@@ -674,7 +708,7 @@ class Model extends BaseModel {
                             
                         }
                     } 
-                ])
+                ]);
 
                 //____________Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển
                 let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.aggregate([
@@ -684,9 +718,22 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
+                                // {
+                                //     $lookup: {
+                                //         from: 'financial_vouchers',
+                                //         localField: 'voucher',
+                                //         foreignField: '_id',
+                                //         as:         'voucher'
+                                //     }
+                                // },
+                                // {
+                                //     $unwind : "$voucher"
+                                // },
                                 {
                                     $match: {
-                                        date: { 
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                                         },
@@ -706,6 +753,8 @@ class Model extends BaseModel {
                                 }, 
                                 {
                                     $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
                                         "date": { 
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
@@ -723,9 +772,9 @@ class Model extends BaseModel {
                         }
                     } 
                 ]);
+                
                 let openingBalanceS = listDataS[0], openingBalance = listData[0]
                 let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0;
-
                 if(openingBalance._debit.length > 0){
                     totalOpeningDebit = openingBalance._debit[0].amountPrice;
                 }
@@ -738,6 +787,7 @@ class Model extends BaseModel {
                 if(openingBalanceS._credit.length > 0){
                     totalOpeningCreditS = openingBalanceS._credit[0].amountPrice;
                 }
+                console.log({ totalOpeningDebit, totalOpeningCredit, totalOpeningDebitS, totalOpeningCreditS })
 
                 return resolve({ error: false, data: (Number(totalOpeningDebit + totalOpeningDebitS - totalOpeningCreditS - totalOpeningCredit)) });
             } catch (error) {
@@ -835,8 +885,7 @@ class Model extends BaseModel {
                             }
                         }
                     ]
-                }).sort({'voucher.date':'asc'});
-
+                }).sort({'date':1});
                 if (!listData) return resolve({ error: true, message: 'cannot_get_list' });
 
                 // let listData1 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData, {
