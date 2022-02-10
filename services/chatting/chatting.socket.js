@@ -482,7 +482,7 @@ exports.CHATTING_SOCKET = {
 						path: 'sender files.file',
 						populate: {
 							path: 'file',
-							select: 'name url size'
+							select: 'name path size'
 						},
 						select: '_id bizfullname fullname image'
 					}
@@ -505,7 +505,7 @@ exports.CHATTING_SOCKET = {
 					path: 'files.file',
 					populate: {
 						path: 'file',
-						select: 'name url size'
+						select: 'name path size'
 					},
 				})
 				.lean();
@@ -640,7 +640,7 @@ exports.CHATTING_SOCKET = {
 					path: 'avatar',
 					populate: {
 						path: 'file',
-						select: 'name nameOrg size url'
+						select: 'name nameOrg size path'
 					},
 				})
 				.lean();
@@ -1232,7 +1232,7 @@ exports.CHATTING_SOCKET = {
 				path: 'files.file',
 				populate: {
 					path: 'file',
-					select: 'name url size'
+					select: 'name path size'
 				},
 			})
 			.lean();
@@ -1334,7 +1334,7 @@ exports.CHATTING_SOCKET = {
 					path: 'sender files.file',
 					populate: {
 						path: 'file',
-						select: 'name url size'
+						select: 'name path size'
 					},
 					select: '_id bizfullname fullname image'
 				}

@@ -29,7 +29,7 @@ class Model extends BaseModel {
      *   lưu ý:
      *      app: là các name constant
      * */
-    insert({ app, nameOrg, name, url, size, type, userID }) {
+    insert({ app, nameOrg, name, path, size, type, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -50,7 +50,7 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let infoAfterInsert = await this.insertData({ app, nameOrg, name, url, size, type, userCreate: userID });
+                let infoAfterInsert = await this.insertData({ app, nameOrg, name, path, size, type, userCreate: userID });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
@@ -172,19 +172,19 @@ class Model extends BaseModel {
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listStatusValid, val: status }) && status != 'all')
                     return resolve({ error: true, message: 'status_invalid' });
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */    
+                 */
 
                 let conditionObj = {
                     userCreate: userID
                 };
-                if (status != 'all')
-                    conditionObj = {
-                        ...conditionObj, status: Number(status)
-                    }
+                if (status != 'all') {
+                    conditionObj.status = Number(status);
+                }
 
                 let listFiles = await FILE__CORE_COLL.find(conditionObj).sort({ createAt: -1 });
                 if (!listFiles)

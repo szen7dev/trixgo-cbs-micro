@@ -1,13 +1,13 @@
 "use strict";
 
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION_V2 }      = require('../../../tools/cursor_base/playground/index');
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_NOTIFICATION } 		= require('../../notification/helper/notification.actions-constant');
-const { CF_ACTIONS_SUBJECT_PCM } 		= require('../../subject_pcm/helper/subject_pcm.actions-constant');
-const { CF_ACTIONS_ANALYSIS } 		    = require('../../analysis/helper/analysis.actions-constant');
-const { PCM_COMMENT_TYPE }              = require('../helper/subject_pcm.keys-constant');
+const BaseModel                                 = require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../../subject_pcm/helper/subject_pcm.actions-constant');
+const { CF_ACTIONS_ANALYSIS } 		            = require('../../analysis/helper/analysis.actions-constant');
+const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -20,7 +20,7 @@ class Model extends BaseModel {
     constructor() {
         super(SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL);
     }
-    
+
     /**
      * Name  : Thêm comment ✅
      * Author: Depv
@@ -100,7 +100,7 @@ class Model extends BaseModel {
                         break;
                 }
 
-                receivers = receivers.filter(receiverID => receiverID.toString() !== authorID.toString());
+                // receivers = receivers.filter(receiverID => receiverID.toString() !== authorID.toString());
                 // Gửi thông báo cho user
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     title,
@@ -139,7 +139,7 @@ class Model extends BaseModel {
                         select: "_id bizfullname fullname image files images content",
                         populate: {
                             path: 'images files',
-                            select: '_id name nameOrg url description createAt userCreate',
+                            select: '_id name nameOrg path description createAt userCreate',
                             populate: {
                                 path: 'userCreate',
                                 select: '_id bizfullname'
@@ -291,7 +291,7 @@ class Model extends BaseModel {
      * Name   : Danh sách comment ✅
      * Author : Depv
      */
-    getList({ taskID, parentID, limit = 10, lastestID, isMarked, select, populates }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, isMarked, sortKey, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -299,7 +299,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {};
                 let keys = ['createAt__-1', '_id__-1'];
-                let sortBy = { createAt: -1 };
+                let sortBy = {};
 
                 /** 
                  * VALIDATION STEP (2)
@@ -312,6 +312,14 @@ class Model extends BaseModel {
                 } else {
                     limit = +limit;
                 }
+
+                if(sortKey && typeof sortKey === 'string'){
+					if(!IsJsonString(sortKey))
+						return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+					sortKey = JSON.parse(sortKey);
+                    keys = sortKey.keys;
+				}
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -380,7 +388,9 @@ class Model extends BaseModel {
                 let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
 
-                infoDataAfterGet = infoDataAfterGet.reverse();
+                if(!sortKey) {
+                    infoDataAfterGet = infoDataAfterGet.reverse();
+                }
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -390,13 +400,14 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
+                console.error(error)
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
 
     /**
-     * Name   : Danh sách comment theo filter ✅
+     * Name   : Danh sách comment tìm kiếm theo id ✅
      * Author : MinhVH
      */
 	searchCommentById({ taskID, authorID, commentID, select, populates = {} }){
@@ -406,7 +417,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([taskID, commentID, authorID])) {
                     return resolve({
                         error: true,
-                        message: 'Tham số task ID hoặc commentID không hợp lệ',
+                        message: 'Tham số task ID hoặc comment ID không hợp lệ',
                         keyError: 'params_taskID_or_commentID_invalid',
                         status: 400
                     })
@@ -438,10 +449,6 @@ class Model extends BaseModel {
 				let conditionObjFrontList 		= { _id: { $lt: commentID }, task: taskID };
 				let conditionObjBackList 		= { _id: { $gt: commentID }, task: taskID };
 				let conditionObjSearchMessage 	= { _id: commentID, task: taskID };
-				let sortBy = {
-					createAt: -1,
-					_id: -1
-				};
 
 				let infoComment = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
 					.findOne(conditionObjSearchMessage)
@@ -459,27 +466,31 @@ class Model extends BaseModel {
                 }
 
 				let listCommentsFront = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObjFrontList)
-                    .sort(sortBy)
                     .limit(5)
+                    .sort({ createAt: -1, _id: -1 })
                     .select(select)
                     .populate(populates)
 					.lean();
 
 				let listCommentsBack = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObjBackList)
-                    .sort(sortBy)
-					.limit(5)
+                    .limit(5)
+                    .sort({ createAt: 1, _id: 1 })
                     .select(select)
                     .populate(populates)
 					.lean();
 
-				let listComments = [...listCommentsFront.reverse(), infoComment, ...listCommentsBack.reverse()];
+				let listComments = [...listCommentsFront.reverse(), infoComment, ...listCommentsBack];
+
+                const totalRecordFront = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjFrontList);
+                const totalRecordBack = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjBackList);
 
 				return resolve({
 					error: false,
 					status: 200,
 					data: {
 						listRecords: listComments,
-						totalRecord: listComments.length
+                        totalRecordFront,
+                        totalRecordBack
 					}
 				});
 			} catch (error) {
@@ -489,4 +500,4 @@ class Model extends BaseModel {
 	}
 }
 
-exports.MODEL = new Model; 
+exports.MODEL = new Model;

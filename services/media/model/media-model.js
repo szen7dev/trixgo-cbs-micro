@@ -419,7 +419,7 @@ class Model extends BaseModel {
 						conditionObj.company = companyID;
 						break;
 					default:
-						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
+						break;
 				}
 
                 let listAfterFind = await this.getListWithCondition({
@@ -491,15 +491,15 @@ class Model extends BaseModel {
 					})
 					.populate({
 						path: 'files',
-						select: '_id name url size type',
+						select: '_id name nameOrg path size type',
 					})
 					.populate({
 						path: 'images',
-						select: '_id name url size type',
+						select: '_id name nameOrg path size type',
 					})
 					.populate({
 						path: 'background',
-						select: '_id name url size type',
+						select: '_id name nameOrg path size type',
 					})
 					.lean();
 
@@ -567,15 +567,15 @@ class Model extends BaseModel {
 					})
 					.populate({
 						path: 'files',
-						select: '_id name url size type',
+						select: '_id name nameOrg path size type',
 					})
 					.populate({
 						path: 'images',
-						select: '_id name url size type',
+						select: '_id name nameOrg path size type',
 					})
 					.populate({
 						path: 'background',
-						select: '_id name url size type',
+						select: '_id name nameOrg path size type',
 					})
 					.populate({
 						path: 'tagFriends',
@@ -774,15 +774,15 @@ class Model extends BaseModel {
 						})
 						.populate({
 							path: 'files',
-							select: '_id name url size type',
+							select: '_id name nameOrg path size type',
 						})
 						.populate({
 							path: 'images',
-							select: '_id name url size type',
+							select: '_id name nameOrg path size type',
 						})
 						.populate({
 							path: 'background',
-							select: '_id name url size type',
+							select: '_id name nameOrg path size type',
 						})
 						.populate({
 							path: 'tagFriends',
@@ -1037,7 +1037,7 @@ class Model extends BaseModel {
 					createAt: -1,
                 }
 
-				if(lastestID && checkObjectIDs(lastestID)){
+				if(lastestID && checkObjectIDs([lastestID])){
                     let infoReaction = await MEDIA_REACTION_COLL.findById(lastestID);
                     if(!infoReaction) {
 						return resolve({ 
@@ -1064,7 +1064,7 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
                 }
 
-				if(mediaID && !checkObjectIDs([mediaID])) {
+				if(mediaID && checkObjectIDs([mediaID])) {
                     conditionObj.media = mediaID;
                     conditionObj.file = { $exists: false };
                     conditionObj.comment = { $exists: false };
