@@ -46,7 +46,6 @@ class Model extends BaseModel {
 	 * Func: Tạo mới văn bản
 	 * Date: 26/10/2021
 	 */
-    // Hiện đang thiếu fiel giá trị, tình trạng hoàn thành
 	insert({
         parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID,
@@ -808,7 +807,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
  	 * Dev: MinhVH
  	 * Func: Cập nhật quyền người được chia sẻ văn bản
@@ -976,14 +975,14 @@ class Model extends BaseModel {
                 if(!filesID || !filesID.length || !checkObjectIDs(filesID))
                     return resolve({ error: true, message: 'Request params filesID invalid', status: 400 });
 
-                let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: authorID,
-                    permission: 1
-                }).lean()
+                // let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
+                //     document: documentID,
+                //     user: authorID,
+                //     permission: 1
+                // }).lean()
 
-                if(!infoAuthorDocument)
-                    return resolve({ error: true, message: "Permission denined", status: 403 });
+                // if(!infoAuthorDocument)
+                //     return resolve({ error: true, message: "Permission denined", status: 403 });
 
                 const listFilesInsert = filesID.map(file => ({
                     document: documentID,

@@ -80,7 +80,7 @@ const CF_ACTIONS_ITEM = {
     FUNDA_GET_INFO_AND_GET_LIST                 : `${BASE_ACTIONS}_${FUNDA}_GET_INFO_AND_GET_LIST`,
 
     /**
-    * GOODS  
+    * GOODS
     */
     GOOD_GET_INFO_AND_GET_LIST                  : `${BASE_ACTIONS}_${GOOD}_GET_INFO_AND_GET_LIST`,
 }
