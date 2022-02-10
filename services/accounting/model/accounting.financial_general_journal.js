@@ -634,22 +634,22 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
+                                // {
+                                //     $lookup: {
+                                //         from: 'financial_vouchers',
+                                //         localField: 'voucher',
+                                //         foreignField: '_id',
+                                //         as:         'voucher'
+                                //     }
+                                // },
+                                // {
+                                //     $unwind : "$voucher"
+                                // },
                                 {
                                     $project : { 
-                                        year : {$year : "$voucher.date"},
-                                        forward: '$voucher.forward',
-                                        cancel: '$voucher.cancel',
+                                        year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
                                         amount: 1,
                                     }
                                 },
@@ -672,22 +672,22 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj2
                                 }, 
-                                {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
+                                // {
+                                //     $lookup: {
+                                //         from: 'financial_vouchers',
+                                //         localField: 'voucher',
+                                //         foreignField: '_id',
+                                //         as:         'voucher'
+                                //     }
+                                // },
+                                // {
+                                //     $unwind : "$voucher"
+                                // },
                                 {
                                     $project : { 
-                                        year : {$year : "$voucher.date"},
-                                        forward: '$voucher.forward',
-                                        cancel: '$voucher.cancel',
+                                        year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
                                         amount: 1,
                                     }
                                 },
@@ -718,22 +718,22 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
+                                // {
+                                //     $lookup: {
+                                //         from: 'financial_vouchers',
+                                //         localField: 'voucher',
+                                //         foreignField: '_id',
+                                //         as:         'voucher'
+                                //     }
+                                // },
+                                // {
+                                //     $unwind : "$voucher"
+                                // },
                                 {
                                     $match: {
-                                        "voucher.forward": 0,
-                                        "voucher.cancel": 0,
-                                        "voucher.date": { 
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                                         },
@@ -752,21 +752,10 @@ class Model extends BaseModel {
                                     $match: conditionObj2
                                 }, 
                                 {
-                                    $lookup: {
-                                        from: 'financial_vouchers',
-                                        localField: 'voucher',
-                                        foreignField: '_id',
-                                        as:         'voucher'
-                                    }
-                                },
-                                {
-                                    $unwind : "$voucher"
-                                },
-                                {
                                     $match: {
-                                        "voucher.forward": 0,
-                                        "voucher.cancel": 0,
-                                        "voucher.date": { 
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
                                             $gte: moment(firstDayOfYear).toDate(),
                                             $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                                         },
