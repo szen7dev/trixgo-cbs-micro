@@ -46,11 +46,11 @@ module.exports = {
                 // Nếu files có thì call service file để thêm
                 if(files){
                     for (const file of files) {
-                        let { name, url, size } = file;
+                        let { name, path, size } = file;
 
                         // Add file core
                         const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-                            app: CF_DOMAIN_SERVICES.FILE, name, url, size
+                            app: CF_DOMAIN_SERVICES.FILE, name, path, size
                         });
 
                         // Inser file vào collection template_doc_comment_file-coll
@@ -95,11 +95,11 @@ module.exports = {
                 // Nếu files có thì call service file để thêm
                 if(files){
                     for (const file of files) {
-                        let { name, url, size } = file;
+                        let { name, path, size } = file;
 
                         // Add file core
                         const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.INSERT_FILE}`, {
-                            app: CF_DOMAIN_SERVICES.FILE, name, url, size
+                            app: CF_DOMAIN_SERVICES.FILE, name, path, size
                         });
 
                         // Inser file vào collection template_doc_comment_file-coll

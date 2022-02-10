@@ -8,8 +8,8 @@ const {
 
 module.exports  = DATABASE_MIDDLEWARE("file", {
     app         : { type: String, require: true },
-    nameOrg     : { type: String, require: true }, //Tên gốc
-    name        : { type: String, require: true }, //uuidv1
+    nameOrg     : { type: String, require: true }, // Tên gốc
+    name        : { type: String, require: true }, // uuidv1
     description : { type: String },
     //_____Trạng thái upload file 
     status: { 
@@ -18,8 +18,8 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
         require: true, 
         default: FILE_PROCESSING
     },
-    //_____Đường dẫn đến file s3
-    url : { type: String, require: true },
+    //_____Đường dẫn đến file s3 (root/test/image.png)
+    path: { type: String, require: true },
     size: { type: Number },
     //_____image/jpeg
     type: { type: String },

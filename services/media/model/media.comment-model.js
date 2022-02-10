@@ -2,7 +2,6 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 
-
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.actions-constant');
 
@@ -93,10 +92,10 @@ class Model extends BaseModel {
                         select: '_id fullname image content files images amountCommentReply amountReaction createAt',
                         populate: {
                             path: 'files images comment userCreate lastestReplyID',
-                            select: '_id name url size type fullname image content files images amountCommentReply amountReaction',
+                            select: '_id name nameOrg path size type fullname image content files images amountCommentReply amountReaction',
                             populate: {
                                 path: 'files images',
-                                select: '_id name url size type'
+                                select: '_id name nameOrg path size type'
                             }
                         }
                     })
@@ -129,7 +128,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Not found info comment', status: 403 });
 
                 if(infoComment.parent){
-                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
+                    await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_UPDATE}`, {
                         commentID: `${infoComment?.parent?.comment}`,
                         amountCommentReply: -1
                     })
@@ -142,7 +141,7 @@ class Model extends BaseModel {
 				}
 
                 // Cập nhật số lượng comment
-                await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+                await MEDIA_COLL.findByIdAndUpdate(infoComment.media, {
                     $inc: {
                         amountComment: -1
                     }
@@ -213,13 +212,17 @@ class Model extends BaseModel {
 					createAt: -1,
 					_id: -1,
 				};
-				let objSort  = {};
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(isNaN(limit) || limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
 
                 if(checkObjectIDs(mediaID)){
                     conditionObj.media = mediaID;
@@ -231,7 +234,6 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false };
                 }
 
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -243,14 +245,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-                
-                // PHÂN TRANG KIỂU MỚI
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await MEDIA__COMMENT_COLL.findById(lastestID);
 					if(!infoData)
@@ -267,7 +262,7 @@ class Model extends BaseModel {
 				}
 
                 let infoDataAfterGet = await MEDIA__COMMENT_COLL.find({...conditionObj, ...conditionFind })
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)

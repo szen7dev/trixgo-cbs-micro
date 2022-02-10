@@ -140,7 +140,7 @@ class Model extends BaseModel {
                     .findById(infoAfterAction._id)
                     .populate({
                         path: 'files images author',
-                        select: '_id name url size type fullname image',
+                        select: '_id name path size type fullname image',
                     })
                     .lean();
 
