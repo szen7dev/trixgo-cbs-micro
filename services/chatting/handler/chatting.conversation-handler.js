@@ -331,15 +331,16 @@ module.exports = {
             conversationID	: { type: "string" },
 			lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
+			limit 		    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, lastestID, keyword, filter, select } = ctx.params;
+                let { conversationID, lastestID, keyword, limit, filter, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMessagesConversationWithPage({ 
-					conversationID, lastestID, userID, keyword, filter, select
+					conversationID, lastestID, userID, keyword, limit, filter, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

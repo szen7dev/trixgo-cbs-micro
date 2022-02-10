@@ -45,6 +45,7 @@ module.exports = {
             receiverID          : { type: "string", optional: true },
             fieldID             : { type: "string", optional: true },
             propertyID          : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
             otherID             : { type: "string", optional: true },
             storageID           : { type: "string", optional: true },
             departmentID        : { type: "string",                },
@@ -58,13 +59,13 @@ module.exports = {
                 const {
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus
+                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus, ctx
+                    fieldID, propertyID, otherID, storageID, note, departmentID, userID, value, completeStatus,contractID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -106,6 +107,7 @@ module.exports = {
             storageID           : { type: "string", optional: true },
             value               : { type: "number", optional: true },
             completeStatus      : { type: "number", optional: true },
+            contractID          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -114,13 +116,13 @@ module.exports = {
                 const {
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, value, completeStatus
+                    fieldID, propertyID, otherID, storageID, note, value, completeStatus, contractID
                 } = ctx.params;
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.update({
                     documentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, ctx
+                    fieldID, propertyID, otherID, storageID, note, userID: userUpdate, value, completeStatus, contractID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });   

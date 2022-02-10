@@ -2,6 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse } 			= require('../../../tools/utils/status_code')
+const { validateDomainAndPlatform }             = require('../helper/auth.keys-constant')
 
 /**
  * MODEL
@@ -44,12 +45,26 @@ module.exports = {
             email           : { type: "string" },
             password        : { type: "string" },
             platform        : { type: "string" },
+            domain          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { email, password, platform } = ctx.params;
+                let { email, password, platform, domain } = ctx.params;
 
+                /**
+                 * validate code platform-domain
+                 */
+                let isValidatePlatform = validateDomainAndPlatform.find(item => item.platform == platform && item.domain == domain);
+                if (!isValidatePlatform) {
+                    return {
+                        error: true,
+                        data: {
+                            message: 'platform_login_invalid',
+                            keyError: 'platform_login_invalid'
+                        }
+                    }
+                }
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
 

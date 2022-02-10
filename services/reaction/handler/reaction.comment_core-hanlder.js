@@ -1,12 +1,12 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }  = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }   = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const REACTION__COMMENT_MODEL      = require('../model/reaction.comment_core-model').MODEL;
+const REACTION__COMMENT_MODEL           = require('../model/reaction.comment_core-model').MODEL;
 
 module.exports = {
     /**

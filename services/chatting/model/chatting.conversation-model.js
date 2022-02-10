@@ -798,7 +798,7 @@ class Model extends BaseModel {
 							select: '_id fullname bizfullname email image name options status content',
 							populate: {
 								path: 'options.usersVote file',
-								select: '_id bizfullname fullname image name nameOrg url size'
+								select: '_id bizfullname fullname image name nameOrg path size'
 							},
 						},
 						select: select.messagesPin
@@ -842,7 +842,7 @@ class Model extends BaseModel {
 						select: '_id fullname username bizfullname image',
 						populate: {
 							path: 'file',
-							select: 'url'
+							select: 'path'
 						}
 					})
 					.lean();
@@ -859,7 +859,7 @@ class Model extends BaseModel {
 					.select('_id name description authors members avatar')
 					.populate({
 						path: 'avatar authors members',
-						select: '_id fullname username bizfullname image url',
+						select: '_id fullname username bizfullname image path',
 					})
 					.lean();
 
@@ -876,7 +876,7 @@ class Model extends BaseModel {
 								description: conversationOfMember.description,
 								members: conversationOfMember.members.slice(0,4),
 								infoOwner: conversationOfMember.authors && conversationOfMember.authors[0],
-								avatar: conversationOfMember.avatar && conversationOfMember.avatar.url
+								avatar: conversationOfMember.avatar && conversationOfMember.avatar.path
 							};
 
 						}
@@ -949,7 +949,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
-				if(isNaN(limit)) {
+				if(isNaN(limit) || +limit > 20) {
 					limit = 15;
 				} else{
 					limit = +limit;
@@ -1040,7 +1040,7 @@ class Model extends BaseModel {
 							path: 'sender files.file',
 							populate: {
 								path: 'file',
-								select: 'name nameOrg url size'
+								select: 'name nameOrg path size'
 							},
 							select: `_id bizfullname fullname image ${select.files}`
 						}
@@ -1058,7 +1058,7 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name nameOrg url size'
+							select: 'name nameOrg path size'
 						},
 						select: select.files
 					})
@@ -1102,6 +1102,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
 	 * Date: 23/08/2021
+	 * Updated: 10/02/2022
 	 */
 	searchMessageConversationById({ conversationID, userID, messageID, filter = {}, select = {} }){
 		return new Promise(async resolve => {
@@ -1136,11 +1137,6 @@ class Model extends BaseModel {
 				let conditionObjFrontList 		= { _id: { $lt: messageID }, conversation: conversationID };
 				let conditionObjBackList 		= { _id: { $gt: messageID }, conversation: conversationID };
 				let conditionObjSearchMessage 	= { _id: { $in: [messageID] }, conversation: conversationID };
-				let _sort = {
-					modifyAt: -1,
-					createAt: -1,
-					updateAt: -1
-				};
 
 				// CHECK USER DELETE HISTORY
 				if(checkExistConversation.usersDeleteHistory && checkExistConversation.usersDeleteHistory.length){
@@ -1165,7 +1161,7 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name nameOrg url size'
+							select: 'name nameOrg path size'
 						},
 						select: select.files
 					})
@@ -1174,7 +1170,10 @@ class Model extends BaseModel {
 				if(!infoMessage)
 					return resolve({ error: true, message: "Can't get info message", status: 400 });
 
+
 				let listMessagesFront = await CHATTING__MESSAGE_COLL.find(conditionObjFrontList, filter)
+					.limit(5)
+					.sort({ _id: -1, createAt: -1 })
 					.populate('sender', select.sender)
 					.populate('usersSeen', select.usersSeen)
 					.populate('receivers', select.receivers)
@@ -1186,15 +1185,15 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name nameOrg url size'
+							select: 'name nameOrg path size'
 						},
 						select: select.files
 					})
-					.sort(_sort)
-					.limit(5)
 					.lean();
 
 				let listMessagesBack = await CHATTING__MESSAGE_COLL.find(conditionObjBackList, filter)
+					.limit(5)
+					.sort({ _id: 1, createAt: 1 })
 					.populate('sender', select.sender)
 					.populate('usersSeen', select.usersSeen)
 					.populate('receivers', select.receivers)
@@ -1206,22 +1205,24 @@ class Model extends BaseModel {
 						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name nameOrg url size'
+							select: 'name nameOrg path size'
 						},
 						select: select.files
 					})
-					.sort(_sort)
-					.limit(5)
 					.lean();
 
-				let listMessages = [...listMessagesFront.reverse(), infoMessage, ...listMessagesBack.reverse()];
+				let listMessages = [...listMessagesFront.reverse(), infoMessage, ...listMessagesBack];
+
+				const totalRecordFront = await CHATTING__MESSAGE_COLL.countDocuments(conditionObjFrontList);
+                const totalRecordBack = await CHATTING__MESSAGE_COLL.countDocuments(conditionObjBackList);
 
 				return resolve({
 					error: false,
 					status: 200,
 					data: {
 						listRecords: listMessages,
-						totalRecord: listMessages.length
+						totalRecordFront,
+                        totalRecordBack
 					}
 				});
 			} catch (error) {
@@ -1390,7 +1391,7 @@ class Model extends BaseModel {
 									select: '_id file',
 									populate: {
 										path: 'file',
-										select: '_id name nameOrg url size'
+										select: '_id name nameOrg path size'
 									}
 								})
 								.lean());
@@ -1936,7 +1937,7 @@ class Model extends BaseModel {
 								path: 'avatar',
 								populate: {
 									path: 'file',
-									select: 'name nameOrg size url'
+									select: 'name nameOrg size path'
 								},
 								select: select.avatar
 							})
@@ -1970,7 +1971,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'name nameOrg size url'
+							select: 'name nameOrg size path'
 						},
 						select: select.avatar
 					})
@@ -2115,7 +2116,7 @@ class Model extends BaseModel {
 						path: 'avatar',
 						populate: {
 							path: 'file',
-							select: 'name nameOrg size url'
+							select: 'name nameOrg size path'
 						},
 						select: select.avatar
 					})
@@ -2202,7 +2203,7 @@ class Model extends BaseModel {
 							path: 'userCreate',
 							select: '_id fullname image',
 						},
-						select: '_id name nameOrg url type',
+						select: '_id name nameOrg path type',
 					})
 					.limit(limit + 1)
 					.sort(sortBy)

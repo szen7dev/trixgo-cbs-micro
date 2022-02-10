@@ -125,11 +125,12 @@ module.exports = {
             commentTemplateID   : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
+            sortKey             : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, limit, parentID, lastestID, commentTemplateID, isMarked, select, populates } = ctx.params;
+                let { taskID, limit, parentID, lastestID, commentTemplateID, isMarked, sortKey, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
 
                 if(commentTemplateID){
@@ -140,7 +141,7 @@ module.exports = {
                 } else{
                     // Get list
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.getList({
-                        taskID, parentID, limit, lastestID, isMarked, select, populates
+                        taskID, parentID, limit, lastestID, isMarked, sortKey, select, populates
                     });
                 }
 
@@ -152,7 +153,7 @@ module.exports = {
     },
 
     /**
-     * Name   : Danh sách comment theo filter
+     * Name   : Danh sách comment tìm kiếm theo id
      * Author : MinhVH
      */
     searchCommentById: {

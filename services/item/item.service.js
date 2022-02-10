@@ -69,7 +69,7 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
-		//==========================================  CONTRACT  ================================
+		//==========================================  CONTRACT  ==================================
 		[CF_ACTIONS_ITEM.CONTRACT_INSERT] 						: ITEM__CONTRACT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTRACT_REMOVE] 						: ITEM__CONTRACT_HANDLER.remove,
@@ -81,27 +81,27 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
 	
-		//==========================================  DOCTYPE  ==================================
+		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
 
-		//==========================================  CONTACT  ==================================
+		//==========================================  CONTACT  ===================================
 		[CF_ACTIONS_ITEM.CONTACT_INSERT] 						: ITEM__CONTACT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.CONTACT_UPDATE] 						: ITEM__CONTACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
 		
-		//==========================================  WAREHOUSE  ================================
+		//==========================================  WAREHOUSE  =================================
 		[CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST] 		: ITEM__WAREHOUSE_HANDLER.getInfoAndGetList,
 
-		//==========================================  AREA  ================================
+		//==========================================  AREA  ======================================
 		[CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST] 		    : ITEM__AREA_HANDLER.getInfoAndGetList,
 
-		//==========================================  POSITION  ================================
+		//==========================================  POSITION  ==================================
 		[CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST] 		: ITEM__POSITION_HANDLER.getInfoAndGetList,
 
-		//==========================================  STORAGE  ================================
+		//==========================================  STORAGE  ===================================
 		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
 		
-		//==========================================  ACCOUNT  ================================
+		//==========================================  ACCOUNT  ===================================
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST] 		: ITEM__ACCOUNT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME] 			: ITEM__ACCOUNT_HANDLER.getInfoAccountWithName,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID] 				: ITEM__ACCOUNT_HANDLER.getInfoAccount,
@@ -112,7 +112,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER] 		: ITEM__FUNDA_HANDLER.getListByUserCompany,
 		[CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST] 			: ITEM__FUNDA_HANDLER.getInfoAndGetList,
 
-		//==========================================  GOOD  ================================
+		//==========================================  GOOD  ======================================
 		[CF_ACTIONS_ITEM.GOOD_GET_INFO_AND_GET_LIST] 			: ITEM__GOOD_HANDLER.getInfoAndGetList,
 	},
 
