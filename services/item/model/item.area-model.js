@@ -78,6 +78,7 @@ class Model extends BaseModel {
             }
         })
     }
+    
     /**
      * Name  : Danh sách area ✅
      * Author: Depv
