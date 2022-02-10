@@ -8,3 +8,17 @@ exports.LEVEL_USER_EMPLOYEE = 1;
 exports.STATUS_ACTIVE       = 1;
 exports.STATUS_INACTIVE     = -1;
 exports.STATUS_BLOCK        = 0;
+
+/**
+ * Danh sách mapping DOMAIN - PLATFORM
+ */
+exports.validateDomainAndPlatform = [
+    {
+        domain: "https://staging.cbs.trixgo.com",
+        platform: 1
+    },
+    {
+        domain: "https://staging.wdx.trixgo.com",
+        platform: 2
+    },
+];
