@@ -229,7 +229,10 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'platform_invalid' });
 
                 let isExist = await AUTH__USER_COLL
-                    .findOne({ email: emailValid })
+                    .findOne({ 
+                        email: emailValid,
+                        platform: +platform
+                    })
                     .populate({
                         path: 'company',
                         select: '_id name sign image'

@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         ref: "department"
     },
     /**
-     * PHÂN QUYỀN TRUY CẬP
+     * PHÂN QUYỀN TRUY CẬP 
      */
     admins: [{
         type: Schema.Types.ObjectId,
@@ -468,7 +468,6 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         ref : 'comment'
     },
     
-
     /**
     * THÔNG TIN KHÁC
     */

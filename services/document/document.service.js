@@ -31,7 +31,6 @@ module.exports = {
 	* Service metadata
 	*/
 	metadata: {
-
 	},
 
 	/**
