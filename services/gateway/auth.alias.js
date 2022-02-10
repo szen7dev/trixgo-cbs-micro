@@ -496,7 +496,7 @@ module.exports = {
 		
 		/**
 		 * Contact
-		 */
+		*/
 		[`GET ${CF_ROUTINGS_ITEM.CONTACTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST}`],
 
@@ -508,26 +508,26 @@ module.exports = {
 
 		/**
 		 * Warehouse
-		 */
+		*/
 		[`GET ${CF_ROUTINGS_ITEM.WAREHOUSES}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST}`],
 
 
 		/**
 		 * Area
-		 */
+		*/
 		[`GET ${CF_ROUTINGS_ITEM.AREA}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`],
 
 		/**
 		 * Position
-		 */
+		*/
 		[`GET ${CF_ROUTINGS_ITEM.POSITION}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST}`],
 
 		/**
 		 * Storage
-		 */
+		*/
 		[`GET ${CF_ROUTINGS_ITEM.STORAGE}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST}`],
 	

@@ -135,5 +135,22 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    }
+    },
+    /**
+     * KẾT CHUYỂN CUỐI KỲ (31/12)/PHIẾU HỦY
+     */ 
+    //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
+    forward: { type: Number, default: 0 },
+    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
+    forwardIs: { type: Number, default: 0 },
+    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
+    returning: { type: Number, default: 0 },
+     /**
+     * Phân biệt phiếu tạm ứng hay thanh toán
+     * 0-Thanh toán
+     * 1-Tạm ứng
+     */
+    advancePayment: { type: Number, default: 0 },
+    //_________Phiếu có hủy hay không
+    cancel: { type: Number, default: 0 },
 })

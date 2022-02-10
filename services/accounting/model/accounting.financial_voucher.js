@@ -1484,6 +1484,7 @@ class AccountingFinancialVoucher extends BaseModel {
             }
         })
     }
+
 }
 
 exports.MODEL = new AccountingFinancialVoucher;
