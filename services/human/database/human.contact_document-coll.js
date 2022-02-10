@@ -72,11 +72,13 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    // Thuộc hợp đồng
+    //_________Thuộc hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
+    //_________Có phải là nơi làm việc hiện tại không (1-Không/2-Có)
+    currentStatus: { type: Number, default: 1 },
     /**
      * BẰNG CẤP CHỨNG CHỈ
      */
