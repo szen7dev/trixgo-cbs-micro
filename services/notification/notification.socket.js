@@ -13,7 +13,6 @@ const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 /**
  * COLLECTIONS
  */
-const NOTIFICATION_COLL 				        = require('./database/notification.log-coll');
 
 /**
  * MODELS
@@ -22,7 +21,7 @@ const NOTIFICATION_COLL 				        = require('./database/notification.log-coll'
 
 exports.NOTIFICATION_SOCKET = {
  
-    [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_CSS_ADD_MEDIA]: async function(data) { 
+    [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_CSS_RECEIVE_NEW_NOTIFICATION]: async function(data) { 
         let socket                      = this;
 		let broker						= socket.$service.broker;
         let listUserActive              = socket.$service.listUserConnected;
@@ -35,7 +34,7 @@ exports.NOTIFICATION_SOCKET = {
 				listUserConnected: listUserActive, 
 				arrReceiver: [userID],
 				data: { error: true, message: "Can't get receivers notification" }, 
-				event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
+				event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_RECEIVE_NEW_NOTIFICATION], io
 			});
 		}
 
@@ -49,7 +48,7 @@ exports.NOTIFICATION_SOCKET = {
 				listUserConnected: listUserActive, 
 				arrReceiver: [userID],
 				data: listReceivers, 
-				event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
+				event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_RECEIVE_NEW_NOTIFICATION], io
 			});
 		}
 
@@ -61,7 +60,7 @@ exports.NOTIFICATION_SOCKET = {
 			data: {
 				error: false,
 				message: 'You get a new notification'
-			}, event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_ADD_MEDIA], io
+			}, event: [EVENT_SOCKET_CONSTANT_NOTIFICATION.NOTIFICATION_SSC_RECEIVE_NEW_NOTIFICATION], io
 		});
 	},
 

@@ -615,6 +615,7 @@ exports.CHATTING_SOCKET = {
 		let io                          = socket.$service.io;
 		let userID                      = socket.client.user;
 		let { conversationsID, messagesID } = data;
+		let listConversationShare = [];
 
 		if(!conversationsID || !conversationsID.length || !messagesID || !messagesID.length){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -625,8 +626,25 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		conversationsID.map(async conversationID => {
-			const infoConversation 	 = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		for (const conversationID of conversationsID) {
+			const infoConversation = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.populate({
+					path: 'lastMessage',
+					populate: {
+						path: 'sender',
+						select: '_id fullname bizfullname image email phone',
+					},
+				})
+				.populate({
+					path: 'avatar',
+					populate: {
+						path: 'file',
+						select: 'name nameOrg size url'
+					},
+				})
+				.lean();
+
 			const listMessagesShared = await CHATTING__MESSAGE_COLL
 				.find({
 					_id: { $in: messagesID }
@@ -641,13 +659,18 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 
-			const { members } = infoConversation;
+			listConversationShare[listConversationShare.length] = {
+				infoConversation,
+				listMessagesShared
+			}
+		}
 
-			const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
+		listConversationShare.map(item => {
+			const { infoConversation, listMessagesShared } = item;
 
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
-				arrReceiver,
+				arrReceiver: infoConversation.members,
 				data: {
 					error: false,
 					data: {
@@ -1098,10 +1121,11 @@ exports.CHATTING_SOCKET = {
         let io                   					= socket.$service.io;
 		let { conversationID, messageID, userID }	= data;
 
-		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID).select('members');
 		const infoMessage 		= await CHATTING__MESSAGE_COLL
 			.findById(messageID)
-			.populate('reminder');
+			.populate('reminder')
+			.lean();
 
 		if(!infoConversation || !infoMessage){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -1129,9 +1153,7 @@ exports.CHATTING_SOCKET = {
 
 		// Lọc user không phải member của conversation
 		const listMembersIDConversation = members.map(memberID => memberID.toString());
-		const arrReceiver = accepts.filter(memberID => {
-			return listMembersIDConversation.includes(memberID.toString())
-		});
+		const arrReceiver = accepts.filter(memberID => listMembersIDConversation.includes(memberID.toString()));
 
         sendDataToMultilSocketsOfListUser({ 
 			io,

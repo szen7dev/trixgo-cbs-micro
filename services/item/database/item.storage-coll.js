@@ -12,6 +12,11 @@ module.exports  = DATABASE_MIDDLEWARE("storage", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Thuộc về dự án, phòng ban nào (option)
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,

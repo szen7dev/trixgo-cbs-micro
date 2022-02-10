@@ -34,6 +34,26 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     //_________Người tham chiếu
     reference: String,
     /**
+     * Nơi làm việc hiện tại
+     * - Thuộc mục kê khai Kinh nghiệm thực tế tham gia tại các Dự án
+     * - Phân ra làm 3 object để phục vụ việc query gom nhóm cho tiện
+     */
+    //_________Tỉnh/Thành phố
+    currentArea1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện/Quận
+    currentArea2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã/Phường
+    currentArea3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    /**
      * Lĩnh vực chuyên môn
      * Chuyên ngành đào tạo
      */

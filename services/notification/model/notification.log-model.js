@@ -163,7 +163,6 @@ class Model extends BaseModel {
     getList({ authorID, lastestID, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
-
 				if(!checkObjectIDs(authorID)) {
 					return resolve({
                         error: true,
@@ -173,15 +172,11 @@ class Model extends BaseModel {
                     });
                 }
 
-				if(isNaN(limit)) {
-					limit = 15;
+				if(isNaN(limit) || limit > 20) {
+					limit = 20;
 				} else{
 					limit = +limit;
 				}
-
-                if(limit > 20){
-					limit = 20;
-                }
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -227,7 +222,7 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.title = regSearch
+                    conditionObj.title = regSearch;
                 }
 
 				let listNotifications = await NOTIFICATION__LOG_COLL.find(conditionObj)

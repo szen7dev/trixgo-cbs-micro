@@ -19,7 +19,7 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const stringUtils									= require('../../../tools/utils/string_utils');
 const timeUtils									    = require('../../../tools/utils/time_utils');
-const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
 const {
     checkObjectIDs,
@@ -159,44 +159,24 @@ class Model extends BaseModel {
                     modifyAt: timeUtils.getCurrentTime()
                 });
 
-                // Cộng số lượng hồ sơ trong gói thầu
-                if(packageID && checkObjectIDs(packageID)){
-                    await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
-                        $inc: {
-                            numberOfDocs: 1
-                        }
-                    });
-                }
-                // Cập nhật số lượng document cho dự án
-                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
-                    departmentID, numberOfDocs: 1
-                })
- 
-                // Không đi theo hướng childs nữa
-                // if(parentID) {
-                //     await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, {
-                //         $addToSet: { childs: infoAfterInsert._id }
-                //     });
-                // }
-                // Không
-                // Update document for contract
-                // if(type && !isNaN(type) && +type === 2){
-                //     let infoPackage = await DOCUMENT__PACKAGE_COLL
-                //         .findById(packageID)
-                //         .select('_id contract');
-                    
-                //     if(infoPackage){
-                //         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.UPDATE_CONTRACT_BY_CONDITION}`, {
-                //             condition: { _id: infoPackage.contract },
-                //             update: {
-                //                 $addToSet: {
-                //                     documents: infoAfterInsert._id
-                //                 }
-                //             }
-                //         });
-                //     }
-                // }
+             
 
+                // Chỉ cập nhật numberOfDocs khi tạo văn bản cha
+                if(!parentID){
+                    // Cập nhật số lượng document cho dự án
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID, numberOfDocs: 1
+                    })
+                    
+                    // Cập nhật số lượng document cho gói thầu
+                    if(packageID && checkObjectIDs(packageID)){
+                        await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, {
+                            $inc: {
+                                numberOfDocs: 1
+                            }
+                        });
+                    }
+                }
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
@@ -493,26 +473,25 @@ class Model extends BaseModel {
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
                
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(limit > 20){
+                    limit = 20;
+                }
 				
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -524,15 +503,17 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                
-                // TRẠNG THÁI CÔNG VIỆC
-                //____________Công ty
+                // User phải nằm trong member của gói thầu.
+                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
+                if(listPackageAccess.length){
+                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                }
+
                 if(companyID){
                     conditionObj.company = companyID
                 }
@@ -593,23 +574,7 @@ class Model extends BaseModel {
                     conditionObj.usersMarked = { $in: [userID] }
                 }
 
-                // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-                
-				if(keyword){
+                if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
@@ -618,7 +583,24 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-                let infoDataAfterGet = await DOCUMENT__DOC_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+                
+                let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -636,7 +618,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await DOCUMENT__DOC_COLL.countDocuments(conditionObj);
+                let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
@@ -692,8 +674,14 @@ class Model extends BaseModel {
                 let listDoctype = [];
                 companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
+
+                // User phải nằm trong members của gói thầu.
+                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
+                if(listPackageAccess.length){
+                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                }
+
                 packageID       && (conditionObj.package = ObjectID(packageID));
-                
                 let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -708,14 +696,14 @@ class Model extends BaseModel {
                         $sort: { _id: 1 }
                     }
                 ])
-
+                
                 let	listDoctypeGroupByWeek = await DOCUMENT__DOC_COLL.aggregate([
                     {
                         $match: {
                             ...conditionObj,
                             createAt: {
-                                $gte: ISOdate(moment().startOf('week').format()),
-                                $lte: ISOdate(moment().endOf('week').format()),
+                                $gte: ISOdate(moment().startOf('month').format()),
+                                $lte: ISOdate(moment().endOf('month').format()),
                             }
                         }
                     },
@@ -912,30 +900,29 @@ class Model extends BaseModel {
                     select = JSON.parse(select);
                 }
 
-                let conditionFind = {};
                 let conditionObj  = { document: documentID };
-                let sortBy = {
-                    modifyAt: -1,
-                    createAt: -1,
-                }
+                let sortBy;
+                let keys	 = ['modifyAt__-1', '_id__-1'];  
 
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoUserShared = await DOCUMENT__USER_COLL.findById(lastestID);
-                    if(!infoUserShared)
-                        return resolve({ error: true, message: "Can't get info last user shared", status: 403 });
 
-                    let nextInfo = `${infoUserShared.modifyAt}_${infoUserShared._id}`;
-                    let keys	 = ['modifyAt__-1', '_id__-1'];  
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionFind = dataPagingAndSort.data.find;
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
                 }
 
                 let	listUserShared = await DOCUMENT__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, filter)
+                    .find(conditionObj)
                     .populate('document', select.document)
                     .populate('user', select.user)
                     .limit(limit + 1)
@@ -946,7 +933,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get list user shared", status: 400 });
 
                 // GET TOTAL RECORD
-                let totalRecord = await DOCUMENT__USER_COLL.countDocuments(conditionObj);
+                let totalRecord = await DOCUMENT__USER_COLL.count(conditionObjOrg);
                 let nextCursor	= null;
 
                 if(listUserShared && listUserShared.length){

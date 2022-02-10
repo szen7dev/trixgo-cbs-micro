@@ -102,16 +102,13 @@ module.exports = {
 		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
 		
 		//==========================================  ACCOUNT  ================================
-		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME] 			: ITEM__ACCOUNT_HANDLER.getInfoAccountWithName,
-		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID] 				: ITEM__ACCOUNT_HANDLER.getInfoAccount,
-		[CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED] 				: ITEM__ACCOUNT_HANDLER.getListNestedItem,
-		[CF_ACTIONS_ITEM.ACCOUNT_SEARCH_WITH_KEY] 				: ITEM__ACCOUNT_HANDLER.getListWithKey,
+		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST] 		: ITEM__ACCOUNT_HANDLER.getInfoAndGetList,
 		
 		//==========================================  FUNDA  ================================
-		[CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER] 		: ITEM__FUNDA_HANDLER.getListByUserCompany,
+		[CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST] 		: ITEM__FUNDA_HANDLER.getInfoAndGetList,
 
 		//==========================================  GOOD  ================================
-		[CF_ACTIONS_ITEM.GOOD_SEARCH_WITH_KEY] 					: ITEM__GOOD_HANDLER.getListWithKey,
+		[CF_ACTIONS_ITEM.GOOD_GET_INFO_AND_GET_LIST] 			: ITEM__GOOD_HANDLER.getInfoAndGetList,
 	},
 
 	/**

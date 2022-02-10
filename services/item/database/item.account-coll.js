@@ -69,7 +69,4 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
-}, {
-    isRecursive: true,
-    paths: ['childs']
 })

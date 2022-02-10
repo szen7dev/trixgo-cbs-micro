@@ -42,7 +42,7 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
     slogan: String,
     //_________Mô tả
     description: String,
-    //_________Giới thiệu về công ty (xem xét bỏ => Datahub)
+    //_________Giới thiệu về công ty (xem xét bỏ => Datahub) 
     intro: String,
     //_________Website
     website: String,
