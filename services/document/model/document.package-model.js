@@ -3,6 +3,8 @@
 /**
  * EXTERNAL PACKAGE
  */
+const stringUtils						 = require('../../../tools/utils/string_utils');
+const ObjectID                           = require('mongoose').Types.ObjectId;
 
 /**
  * CONSTANTS
@@ -27,6 +29,89 @@ class Model extends BaseModel {
 
     constructor() {
         super(DOCUMENT__PACKAGE_COLL);
+    }
+
+    /**
+	 * Name: insert document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+    insert({ name, sign, contractID, authorID, projectID, companyID, parentID }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Kiểm tra tính hợp lệ của tham biến
+                 * 2. Tạo gói thầu trong dự án
+                 * 3. Cập nhật thông dự án
+                 */
+                if (!name|| !checkObjectIDs(authorID, companyID, projectID))
+                    return resolve({ error: true, message: 'params_invalid' });
+
+                //__________Khai báo dữ liệu
+                let suid = await stringUtils.randomAndCheckExists( DOCUMENT__PACKAGE_COLL, 'suid');
+                let dataInsert = {
+                    suid,
+                    author: authorID, 
+                    company: companyID, 
+                    project: projectID,
+                    name,
+                    sign,
+                    members: [ObjectID(authorID)]
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    dataInsert.contract = contractID;
+                }
+
+                //__________Kiểm tra xem có parent hay không
+                if(parentID && checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                    let infoParent = await DOCUMENT__PACKAGE_COLL.findById(parentID);
+                    dataInsert.level = infoParent.level + 1;
+                }
+                console.log({ dataInsert });
+                //__________Tạo gói thầu
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if (!infoAfterInsert) 
+                    return resolve({ error: true, message: 'cannot_insert' });
+                
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+      /**
+	 * Name: update document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+    update({ name, membersAddID, membersRemoveID }) {
+        return new Promise(async resolve => {
+            try {
+                
+                let dataUpdate = {};
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(membersAddID.length){
+                    dataUpdate
+                }
+
+
+             
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if (!infoAfterInsert) 
+                    return resolve({ error: true, message: 'cannot_insert' });
+                
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 
 	/**

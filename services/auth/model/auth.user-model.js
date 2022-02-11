@@ -227,7 +227,7 @@ class Model extends BaseModel {
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
                     return resolve({ error: true, message: 'platform_invalid' });
-
+                
                 let isExist = await AUTH__USER_COLL
                     .findOne({ 
                         email: emailValid,

@@ -98,8 +98,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * Phân loại chủ đề
      * 1-Công việc
      * 2-Checklist
-     * 3-Bài viết
-     * 4...
      */
     type: { type: Number, default: 1 },
     /**

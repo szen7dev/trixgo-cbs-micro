@@ -59,6 +59,7 @@ class BaseModel {
             data.createAt = timeUtils.getCurrentTime();
 
             (new coll(data)).save(function (error, result) {
+                console.log({ error });
                 return resolve(result, error);
             });
         });
