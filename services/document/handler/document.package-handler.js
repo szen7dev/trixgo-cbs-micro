@@ -49,6 +49,34 @@ module.exports = {
             }
         }
     },
+
+    /**
+	 * Dev: Depv
+	 * Func: Cập nhật gói thầu
+	 * Date: 11/02/2022
+	 */
+    update: {
+        params: {
+            documentPackageID       : { type: "string" },
+            name                    : { type: "string", optional: true },
+            membersAddID            : { type: "array", optional: true },
+            membersRemoveID         : { type: "array", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID, company } = ctx.meta.infoUser;
+                let { documentPackageID, name, membersAddID, membersRemoveID } = ctx.params;
+                let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.update({
+                    documentPackageID, name, membersAddID, membersRemoveID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
     
     /**
 	 * Dev: Depv

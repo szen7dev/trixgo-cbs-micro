@@ -70,11 +70,10 @@ class Model extends BaseModel {
                     let infoParent = await DOCUMENT__PACKAGE_COLL.findById(parentID);
                     dataInsert.level = infoParent.level + 1;
                 }
-                console.log({ dataInsert });
                 //__________Tạo gói thầu
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert) 
-                    return resolve({ error: true, message: 'cannot_insert' });
+                    return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_update' });
                 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -88,7 +87,7 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    update({ name, membersAddID, membersRemoveID }) {
+    update({ documentPackageID, name, membersAddID, membersRemoveID }) {
         return new Promise(async resolve => {
             try {
                 
@@ -97,17 +96,19 @@ class Model extends BaseModel {
                     dataUpdate.name = name;
                 }
 
-                if(membersAddID.length){
-                    dataUpdate
+                if(membersAddID && membersAddID.length){
+                    dataUpdate.$addToSet = { members: membersAddID }
                 }
 
+                if(membersRemoveID && membersRemoveID.length){
+                    dataUpdate.$pullAll = { members: membersRemoveID }
+                }
 
-             
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert) 
-                    return resolve({ error: true, message: 'cannot_insert' });
+                let infoAfterUpdate = await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(documentPackageID, dataUpdate, { new: true });
+                if (!infoAfterUpdate) 
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
                 
-                return resolve({ error: false, data: infoAfterInsert });
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
