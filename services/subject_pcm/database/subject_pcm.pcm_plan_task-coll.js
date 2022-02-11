@@ -203,6 +203,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Number, default: 0
     },
 
+    //_________Tổng số lượng việc con
+    amountTaskChild: {
+        type: Number, default: 0
+    },
+
     //_________Tổng số lượng check list đã hoàn thành
     amountFinishChecklist: {
         type: Number, default: 0
