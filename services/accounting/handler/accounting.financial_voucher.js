@@ -38,6 +38,7 @@ module.exports = {
                 let  resultAfterCallHandler;
 
                 let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+                
                 if(infoFundaCompany.error){
                     resultAfterCallHandler.message = 'Not found funda comany ';
                     return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });

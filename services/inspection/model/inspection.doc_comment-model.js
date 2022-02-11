@@ -150,7 +150,7 @@ class Model extends BaseModel {
                 let fileOfComment = await INSPECTION__DOC_COMMENT_FILE_COLL.find({ comment: infoCommentDoc._id }).select("file")
                                     .populate({
                                         path: "file",
-                                        select: "name url createAt"
+                                        select: "name path createAt"
                                     });
 
                     infoDataAfterGetAfterMapFile.push({ ...infoCommentDoc, files: [...fileOfComment.map(item => item)]})
@@ -230,7 +230,7 @@ class Model extends BaseModel {
                     let fileOfComment = await INSPECTION__DOC_COMMENT_FILE_COLL.find({ comment: comment._id }).select("file")
                                         .populate({
                                             path: "file",
-                                            select: "name url createAt"
+                                            select: "name path createAt"
                                         });
 
                     infoDataAfterGetAfterMapFile.push({ ...comment, files: [...fileOfComment.map(item => item)]})

@@ -1,8 +1,9 @@
 "use strict";
-const DbService                	    	= require("../../tools/mixins/db.mixin");
-const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
-const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_SUBJECT_PCM } 	    = require('./helper/subject_pcm.actions-constant');
+
+const DbService                	    					= require("../../tools/mixins/db.mixin");
+const CacheCleaner                	    				= require("../../tools/mixins/cache.cleaner.mixin");
+const { CF_DOMAIN_SERVICES } 		    				= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_SUBJECT_PCM } 	    				= require('./helper/subject_pcm.actions-constant');
 
 const SUBJECT_PCM__PCM_PLAN_REPORT_HANDLER  	 		= require('./handler/subject_pcm.pcm_plan_report');
 const SUBJECT_PCM__USER_PCM_PLAN_REPORT_HANDLER  		= require('./handler/subject_pcm.user_pcm_plan_report');
@@ -10,20 +11,23 @@ const SUBJECT_PCM__PCM_PLAN_TASK_HANDLER  			 	= require('./handler/subject_pcm.
 const SUBJECT_PCM__PCM_PLAN_GROUP_HANDLER  			 	= require('./handler/subject_pcm.pcm_plan_group');
 const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER  		= require('./handler/subject_pcm.pcm_plan_task_comment');
 
-const SUBJECT_PCM__PCM_PLAN_REPORT_COLL			= require('./database/subject_pcm.pcm_plan_report-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_COLL			= require('./database/subject_pcm.pcm_plan_task-coll');
-const SUBJECT_PCM__PCM_PLAN_GROUP_COLL			= require('./database/subject_pcm.pcm_plan_group-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL	= require('./database/subject_pcm.pcm_plan_task_comment-coll');
-const SUBJECT_PCM__PCM_PLAN_LOG_COLL			= require('./database/subject_pcm.user_pcm_plan_log-coll');
+// const SUBJECT_PCM__PCM_PLAN_REPORT_COLL					= require('./database/subject_pcm.pcm_plan_report-coll');
+// const SUBJECT_PCM__PCM_PLAN_TASK_COLL					= require('./database/subject_pcm.pcm_plan_task-coll');
+// const SUBJECT_PCM__PCM_PLAN_GROUP_COLL					= require('./database/subject_pcm.pcm_plan_group-coll');
+// const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL			= require('./database/subject_pcm.pcm_plan_task_comment-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
 	mixins: [
 		// gọi tất cả các function dùng ở đây
-		DbService(SUBJECT_PCM__PCM_PLAN_REPORT_COLL),  
-		DbService(SUBJECT_PCM__PCM_PLAN_TASK_COLL),  
-		DbService(SUBJECT_PCM__PCM_PLAN_GROUP_COLL),  
-		DbService(SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL),  
+		// DbService(SUBJECT_PCM__PCM_PLAN_REPORT_COLL),  
+		// DbService(SUBJECT_PCM__PCM_PLAN_TASK_COLL),  
+		// DbService(SUBJECT_PCM__PCM_PLAN_GROUP_COLL),  
+		// DbService(SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL),  
+		DbService('pcm_plan_report'),  
+		DbService('pcm_plan_task'),  
+		DbService('pcm_plan_group'),  
+		DbService('pcm_plan_task_comment'), 
 		CacheCleaner([CF_DOMAIN_SERVICES.SUBJECT_PCM])
     ],
 

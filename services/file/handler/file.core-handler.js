@@ -8,7 +8,7 @@ module.exports = {
         params: {
             app            : { type: "string" },
             name           : { type: "string" },
-            url            : { type: "string" },
+            path           : { type: "string" },
             size           : { type: "number", optional: true },
             userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
@@ -16,9 +16,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				// const { _id: userID } = ctx.meta.infoUser;
-                let { app, name, url, size, userID } = ctx.params;
+                let { app, name, path, size, userID } = ctx.params;
                 
-                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, url, size, userID });
+                let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, path, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {
                 return { error: true, message: error.message };
@@ -65,8 +65,8 @@ module.exports = {
 
     getListFileWithStatus: {
         params: {
-            status         : { type: "string", optional: true },
-            userID         : { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            status: { type: "string", optional: true },
+            userID: { type: "string" }, //TODO: fake wating AUTH_SERVICE
         },
         async handler(ctx) {
             try {
@@ -112,7 +112,7 @@ module.exports = {
                         app,
                         nameOrg,
                         name: fileName,
-                        url: `${process.env.AWS_BUCKET_URL}${process.env.AWS_BUCKET_PATH}/${fileName}`,
+                        path: `${process.env.AWS_BUCKET_PATH}/${fileName}`,
                         type,
                         size,
                         userID

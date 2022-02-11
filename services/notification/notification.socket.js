@@ -1,22 +1,14 @@
 /**
- * CONSTANTS
+ * Constants
  */
 const { EVENT_SOCKET_CONSTANT_NOTIFICATION }    = require('./helper/notification.events-socket-constant');
 const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
  
 /**
- * TOOLS
+ * Utils
  */
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
-
-/**
- * COLLECTIONS
- */
-
-/**
- * MODELS
- */
 
 
 exports.NOTIFICATION_SOCKET = {

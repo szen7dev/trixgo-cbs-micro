@@ -13,6 +13,8 @@ module.exports  = DATABASE_MIDDLEWARE("area", {
         type: Schema.Types.ObjectId,
         ref: "area"
     },
+    //_________Level (1/2/3)
+    level: { type: Number, default: 1 },
     //_________Tên
     name: String,
     //_________Mã hiệu

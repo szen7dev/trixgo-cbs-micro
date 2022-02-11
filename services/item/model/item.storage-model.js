@@ -755,14 +755,14 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
 
-                 if(keyword){
+                if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 
                 let conditionObjOrg = { ...conditionObj };
-                // PHÂN TRANG KIỂU MỚI
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__STORAGE_COLL.findById(lastestID);
 					if(!infoData)
@@ -771,13 +771,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy                = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await ITEM__STORAGE_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
