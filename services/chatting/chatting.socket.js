@@ -1121,6 +1121,7 @@ exports.CHATTING_SOCKET = {
         let listUserActive       					= socket.$service.listUserConnected;
         let io                   					= socket.$service.io;
 		let { conversationID, messageID, userID }	= data;
+		console.log({ ['EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER']: conversationID, messageID, userID})
 
 		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID).select('members');
 		const infoMessage 		= await CHATTING__MESSAGE_COLL
@@ -1129,12 +1130,13 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !infoMessage){
-			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: [userID],
-				title: 'Thông báo reminder',
-				description: 'Thông tin cuộc hội thoại hoặc tin nhắn không hợp lệ',
-				web_url: `https://staging.cbs.trixgo.com`
-			});
+			return;
+			// return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			// 	users: [userID],
+			// 	title: 'Thông báo reminder',
+			// 	description: 'Thông tin cuộc hội thoại hoặc tin nhắn không hợp lệ',
+			// 	web_url: `https://staging.cbs.trixgo.com`
+			// });
 		}
 
 		const { members } = infoConversation;
@@ -1144,24 +1146,25 @@ exports.CHATTING_SOCKET = {
 		if(status === 2) return;
 
 		if(notifyFor === 'onlyme'){
-			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: [userID],
-				title: 'Thông báo nhắc hẹn',
-				description: content,
-				web_url: `https://staging.cbs.trixgo.com`
-			});
+			return;
+			// return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			// 	users: [userID],
+			// 	title: 'Thông báo nhắc hẹn',
+			// 	description: content,
+			// 	web_url: `https://staging.cbs.trixgo.com`
+			// });
 		}
 
 		// Lọc user không phải member của conversation
 		const listMembersIDConversation = members.map(memberID => memberID.toString());
 		const arrReceiver = accepts.filter(memberID => listMembersIDConversation.includes(memberID.toString()));
 
-		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-			users: arrReceiver,
-			title: 'Thông báo nhắc hẹn',
-			description: content,
-			web_url: `https://staging.cbs.trixgo.com`
-		});
+		// broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+		// 	users: arrReceiver,
+		// 	title: 'Thông báo nhắc hẹn',
+		// 	description: content,
+		// 	web_url: `https://staging.cbs.trixgo.com`
+		// });
 
         // sendDataToMultilSocketsOfListUser({ 
 		// 	io,
