@@ -11,23 +11,13 @@ const SUBJECT_PCM__PCM_PLAN_TASK_HANDLER  			 	= require('./handler/subject_pcm.
 const SUBJECT_PCM__PCM_PLAN_GROUP_HANDLER  			 	= require('./handler/subject_pcm.pcm_plan_group');
 const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_HANDLER  		= require('./handler/subject_pcm.pcm_plan_task_comment');
 
-// const SUBJECT_PCM__PCM_PLAN_REPORT_COLL					= require('./database/subject_pcm.pcm_plan_report-coll');
-// const SUBJECT_PCM__PCM_PLAN_TASK_COLL					= require('./database/subject_pcm.pcm_plan_task-coll');
-// const SUBJECT_PCM__PCM_PLAN_GROUP_COLL					= require('./database/subject_pcm.pcm_plan_group-coll');
-// const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL			= require('./database/subject_pcm.pcm_plan_task_comment-coll');
-
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
 	mixins: [
-		// gọi tất cả các function dùng ở đây
-		// DbService(SUBJECT_PCM__PCM_PLAN_REPORT_COLL),  
-		// DbService(SUBJECT_PCM__PCM_PLAN_TASK_COLL),  
-		// DbService(SUBJECT_PCM__PCM_PLAN_GROUP_COLL),  
-		// DbService(SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL),  
-		DbService('pcm_plan_report'),  
-		DbService('pcm_plan_task'),  
-		DbService('pcm_plan_group'),  
-		DbService('pcm_plan_task_comment'), 
+		DbService('pcm_plan_reports'),  
+		DbService('pcm_plan_tasks'),  
+		DbService('pcm_plan_groups'),  
+		DbService('pcm_plan_task_comments'), 
 		CacheCleaner([CF_DOMAIN_SERVICES.SUBJECT_PCM])
     ],
 
