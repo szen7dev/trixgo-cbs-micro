@@ -96,20 +96,20 @@ module.exports = {
 			});
 
 			agenda.define('add_reminder_conversation', async (job, done) => {
-				console.log(`========================================`);
-				console.log(`done add reminder conversation!!!!`);
-				console.log({ __JOB: job.attrs });
+				// console.log(`========================================`);
+				// console.log(`done add reminder conversation!!!!`);
+				// console.log({ __JOB: job.attrs });
 
 				if(job.attrs.data && job.attrs.data.userID){
 					const socket = require('socket.io-client')(`${process.env.SOCKET_URL}?token=${job.attrs.data.userID}&access_key=Y2JzX3Byb2plY3RAMjAyMQo=`);
 
 					socket.on("connect", () => {
-						console.log({ 
-							__MESSAGE: "Connection with the Gateway established", 
-							__SOCKETID: socket.id, 
-							__CONNECTED: socket.connected, 
-							__DISCONNECTED: socket.disconnected 
-						});
+						// console.log({ 
+						// 	__MESSAGE: "Connection with the Gateway established", 
+						// 	__SOCKETID: socket.id, 
+						// 	__CONNECTED: socket.connected, 
+						// 	__DISCONNECTED: socket.disconnected 
+						// });
 						socket.emit('CHATTING_CSS_NOTIFICATION_REMINDER', job.attrs.data);
 						socket.disconnect();
 					});
