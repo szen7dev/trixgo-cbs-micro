@@ -9,7 +9,9 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_project", {
     /**
      * Khu vực dự án
      * - Thuộc mục kê khai Kinh nghiệm thực tế tham gia tại các Dự án
-     * - Phân ra làm 3 object để phục vụ việc query gom nhóm cho tiện
+     * - Phân ra làm 3 object area để phục vụ việc query gom nhóm cho tiện
+     * - Khi hiển thị area cho người dùng chọn => chỉ hiển thị phường xã để gán (area3).
+     * Gán xong => tự tính ra area2, area1 để insert cùng
      */
     //_________Tỉnh/Thành phố
     area1: {
