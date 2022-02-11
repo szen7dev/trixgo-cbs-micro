@@ -332,7 +332,6 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                console.log({ meta: ctx.meta, infoUser: ctx.meta.infoUser })
                 let { userID, select } = ctx.params;
 
                 let infoUserAfterFind = await AUTH__USER_MODEL.getInfoById({ userID, select });
