@@ -77,6 +77,30 @@ module.exports = {
             }
         }
     },
+
+     /**
+	 * Dev: Depv
+	 * Func: Cập nhật gói thầu
+	 * Date: 11/02/2022
+	 */
+    remove: {
+        params: {
+            documentPackageID : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID, company } = ctx.meta.infoUser;
+                let { documentPackageID } = ctx.params;
+                let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.remove({
+                    documentPackageID
+                });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
     
     /**
 	 * Dev: Depv

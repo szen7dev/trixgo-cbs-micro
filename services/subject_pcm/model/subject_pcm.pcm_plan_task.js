@@ -31,7 +31,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ projectID, groupID, authorID, name, description, sign, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx }) { 
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 
@@ -113,6 +113,7 @@ class Model extends BaseModel {
                     expiredTime,
                     actualFinishTime: expiredTime,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
+                    type,
                 }
 
                 if(parentID && checkObjectIDs(parentID)){

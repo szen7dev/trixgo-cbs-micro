@@ -51,7 +51,7 @@ class Model extends BaseModel {
                 
                 if(!checkObjectIDs(fileID))
                     return resolve({ error: true, message: 'Request params fileID invalid', status: 400 });
-
+                
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
                 
