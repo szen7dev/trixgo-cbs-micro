@@ -16,8 +16,42 @@ module.exports = {
 	 * ============================ ****************** ===============================
 	 */
 
+     /**
+	 * Dev: Depv
+	 * Func: Tạo gói thầu
+	 * Date: 11/02/2022
+	 */
+    insert: {
+        params: {
+			name            : { type: "string" },
+			sign            : { type: "string", optional: true },
+			contractID      : { type: "string", optional: true },
+			projectID       : { type: "string" },
+			companyID       : { type: "string", optional: true },
+			parentID        : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				let { _id: userID, company } = ctx.meta.infoUser;
+                let { name, sign, contractID, projectID, companyID, parentID } = ctx.params;
+                if(!companyID){
+                    companyID = company._id;
+                }
+
+                let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.insert({
+                    name, sign, contractID, authorID: userID, projectID, companyID, parentID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+    
     /**
-	 * Dev: MinhVH
+	 * Dev: Depv
 	 * Func: Danh sách gói thầu hoặc chi tiết gói thầu
 	 * Date: 27/10/2021
 	 */

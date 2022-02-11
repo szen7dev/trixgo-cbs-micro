@@ -60,7 +60,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     },
     /**
      * Lĩnh vực chuyên môn
-     * Chuyên ngành đào tạo
+     * Chuyên ngành đào tạo (/item/doctypes/?tab=7)
      */
     field2: {
         type: Schema.Types.ObjectId,

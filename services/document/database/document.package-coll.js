@@ -7,13 +7,19 @@ const Schema                = require('mongoose').Schema;
  *  Gói thầu/Thư mục hồ sơ dự án
  */
 module.exports = DATABASE_MIDDLEWARE("document_package", {
+    //_________Mã hiệu bằng số do hệ thống tự phát sinh
+    suid : {
+        type   : String,
+        require:  true,
+        unique : true
+    },
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
     //_________Phòng ban/dự án
-    project: {
+    project: { 
         type: Schema.Types.ObjectId,
         ref : "department"                  
     },

@@ -772,7 +772,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
+        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -983,7 +983,15 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                     delete conditionObj.$or
+                    // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
+                    if(isChecklist == 1){
+                        conditionObj.type = 2;
+                    }else{
+                        conditionObj.type = 1;
+                    }
                 }
+
+                console.log({ conditionObj });
 
                 // Công ty của người tạo việc
                 if(companyOfAuthor && checkObjectIDs(companyOfAuthor)){
