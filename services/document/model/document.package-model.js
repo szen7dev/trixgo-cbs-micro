@@ -115,6 +115,28 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+	 * Name: Remove document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+	remove({ documentPackageID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(documentPackageID))
+                    return resolve({ error: true, message: 'Mã gói thầu không hợp lệ', keyError: "documentPackageID_invalid", status: 400 });
+                
+                let infoAterRemove = await DOCUMENT__PACKAGE_COLL.findByIdAndDelete(documentPackageID)
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {               
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 	/**
 	 * Name: get info document package ✅
 	 * Author: Depv

@@ -589,6 +589,7 @@ module.exports = {
         auth: "required",
         params: {
             userID      : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
 
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -600,7 +601,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    userID,
+                    userID, projectID, 
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
                 let resultAfterCallHandler;
@@ -611,7 +612,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
-                        companyID, keyword, limit, lastestID, select, populates,
+                        projectID, keyword, limit, lastestID, select, populates, ctx
                     });
                 }
 
