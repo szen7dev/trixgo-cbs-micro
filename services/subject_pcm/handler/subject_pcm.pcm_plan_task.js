@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_MODEL            = require('../model/subject_pcm.pcm_plan_task').MODEL;
+const SUBJECT_PCM__PCM_PLAN_TASK_MODEL          = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 module.exports = {
     /**
@@ -124,7 +124,7 @@ module.exports = {
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
-        auth: "required",
+        // auth: "required",
         params: {
             // Field bổ sung
             projectID   : { type: "string", optional: true },
@@ -163,6 +163,7 @@ module.exports = {
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
+                console.log({ meta: ctx.meta, infoUser: ctx.meta.infoUser })
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -181,7 +182,8 @@ module.exports = {
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                console.error(error);
+                return { error: true, message: error.message };
             }
         }
     },

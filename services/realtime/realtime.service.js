@@ -28,6 +28,7 @@ const { CF_ACTIONS_AUTH } 		    		    = require('../auth/helper/auth.actions-con
 const { NOTIFICATION_SOCKET } 					= require('../notification/notification.socket');
 const { CHATTING_SOCKET } 						= require('../chatting/chatting.socket');
 const { MEDIA_SOCKET } 						    = require('../media/media.socket');
+const { REACTION_SOCKET }                       = require('../reaction/reaction.socket');
 
 let pub = redis.createClient({
     host: REDIS_SEPERATOR.HOST,
@@ -98,6 +99,7 @@ module.exports = {
                          *  passing all event of all services
                          */
                         ...NOTIFICATION_SOCKET,
+                        ...REACTION_SOCKET,
                         ...CHATTING_SOCKET,
                         ...MEDIA_SOCKET,
 

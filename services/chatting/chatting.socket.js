@@ -536,6 +536,7 @@ exports.CHATTING_SOCKET = {
 			userID,
 			select: 'fullname bizfullname'
 		});
+		console.log({ infoSender })
 
 		let senderFullname = infoSender?.data?.bizfullname;
 		let description = '';

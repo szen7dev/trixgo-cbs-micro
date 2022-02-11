@@ -66,40 +66,37 @@ class Model extends BaseModel {
 
                 let ObjectSearch            = dataPaggingAndSort.data.find;
                 ObjectSearch.conversation   =  ObjectID(conversationID);
-                let _sort = dataPaggingAndSort.data.sort;
                 let listMessage             = await CHATTING__CONVERSATION_FILE_COLL.find(ObjectSearch)
-                .populate({
-                    path : 'file', model: CHATTING__CONVERSATION_FILE_COLL
-                })
-                // .populate(
-                // {
-                //     path : 'sender', select :'_id fullname image company ' 
-                // })
-                // .populate({
-                //     path: 'parent',
-                //     populate: {
-                //         path: "files sender",
-                //         select :'_id fullname image company path name type size author conversation' 
-                //     }
-                // })
-                // .populate(
-                // {
-                //     path : 'likedUsers', select :'_id fullname image company ' 
-                // })
-                // .populate({path: 'usersSeen', select :  '_id fullname  image' })
-                // .populate({
-                //     path: 'reactions',
-                //     populate: {
-                //         path: "author",
-                //         select :'_id fullname image company' 
-                //     }
-                // })
-                .limit(perPage)
-                .sort( dataPaggingAndSort.data.sort );
+                    .populate({
+                        path : 'file', model: CHATTING__CONVERSATION_FILE_COLL
+                    })
+                    // .populate(
+                    // {
+                    //     path : 'sender', select :'_id fullname image company ' 
+                    // })
+                    // .populate({
+                    //     path: 'parent',
+                    //     populate: {
+                    //         path: "files sender",
+                    //         select :'_id fullname image company path name type size author conversation' 
+                    //     }
+                    // })
+                    // .populate(
+                    // {
+                    //     path : 'likedUsers', select :'_id fullname image company ' 
+                    // })
+                    // .populate({path: 'usersSeen', select :  '_id fullname  image' })
+                    // .populate({
+                    //     path: 'reactions',
+                    //     populate: {
+                    //         path: "author",
+                    //         select :'_id fullname image company' 
+                    //     }
+                    // })
+                    .limit(perPage)
+                    .sort( dataPaggingAndSort.data.sort );
 
-            
-            return resolve({ error: false, data : listMessage, page, status: 200 });
-
+                return resolve({ error: false, data : listMessage, page, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
