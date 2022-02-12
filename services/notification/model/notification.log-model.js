@@ -302,11 +302,11 @@ class Model extends BaseModel {
                             let { devices } = user;
                             listDeviceFromMobile = [
                                 ...listDeviceFromMobile,
-                                ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                             listDeviceFromWebBrowser = [
                                 ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                         });
                         console.log({ listDeviceFromMobile: listDeviceFromMobile.length, listDeviceFromWebBrowser: listDeviceFromWebBrowser.length })
