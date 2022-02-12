@@ -31,7 +31,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ projectID, groupID, authorID, name, description, sign, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx }) { 
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 
@@ -113,6 +113,7 @@ class Model extends BaseModel {
                     expiredTime,
                     actualFinishTime: expiredTime,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
+                    type,
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -772,7 +773,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, 
+        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -983,6 +984,12 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                     delete conditionObj.$or
+                    // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
+                    if(isChecklist == 1){
+                        conditionObj.type = 2;
+                    }else{
+                        conditionObj.type = 1;
+                    }
                 }
 
                 // Công ty của người tạo việc

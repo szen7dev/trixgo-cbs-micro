@@ -34,6 +34,8 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_CHATTING }           = require('../../chatting/helper/chatting.actions-constant');
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+
 
 // const ObjectID                      = require('mongoose').Types.ObjectId;
 
@@ -227,7 +229,7 @@ class Model extends BaseModel {
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
                     return resolve({ error: true, message: 'platform_invalid' });
-
+                
                 let isExist = await AUTH__USER_COLL
                     .findOne({ 
                         email: emailValid,
@@ -1365,8 +1367,8 @@ class Model extends BaseModel {
      * Code  : 
      */
     getListV2({
-        companyID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        companyID, projectID, 
+        keyword, limit = 10, lastestID, select, populates= {}, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1405,11 +1407,19 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
+                
+                if(checkObjectIDs(projectID)){
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                        departmentID: projectID
+                    });
+                    let members = infoProject.data.members;
+                    conditionObj._id = { $in: members };
+                }
 
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    conditionObj.fullname = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = { ...conditionObj };

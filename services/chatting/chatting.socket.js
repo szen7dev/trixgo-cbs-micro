@@ -1117,9 +1117,11 @@ exports.CHATTING_SOCKET = {
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER]: async function(data, ack) { 
         let socket               					= this;
+		let broker                      			= socket.$service.broker;
         let listUserActive       					= socket.$service.listUserConnected;
         let io                   					= socket.$service.io;
 		let { conversationID, messageID, userID }	= data;
+		console.log({ ['EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER']: conversationID, messageID, userID})
 
 		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID).select('members');
 		const infoMessage 		= await CHATTING__MESSAGE_COLL
@@ -1128,26 +1130,28 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation or message" }, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER], io
+			// return;
+			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+				users: [userID],
+				title: 'Thông báo reminder',
+				description: 'Thông tin cuộc hội thoại hoặc tin nhắn không hợp lệ',
+				web_url: `https://staging.cbs.trixgo.com`
 			});
 		}
 
 		const { members } = infoConversation;
-		const { notifyFor, accepts, status } = infoMessage.reminder;
+		const { notifyFor, accepts, status, content } = infoMessage.reminder;
 
 		// Reminder deleted
 		if(status === 2) return;
 
 		if(notifyFor === 'onlyme'){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: false, data: infoMessage }, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER], io
+			// return;
+			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+				users: [userID],
+				title: 'Thông báo nhắc hẹn',
+				description: content,
+				web_url: `https://staging.cbs.trixgo.com`
 			});
 		}
 
@@ -1155,13 +1159,20 @@ exports.CHATTING_SOCKET = {
 		const listMembersIDConversation = members.map(memberID => memberID.toString());
 		const arrReceiver = accepts.filter(memberID => listMembersIDConversation.includes(memberID.toString()));
 
-        sendDataToMultilSocketsOfListUser({ 
-			io,
-			arrReceiver, 
-			listUserConnected: listUserActive, 
-			data: { error: false, data: infoMessage }, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER]
-		})
+		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			users: arrReceiver,
+			title: 'Thông báo nhắc hẹn',
+			description: content,
+			web_url: `https://staging.cbs.trixgo.com`
+		});
+
+        // sendDataToMultilSocketsOfListUser({ 
+		// 	io,
+		// 	arrReceiver, 
+		// 	listUserConnected: listUserActive, 
+		// 	data: { error: false, data: infoMessage }, 
+		// 	event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER]
+		// })
     },
 
 	/**

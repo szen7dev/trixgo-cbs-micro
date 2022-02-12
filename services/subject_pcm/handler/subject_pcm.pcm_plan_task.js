@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_MODEL            = require('../model/subject_pcm.pcm_plan_task').MODEL;
+const SUBJECT_PCM__PCM_PLAN_TASK_MODEL          = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 module.exports = {
     /**
@@ -51,10 +51,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
 				let { _id: userID } = ctx.meta.infoUser;
-                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID } = ctx.params;
+                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type } = ctx.params;
 
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, authorID: userID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, ctx
+                    projectID, groupID, authorID: userID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -124,7 +124,7 @@ module.exports = {
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
-        auth: "required",
+        // auth: "required",
         params: {
             // Field bổ sung
             projectID   : { type: "string", optional: true },
@@ -145,6 +145,7 @@ module.exports = {
             companyOfAssignee: { type: "string", optional: true },
             fieldID          : { type: "string", optional: true },
             isSortChecklist  : { type: "string", optional: true },
+            isChecklist      : { type: "string", optional: true },
             
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -159,7 +160,7 @@ module.exports = {
                 
                 let { 
                     taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, 
-                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
+                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
@@ -174,14 +175,14 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, 
-                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
+                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
                         keyword, limit, select, lastestID, populates
                     });
                 }
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },

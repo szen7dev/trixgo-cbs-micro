@@ -1,8 +1,10 @@
 "use strict";
+
 const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_ANALYSIS } 	        = require('./helper/analysis.actions-constant');
+
 /**
  * HANDLERS
  */
@@ -18,9 +20,8 @@ const ANALYSIS__HISTORY_LOG_COLL	  	= require('./database/analysis.history_log-c
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ANALYSIS,
 	mixins: [
-		// gọi tất cả các function dùng ở đây
-		DbService(ANALYSIS__HISTORY_TRAFFIC_COLL),  
-		DbService(ANALYSIS__HISTORY_LOG_COLL),  
+		DbService('history_traffics'),  
+		DbService('history_logs'),  
 		CacheCleaner([CF_DOMAIN_SERVICES.ANALYSIS])
     ],
 	

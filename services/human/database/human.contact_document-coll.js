@@ -13,12 +13,17 @@ const Schema                = require('mongoose').Schema;
  * 6. Khác (Bảo hiểm xã hội, tài sản giao nhận, lịch sử tuyển dụng, quá trình làm việc, công tác)
  */
 module.exports  = DATABASE_MIDDLEWARE("contact_document", {
-    // Công ty   
+    //_________Công ty   
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    // Nhân sự
+    //_________Dự án đang triển khai
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_project"
+    },
+    //_________Nhân sự
     contact: {
         type: Schema.Types.ObjectId,
         ref : "contact"
@@ -55,7 +60,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     },
     /**
      * Lĩnh vực chuyên môn
-     * Chuyên ngành đào tạo
+     * Chuyên ngành đào tạo (/item/doctypes/?tab=7)
      */
     field2: {
         type: Schema.Types.ObjectId,
@@ -72,11 +77,13 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    // Thuộc hợp đồng
+    //_________Thuộc hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
+    //_________Có phải là nơi làm việc hiện tại không (1-Không/2-Có)
+    currentStatus: { type: Number, default: 1 },
     /**
      * BẰNG CẤP CHỨNG CHỈ
      */

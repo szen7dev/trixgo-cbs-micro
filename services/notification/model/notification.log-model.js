@@ -286,6 +286,7 @@ class Model extends BaseModel {
                 let infoAfterCall = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH}`, {
 					users
 				});
+
                 if (!infoAfterCall.error) {
                     let { data: { listRecords } } = infoAfterCall;
 
@@ -301,13 +302,14 @@ class Model extends BaseModel {
                             let { devices } = user;
                             listDeviceFromMobile = [
                                 ...listDeviceFromMobile,
-                                ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                             listDeviceFromWebBrowser = [
                                 ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                         });
+                        console.log({ listDeviceFromMobile: listDeviceFromMobile.length, listDeviceFromWebBrowser: listDeviceFromWebBrowser.length })
 
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
@@ -335,14 +337,18 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForMobilePush)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
                         } 
                         if (listDeviceFromWebBrowser.length > 0) {
                             // WEB PUSH
                             let dataForWebPush = {
                                 ...dataForSend,
+                                data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
                                 web_url,
-                                include_player_ids: listDeviceFromMobile
+                                include_player_ids: listDeviceFromWebBrowser
                             }
 
                             sendNotificationviaOneSignal(dataForWebPush)

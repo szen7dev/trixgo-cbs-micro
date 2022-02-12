@@ -112,7 +112,7 @@ module.exports = {
 
     /**
 	 * Dev: Depv 
-	 * Func: Danh sách hoặc chi tiết
+	 * Func: Danh sách hoặc chi tiết ✅
 	 * Date: 17/08/2021
 	 */
     getInfoAndGetList: {
@@ -153,7 +153,7 @@ module.exports = {
     },
 
     /**
-     * Name   : Danh sách comment tìm kiếm theo id
+     * Name   : Danh sách comment tìm kiếm theo id ✅
      * Author : MinhVH
      */
     searchCommentById: {

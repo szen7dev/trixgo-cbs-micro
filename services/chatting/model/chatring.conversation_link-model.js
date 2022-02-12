@@ -9,7 +9,6 @@ const BaseModel   								= require('../../../tools/db/base_model');
  * TOOLS
  */
 const { checkObjectIDs }                        = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION }                 = require('../../../tools/cursor_base/playground/index');
 
 /**
  * COLLECTIONS

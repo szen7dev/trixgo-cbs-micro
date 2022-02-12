@@ -3,6 +3,8 @@
 /**
  * EXTERNAL PACKAGE
  */
+const stringUtils						 = require('../../../tools/utils/string_utils');
+const ObjectID                           = require('mongoose').Types.ObjectId;
 
 /**
  * CONSTANTS
@@ -27,6 +29,112 @@ class Model extends BaseModel {
 
     constructor() {
         super(DOCUMENT__PACKAGE_COLL);
+    }
+
+    /**
+	 * Name: insert document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+    insert({ name, sign, contractID, authorID, projectID, companyID, parentID }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Kiểm tra tính hợp lệ của tham biến
+                 * 2. Tạo gói thầu trong dự án
+                 * 3. Cập nhật thông dự án
+                 */
+                if (!name|| !checkObjectIDs(authorID, companyID, projectID))
+                    return resolve({ error: true, message: 'params_invalid' });
+
+                //__________Khai báo dữ liệu
+                let suid = await stringUtils.randomAndCheckExists( DOCUMENT__PACKAGE_COLL, 'suid');
+                let dataInsert = {
+                    suid,
+                    author: authorID, 
+                    company: companyID, 
+                    project: projectID,
+                    name,
+                    sign,
+                    members: [ObjectID(authorID)]
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    dataInsert.contract = contractID;
+                }
+
+                //__________Kiểm tra xem có parent hay không
+                if(parentID && checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                    let infoParent = await DOCUMENT__PACKAGE_COLL.findById(parentID);
+                    dataInsert.level = infoParent.level + 1;
+                }
+                //__________Tạo gói thầu
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if (!infoAfterInsert) 
+                    return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_update' });
+                
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+      /**
+	 * Name: update document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+    update({ documentPackageID, name, membersAddID, membersRemoveID }) {
+        return new Promise(async resolve => {
+            try {
+                
+                let dataUpdate = {};
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(membersAddID && membersAddID.length){
+                    dataUpdate.$addToSet = { members: membersAddID }
+                }
+
+                if(membersRemoveID && membersRemoveID.length){
+                    dataUpdate.$pullAll = { members: membersRemoveID }
+                }
+
+                let infoAfterUpdate = await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(documentPackageID, dataUpdate, { new: true });
+                if (!infoAfterUpdate) 
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
+                
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+	 * Name: Remove document package ✅
+	 * Author: Depv
+	 * Code: 
+	 */
+	remove({ documentPackageID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(documentPackageID))
+                    return resolve({ error: true, message: 'Mã gói thầu không hợp lệ', keyError: "documentPackageID_invalid", status: 400 });
+                
+                let infoAterRemove = await DOCUMENT__PACKAGE_COLL.findByIdAndDelete(documentPackageID)
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
+ 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {               
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
     }
 
 	/**
