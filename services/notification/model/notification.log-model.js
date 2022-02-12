@@ -286,6 +286,7 @@ class Model extends BaseModel {
                 let infoAfterCall = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH}`, {
 					users
 				});
+                console.log({ infoAfterCall })
                 if (!infoAfterCall.error) {
                     let { data: { listRecords } } = infoAfterCall;
 
@@ -308,6 +309,7 @@ class Model extends BaseModel {
                                 ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                         });
+                        console.log({ listDeviceFromMobile: listDeviceFromMobile.length, listDeviceFromWebBrowser: listDeviceFromWebBrowser.length })
 
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
