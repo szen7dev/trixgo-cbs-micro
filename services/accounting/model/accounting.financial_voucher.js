@@ -282,7 +282,7 @@ class AccountingFinancialVoucher extends BaseModel {
                  *  VOUCHER_TYPES  = PX
                  *  {Number(number+1)} = 4740
                  */
-                const voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
+                let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
                 const companyID = infoFunda.company;
                 if(sign && sign != ""){
                     const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
