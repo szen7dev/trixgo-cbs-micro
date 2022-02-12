@@ -1,8 +1,4 @@
 /**
- * CONSTATNS
- */
-
-/**
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
@@ -10,15 +6,15 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const CHATTING__CONVERSATION_GROUP_MODEL        = require('../model/chatting.conversation_group-model').MODEL;
+const CHATTING__CONVERSATION_FOLDER_MODEL       = require('../model/chatting.conversation_folder-model').MODEL;
 
 
 module.exports = {
 
 	/**
-	 * ============================ ************************* ===============================
-	 * ============================ 	CONVERSATION GROUP    ===============================
-	 * ============================ ************************* ===============================
+	 * ============================ ************************** ===============================
+	 * ============================ 	CONVERSATION FOLDER    ===============================
+	 * ============================ ************************** ===============================
 	 */
 
     /**
@@ -28,18 +24,18 @@ module.exports = {
 	 */
     insert: {
         params: {
-            name                    : { type: "string" },
-            includedConversations   : { type: "array", optional: true },
-            excludedConversations   : { type: "array", optional: true },
+            name                        : { type: "string" },
+            includedConversationsID     : { type: "array", optional: true },
+            excludedConversationsIDD    : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { name, includedConversations, excludedConversations } = ctx.params;
+                const { name, includedConversationsID, excludedConversationsID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_GROUP_MODEL.insert({
-					name, includedConversations, excludedConversations, authorID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.insert({
+					name, includedConversationsID, excludedConversationsID, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -56,19 +52,19 @@ module.exports = {
 	 */
 	update: {
         params: {
-            groupID                 : { type: "string" },
+            folderID                : { type: "string" },
             name                    : { type: "string", optional: true },
-            includedConversations   : { type: "array", optional: true },
-            excludedConversations   : { type: "array", optional: true },
+            includedConversationsID : { type: "array", optional: true },
+            excludedConversationsID : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { groupID, name, includedConversations, excludedConversations } = ctx.params;
+                const { folderID, name, includedConversationsID, excludedConversationsID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_GROUP_MODEL.update({
-					groupID, name, includedConversations, excludedConversations, authorID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.update({
+					folderID, name, includedConversationsID, excludedConversationsID, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -85,7 +81,7 @@ module.exports = {
 	 */
     getInfo: {
         params: {
-            groupID     : { type: "string" },
+            folderID    : { type: "string" },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
         },
@@ -93,10 +89,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { groupID, select, populates } = ctx.params;
+                const { folderID, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_GROUP_MODEL.getInfo({ 
-					groupID, select, populates, authorID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.getInfo({ 
+					folderID, select, populates, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -125,7 +121,7 @@ module.exports = {
                 const { _id: authorID } = ctx.meta.infoUser;
                 const { lastestID, keyword, limit, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_GROUP_MODEL.getList({ 
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.getList({ 
 					lastestID, keyword, limit, select, populates, authorID
 				});
 
@@ -143,16 +139,16 @@ module.exports = {
 	 */
 	delete: {
         params: {
-            groupID: { type: "string" },
+            folderID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { groupID } = ctx.params;
+                const { folderID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_GROUP_MODEL.delete({ 
-					groupID, authorID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.delete({ 
+					folderID, authorID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

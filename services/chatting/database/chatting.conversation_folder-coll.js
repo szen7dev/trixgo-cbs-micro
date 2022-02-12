@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports = DATABASE_MIDDLEWARE("message_conversation_group", {
+module.exports = DATABASE_MIDDLEWARE("message_conversation_folder", {
     /**
      * Tên folder
      */

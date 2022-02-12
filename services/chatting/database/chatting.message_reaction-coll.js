@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports = DATABASE_MIDDLEWARE("reaction_message", {
+module.exports = DATABASE_MIDDLEWARE("message_message_reaction", {
     /**
      * Cảm xúc
      */

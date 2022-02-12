@@ -1,19 +1,20 @@
 "use strict";
 
-const DbService                	    	= require("../../tools/mixins/db.mixin");
-const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+const DbService                	    		= require("../../tools/mixins/db.mixin");
+const CacheCleaner                	    	= require("../../tools/mixins/cache.cleaner.mixin");
 
 /**
  * CONSTANTS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_CHATTING } 	        = require('./helper/chatting.actions-constant');
+const { CF_DOMAIN_SERVICES } 		    	= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_CHATTING } 	        	= require('./helper/chatting.actions-constant');
 
 /**
  * HANDLERS
  */
-const CHATTING__CONVERSATION_HANDLER    = require('./handler/chatting.conversation-handler');
-const CHATTING__MESSAGE_HANDLER         = require('./handler/chatting.message-handler');
+const CHATTING__CONVERSATION_FOLDER_HANDLER	= require('./handler/chatting.conversation_folder-handler');
+const CHATTING__CONVERSATION_HANDLER    	= require('./handler/chatting.conversation-handler');
+const CHATTING__MESSAGE_HANDLER         	= require('./handler/chatting.message-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CHATTING,
@@ -22,9 +23,11 @@ module.exports = {
 		DbService('message_conversations'),
 		DbService('message_conversation_links'),
 		DbService('message_conversation_files'),
+		DbService('message_conversation_folders'),
+		DbService('message_conversation_members'),
 		DbService('message_message_polls'),
 		DbService('message_message_reminders'),
-		DbService('message_reaction_message'),
+		DbService('message_message_reactions'),
 		DbService('users'),
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
@@ -63,6 +66,72 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
+		// =========================  MESSAGE  ============================
+
+		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
+
+		// Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
+		[CF_ACTIONS_CHATTING.SEARCH_MESSAGE_CONVERSATION_BY_ID] 				: CHATTING__CONVERSATION_HANDLER.searchMessageConversationById,
+
+		// Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.insertMessage,
+
+		// Xoá tin nhắn của cuộc hội thoại (media, text)
+		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.deleteMessage,
+
+		// Thu hồi tin nhắn của cuộc hội thoại (media, text)
+		[CF_ACTIONS_CHATTING.REVOKE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.revokeMessage,
+
+		// Tự động xoá tất cả tin nhắn của cuộc hội thoại
+		[CF_ACTIONS_CHATTING.AUTO_DELETE_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.autoDeleteMessagesConversation,
+
+		// Chia sẻ tin nhắn đến các cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
+
+		// Pin 1 tin nhắn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_PIN_MESSAGE_CONVERSATION] 					: CHATTING__MESSAGE_HANDLER.updatePinMessageConversation,
+
+		// Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_PIN_CONVERSATION_WITH_PAGE]		: CHATTING__MESSAGE_HANDLER.getListMessagePinConversation,
+
+		// Thêm tin nhắn bình chọn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.insertMessagePoll,
+
+		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateMessagePoll,
+
+		// Đóng tin nhắn bình chọn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.CLOSE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.closeMessagePoll,
+
+		// Danh sách tin nhắn bình chọn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_POLL_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.getListMessagePoll,
+
+		// Cập nhật Danh sách đã xem tin nhắn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_SEEN_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateSeenMessage,
+
+		// Thêm tin nhắn nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.insertMessageReminder,
+
+		// Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.updateMessageReminder,
+
+		// Cập nhật thành viên tham gia nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.UPDATE_USER_JOIN_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.updateUsersJoinReminder,
+
+		// Xoá nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.deleteReminder,
+
+		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListMessageReminder,
+
+		// Reaction tin nhắn trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.REACTION_MESSAGE_CONVERSATION]						: CHATTING__MESSAGE_HANDLER.reactionMessage,
+
+		// Danh sách Reaction 1 tin nhắn
+		[CF_ACTIONS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListReactionByMessage,
+
+
 		// ======================  CONVERSATION ===========================
 
 		// Thêm cuộc hội thoại mới
@@ -138,70 +207,22 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.GET_LIST_FILE_CONVERSATION]						: CHATTING__CONVERSATION_HANDLER.getListFileConversation,
 
 
-		// =========================  MESSAGE  ============================
+		// ======================  CONVERSATION FOLDER ===========================
 
-		// Lấy danh sách tin nhắn cuộc hội thoại (phân trang)
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_CONVERSATION_WITH_PAGE] 			: CHATTING__CONVERSATION_HANDLER.getListMessagesConversationWithPage,
+		// Thêm folder mới
+		[CF_ACTIONS_CHATTING.INSERT_FOLDER]										: CHATTING__CONVERSATION_FOLDER_HANDLER.insert,
 
-		// Tìm kiếm tin nhắn cuộc hội thoại (Dữ liệu trả về là 5 tin nhắn trước và sau tin nhắn tìm thấy)
-		[CF_ACTIONS_CHATTING.SEARCH_MESSAGE_CONVERSATION_BY_ID] 				: CHATTING__CONVERSATION_HANDLER.searchMessageConversationById,
+		// Cập nhật folder
+		[CF_ACTIONS_CHATTING.UPDATE_FOLDER]										: CHATTING__CONVERSATION_FOLDER_HANDLER.update,
 
-		// Thêm tin nhắn trong cuộc hội thoại (text, emoij, tag name)
-		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.insertMessage,
+		// Xóa folder
+		[CF_ACTIONS_CHATTING.REMOVE_FOLDER]										: CHATTING__CONVERSATION_FOLDER_HANDLER.delete,
 
-		// Xoá tin nhắn của cuộc hội thoại (media, text)
-		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.deleteMessage,
+		// Lấy thông tin folder
+		[CF_ACTIONS_CHATTING.GET_INFO_FOLDER]									: CHATTING__CONVERSATION_FOLDER_HANDLER.getInfo,
 
-		// Thu hồi tin nhắn của cuộc hội thoại (media, text)
-		[CF_ACTIONS_CHATTING.REVOKE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.revokeMessage,
-
-		// Tự động xoá tất cả tin nhắn của cuộc hội thoại
-		[CF_ACTIONS_CHATTING.AUTO_DELETE_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.autoDeleteMessagesConversation,
-
-		// Chia sẻ tin nhắn đến các cuộc hội thoại 
-		[CF_ACTIONS_CHATTING.SHARE_MESSAGE_CONVERSATION] 						: CHATTING__MESSAGE_HANDLER.shareMessageConversation,
-
-		// Pin 1 tin nhắn trong cuộc hội thoại 
-		[CF_ACTIONS_CHATTING.UPDATE_PIN_MESSAGE_CONVERSATION] 					: CHATTING__MESSAGE_HANDLER.updatePinMessageConversation,
-
-		// Danh sách tin nhắn được pin trong cuộc hội thoại (phân trang)
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_PIN_CONVERSATION_WITH_PAGE]		: CHATTING__MESSAGE_HANDLER.getListMessagePinConversation,
-
-		// Thêm tin nhắn bình chọn trong cuộc hội thoại 
-		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.insertMessagePoll,
-
-		// Cập nhật tin nhắn bình chọn trong cuộc hội thoại 
-		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateMessagePoll,
-
-		// Đóng tin nhắn bình chọn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.CLOSE_MESSAGE_POLL_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.closeMessagePoll,
-
-		// Danh sách tin nhắn bình chọn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_POLL_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.getListMessagePoll,
-
-		// Cập nhật Danh sách đã xem tin nhắn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_SEEN_MESSAGE_CONVERSATION]					: CHATTING__MESSAGE_HANDLER.updateSeenMessage,
-
-		// Thêm tin nhắn nhắc hẹn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.insertMessageReminder,
-
-		// Cập nhật tin nhắn nhắc hẹn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.updateMessageReminder,
-
-		// Cập nhật thành viên tham gia nhắc hẹn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.UPDATE_USER_JOIN_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.updateUsersJoinReminder,
-
-		// Xoá nhắc hẹn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.DELETE_MESSAGE_REMINDER_CONVERSATION]				: CHATTING__MESSAGE_HANDLER.deleteReminder,
-
-		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListMessageReminder,
-
-		// Reaction tin nhắn trong cuộc hội thoại
-		[CF_ACTIONS_CHATTING.REACTION_MESSAGE_CONVERSATION]						: CHATTING__MESSAGE_HANDLER.reactionMessage,
-
-		// Danh sách Reaction 1 tin nhắn
-		[CF_ACTIONS_CHATTING.GET_LIST_REACTION_MESSAGE_CONVERSATION]			: CHATTING__MESSAGE_HANDLER.getListReactionByMessage,
+		// Lấy danh sách folder
+		[CF_ACTIONS_CHATTING.GET_LIST_FOLDER]									: CHATTING__CONVERSATION_FOLDER_HANDLER.getList,
 	},
 
 	/**
