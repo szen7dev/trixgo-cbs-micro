@@ -992,8 +992,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log({ conditionObj });
-
                 // Công ty của người tạo việc
                 if(companyOfAuthor && checkObjectIDs(companyOfAuthor)){
                     conditionObj.companyOfAuthor = companyOfAuthor;

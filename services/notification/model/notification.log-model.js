@@ -335,6 +335,7 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForMobilePush)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
                         } 
                         if (listDeviceFromWebBrowser.length > 0) {
                             // WEB PUSH
@@ -342,7 +343,7 @@ class Model extends BaseModel {
                                 ...dataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
                                 web_url,
-                                include_player_ids: listDeviceFromMobile
+                                include_player_ids: listDeviceFromWebBrowser
                             }
 
                             sendNotificationviaOneSignal(dataForWebPush)
