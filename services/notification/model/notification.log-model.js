@@ -286,7 +286,7 @@ class Model extends BaseModel {
                 let infoAfterCall = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH}`, {
 					users
 				});
-                console.log({ infoAfterCall })
+
                 if (!infoAfterCall.error) {
                     let { data: { listRecords } } = infoAfterCall;
 
@@ -343,7 +343,10 @@ class Model extends BaseModel {
                             // WEB PUSH
                             let dataForWebPush = {
                                 ...dataForSend,
+                                data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowser
                             }

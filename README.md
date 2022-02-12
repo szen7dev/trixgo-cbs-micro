@@ -1,6 +1,8 @@
 [![Moleculer](https://badgen.net/badge/Powered%20by/Moleculer/0e83cd)](https://moleculer.services)
 # CBS Microservices [TRIXGO](https://app.trixgo.com)
 
+<!-- Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục -->
+
 ## **Import Convention**
 ```javascript
 
