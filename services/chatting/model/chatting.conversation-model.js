@@ -1030,7 +1030,7 @@ class Model extends BaseModel {
 						select: '_id type',
 						populate: {
 							path: 'userCreate',
-							select: '_id fullname image'
+							select: '_id bizfullname fullname image'
 						}
 					})
 					.populate({
@@ -1823,6 +1823,7 @@ class Model extends BaseModel {
 	getListConversationWithPage({ lastestID, userID, keyword, bizfullname, limit = 20, filter = {}, select = {}, ctx }){
         return new Promise(async resolve => {
             try {
+				console.log({ 'getListConversationWithPage': userID, lastestID, keyword, bizfullname, limit, filter, select })
 				if(!checkObjectIDs(userID)) {
 					return resolve({ 
 						error: true, 
