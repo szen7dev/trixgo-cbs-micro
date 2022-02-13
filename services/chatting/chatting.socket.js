@@ -505,7 +505,7 @@ exports.CHATTING_SOCKET = {
 					path: 'files.file',
 					populate: {
 						path: 'file',
-						select: 'name path size'
+						select: 'name nameOrg path size'
 					},
 				})
 				.lean();
@@ -598,7 +598,7 @@ exports.CHATTING_SOCKET = {
 					description,
 					amountNoti: amountMissMessage,
 					conversationID: infoConversation._id,
-					web_url: `https://facebook.com/hiepnh.trixgo`
+					web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`
 				});
 			}
 		})
@@ -1118,10 +1118,9 @@ exports.CHATTING_SOCKET = {
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER]: async function(data, ack) { 
         let socket               					= this;
 		let broker                      			= socket.$service.broker;
-        let listUserActive       					= socket.$service.listUserConnected;
-        let io                   					= socket.$service.io;
+        // let listUserActive       					= socket.$service.listUserConnected;
+        // let io                   					= socket.$service.io;
 		let { conversationID, messageID, userID }	= data;
-		console.log({ ['EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER']: conversationID, messageID, userID})
 
 		const infoConversation 	= await CHATTING__CONVERSATION_COLL.findById(conversationID).select('members');
 		const infoMessage 		= await CHATTING__MESSAGE_COLL
@@ -1146,7 +1145,6 @@ exports.CHATTING_SOCKET = {
 		if(status === 2) return;
 
 		if(notifyFor === 'onlyme'){
-			// return;
 			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 				users: [userID],
 				title: 'Thông báo nhắc hẹn',
@@ -1158,6 +1156,7 @@ exports.CHATTING_SOCKET = {
 		// Lọc user không phải member của conversation
 		const listMembersIDConversation = members.map(memberID => memberID.toString());
 		const arrReceiver = accepts.filter(memberID => listMembersIDConversation.includes(memberID.toString()));
+		console.log({ ['NOTIFICATION_FROM_REMINDER']: arrReceiver })
 
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 			users: arrReceiver,
@@ -1243,7 +1242,7 @@ exports.CHATTING_SOCKET = {
 				path: 'files.file',
 				populate: {
 					path: 'file',
-					select: 'name path size'
+					select: 'name nameOrg path size'
 				},
 			})
 			.lean();

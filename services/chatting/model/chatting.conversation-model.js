@@ -1030,7 +1030,7 @@ class Model extends BaseModel {
 						select: '_id type',
 						populate: {
 							path: 'userCreate',
-							select: '_id fullname image'
+							select: '_id bizfullname fullname image'
 						}
 					})
 					.populate({
