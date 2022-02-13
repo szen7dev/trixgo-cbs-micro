@@ -3,16 +3,9 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * DATAHUB DỰ ÁN
+ * GÓI THẦU CỦA DỰ ÁN
  */
-module.exports  = DATABASE_MIDDLEWARE("datahub_project", {
-    /**
-     * Khu vực dự án
-     * - Thuộc mục kê khai Kinh nghiệm thực tế tham gia tại các Dự án
-     * - Phân ra làm 3 object area để phục vụ việc query gom nhóm cho tiện
-     * - Khi hiển thị area cho người dùng chọn => chỉ hiển thị phường xã để gán (area3).
-     * Gán xong => tự tính ra area2, area1 để insert cùng
-     */
+module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     //_________Tỉnh/Thành phố
     area1: {
         type: Schema.Types.ObjectId,
@@ -33,18 +26,58 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_project", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_project"
+    },
+    //_________Nhóm dự án
+    projectType: { type: Number, default: 1 },
+    //_________Loại công trình
+    buildingType: { type: Number, default: 1 },
+    //_________Cấp công trình
+    buildingGrade: { type: Number, default: 1 },
+    //_________Lĩnh vực
+    field: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_field"
+    },
+    //_________Nhà thầu
+    contractor: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },
     //_________Tên
     name: String,
     //_________Ký hiệu
     sign: String,
     //_________Ghi chú
     note: String,
-    //_________Địa chỉ
-    address: String,
-    //_________Nhóm dự án
-    projectType: { type: Number, default: 1 },
-    //_________Cấp công trình
-    grade: { type: Number, default: 1 },
+    //_________Giá trị hợp đồng trước VAT
+    value: { type: Number, default: 0 },
+    //_________Giá trị phần VAT
+    vatValue: { type: Number, default: 0 },
+    //_________Số tầng hầm
+    basementNumber: { type: Number, default: 0 },
+    //_________Diện tích tầng hầm
+    basementArea: { type: Number, default: 0 },
+    //_________Số tầng cao
+    floorNumber: { type: Number, default: 0 },
+    //_________Diện tích tầng cao
+    floorArea: { type: Number, default: 0 },   
+    //_________Ngày ký
+    date: { type: Date, default: null },
+    //_________Thực hiện từ ngày
+    startTime: { type: Date, default: null },
+    //_________Thực hiện đến ngày
+    endTime: { type: Date, default: null },
+    //_________Tình trạng hợp đồng
+    status: { type: Number, default: 1 },
+    //_________Tài liệu đính kèm
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
