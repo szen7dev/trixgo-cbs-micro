@@ -576,7 +576,6 @@ class AccountingFinancialVoucher extends BaseModel {
                             // console.log('==============Tạo mới==============>')
                             //_________Tiến hành tạo chi tiết_________//
                             let infoAfterInsert = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
-                            listJorID.push(infoAfterInsert.data._id);
                         }else{
                             let dataUpdate = {
                                 journalID: subitem.journalID,
