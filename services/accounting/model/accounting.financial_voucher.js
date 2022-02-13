@@ -406,15 +406,14 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                         
                         //_________Tiến hành tạo chi tiết_________//
-                        const res = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert)
+                        const res = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
                     }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
-
                 console.log(`ERROR [ACCOUNTING][INSERT_FULL_VOUCHER]: ${error}`);
-                return resolve({ error: true, message: error.message, status: 400 });
+                return resolve({ error: true, message: `error voucher services : ${error.message}`, status: 400 });
             }
         })
     }
