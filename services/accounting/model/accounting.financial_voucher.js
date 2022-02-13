@@ -51,18 +51,24 @@ class AccountingFinancialVoucher extends BaseModel {
         if(!name)
             return { error: true, message: 'name_invalid', status: 400 };
 
-        if(!type || !Number.isNaN(Number(type)))
+        if(Number.isNaN(Number(type))){
             return { error: true, message: 'type_invalid', status: 400 };
+        }
 
         if(!authorID || !ObjectId.isValid(authorID))
             return { error: true, message: 'authorID_invalid', status: 400};
 
-        if(customerID || !ObjectId.isValid(customerID))
-            return { error: true, message: 'type_invalid', status: 400 };
+        if(!customerID || !ObjectId.isValid(customerID))
+            return { error: true, message: 'customer_invalid', status: 400 };
+
+        return { error: false };
     }
 
     checkInputInsertFull({ date, name, type, fundaID, authorID, customerID }){
-        this.checkInputVoucher({ date, name, type, authorID, customerID });
+        const checkVoucher = this.checkInputVoucher({ date, name, type, authorID, customerID });
+        if(checkVoucher.error)
+            return checkVoucher; 
+
         if(!fundaID || !ObjectId.isValid(fundaID))
             return { error: true, message: 'fundaId_invalid', status: 400};
 
@@ -70,7 +76,9 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     checkInputUpdate({ date, name, type, voucherID, authorID, customerID }){
-        this.checkInputVoucher({ date, name, type, authorID, customerID });
+        const checkVoucher = this.checkInputVoucher({ date, name, type, authorID, customerID });
+        if(checkVoucher.error)
+            return checkVoucher; 
         if(!voucherID || !ObjectId.isValid(voucherID))
             return { error: true, message: 'voucherID_invalid', status: 400 };
 
@@ -480,7 +488,6 @@ class AccountingFinancialVoucher extends BaseModel {
                 //// Cập nhật phiếu + xoá phiếu
                 // Cập nhật chi tiết
                 if(selectedJournals){
-                    let listJorID=  [];
                     for (const subitem of selectedJournals) {
                         // Kiểm tra nếu là mới thì cho tạo, không thì cho cập nhật
                         if(!subitem.journalID){
@@ -671,11 +678,11 @@ class AccountingFinancialVoucher extends BaseModel {
 
                             //_________Tiến hành cập nhật chi tiết_________//
                             let resultUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.update(dataUpdate);
-                            listJorID.push(resultUpdate.data._id);
                         }
                     }
                 }
                 const listJunral = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID });
+
                 if(listJunral){
                     let arrayUpdateJounral  = []
                     listJunral.forEach(journal=>{
@@ -686,12 +693,12 @@ class AccountingFinancialVoucher extends BaseModel {
                     await Promise.all(arrayUpdateJounral);
                 }
                 //_________Tiến hành xóa chi tiết_________//
-                // if(deletedJournals){
-                //     // console.log('==============Xóa==============>')
-                //     for(const item of deletedJournals){
-                //         await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.remove({ journalID: item });
-                //     }
-                // }
+                if(deletedJournals){
+                    // console.log('==============Xóa==============>')
+                    for(const item of deletedJournals){
+                        await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.remove({ journalID: item });
+                    }
+                }
                     
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
