@@ -37,10 +37,10 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     buildingType: { type: Number, default: 1 },
     //_________Cấp công trình
     buildingGrade: { type: Number, default: 1 },
-    //_________Lĩnh vực
+    //_________Lĩnh vực (type=1)
     field: {
         type: Schema.Types.ObjectId,
-        ref : "datahub_field"
+        ref : "datahub_type"
     },
     //_________Nhà thầu
     contractor: {

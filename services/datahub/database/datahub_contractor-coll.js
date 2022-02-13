@@ -9,7 +9,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
     //_________Lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
-        ref : "datahub_field"
+        ref : "datahub_type"
     },  
     //_________Tỉnh/Thành phố
     area1: {
