@@ -1270,7 +1270,6 @@ exports.CHATTING_SOCKET = {
         let io               = socket.$service.io;
 		let userID			 = socket.client.user;
 		let { filter, select, conversationID } = data;
-		console.log({ 'EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION': userID, filter, select, conversationID })
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 

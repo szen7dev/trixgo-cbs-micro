@@ -338,7 +338,8 @@ class Model extends BaseModel {
 
                             sendNotificationviaOneSignal(dataForMobilePush)
                             console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
-                        } 
+                        }
+
                         if (listDeviceFromWebBrowser.length > 0) {
                             // WEB PUSH
                             let dataForWebPush = {
