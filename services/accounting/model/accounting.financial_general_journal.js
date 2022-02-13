@@ -111,7 +111,7 @@ class Model extends BaseModel {
         amountCalculate, fcuExRate, fcuAmountCalculate,
         cash, vat, note, date, subtype, project,
         updown, advancePayment, debit, credit,
-        goods, contract, job
+        goods, contract, job, warehouse, group
     }){
         let dataInsert = {
             company: companyID, 
@@ -255,11 +255,17 @@ class Model extends BaseModel {
     }
     //_________Tạo chi tiết chứng từ (OK)
     // Author: HiepNH
+    // insertFull({
+    //     authorID, companyID, fundaID, voucher, debit,
+    //      credit, customerDebit, customerCredit, goods, warehouse, 
+    //      quantity, amount, fcuExRate, contract, project, job, group,
+    //       cash, vat, note, updown, advancePayment 
+    //    })
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, 
         project, job, cash, vat, note, updown, advancePayment , 
-        date, subtype, 
+        date, subtype, warehouse, group
     }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -288,13 +294,13 @@ class Model extends BaseModel {
                     amountCalculate, fcuExRate, fcuAmountCalculate,
                     cash, vat, note, date, subtype, project,
                     updown, advancePayment, debit, credit,
-                    goods, contract, job
+                    goods, contract, job, warehouse, group
                 })
                
                 // console.log(dataInsert)
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert", status: 400 });
+                    return resolve({ error: true, message: "ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL] cannot_insert", status: 400 });
                 
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN PHIẾU
@@ -311,16 +317,16 @@ class Model extends BaseModel {
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
                 //1.butget service
-                // if(job && _isValid(job)){
-                //     await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
-                //         $addToSet: { journals: infoAfterInsert._id } 
-                //     },{ new: true });
-                // }
-                // return resolve({ error: false, data: infoAfterInsert });
+                if(job && _isValid(job)){
+                    // await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
+                    //     $addToSet: { journals: infoAfterInsert._id } 
+                    // },{ new: true });
+                }
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
                 await session.abortTransaction();
-                responseResultInsert = { error: true, message: error.message, status: 400 };
+                responseResultInsert = { error: true, message: `error jounal services: ${error.message}`, status: 400 };
                 // return resolve({ error: true, message: error.message });
             }
             finally {
