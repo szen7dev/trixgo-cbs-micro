@@ -1242,7 +1242,7 @@ exports.CHATTING_SOCKET = {
 				path: 'files.file',
 				populate: {
 					path: 'file',
-					select: 'name path size'
+					select: 'name nameOrg path size'
 				},
 			})
 			.lean();
