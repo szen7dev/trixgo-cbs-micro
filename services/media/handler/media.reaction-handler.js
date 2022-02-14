@@ -17,7 +17,7 @@ module.exports = {
     reaction: {
         params: {
             mediaID         : { type: "string" },
-            typeReaction    : { type: "number" },
+            typeReaction    : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -73,7 +73,7 @@ module.exports = {
         params: {
             mediaID         : { type: "string" },
             fileID          : { type: "string" },
-            typeReaction    : { type: "number" },
+            typeReaction    : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
