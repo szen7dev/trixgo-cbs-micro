@@ -173,7 +173,7 @@ class Model extends BaseModel {
         amountCalculate, fcuExRate, fcuAmountCalculate,
         note, project,
         updown, advancePayment, debit, credit,
-        goods, contract, job, journalID, amount
+        goods, contract, job, journalID, amount, warehouse, group
     }){
         // TẠO CHI TIẾT CHỨNG TỪ
         let dataUpdate = {
@@ -341,7 +341,7 @@ class Model extends BaseModel {
         journalID, debit, credit, customerDebit,
         customerCredit, goods, quantity, 
         amount, fcuExRate, note, updown, advancePayment,
-        contract, project, job, authorID 
+        contract, project, job, authorID, warehouse, group
     }){
         return new Promise(async (resolve) => {
             let responseResultUpdate = {};
@@ -375,7 +375,7 @@ class Model extends BaseModel {
                     quantityCalculate, unitpriceCalculate,
                     amountCalculate, fcuExRate, fcuAmountCalculate,
                     note, project, updown, advancePayment, debit, credit,
-                    goods, contract, job, journalID, amount
+                    goods, contract, job, journalID, amount, warehouse, group
                 })
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findByIdAndUpdate(journalID, dataUpdate , { new: true });
