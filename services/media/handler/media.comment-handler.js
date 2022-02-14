@@ -3,15 +3,21 @@
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
- /**
-  * MODELS
-  */
+/**
+ * MODELS
+ */
 const MEDIA__COMMENT_MODEL                      = require('../model/media.comment-model').MODEL;
- 
+
 module.exports = {
     /**
-     * Dev: Depv ✅
-     * Func: insert comment media
+	 * ============================ ****************** ===============================
+	 * ============================    COMMENT MEDIA   ===============================
+	 * ============================ ****************** ===============================
+	 */
+
+    /**
+     * Dev: MinhVH
+     * Func: Create comment media
      */
     insert: {
         auth: "required",
@@ -19,6 +25,8 @@ module.exports = {
             mediaID         : { type: "string" },
             parentID        : { type: "string", optional: true },
             content         : { type: "string", optional: true },
+            files           : { type: "array", optional: true },
+            images          : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
@@ -32,17 +40,16 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                console.error(error);
-                return { error: true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
 
     /**
-	 * Dev: NPNguyen 🐸
-	 * Func: XÓA COMMENT TRONG BÀI VIẾT
+	 * Dev: MinhVH
+	 * Func: Delete comment media
 	 */
-    deleteComment: {
+    delete: {
         params: {
             commentID: { type: "string" },
         },
@@ -64,17 +71,15 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: MinhVH
      * Func: getList and getInfo comment media
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            // Field bổ sung
-            commentID   : { type: "string", optional: true },
             mediaID     : { type: "string" },
+            commentID   : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
-            // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
@@ -85,8 +90,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    commentID, mediaID, parentID, limit, lastestID, select,
-                    populates
+                    commentID, mediaID, parentID, limit, lastestID, select, populates
                 } = ctx.params;
                 let resultAfterCallHandler;
 
@@ -102,7 +106,110 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * ============================ ****************** ===============================
+	 * ============================    COMMENT FILE    ===============================
+	 * ============================ ****************** ===============================
+	 */
+
+     /**
+     * Dev: MinhVH
+     * Func: Create comment file
+     */
+    insertCommentFile: {
+        auth: "required",
+        params: {
+            mediaID         : { type: "string" },
+            fileID          : { type: "string" },
+            parentID        : { type: "string", optional: true },
+            content         : { type: "string", optional: true },
+            files           : { type: "array", optional: true },
+            images          : { type: "array", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { mediaID, fileID, parentID, content, files, images } = ctx.params;
+
+                let resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insertCommentFile({
+                    mediaID, fileID, parentID, content, files, images, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Delete comment file
+	 */
+    deleteCommentFile: {
+        params: {
+            commentID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID } = ctx.params;
+
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.deleteCommentFile({
+					authorID, commentID, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: getList and getInfo comment file
+     */
+    getInfoAndGetListCommentFile: {
+        auth: "required",
+        params: {
+            mediaID     : { type: "string" },
+            fileID      : { type: "string" },
+            commentID   : { type: "string", optional: true },
+            parentID    : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { 
+                    commentID, mediaID, fileID, parentID, limit, lastestID, select, populates
+                } = ctx.params;
+                let resultAfterCallHandler;
+
+                if(commentID){
+                    resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getInfoCommentFile({
+                        commentID, select, populates
+                    });
+                } else{
+                    resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getListCommentFile({
+                        mediaID, fileID, parentID, limit, lastestID, select, populates
+                    });
+                }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },

@@ -22,7 +22,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         ref     : 'comment_core'
     },
     
-    //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
+    //_________ID reply của comment reply cuối (Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
         ref     : 'media_comment'
@@ -32,5 +32,4 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
-
 })

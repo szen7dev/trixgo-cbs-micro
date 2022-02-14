@@ -4,7 +4,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("media_pin", {
-
     /**
      * Bài viết 
      */
@@ -15,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_pin", {
     /**
      *  Người ghim bài viết
      */
-     userPin: {
+    userPin: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
