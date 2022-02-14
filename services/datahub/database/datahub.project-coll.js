@@ -33,6 +33,8 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_project", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Địa chỉ theo google map
+    location: String,
     //_________Tên
     name: String,
     //_________Ký hiệu
