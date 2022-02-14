@@ -1,17 +1,12 @@
 "use strict";
 
 /**
- * EXTERNAL PACKAGE
- */
-
-/**
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-const { CF_ACTIONS_REACTION }					= require('../../reaction/helper/reaction.actions-constant');
-const { MEDIA_TYPES, REACTION_TYPES }			= require('../helper/media.keys-constant');
+const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
 
 /**
  * TOOLS
@@ -24,7 +19,6 @@ const { checkObjectIDs, isEmptyObject, IsJsonString } = require('../../../tools/
  * COLLECTIONS
  */
 const MEDIA_COLL					        	= require('../database/media-coll');
-const MEDIA_REACTION_COLL					    = require('../database/media.reaction-coll');
 const MEDIA_SAVE_COLL					    	= require('../database/media.save-coll');
 
 
@@ -876,234 +870,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-	/**
-	 * Dev: MinhVH 🐸
-	 * Func: REACTION BÀI VIẾT
-	 */
-	reactionMedia({ authorID, mediaID, typeReaction, ctx }) {
-		return new Promise(async resolve => {
-			try {
-				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
-                    typeReaction = 1;
-				}
-
-				if(!checkObjectIDs([authorID, mediaID])) {
-                    return resolve({
-						error: true, 
-						message: 'Tham số media ID hoặc author ID không hợp lệ', 
-						keyError: 'params_messageID_or_authorID_invalid',
-						status: 400
-					});
-				}
-
-				const infoMedia = await MEDIA_COLL
-					.findById(mediaID)
-					.lean();
-
-				if(!infoMedia) {
-					return resolve({
-						error: true, 
-						message: 'ID media không tồn tại', 
-						keyError: 'media_is_not_exists',
-						status: 400
-					});
-				}
-
-				// Kiểm tra đã thả cảm xúc trên bài viết
-				const infoReaction = await MEDIA_REACTION_COLL
-					.findOne({
-						media: mediaID,
-						file: { $exists: false },
-						comment: { $exists: false },
-						userCreate: authorID
-					})
-					.populate('reaction')
-					.lean();
-
-				if(infoReaction && +infoReaction?.reaction?.type === typeReaction){
-					const infoAfterDeleteReaction = await MEDIA_REACTION_COLL.findByIdAndDelete(infoReaction._id);
-
-					await MEDIA_COLL.findByIdAndUpdate(mediaID, {
-						$inc: {
-							amountReaction: -1
-						}
-					})
-
-					return resolve({
-						error: false,
-						status: 200,
-						data: infoAfterDeleteReaction
-					});
-				}
-
-				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
-					type: typeReaction,
-					userID: authorID
-				});
-
-				if(infoAfterInsertReaction.error)
-					return resolve(infoAfterInsertReaction);
-
-				if(infoReaction) {
-					await MEDIA_REACTION_COLL.findByIdAndDelete(infoReaction._id);
-				}
-
-				const infoAfterUpdateReaction = await MEDIA_REACTION_COLL.create({
-					media: mediaID,
-					reaction: infoAfterInsertReaction?.data?._id,
-					userCreate: authorID,
-				})
-
-				if(!infoAfterUpdateReaction) {
-					return resolve({
-						error: true, 
-						message: 'Đã có lỗi xảy ra', 
-						keyError: 'error_occurs',
-						status: 422
-					});
-				}
-
-				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
-					$inc: {
-						amountReaction: 1
-					}
-				})
-
-                return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
-			} catch (error) {
-				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
-	}
-
-	/**
-	 * Dev: MinhVH 🐸
-	 * Func: DANH SÁCH REACTION BÀI VIẾT
-	 */
-	getListReaction({ userID, mediaID, lastestID, limit = 20, select = {}, populates = {} }) {
-		return new Promise(async resolve => {
-			try {
-				if(!checkObjectIDs([userID])) {
-                    return resolve({
-						error: true, 
-						message: 'Tham số or user ID không hợp lệ', 
-						keyError: 'params_userID_invalid',
-						status: 400
-					});
-				}
-
-				if(isNaN(limit) || limit > 20) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
-
-				if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates)) {
-						return resolve({ 
-							error: true, 
-							message: 'Tham số populates không hợp lệ', 
-							keyError: 'params_populates_invalid',
-							status: 400 
-						});
-					}
-
-					populates = JSON.parse(populates);
-				} else{
-					populates = {
-						path: '',
-						select: ''
-					}
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select)) {
-						return resolve({ 
-							error: true, 
-							message: 'Tham số select không hợp lệ', 
-							keyError: 'params_select_invalid',
-							status: 400 
-						});
-					}
-
-					select = JSON.parse(select);
-				}
-
-				let conditionObj = {};
-				let conditionFind = {};
-                let sortBy = {
-                    _id: -1,
-					createAt: -1,
-                }
-
-				if(lastestID && checkObjectIDs([lastestID])){
-                    let infoReaction = await MEDIA_REACTION_COLL.findById(lastestID);
-                    if(!infoReaction) {
-						return resolve({ 
-							error: true, 
-							message: "lastestID không tồn tại",
-							keyError: 'cannot_get_info_by_lastestID',
-							status: 403
-						});
-					}
-
-                    let nextInfo = `${infoReaction._id}_${infoReaction.createAt}`;
-                    let keys 	 = ['_id__-1', 'createAt__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error) {
-						return resolve({ 
-							error: true, 
-							message: "Không thể lấy phạm vi phân trang", 
-							keyError: 'cannot_get_range_pagination',
-							status: 403
-						});
-					}
-
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				if(mediaID && checkObjectIDs([mediaID])) {
-                    conditionObj.media = mediaID;
-                    conditionObj.file = { $exists: false };
-                    conditionObj.comment = { $exists: false };
-				}
-
-				const listReactionMedia = await MEDIA_REACTION_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.limit(limit + 1)
-					.sort(sortBy)
-					.populate(populates)
-					.lean();
-
-				// GET TOTAL RECORD
-				let totalRecord = await MEDIA_REACTION_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
-
-				if(listReactionMedia && listReactionMedia.length){
-					if(listReactionMedia.length > limit){
-						nextCursor = listReactionMedia[limit - 1]._id;
-						listReactionMedia.length = limit;
-					}
-				}
-
-				return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: listReactionMedia,
-						limit,
-						totalRecord,
-						nextCursor
-					}
-				});
-			} catch (error) {
-				console.error(error);
-				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
-	}
 
 }
 

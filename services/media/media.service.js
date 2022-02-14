@@ -14,6 +14,7 @@ const { CF_ACTIONS_MEDIA } 	            = require('./helper/media.actions-consta
  */
 const MEDIA_HANDLER    					= require('./handler/media-handler');
 const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
+const MEDIA__REACTION_HANDLER    		= require('./handler/media.reaction-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
@@ -21,8 +22,9 @@ module.exports = {
 		DbService('media'),
 		DbService('media_file'),  
 		DbService('media_reaction'),  
+		DbService('media_reaction_file'),  
 		DbService('media_comment'),  
-		DbService('media_comment_image'),
+		DbService('media_comment_file'),
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -45,95 +47,58 @@ module.exports = {
 	*/
 	actions: {
 
-		// ================================  MEDIA  ================================ //
+		// ================================  MEDIA  ================================
 
-		// ✅ 	THÊM BÀI VIẾT MỚI
+		// THÊM BÀI VIẾT MỚI
 		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insertMedia,
 
-		// ✅	LẤY DANH SÁCH BÀI VIẾT 	
+		// LẤY DANH SÁCH BÀI VIẾT 	
 		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
 		
-		// ✅	CHỈNH SỬA BÀI VIẾT
+		// CHỈNH SỬA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
 
-		// ✅	XÓA BÀI VIẾT	
+		// XÓA BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
 
-		// ✅	CHI TIẾT BÀI VIẾT	
+		// CHI TIẾT BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
 		
-		// ✅	LƯU BÀI VIẾT
+		// LƯU BÀI VIẾT
 		[CF_ACTIONS_MEDIA.SAVE_MEDIA] 		            				: MEDIA_HANDLER.saveMedia,
 		
-		// ✅	LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
+		// LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 		[CF_ACTIONS_MEDIA.LIST_SAVE_MEDIA] 		            			: MEDIA_HANDLER.getListSaveMedia,
 		
-		// ✅	XÓA BÀI VIẾT ĐÃ LƯU
+		// XÓA BÀI VIẾT ĐÃ LƯU
 		[CF_ACTIONS_MEDIA.DELETE_SAVE_MEDIA] 		            		: MEDIA_HANDLER.deleteSaveMedia,
 		
-		// ✅	GHIM BÀI VIẾT
+		// GHIM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.PIN_MEDIA] 		            				: MEDIA_HANDLER.pinMedia,
 
-		// ✅	LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
+		// LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 		[CF_ACTIONS_MEDIA.LIST_PIN_MEDIA] 		            			: MEDIA_HANDLER.getListPinMedia,
 
-		// ✅	HỦY GHIM BÀI VIẾT
+		// HỦY GHIM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.DELETE_PIN_MEDIA] 		            		: MEDIA_HANDLER.deletePinMedia,
 
-		// ================================  MEDIA COMMENT  ================================ //
+		// ================================  MEDIA COMMENT  ================================
 
-		[CF_ACTIONS_MEDIA.COMMENT_INSERT]   							: MEDIA__COMMENT_HANDLER.insert,
-		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.deleteComment,
-		[CF_ACTIONS_MEDIA.COMMENT_GET_INFO_AND_GET_LIST]				: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_MEDIA.INSERT_COMMENT_MEDIA]   						: MEDIA__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.delete,
+		[CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_MEDIA]			: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 
-		// ================================  MEDIA REACTION  ================================ //
+		[CF_ACTIONS_MEDIA.INSERT_COMMENT_FILE]   						: MEDIA__COMMENT_HANDLER.insertCommentFile,
+		[CF_ACTIONS_MEDIA.DELETE_COMMENT_FILE]            				: MEDIA__COMMENT_HANDLER.deleteCommentFile,
+		[CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_FILE]			: MEDIA__COMMENT_HANDLER.getInfoAndGetListCommentFile,
 
-		// ✅	THẢ CẢM XÚC VÀO COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.REACTION_COMMENT]            					: MEDIA_HANDLER.reactionComment,
+		// ================================  MEDIA REACTION  ================================
 
-		// ✅	LẤY DANH SÁCH CÁC USER ĐÃ THẢ CẢM XÚC VÀO COMMENT
-		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_COMMENT]   					: MEDIA_HANDLER.getListReactionComment,
+		[CF_ACTIONS_MEDIA.REACTION_MEDIA] 		            			: MEDIA__REACTION_HANDLER.reaction,
+		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_MEDIA]						: MEDIA__REACTION_HANDLER.getListReaction,
 
-		// ✅	THẢ CẢM XÚC TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.REACTION_MEDIA] 		            			: MEDIA_HANDLER.reactionMedia,
-
-		// ✅	LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_LIST_REACTION]							: MEDIA_HANDLER.getListReaction,
-
-
-		// ================================  MEDIA IMAGE COMMENT  ================================ //
-
-		// ✅	COMMENT ẢNH TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.COMMENT_IMAGE_MEDIA]            			  	: MEDIA_HANDLER.commentImageMedia,
-
-		// ✅	LẤY DANH SÁCH COMMENT ẢNH TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_LIST_COMMENT_IMAGE_MEDIA]            		: MEDIA_HANDLER.getListCommentImageMedia,
-
-		// ✅	LẤY CHI TIẾT COMMENT TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_DETAIL_COMMENT_IMAGE_MEDIA]            	: MEDIA_HANDLER.getDetailCommentImageMedia,
-
-		// ✅	CHỈNH SỬA COMMENT ẢNH TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.UPDATE_COMMENT_IMAGE_MEDIA]            		: MEDIA_HANDLER.updateCommentImageMedia,
-
-		// ✅	XÓA COMMENT ẢNH TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.DELETE_COMMENT_IMAGE_MEDIA]            		: MEDIA_HANDLER.deleteCommentImageMedia,
-
-		// ✅	TRẢ LỜI COMMENT ẢNH TRONG BÀI VIẾT
-		[CF_ACTIONS_MEDIA.REPLY_COMMENT_IMAGE_MEDIA]         			: MEDIA_HANDLER.replyCommentImageMedia,
-
-		// ================================  MEDIA IMAGE REACTION  ================================ //
-
-		// ✅	THẢ CẢM XÚC TRONG ẢNH CỦA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.REACTION_IMAGE_MEDIA] 		            	: MEDIA_HANDLER.reactionImageMedia,
-
-		// ✅	LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG ẢNH CỦA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_IMAGE_MEDIA]            	: MEDIA_HANDLER.getListReactionImageMedia,
-
-		// ✅	THẢ CẢM XÚC VÀO TRONG COMMENT ẢNH CỦA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.REACTION_COMMENT_IMAGE]            			: MEDIA_HANDLER.reactionCommentImage,
-
-		// ✅	LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC VÀO TRONG COMMENT ẢNH CỦA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_COMMENT_IMAGE]   			: MEDIA_HANDLER.getListReactionCommentImage,
+		[CF_ACTIONS_MEDIA.REACTION_FILE]            					: MEDIA__REACTION_HANDLER.reactionFile,
+		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_FILE]   					: MEDIA__REACTION_HANDLER.getListReactionFile,
 	},
 
 	/**
