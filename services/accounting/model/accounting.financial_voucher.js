@@ -460,6 +460,9 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(infoVoucher)
                     return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 }); 
 
+                if(!fundaID)
+                    fundaID = info.funda;
+
                 const dataUpdateVoucher = this.collectDataForUpdate({
                     authorID, type, date, dateInvoice, 
                     name, sign, signInvoice, customer, 

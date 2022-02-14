@@ -6,6 +6,16 @@ const Schema                = require('mongoose').Schema;
  * GÓI THẦU CỦA DỰ ÁN
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_project"
+    },
+    //_________Chủ đầu tư
+    client: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },
     //_________Tỉnh/Thành phố
     area1: {
         type: Schema.Types.ObjectId,
@@ -21,22 +31,20 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Chủ đầu tư
-    client: {
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    },
-    //_________Dự án
-    project: {
-        type: Schema.Types.ObjectId,
-        ref : "datahub_project"
-    },
     //_________Nhóm dự án
     projectType: { type: Number, default: 1 },
     //_________Loại công trình
     buildingType: { type: Number, default: 1 },
     //_________Cấp công trình
     buildingGrade: { type: Number, default: 1 },
+    //_________Số tầng hầm
+    basementNumber: { type: Number, default: 0 },
+    //_________Diện tích tầng hầm
+    basementArea: { type: Number, default: 0 },
+    //_________Số tầng cao
+    floorNumber: { type: Number, default: 0 },
+    //_________Diện tích tầng cao
+    floorArea: { type: Number, default: 0 }, 
     //_________Lĩnh vực (type=1)
     field: {
         type: Schema.Types.ObjectId,
@@ -56,15 +64,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     //_________Giá trị hợp đồng trước VAT
     value: { type: Number, default: 0 },
     //_________Giá trị phần VAT
-    vatValue: { type: Number, default: 0 },
-    //_________Số tầng hầm
-    basementNumber: { type: Number, default: 0 },
-    //_________Diện tích tầng hầm
-    basementArea: { type: Number, default: 0 },
-    //_________Số tầng cao
-    floorNumber: { type: Number, default: 0 },
-    //_________Diện tích tầng cao
-    floorArea: { type: Number, default: 0 },   
+    vatValue: { type: Number, default: 0 },  
     //_________Ngày ký
     date: { type: Date, default: null },
     //_________Thực hiện từ ngày
