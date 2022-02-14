@@ -32,7 +32,7 @@ exports.REACTION_SOCKET = {
 			});
 		}
 
-		let titleMSS = '';
+		let descriptionMSS = '';
 		let infoObject = null;
 		let arrReceiver = [];
 
@@ -55,7 +55,7 @@ exports.REACTION_SOCKET = {
 					arrReceiver = [...new Set([author, assignee, ...related])];
 				}
 
-				titleMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 phản hồi`;
+				descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 phản hồi`;
 				break;
 			}
 			case APP_TYPE.MEDIA: {
@@ -93,8 +93,8 @@ exports.REACTION_SOCKET = {
 		// SEND CLOUD-MSG
 		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 			users: arrReceiver,
-			title: titleMSS,
-			description: infoComment?.comment?.content,
+			title: 'THÔNG BÁO',
+			description: descriptionMSS,
 			web_url: `https://staging.cbs.trixgo.com/pcm/detail/${infoObject?.data?._id}`
 		});
 	},
