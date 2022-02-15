@@ -374,8 +374,14 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 422 });
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurs",
+                        status: 422
+                    })
+                }
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

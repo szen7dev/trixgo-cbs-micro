@@ -59,14 +59,6 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
 	location: GeoSchema,
 
     /**
-     * User đã xem bài viết
-     */
-    usersSeen: [{
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
-
-    /**
      * Bạn bè được tag trong bài viết
      */
     tagFriends: [{

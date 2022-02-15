@@ -636,13 +636,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                // console.log({ ctx })
-                console.log({ span: ctx.span })
-                console.log({ meta: ctx.meta })
-                console.log({ id: ctx.id })
-                console.log({ nodeID: ctx.nodeID })
-                console.log({ requestID: ctx.requestID })
-
 				await this.validateEntity(ctx.params);
 				const { _id: userID, bizfullname } = ctx.meta.infoUser;
                 const { lastestID, keyword, filter, limit, select } = ctx.params;
