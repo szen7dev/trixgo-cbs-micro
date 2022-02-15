@@ -61,7 +61,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     /**
      * User đã xem bài viết
      */
-    userSeen: [{
+    usersSeen: [{
         type: Schema.Types.ObjectId,
         ref: 'user'
     }],

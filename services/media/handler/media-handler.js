@@ -18,7 +18,7 @@ module.exports = {
 	 */
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
     insertMedia: {
@@ -45,7 +45,7 @@ module.exports = {
     },
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
     getListMedia: {
@@ -74,7 +74,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
 	updateMedia: {
@@ -102,7 +102,32 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
+	 * Func: CẬP NHẬT LƯỢT XEM BÀI VIẾT
+	 */
+	updateView: {
+        params: {
+            mediaID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
+                let { mediaID } = ctx.params;
+
+                let resultAfterCallHandler = await MEDIA_MODEL.updateView({ 
+					mediaID, authorID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
 	 * Func: XÓA BÀI VIẾT	
 	 */
     deleteMedia: {
@@ -127,7 +152,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: CHI TIẾT BÀI VIẾT	
 	 */
     getInfoMedia: {
@@ -137,10 +162,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 
                 let resultAfterCallHandler = await MEDIA_MODEL.getInfo({ 
-					mediaID
+					mediaID, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -151,7 +177,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LƯU BÀI VIẾT
 	 */
     saveMedia: {
@@ -176,7 +202,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 	 */
     getListSaveMedia: {
@@ -202,7 +228,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: XÓA BÀI VIẾT ĐÃ LƯU
 	 */
     deleteSaveMedia: {
@@ -227,7 +253,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
     getListPinMedia: {
@@ -249,7 +275,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: GHIM BÀI VIẾT
 	 */
     pinMedia: {
@@ -274,7 +300,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: HỦY GHIM BÀI VIẾT
 	 */
     deletePinMedia: {

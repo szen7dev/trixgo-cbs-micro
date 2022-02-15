@@ -16,6 +16,7 @@ const CF_ACTIONS_MEDIA = {
 
 	LIST_SAVE_MEDIA                  				: `${BASE_ACTIONS}_LIST_SAVE_MEDIA`,
 	UPDATE_MEDIA                  			        : `${BASE_ACTIONS}_UPDATE`,
+	UPDATE_VIEW_MEDIA                  			    : `${BASE_ACTIONS}_UPDATE_VIEW_MEDIA`,
 	SAVE_MEDIA                  					: `${BASE_ACTIONS}_SAVE_MEDIA`,
 	DELETE_SAVE_MEDIA                  				: `${BASE_ACTIONS}_DELETE_SAVE_MEDIA`,
 	LIST_PIN_MEDIA                  				: `${BASE_ACTIONS}_LIST_PIN_MEDIA`,

@@ -28,7 +28,7 @@ class Model extends BaseModel {
     }
 
 	 /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: THÊM BÀI VIẾT MỚI
 	 */
 	insert({ authorID, title, content, type, location, files, tagFriends, images, background, companyID, departmentID, ctx }) {
@@ -189,7 +189,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: CHỈNH SỬA BÀI VIẾT
 	 */
 	update({
@@ -309,9 +309,51 @@ class Model extends BaseModel {
             }
         })
     }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: CẬP NHẬT LƯỢT XEM BÀI VIẾT	
+	 */
+	updateView({ mediaID, authorID }) {
+        return new Promise(async resolve => {
+            try {
+				if(!checkObjectIDs(mediaID))
+					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
+
+				if(!checkObjectIDs(authorID))
+					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+
+				let infoMedia = await MEDIA_COLL
+					.findById(mediaID)
+					.lean();
+
+				if (!infoMedia) {
+                    return resolve({ error: true, message: "Can't get info media", status: 403 });
+				}
+
+                // Cập nhật số lượng view
+				infoMedia = await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+					$addToSet: {
+						usersSeen: authorID
+					},
+					$inc: {
+						amountView: 1
+					}
+				}, { new: true });
+
+				return resolve({ 
+					error: false,
+					status: 200,
+					data: infoMedia
+				});
+			} catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 	
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
 	 */
     getListMedia({ userID, lastestID, companyID, departmentID, mediaID, isRelated, type }){
@@ -431,7 +473,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: XÓA BÀI VIẾT	
 	 */
 	remove({ mediaID, authorID }) {
@@ -464,24 +506,31 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: THÔNG TIN BÀI VIẾT	
 	 */
-	getInfo({ mediaID }) {
+	getInfo({ mediaID, authorID }) {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(mediaID))
 					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
 
+				if(!checkObjectIDs(authorID))
+					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+
 				let infoMedia = await MEDIA_COLL
 					.findById(mediaID)
 					.populate({
 						path: 'author',
-						select: 'fullname company image',
+						select: '_id bizfullname fullname company image',
 						populate: { 
 							path: 'company', 
 							select: 'name'
 						}
+					})
+					.populate({
+						path: 'usersSeen',
+						select: '_id bizfullname image'
 					})
 					.populate({
 						path: 'files',
@@ -501,13 +550,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get info media", status: 403 });
 				}
 
-                // Cập nhật số lượng view
-				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
-					$inc: {
-						amountView: 1
-					}
-				})
-
 				return resolve({ 
 					error: false,
 					status: 200,
@@ -520,7 +562,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: ĐÓNG GÓI RENDER BÀI VIẾT	
 	 */
 	getListWithCondition({ conditionObj, limit, sortBy, lastestID }) {
@@ -613,7 +655,7 @@ class Model extends BaseModel {
 	}
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 	 */
 	getListSaveMedia({ userID, lastestID, limit, ctx }) {
@@ -657,7 +699,7 @@ class Model extends BaseModel {
     }
 
 	 /**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LƯU BÀI VIẾT
 	 */
 	saveMedia({ author, mediaID, ctx }) {
@@ -706,7 +748,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: XÓA BÀI VIẾT ĐÃ LƯU
 	 */
 	deleteSaveMedia({ author, mediaID, ctx }) {
@@ -743,7 +785,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
 	getListPinMedia({ userID, ctx }) {
@@ -806,7 +848,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: GHIM BÀI VIẾT
 	 */
 	pinMedia({ userID, mediaID, ctx }) {
@@ -839,7 +881,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen 🐸
+	 * Dev: MinhVH
 	 * Func: HỦY GHIM BÀI VIẾT
 	 */
 	deletePinMedia({ userID, mediaID, ctx }) {
