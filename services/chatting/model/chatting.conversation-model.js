@@ -455,8 +455,8 @@ class Model extends BaseModel {
                 if(!checkObjectIDs([conversationID, authorID, memberID])) {
 					return resolve({ 
 						error: true, 
-						message: 'Tham số không hợp lệ', 
-						keyError: 'params_invalid',
+						message: 'Tham số conversationID hoặc memberID không hợp lệ', 
+						keyError: 'params_conversationID_or_memberID_invalid',
 						status: 400
 					});
 				}
@@ -480,7 +480,7 @@ class Model extends BaseModel {
                 if(!checkExistConversation) {
 					return resolve({ 
 						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại này", 
+						message: "Bạn không phải thành viên của cuộc hội thoại này (chỉ áp dụng trong nhóm chat)", 
 						keyError: 'you_cannot_member_of_conversation',
 						status: 403
 					});
@@ -542,6 +542,7 @@ class Model extends BaseModel {
 					status: 200
 				});
             } catch (error) {
+				console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

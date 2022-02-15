@@ -44,35 +44,6 @@ module.exports = {
         }
     },
 
-	/**
-	 * Dev: MinhVH
-	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
-	 */
-    getListMedia: {
-        params: {
-            type: { type: 'string', optional: true },
-            mediaID: { type: 'string', optional: true },
-            isRelated: { type: 'string', optional: true },
-            companyID: { type: 'string', optional: true },
-            departmentID: { type: 'string', optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				let { _id: userID } = ctx.meta.infoUser;
-                let { lastestID, companyID, departmentID, mediaID, isRelated, type } = ctx.params;
-
-                let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
-					userID, lastestID, companyID, departmentID, mediaID, isRelated, type, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
     /**
 	 * Dev: MinhVH
 	 * Func: CHỈNH SỬA BÀI VIẾT
@@ -112,6 +83,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
+                // let { ipAddr } = ctx.meta;
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 
@@ -178,6 +150,68 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
+	 */
+    getListMedia: {
+        params: {
+            type: { type: 'string', optional: true },
+            mediaID: { type: 'string', optional: true },
+            isRelated: { type: 'string', optional: true },
+            companyID: { type: 'string', optional: true },
+            departmentID: { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				let { _id: userID } = ctx.meta.infoUser;
+                let { lastestID, companyID, departmentID, mediaID, isRelated, type } = ctx.params;
+
+                let resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
+					userID, lastestID, companyID, departmentID, mediaID, isRelated, type, ctx
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
+	 */
+    getListUsersSeen: {
+        params: {
+            mediaID     : { type: 'string' },
+            limit       : { type: 'string', optional: true },
+            lastestID   : { type: 'string', optional: true },
+            select      : { type: 'string', optional: true },
+            populates   : { type: 'string', optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
+                let { mediaID, lastestID, limit, select, populates } = ctx.params;
+
+                let resultAfterCallHandler = await MEDIA_MODEL.getListUsersSeen({ 
+					authorID, mediaID, lastestID, limit, select, populates
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+
+
+
+    /**
+	 * Dev: NPNguyen
 	 * Func: LƯU BÀI VIẾT
 	 */
     saveMedia: {
@@ -202,7 +236,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 	 */
     getListSaveMedia: {
@@ -228,7 +262,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: XÓA BÀI VIẾT ĐÃ LƯU
 	 */
     deleteSaveMedia: {
@@ -253,7 +287,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
     getListPinMedia: {
@@ -275,7 +309,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: GHIM BÀI VIẾT
 	 */
     pinMedia: {
@@ -300,7 +334,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: HỦY GHIM BÀI VIẾT
 	 */
     deletePinMedia: {

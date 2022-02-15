@@ -6,7 +6,8 @@ const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
 
     MAIN_MEDIA                  		        : `${BASE_ROUTE}`,
-    UPDATE_VIEW_MEDIA                  		    : `${BASE_ROUTE}/update-view`,
+    UPDATE_VIEW_MEDIA                  		    : `${BASE_ROUTE}/views`,
+    LIST_SEEN_MEDIA                  		    : `${BASE_ROUTE}/seens`,
     INFO_MEDIA                  		        : `${BASE_ROUTE}/:mediaID`,
     SAVE_MEDIA                  		        : `${BASE_ROUTE}/save`,
     PIN_MEDIA                  		            : `${BASE_ROUTE}/pin`,

@@ -12,14 +12,15 @@ const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
  * TOOLS
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION } 				= require('../../../tools/cursor_base/playground/index');
 const { checkObjectIDs, isEmptyObject, IsJsonString } = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 
 /**
  * COLLECTIONS
  */
 const MEDIA_COLL					        	= require('../database/media-coll');
-const MEDIA_SAVE_COLL					    	= require('../database/media.save-coll');
+const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
+const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
 
 
 class Model extends BaseModel {
@@ -201,21 +202,51 @@ class Model extends BaseModel {
 				let condition = {};
 
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs(mediaID))
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
+				if(!checkObjectIDs([mediaID])) {
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
+
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
 
 				if (!MEDIA_TYPES.includes(type)) {
-                    return resolve({ error: true, message: 'Request params type invalid', status: 400 });
+					return resolve({
+						error: true,
+						message: "Tham số type không hợp lệ",
+						keyError: "params_type_invalid",
+						status: 400
+					})
 				}
 
 				let infoMedia = await MEDIA_COLL.findById(mediaID);
 
 				if (!infoMedia) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
+                    return resolve({ 
+						error: true, 
+						message: "Bài viết không tồn tại",
+						keyError: "media_not_exists",
+						status: 400
+					});
 				}
 
 				if (infoMedia.author.toString() !== authorID.toString()) {
-                    return resolve({ error: true, message: 'Permission denined', status: 403 });
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải tác giả bài viết",
+						keyError: "you_are_not_author_post",
+						status: 403
+					});
 				}
 
 				condition = {
@@ -240,7 +271,7 @@ class Model extends BaseModel {
 						condition.type = 5;
 						break;
 					default:
-						return resolve({ error: true, message: 'Request params type invalid', status: 400 });
+						break;
 				}
 
 				if (location) {
@@ -253,37 +284,67 @@ class Model extends BaseModel {
 				}
 
 				if (tagFriends) {
-					if(!checkObjectIDs(tagFriends))
-                    	return resolve({ error: true, message: 'Request params tagFriends invalid', status: 400 });
+					if(!checkObjectIDs(tagFriends)) {
+						return resolve({
+							error: true,
+							message: "Tham số tagFriends không hợp lệ",
+							keyError: "params_tagFriends_invalid",
+							status: 400
+						})
+					}
 
 					condition.tagFriends = tagFriends;
 				}
 
 				if (companyID) {
-					if(!checkObjectIDs(companyID))
-                    	return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+					if(!checkObjectIDs(companyID)) {
+						return resolve({
+							error: true,
+							message: "Tham số companyID không hợp lệ",
+							keyError: "params_companyID_invalid",
+							status: 400
+						})
+					}
 
 					condition.company = companyID;
 				}
 
 				let infoMediaAfterInserted = await MEDIA_COLL.findByIdAndUpdate(mediaID, condition, { new: true });
 
-                if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't update media", status: 422 });
+                if(!infoMediaAfterInserted) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
+				}
 
 				// INSERT FILE GỌI QUA FILE CORE SERVICE
 				let conditionObjUpdate = {};
 
 				if (background) {
-					if(!checkObjectIDs(background))
-						return resolve({ error: true, message: 'Request background media failed', status: 403 });
+					if(!checkObjectIDs(background)) {
+						return resolve({
+							error: true,
+							message: "Tham số background không hợp lệ",
+							keyError: "params_background_invalid",
+							status: 400
+						})
+					}
 
 					conditionObjUpdate.background = background;
 				}
 
 				if (files && files.length) {
-					if(!checkObjectIDs(files))
-						return resolve({ error: true, message: 'Request files media failed', status: 403 });
+					if(!checkObjectIDs(files)) {
+						return resolve({
+							error: true,
+							message: "Tham số files không hợp lệ",
+							keyError: "params_files_invalid",
+							status: 400
+						})
+					}
 
 					conditionObjUpdate.files = files;
 				} else{
@@ -291,8 +352,14 @@ class Model extends BaseModel {
 				}
 
 				if (images && images.length) {
-					if(!checkObjectIDs(images))
-						return resolve({ error: true, message: 'Request images media failed', status: 403 });
+					if(!checkObjectIDs(images)) {
+						return resolve({
+							error: true,
+							message: "Tham số images không hợp lệ",
+							keyError: "params_images_invalid",
+							status: 400
+						})
+					}
 
 					conditionObjUpdate.images = images;
 				} else{
@@ -317,25 +384,63 @@ class Model extends BaseModel {
 	updateView({ mediaID, authorID }) {
         return new Promise(async resolve => {
             try {
-				if(!checkObjectIDs(mediaID))
-					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
+				if(!checkObjectIDs([mediaID])) {
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
 
-				if(!checkObjectIDs(authorID))
-					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
 
 				let infoMedia = await MEDIA_COLL
 					.findById(mediaID)
 					.lean();
 
 				if (!infoMedia) {
-                    return resolve({ error: true, message: "Can't get info media", status: 403 });
+                    return resolve({
+						error: true,
+						message: "Bài viết không tồn tại",
+						keyError: "media_not_exists",
+						status: 400
+					})
 				}
 
+				// let infoUserSeen = await MEDIA__SEEN_COLL.findOne({
+				// 	media: mediaID,
+				// 	userCreate: authorID
+				// })
+
+				// if(!infoUserSeen) {
+				// 	infoUserSeen = await MEDIA__SEEN_COLL.create({
+				// 		media: mediaID,
+				// 		userCreate: authorID,
+				// 		createAt: new Date()
+				// 	})
+				// }
+
+                // Tạo người xem mới nếu chưa tồn tại
+				let infoUserSeen = await MEDIA__SEEN_COLL.updateOne({
+					media: mediaID,
+					userCreate: authorID
+				}, {
+					$set: {
+						media: mediaID,
+						userCreate: authorID
+					}
+				}, { new: true, upsert: true })
+
                 // Cập nhật số lượng view
-				infoMedia = await MEDIA_COLL.findByIdAndUpdate(mediaID, {
-					$addToSet: {
-						usersSeen: authorID
-					},
+				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
 					$inc: {
 						amountView: 1
 					}
@@ -344,13 +449,130 @@ class Model extends BaseModel {
 				return resolve({ 
 					error: false,
 					status: 200,
-					data: infoMedia
+					data: infoUserSeen
 				});
 			} catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
+	/**
+	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 
+	 */
+	getListUsersSeen({ authorID, mediaID, lastestID, limit = 15, select, populates }) {
+		return new Promise(async resolve => {
+			try {
+				/**
+                 * DECALARTION VARIABLE (1)
+                 */
+				let conditionObj = {};
+				let keys = ['_id__-1', 'createAt__-1'];
+				let sortBy = {};
+				let nextCursor	= null;
+
+				/** 
+				 * VALIDATION STEP (2)
+				 *  - Kiểm tra valid từ các input
+				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+				 */
+				if(!checkObjectIDs([mediaID])) {
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
+
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
+
+				if(limit > 20 || isNaN(limit)){
+					limit = 20;
+				} else {
+					limit = +limit;
+				}
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: "",
+						select: ""
+					}
+				}
+
+				/**
+				 * LOGIC STEP (3)
+				 *  3.1: Convert type + update name (ví dụ: string -> number)
+				 *  3.2: Operation database
+				 */
+				conditionObj.media = mediaID;
+
+				let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await MEDIA__SEEN_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+				}
+
+				let infoDataAfterGet = await MEDIA__SEEN_COLL.find(conditionObj)
+					.limit(limit + 1)
+					.sort(sortBy)
+					.select(select)
+					.populate(populates)
+					.lean();
+
+				if(!infoDataAfterGet) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
+				}
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+				let totalRecord = await MEDIA__SEEN_COLL.countDocuments(conditionObjOrg);
+
+				return resolve({ error: false, data: {
+					listRecords: infoDataAfterGet,
+					limit,
+					totalRecord,
+					nextCursor,
+				}, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, error: message.error, status: 500 });
+			}
+		})
+	}
 	
 	/**
 	 * Dev: MinhVH
@@ -479,11 +701,23 @@ class Model extends BaseModel {
 	remove({ mediaID, authorID }) {
         return new Promise(async resolve => {
             try {
-				if(!checkObjectIDs(mediaID))
-					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
+				if(!checkObjectIDs([mediaID])) {
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
 
-				if(!checkObjectIDs(authorID))
-					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
 
 				let infoMediaAfterDelete = await MEDIA_COLL.findOneAndDelete({
 					_id: mediaID,
@@ -491,7 +725,12 @@ class Model extends BaseModel {
 				});
 
 				if (!infoMediaAfterDelete) {
-                    return resolve({ error: true, message: "Can't delete media", status: 422 });
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
 				}
 
 				return resolve({ 
@@ -512,11 +751,23 @@ class Model extends BaseModel {
 	getInfo({ mediaID, authorID }) {
         return new Promise(async resolve => {
             try {
-				if(!checkObjectIDs(mediaID))
-					return resolve({ error: true, message: 'Request param mediaID invalid', status: 400 });
+				if(!checkObjectIDs([mediaID])) {
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
 
-				if(!checkObjectIDs(authorID))
-					return resolve({ error: true, message: 'Request param authorID invalid', status: 400 });
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
 
 				let infoMedia = await MEDIA_COLL
 					.findById(mediaID)
@@ -527,10 +778,6 @@ class Model extends BaseModel {
 							path: 'company', 
 							select: 'name'
 						}
-					})
-					.populate({
-						path: 'usersSeen',
-						select: '_id bizfullname image'
 					})
 					.populate({
 						path: 'files',
@@ -547,7 +794,12 @@ class Model extends BaseModel {
 					.lean();
 
 				if (!infoMedia) {
-                    return resolve({ error: true, message: "Can't get info media", status: 403 });
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
 				}
 
 				return resolve({ 
@@ -562,7 +814,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: ĐÓNG GÓI RENDER BÀI VIẾT	
 	 */
 	getListWithCondition({ conditionObj, limit, sortBy, lastestID }) {
@@ -654,8 +906,15 @@ class Model extends BaseModel {
         })
 	}
 
+
+
+
+
+
+	// NPNguyen
+
 	/**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 	 */
 	getListSaveMedia({ userID, lastestID, limit, ctx }) {
@@ -678,7 +937,7 @@ class Model extends BaseModel {
 
 				limit = +limit;
 			
-				let	listMediaHavedSave = await MEDIA_SAVE_COLL.find({ userSave: { $in: userID },})
+				let	listMediaHavedSave = await MEDIA__SAVE_COLL.find({ userSave: { $in: userID },})
 
                 if(!listMediaHavedSave)
                     return resolve({ error: true, message: "Can't get list media", status: 403 });
@@ -699,7 +958,7 @@ class Model extends BaseModel {
     }
 
 	 /**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: LƯU BÀI VIẾT
 	 */
 	saveMedia({ author, mediaID, ctx }) {
@@ -727,13 +986,13 @@ class Model extends BaseModel {
 				}
 
 				// CHECK USER HAVE SAVED MEDIA
-                let checkExistSaveMedia = await MEDIA_SAVE_COLL.findOne(condition).lean();
+                let checkExistSaveMedia = await MEDIA__SAVE_COLL.findOne(condition).lean();
 
 				if(checkExistSaveMedia) {
 					return resolve({ error: true, message: 'You have already saved this post', status: 403 });
 				}
 
-				let infoMediaAfterInserted = await MEDIA_SAVE_COLL.create({ 
+				let infoMediaAfterInserted = await MEDIA__SAVE_COLL.create({ 
 					...condition
 				});
 
@@ -748,7 +1007,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: XÓA BÀI VIẾT ĐÃ LƯU
 	 */
 	deleteSaveMedia({ author, mediaID, ctx }) {
@@ -770,7 +1029,7 @@ class Model extends BaseModel {
 					media: mediaID,
 				}
 
-				let infoMediaAfterDelete = await MEDIA_SAVE_COLL.findOneAndDelete({ 
+				let infoMediaAfterDelete = await MEDIA__SAVE_COLL.findOneAndDelete({ 
 					...condition
 				});
 
@@ -785,7 +1044,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
 	 */
 	getListPinMedia({ userID, ctx }) {
@@ -848,7 +1107,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: GHIM BÀI VIẾT
 	 */
 	pinMedia({ userID, mediaID, ctx }) {
@@ -881,7 +1140,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: MinhVH
+	 * Dev: NPNguyen
 	 * Func: HỦY GHIM BÀI VIẾT
 	 */
 	deletePinMedia({ userID, mediaID, ctx }) {

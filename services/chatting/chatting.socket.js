@@ -1128,15 +1128,7 @@ exports.CHATTING_SOCKET = {
 			.populate('reminder')
 			.lean();
 
-		if(!infoConversation || !infoMessage){
-			// return;
-			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: [userID],
-				title: 'Thông báo reminder',
-				description: 'Thông tin cuộc hội thoại hoặc tin nhắn không hợp lệ',
-				web_url: `https://staging.cbs.trixgo.com`
-			});
-		}
+		if(!infoConversation || !infoMessage) return;
 
 		const { members } = infoConversation;
 		const { notifyFor, accepts, status, content } = infoMessage.reminder;
@@ -1164,14 +1156,6 @@ exports.CHATTING_SOCKET = {
 			description: content,
 			web_url: `https://staging.cbs.trixgo.com`
 		});
-
-        // sendDataToMultilSocketsOfListUser({ 
-		// 	io,
-		// 	arrReceiver, 
-		// 	listUserConnected: listUserActive, 
-		// 	data: { error: false, data: infoMessage }, 
-		// 	event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NOTIFICATION_REMINDER]
-		// })
     },
 
 	/**

@@ -52,9 +52,6 @@ module.exports = {
 		// THÊM BÀI VIẾT MỚI
 		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insertMedia,
 
-		// LẤY DANH SÁCH BÀI VIẾT 	
-		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
-		
 		// CHỈNH SỬA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
 
@@ -66,7 +63,18 @@ module.exports = {
 
 		// CHI TIẾT BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
-		
+
+		// LẤY DANH SÁCH BÀI VIẾT 	
+		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
+
+		// LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
+		[CF_ACTIONS_MEDIA.LIST_SEEN_MEDIA] 		            			: MEDIA_HANDLER.getListUsersSeen,
+
+
+
+
+		// NPNguyen
+
 		// LƯU BÀI VIẾT
 		[CF_ACTIONS_MEDIA.SAVE_MEDIA] 		            				: MEDIA_HANDLER.saveMedia,
 		
