@@ -58,6 +58,9 @@ module.exports = {
 		// CHỈNH SỬA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
 
+		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
+		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
+
 		// XÓA BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
 

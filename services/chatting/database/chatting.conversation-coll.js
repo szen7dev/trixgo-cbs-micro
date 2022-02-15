@@ -53,10 +53,10 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Folder chứa conversation
      */
-    group: {
+    groups: [{
         type    : Schema.Types.ObjectId,
         ref     : 'message_conversation_group'
-    },
+    }],
 
     /**
      * Tin nhắn được ghim

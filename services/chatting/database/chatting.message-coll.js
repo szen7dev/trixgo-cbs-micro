@@ -66,7 +66,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     files: [{
         file: {
 			type: Schema.Types.ObjectId,
-			ref: 'message_conversation_file' // convert to file
+			ref: 'message_conversation_file'
 		},
 		/**
 		 * Trạng thái file
