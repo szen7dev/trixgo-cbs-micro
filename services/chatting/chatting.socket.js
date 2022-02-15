@@ -1209,7 +1209,7 @@ exports.CHATTING_SOCKET = {
 			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
 			.populate({
 				path: 'sender receivers usersAssigned',
-				select: '_id fullname bizfullname image'
+				select: '_id bizfullname fullname image'
 			})
 			.populate({
 				path: 'conversation',
@@ -1220,7 +1220,7 @@ exports.CHATTING_SOCKET = {
 				select: '_id type',
 				populate: {
 					path: 'userCreate',
-					select: '_id fullname image'
+					select: '_id bizfullname fullname image'
 				}
 			})
 			.populate({
