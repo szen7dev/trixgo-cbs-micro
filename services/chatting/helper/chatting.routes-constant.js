@@ -40,6 +40,12 @@ const CF_ROUTINGS_CHATTING = {
     GET_LIST_MESSAGE_MEDIA_CONVERSATION 			: `${BASE_ROUTE}${CONVERSATION}/list-message-media-conversation`,
     GET_LIST_MEMBER_SEND_MESSAGE_MEDIA_CONVERSATION : `${BASE_ROUTE}${CONVERSATION}/list-member-send-message-media-conversation`,
 
+    /// FOLDER CONVERSATION
+	INSERT_FOLDER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/create-folder`,
+    UPDATE_FOLDER_CONVERSATION           		    : `${BASE_ROUTE}${CONVERSATION}/update-folder`,
+	DELETE_FOLDER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-folder`,
+    GET_INFO_FOLDER_CONVERSATION             		: `${BASE_ROUTE}${CONVERSATION}/info-folder`,
+    GET_LIST_FOLDER_CONVERSATION            	    : `${BASE_ROUTE}${CONVERSATION}/list-folder`,
 
     /// MESSAGE
 	INSERT_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/insert-message-conversation`,

@@ -13,11 +13,6 @@ const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils'
 const CHATTING__CONVERSATION_FOLDER_COLL			= require('../database/chatting.conversation_folder-coll');
 const CHATTING__CONVERSATION_COLL               	= require('../database/chatting.conversation-coll');
 
-/**
- * MODELS
- */
-
-
 class Model extends BaseModel {
 
     constructor() {
@@ -198,9 +193,9 @@ class Model extends BaseModel {
                 if (!infoFolder) {
 					return resolve({
 						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurs",
-						status: 422
+						message: "Folder không tồn tại",
+						keyError: "folder_not_exists",
+						status: 400
 					})
 				}
 
@@ -245,7 +240,7 @@ class Model extends BaseModel {
                 }
 
 				if(isNaN(limit) || +limit > 20) {
-					limit = 10;
+					limit = 20;
 				} else{
 					limit = +limit;
 				}
@@ -322,6 +317,20 @@ class Model extends BaseModel {
 						message: "Tham số folder ID hoặc author ID không hợp lệ",
 						keyError: "params_folderID_or_authorID_invalid",
 						status: 400,
+					})
+				}
+
+				let infoFolder = await CHATTING__CONVERSATION_FOLDER_COLL
+					.findOne({ _id: folderID, author: authorID })
+					.select('_id')
+					.lean();
+
+                if (!infoFolder) {
+					return resolve({
+						error: true,
+						message: "Folder không tồn tại",
+						keyError: "folder_not_exists",
+						status: 400
 					})
 				}
 
