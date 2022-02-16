@@ -136,5 +136,28 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
+    },
+
+    getList: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const { voucherID, keyword, limit, lastestID, select, populates } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+           
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({ companyID: company._id, voucherID, keyword, limit, lastestID, select, populates })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);
+                return { error: true, message: error.message };
+            }
+        }
     }
 }

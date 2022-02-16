@@ -182,9 +182,9 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     /**
      * Tin nhắn NPS
      */
-	poll: {
+	nps: {
         type    : Schema.Types.ObjectId,
-        ref     : 'message_message_poll'
+        ref     : 'message_nps'
     },
 
     /**
