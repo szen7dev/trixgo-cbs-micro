@@ -210,7 +210,7 @@ module.exports = {
 
 				switch (+time) {
 					case 1:
-						timeScheduler = "2 minutes";
+						timeScheduler = "1 minutes";
 						break;
 					case 7:
 						timeScheduler = "1 week";
