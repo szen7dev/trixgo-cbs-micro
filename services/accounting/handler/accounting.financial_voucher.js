@@ -121,7 +121,7 @@ module.exports = {
             }
         }
     },
-
+  
     getInfoVoucher:{
         params: {
             // email           : { type: "string" },
@@ -130,12 +130,13 @@ module.exports = {
             // level           : { type: "string" },
             // companyID       : { type: "string" },
             voucherID           : { type: "string" },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                const {  voucherID  } = ctx.params;
+                const {  voucherID, populates  } = ctx.params;
                 // const voucherID = '61e43deaac5b40893b163750';
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({ voucherID })
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({ voucherID, populates })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][VOUCHER_HANDLER][GET_INFO_VOUCHER] ${error}`);

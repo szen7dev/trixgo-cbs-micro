@@ -17,7 +17,7 @@ const PERPAGE_CORE              = 20;
 /**
  * TOOLS
 */
-const { _isValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany }  = require('../../../tools/utils/utils');
+const { _isValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 
 // update  phân trang sau
@@ -338,6 +338,7 @@ class AccountingFinancialVoucher extends BaseModel {
                             authorID, companyID, fundaID, voucher: voucherID, 
                             quantity: subitem.quantity ? Number(subitem.quantity) : 1,
                             amount: subitem.amount ? Number(subitem.amount) : 0,
+                            unitprice: subitem.unitprice ? Number(subitem.unitprice) : 0,
                             fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
                             note: subitem.note,
                             updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
@@ -498,6 +499,7 @@ class AccountingFinancialVoucher extends BaseModel {
                                 authorID, companyID, fundaID, voucher: voucherID, 
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 1,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
+                                unitprice: subitem.unitprice ? Number(subitem.unitprice) : 0,
                                 fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
                                 note: subitem.note,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
@@ -583,8 +585,9 @@ class AccountingFinancialVoucher extends BaseModel {
                             let dataUpdate = {
                                 journalID: subitem.journalID,
                                 authorID, 
-                                quantity: subitem.quantity ? Number(subitem.quantity) : 1,
-                                amount: subitem.amount ? Number(subitem.amount) : 0,
+                                // quantity: subitem.quantity ? Number(subitem.quantity) : 1,
+                                // amount: subitem.amount ? Number(subitem.amount) : 0,
+                                // unitprice: subitem.unitprice ? Number(subitem.unitprice) : 0,
                                 fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
                                 note: subitem.note,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
@@ -592,7 +595,11 @@ class AccountingFinancialVoucher extends BaseModel {
                                 customerDebit: customer,
                                 customerCredit: customer
                             }
-
+                            if(subitem.quantity && subitem.unitprice){
+                                dataUpdate.quantity = subitem.quantity ? Number(subitem.quantity) : 1;
+                                dataUpdate.amount = subitem.amount ? Number(subitem.amount) : 0;
+                                dataUpdate.unitprice = subitem.unitprice ? Number(subitem.unitprice) : 0;
+                            }
                             //_________Kiểm tra xem có tài khoản nợ/có không
                             //_________Nếu không thì lấy giá trị null
                             if(subitem.debit && _isValid(subitem.debit)){
@@ -786,7 +793,7 @@ class AccountingFinancialVoucher extends BaseModel {
         })
     }
 
-    getInfo({ voucherID }) {
+    getInfo({ voucherID, populates }) {
         return new Promise(async resolve => {
             try {
 
@@ -808,35 +815,47 @@ class AccountingFinancialVoucher extends BaseModel {
                 if(!infoVoucher)
                     return resolve({ error: true, message: 'voucher_exits', status: 400 })
 
-                // get list journal
-                let resultGetListJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
-                .populate({
-                    path: 'files',
-                    populate: {
-                        path: 'author'
+                // populates
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
                     }
-                })
-                .populate({
-                    path: 'customerCredit customerDebit contact  warehouse ipc',
-                    select:'_id  name'
-                })
-                .populate({
-                    path: 'contract',
-                    select:'_id  date name sign'
-                })
+                }
+                // get list journal
+              
                 // .populate({
-                //     path: 'goods',
-                //     select:'_id name unit'
+                //     path: 'files',
+                //     populate: {
+                //         path: 'author'
+                //     }
                 // })
-                .populate({
-                    path: 'debit credit',
-                    select:'_id description sign'
-                });
+                // .populate({
+                //     path: 'customerCredit customerDebit contact  warehouse ipc',
+                //     select:'_id  name'
+                // })
+                // .populate({
+                //     path: 'contract',
+                //     select:'_id  date name sign'
+                // })
+                // // .populate({
+                // //     path: 'goods',
+                // //     select:'_id name unit'
+                // // })
+                // .populate({
+                //     path: 'debit credit',
+                //     select:'_id description sign'
+                // });
 
-                if(!resultGetListJournal)
-                    resultGetListJournal = [];
 
-                return resolve({ error: false, data: { infoVoucher, listJournal: resultGetListJournal }, status: 200 })
+              
+
+                return resolve({ error: false, data: infoVoucher, status: 200 })
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][GET_INFO_VOUCHER]: ${error}`);
                 return resolve({ error: true, message: error.message, status: 400})
