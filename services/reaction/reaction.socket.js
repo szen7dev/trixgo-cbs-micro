@@ -33,6 +33,7 @@ exports.REACTION_SOCKET = {
 		}
 
 		let descriptionMSS = '';
+		let webUrl = '';
 		let infoObject = null;
 		let arrReceiver = [];
 
@@ -56,6 +57,7 @@ exports.REACTION_SOCKET = {
 				}
 
 				descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 phản hồi`;
+				webUrl = `https://staging.cbs.trixgo.com/pcm/detail/${infoObject?.data?._id}`;
 				break;
 			}
 			case APP_TYPE.MEDIA: {
@@ -74,7 +76,7 @@ exports.REACTION_SOCKET = {
 			});
 		}
 
-		arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== userID.toString());
+		// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== userID.toString());
 
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
@@ -95,7 +97,7 @@ exports.REACTION_SOCKET = {
 			users: arrReceiver,
 			title: 'THÔNG BÁO',
 			description: descriptionMSS,
-			web_url: `https://staging.cbs.trixgo.com/pcm/detail/${infoObject?.data?._id}`
+			web_url: webUrl
 		});
 	},
 
