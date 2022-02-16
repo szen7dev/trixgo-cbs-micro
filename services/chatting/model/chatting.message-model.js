@@ -614,12 +614,15 @@ class Model extends BaseModel {
 					})
 				} else{
 					const lastMessage = await CHATTING__MESSAGE_COLL
-						.findOne({
+						.find({
 							conversation: conversationID
 						})
 						.sort({ _id: -1 })
+						.limit(1)
 						.select('_id')
 						.lean();
+
+					console.log({ lastMessage })
 
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
 						conversationID,
@@ -629,7 +632,7 @@ class Model extends BaseModel {
 					if(+time !== 0){
 						await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
 							conversationID,
-							messageID: lastMessage?._id?.toString(),
+							messageID: lastMessage.length ? lastMessage[0]._id?.toString() : '',
 							userID,
 							time
 						})
