@@ -629,7 +629,7 @@ class Model extends BaseModel {
 					if(+time !== 0){
 						await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
 							conversationID,
-							messageID: lastMessage._id,
+							messageID: lastMessage?._id?.toString(),
 							userID,
 							time
 						})
@@ -638,6 +638,7 @@ class Model extends BaseModel {
 
 				resolve({ error: false, message: 'success', status: 200 });
 			} catch (error) {
+				console.error(error);
 				resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
