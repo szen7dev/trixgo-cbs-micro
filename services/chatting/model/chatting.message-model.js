@@ -607,6 +607,7 @@ class Model extends BaseModel {
 					})
 				}
 
+				console.log({ conversationID, messageID, isDelete })
 				if(isDelete){
 					await CHATTING__MESSAGE_COLL.deleteMany({
 						_id: { $gte: messageID },
