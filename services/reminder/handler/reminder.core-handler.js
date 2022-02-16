@@ -199,17 +199,18 @@ module.exports = {
 	addJobAutoDeleteMessageConversation: {
         params: {
             conversationID	: { type: "string" },
+            messageID		: { type: "string" },
             userID			: { type: "string" },
             time			: { type: "string" },
         },
         async handler(ctx) {
             try {
-                let { conversationID, userID, time } = ctx.params;
+                let { conversationID, messageID, userID, time } = ctx.params;
                 let timeScheduler = '';
 
 				switch (+time) {
 					case 1:
-						timeScheduler = "24 hours";
+						timeScheduler = "2 minutes";
 						break;
 					case 7:
 						timeScheduler = "1 week";
@@ -226,6 +227,7 @@ module.exports = {
 
 				agenda.schedule(timeScheduler, 'auto_delete_message_conversation', { 
 					conversationID,
+					messageID,
 					userID,
 					time,
 					isDelete: true,

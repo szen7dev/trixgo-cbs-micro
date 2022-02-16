@@ -137,6 +137,7 @@ module.exports = {
 	autoDeleteMessagesConversation: {
         params: {
 			conversationID	: { type: 'string' },
+			messageID		: { type: 'string', optional: true },
 			time			: { type: 'string' },
 			isDelete		: { type: 'boolean', optional: true },
         },
@@ -144,10 +145,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, time, isDelete } = ctx.params;
+                const { conversationID, messageID, time, isDelete } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.autoDeleteMessagesConversation({
-					conversationID, userID, time, isDelete, ctx
+					conversationID, messageID, userID, time, isDelete, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

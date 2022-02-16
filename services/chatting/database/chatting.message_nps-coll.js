@@ -14,6 +14,7 @@ module.exports = DATABASE_MIDDLEWARE("message_nps", {
         type: Number,
         default: 1
     },
+
     /**
      * Mã dịch vụ
      * - Với tin nhắn loại 2, 3 => Populdate vào trong doctype để lấy mảng phần tử con
@@ -26,7 +27,7 @@ module.exports = DATABASE_MIDDLEWARE("message_nps", {
     /**
      * Đánh giá
      */
-     usersVote: [{
+    usersVote: [{
 		// User đánh giá
         user: {
 			type: Schema.Types.ObjectId,
@@ -52,7 +53,7 @@ module.exports = DATABASE_MIDDLEWARE("message_nps", {
 	 * Trạng thái bình chọn
 	 * 1: Opened
 	 * 2: Closed
-	*/
+	 */
 	status: {
 		type: Number,
 		default: 1

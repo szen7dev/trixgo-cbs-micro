@@ -22,7 +22,6 @@ const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
 const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
 
-
 class Model extends BaseModel {
     constructor() {
         super(MEDIA_COLL);
@@ -414,19 +413,6 @@ class Model extends BaseModel {
 						status: 400
 					})
 				}
-
-				// let infoUserSeen = await MEDIA__SEEN_COLL.findOne({
-				// 	media: mediaID,
-				// 	userCreate: authorID
-				// })
-
-				// if(!infoUserSeen) {
-				// 	infoUserSeen = await MEDIA__SEEN_COLL.create({
-				// 		media: mediaID,
-				// 		userCreate: authorID,
-				// 		createAt: new Date()
-				// 	})
-				// }
 
                 // Tạo người xem mới nếu chưa tồn tại
 				let infoUserSeen = await MEDIA__SEEN_COLL.updateOne({

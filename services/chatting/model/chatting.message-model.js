@@ -581,7 +581,7 @@ class Model extends BaseModel {
 	 * Func: Tự động xoá tất cả tin nhắn của cuộc hội thoại
 	 * Date: 28/09/2021
 	 */
-	autoDeleteMessagesConversation({ conversationID, userID, time, isDelete = false, ctx }){
+	autoDeleteMessagesConversation({ conversationID, messageID, userID, time, isDelete = false, ctx }){
 		return new Promise(async resolve => {
 			try {
                 if (!checkObjectIDs([userID, conversationID])) {
@@ -609,17 +609,27 @@ class Model extends BaseModel {
 
 				if(isDelete){
 					await CHATTING__MESSAGE_COLL.deleteMany({
+						_id: { $gte: messageID },
 						conversation: conversationID
 					})
 				} else{
+					const lastMessage = await CHATTING__MESSAGE_COLL
+						.findOne({
+							conversation: conversationID
+						})
+						.sort({ _id: -1 })
+						.select('_id')
+						.lean();
+
 					await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
-						conversationID
+						conversationID,
 					});
 
 					// !Off auto delete message
 					if(+time !== 0){
 						await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_AUTO_DELETE_MESSAGE_CONVERSATION}`, {
 							conversationID,
+							messageID: lastMessage._id,
 							userID,
 							time
 						})
