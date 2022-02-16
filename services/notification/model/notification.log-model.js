@@ -263,12 +263,11 @@ class Model extends BaseModel {
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
         return new Promise(async (resolve) => {
              try {
-                const WEB_CBS           = 1;
-                const MOBILE_TEARSER    = 2;
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                const WEB_CBS           = 1;
+                const MOBILE_TEARSER    = 2;
 
                 /** 
                  * VALIDATION STEP (2)
@@ -316,7 +315,6 @@ class Model extends BaseModel {
                             headings: { "en": title },
                             contents: { "en": description },
                         }
-                        console.log("🚀 ~ file: notification.log-model.js ~ line 308 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowser", listDeviceFromWebBrowser)
 
                         if (listDeviceFromMobile.length > 0) {
                             // MOBILE PUSH

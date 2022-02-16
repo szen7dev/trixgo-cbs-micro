@@ -1,7 +1,9 @@
+"use strict";
+
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("media_user_seen", {
+module.exports  = DATABASE_MIDDLEWARE("media_seen", {
     /**
      * Bài viết 
      */
@@ -11,9 +13,9 @@ module.exports  = DATABASE_MIDDLEWARE("media_user_seen", {
     },
 
     /**
-     *  Người xem bài viết
+     *  Người tạo
      */
-    userSeen: {
+    userCreate: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },

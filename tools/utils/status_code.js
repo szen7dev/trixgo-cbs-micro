@@ -3,41 +3,41 @@
  * Updated: MinhVH
  */ 
 exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, error_message }) {
-    let error = [];
+    let errors = [];
 
     if(resultAfterCallHandler && resultAfterCallHandler.error){
-        error = [{
+        errors = [{
             message: resultAfterCallHandler.message,
-            keyError: 'result_after_call_handler'
+            keyError: resultAfterCallHandler.keyError || 'result_after_call_handler'
         }]
     }
 
     if(!ctx){
-        error = [...error, {
+        errors = [...errors, {
             message: 'error_render_status_code_miss_ctx',
             keyError: 'ctx'
         }]
     }
 
     if(ctx && !ctx.meta){
-        error = [...error, {
+        errors = [...errors, {
             message: 'error_render_status_code_miss_ctx.meta',
             keyError: 'ctx.meta'
         }]
     }
 
 	if(error_message){
-		error = [...error, {
+		errors = [...errors, {
             message: error_message,
-            keyError: 'error_message'
+            keyError: 'server_error'
         }]
 	}
 
-    if(error.length){
-        ctx.meta.$statusCode    = resultAfterCallHandler && resultAfterCallHandler.status || 500;
+    if(errors.length){
+        ctx.meta.$statusCode    = resultAfterCallHandler ? resultAfterCallHandler.status : 500;
         ctx.meta.$statusMessage = 'server_error';
 
-		return { error: true, data: error };
+		return { error: true, status: ctx.meta.$statusCode, data: errors };
     }
 
     ctx.meta.$statusCode    = 200;

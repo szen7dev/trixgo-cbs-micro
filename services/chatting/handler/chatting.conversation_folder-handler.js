@@ -13,7 +13,7 @@ module.exports = {
 
 	/**
 	 * ============================ ************************** ===============================
-	 * ============================ 	CONVERSATION FOLDER    ===============================
+	 * ============================ 	FOLDER CONVERSATION    ===============================
 	 * ============================ ************************** ===============================
 	 */
 
@@ -26,7 +26,7 @@ module.exports = {
         params: {
             name                        : { type: "string" },
             includedConversationsID     : { type: "array", optional: true },
-            excludedConversationsIDD    : { type: "array", optional: true },
+            excludedConversationsID     : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
@@ -157,6 +157,4 @@ module.exports = {
             }
         }
     },
-
-    //========================= END CONVERSATION GROUP  ==============================
 }

@@ -66,7 +66,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     files: [{
         file: {
 			type: Schema.Types.ObjectId,
-			ref: 'message_conversation_file' // convert to file
+			ref: 'message_conversation_file'
 		},
 		/**
 		 * Trạng thái file
@@ -97,14 +97,17 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 
 	/**
      * Loại tin nhắn
-     * 0: tin nhắn thông thường 
-	 * 1: tin nhắn ảnh
-	 * 2: tin nhắn file
-	 * 3: tin nhắn link (bỏ => sử dụng coll chatting.conversation_link-model)
-	 * 4: tin nhắn reminder
-	 * 5: tin nhắn poll
-	 * 6: tin nhắn share location
-	 * 7: tin nhắn share contact
+     * 0: Tin nhắn thông thường 
+	 * 1: Tin nhắn ảnh
+	 * 2: Tin nhắn file
+	 * 3: Tin nhắn link (bỏ => sử dụng coll chatting.conversation_link-model)
+	 * 4: Tin nhắn reminder
+	 * 5: Tin nhắn poll
+	 * 6: Tin nhắn share location
+	 * 7: Tin nhắn share contact
+     * 8: Tin nhắn NPS-Điểm số
+     * 9: Tin nhắn NPS-Lý do không hài lòng
+     * 10: Tin nhắn NPS-Lý do hài lòng
 	 * 
      * 101: Thêm thành viên vào cuộc hội thoại
      * 102: Xóa thành viên khỏi cuộc hội thoại
@@ -152,7 +155,8 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     }],
 
 	/**
-     * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin) (Contact bạn bè - tin nhắn chia sẻ danh bạ)
+     * Danh sách users được chỉ định (thêm/xoá thành viên, xét/bỏ admin)
+     * (Contact bạn bè - tin nhắn chia sẻ danh bạ)
      */
     usersAssigned: [{
         type    : Schema.Types.ObjectId,
@@ -173,6 +177,14 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	reminder: {
         type    : Schema.Types.ObjectId,
         ref     : 'message_message_reminder'
+    },
+
+    /**
+     * Tin nhắn NPS
+     */
+	nps: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'message_nps'
     },
 
     /**
