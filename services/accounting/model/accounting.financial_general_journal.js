@@ -2,7 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                                  = require('mongoose').Types.ObjectId;
 const moment                                = require('moment');
-const { _isValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany
+const { _isValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany
 }                                           = require('../../../tools/utils/utils');
 
 // const CONTACT_COLL                          = require('../../../database/core/contact-coll');
@@ -55,20 +55,15 @@ class Model extends BaseModel {
         super(require('../database/accounting.financial_general_journal-coll'))
     }
     // -------------------- start function check params for add, update, remove, search -----------
-    checkInputInputJournal({ amount, authorID }){
-        if(Number.isNaN(Number(amount)))
-            return { error: true, message: 'amount_invalid', status: 400 };
-
+    checkInputInputJournal({ authorID }){
         if(!_isValid(authorID))
             return { error: true, message: 'authorID_invalid', status: 400 };
     }
 
     checkInputInsertFull({ amount, voucher, companyID, authorID, fundaID, customerDebit, customerCredit }){
         // if(Number.isNaN(Number(amount)) || !_isValid(journalID) || !_isValid(authorID)){
-        this.checkInputInputJournal({ amount, authorID });
-        if(Number.isNaN(Number(amount)))
-            return { error: true, message: 'amount_invalid', status: 400 };
-
+        this.checkInputInputJournal({  authorID });
+       
         if(!_isValid(authorID))
             return { error: true, message: 'authorID_invalid', status: 400 };
             
@@ -90,9 +85,9 @@ class Model extends BaseModel {
         return { error: false }
     }
 
-    checkInputUpdate({ amount, authorID, journalID }){
+    checkInputUpdate({  authorID, journalID }){
         // if(Number.isNaN(Number(amount)) || !_isValid(journalID) || !_isValid(authorID)){
-        this.checkInputInputJournal({ amount, authorID });
+        this.checkInputInputJournal({  authorID });
         if(!_isValid(journalID))
             return { error: true, message: 'journalID_invalid', status: 400 };
 
@@ -122,7 +117,7 @@ class Model extends BaseModel {
             customerCredit,
             quantity: quantityCalculate,
             unitprice: unitpriceCalculate,
-            amount: amountCalculate,
+            amount: Number(quantityCalculate) *  Number(unitpriceCalculate),
             fcuExRate: Number(fcuExRate || 0),
             fcuAmount: fcuAmountCalculate,
             cash,
@@ -180,7 +175,6 @@ class Model extends BaseModel {
             userUpdate: authorID, 
             quantity: quantityCalculate,
             unitprice: unitpriceCalculate,
-            amount: amountCalculate,
             fcuExRate: Number(fcuExRate),
             fcuAmount: fcuAmountCalculate,
             note,
@@ -189,8 +183,8 @@ class Model extends BaseModel {
             customerDebit,
             customerCredit,
         }
-        if(amount && Number(amount)){
-            dataUpdate.amount = Number(amount);
+        if(unitpriceCalculate && quantityCalculate){
+            dataUpdate.amount = Number(quantityCalculate) *  Number(unitpriceCalculate)
         }
         //_________Kiểm tra xem có tài khoản nợ/có không
         //_________Nếu không thì lấy giá trị null
@@ -265,7 +259,7 @@ class Model extends BaseModel {
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, 
         project, job, cash, vat, note, updown, advancePayment , 
-        date, subtype, warehouse, group
+        date, subtype, warehouse, group, unitprice
     }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -273,7 +267,7 @@ class Model extends BaseModel {
             const session = await connection.startSession();
             await session.startTransaction();
             try {
-                const checkInput = this.checkInputInsertFull({  amount, voucher, companyID, authorID, fundaID, customerDebit, customerCredit });
+                const checkInput = this.checkInputInsertFull({  voucher, companyID, authorID, fundaID, customerDebit, customerCredit });
                 if(checkInput.error)
                     return resolve(checkInput)
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
@@ -283,7 +277,7 @@ class Model extends BaseModel {
 
                 // Fix: nếu amount == 0 -> result = NaN (insert into db throw error)
                 const quantityCalculate       = Number(Number(quantity).toFixed(3)) || 0;
-                const unitpriceCalculate      = Number(Number(amount/quantity).toFixed(3)) || 0;
+                const unitpriceCalculate      = Number(Number(unitprice).toFixed(3)) || 0;
                 const amountCalculate         = Number(Number(amount).toFixed(3)) || 0;
                 const fcuAmountCalculate      = Number(Number((amount || 0)/(fcuExRate || 1)).toFixed(0)) || 0;
                 
@@ -305,7 +299,7 @@ class Model extends BaseModel {
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN PHIẾU
                 // Cập nhật: amount, fcuAmount
-                const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherId: voucher, journalAmount : amount , journalFcuAmount: fcuAmountCalculate })
+                const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherId: voucher, journalAmount : infoAfterInsert.amount , journalFcuAmount: fcuAmountCalculate })
                 // await session.commitTransaction();
                 //---- Không cần check kĩ --> sẽ đưa qua trasaction//
                 if(resultUpdate.error){
@@ -341,7 +335,7 @@ class Model extends BaseModel {
         journalID, debit, credit, customerDebit,
         customerCredit, goods, quantity, 
         amount, fcuExRate, note, updown, advancePayment,
-        contract, project, job, authorID, warehouse, group
+        contract, project, job, authorID, warehouse, group, unitprice
     }){
         return new Promise(async (resolve) => {
             let responseResultUpdate = {};
@@ -367,7 +361,7 @@ class Model extends BaseModel {
 
                 // Fix: Nếu amount == 0 -> result = NaN (insert into db throw error)
                 const quantityCalculate       = Number(Number(quantity).toFixed(3)) || 0;
-                const unitpriceCalculate      = Number(Number(amount/quantity).toFixed(3)) || 0;
+                const unitpriceCalculate      = Number(Number(unitprice).toFixed(3)) || 0;
                 const amountCalculate         = Number(Number(amount).toFixed(3)) || 0;
                 const fcuAmountCalculate      = Number(Number(amount/fcuExRate).toFixed(0)) || 0;
                 const dataUpdate = await this.collectDataForUpdate({
@@ -376,18 +370,20 @@ class Model extends BaseModel {
                     amountCalculate, fcuExRate, fcuAmountCalculate,
                     note, project, updown, advancePayment, debit, credit,
                     goods, contract, job, journalID, amount, warehouse, group
-                })
+                });
+                console.log({dataUpdate})
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findByIdAndUpdate(journalID, dataUpdate , { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update", status: 400 });
                 
-                const journalAmount = Number(infoAfterUpdate.amount || 0) - Number(infoJournal.amount ||0) || 0;
-                const journalFcuAmount = Number(infoAfterUpdate.fcuAmount || 0) - Number(infoJournal.fcuAmount ||0) || 0;
+                const journalAmount = Number(dataUpdate.amount ||0)  -  Number(infoJournal.amount || 0) || 0;
+                const journalFcuAmount = Number(dataUpdate.fcuAmount || 0) - Number(infoJournal.fcuAmount ||0) || 0;
 
                 // step 1: update --> voucher info 
                 // step 2: transaction (after...)
                 const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({  voucherId: `${infoAfterUpdate.voucher}`,journalAmount, journalFcuAmount })
+                console.log({resultUpdateVoucher,journalAmount, journalFcuAmount})
                 if(resultUpdateVoucher.error){
                     responseResultUpdate = { error: false, data: infoAfterUpdate, status: 400 }
                     await session.abortTransaction();
@@ -463,9 +459,7 @@ class Model extends BaseModel {
                 return resolve(responseResultRemove);
             }
         })
-    }
-
-   
+    } 
 
     getInfo({ journalID }) {
         return new Promise(async resolve => {
@@ -930,6 +924,110 @@ class Model extends BaseModel {
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOUNRAL][getListJournalOfAccount]: ${error} `);
                 return resolve({ error: true, message: error.message })
+            }
+        });  
+    }
+
+    getList({ companyID, voucherID,
+        keyword, limit = 10, lastestID, select, populates= {} }){
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                if(!_isValid(voucherID))
+                    return { error: true, message: 'voucherID_invalid' };
+
+                if(!_isValid(companyID))
+                    return { error: true, message: 'companyID_invalid' };
+           
+                let conditionObj = { 
+                    company: companyID
+                };
+                if(voucherID){
+                    conditionObj.voucher = voucherID
+                }
+
+                if(limit > 20){
+                    limit = 20
+                }
+
+                let sortBy   = { createAt: -1, _id: -1 };
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+				
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+					let keys	 = ['createAt__-1', '_id__-1'];
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}
+
+                let infoDataAfterGet = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean(); 
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+                
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListJournalOfAccount]: ${error} `);
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         });  
     }

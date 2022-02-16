@@ -50,8 +50,8 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(accountID))
                     return resolve({ error: true, message: 'Request params accountID invalid', status: 400 });
                 
-                 // populates
-                 if(populates && typeof populates === 'string'){
+                // populates
+                if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
