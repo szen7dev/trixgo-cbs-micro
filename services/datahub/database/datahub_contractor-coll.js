@@ -4,6 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
  * DATAHUB KHU VỰC-LĨNH VỰC-NHÀ THẦU
+ * - Mỗi contractorID chỉ ứng với 1 fieldID
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
     //_________Lĩnh vực
@@ -16,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
-    //_________Xã/Phường
+    //_________Xã/Phường (chỉ lưu area3)
     areas: [{
         type: Schema.Types.ObjectId,
         ref : "area"

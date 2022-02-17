@@ -30,6 +30,11 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
         type: Schema.Types.ObjectId,
         ref: "file"
     },
+    //_________Số nhà thầu hoạt động
+    contractors: [{
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    }], 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
