@@ -5,17 +5,6 @@ const moment                                = require('moment');
 const { checkObjectIDs, _isValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany
 }                                           = require('../../../tools/utils/utils');
 
-// const CONTACT_COLL                          = require('../../../database/core/contact-coll');
-// const ACCOUNT_COLL                          = require('../../../database/core/account-coll');
-// const GOODS_COLL                            = require('../../../database/core/goods-coll');
-// const WAREHOUSE_COLL                        = require('../../../database/core/warehouse-coll');
-// const CONTRACT_COLL                         = require('../../../database/core/contract-coll');
-// const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL                  = require('../../../database/apps/financial/financial_general_journal-coll');
-// const VOUCHER_COLL                          = require('../../../database/apps/financial/financial_voucher-coll');
-// const BUDGET_JOB_COLL                       = require('../../../database/apps/budget/budget_job-coll');
-
-// const ACCOUNT_MODEL                         = require('../../../models/core/account').MODEL;
-
 /**
  * DOMAIN AND ACTIONS
 */
@@ -31,11 +20,6 @@ const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-consta
 */
 const connection  = require('../helper/transaction-demo/connectionMongo');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-
-
-// update  phân trang sau
-// const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
-// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS

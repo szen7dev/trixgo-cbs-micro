@@ -136,7 +136,6 @@ class AccountingFinancialVoucher extends BaseModel {
         if(storage && _isValid(storage)){
             dataInsertVoucher.storage = storage
         }
-
         if(ipc){
             if(!ObjectId.isValid(ipc)){
                 return { error: true, message: "ipc_invalid", status: 400 }
@@ -199,7 +198,13 @@ class AccountingFinancialVoucher extends BaseModel {
             shipperCost: shipperCost ? Number(shipperCost) : 0,
             fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
             staff, 
-            ipc, project, subtype, fee
+            project, subtype, fee
+        }
+
+        if(ipc && _isValid(ipc)){
+            dataUpdateVoucher.ipc = ipc
+        }else{
+            dataUpdateVoucher.ipc = null
         }
 
         //_________Kiểm tra xem có VAT, lưu trữ hồ sơ không
@@ -290,6 +295,8 @@ class AccountingFinancialVoucher extends BaseModel {
                  *  VOUCHER_TYPES  = PX
                  *  {Number(number+1)} = 4740
                  */
+
+
                 let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
                 const companyID = infoFunda.company;
                 if(sign && sign != ""){
@@ -437,7 +444,8 @@ class AccountingFinancialVoucher extends BaseModel {
         storage, inspection, termination, advancePayment,
         returning, forward, cancel, selectedJournals, deletedJournals,
         source, orderNew, pricePolicy, discountCost, otherCost, shipperName,
-        shipperCost, staff, fcuExRate, authorID, companyID, fundaID, project, subtype, fee
+        shipperCost, staff, fcuExRate, authorID, companyID, fundaID,
+         project, subtype, fee, ipc
     }){
         return new Promise(async (resolve) => {
             try {
@@ -472,7 +480,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     cancel, source, orderNew, pricePolicy,
                     discountCost, otherCost, shipperName,
                     shipperCost, fcuExRate, staff, contract,
-                    storage, project, subtype, fee
+                    storage, project, subtype, fee, ipc
                 });
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true });

@@ -81,7 +81,7 @@ module.exports = {
                     storage, inspection, termination, advancePayment,
                     returning, forward, cancel, selectedJournals, deletedJournals,
                     source, orderNew, pricePolicy, discountCost, otherCost, shipperName,
-                    shipperCost, staff, fcuExRate, fundaID, project, subtype, fee } = ctx.params;
+                    shipperCost, staff, fcuExRate, fundaID, project, subtype, fee, ipc } = ctx.params;
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.update({ 
                     ctx, voucherID, type, date, dateInvoice, 
@@ -90,7 +90,8 @@ module.exports = {
                     storage, inspection, termination, advancePayment,
                     returning, forward, cancel, selectedJournals, deletedJournals,
                     source, orderNew, pricePolicy, discountCost, otherCost, shipperName,
-                    shipperCost, staff, fcuExRate, authorID: userID, companyID: company._id, fundaID, project, subtype, fee
+                    shipperCost, staff, fcuExRate, authorID: userID,
+                    companyID: company._id, fundaID, project, subtype, fee, ipc
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
