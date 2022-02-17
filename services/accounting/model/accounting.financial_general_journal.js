@@ -930,7 +930,7 @@ class Model extends BaseModel {
     }
 
     getList({ companyID, voucherID,
-        keyword, limit = 1, lastestID, select, populates= {} }){
+        keyword, limit = 10, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
                 /**
@@ -950,7 +950,7 @@ class Model extends BaseModel {
                 }
 
                 if(limit > 20){
-                    limit = 1
+                    limit = 20
                 }
 
                 let sortBy   = { createAt: -1, _id: -1 };
