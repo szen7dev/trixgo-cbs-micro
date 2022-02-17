@@ -2,7 +2,9 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
-
+/**
+ * DATAHUB-HỒ SƠ NGHIỆM THU
+ */
 module.exports  = DATABASE_MIDDLEWARE("datahub_inspection_doc", {
     //_________Phân loại (kết cấu, kiến trúc,...) cf_constant
     type: {

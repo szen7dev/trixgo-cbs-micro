@@ -2,7 +2,9 @@
 
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
-
+/**
+ * DATAHUB-CHECKLIST CỦA HỒ SƠ NGHIỆM THU
+ */
 module.exports  = DATABASE_MIDDLEWARE("datahub_inspection_checklist", {
     //_________Thuộc biên bản
     inspection: {

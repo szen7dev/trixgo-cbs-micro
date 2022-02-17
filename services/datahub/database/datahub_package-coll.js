@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * GÓI THẦU CỦA DỰ ÁN
+ * DATAHUB-GÓI THẦU CỦA DỰ ÁN
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     //_________Dự án
