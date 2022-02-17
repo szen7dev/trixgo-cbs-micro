@@ -1,18 +1,16 @@
 
 "use strict";
-const ObjectID                                  = require('mongoose').Types.ObjectId;
-const REACTION__REACTION_CORE_COLL              = require('../database/reaction.reaction_core-coll');
-const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
-                                                = require('../../../tools/utils/utils');
-const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 
-// Lưu ý reaction core chỉ có 2 hàm thêm và vập nhật, xóa và lấy danh sách thì được lấy thông qua reaction theo ứng dụng
+const BaseModel                                 = require('../../../tools/db/base_model');
+const { checkObjectIDs }                        = require('../../../tools/utils/utils');
+const REACTION__REACTION_CORE_COLL              = require('../database/reaction.reaction_core-coll');
+
 class Model extends BaseModel {
+
     constructor() {
         super(REACTION__REACTION_CORE_COLL);
     }
+
     /**
      * Name: Thêm reaction core ✅
      * Author: Depv
@@ -97,5 +95,64 @@ class Model extends BaseModel {
         });
     }
 
+    /**
+	 * Dev: MinhVH
+	 * Func: DANH SÁCH REACTION BÀI VIẾT
+	 */
+	getListReaction({ userID, condition, select, populates }) {
+		return new Promise(async resolve => {
+			try {
+                console.log({ userID, condition, select, populates })
+				if(!checkObjectIDs([userID])) {
+                    return resolve({
+						error: true, 
+						message: 'Tham số userID không hợp lệ', 
+						keyError: 'params_userID_invalid',
+						status: 400
+					});
+				}
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Tham số populates không hợp lệ', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: '',
+						select: ''
+					}
+				}
+
+                const sortBy = {
+                    _id: -1,
+                    createAt: -1,
+                }
+
+				const listReaction = await REACTION__REACTION_CORE_COLL
+					.find(condition)
+					.select(select)
+					.populate(populates)
+                    .sort(sortBy)
+					.lean();
+
+				const totalRecord = await REACTION__REACTION_CORE_COLL.countDocuments(condition);
+
+				return resolve({
+					error: false,
+					status: 200,
+					data: { 
+                        listRecords: listReaction, 
+                        totalRecord
+                    }
+				});
+			} catch (error) {
+				console.error(error);
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
 }
+
 exports.MODEL = new Model;

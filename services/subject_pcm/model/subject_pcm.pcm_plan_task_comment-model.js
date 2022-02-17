@@ -419,7 +419,6 @@ class Model extends BaseModel {
 	searchCommentById({ taskID, authorID, commentID, select, populates = {} }){
 		return new Promise(async resolve => {
 			try {
-				// Check params
 				if(!checkObjectIDs([taskID, commentID, authorID])) {
                     return resolve({
                         error: true,

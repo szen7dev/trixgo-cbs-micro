@@ -23,6 +23,18 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_type", {
     description: String,   
     //_________Số lượng nhà thầu tham gia
     numberOfContractors: { type: Number, default: 0 },
+    //_________Phổ biến hay không (Phổ biến 2/Thông thường 1)
+    popular: { type: Number, default: 1 },
+    //_________Ảnh đại diện
+    image: {
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    },
+    //_________Số nhà thầu hoạt động
+    contractors: [{
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    }], 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

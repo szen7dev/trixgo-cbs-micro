@@ -127,14 +127,23 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReaction({ userID, mediaID, lastestID, limit = 20, select, populates = {} }) {
+	getListReaction({ userID, mediaID, lastestID, type, limit = 20, select, populates, ctx }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số or user ID không hợp lệ', 
+						message: 'Tham số user ID không hợp lệ', 
 						keyError: 'params_userID_invalid',
+						status: 400
+					});
+				}
+
+				if(!checkObjectIDs([mediaID])) {
+                    return resolve({
+						error: true, 
+						message: 'Tham số mediaID không hợp lệ', 
+						keyError: 'params_mediaID_invalid',
 						status: 400
 					});
 				}
@@ -145,24 +154,11 @@ class Model extends BaseModel {
 					limit = +limit;
 				}
 
-				if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Tham số populates không hợp lệ', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-					populates = {
-						path: '',
-						select: ''
-					}
-				}
-
-				let conditionObj = { media: mediaID };
-				let conditionFind = {};
-                let sortBy = {
-                    _id: -1,
-					createAt: -1,
-                }
+				let conditionObj 			= { media: mediaID };
+				let conditionFind 			= {};
+				let conditionReactionCore 	= {};
+				let nextCursor	= null;
+				let totalRecord = 0;
 
 				if(lastestID && checkObjectIDs([lastestID])){
                     let infoReaction = await MEDIA__REACTION_COLL.findById(lastestID);
@@ -191,17 +187,17 @@ class Model extends BaseModel {
 					conditionFind = dataPagingAndSort.data.find;
                 }
 
-				const listReactionMedia = await MEDIA__REACTION_COLL
+				type && (conditionReactionCore.type = type);
+
+				let listReactionMedia = await MEDIA__REACTION_COLL
 					.find({ ...conditionObj, ...conditionFind })
 					.select(select)
+					.populate({
+						path: 'reaction',
+						match: conditionReactionCore
+					})
 					.limit(limit + 1)
-					.sort(sortBy)
-					.populate(populates)
 					.lean();
-
-				// GET TOTAL RECORD
-				let totalRecord = await MEDIA__REACTION_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
 
 				if(listReactionMedia && listReactionMedia.length){
 					if(listReactionMedia.length > limit){
@@ -209,6 +205,37 @@ class Model extends BaseModel {
 						listReactionMedia.length = limit;
 					}
 				}
+
+				listReactionMedia = listReactionMedia.filter(reaction => reaction.reaction);
+
+				// let listReactionsID = listReactionMedia.map(reaction => reaction.reaction);
+
+				// if(listReactionsID.length) {
+				// 	type && (conditionReactionCore.type = type);
+
+				// 	listReactionMedia = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
+				// 		select,
+				// 		populates,
+				// 		condition: { ...conditionReactionCore, _id: { $in: listReactionsID } }
+				// 	});
+
+				// 	if(listReactionMedia.error)
+				// 		return resolve(listReactionMedia);
+
+				// 	totalRecord = listReactionMedia.data?.totalRecord;
+				// 	listReactionMedia = listReactionMedia.data?.listRecords;
+				// } else{
+				// 	return resolve({
+				// 		error: false,
+				// 		status: 200,
+				// 		data: {
+				// 			listRecords: [],
+				// 			limit,
+				// 			totalRecord,
+				// 			nextCursor
+				// 		}
+				// 	})
+				// }
 
 				return resolve({
 					error: false,
