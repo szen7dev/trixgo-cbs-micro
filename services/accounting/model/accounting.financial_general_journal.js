@@ -2,7 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                                  = require('mongoose').Types.ObjectId;
 const moment                                = require('moment');
-const { _isValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany
+const { checkObjectIDs, _isValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany
 }                                           = require('../../../tools/utils/utils');
 
 // const CONTACT_COLL                          = require('../../../database/core/contact-coll');
