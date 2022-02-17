@@ -4,33 +4,24 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
  * DATAHUB KHU VỰC-LĨNH VỰC-NHÀ THẦU
+ * - Mỗi contractorID chỉ ứng với 1 fieldID
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
     //_________Lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
         ref : "datahub_type"
-    },  
-    //_________Tỉnh/Thành phố
-    area1: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Huyện/Quận
-    area2: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Xã/Phường
-    area3: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
+    }, 
     //_________Nhà thầu thực hiện dịch vụ/lĩnh vực
     contractor: {
         type: Schema.Types.ObjectId,
         ref : "company"
-    },
+    }, 
+    //_________Xã/Phường (chỉ lưu area3)
+    areas: [{
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    }],
     //_________Xếp hạng (1-5)
     ranking: { type: Number, default: 1 },
     //_________Ghi chú
