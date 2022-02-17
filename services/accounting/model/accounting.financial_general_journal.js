@@ -30,6 +30,7 @@ const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-consta
  * TOOLS
 */
 const connection  = require('../helper/transaction-demo/connectionMongo');
+const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
 
 
 // update  phân trang sau
@@ -929,7 +930,7 @@ class Model extends BaseModel {
     }
 
     getList({ companyID, voucherID,
-        keyword, limit = 10, lastestID, select, populates= {} }){
+        keyword, limit = 1, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
                 /**
@@ -949,7 +950,7 @@ class Model extends BaseModel {
                 }
 
                 if(limit > 20){
-                    limit = 20
+                    limit = 1
                 }
 
                 let sortBy   = { createAt: -1, _id: -1 };
