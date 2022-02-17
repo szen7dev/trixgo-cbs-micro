@@ -43,6 +43,7 @@ module.exports = {
     getListReaction: {
         params: {
             mediaID     : { type: "string" },
+            type        : { type: "string", optional: true },
             lastestID 	: { type: "string", optional: true },
             limit 	    : { type: "string", optional: true },
             select 	    : { type: "string", optional: true },
@@ -52,10 +53,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID, lastestID, limit, select, populates } = ctx.params;
+                const { mediaID, type, lastestID, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.getListReaction({
-					userID, mediaID, lastestID, limit, select, populates
+					userID, mediaID, type, lastestID, limit, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

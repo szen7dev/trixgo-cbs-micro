@@ -1105,25 +1105,28 @@ class Model extends BaseModel {
 	 * Date: 23/08/2021
 	 * Updated: 10/02/2022
 	 */
-	searchMessageConversationById({ conversationID, userID, messageID, filter = {}, select = {} }){
+	searchMessageConversationById({ conversationID, userID, messageID, populates, select }){
 		return new Promise(async resolve => {
 			try {
-				// Check params
-				if(!checkObjectIDs([conversationID, messageID, userID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
-
-				if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
+				if(!checkObjectIDs([conversationID, messageID, userID])) {
+					return resolve({
+						error: true,
+						message: "Tham số conversationID hoặc messageID không hợp lệ",
+						keyError: "params_conversationID_or_messageID_invalid",
+						status: 400
+					})
 				}
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					select = JSON.parse(select);
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: '',
+						select: ''
+					}
 				}
 
 				// Check user exist in conversation
@@ -1132,8 +1135,14 @@ class Model extends BaseModel {
 					members: { $all: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
+						keyError: "you_are_not_member_of_conversation",
+						status: 403
+					})
+				}
 
 				let conditionObjFrontList 		= { _id: { $lt: messageID }, conversation: conversationID };
 				let conditionObjBackList 		= { _id: { $gt: messageID }, conversation: conversationID };
@@ -1150,67 +1159,83 @@ class Model extends BaseModel {
 				}
 
 				let infoMessage = await CHATTING__MESSAGE_COLL
-					.findOne(conditionObjSearchMessage, filter)
-					.populate('sender', select.sender)
-					.populate('usersSeen', select.usersSeen)
-					.populate('receivers', select.receivers)
-					.populate('usersAssigned', select.usersAssigned)
-					.populate('parent', select.parent)
-					.populate('poll', select.poll)
-					.populate('reminder', select.reminder)
-					.populate({
-						path: 'files.file',
-						populate: {
-							path: 'file',
-							select: 'name nameOrg path size'
-						},
-						select: select.files
-					})
+					.findOne(conditionObjSearchMessage)
+					.select(select)
+					.populate(populates)
 					.lean();
+					// .populate('sender', select.sender)
+					// .populate('usersSeen', select.usersSeen)
+					// .populate('receivers', select.receivers)
+					// .populate('usersAssigned', select.usersAssigned)
+					// .populate('parent', select.parent)
+					// .populate('poll', select.poll)
+					// .populate('reminder', select.reminder)
+					// .populate({
+					// 	path: 'files.file',
+					// 	populate: {
+					// 		path: 'file',
+					// 		select: 'name nameOrg path size'
+					// 	},
+					// 	select: select.files
+					// })
+					// .lean();
 
-				if(!infoMessage)
-					return resolve({ error: true, message: "Can't get info message", status: 400 });
+				if(!infoMessage) {
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
+						keyError: "message_not_exists",
+						status: 400
+					})
+				}
 
-
-				let listMessagesFront = await CHATTING__MESSAGE_COLL.find(conditionObjFrontList, filter)
+				let listMessagesFront = await CHATTING__MESSAGE_COLL
+					.find(conditionObjFrontList)
+					.select(select)
 					.limit(5)
-					.sort({ _id: -1, createAt: -1 })
-					.populate('sender', select.sender)
-					.populate('usersSeen', select.usersSeen)
-					.populate('receivers', select.receivers)
-					.populate('usersAssigned', select.usersAssigned)
-					.populate('parent', select.parent)
-					.populate('poll', select.poll)
-					.populate('reminder', select.reminder)
-					.populate({
-						path: 'files.file',
-						populate: {
-							path: 'file',
-							select: 'name nameOrg path size'
-						},
-						select: select.files
-					})
+                    .sort({ createAt: -1, _id: -1 })
+					.populate(populates)
 					.lean();
+					// .populate('sender', select.sender)
+					// .populate('usersSeen', select.usersSeen)
+					// .populate('receivers', select.receivers)
+					// .populate('usersAssigned', select.usersAssigned)
+					// .populate('parent', select.parent)
+					// .populate('poll', select.poll)
+					// .populate('reminder', select.reminder)
+					// .populate({
+					// 	path: 'files.file',
+					// 	populate: {
+					// 		path: 'file',
+					// 		select: 'name nameOrg path size'
+					// 	},
+					// 	select: select.files
+					// })
+					// .lean();
 
-				let listMessagesBack = await CHATTING__MESSAGE_COLL.find(conditionObjBackList, filter)
+				let listMessagesBack = await CHATTING__MESSAGE_COLL
+					.find(conditionObjBackList)
+					.select(select)
 					.limit(5)
-					.sort({ _id: 1, createAt: 1 })
-					.populate('sender', select.sender)
-					.populate('usersSeen', select.usersSeen)
-					.populate('receivers', select.receivers)
-					.populate('usersAssigned', select.usersAssigned)
-					.populate('parent', select.parent)
-					.populate('poll', select.poll)
-					.populate('reminder', select.reminder)
-					.populate({
-						path: 'files.file',
-						populate: {
-							path: 'file',
-							select: 'name nameOrg path size'
-						},
-						select: select.files
-					})
+                    .sort({ createAt: 1, _id: 1 })
+					.populate(populates)
 					.lean();
+					// .populate('sender', select.sender)
+					// .populate('usersSeen', select.usersSeen)
+					// .populate('receivers', select.receivers)
+					// .populate('usersAssigned', select.usersAssigned)
+					// .populate('parent', select.parent)
+					// .populate('poll', select.poll)
+					// .populate('reminder', select.reminder)
+					// .populate({
+					// 	path: 'files.file',
+					// 	populate: {
+					// 		path: 'file',
+					// 		select: 'name nameOrg path size'
+					// 	},
+					// 	select: select.files
+					// })
+					// .lean();
 
 				let listMessages = [...listMessagesFront.reverse(), infoMessage, ...listMessagesBack];
 

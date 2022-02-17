@@ -64,4 +64,31 @@ module.exports = {
             }
         }
     },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH REACTION
+	 * Date: 17/02/2022
+	 */
+    getInfoAndGetList: {
+        params: {
+            select 	    : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { condition, select, populates } = ctx.params;
+
+                const resultAfterCallHandler = await REACTION_CORE_MODEL.getListReaction({
+					userID, condition, select, populates
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 }

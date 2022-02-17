@@ -364,10 +364,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, messageID, filter, select } = ctx.params;
+                let { conversationID, messageID, populates, select } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.searchMessageConversationById({ 
-					conversationID, userID, messageID, filter, select
+					conversationID, userID, messageID, populates, select
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
