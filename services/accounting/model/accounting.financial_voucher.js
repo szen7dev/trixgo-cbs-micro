@@ -807,21 +807,6 @@ class AccountingFinancialVoucher extends BaseModel {
 
                 if( !_isValid(voucherID))
                     return resolve({ error: true, message: 'voucherID_invalid', status: 400 });
-                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
-                .populate('company customer contract storage staff')
-                .populate({
-                    path: 'files',
-                    populate: {
-                        path: 'author'
-                    }
-                })
-                .populate({
-                path: 'userCreate userUpdate',
-                    select:'_id fullname image'
-                })
-                
-                if(!infoVoucher)
-                    return resolve({ error: true, message: 'voucher_exits', status: 400 })
 
                 // populates
                 if(populates && typeof populates === 'string'){
@@ -835,6 +820,13 @@ class AccountingFinancialVoucher extends BaseModel {
                         select: ""
                     }
                 }
+                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
+                .populate(populates);
+                
+                if(!infoVoucher)
+                    return resolve({ error: true, message: 'voucher_exits', status: 400 })
+
+               
                 // get list journal
               
                 // .populate({
