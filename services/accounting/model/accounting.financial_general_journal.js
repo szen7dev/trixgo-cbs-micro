@@ -987,7 +987,6 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .populate(populates)
                     .lean(); 
-
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 

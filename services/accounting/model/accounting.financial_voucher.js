@@ -1511,6 +1511,72 @@ class AccountingFinancialVoucher extends BaseModel {
             }
         })
     }
+    
+    //
+    updateDB(){
+        return new Promise(async (resolve) => {
+            const listFina = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({
+                date : { 
+                    $gte: moment('2021-01-01').toDate(),
+                    $lte: moment('2021-12-01').toDate()
+                }, 
+                company:'5e8415e651d84b60937abe71'
+            });
+            async function updateJounal(id,  
+                forward,
+                cancel,
+                returning,
+                advancePayment,
+                forwardIs,
+                date
+            ){
+                console.log({id,  forward,
+                    cancel,
+                    returning,
+                    advancePayment,
+                    forwardIs,
+                    date
+                });
+                await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(id,{
+                    forward,
+                    cancel,
+                    returning,
+                    advancePayment,
+                    forwardIs,
+                    date
+                });
+            }
+            async function updateVoucher(id, amount){
+                const listFina = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(id,
+                    {
+                        amount: amount
+                    });
+                return listFina;
+            }
+            let listPJ = [];
+            let listPV = [];
+            for(const finItem of listFina){
+                let newAmount = 0;
+                finItem.journals && finItem.journals.forEach(item=>{
+                    newAmount = Number(newAmount) + (Number(item.amount || 0) || 0);
+                    listPJ.push(updateJounal(item, 
+                        finItem.forward,
+                        finItem.cancel,
+                        finItem.returning,
+                        finItem.advancePayment,
+                        finItem.forwardIs,
+                        finItem.date
+                    ));
+                });
+                listPV.push(
+                    updateVoucher(finItem._id, newAmount)
+                );
+            }
+            //
+            const resulUpdateJ = await Promise.all(listPJ);
+            const resulUpdateV = await Promise.all(listPV);
+        })
+    }
 
 }
 
