@@ -345,8 +345,6 @@ class Model extends BaseModel {
 					})
 				}
 
-				console.log({ MEMBERS: infoConversation.members.length, USERS_SEEN: infoMessageAfterUpdate.usersSeen.length });
-
 				// Cập nhật trạng thái đã xem (khi tất cả thành viên đều đã xem)
 				if(infoConversation.members.length === infoMessageAfterUpdate.usersSeen.length) {
 					infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
