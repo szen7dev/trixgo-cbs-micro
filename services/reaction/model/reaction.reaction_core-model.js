@@ -3,6 +3,7 @@
 
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs }                        = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 const REACTION__REACTION_CORE_COLL              = require('../database/reaction.reaction_core-coll');
 
 class Model extends BaseModel {
@@ -99,10 +100,9 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReaction({ userID, condition, select, populates }) {
+	getListReaction({ userID, conditionObj, lastestID, limit, select, populates }) {
 		return new Promise(async resolve => {
 			try {
-                console.log({ userID, condition, select, populates })
 				if(!checkObjectIDs([userID])) {
                     return resolve({
 						error: true, 
@@ -124,26 +124,67 @@ class Model extends BaseModel {
 					}
 				}
 
-                const sortBy = {
-                    _id: -1,
-                    createAt: -1,
+                if(isNaN(limit) || limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+
+                let nextCursor	= null;
+                let sortBy      = { createAt: -1 };
+                let keys        = ['createAt__-1', '_id__-1'];
+                let conditionObjOrg = { ...conditionObj };
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await REACTION__REACTION_CORE_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
                 }
 
-				const listReaction = await REACTION__REACTION_CORE_COLL
-					.find(condition)
+				let listReactions = await REACTION__REACTION_CORE_COLL
+					.find(conditionObj)
+                    .limit(limit + 1)
+                    .sort(sortBy)
 					.select(select)
 					.populate(populates)
-                    .sort(sortBy)
 					.lean();
 
-				const totalRecord = await REACTION__REACTION_CORE_COLL.countDocuments(condition);
+                if(!listReactions) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+                        keyError: "error_occurs",
+                        status: 422
+                    });
+                }
+
+                if(listReactions && listReactions.length){
+                    if(listReactions.length > limit){
+                        nextCursor = listReactions[limit - 1]._id;
+                        listReactions.length = limit;
+                    }
+                }
+
+                const totalRecord = await REACTION__REACTION_CORE_COLL.countDocuments(conditionObjOrg);
 
 				return resolve({
 					error: false,
 					status: 200,
 					data: { 
-                        listRecords: listReaction, 
-                        totalRecord
+                        listRecords: listReactions, 
+                        limit,
+                        totalRecord,
+                        nextCursor
                     }
 				});
 			} catch (error) {

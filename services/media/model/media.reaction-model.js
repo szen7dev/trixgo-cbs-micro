@@ -127,7 +127,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReaction({ userID, mediaID, lastestID, type, limit = 20, select, populates, ctx }) {
+	getListReaction({ userID, mediaID, lastestID, type, limit, select, populates, ctx }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -148,105 +148,38 @@ class Model extends BaseModel {
 					});
 				}
 
-				if(isNaN(limit) || limit > 20) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
+				let conditionReactionCore = {};
 
-				let conditionObj 			= { media: mediaID };
-				let conditionFind 			= {};
-				let conditionReactionCore 	= {};
-				let nextCursor	= null;
-				let totalRecord = 0;
-
-				if(lastestID && checkObjectIDs([lastestID])){
-                    let infoReaction = await MEDIA__REACTION_COLL.findById(lastestID);
-                    if(!infoReaction) {
-						return resolve({ 
-							error: true, 
-							message: "lastestID không tồn tại",
-							keyError: 'cannot_get_info_by_lastestID',
-							status: 403
-						});
-					}
-
-                    let nextInfo = `${infoReaction._id}_${infoReaction.createAt}`;
-                    let keys 	 = ['_id__-1', 'createAt__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error) {
-						return resolve({ 
-							error: true, 
-							message: "Không thể lấy phạm vi phân trang", 
-							keyError: 'cannot_get_range_pagination',
-							status: 403
-						});
-					}
-
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				type && (conditionReactionCore.type = type);
-
-				let listReactionMedia = await MEDIA__REACTION_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.select(select)
-					.populate({
-						path: 'reaction',
-						match: conditionReactionCore
-					})
-					.limit(limit + 1)
+				let listReactionsID = await MEDIA__REACTION_COLL
+					.find({ media: mediaID })
+					.select('reaction')
 					.lean();
 
-				if(listReactionMedia && listReactionMedia.length){
-					if(listReactionMedia.length > limit){
-						nextCursor = listReactionMedia[limit - 1]._id;
-						listReactionMedia.length = limit;
-					}
-				}
+				if(listReactionsID.length) {
+					listReactionsID = listReactionsID.map(reaction => reaction.reaction);
+					type && (conditionReactionCore.type = type);
 
-				listReactionMedia = listReactionMedia.filter(reaction => reaction.reaction);
-
-				// let listReactionsID = listReactionMedia.map(reaction => reaction.reaction);
-
-				// if(listReactionsID.length) {
-				// 	type && (conditionReactionCore.type = type);
-
-				// 	listReactionMedia = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
-				// 		select,
-				// 		populates,
-				// 		condition: { ...conditionReactionCore, _id: { $in: listReactionsID } }
-				// 	});
-
-				// 	if(listReactionMedia.error)
-				// 		return resolve(listReactionMedia);
-
-				// 	totalRecord = listReactionMedia.data?.totalRecord;
-				// 	listReactionMedia = listReactionMedia.data?.listRecords;
-				// } else{
-				// 	return resolve({
-				// 		error: false,
-				// 		status: 200,
-				// 		data: {
-				// 			listRecords: [],
-				// 			limit,
-				// 			totalRecord,
-				// 			nextCursor
-				// 		}
-				// 	})
-				// }
-
-				return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: listReactionMedia,
+					const listReactions = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
+						conditionObj: { ...conditionReactionCore, _id: { $in: listReactionsID } },
+						lastestID,
+						select,
+						populates,
 						limit,
-						totalRecord,
-						nextCursor
-					}
-				});
+					});
+
+					return resolve(listReactions);
+				} else{
+					return resolve({
+						error: false,
+						status: 200,
+						data: {
+							listRecords: [],
+							limit: 20,
+							totalRecord: 0,
+							nextCursor: null
+						}
+					})
+				}
 			} catch (error) {
 				console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -358,7 +291,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION FILE
 	 */
-	getListReactionFile({ userID, fileID, mediaID, lastestID, limit = 20, select, populates = {} }) {
+	getListReactionFile({ userID, fileID, mediaID, lastestID, type, limit, select, populates, ctx }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -379,87 +312,38 @@ class Model extends BaseModel {
 					});
 				}
 
-				if(isNaN(limit) || limit > 20) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
+				let conditionReactionCore = {};
 
-				if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Tham số populates không hợp lệ', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-					populates = {
-						path: '',
-						select: ''
-					}
-				}
-
-				let conditionObj = { media: mediaID, file: fileID };
-				let conditionFind = {};
-                let sortBy = {
-                    _id: -1,
-					createAt: -1,
-                }
-
-				if(lastestID && checkObjectIDs([lastestID])){
-                    let infoReaction = await MEDIA__FILE_REACTION_COLL.findById(lastestID);
-                    if(!infoReaction) {
-						return resolve({ 
-							error: true, 
-							message: "lastestID không tồn tại",
-							keyError: 'cannot_get_info_by_lastestID',
-							status: 403
-						});
-					}
-
-                    let nextInfo = `${infoReaction._id}_${infoReaction.createAt}`;
-                    let keys 	 = ['_id__-1', 'createAt__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error) {
-						return resolve({ 
-							error: true, 
-							message: "Không thể lấy phạm vi phân trang", 
-							keyError: 'cannot_get_range_pagination',
-							status: 403
-						});
-					}
-
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				const listReactionFile = await MEDIA__FILE_REACTION_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.select(select)
-					.limit(limit + 1)
-					.sort(sortBy)
-					.populate(populates)
+				let listReactionsID = await MEDIA__FILE_REACTION_COLL
+					.find({ media: mediaID, file: fileID })
+					.select('reaction')
 					.lean();
 
-				// GET TOTAL RECORD
-				let totalRecord = await MEDIA__FILE_REACTION_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
+				if(listReactionsID.length) {
+					listReactionsID = listReactionsID.map(reaction => reaction.reaction);
+					type && (conditionReactionCore.type = type);
 
-				if(listReactionFile && listReactionFile.length){
-					if(listReactionFile.length > limit){
-						nextCursor = listReactionFile[limit - 1]._id;
-						listReactionFile.length = limit;
-					}
-				}
-
-				return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: listReactionFile,
+					const listReactions = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
+						conditionObj: { ...conditionReactionCore, _id: { $in: listReactionsID } },
+						lastestID,
+						select,
+						populates,
 						limit,
-						totalRecord,
-						nextCursor
-					}
-				});
+					});
+
+					return resolve(listReactions);
+				} else{
+					return resolve({
+						error: false,
+						status: 200,
+						data: {
+							listRecords: [],
+							limit: 20,
+							totalRecord: 0,
+							nextCursor: null
+						}
+					})
+				}
 			} catch (error) {
 				console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
