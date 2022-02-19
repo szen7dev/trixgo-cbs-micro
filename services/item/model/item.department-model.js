@@ -728,6 +728,117 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name  : Danh sách dự án mà user được quyền truy cập (là member)
+     * Author: DePV ✅
+     * Code  : F00403
+     */
+    getListByMember({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj  =  { 
+                    members: {$in: [userID]}
+                }
+                
+                let sortBy;
+                let keys	      = ['createAt__-1', '_id__-1'];
+
+                if(limit > 20){
+                    limit = 20;
+                }
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = companyID
+                }
+    
+                if(type){
+                    conditionObj.type = +type;
+                }
+
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+
+                //_____populate
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    populates = JSON.parse(populates);
+                }else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                    //_____Tìm kiếm theo từ khóa
+                    if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj }
+
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await ITEM__DEPARTMENT_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort?.data?.find;
+                    sortBy        = dataPagingAndSort?.data?.sort;
+                }else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy        = dataPagingAndSort?.data?.sort;
+                }
+                
+                //_____Bắt đầu query database
+                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                    .find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy) 
+                    .select(select) 
+                    .populate(populates)
+                    .lean(); 
+                
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get department", status: 403 });
+
+                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObjOrg);
+                let nextCursor	= null;
+                let totalPage = Math.ceil(totalRecord/limit);
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
      /**
      * Name  : Thống kê theo tiến độ ngân sách
      * Author: DePV ✅
