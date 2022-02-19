@@ -285,34 +285,74 @@ class Model extends BaseModel {
 	updateSeenMessage({ conversationID, messageID, userID }){
         return new Promise(async(resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, messageID, userID]))
-                    return resolve({ error: true, message: 'Request Params Invalid', status: 400 });
+                if(!checkObjectIDs([conversationID, messageID, userID])) {
+					return resolve({
+						error: true,
+						message: "Tham số conversationID hoặc messageID không hợp lệ",
+						keyError: "params_conversationID_or_messageID_invalid",
+						status: 400
+					})
+				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
 				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					members: { $in: [userID] }
-				}).lean();
+				})
+				.select('members')
+				.lean();
 
-				if(!infoConversation)
-					return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+				if(!infoConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
+						keyError: "you_are_not_member_of_conversation",
+						status: 403
+					})
+				}
 
                 let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-                if(!infoMessage)
-                    return resolve({ error: true, message: "Can't get info message", status: 403 });
+                if(!infoMessage) {
+					return resolve({
+						error: true,
+						message: "Tin nhắn không tồn tại",
+						keyError: "message_not_exists",
+						status: 400
+					})
+				}
 
-				if(infoMessage.status === 3)
-					return resolve({ error: true, message: "Message is recall", status: 403 });
+				if(infoMessage.status === 3) {
+					return resolve({
+						error: true,
+						message: "Tin nhắn đã được thu hồi",
+						keyError: "message_is_recall",
+						status: 403
+					})
+				}
 
 				let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-					$set: { status: 2 },
 					$addToSet: {
 						usersSeen: userID
 					}
 				}, { new: true });
 
-				if(!infoMessageAfterUpdate)
-					return resolve({ error: true, message: "Can't update seen message", status: 403 });
+				if(!infoMessageAfterUpdate) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
+				}
+
+				console.log({ MEMBERS: infoConversation.members.length, USERS_SEEN: infoMessageAfterUpdate.usersSeen.length });
+
+				// Cập nhật trạng thái đã xem (khi tất cả thành viên đều đã xem)
+				if(infoConversation.members.length === infoMessageAfterUpdate.usersSeen.length) {
+					infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+						$set: { status: 2 }
+					}, { new: true });
+				}
 
 				return resolve({ error: false, data: infoMessageAfterUpdate, status: 200 });
             } catch (error) {
