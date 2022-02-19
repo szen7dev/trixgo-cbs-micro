@@ -1,8 +1,7 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION }         = require('../../../tools/cursor_base/playground/index');
+const { checkObjectIDs }  				= require('../../../tools/utils/utils');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.actions-constant');
