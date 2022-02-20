@@ -29,6 +29,11 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
         type   : Number,
         default: 1 //ko thuộc lĩnh vực nào
     },
+    //_________Phân loại khác
+    type: {
+        type: Schema.Types.ObjectId,
+        ref: "datahub_type"
+    },
     //_________Quy mô hoạt động
     scale: { type   : Number, default: 1 },
     //_________Địa chỉ
