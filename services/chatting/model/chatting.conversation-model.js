@@ -1111,7 +1111,7 @@ class Model extends BaseModel {
 	 * Date: 23/08/2021
 	 * Updated: 10/02/2022
 	 */
-	searchMessageConversationById({ conversationID, userID, messageID, populates, select }){
+	searchMessageConversationById({ conversationID, userID, messageID, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, messageID, userID])) {
@@ -1123,16 +1123,18 @@ class Model extends BaseModel {
 					})
 				}
 
-				if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+				if(filter && typeof filter === 'string'){
+					if(!IsJsonString(filter))
+						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				} else{
-					populates = {
-						path: '',
-						select: ''
-					}
+					filter = JSON.parse(filter);
+				}
+
+				if(select && typeof select === 'string'){
+					if(!IsJsonString(select))
+						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
+
+					select = JSON.parse(select);
 				}
 
 				// Check user exist in conversation
@@ -1165,26 +1167,49 @@ class Model extends BaseModel {
 				}
 
 				let infoMessage = await CHATTING__MESSAGE_COLL
-					.findOne(conditionObjSearchMessage)
-					.select(select)
-					.populate(populates)
+					.findOne(conditionObjSearchMessage, filter)
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('receivers', select.receivers)
+					.populate({
+						path: 'reactions',
+						select: '_id type',
+						populate: {
+							path: 'userCreate',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.populate({
+						path: 'parent',
+						select: select.parent,
+						populate: {
+							path: 'sender files.file',
+							populate: {
+								path: 'file',
+								select: 'name nameOrg path size'
+							},
+							select: `_id bizfullname fullname image ${select.files}`
+						}
+					})
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizfullname fullname image'
+						},
+						select: select.poll
+					})
+					.populate('reminder', select.reminder)
+					.populate({
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name nameOrg path size'
+						},
+						select: select.files
+					})
 					.lean();
-					// .populate('sender', select.sender)
-					// .populate('usersSeen', select.usersSeen)
-					// .populate('receivers', select.receivers)
-					// .populate('usersAssigned', select.usersAssigned)
-					// .populate('parent', select.parent)
-					// .populate('poll', select.poll)
-					// .populate('reminder', select.reminder)
-					// .populate({
-					// 	path: 'files.file',
-					// 	populate: {
-					// 		path: 'file',
-					// 		select: 'name nameOrg path size'
-					// 	},
-					// 	select: select.files
-					// })
-					// .lean();
 
 				if(!infoMessage) {
 					return resolve({
@@ -1196,52 +1221,98 @@ class Model extends BaseModel {
 				}
 
 				let listMessagesFront = await CHATTING__MESSAGE_COLL
-					.find(conditionObjFrontList)
-					.select(select)
+					.find(conditionObjFrontList, filter)
 					.limit(5)
                     .sort({ createAt: -1, _id: -1 })
-					.populate(populates)
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('receivers', select.receivers)
+					.populate({
+						path: 'reactions',
+						select: '_id type',
+						populate: {
+							path: 'userCreate',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.populate({
+						path: 'parent',
+						select: select.parent,
+						populate: {
+							path: 'sender files.file',
+							populate: {
+								path: 'file',
+								select: 'name nameOrg path size'
+							},
+							select: `_id bizfullname fullname image ${select.files}`
+						}
+					})
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizfullname fullname image'
+						},
+						select: select.poll
+					})
+					.populate('reminder', select.reminder)
+					.populate({
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name nameOrg path size'
+						},
+						select: select.files
+					})
 					.lean();
-					// .populate('sender', select.sender)
-					// .populate('usersSeen', select.usersSeen)
-					// .populate('receivers', select.receivers)
-					// .populate('usersAssigned', select.usersAssigned)
-					// .populate('parent', select.parent)
-					// .populate('poll', select.poll)
-					// .populate('reminder', select.reminder)
-					// .populate({
-					// 	path: 'files.file',
-					// 	populate: {
-					// 		path: 'file',
-					// 		select: 'name nameOrg path size'
-					// 	},
-					// 	select: select.files
-					// })
-					// .lean();
 
 				let listMessagesBack = await CHATTING__MESSAGE_COLL
-					.find(conditionObjBackList)
-					.select(select)
+					.find(conditionObjBackList, filter)
 					.limit(5)
                     .sort({ createAt: 1, _id: 1 })
-					.populate(populates)
+					.populate('sender', select.sender)
+					.populate('usersSeen', select.usersSeen)
+					.populate('usersAssigned', select.usersAssigned)
+					.populate('receivers', select.receivers)
+					.populate({
+						path: 'reactions',
+						select: '_id type',
+						populate: {
+							path: 'userCreate',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.populate({
+						path: 'parent',
+						select: select.parent,
+						populate: {
+							path: 'sender files.file',
+							populate: {
+								path: 'file',
+								select: 'name nameOrg path size'
+							},
+							select: `_id bizfullname fullname image ${select.files}`
+						}
+					})
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizfullname fullname image'
+						},
+						select: select.poll
+					})
+					.populate('reminder', select.reminder)
+					.populate({
+						path: 'files.file',
+						populate: {
+							path: 'file',
+							select: 'name nameOrg path size'
+						},
+						select: select.files
+					})
 					.lean();
-					// .populate('sender', select.sender)
-					// .populate('usersSeen', select.usersSeen)
-					// .populate('receivers', select.receivers)
-					// .populate('usersAssigned', select.usersAssigned)
-					// .populate('parent', select.parent)
-					// .populate('poll', select.poll)
-					// .populate('reminder', select.reminder)
-					// .populate({
-					// 	path: 'files.file',
-					// 	populate: {
-					// 		path: 'file',
-					// 		select: 'name nameOrg path size'
-					// 	},
-					// 	select: select.files
-					// })
-					// .lean();
 
 				let listMessages = [...listMessagesFront.reverse(), infoMessage, ...listMessagesBack];
 
