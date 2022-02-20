@@ -136,6 +136,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 const {  voucherID, populates  } = ctx.params;
+            
                 // const voucherID = '61e43deaac5b40893b163750';
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({ voucherID, populates })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -216,6 +217,29 @@ module.exports = {
                 // const voucherID = '61e43deaac5b40893b163750';
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.findVoucherInCompany({ limit, lastestID, key, type, customer, author: userID, fromDate, toDate, fundaID, companyID: company._id })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][VOUCHER_HANDLER][FIND_VOUCHER_IN_COMPANY] ${error}`);
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    updateOlDB:{
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // voucherID           : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                // const voucherID = '61e43deaac5b40893b163750';
+                console.log('here')
+                const { companyID, watchFileError } = ctx.params;
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.updateDB(companyID, watchFileError);
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][VOUCHER_HANDLER][FIND_VOUCHER_IN_COMPANY] ${error}`);
