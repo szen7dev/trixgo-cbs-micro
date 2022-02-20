@@ -83,6 +83,7 @@ class Model extends BaseModel {
 							// 	$size: 2
 							// },
 						})
+						.populate('members', '_id bizfullname image')
 						.lean();
 
 					if(checkExistConversation)
@@ -141,7 +142,12 @@ class Model extends BaseModel {
 					});
 				}
 
-                return resolve({ error: false, data: infoConversationAfterInserted, status: 200 });
+				const infoConversation = await CHATTING__CONVERSATION_COLL
+					.findById(infoConversationAfterInserted._id)
+					.populate('members', '_id bizfullname image')
+					.lean();
+
+                return resolve({ error: false, data: infoConversation, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

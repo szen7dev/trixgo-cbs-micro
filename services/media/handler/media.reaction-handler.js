@@ -102,6 +102,7 @@ module.exports = {
             mediaID     : { type: "string" },
             fileID      : { type: "string" },
             lastestID 	: { type: "string", optional: true },
+            type        : { type: "string", optional: true },
             limit 	    : { type: "string", optional: true },
             select 	    : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
@@ -110,10 +111,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { fileID, mediaID, lastestID, limit, select, populates } = ctx.params;
+                const { fileID, mediaID, lastestID, type, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.getListReactionFile({
-					userID, fileID, mediaID, lastestID, limit, select, populates
+					userID, fileID, mediaID, lastestID, type, limit, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
