@@ -142,7 +142,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật nps
 	 * Date: 20/02/2022
 	 */
-	update({ conversationID, messageID, score, newVotes, authorID }) {
+	update({ conversationID, messageID, score, reasons, authorID }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, messageID])) {
@@ -205,12 +205,12 @@ class Model extends BaseModel {
 							}
 						}
 					});
-				} else if(newVotes && newVotes.length && checkObjectIDs(newVotes)){
+				} else if(reasons && reasons.length && checkObjectIDs(reasons)){
 					await CHATTING__MESSAGE_NPS_COLL.findByIdAndUpdate(nps._id, {
 						$addToSet: {
 							usersVote: {
 								user: authorID,
-								reasons: newVotes
+								reasons: reasons
 							}
 						}
 					});
@@ -231,7 +231,7 @@ class Model extends BaseModel {
 						...dataInsertMessage,
 						type: 120 // Tham gia bình chọn trong cuộc hội thoại
 					})
-				} else if(newVotes.length) {
+				} else if(reasons.length) {
 					lastMessage = await CHATTING__MESSAGE_MODEL.insertData({
 						...dataInsertMessage,
 						type: 121 // Thay đổi bình chọn trong cuộc hội thoại

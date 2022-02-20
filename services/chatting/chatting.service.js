@@ -17,6 +17,7 @@ const CHATTING__CONVERSATION_HANDLER    	= require('./handler/chatting.conversat
 const CHATTING__MESSAGE_HANDLER         	= require('./handler/chatting.message-handler');
 const CHATTING__MESSAGE_POLL_HANDLER		= require('./handler/chatting.message_poll-handler');
 const CHATTING__MESSAGE_REMINDER_HANDLER	= require('./handler/chatting.message_reminder-handler');
+const CHATTING__MESSAGE_NPS_HANDLER			= require('./handler/chatting.message_nps-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CHATTING,
@@ -136,6 +137,20 @@ module.exports = {
 
 		// Danh sách tin nhắn nhắc hẹn trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_REMINDER_CONVERSATION]			: CHATTING__MESSAGE_REMINDER_HANDLER.getList,
+
+
+		// =========================  MESSAGE NPS  ============================
+		// Thêm tin nhắn NPS trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.INSERT_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.insert,
+
+		// Cập nhật tin nhắn NPS trong cuộc hội thoại 
+		[CF_ACTIONS_CHATTING.UPDATE_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.update,
+
+		// Đóng tin nhắn NPS trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.CLOSE_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.closeNps,
+
+		// Danh sách tin nhắn NPS trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_MESSAGE_NPS_CONVERSATION]					: CHATTING__MESSAGE_NPS_HANDLER.getList,
 
 
 		// ======================  CONVERSATION ===========================

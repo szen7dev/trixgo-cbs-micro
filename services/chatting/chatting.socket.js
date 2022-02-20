@@ -23,6 +23,7 @@ const CHATTING__CONVERSATION_MODEL				= require('./model/chatting.conversation-m
 const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').MODEL;
 const CHATTING__MESSAGE_POLL_MODEL 				= require('./model/chatting.message_poll-model').MODEL;
 const CHATTING__MESSAGE_REMINDER_MODEL 			= require('./model/chatting.message_reminder-model').MODEL;
+const CHATTING__MESSAGE_NPS_MODEL 				= require('./model/chatting.message_nps-model').MODEL;
 
 
 exports.CHATTING_SOCKET = {
@@ -400,7 +401,8 @@ exports.CHATTING_SOCKET = {
         let {
 			tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
 			notifyFor, remindTime, repeat,
-			name, options
+			name, options,
+			serviceID, typeNps
 		} = data;
 
 		let infoMessageAfterInsert = {};
@@ -414,6 +416,11 @@ exports.CHATTING_SOCKET = {
 			case 5:
 				infoMessageAfterInsert = await CHATTING__MESSAGE_POLL_MODEL.insert({
 					conversationID, name, options, authorID: userID
+				});
+				break;
+			case 8:
+				infoMessageAfterInsert = await CHATTING__MESSAGE_NPS_MODEL.insert({
+					conversationID, serviceID, type: typeNps, authorID: userID
 				});
 				break;
 			default:

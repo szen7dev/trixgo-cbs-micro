@@ -11,7 +11,9 @@ const CF_ROUTINGS_CHATTING = {
 
 	// ======================== ROUTE - API ===============================
 
-    /// CONVERSATION
+    /**
+     * CONVERSATION
+     */
     INSERT_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/create-conversation`,
     UPDATE_CONVERSATION                     		: `${BASE_ROUTE}${CONVERSATION}/update-conversation`,
     CHECK_EXISTS_CONVERSATION                     	: `${BASE_ROUTE}${CONVERSATION}/check-exists-conversation`,
@@ -40,14 +42,18 @@ const CF_ROUTINGS_CHATTING = {
     GET_LIST_MESSAGE_MEDIA_CONVERSATION 			: `${BASE_ROUTE}${CONVERSATION}/list-message-media-conversation`,
     GET_LIST_MEMBER_SEND_MESSAGE_MEDIA_CONVERSATION : `${BASE_ROUTE}${CONVERSATION}/list-member-send-message-media-conversation`,
 
-    /// FOLDER CONVERSATION
+    /**
+     * FOLDER CONVERSATION
+     */
 	INSERT_FOLDER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/create-folder`,
     UPDATE_FOLDER_CONVERSATION           		    : `${BASE_ROUTE}${CONVERSATION}/update-folder`,
 	DELETE_FOLDER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-folder`,
     GET_INFO_FOLDER_CONVERSATION             		: `${BASE_ROUTE}${CONVERSATION}/info-folder`,
     GET_LIST_FOLDER_CONVERSATION            	    : `${BASE_ROUTE}${CONVERSATION}/list-folder`,
 
-    /// MESSAGE
+    /**
+     * MESSAGE
+     */
 	INSERT_MESSAGE_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/insert-message-conversation`,
 	UPDATE_SEEN_MESSAGE_CONVERSATION                : `${BASE_ROUTE}${CONVERSATION}/update-seen-message-conversation`,
     UPDATE_SEEN_MESSAGE_CONVERSATION           		: `${BASE_ROUTE}${CONVERSATION}/update-seen-message-conversation`,
@@ -57,22 +63,38 @@ const CF_ROUTINGS_CHATTING = {
 	REACTION_MESSAGE_CONVERSATION           		: `${BASE_ROUTE}${CONVERSATION}/reaction-message-conversation`,
 	GET_LIST_REACTION_MESSAGE_CONVERSATION     		: `${BASE_ROUTE}${CONVERSATION}/list-reaction-message-conversation`,
 
+    /**
+     * MESSAGE POLL
+     */
     INSERT_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/insert-message-poll-conversation`,
     UPDATE_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/update-message-poll-conversation`,
     CLOSE_MESSAGE_POLL_CONVERSATION            		: `${BASE_ROUTE}${CONVERSATION}/close-message-poll-conversation`,
     GET_LIST_MESSAGE_POLL_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/list-message-poll-conversation`,
 
-	INSERT_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/insert-message-reminder-conversation`,
+    /**
+     * MESSAGE REMINDER
+     */
+    INSERT_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/insert-message-reminder-conversation`,
     UPDATE_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/update-message-reminder-conversation`,
     UPDATE_USER_JOIN_REMINDER_CONVERSATION          : `${BASE_ROUTE}${CONVERSATION}/update-user-join-message-reminder-conversation`,
 	DELETE_MESSAGE_REMINDER_CONVERSATION            : `${BASE_ROUTE}${CONVERSATION}/delete-message-reminder-conversation`,
     GET_LIST_MESSAGE_REMINDER_CONVERSATION          : `${BASE_ROUTE}${CONVERSATION}/list-message-reminder-conversation`,
 
+    /**
+     * MESSAGE NPS
+     */
+    INSERT_MESSAGE_NPS_CONVERSATION            	    : `${BASE_ROUTE}${CONVERSATION}/insert-message-nps-conversation`,
+    UPDATE_MESSAGE_NPS_CONVERSATION            	    : `${BASE_ROUTE}${CONVERSATION}/update-message-nps-conversation`,
+    CLOSE_MESSAGE_NPS_CONVERSATION            		: `${BASE_ROUTE}${CONVERSATION}/close-message-nps-conversation`,
+    GET_LIST_MESSAGE_NPS_CONVERSATION            	: `${BASE_ROUTE}${CONVERSATION}/list-message-nps-conversation`,
+
+    /**
+     * OTHER
+     */
     SEARCH_MESSAGE_CONVERSATION_BY_ID 				: `${BASE_ROUTE}${CONVERSATION}/search-message-conversation-by-id`,
     SHARE_MESSAGE_CONVERSATION            			: `${BASE_ROUTE}${CONVERSATION}/share-message-conversation`,
     UPDATE_PIN_MESSAGE_CONVERSATION					: `${BASE_ROUTE}${CONVERSATION}/update-pin-message-conversation`,
     GET_LIST_MESSAGE_PIN_CONVERSATION_WITH_PAGE		: `${BASE_ROUTE}${CONVERSATION}/list-message-pin-conversation-with-page`,
-
 
 
     // ======================== SWAGGER - DOC ===============================
