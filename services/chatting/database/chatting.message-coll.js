@@ -100,14 +100,12 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 0: Tin nhắn thông thường 
 	 * 1: Tin nhắn ảnh
 	 * 2: Tin nhắn file
-	 * 3: Tin nhắn link (bỏ => sử dụng coll chatting.conversation_link-model)
+	 * 3: Tin nhắn link (bỏ => sử dụng chatting.conversation_link-model)
 	 * 4: Tin nhắn reminder
 	 * 5: Tin nhắn poll
 	 * 6: Tin nhắn share location
 	 * 7: Tin nhắn share contact
-     * 8: Tin nhắn NPS-Điểm số
-     * 9: Tin nhắn NPS-Lý do không hài lòng
-     * 10: Tin nhắn NPS-Lý do hài lòng
+     * 8: Tin nhắn NPS
 	 * 
      * 101: Thêm thành viên vào cuộc hội thoại
      * 102: Xóa thành viên khỏi cuộc hội thoại
@@ -132,6 +130,11 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      * 116: Xác nhận tham gia nhắc hẹn trong cuộc hội thoại 
      * 117: Xác nhận không tham gia nhắc hẹn trong cuộc hội thoại 
      * 118: Xoá nhắc hẹn trong cuộc hội thoại 
+     * 
+     * 119: Tạo nps trong cuộc hội thoại 
+     * 120: Tham gia nps trong cuộc hội thoại 
+     * 121: Thay đổi nps trong cuộc hội thoại 
+     * 122: Đóng nps trong cuộc hội thoại 
 	 */
     type: {
         type: Number,
