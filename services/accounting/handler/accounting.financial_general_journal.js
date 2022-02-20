@@ -128,7 +128,16 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const { accountID, fromDate, toDate,fundaID  } = ctx.params;
+                const { accountID, fromDate, toDate  } = ctx.params;
+                let { fundaID } = ctx.params;
+                if(!fundaID){
+                    const infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+                    if(infoFundaCompany.error){
+                        resultAfterCallHandler.message = 'Not found funda comany ';
+                        return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                    }
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
+                }
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getListJournalOfAccount({ ctx, accountID, fromDate, toDate,fundaID })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -149,10 +158,26 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const { voucherID, keyword, limit, lastestID, select, populates } = ctx.params;
+                const { voucherID, keyword, limit, lastestID, select,
+                    populates, accountID, fromDate, toDate, isGetForAccountDetails, arrAccountObjectID
+                } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
+                let fundaID;
+                if(isGetForAccountDetails){
+                    let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+            
+                    if(infoFundaCompany.error){
+                        resultAfterCallHandler.message = 'Not found funda comany ';
+                        return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                    }
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
+                }
+                
            
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({ companyID: company._id, voucherID, keyword, limit, lastestID, select, populates })
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({ companyID: company._id, voucherID, keyword,
+                    limit, lastestID, select, populates,
+                    accountID, fromDate, toDate, isGetForAccountDetails, fundaID, arrAccountObjectID
+                });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);

@@ -485,7 +485,7 @@ class Model extends BaseModel {
     //_________SỐ DƯ ĐẦU KỲ CỦA 1 TÀI KHOẢN (OK)
     // Tính năng sử dụng: Sổ chi tiết tài khoản
     // Author: HiepNH
-    getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate, arrAccountObjectID }) {
+    getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -579,17 +579,6 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                // {
-                                //     $lookup: {
-                                //         from: 'financial_vouchers',
-                                //         localField: 'voucher',
-                                //         foreignField: '_id',
-                                //         as:         'voucher'
-                                //     }
-                                // },
-                                // {
-                                //     $unwind : "$voucher"
-                                // },
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
@@ -617,17 +606,6 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj2
                                 }, 
-                                // {
-                                //     $lookup: {
-                                //         from: 'financial_vouchers',
-                                //         localField: 'voucher',
-                                //         foreignField: '_id',
-                                //         as:         'voucher'
-                                //     }
-                                // },
-                                // {
-                                //     $unwind : "$voucher"
-                                // },
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
@@ -732,7 +710,6 @@ class Model extends BaseModel {
                 if(openingBalanceS._credit.length > 0){
                     totalOpeningCreditS = openingBalanceS._credit[0].amountPrice;
                 }
-                console.log({ totalOpeningDebit, totalOpeningCredit, totalOpeningDebitS, totalOpeningCreditS })
 
                 return resolve({ error: false, data: (Number(totalOpeningDebit + totalOpeningDebitS - totalOpeningCreditS - totalOpeningCredit)) });
             } catch (error) {
@@ -741,134 +718,7 @@ class Model extends BaseModel {
             }
         });
     } 
-
-     //_________CHI TIẾT GIAO DỊCH TRONG KỲ CỦA 1 TÀI KHOẢN (OK)
-    // Tính năng sử dụng: Sổ chi tiết tài khoản
-    // Author: HiepNH
-    getListJournalOfCompany({ companyID, fundaID, contractID, accountID, fromDate, toDate, arrAccountObjectID }) {
-        // console.log({fromDate})
-        // console.log({toDate})
-        const that = this;
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * Business Analyst (BA)
-                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
-                 * 2. Số liệu trong kỳ không gồm các Phiếu kết chuyển+Phiếu hủy
-                 */
-
-                // Get nestedArray of account
-                // let arrObjectID = await that.getListNestedItem({accountID});
-                const arrObjectID = arrAccountObjectID;
-
-                let conditionObj1;
-                
-                if(!fundaID){
-                    if(!contractID){
-                        conditionObj1 = {
-                            company: companyID,
-                            $or: [
-                                { debit:   {
-                                    $in: arrObjectID.data
-                                }},
-                                { credit:  {
-                                    $in: arrObjectID.data
-                                } },
-                            ],
-                        }
-                    }else{
-                        conditionObj1 = {
-                            company: companyID,
-                            contract: contractID,
-                            $or: [
-                                { debit:   {
-                                    $in: arrObjectID.data
-                                }},
-                                { credit:  {
-                                    $in: arrObjectID.data
-                                } },
-                            ],
-                        }
-                    }
-                }else{
-                    if(!contractID){
-                        conditionObj1 = {
-                            funda: fundaID,
-                            $or: [
-                                { debit:   {
-                                    $in: arrObjectID.data
-                                }},
-                                { credit:  {
-                                    $in: arrObjectID.data
-                                } },
-                            ],
-                        }
-                    }else{
-                        conditionObj1 = {
-                            funda: fundaID,
-                            contract: contractID,
-                            $or: [
-                                { debit:   {
-                                    $in: arrObjectID.data
-                                }},
-                                { credit:  {
-                                    $in: arrObjectID.data
-                                } },
-                            ],
-                        }
-                    }
-                }
-
-                // Lấy giao dịch của tài khoản và các tài khoản con của nó
-                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.find({
-                    $and: [
-                        conditionObj1,
-                        {
-                            "date": { 
-                                $gte: moment(fromDate).toDate(),
-                                $lte: moment(toDate).toDate()
-                            }
-                        }
-                    ]
-                }).sort({'date':1});
-                if (!listData) return resolve({ error: true, message: 'cannot_get_list' });
-
-                // let listData1 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData, {
-                //     path: 'debit',
-                //     select: '_id name description',
-                //     model: 'account',
-                // });
-                // if (!listData1) return resolve({ error: true, message: 'cannot_get_list' });
-
-                // let listData2 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData1, {
-                //     path: 'credit',
-                //     select: '_id name description',
-                //     model: 'account',
-                // });
-                // if (!listData2) return resolve({ error: true, message: 'cannot_get_list' });
-
-                // let listData3 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData2, {
-                //     path: 'voucher.customer',
-                //     select: '_id name',
-                //     model: 'contact',
-                // });
-                // if (!listData3) return resolve({ error: true, message: 'cannot_get_list' });
-
-                // let listData4 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.populate(listData3, {
-                //     path: 'contract',
-                //     select: '_id name',
-                //     model: 'contract',
-                // });
-                // if (!listData4) return resolve({ error: true, message: 'cannot_get_list' });
-
-                return resolve({ error: false, data: listData });
-            } catch (error) {
-                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListJournalOfCompany]: ${error} `);
-                return resolve({ error: true, message: error.message });
-            }
-        });
-    }
-
+  
     getListJournalOfAccount({ ctx, accountID, fromDate, toDate,fundaID }){
         return new Promise(async resolve => {
             try {
@@ -885,24 +735,24 @@ class Model extends BaseModel {
                     }
                 })
                 const nestedAccount = listNestedAccount.data.map(item => item.toString());
-                const [ openingBalance, listJournals ] = await Promise.all([
-                    this.getOpeningBalanceOfCompany({ ctx, fundaID, accountID, fromDate, arrAccountObjectID: listNestedAccount }),
-                    this.getListJournalOfCompany({ fundaID, accountID, fromDate, toDate, arrAccountObjectID: listNestedAccount })
-                ]);
-
-                [ openingBalance, listJournals ].forEach(item=>{
-                    if(item.error){
-                        return resolve(item);
-                    }
-                })
+                // const [ openingBalance, listJournals ] = await Promise.all([
+                //     this.getOpeningBalanceOfCompany({ ctx, fundaID, accountID, fromDate, arrAccountObjectID: listNestedAccount }),
+                //     this.getList({ fundaID, accountID, fromDate, toDate, arrAccountObjectID: listNestedAccount, isGetForAccountDetails: true })
+                // ]);
+                const openingBalance = await this.getOpeningBalanceOfCompany({ ctx, fundaID, accountID, fromDate });
+                // [ openingBalance, listJournals ].forEach(item=>{
+                //     if(item.error){
+                //         return resolve(item);
+                //     }
+                // })
                 return resolve({
-                    error: false, 
+                    error: false,
                     data:{
                         fromDate, toDate,
-                        infoAccount: infoAccount.data,
-                        nestedAccount, accountID,
+                        nestedAccount,
+                        accountID,
                         openingBalance: openingBalance.data,
-                        listJournals: listJournals.data
+                        // listJournals: listJournals.data
                     }
                 });
 
@@ -913,24 +763,23 @@ class Model extends BaseModel {
         });  
     }
 
-    getList({ companyID, voucherID,
-        keyword, limit = 10, lastestID, select, populates= {} }){
+    getList({ companyID, voucherID, contractID, isGetForAccountDetails, fromDate, toDate, fundaID,
+        keyword, limit = 10, lastestID, select, populates= {}, arrAccountObjectID }){
         return new Promise(async resolve => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
-                 */
-                if(!_isValid(voucherID))
-                    return { error: true, message: 'voucherID_invalid' };
-
-                if(!_isValid(companyID))
-                    return { error: true, message: 'companyID_invalid' };
-           
-                let conditionObj = { 
-                    company: companyID
-                };
+                */
+               let conditionObj = {};
                 if(voucherID){
+                    if(!_isValid(voucherID))
+                        return { error: true, message: 'voucherID_invalid' };
                     conditionObj.voucher = voucherID
+                }   
+                if(companyID){
+                    if(!_isValid(companyID))
+                        return { error: true, message: 'companyID_invalid' };
+                    conditionObj.company = companyID;
                 }
 
                 if(limit > 20){
@@ -938,7 +787,13 @@ class Model extends BaseModel {
                 }
 
                 let sortBy   = { createAt: -1, _id: -1 };
+   
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -958,12 +813,78 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                // Lấy danh sách phiếu cho một tài khoản vd : tk :  111 có các chi tiết phiếu trong kì 9/2021
+                if(isGetForAccountDetails){
+                    const arrObjectID = JSON.parse(arrAccountObjectID);
+                    let conditionObj1;
+                    if(!fundaID){
+                        if(!contractID){
+                            conditionObj1 = {
+                                company: companyID,
+                                $or: [
+                                    { debit:   {
+                                        $in: arrObjectID
+                                    }},
+                                    { credit:  {
+                                        $in: arrObjectID
+                                    } },
+                                ],
+                            }
+                        }else{
+                            conditionObj1 = {
+                                company: companyID,
+                                contract: contractID,
+                                $or: [
+                                    { debit:   {
+                                        $in: arrObjectID
+                                    }},
+                                    { credit:  {
+                                        $in: arrObjectID
+                                    } },
+                                ],
+                            }
+                        }
+                    }else{
+                        if(!contractID){
+                            conditionObj1 = {
+                                funda: fundaID,
+                                $or: [
+                                    { debit:   {
+                                        $in: arrObjectID
+                                    }},
+                                    { credit:  {
+                                        $in: arrObjectID
+                                    } },
+                                ],
+                            }
+                        }else{
+                            conditionObj1 = {
+                                funda: fundaID,
+                                contract: contractID,
+                                $or: [
+                                    { debit:   {
+                                        $in: arrObjectID
+                                    }},
+                                    { credit:  {
+                                        $in: arrObjectID
+                                    } },
+                                ],
+                            }
+                        }
+                    }
+                    conditionObj = { 
+                        $and: [
+                            conditionObj1,
+                            {
+                                "date": { 
+                                    $gte: moment(fromDate).toDate(),
+                                    $lte: moment(toDate).toDate()
+                                }
+                            }
+                        ]
+                    }
                 }
-
+           
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
