@@ -1518,6 +1518,19 @@ class AccountingFinancialVoucher extends BaseModel {
     updateDB(company, watchFileError){
         return new Promise(async (resolve) => {
             try {
+                async function checkExitFile(){
+                    const pathFileError = path.resolve(__dirname, `../../../provisioning/update-db-accouting/error.json`);
+                    const resultCheck = await fs.existsSync(pathFileError);
+                    return resultCheck;
+                }
+                const checkExitFileLog = await checkExitFile();
+                console.log({ checkExitFileLog })
+                if (!checkExitFileLog) {
+                    //file exists
+                    console.log('file logger:  error.json is exits ');
+                    // tạo file
+                    await handleErrorAffterConver({});
+                }
                 if(watchFileError){
                     async function readFile(){ 
                         const pathFileError = path.resolve(__dirname, `../../../provisioning/update-db-accouting/error.json`);
