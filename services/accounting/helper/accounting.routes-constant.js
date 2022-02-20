@@ -20,6 +20,7 @@ const CF_ROUTINGS_ACCOUNTING = {
     GET_LIST_VAT_VOUCHER_OF_COMPANY         : `${BASE_ROUTE}${VOUCHER}/list-vat-voucher`,
     FIND_VOUCHER_IN_COMPANY                 : `${BASE_ROUTE}${VOUCHER}/find-voucher`,
     GET_INFO_VOUCHER                        : `${BASE_ROUTE}${VOUCHER}/:voucherID`,
+    UPDATE_DB                               : `${BASE_ROUTE}${VOUCHER}/update-db`,
 
     //  JOURNAL
     INSERT_GENERAL_JOURNAL                  : `${BASE_ROUTE}${GENERAL_JOURNAL}/insertFull`,
@@ -27,7 +28,7 @@ const CF_ROUTINGS_ACCOUNTING = {
     UPDATE_GENERAL_JOURNAL                  : `${BASE_ROUTE}${GENERAL_JOURNAL}/update`,
     GET_LIST_OF_ACCOUNT_GENERAL_JOURNAL     : `${BASE_ROUTE}${GENERAL_JOURNAL}/account-details`,
     GET_INFO_GENERAL_JOURNAL                : `${BASE_ROUTE}${GENERAL_JOURNAL}/:journalID`,
-    GET_LIST_OF_ACCOUNT_GENERAL_JOURNAL     : `${BASE_ROUTE}${GENERAL_JOURNAL}/list`,
+    GET_LIST_GENERAL_JOURNAL                : `${BASE_ROUTE}${GENERAL_JOURNAL}/list`,
     GENERAL_JOURNAL                         : `${BASE_ROUTE}${GENERAL_JOURNAL}`
 
     // UPDATE_GENERAL_JOURNAL  : `${BASE_ROUTE}${GENERAL_JOURNAL}/update`,
