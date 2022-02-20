@@ -55,17 +55,16 @@ module.exports = {
             conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
 			score		    : { type: 'number', optional: true },
-			newVotes		: { type: 'array', optional: true },
-			votesCancel		: { type: 'array', optional: true },
+			reasons		    : { type: 'array', optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { conversationID, messageID, score, newVotes, votesCancel } = ctx.params;
+                const { conversationID, messageID, score, reasons } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_NPS_MODEL.update({
-					conversationID, messageID, score, newVotes, votesCancel, authorID
+					conversationID, messageID, score, reasons, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
