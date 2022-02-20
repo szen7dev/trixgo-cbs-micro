@@ -2,6 +2,8 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectId                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment')
+const fs                                = require('fs');
+const path                              = require('path');
 
 /**
  * DOMAIN AND ACTIONS
@@ -1508,6 +1510,171 @@ class AccountingFinancialVoucher extends BaseModel {
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+    
+    //
+    updateDB(company, watchFileError){
+        return new Promise(async (resolve) => {
+            try {
+                async function checkExitFile(){
+                    const pathFileError = path.resolve(__dirname, `../../../provisioning/update-db-accouting/error.json`);
+                    const resultCheck = await fs.existsSync(pathFileError);
+                    return resultCheck;
+                }
+                const checkExitFileLog = await checkExitFile();
+                console.log({ checkExitFileLog })
+                if (!checkExitFileLog) {
+                    //file exists
+                    console.log('file logger:  error.json is exits ');
+                    // tạo file
+                    await handleErrorAffterConver({});
+                }
+                if(watchFileError){
+                    async function readFile(){ 
+                        const pathFileError = path.resolve(__dirname, `../../../provisioning/update-db-accouting/error.json`);
+                        const data = await fs.readFileSync(pathFileError, 'utf8');
+                        return data;
+                    }
+                    const data = await readFile()
+                    return resolve({ error: false, data });
+                }
+
+                const listFina = await ACCOUNTING__FINANCIAL_VOUCHER_COLL
+                .find({
+                    // date : { 
+                    //     $gte: moment('2021-01-01').toDate(),
+                    //     $lte: moment('2021-12-01').toDate()
+                    // }, 
+                    company: company,
+                })
+                .populate("journals");
+                async function updateJounal(id,  
+                    forward,
+                    cancel,
+                    returning,
+                    advancePayment,
+                    forwardIs,
+                    date
+                ){
+                    try {
+                        const resultUpdateJounal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(id,{
+                            forward,
+                            cancel,
+                            returning,
+                            advancePayment,
+                            forwardIs,
+                            date
+                        });
+                        if(!resultUpdateJounal){
+                            return { 
+                                error: true,
+                                data: { 
+                                    id, forward,
+                                    cancel,
+                                    returning,
+                                    advancePayment,
+                                    forwardIs,
+                                    date 
+                                },
+                            }
+                        }
+                           
+                        return { error: false, message: 'update jounal success'}
+                    } catch (error) {
+                        return { 
+                                error: true,
+                                message: error.message,
+                                data: { 
+                                id, 
+                                forward,
+                                cancel,
+                                returning,
+                                advancePayment,
+                                forwardIs,
+                                date 
+                            },
+                        }
+                        
+                    }
+                   
+                }
+                async function updateVoucher(id, amount){
+                    try {
+                        const updateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(id,
+                            {
+                                amount: amount
+                            });
+                        if(!updateVoucher){
+                            return { 
+                                error: true,
+                                data: { 
+                                    id, amount
+                                },
+                            }
+                        }
+                            
+                        return { error: false, message: 'update voucher success', data:updateVoucher }; 
+                    } catch (error) {
+                        return { 
+                            error: true,
+                            data: { 
+                                id, amount
+                            },
+                            message: error.message
+                        }
+                    }
+                
+                }
+                async function handleErrorAffterConver(data){
+                    const pathFileError = path.resolve(__dirname, `../../../provisioning/update-db-accouting/error.json`);
+                    await fs.writeFileSync(pathFileError, JSON.stringify(data));
+                    return true;
+                }
+                await handleErrorAffterConver({});
+
+                let listPJ = [];
+                let listPV = [];
+                for(const finItem of listFina){
+                    let newAmount = 0;
+                    finItem.journals && finItem.journals.forEach(item=>{
+                        newAmount = Number(newAmount) + (Number(item.amount || 0) || 0);
+                        listPJ.push(updateJounal(item, 
+                            finItem.forward,
+                            finItem.cancel,
+                            finItem.returning,
+                            finItem.advancePayment,
+                            finItem.forwardIs,
+                            finItem.date
+                        ));
+                    });
+                    listPV.push(
+                        updateVoucher(finItem._id, newAmount)
+                    );
+                }
+                //
+                const resulUpdateJ = await Promise.all(listPJ);
+                const resulUpdateV = await Promise.all(listPV);
+                let listInsertError = [];
+             
+                resulUpdateJ.forEach(item1=>{
+                    if(item1.error){
+                        listInsertError.push( handleErrorAffterConver(item1));
+                        console.log({item1})
+                    }
+                })
+                resulUpdateV.forEach(item2=>{
+                    if(item2.error){
+                        listInsertError.push(handleErrorAffterConver(item1));
+                        console.log({item2})
+                    }
+                })
+                console.log('successfully update DB ACOUTTING.VOUCHER ');
+                return resolve({ error : false, message:'successfully'});
+            } catch (error) {
+                return resolve({ error : true, message: error.message });
+                console.log('ERROR update DB ACOUTTING.VOUCHER', error);
             }
         })
     }

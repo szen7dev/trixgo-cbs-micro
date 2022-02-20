@@ -974,6 +974,7 @@ class Model extends BaseModel {
 
 					let keys	 = ['createAt__-1', '_id__-1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
@@ -987,7 +988,6 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .populate(populates)
                     .lean(); 
-
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
