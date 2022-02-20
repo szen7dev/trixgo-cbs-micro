@@ -39,10 +39,10 @@ module.exports = DATABASE_MIDDLEWARE("message_nps", {
             default: 5
         },
         // Lý do hài lòng/không hài lòng (áp dụng cho tin nhắn Type=2, 3)
-        reason: {
+        reasons: [{
             type: Schema.Types.ObjectId,
 		    ref: 'doctype' // Là childs của service (được tạo ra khi khởi tạo danh mục)
-        },
+        }],
 		createAt: {
 			type: Date,
 			default: Date.now

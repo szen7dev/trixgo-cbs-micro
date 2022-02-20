@@ -21,6 +21,8 @@ const CHATTING__MESSAGE_COLL 					= require('./database/chatting.message-coll');
  */
 const CHATTING__CONVERSATION_MODEL				= require('./model/chatting.conversation-model').MODEL;
 const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').MODEL;
+const CHATTING__MESSAGE_POLL_MODEL 				= require('./model/chatting.message_poll-model').MODEL;
+const CHATTING__MESSAGE_REMINDER_MODEL 			= require('./model/chatting.message_reminder-model').MODEL;
 
 
 exports.CHATTING_SOCKET = {
@@ -405,13 +407,13 @@ exports.CHATTING_SOCKET = {
 
 		switch (+type) {
 			case 4:
-				infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessageReminder({
-					conversationID, content, notifyFor, remindTime, repeat, userID, ctx: broker
+				infoMessageAfterInsert = await CHATTING__MESSAGE_REMINDER_MODEL.insert({
+					conversationID, content, notifyFor, remindTime, repeat, authorID: userID, ctx: broker
 				});
 				break;
 			case 5:
-				infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessagePoll({
-					conversationID, name, options, userID
+				infoMessageAfterInsert = await CHATTING__MESSAGE_POLL_MODEL.insert({
+					conversationID, name, options, authorID: userID
 				});
 				break;
 			default:
@@ -603,6 +605,49 @@ exports.CHATTING_SOCKET = {
 			}
 		})
     },
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Cập nhật người seen tin nhắn
+	 * Date: 20/02/2022
+	 */
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_SEEN_MESSAGE]: async function(data, ack) { 
+		let socket                      	= this;
+		let broker                      	= socket.$service.broker;
+		let listUserActive              	= socket.$service.listUserConnected;
+		let userID                      	= socket.client.user;
+		let io                          	= socket.$service.io;
+		let { conversationID, messagesID } 	= data; 
+
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+
+		if(!infoConversation){
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: [userID],
+				data: { error: true, message: "Can't get info conversation" }, 
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_SEEN_MESSAGE], io
+			});
+		}
+
+		const infoUserSeen = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+			userID,
+			select: '_id bizfullname fullname image'
+		});
+
+		sendDataToMultilSocketsOfListUser({ 
+			listUserConnected: listUserActive, 
+			arrReceiver: infoConversation.members,
+			data: {
+				error: false,
+				data: {
+					infoConversation,
+					infoUserSeen: infoUserSeen.data,
+					messagesID
+				}
+			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_SEEN_MESSAGE], io
+		});
+	},
 
 	/**
 	 * Dev: MinhVH
