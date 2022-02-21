@@ -676,7 +676,7 @@ class Model extends BaseModel {
 					.findById(userID, { ...filter, password: 0 })
 					.populate('company', select.company)
 					.populate('department', select.department)
-					// .populate('position', select.position)
+					.populate('position', select.position)
 					.lean();
 
                 return resolve({ error: false, data: infoUser });
