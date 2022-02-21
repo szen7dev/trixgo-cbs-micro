@@ -100,6 +100,9 @@ module.exports = {
 		[CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST] 		: ITEM__POSITION_HANDLER.getInfoAndGetList,
 
 		//==========================================  STORAGE  ===================================
+		[CF_ACTIONS_ITEM.STORAGE_INSERT] 						: ITEM__STORAGE_HANDLER.insert,
+		[CF_ACTIONS_ITEM.STORAGE_UPDATE] 						: ITEM__STORAGE_HANDLER.update,
+		[CF_ACTIONS_ITEM.STORAGE_REMOVE] 						: ITEM__STORAGE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
 		
 		//==========================================  ACCOUNT  ===================================

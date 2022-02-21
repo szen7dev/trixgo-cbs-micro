@@ -9,6 +9,81 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 const ITEM__STORAGE_MODEL                    = require('../model/item.storage-model').MODEL;
 
 module.exports = {
+    /**
+	 * Dev: Depv ✅
+	 * Func: insert storage
+	 */
+    insert: {
+        params: {
+            projectID  : { type: "string", optional: true },
+            name       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { projectID, name } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+               
+                let resultAfterCallHandler = await ITEM__STORAGE_MODEL.insert({
+                    projectID, name, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: Depv ✅
+     * Func: update storage
+     */
+    update: {
+        params: {
+            storageID  : { type: "string", optional: true },
+            name       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { storageID, name } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+               
+                let resultAfterCallHandler = await ITEM__STORAGE_MODEL.update({
+                    storageID, name, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+    
+    /**
+     * Dev: Depv ✅
+     * Func: remove storage
+     */
+    remove: {
+        params: {
+            storageID  : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { storageID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+               
+                let resultAfterCallHandler = await ITEM__STORAGE_MODEL.remove({
+                    storageID 
+                });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
     
     /**
 	 * Dev: Depv ✅
@@ -50,5 +125,4 @@ module.exports = {
             }
         }
     },
-
 }
