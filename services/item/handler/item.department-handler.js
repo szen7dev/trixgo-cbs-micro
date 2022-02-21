@@ -199,7 +199,7 @@ module.exports = {
     
     /**
 	 * Dev: Depv ✅
-	 * Func: Danh sách dự án mà user được quyền truy cập
+	 * Func: Danh sách dự án (Hàm dùng chung)
 	 */
     getInfoAndGetList: {
         auth: "required",
@@ -208,7 +208,6 @@ module.exports = {
             type            : { type: "string", optional: true },
             departmentID    : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
-            projectID       : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -244,8 +243,41 @@ module.exports = {
         }
     },
 
+    /**
+     * Dev: Depv ✅
+     * Func: Danh sách dự án mà user được quyền truy cập
+     */
+    getListByMembers: {
+        auth: "required",
+        params: {
+            // Field bổ sung
+            type            : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            // Field mặc định
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+				let { _id: userID } = ctx.meta.infoUser;
+               
+                let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
+                    companyID, lastestID, userID, type, 
+                    keyword, limit, select, populates
+                });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
 
-     /**
+    /**
 	 * Dev: Depv ✅
 	 * Func: Thống kê theo tiến độ, ngân sách
 	 */
@@ -266,5 +298,4 @@ module.exports = {
             }
         }
     },
-
-}
+}   

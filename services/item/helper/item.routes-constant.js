@@ -19,6 +19,7 @@ const CF_ROUTINGS_ITEM = {
     
     // ================================DEPARTMENT=======================================//
     DEPARTMENTS                                : `${BASE_ROUTE}${DEPARTMENT}`,
+    LIST_DEPARTMENT_IS_MEMBERS                : `${BASE_ROUTE}/list-department-is-members`,
     DEPARTMENTS_ANALYSIS_ONTIME_ONBUDGET       : `${BASE_ROUTE}${DEPARTMENT}/analysis`,
 
     // ================================CONTRACT=========================================//
