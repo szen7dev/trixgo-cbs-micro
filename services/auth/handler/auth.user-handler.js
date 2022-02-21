@@ -308,13 +308,17 @@ module.exports = {
      */
     getInfo: { //(lấy thông tin chính user - owner) 
         auth: "required",
+        params: {
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
         async handler(ctx) {
             try {
                 let infoUser = ctx.meta.infoUser;
-				let { filter, select } = ctx.params;
+				let { populates, select } = ctx.params;
 
                 let { _id: userID } = infoUser;
-                let infoUserAfterFind = await AUTH__USER_MODEL.getInfo({ userID, filter, select });
+                let infoUserAfterFind = await AUTH__USER_MODEL.getInfoV2({ userID, select, populates });
 
                 return infoUserAfterFind;
             } catch (error) {
