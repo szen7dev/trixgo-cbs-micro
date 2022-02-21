@@ -671,7 +671,7 @@ class Model extends BaseModel {
 
 					select = JSON.parse(select);
 				}
-
+                
                 let infoUser = await AUTH__USER_COLL
 					.findById(userID, { ...filter, password: 0 })
 					.populate('company', select.company)
