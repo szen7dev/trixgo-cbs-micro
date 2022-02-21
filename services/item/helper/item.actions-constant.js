@@ -68,6 +68,9 @@ const CF_ACTIONS_ITEM = {
     /**
      * STORAGE 
      */
+    STORAGE_INSERT                              : `${BASE_ACTIONS}_${STORAGE}_INSERT`, 
+    STORAGE_UPDATE                              : `${BASE_ACTIONS}_${STORAGE}_UPDATE`, 
+    STORAGE_REMOVE                              : `${BASE_ACTIONS}_${STORAGE}_REMOVE`, 
     STORAGE_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${STORAGE}_GET_INFO_AND_GET_LIST`, 
     
     /**

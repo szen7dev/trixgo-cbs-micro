@@ -480,7 +480,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus,
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -552,6 +552,12 @@ class Model extends BaseModel {
                 if(insuranceStatus){
                     conditionObj.insuranceStatus = insuranceStatus
                 }
+                // Lấy những danh bạ có sinh nhật vào hôm nay
+                if(isBirthday == 1){
+                    const day = (new Date()).getDate();
+                    const month = (new Date()).getMonth();
+                    conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
+                }
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -564,7 +570,6 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
@@ -579,7 +584,7 @@ class Model extends BaseModel {
 					sortBy       = dataPagingAndSort.data.sort;
 				}else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy       = dataPagingAndSort.data.sort;
+					sortBy                = dataPagingAndSort.data.sort;
                 }
                 
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
@@ -616,6 +621,155 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name  : Báo cáo quản trị ✅
+     * Author: Depv
+     * Code  : 
+     */
+    administratorReport({
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = {  company: companyID };
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+
+                if(limit > 20){
+                    limit = 20
+                }
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+				
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+               
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                
+                // TRẠNG THÁI CÔNG VIỆC
+                //____________Công ty
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+
+                if(type){
+                    conditionObj.type = type
+                }
+
+                if(checkObjectIDs(departmentID)){
+                    conditionObj.department = departmentID
+                }
+
+                if(checkObjectIDs(positionID)){
+                    conditionObj.position = positionID
+                }
+                
+                if(checkObjectIDs(contractTypeID)){
+                    conditionObj.contractType = contractTypeID
+                }
+
+                if(checkObjectIDs(workingStatusID)){
+                    conditionObj.workingStatus = workingStatusID
+                }
+
+                if(gender){
+                    conditionObj.gender = gender
+                }
+
+                if(insuranceStatus){
+                    conditionObj.insuranceStatus = insuranceStatus
+                }
+                // Lấy những danh bạ có sinh nhật vào hôm nay
+                if(isBirthday == 1){
+                    const day = (new Date()).getDate();
+                    const month = (new Date()).getMonth();
+                    conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                    ]
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort.data.sort;
+                }
+                
+                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
