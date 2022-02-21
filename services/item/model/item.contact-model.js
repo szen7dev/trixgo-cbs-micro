@@ -480,14 +480,14 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday,
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {  company: companyID };
+                let conditionObj = { company: companyID };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
@@ -557,6 +557,10 @@ class Model extends BaseModel {
                     const day = (new Date()).getDate();
                     const month = (new Date()).getMonth();
                     conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
+                }
+                // Lấy những tài khoản có trường linkUser
+                if(isLinkUser == 1){
+                    conditionObj.linkUser = { $exists: true }
                 }
 
                 if(keyword){

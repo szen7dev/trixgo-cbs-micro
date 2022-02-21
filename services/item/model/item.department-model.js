@@ -129,7 +129,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ 
-        departmentID, name, admins, adminRemove, members, memberRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+        departmentID, name, admins, adminRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
         pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -181,8 +181,8 @@ class Model extends BaseModel {
                     dataAddToSet.members = members;
                 }
 
-                if(checkObjectIDs(memberRemove)){
-                    dataPull.members = memberRemove;
+                if(checkObjectIDs(membersRemove)){
+                    dataPull.members = membersRemove;
                 }
 
                 if(!isNaN(stage)){
@@ -493,10 +493,6 @@ class Model extends BaseModel {
                     dataUpdate.numberOfMoms = numberOfMoms;
                 }
 
-                // if(!isNaN(numberOfDocs)){
-                //     dataUpdate.numberOfDocs = numberOfDocs;
-                // }
-
                 if(!isNaN(numberOfDrawings)){
                     dataUpdate.numberOfDrawings = numberOfDrawings;
                 }
@@ -534,7 +530,7 @@ class Model extends BaseModel {
                 }
 
                 if(dataPull){
-                    dataUpdate.$pull = dataPull;
+                    dataUpdate.$pullAll = dataPull;
                 }
 
                 let dataInc = {};

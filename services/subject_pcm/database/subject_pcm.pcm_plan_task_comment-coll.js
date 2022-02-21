@@ -37,9 +37,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'media_comment'
+        ref     : 'pcm_plan_task_comment'
     },
-
+    
     userCreate: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
