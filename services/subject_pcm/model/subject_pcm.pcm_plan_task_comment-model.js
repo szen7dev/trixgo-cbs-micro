@@ -1,5 +1,10 @@
 "use strict";
 
+/**
+ * import external
+ */
+const PromisePool								= require('@supercharge/promise-pool');
+
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
@@ -7,12 +12,14 @@ const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domai
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_ANALYSIS } 		            = require('../../analysis/helper/analysis.actions-constant');
+const { CF_ACTIONS_REACTION } 				    = require('../../reaction/helper/reaction.actions-constant');
 const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
 
 /**
  * import inter-coll, exter-coll
  */
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL           = require('../database/subject_pcm.pcm_plan_task-coll');
+const SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL      = require('../database/subject_pcm.pcm_plan_task_file-coll');
 const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL   = require('../database/subject_pcm.pcm_plan_task_comment-coll');
 
 class Model extends BaseModel {
@@ -25,7 +32,7 @@ class Model extends BaseModel {
      * Name  : Thêm comment ✅
      * Author: Depv
      */
-    insert({ taskID, commentCoreID, type, content, bizfullname, parentID, authorID, ctx }) { 
+    insert({ taskID, type, content, bizfullname, parentID, authorID, files, images, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -41,9 +48,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'Request params taskID invalid', status: 400 });
 
-                if(!checkObjectIDs(commentCoreID))
-                    return resolve({ error: true, message: 'Request params commentCoreID invalid', status: 400 }); 
-
                 if(!checkObjectIDs(authorID))
                     return resolve({ error: true, message: 'Request params authorID invalid', status: 400 }); 
 
@@ -55,11 +59,36 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                dataInsert = { type, comment: commentCoreID, task: taskID, userCreate: authorID };
+                dataInsert = { type, task: taskID, userCreate: authorID };
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
+
+                // Call service comment để insert comment_core
+                const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_INSERT}`, {
+					content, files, images
+				});
+
+                if(!infoCommentCore || infoCommentCore.error)
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler: infoCommentCore, ctx });
+
+                dataInsert.comment = infoCommentCore.data._id;
+
+                // if(files.length || images.length) {
+                //     const { results } = await PromisePool
+                //         .for([...files, ...images])
+                //         .withConcurrency(2)
+                //         .process(async fileID => {
+                //             const infoAfterCreate = await SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL.create({
+                //                 file: fileID,
+                //                 task: taskID
+                //             });
+                //             return infoAfterCreate;
+                //         })
+
+                //     console.log({ results })
+                // }
 
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)

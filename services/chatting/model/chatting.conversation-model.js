@@ -18,7 +18,7 @@ const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.ac
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION } 					= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION }						= require('../../../tools/cursor_base/playground/index');
 const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils');
 
 /**
@@ -26,14 +26,12 @@ const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils'
  */
 const CHATTING__MESSAGE_COLL						= require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL               	= require('../database/chatting.conversation-coll');
-const CHATTING__CONVERSATION_FILE_COLL          	= require('../database/chatting.conversation_file-coll');
 const CHATTING__CONVERSATION_LINK_COLL          	= require('../database/chatting.conversation_link-coll');
 
 /**
  * MODELS
  */
 const CHATTING__MESSAGE_MODEL  						= require('../model/chatting.message-model').MODEL;
-
 
 class Model extends BaseModel {
 
@@ -1362,8 +1360,8 @@ class Model extends BaseModel {
 				if(!page || isNaN(page))
 					page = 1;
 
-				if(!limit || isNaN(limit))
-					limit = 10;
+				if(!limit || isNaN(limit) || +limit > 20)
+					limit = 20;
 
 				page  		= +page;
 				limit 		= +limit;
@@ -1499,7 +1497,7 @@ class Model extends BaseModel {
 								})
 								.lean());
 
-							listMessage = await Promise.all(listMessage);
+							listMessage = await Promise.all(listMessage);s
 							let messages = [];
 
 							for (const message of listMessage) {
@@ -2244,90 +2242,6 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listConversationMissMessage,
-						limit: +limit,
-						totalRecord,
-						nextCursor
-					}
-				});
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-	/**
-	 * Dev: MinhVH
-	 * Func: Lấy danh sách file trong cuộc hội thoại
-	 * Date: 04/01/2022
-	 */
-	getListFileConversation({ lastestID, userID, conversationID, limit = 100 }){
-        return new Promise(async resolve => {
-            try {
-				if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-				if(!checkObjectIDs(conversationID))
-                    return resolve({ error: true, message: 'Request params conversationID invalid', status: 400 });
-
-				if(isNaN(limit)) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
-
-				let conditionObj 	= { conversation: conversationID };
-				let conditionFind 	= {};
-                let sortBy = {
-					createAt: -1,
-                    modifyAt: -1,
-                }
-
-				// GET CONDITION PAGINATION
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoFileConversation = await CHATTING__CONVERSATION_FILE_COLL.findById(lastestID);
-                    if(!infoFileConversation)
-                        return resolve({ error: true, message: "Can't get info last file conversation", status: 400 });
-
-                    let nextInfo = `${infoFileConversation.createAt}_${infoFileConversation._id}`;
-                    let keys 	 = ['createAt__-1', '_id__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 403 });
-
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-                let listFileConversation = await CHATTING__CONVERSATION_FILE_COLL
-					.find({ ...conditionObj, ...conditionFind })
-					.populate({
-						path: 'file',
-						populate: {
-							path: 'userCreate',
-							select: '_id fullname image',
-						},
-						select: '_id name nameOrg path type',
-					})
-					.limit(limit + 1)
-					.sort(sortBy)
-					.lean();
-
-				// GET TOTAL RECORD
-                let totalRecord = await CHATTING__CONVERSATION_FILE_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
-
-				if(listFileConversation && listFileConversation.length){
-					if(listFileConversation.length > limit){
-						nextCursor = listFileConversation[limit - 1]._id;
-						listFileConversation.length = limit;
-					}
-				}
-
-                return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: listFileConversation,
 						limit: +limit,
 						totalRecord,
 						nextCursor

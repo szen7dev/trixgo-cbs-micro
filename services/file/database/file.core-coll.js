@@ -7,7 +7,10 @@ const {
 }                           = require('../helper/file.keys-constant');
 
 module.exports  = DATABASE_MIDDLEWARE("file", {
-    app         : { type: String, require: true },
+    app: {
+        type: Schema.Types.ObjectId,
+        ref: 'app'
+    },
     nameOrg     : { type: String, require: true }, // Tên gốc
     name        : { type: String, require: true }, // uuidv1
     description : { type: String },

@@ -2,8 +2,6 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
-const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_REACTION } 				    = require('../../reaction/helper/reaction.actions-constant');
 
 /**
  * MODELS
@@ -32,17 +30,8 @@ module.exports = {
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images } = ctx.params;
 
-                // Call service comment để insert comment_core
-                const infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_CORE_INSERT}`, {
-					content, files, images
-				});
-
-                if(!infoCommentCore || infoCommentCore.error)
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler: infoCommentCore, ctx });
-
-                let commentCoreID = infoCommentCore.data._id;
                 let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.insert({
-					taskID, commentCoreID, parentID, authorID, type, content, bizfullname, ctx
+					taskID, parentID, authorID, type, content, bizfullname, files, images, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

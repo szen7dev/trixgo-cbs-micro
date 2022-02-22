@@ -7,7 +7,7 @@ const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.consta
 const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.actions-constant');
 const { REACTION_TYPES }			    = require('../helper/media.keys-constant');
 
-/**s
+/**
  * import inter-coll, exter-coll
  */
 const MEDIA__REACTION_COLL              = require('../database/media.reaction-coll');
@@ -36,8 +36,8 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([authorID, mediaID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số media ID hoặc author ID không hợp lệ', 
-						keyError: 'params_messageID_or_authorID_invalid',
+						message: 'Tham số mediaID hoặc authorID không hợp lệ', 
+						keyError: 'params_mediaID_or_authorID_invalid',
 						status: 400
 					});
 				}
@@ -49,7 +49,7 @@ class Model extends BaseModel {
 				if(!infoMedia) {
 					return resolve({
 						error: true, 
-						message: 'ID media không tồn tại', 
+						message: 'Bài viết không tồn tại', 
 						keyError: 'media_is_not_exists',
 						status: 400
 					});
@@ -59,8 +59,6 @@ class Model extends BaseModel {
 				const infoReaction = await MEDIA__REACTION_COLL
 					.findOne({
 						media: mediaID,
-						file: { $exists: false },
-						comment: { $exists: false },
 						userCreate: authorID
 					})
 					.populate('reaction')
@@ -97,14 +95,14 @@ class Model extends BaseModel {
 				const infoAfterUpdateReaction = await this.insertData({
 					media: mediaID,
 					reaction: infoAfterInsertReaction?.data?._id,
-					userCreate: authorID,
+					userCreate: authorID
 				})
 
 				if(!infoAfterUpdateReaction) {
 					return resolve({
 						error: true, 
-						message: 'Đã có lỗi xảy ra', 
-						keyError: 'error_occurs',
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+						keyError: 'error_occurred',
 						status: 422
 					});
 				}
@@ -126,9 +124,12 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReaction({ userID, mediaID, lastestID, type, limit, select, populates, ctx }) {
+	getListReaction({ userID, mediaID, lastestID, isGetTotal, type, limit = 15, select, populates, ctx }) {
 		return new Promise(async resolve => {
 			try {
+				console.log({
+					userID, mediaID, lastestID, isGetTotal, type, limit, select, populates
+				})
 				if(!checkObjectIDs([userID])) {
                     return resolve({
 						error: true, 
@@ -161,6 +162,7 @@ class Model extends BaseModel {
 					const listReactions = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
 						conditionObj: { ...conditionReactionCore, _id: { $in: listReactionsID } },
 						lastestID,
+						isGetTotal,
 						select,
 						populates,
 						limit,
@@ -201,7 +203,7 @@ class Model extends BaseModel {
                     return resolve({
 						error: true, 
 						message: 'Tham số mediaID hoặc authorID, fileID không hợp lệ', 
-						keyError: 'params_messageID_or_authorID_or_fileID_invalid',
+						keyError: 'params_mediaID_or_authorID_or_fileID_invalid',
 						status: 400
 					});
 				}
@@ -213,7 +215,7 @@ class Model extends BaseModel {
 				if(!infoMedia) {
 					return resolve({
 						error: true, 
-						message: 'Media không tồn tại', 
+						message: 'Bài viết không tồn tại', 
 						keyError: 'media_is_not_exists',
 						status: 400
 					});
@@ -290,13 +292,13 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION FILE
 	 */
-	getListReactionFile({ userID, fileID, mediaID, lastestID, type, limit, select, populates, ctx }) {
+	getListReactionFile({ userID, fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates, ctx }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số user ID không hợp lệ', 
+						message: 'Tham số userID không hợp lệ', 
 						keyError: 'params_userID_invalid',
 						status: 400
 					});
@@ -325,6 +327,7 @@ class Model extends BaseModel {
 					const listReactions = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
 						conditionObj: { ...conditionReactionCore, _id: { $in: listReactionsID } },
 						lastestID,
+						isGetTotal,
 						select,
 						populates,
 						limit,

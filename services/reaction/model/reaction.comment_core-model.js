@@ -1,25 +1,18 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 
 /**
  * COLLECTION
  */
-const REACTION__COMMENT_CORE_COLL            = require('../database/reaction.comment_core-coll');
+const REACTION__COMMENT_CORE_COLL       = require('../database/reaction.comment_core-coll');
 
 class Model extends BaseModel {
     constructor() {
         super(REACTION__COMMENT_CORE_COLL);
     }
+
     /**
      * Name: Thêm comment core
      * Author: Depv
