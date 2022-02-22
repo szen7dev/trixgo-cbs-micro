@@ -4,6 +4,8 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
+    //_________Nội dung
+    content: String,
     /**
      * Phân loại
      * 1-Comment thông thường (task, document, post,...)

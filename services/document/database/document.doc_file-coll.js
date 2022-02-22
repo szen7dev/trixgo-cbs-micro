@@ -7,6 +7,9 @@ const Schema                = require('mongoose').Schema;
  *  File đính kèm hồ sơ
  */
 module.exports  = DATABASE_MIDDLEWARE("document_file", {
+    nameOrg     : { type: String, require: true }, // Tên gốc
+    name        : { type: String, require: true }, // uuidv1
+
     //_________Công ty
     company: {
         type:  Schema.Types.ObjectId,
