@@ -13,7 +13,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
      */
     type: { type: Number, default: 1 },
 
-    //_________Đánh dấu 
+    //_________Đánh dấu
     isMarked: { type: Boolean, default: false },
 
     //_________taskID
@@ -33,13 +33,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'comment_core'
     },
-
+    
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_plan_task_comment'
     },
-    
+
     userCreate: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
