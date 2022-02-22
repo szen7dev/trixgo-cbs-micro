@@ -181,7 +181,8 @@ module.exports = {
             insuranceStatus     : { type: "string", optional: true },
             companyID           : { type: "string", optional: true },
             isBirthday          : { type: "string", optional: true },
-
+            isLinkUser          : { type: "string", optional: true },
+            
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -192,7 +193,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, contactID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday,
+                let { companyID, contactID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -207,11 +208,11 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday,
+                        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

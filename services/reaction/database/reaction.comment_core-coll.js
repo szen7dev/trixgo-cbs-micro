@@ -6,7 +6,7 @@ const Schema                = require('mongoose').Schema;
 module.exports  = DATABASE_MIDDLEWARE("comment_core", {
     //_________Nội dung
     content: String,
-
+    
     //_________Các files được đính kèm trong bài viết
     files: [{
         type: Schema.Types.ObjectId,
@@ -18,7 +18,7 @@ module.exports  = DATABASE_MIDDLEWARE("comment_core", {
         type: Schema.Types.ObjectId,
         ref: 'file'
     }],
-
+    
     //_________Người comment
     author: {
         type: Schema.Types.ObjectId,

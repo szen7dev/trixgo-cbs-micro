@@ -4,6 +4,8 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
+    //_________Nội dung
+    content: String,
     /**
      * Phân loại
      * 1-Comment thông thường (task, document, post,...)
@@ -13,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
      */
     type: { type: Number, default: 1 },
 
-    //_________Đánh dấu 
+    //_________Đánh dấu
     isMarked: { type: Boolean, default: false },
 
     //_________taskID
@@ -33,11 +35,11 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'comment_core'
     },
-
+    
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'media_comment'
+        ref     : 'pcm_plan_task_comment'
     },
 
     userCreate: {

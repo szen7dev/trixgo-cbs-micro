@@ -29,7 +29,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-    /**
+    /** 
      * Phân loại
      * 1-Phòng ban
      * 2-Dự án
