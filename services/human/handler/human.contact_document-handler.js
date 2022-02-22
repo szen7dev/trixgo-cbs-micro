@@ -176,4 +176,34 @@ module.exports = {
         }
     },
 
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Thống kê chứng chỉ
+	 */
+    statisticsCertificate: {
+        params: {
+            companyID         : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID } = ctx.params;
+				let { _id: userID, company } = ctx.meta.infoUser;
+                
+                if(!companyID){
+                    companyID = company._id;
+                }
+               
+                let resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.statisticsCertificate({
+                    companyID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
 }

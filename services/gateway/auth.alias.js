@@ -649,10 +649,12 @@ module.exports = {
 
 		[`DELETE ${CF_ROUTINGS_CONTACT.CONTACT_DOCUMENT}`] :
 		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_CONTACT.CONTACT_DOCUMENT_STATISTICS_CERTIFICATE}`] :
+		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_STATISTICS_CERTIFICATE}`],
 		
 		//---------------------------- END SEARVICE HUMAN (CONTACT) --------------------------------//
-
-
+		
 
 		//---------------------------🏁 START SEARVICE TRAINING 🏁--------------------------------//
 		//______traning subject
