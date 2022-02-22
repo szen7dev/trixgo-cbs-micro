@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("notification_log", {
+module.exports  = DATABASE_MIDDLEWARE("notification", {
     /**
      * PHÂN LOẠI THÔNG BÁO ĐỂ PHỤC VỤ CÁC NHU CẦU KHÁC NHAU
      * 1 - InApp (Socket)
@@ -53,7 +53,7 @@ module.exports  = DATABASE_MIDDLEWARE("notification_log", {
     path: {
         type: String
     },
-    //_________Key để xử lý ngôn ngữ
+    //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
     key: {
         type: String 
     }  
