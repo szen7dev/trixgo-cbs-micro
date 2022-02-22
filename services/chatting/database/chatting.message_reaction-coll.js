@@ -9,7 +9,7 @@ module.exports = DATABASE_MIDDLEWARE("message_message_reaction", {
      */
 	reaction: {
         type    : Schema.Types.ObjectId,
-        ref     : 'reaction_core'
+        ref     : 'reaction'
     },
 	/**
      * Tin nhắn

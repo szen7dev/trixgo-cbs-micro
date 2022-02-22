@@ -29,7 +29,7 @@ class Model extends BaseModel {
      *   lưu ý:
      *      app: là các name constant
      * */
-    insert({ app, nameOrg, name, path, size, type, userID }) {
+    insert({ app, nameOrg, name, path, size, mimeType, type, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -50,7 +50,7 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let infoAfterInsert = await this.insertData({ app, nameOrg, name, path, size, type, userCreate: userID });
+                let infoAfterInsert = await this.insertData({ app, nameOrg, name, path, size, mimeType, type, userCreate: userID });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

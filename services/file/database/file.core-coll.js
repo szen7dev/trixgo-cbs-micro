@@ -22,7 +22,14 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
     path: { type: String, require: true },
     size: { type: Number },
     //_____image/jpeg
-    type: { type: String },
+    mimeType: { type: String },
+    /**
+     * 1. Hình ảnh
+     * 2. File
+     * 3. Audio
+     * 4. Video
+     */
+    type: { type: Number },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref: 'user',

@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("reaction_core", {
+module.exports  = DATABASE_MIDDLEWARE("reaction", {
     /**
      * Loại tương tác, like, tim, haha ...
      *  { value: 1, text: 'Thả tim', image: '2764.png' },

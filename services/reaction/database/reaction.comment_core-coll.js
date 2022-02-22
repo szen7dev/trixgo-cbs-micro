@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("comment_core", {
+module.exports  = DATABASE_MIDDLEWARE("comment", {
     //_________Nội dung
     content: String,
 
@@ -24,6 +24,7 @@ module.exports  = DATABASE_MIDDLEWARE("comment_core", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
+
     //_________Số lượng comment con của comment cha
     amountCommentReply: {
         type    :  Number,

@@ -31,7 +31,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_comment", {
     //_________ID comment core
     comment: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'comment_core'
+        ref     : 'comment'
     },
 
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)

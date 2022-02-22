@@ -17,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_reaction", {
      */
     reaction: {
         type    : Schema.Types.ObjectId,
-        ref     : 'reaction_core'
+        ref     : 'reaction'
     },
 
     /**

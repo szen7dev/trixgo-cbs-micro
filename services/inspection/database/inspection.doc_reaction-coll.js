@@ -10,7 +10,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_doc_reaction", {
     },
     reaction: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'reaction_core'
+        ref     : 'reaction'
     },
     author: {
         type    :  Schema.Types.ObjectId,

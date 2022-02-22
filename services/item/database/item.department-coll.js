@@ -200,7 +200,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     //______Bình luận cuối cùng
     lastComment: {
         type: Schema.Types.ObjectId,
-        ref : 'comment_core'
+        ref : 'comment'
     },
 
     /**
