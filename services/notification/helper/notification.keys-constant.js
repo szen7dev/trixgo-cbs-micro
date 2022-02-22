@@ -9,3 +9,22 @@ exports.NOTI_TYPE_SMS                   = 'NOTI_TYPE_SMS';
 exports.NOTI_TYPE_EMAIL                 = 'NOTI_TYPE_EMAIL';
 
 exports.NOTI_TYPE = [1,2,3,4,5]
+
+
+/**
+ * LIST TYPE EVENT - KEY
+ *  (chức năng dùng cho phần đa ngôn ngữ) (đồng bộ phía client-server)
+ */
+
+/**
+ * LIST TYPE NOTIFICATIONS 
+*/
+let APP_MESSAGE                 = 'MESSAGE';
+let APP_ACCOUNT                 = 'ACCOUNT';
+let APP_SOCIAL                  = 'SOCIAL';
+let APP_PCM                     = 'PCM';
+
+// SOCIAL
+exports.SOCIAL_POST_LIKE                      = `${APP_SOCIAL}.SOCIAL_POST_LIKE`;
+exports.SOCIAL_COMMENT_LIKE                   = `${APP_SOCIAL}.SOCIAL_COMMENT_LIKE`;
+exports.SOCIAL_SEND_NOTICE_COMMENT_TO_MEMBERS = `${APP_SOCIAL}.SOCIAL_SEND_NOTICE_COMMENT_TO_MEMBERS`;
