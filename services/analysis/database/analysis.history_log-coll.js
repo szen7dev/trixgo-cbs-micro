@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("history_log", {
+module.exports  = DATABASE_MIDDLEWARE("history_activity", {
     //_______Dự án (option, chỉ khi truy cập vào project thì mới có trường này)
     project: {
         type: Schema.Types.ObjectId,
@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         type: Number,
         default: 1
     },
-    //_________Key để xử lý ngôn ngữ
+    //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
     key: {
         type: String 
     },  
