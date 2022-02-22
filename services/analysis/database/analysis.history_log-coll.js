@@ -7,7 +7,7 @@ module.exports  = DATABASE_MIDDLEWARE("history_activity", {
     //_______Dự án (option, chỉ khi truy cập vào project thì mới có trường này)
     project: {
         type: Schema.Types.ObjectId,
-        ref : 'department' 
+        ref : 'department'
     },
     //_______Hợp đồng (option, chỉ khi truy cập vào contract thì mới có trường này)
     contract: {
