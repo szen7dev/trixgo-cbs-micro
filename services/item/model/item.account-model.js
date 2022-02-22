@@ -87,7 +87,9 @@ class Model extends BaseModel {
      */
     getList({
         companyID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {},
+        status, type, level,
+    }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -116,6 +118,18 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                if(status){
+                    conditionObj.status = status;
+                }
+
+                if(type){
+                    conditionObj.type = type;
+                }
+
+                if(level){
+                    conditionObj.level = level;
                 }
                 
                 let conditionObjOrg = { ...conditionObj };
