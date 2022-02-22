@@ -824,7 +824,7 @@ class Model extends BaseModel {
                     listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, _id: { $in: listGroupBySignID } });
                  }else{
                     listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
-                 }
+                }
                  
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
@@ -939,7 +939,6 @@ class Model extends BaseModel {
                 // 2 Tới hạn tuần tới
                 // 3 Tới hạn + 7 ngày tới
                 // 4 Quá hạn
-
                 // Lấy việc ngày nay
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
@@ -1068,6 +1067,7 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
      * Name: Lấy số lượng task của bạn ✅
      * Author: Depv

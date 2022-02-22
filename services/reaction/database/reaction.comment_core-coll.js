@@ -18,7 +18,7 @@ module.exports  = DATABASE_MIDDLEWARE("comment", {
         type: Schema.Types.ObjectId,
         ref: 'file'
     }],
-    
+        
     //_________Người comment
     author: {
         type: Schema.Types.ObjectId,

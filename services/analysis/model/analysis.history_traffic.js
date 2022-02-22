@@ -396,7 +396,6 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
 	 * Dev: Depv
 	 * Func: Thống kê truy cập theo công ty
