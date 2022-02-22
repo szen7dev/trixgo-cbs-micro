@@ -11,3 +11,9 @@ exports.REACTION_TYPES = [1,2,3,4,5,6,7];
  * 3-Hài lòng
  */
 exports.NPS_TYPE = [1,2,3];
+
+/**
+ * 1. Hình ảnh
+ * 2. File
+ */
+exports.FILE_TYPE = [1,2];

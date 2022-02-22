@@ -17,7 +17,7 @@ module.exports = {
     reaction: {
         params: {
             mediaID         : { type: "string" },
-            typeReaction    : { type: "number", optional: true },
+            typeReaction    : { type: "number", optional: true }
         },
         async handler(ctx) {
             try {
@@ -44,6 +44,7 @@ module.exports = {
         params: {
             mediaID     : { type: "string" },
             type        : { type: "string", optional: true },
+            isGetTotal  : { type: "string", optional: true },
             lastestID 	: { type: "string", optional: true },
             limit 	    : { type: "string", optional: true },
             select 	    : { type: "string", optional: true },
@@ -53,10 +54,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID, type, lastestID, limit, select, populates } = ctx.params;
+                const { mediaID, type, lastestID, isGetTotal, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.getListReaction({
-					userID, mediaID, type, lastestID, limit, select, populates, ctx
+					userID, mediaID, type, lastestID, isGetTotal, limit, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -101,6 +102,7 @@ module.exports = {
         params: {
             mediaID     : { type: "string" },
             fileID      : { type: "string" },
+            isGetTotal  : { type: "string", optional: true },
             lastestID 	: { type: "string", optional: true },
             type        : { type: "string", optional: true },
             limit 	    : { type: "string", optional: true },
@@ -111,10 +113,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { fileID, mediaID, lastestID, type, limit, select, populates } = ctx.params;
+                const { fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.getListReactionFile({
-					userID, fileID, mediaID, lastestID, type, limit, select, populates, ctx
+					userID, fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

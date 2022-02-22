@@ -195,6 +195,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      */
     reactions: [{
         type    : Schema.Types.ObjectId,
-        ref     : 'reaction_core'
+        ref     : 'reaction'
     }],
 })

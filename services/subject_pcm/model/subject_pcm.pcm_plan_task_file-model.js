@@ -1,47 +1,41 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
-                                        = require('../../../tools/utils/utils');
-const { RANGE_BASE_PAGINATION } 		= require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { checkObjectIDs }                = require('../../../tools/utils/utils');
     
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_FILE_COLL = require('../database/subject_pcm.pcm_plan_task_comment_file-coll');
-
-/**
- * import inter-model, exter-model
- */
-
-/**
- * import util files
- */
+const SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL = require('../database/subject_pcm.pcm_plan_task_file-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_FILE_COLL);
+        super(SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL);
     }
 
     /**
-     * Thêm mẩu tin: DePV ✅
+     * Thêm file: DePV ✅
      * F0211
      */
-    insert({ comment, task, file }) { 
+    insert({ company, project, comment, task, file, authorID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = {};
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(comment, task, file))
+                if(!checkObjectIDs([comment, task, file]))
                     return resolve({ error: true, message: 'Request params comment or task or file invalid', status: 400 });
+
+                if(!checkObjectIDs([company, project, authorID]))
+                    return resolve({ error: true, message: 'Request params company or project or authorID invalid', status: 400 });
 
                 /**
                  * LOGIC STEP (3)
@@ -49,7 +43,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                dataInsert = { comment, task, file };
+                dataInsert = { company, project, comment, task, file, userCreate: authorID };
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
                     return resolve({ error: true, message: "Can't create task file", status: 403 });
@@ -62,7 +56,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Xóa template docs: DePV ✅
+     * Xóa file: DePV ✅
      * F0213
      */
     remove({ fileID }) { 
@@ -85,7 +79,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                let infoDataAfterRemove = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_FILE_COLL.findByIdAndDelete(fileID);
+                let infoDataAfterRemove = await SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL.findByIdAndDelete(fileID);
                 if(!infoDataAfterRemove)
                     return resolve({ error: true, message: "Can't remove file comment", status: 403 });
 

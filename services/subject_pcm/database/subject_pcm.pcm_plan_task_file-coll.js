@@ -13,7 +13,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task_file", {
     //________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
-        ref: 'deparment'
+        ref: 'department'
     },
 
     //________Nhóm dữ liệu

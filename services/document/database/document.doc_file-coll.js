@@ -19,7 +19,7 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
     //________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
-        ref: 'deparment'
+        ref: 'department'
     },
 
     //_________Văn bản
