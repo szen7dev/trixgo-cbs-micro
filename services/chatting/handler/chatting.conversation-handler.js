@@ -13,6 +13,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  * MODELS
  */
 const CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
+const CHATTING__CONVERSATION_FILE_MODEL         = require('../model/chatting.conversation_file-model').MODEL;
 
 
 module.exports = {
@@ -709,15 +710,23 @@ module.exports = {
         params: {
 			conversationID 	: { type: "string" },
 			lastestID 	    : { type: "string", optional: true },
+			authorID 	    : { type: "string", optional: true },
+			fromDate 	    : { type: "string", optional: true },
+			toDate 	        : { type: "string", optional: true },
+			type 	        : { type: "string", optional: true },
+			keyword 	    : { type: "string", optional: true },
+			select 	        : { type: "string", optional: true },
+			populates       : { type: "string", optional: true },
+			limit           : { type: "string", optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, conversationID } = ctx.params;
+                const { lastestID, conversationID, authorID, fromDate, toDate, type, keyword, limit, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListFileConversation({ 
-					userID, lastestID, conversationID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FILE_MODEL.getList({ 
+					userID, lastestID, conversationID, authorID, fromDate, toDate, type, keyword, limit, select, populates
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

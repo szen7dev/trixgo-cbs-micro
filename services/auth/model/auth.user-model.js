@@ -671,12 +671,12 @@ class Model extends BaseModel {
 
 					select = JSON.parse(select);
 				}
-
+                
                 let infoUser = await AUTH__USER_COLL
 					.findById(userID, { ...filter, password: 0 })
 					.populate('company', select.company)
 					.populate('department', select.department)
-					// .populate('position', select.position)
+					.populate('position', select.position)
 					.lean();
 
                 return resolve({ error: false, data: infoUser });

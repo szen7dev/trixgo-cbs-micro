@@ -13,9 +13,7 @@ const { checkObjectIDs }                        = require('../../../tools/utils/
 /**
  * COLLECTIONS
  */
-const CHATTING__CONVERSATION_COLL               = require('../database/chatting.conversation-coll');
 const CHATTING__CONVERSATION_LINK_COLL          = require('../database/chatting.conversation_link-coll');
-
 
 class Model extends BaseModel {
 
@@ -23,25 +21,17 @@ class Model extends BaseModel {
         super(CHATTING__CONVERSATION_LINK_COLL);
     }
 
-    insert({ conversationID, link, senderID }){
+    insert({ conversationID, link, authorID }){
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, senderID]))
+                if(!checkObjectIDs([conversationID, authorID]))
                     return resolve({ error: true, message: 'Request Params invalid', status: 400 });
 
-                let checkExistConversation =  await CHATTING__CONVERSATION_COLL.findOne({ 
-					_id: conversationID,
-                    members: { $all: [senderID] }
-                })
-
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
-
-                // let checkLinkExist = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link, senderID });
+                // let checkLinkExist = await CHATTING__CONVERSATION_LINK_COLL.findOne({ conversationID, link, authorID });
                 // if(checkLinkExist)
                 //     return resolve({ error: false, message: "Link is exist", status: 200 });
 
-                let infoAfterInserted = await this.insertData({ conversation: conversationID, sender: senderID, link });
+                let infoAfterInserted = await this.insertData({ conversation: conversationID, author: authorID, link });
 
                 if(!infoAfterInserted)
                     return resolve({ error: true, message: "Can't create link", status: 403 });

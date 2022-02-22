@@ -171,7 +171,7 @@ class Model extends BaseModel {
                                 app:  "$app"
                             }, 
                             amountAccesses: { $sum: 1 },
-                        } 
+                        }
                     },
                     {
                         $lookup: {
@@ -395,7 +395,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 
     /**
 	 * Dev: Depv

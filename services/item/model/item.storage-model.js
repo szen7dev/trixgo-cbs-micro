@@ -28,635 +28,98 @@ class Model extends BaseModel {
     constructor() {
         super(ITEM__STORAGE_COLL);
     }
-
 	/**
-	 * Dev: Depv
-	 * Func: Tạo hợp đồng
+	 * Dev : Depv
+	 * Func: Tạo storage
 	 * Date: 13/12/2021
 	 */
-	// insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, storageID,
-    //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
-    //     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-    //     budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-    //     cgValue, expiredCg, agValue, expiredAg, userID, ctx
-    //      }){
-    //     return new Promise(async resolve => { 
-    //         try {
-    //             let dataInsert = {
-    //                 project: projectID, name, sign, date, userCreate: userID
-    //             }
+	insert({ projectID, name, userID, ctx }){
+        return new Promise(async resolve => {
+            try {
+                if(!name)
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
 
-    //             let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-    //                 departmentID: projectID
-    //             })
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID
+                })
 
-    //             if(infoProject.error)
-    //                 return resolve({ error: true, message: "Request params project invalid" });
-                
-    //             dataInsert.company = infoProject.data.company;
+                if(infoProject.error)
+                    return resolve({ error: true, message: "Request params project invalid" });
 
-    //             // company lấy theo product
-    //             if(checkObjectIDs(parentID)){
-    //                 dataInsert.parent = parentID;
-    //                 let infoContractParent = await ITEM__STORAGE_COLL.findById(parentID);
-    //                 if(infoContractParent){
-    //                     dataInsert.level = infoContractParent.level + 1;
-    //                 }
-    //             }
+                let dataInsert = {
+                    project: projectID, name, userCreate: userID
+                }
+                dataInsert.company = infoProject.data.company;                  
 
-    //             if(checkObjectIDs(admins)){
-    //                 dataInsert.admins = admins;
-    //             }
-
-    //             if(checkObjectIDs(members)){
-    //                 dataInsert.members = members;
-    //             }
-
-    //             if(draft){
-    //                 dataInsert.draft = draft;
-    //             }
-
-    //             if(outin){
-    //                 dataInsert.outin = outin;
-    //             }
-
-    //             if(status){
-    //                 dataInsert.status = status;
-    //             }
-
-    //             if(real){
-    //                 dataInsert.real = real;
-    //             }
-
-    //             if(subType){
-    //                 dataInsert.subType = subType;
-    //             }
-
-    //             if(type){
-    //                 dataInsert.type = type;
-    //             }
-
-    //             if(field){
-    //                 dataInsert.field = field;
-    //             }
-
-    //             if(chairID){
-    //                 dataInsert.chair = chairID;
-    //             }
-
-    //             if(personInChargeID){
-    //                 dataInsert.personInCharge = personInChargeID;
-    //             }
-
-    //             if(debtStatusID){
-    //                 dataInsert.debtStatus = debtStatusID;
-    //             }
-
-    //             if(storageID){
-    //                 dataInsert.storage = storageID;
-    //             }
-
-    //             if(name){
-    //                 dataInsert.name = name;
-    //             }
-
-    //             if(sign){
-    //                 dataInsert.sign = sign;
-    //             }
-
-    //             if(storeSign){
-    //                 dataInsert.storeSign = storeSign;
-    //             }
-
-    //             if(description){
-    //                 dataInsert.description = description;
-    //             }
-
-    //             if(note){
-    //                 dataInsert.note = note;
-    //             }
-
-    //             if(note1){
-    //                 dataInsert.note1 = note1;
-    //             }
-
-    //             if(date){
-    //                 dataInsert.date = date;
-    //             }
-
-    //             if(startTime){
-    //                 dataInsert.startTime = startTime;
-    //             }
-
-    //             if(endTime){
-    //                 dataInsert.endTime = endTime;
-    //             }
-
-    //             if(checkObjectIDs(buyerInfoID)){
-    //                 dataInsert.buyerInfo = buyerInfoID;
-    //             }
-
-    //             if(buyerBank){
-    //                 dataInsert.buyerBank = buyerBank;
-    //             }
-
-    //             if(checkObjectIDs(sellerInfoID)){
-    //                 dataInsert.sellerInfo = sellerInfoID;
-    //             }
-                
-    //             if(buyerBank){
-    //                 dataInsert.buyerBank = buyerBank;
-    //             }
-
-    //             if(sellerBank){
-    //                 dataInsert.sellerBank = sellerBank;
-    //             }
-
-    //             if(packageName){
-    //                 dataInsert.packageName = packageName;
-    //             }
-
-    //             if(lock){
-    //                 dataInsert.lock = lock;
-    //             }
-
-    //             if(value){
-    //                 dataInsert.value = value;
-    //             }
-
-    //             if(plus){
-    //                 dataInsert.plus = plus;
-    //             }
-
-    //             if(vatValue){
-    //                 dataInsert.vatValue = vatValue;
-    //             }
-
-    //             if(advancePayment){
-    //                 dataInsert.advancePayment = advancePayment;
-    //             }
-
-    //             if(produce){
-    //                 dataInsert.produce = produce;
-    //             }
-
-    //             if(plusProduce){
-    //                 dataInsert.plusProduce = plusProduce;
-    //             }
-
-    //             if(vatProduce){
-    //                 dataInsert.vatProduce = vatProduce;
-    //             }
-
-    //             if(acceptance){
-    //                 dataInsert.acceptance = acceptance;
-    //             }
-
-    //             if(plusAcceptance){
-    //                 dataInsert.plusAcceptance = plusAcceptance;
-    //             }
-
-    //             if(vatAcceptance){
-    //                 dataInsert.vatAcceptance = vatAcceptance;
-    //             }
-
-    //             if(retainedValue){
-    //                 dataInsert.retainedValue = retainedValue;
-    //             }
-
-    //             if(advancePaymentDeduction){
-    //                 dataInsert.advancePaymentDeduction = advancePaymentDeduction;
-    //             }
-
-    //             if(otherDeduction){
-    //                 dataInsert.otherDeduction = otherDeduction;
-    //             }
-
-    //             if(recommendedPayment){
-    //                 dataInsert.recommendedPayment = recommendedPayment;
-    //             }
-
-    //             if(advancePaymentPaid){
-    //                 dataInsert.advancePaymentPaid = advancePaymentPaid;
-    //             }
-
-    //             if(amountPaid){
-    //                 dataInsert.amountPaid = amountPaid;
-    //             }
-
-    //             if(remainingPayment){
-    //                 dataInsert.remainingPayment = remainingPayment;
-    //             }
-
-    //             if(advancePaymentOverage){
-    //                 dataInsert.advancePaymentOverage = advancePaymentOverage;
-    //             }
-
-    //             if(finalValue){
-    //                 dataInsert.finalValue = finalValue;
-    //             }
-
-    //             if(budget){
-    //                 dataInsert.budget = budget;
-    //             }
-
-    //             if(budgetVAT){
-    //                 dataInsert.budgetVAT = budgetVAT;
-    //             }
-
-    //             if(forecastBudget){
-    //                 dataInsert.forecastBudget = forecastBudget;
-    //             }
-
-    //             if(forecastBudgetVAT){
-    //                 dataInsert.forecastBudgetVAT = forecastBudgetVAT;
-    //             }
-
-    //             if(managementFee){
-    //                 dataInsert.managementFee = managementFee;
-    //             }
-
-    //             if(subcontractFee){
-    //                 dataInsert.subcontractFee = subcontractFee;
-    //             }
-
-    //             if(expenses){
-    //                 dataInsert.expenses = expenses;
-    //             }
-
-    //             if(profit){
-    //                 dataInsert.profit = profit;
-    //             }
-
-    //             if(cgValue){
-    //                 dataInsert.cgValue = cgValue;
-    //             }
-
-    //             if(expiredCg){
-    //                 dataInsert.expiredCg = expiredCg;
-    //             }
-
-    //             if(agValue){
-    //                 dataInsert.agValue = agValue;
-    //             }
-
-    //             if(expiredAg){
-    //                 dataInsert.expiredAg = expiredAg;
-    //             }
-
-    //             let infoAfterInsert = await this.insertData(dataInsert);
-    //             return resolve({ error: false, data: infoAfterInsert });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
+                let infoAfterInsert = await this.insertData(dataInsert);
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
     /**
-	 * Dev: Depv
-	 * Func: Cập nhật hợp đồng
+	 * Dev : Depv
+	 * Func: update storage
 	 * Date: 13/12/2021
 	 */
-	// update({ storageID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, storageID,
-    //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
-    //     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-    //     budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-    //     cgValue, expiredCg, agValue, expiredAg
-    //      }){
-    //     return new Promise(async resolve => { 
-    //         try {
-    //             if(!checkObjectIDs(storageID))
-    //                 return resolve({ error: true, message: "Request params storageID invalid" });
-    //              storageID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chairID, personInChargeID, debtStatusID, storageID,
-    //                 name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfoID, buyerBank, sellerInfoID, sellerBank, packageName, lock,
-    //                 value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-    //                 budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-    //                 cgValue, expiredCg, agValue, expiredAg });
-    //             let dataUpdate = {
-    //                 project: projectID, name, sign, date
-    //             }
+	update({ storageID, name, userID }){
+        return new Promise(async resolve => { 
+            try {
+                if(!checkObjectIDs(storageID))
+                    return resolve({ error: true, message: "storageID không hợp lệ", keyError: "Request params storageID invalid" });
 
-    //             let dataAddToSet = {};
-    //             let dataPull     = {};
-
-    //             if(projectID){
-    //                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-    //                     departmentID: projectID
-    //                 })
-
-    //                 if(!infoProject.error)
-    //                     return resolve({ error: true, message: "Request params project invalid" });
-    //                 //________company được lấy theo dự án
-    //                 dataUpdate.company = infoProject.data.company;
-    //             }
+                if(!name)
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 
-    //             if(checkObjectIDs(parentID)){
-    //                 dataUpdate.parent = parentID;
-    //                 let infoContractParent = await ITEM__STORAGE_COLL.findById(parentID);
-    //                 if(infoContractParent){
-    //                     dataUpdate.level = infoContractParent.level + 1;
-    //                 }
-    //             }
-
-    //             if(checkObjectIDs(admins)){
-    //                 dataAddToSet.admins = admins;
-    //             }
-
-    //             if(checkObjectIDs(members)){
-    //                 dataAddToSet.members = members;
-    //             }
-
-    //             if(checkObjectIDs(adminIDRemove)){
-    //                 dataPull.admins = adminIDRemove;
-    //             }
-
-    //             if(checkObjectIDs(memberIDRemove)){
-    //                 dataPull.members = memberIDRemove;
-    //             }
-
-    //             if(draft){
-    //                 dataUpdate.draft = draft;
-    //             }
-
-    //             if(outin){
-    //                 dataUpdate.outin = outin;
-    //             }
-
-    //             if(status){
-    //                 dataUpdate.status = status;
-    //             }
-
-    //             if(real){
-    //                 dataUpdate.real = real;
-    //             }
-
-    //             if(subType){
-    //                 dataUpdate.subType = subType;
-    //             }
-
-    //             if(type){
-    //                 dataUpdate.type = type;
-    //             }
-
-    //             if(field){
-    //                 dataUpdate.field = field;
-    //             }
-
-    //             if(chairID){
-    //                 dataUpdate.chair = chairID;
-    //             }
-
-    //             if(personInChargeID){
-    //                 dataUpdate.personInCharge = personInChargeID;
-    //             }
-
-    //             if(debtStatusID){
-    //                 dataUpdate.debtStatus = debtStatusID;
-    //             }
-
-    //             if(storageID){
-    //                 dataUpdate.storage = storageID;
-    //             }
-
-    //             if(name){
-    //                 dataUpdate.name = name;
-    //             }
-
-    //             if(sign){
-    //                 dataUpdate.sign = sign;
-    //             }
-
-    //             if(storeSign){
-    //                 dataUpdate.storeSign = storeSign;
-    //             }
-
-    //             if(description){
-    //                 dataUpdate.description = description;
-    //             }
-
-    //             if(note){
-    //                 dataUpdate.note = note;
-    //             }
-
-    //             if(note1){
-    //                 dataUpdate.note1 = note1;
-    //             }
-
-    //             if(date){
-    //                 dataUpdate.date = date;
-    //             }
-
-    //             if(startTime){
-    //                 dataUpdate.startTime = startTime;
-    //             }
-
-    //             if(endTime){
-    //                 dataUpdate.endTime = endTime;
-    //             }
-
-    //             if(checkObjectIDs(buyerInfoID)){
-    //                 dataUpdate.buyerInfo = buyerInfoID;
-    //             }
-
-    //             if(buyerBank){
-    //                 dataUpdate.buyerBank = buyerBank;
-    //             }
-
-    //             if(checkObjectIDs(sellerInfoID)){
-    //                 dataUpdate.sellerInfo = sellerInfoID;
-    //             }
-                
-    //             if(buyerBank){
-    //                 dataUpdate.buyerBank = buyerBank;
-    //             }
-
-    //             if(sellerBank){
-    //                 dataUpdate.sellerBank = sellerBank;
-    //             }
-
-    //             if(packageName){
-    //                 dataUpdate.packageName = packageName;
-    //             }
-
-    //             if(lock){
-    //                 dataUpdate.lock = lock;
-    //             }
-
-    //             if(value){
-    //                 dataUpdate.value = value;
-    //             }
-
-    //             if(plus){
-    //                 dataUpdate.plus = plus;
-    //             }
-
-    //             if(vatValue){
-    //                 dataUpdate.vatValue = vatValue;
-    //             }
-
-    //             if(advancePayment){
-    //                 dataUpdate.advancePayment = advancePayment;
-    //             }
-
-    //             if(produce){
-    //                 dataUpdate.produce = produce;
-    //             }
-
-    //             if(plusProduce){
-    //                 dataUpdate.plusProduce = plusProduce;
-    //             }
-
-    //             if(vatProduce){
-    //                 dataUpdate.vatProduce = vatProduce;
-    //             }
-
-    //             if(acceptance){
-    //                 dataUpdate.acceptance = acceptance;
-    //             }
-
-    //             if(plusAcceptance){
-    //                 dataUpdate.plusAcceptance = plusAcceptance;
-    //             }
-
-    //             if(vatAcceptance){
-    //                 dataUpdate.vatAcceptance = vatAcceptance;
-    //             }
-
-    //             if(retainedValue){
-    //                 dataUpdate.retainedValue = retainedValue;
-    //             }
-
-    //             if(advancePaymentDeduction){
-    //                 dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
-    //             }
-
-    //             if(otherDeduction){
-    //                 dataUpdate.otherDeduction = otherDeduction;
-    //             }
-
-    //             if(recommendedPayment){
-    //                 dataUpdate.recommendedPayment = recommendedPayment;
-    //             }
-
-    //             if(advancePaymentPaid){
-    //                 dataUpdate.advancePaymentPaid = advancePaymentPaid;
-    //             }
-
-    //             if(amountPaid){
-    //                 dataUpdate.amountPaid = amountPaid;
-    //             }
-
-    //             if(remainingPayment){
-    //                 dataUpdate.remainingPayment = remainingPayment;
-    //             }
-
-    //             if(advancePaymentOverage){
-    //                 dataUpdate.advancePaymentOverage = advancePaymentOverage;
-    //             }
-
-    //             if(finalValue){
-    //                 dataUpdate.finalValue = finalValue;
-    //             }
-
-    //             if(budget){
-    //                 dataUpdate.budget = budget;
-    //             }
-
-    //             if(budgetVAT){
-    //                 dataUpdate.budgetVAT = budgetVAT;
-    //             }
-
-    //             if(forecastBudget){
-    //                 dataUpdate.forecastBudget = forecastBudget;
-    //             }
-
-    //             if(forecastBudgetVAT){
-    //                 dataUpdate.forecastBudgetVAT = forecastBudgetVAT;
-    //             }
-
-    //             if(managementFee){
-    //                 dataUpdate.managementFee = managementFee;
-    //             }
-
-    //             if(subcontractFee){
-    //                 dataUpdate.subcontractFee = subcontractFee;
-    //             }
-
-    //             if(expenses){
-    //                 dataUpdate.expenses = expenses;
-    //             }
-
-    //             if(profit){
-    //                 dataUpdate.profit = profit;
-    //             }
-
-    //             if(cgValue){
-    //                 dataUpdate.cgValue = cgValue;
-    //             }
-
-    //             if(expiredCg){
-    //                 dataUpdate.expiredCg = expiredCg;
-    //             }
-
-    //             if(agValue){
-    //                 dataUpdate.agValue = agValue;
-    //             }
-
-    //             if(expiredAg){
-    //                 dataUpdate.expiredAg = expiredAg;
-    //             }
-
-    //             if(dataAddToSet){
-    //                 dataUpdate.$addToSet = dataAddToSet;
-    //             }
-
-    //             if(dataPull){
-    //                 dataUpdate.$pull = dataPull;
-    //             }
-
-    //             let infoAfterInsert = await ITEM__STORAGE_COLL.findByIdAndUpdate(storageID, dataUpdate, { new: true });
-    //             return resolve({ error: false, data: infoAfterInsert });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
+                let dataUpdate = {
+                    name, userUpdate: userID, modifyAt: new Date
+                }
+
+                let infoAfterUpdate = await ITEM__STORAGE_COLL.findByIdAndUpdate(storageID, dataUpdate, { new: true });
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
     /**
-     * Name: Remove Hợp đồng ✅
+     * Name: Remove storage ✅
      * Author: Depv
      * Code: 
      */
-    // remove({ storageID }) { 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             /**
-    //              * DECALARTION VARIABLE (1)
-    //              */
+    remove({ storageID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
 
-    //             /** 
-    //              * VALIDATION STEP (2)
-    //              *  - Kiểm tra valid từ các input
-    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-    //              */
-    //             if(!checkObjectIDs(storageID))
-    //                 return resolve({ error: true, message: 'Request params storageID invalid', status: 400 });
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(storageID))
+                    return resolve({ error: true, message: 'Request params storageID invalid', status: 400 });
                     
-    //             /**
-    //              * LOGIC STEP (3)
-    //              * 3.1: Convert type + update name (ví dụ: string -> number)
-    //              * 3.2: Operation database
-    //              */
-    //             let infoAterRemove = await ITEM__STORAGE_COLL.findByIdAndDelete(storageID);
-    //             if(!infoAterRemove)
-    //                 return resolve({ error: true, message: "can't_remove", status: 403 });
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await ITEM__STORAGE_COLL.findByIdAndDelete(storageID);
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: "can't_remove", status: 403 });
  
-    //             return resolve({ error: false, data: infoAterRemove, status: 200 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name: get info storage ✅
@@ -714,7 +177,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, projectID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -727,6 +190,9 @@ class Model extends BaseModel {
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
+                if(limit > 20){
+                    limit = 20;
+                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -748,13 +214,15 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-
+                
+                if(checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';

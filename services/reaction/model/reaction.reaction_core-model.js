@@ -100,7 +100,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
 	 */
-	getListReaction({ userID, conditionObj, lastestID, limit, select, populates }) {
+	getListReaction({ userID, conditionObj, lastestID, isGetTotal, limit = 15, select, populates }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -114,7 +114,7 @@ class Model extends BaseModel {
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Tham số populates không hợp lệ', status: 400 });
+						return resolve({ error: true, message: 'Request param populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
 				} else{
@@ -159,6 +159,7 @@ class Model extends BaseModel {
 					.populate(populates)
 					.lean();
 
+                console.log({ listReactions, select, populates, limit, sortBy, conditionObj: conditionObj._id.$in })
                 if(!listReactions) {
                     return resolve({ 
                         error: true, 
@@ -177,10 +178,36 @@ class Model extends BaseModel {
 
                 const totalRecord = await REACTION__REACTION_CORE_COLL.countDocuments(conditionObjOrg);
 
+                if(isGetTotal) {
+                    const totalRecordLike       = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 1 });
+                    const totalRecordHeart      = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 2 });
+                    const totalRecordSmile      = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 3 });
+                    const totalRecordSurprise   = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 4 });
+                    const totalRecordSad        = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 5 });
+                    const totalRecordAngry      = await REACTION__REACTION_CORE_COLL.countDocuments({ ...conditionObjOrg, type: 6 });
+
+                    return resolve({
+                        error: false,
+                        status: 200,
+                        data: { 
+                            listRecords: listReactions, 
+                            limit,
+                            nextCursor,
+                            totalRecord,
+                            totalRecordLike,
+                            totalRecordHeart,
+                            totalRecordSmile,
+                            totalRecordSurprise,
+                            totalRecordSad,
+                            totalRecordAngry
+                        }
+                    });
+                }
+
 				return resolve({
 					error: false,
 					status: 200,
-					data: { 
+					data: {
                         listRecords: listReactions, 
                         limit,
                         totalRecord,

@@ -79,6 +79,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DEPARTMENT_UPDATE] 					: ITEM__DEPARTMENT_HANDLER.update,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS] 		: ITEM__DEPARTMENT_HANDLER.getListByMembers,
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
 	
 		//==========================================  DOCTYPE  ===================================
@@ -99,6 +100,9 @@ module.exports = {
 		[CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST] 		: ITEM__POSITION_HANDLER.getInfoAndGetList,
 
 		//==========================================  STORAGE  ===================================
+		[CF_ACTIONS_ITEM.STORAGE_INSERT] 						: ITEM__STORAGE_HANDLER.insert,
+		[CF_ACTIONS_ITEM.STORAGE_UPDATE] 						: ITEM__STORAGE_HANDLER.update,
+		[CF_ACTIONS_ITEM.STORAGE_REMOVE] 						: ITEM__STORAGE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
 		
 		//==========================================  ACCOUNT  ===================================

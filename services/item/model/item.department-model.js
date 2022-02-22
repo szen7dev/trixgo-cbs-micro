@@ -129,7 +129,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ 
-        departmentID, name, admins, adminRemove, members, memberRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+        departmentID, name, admins, adminRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
         pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -181,8 +181,8 @@ class Model extends BaseModel {
                     dataAddToSet.members = members;
                 }
 
-                if(checkObjectIDs(memberRemove)){
-                    dataPull.members = memberRemove;
+                if(checkObjectIDs(membersRemove)){
+                    dataPull.members = membersRemove;
                 }
 
                 if(!isNaN(stage)){
@@ -493,10 +493,6 @@ class Model extends BaseModel {
                     dataUpdate.numberOfMoms = numberOfMoms;
                 }
 
-                // if(!isNaN(numberOfDocs)){
-                //     dataUpdate.numberOfDocs = numberOfDocs;
-                // }
-
                 if(!isNaN(numberOfDrawings)){
                     dataUpdate.numberOfDrawings = numberOfDrawings;
                 }
@@ -534,7 +530,7 @@ class Model extends BaseModel {
                 }
 
                 if(dataPull){
-                    dataUpdate.$pull = dataPull;
+                    dataUpdate.$pullAll = dataPull;
                 }
 
                 let dataInc = {};
@@ -617,7 +613,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách dự án mà user được quyền truy cập (là member)
+     * Name  : Danh sách dự án (Hàm dùng chung)
      * Author: DePV ✅
      * Code  : F00402
      */
@@ -636,9 +632,9 @@ class Model extends BaseModel {
                 }
 
                 if(isMember == 1){
-                    conditionObj.members = { $in: [userID]}
+                    conditionObj.members = { $in: [userID] }
                 }
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -647,7 +643,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
                 companyID && (conditionObj.company = companyID);
- 
+                
                 if(type){
                     conditionObj.type = +type;
                 }
@@ -667,8 +663,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                 //_____Tìm kiếm theo từ khóa
-                 if(keyword){
+                //_____Tìm kiếm theo từ khóa
+                if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
@@ -733,14 +729,14 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00403
      */
-    getListByMember({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
+    getListByMembers({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj  =  { 
-                    members: {$in: [userID]}
+                    members: { $in: [userID] }
                 }
                 
                 let sortBy;
@@ -758,8 +754,8 @@ class Model extends BaseModel {
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
-    
-                if(type){
+                
+                if([1,2].includes(type)){
                     conditionObj.type = +type;
                 }
 
@@ -778,8 +774,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                    //_____Tìm kiếm theo từ khóa
-                    if(keyword){
+                //_____Tìm kiếm theo từ khóa
+                if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
@@ -839,7 +835,7 @@ class Model extends BaseModel {
         })
     }
 
-     /**
+    /**
      * Name  : Thống kê theo tiến độ ngân sách
      * Author: DePV ✅
      * Code  : 

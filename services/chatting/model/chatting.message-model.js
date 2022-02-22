@@ -125,8 +125,14 @@ class Model extends BaseModel {
 	}) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([senderID, conversationID]))
-                    return resolve({ error: true, message: 'Request Params senderID or conversationID invalid', status: 400 });
+                if (!checkObjectIDs([senderID, conversationID])) {
+					return resolve({
+						error: true,
+						message: "Tham số senderID hoặc conversationID không hợp lệ",
+						keyError: "params_senderID_or_conversationID_invalid",
+						status: 400
+					})
+				}
 
 				// CHECK SENDER IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -134,30 +140,58 @@ class Model extends BaseModel {
 					members: { $in: [senderID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
+						keyError: "you_are_not_member_of_conversation",
+						status: 403
+					})
+				}
 
 				// Check config admin conversation
 				if(checkExistConversation.config && checkExistConversation.config.configSendMessage === 2){
 					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 
 					// User is not author of conversation
-					if(!listAuthorsID.includes(senderID))
-						return resolve({ error: true, message: "You don't have permission to send message", status: 403 });
+					if(!listAuthorsID.includes(senderID)) {
+						return resolve({
+							error: true,
+							message: "Bạn không có quyền gửi tin nhắn trong cuộc hội thoại này, vui lòng liên hệ người tạo nhóm chat",
+							keyError: "you_do_not_have_permission_to_send_message",
+							status: 403
+						})
+					}
 				}
 
 				if(!receiversID || !receiversID.length){
 					receiversID = checkExistConversation.members;
-				} else{
-					if (!checkObjectIDs(receiversID))
-                    	return resolve({ error: true, message: 'Request Params receiversID invalid', status: 400 });
+				} else if(!checkObjectIDs(receiversID)){ 
+					return resolve({
+						error: true,
+						message: "Tham số receiversID không hợp lệ",
+						keyError: "param_receiversID_invalid",
+						status: 400
+					})
 				}
 
-				if(parentID && !checkObjectIDs(parentID))
-					return resolve({ error: true, message: 'Request Param parentID invalid', status: 400 });
+				if(parentID && !checkObjectIDs([parentID])) {
+					return resolve({
+						error: true,
+						message: "Tham số parentID không hợp lệ",
+						keyError: "param_parentID_invalid",
+						status: 400
+					})
+				}
 
-				if(usersAssigned && usersAssigned.length && !checkObjectIDs(usersAssigned))
-					return resolve({ error: true, message: 'Request Param usersAssigned invalid', status: 400 });
+				if(usersAssigned && usersAssigned.length && !checkObjectIDs(usersAssigned)) {
+					return resolve({
+						error: true,
+						message: "Tham số usersAssigned không hợp lệ",
+						keyError: "param_usersAssigned_invalid",
+						status: 400
+					})
+				}
 
 				let dataInsertMessage = {
 					usersSeen: [senderID],
@@ -171,18 +205,18 @@ class Model extends BaseModel {
 				usersAssigned 	&& (dataInsertMessage.usersAssigned = usersAssigned);
 
 				// MESSAGE IMAGES, FILES
-				if(files && files.length && checkObjectIDs(files) && checkNumberIsValidWithRange({ arrValid: [1,2], val: type })){
-					let listFilesMessage = files.map(file => ({
-						conversationID,
-						fileID: file
-					}))
-
+				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type })){
 					const { results } = await PromisePool
-						.for(listFilesMessage)
+						.for(files)
 						.withConcurrency(2)
 						.process(async file => {
-							// Insert conversation file collection
-							const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert(file);
+							const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
+								fileName: file.name,
+								fileType: type,
+								conversationID,
+								fileID: file._id,
+								authorID: senderID
+							});
 							return { file: infoAfterInserted.data && infoAfterInserted.data._id }
 						})
 
@@ -195,16 +229,14 @@ class Model extends BaseModel {
 					let allLinks = content.match(urlRegex);
 
 					if(allLinks && allLinks.length){
-						let listMessageLinks = allLinks.map(link => ({
-							conversationID,
-							senderID,
-							link
-						}))
-
 						await PromisePool
-							.for(listMessageLinks)
+							.for(allLinks)
 							.withConcurrency(2)
-							.process(async message => CHATTING__CONVERSATION_LINK_MODEL.insert(message))
+							.process(async link => CHATTING__CONVERSATION_LINK_MODEL.insert({
+								conversationID,
+								authorID: senderID,
+								link
+							}))
 					}
 				}
 
@@ -222,8 +254,14 @@ class Model extends BaseModel {
 						})
 						break;
 					case 7: // MESSAGE SHARE CONTACT
-						if(!usersAssigned || !usersAssigned.length || !checkObjectIDs(usersAssigned))
-							return resolve({ error: true, message: "Request Params usersAssigned invalid", status: 400 });
+						if(!usersAssigned || !usersAssigned.length || !checkObjectIDs(usersAssigned)) {
+							return resolve({
+								error: true,
+								message: "Tham số usersAssigned không hợp lệ",
+								keyError: "param_usersAssigned_invalid",
+								status: 400
+							})
+						}
 
 						let listMessageShareContact = usersAssigned.map(memberID => ({
 							usersSeen: [senderID],
@@ -247,21 +285,23 @@ class Model extends BaseModel {
 						break;
 				}
 
-                if(!infoMessageAfterInserted)
-                    return resolve({ error: true, message: "Can't create message", status: 403 });
+                if(!infoMessageAfterInserted) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occured",
+						status: 422
+					})
+				}
 
-				// UPDATE LAST MESSAGE
-                let infoUpdateLastMessage = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-                    lastMessage: infoMessageAfterInserted._id, modifyAt: Date.now()
-                }, { new: true });
-
-                if(!infoUpdateLastMessage)
-                    return resolve({ error: true, message: "Can't update last message", status: 403 });
-
-				// UPDATE SHOW CONVERSATION HIDE
-				await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-					$set: { usersHide: [] }
-				}, { new: true });
+				// UPDATE LAST MESSAGE & UPDATE SHOW CONVERSATION HIDE
+                await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+					$set: {
+						lastMessage: infoMessageAfterInserted._id,
+						usersHide: [],
+						modifyAt: Date.now()
+					}
+                });
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await this.updateUserMissMessage({ conversationID, userID: senderID, numberMissMessage });

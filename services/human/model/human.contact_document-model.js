@@ -442,6 +442,63 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Thống kê chứng chỉ ✅
+     * Author: Depv
+     * Code: 
+     * SCREEN: S18-2.1
+     */
+    statisticsCertificate({ companyID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                let infoData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: _isValid(companyID),
+                            certificateName: { $exists: true }
+                        }
+                    },
+                    { 
+                        $group: {
+                            _id: { 
+                                certificateName:  "$certificateName"
+                            }, 
+                            amount: { $sum: 1 },
+                        } 
+                    },
+                    {
+                        $sort: { "_id.certificateName": 1 }
+                    },
+                    {
+                        $lookup: {
+                            from: "doctypes",
+                            localField:"_id.certificateName",
+                            foreignField: "_id",
+                            as: "certificateName"
+                        } 
+                    },
+                    {
+                        $unwind: "$certificateName"
+                    },
+                    {
+                        "$project": {
+                          "_id": 0,
+                          "certificateName.name": 1,
+                          "amount": 1
+                        }
+                    }
+                ]);
+                if(!infoData)
+                    return resolve({ error: true, message: "can't_get", status: 403 });
+                
+                return resolve({ error: false, data: infoData, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

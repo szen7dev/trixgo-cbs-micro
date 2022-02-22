@@ -773,7 +773,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
+        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isStatusNot3, isUsersDelete,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -782,13 +782,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    // Lấy những công việc mình chưa xóa
-                    usersDelete: { $nin: [userID] },
-                    // Lấy những công việc chưa hoàn thành
-                    // status: { $ne: 3 }
+                let conditionObj = {
                 };
-
+                
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 if(isSortChecklist == 1){
@@ -824,7 +820,7 @@ class Model extends BaseModel {
                     listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, _id: { $in: listGroupBySignID } });
                  }else{
                     listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
-                 }
+                }
                  
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
@@ -939,7 +935,6 @@ class Model extends BaseModel {
                 // 2 Tới hạn tuần tới
                 // 3 Tới hạn + 7 ngày tới
                 // 4 Quá hạn
-
                 // Lấy việc ngày nay
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
@@ -1006,6 +1001,16 @@ class Model extends BaseModel {
                     conditionObj.field = fieldID;
                 }
 
+                // Bỏ đi công việc đã hoàn thành
+                if(isStatusNot3 == 1){
+                    conditionObj.status = { $ne: 3 };
+                }
+
+                // Bỏ đi công việc đã hoàn thành
+                if(isUsersDelete == 1){
+                    conditionObj.usersDelete = { $nin: [userID] };
+                }
+
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -1068,6 +1073,7 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
      * Name: Lấy số lượng task của bạn ✅
      * Author: Depv

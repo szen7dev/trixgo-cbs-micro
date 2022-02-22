@@ -480,14 +480,14 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus,
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {  company: companyID };
+                let conditionObj = { company: companyID };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
@@ -552,6 +552,16 @@ class Model extends BaseModel {
                 if(insuranceStatus){
                     conditionObj.insuranceStatus = insuranceStatus
                 }
+                // Lấy những danh bạ có sinh nhật vào hôm nay
+                if(isBirthday == 1){
+                    const day = (new Date()).getDate();
+                    const month = (new Date()).getMonth();
+                    conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
+                }
+                // Lấy những tài khoản có trường linkUser
+                if(isLinkUser == 1){
+                    conditionObj.linkUser = { $exists: true }
+                }
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -564,7 +574,6 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
@@ -579,7 +588,7 @@ class Model extends BaseModel {
 					sortBy       = dataPagingAndSort.data.sort;
 				}else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy       = dataPagingAndSort.data.sort;
+					sortBy                = dataPagingAndSort.data.sort;
                 }
                 
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
@@ -616,6 +625,32 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name  : Báo cáo biến động nhân sự ✅
+     * Author: Depv
+     * Code  : 
+     */
+    // dashboardContactchange({}) { 
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             // Cần hỏi lại nghiệp vụ chỗ 12 tháng
+    //             // Block 1
+    //             let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
+                   
+    //             if(!infoDataAfterGet)
+    //                 return resolve({ error: true, message: "Can't get data", status: 403 });
+              
+    //             return resolve({ error: false, data: {
+                 
+    //             }, status: 200 });
+                
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
+
 }
 
 exports.MODEL = new Model;

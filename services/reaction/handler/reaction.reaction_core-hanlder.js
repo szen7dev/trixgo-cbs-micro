@@ -74,6 +74,7 @@ module.exports = {
         params: {
             lastestID 	: { type: "string", optional: true },
             limit 	    : { type: "string", optional: true },
+            isGetTotal  : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
         },
@@ -81,10 +82,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conditionObj, lastestID, limit, select, populates } = ctx.params;
+                const { conditionObj, lastestID, isGetTotal, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await REACTION_CORE_MODEL.getListReaction({
-					userID, conditionObj, lastestID, limit, select, populates
+					userID, conditionObj, lastestID, isGetTotal, limit, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

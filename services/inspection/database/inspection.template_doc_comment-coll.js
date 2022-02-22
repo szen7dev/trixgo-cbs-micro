@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("inspection_template_doc_comment", {
     //_________ID comment core
     comment: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'comment_core'
+        ref     : 'comment'
     },
     //_________ID comment cha
     parent: {

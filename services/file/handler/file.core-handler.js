@@ -113,7 +113,7 @@ module.exports = {
                         nameOrg,
                         name: fileName,
                         path: `${process.env.AWS_BUCKET_PATH}/${fileName}`,
-                        type,
+                        mimeType: type,
                         size,
                         userID
                     });
