@@ -15,7 +15,7 @@ const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-consta
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
@@ -334,20 +334,16 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, contactID,
+        companyID, type, contactID, isDuration3Month,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    // company: companyID
-                };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                let conditionObj = {};
+                let keys	 = ['createAt__-1', '_id__-1'];
+                let sortBy;
                
                 /** 
                  * VALIDATION STEP (2)
@@ -368,8 +364,29 @@ class Model extends BaseModel {
                     }
                 }
                 
-                if(!checkObjectIDs(companyID))
-                    return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
+                if(checkObjectIDs(companyID)){
+                    conditionObj.company = companyID;
+                }
+
+                if(type){
+                    conditionObj.type = type;
+                }
+
+                if(checkObjectIDs(contactID)){
+                    conditionObj.contact = contactID;
+                }
+
+                if(isDuration3Month == 1){
+                    let today = new Date();
+                    today.setMonth(today.getMonth() +3); // + Thêm 3 tháng nữa
+                    conditionObj.toDate = { $lte: today }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -377,43 +394,30 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 
-
+                let conditionObjOrg = { ...conditionObj };
+                console.log({ conditionObjOrg });
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await HUMAN__CONTACT_DOCUMENT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
+                    conditionObj = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
-				}
-                
-				if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
                 }
-
-				if(type){
-					conditionObj.type = type;
-				}
-
-				if(checkObjectIDs(contactID)){
-					conditionObj.contact = contactID;
-				}
                 
-                let infoDataAfterGet = await HUMAN__CONTACT_DOCUMENT_COLL.find({...conditionObj, ...conditionFind }, { ...objSort })
+                let infoDataAfterGet = await HUMAN__CONTACT_DOCUMENT_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -426,7 +430,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await HUMAN__CONTACT_DOCUMENT_COLL.countDocuments(conditionObj);
+                let totalRecord = await HUMAN__CONTACT_DOCUMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
@@ -499,6 +503,61 @@ class Model extends BaseModel {
         })
     }
 
+     /**
+     * Name: Thống kê khu vực làm việc ✅
+     * Author: Depv
+     * Code: 
+     * SCREEN: S18-2.4.1
+     */
+    statistics({ companyID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                let infoData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: _isValid(companyID),
+                            certificateName: { $exists: true }
+                        }
+                    },
+                    { 
+                        $group: {
+                            _id: { 
+                                certificateName:  "$certificateName"
+                            }, 
+                            amount: { $sum: 1 },
+                        } 
+                    },
+                    {
+                        $sort: { "_id.certificateName": 1 }
+                    },
+                    {
+                        $lookup: {
+                            from: "doctypes",
+                            localField:"_id.certificateName",
+                            foreignField: "_id",
+                            as: "certificateName"
+                        } 
+                    },
+                    {
+                        $unwind: "$certificateName"
+                    },
+                    {
+                        "$project": {
+                          "_id": 0,
+                          "certificateName.name": 1,
+                          "amount": 1
+                        }
+                    }
+                ]);
+                if(!infoData)
+                    return resolve({ error: true, message: "can't_get", status: 403 });
+                
+                return resolve({ error: false, data: infoData, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

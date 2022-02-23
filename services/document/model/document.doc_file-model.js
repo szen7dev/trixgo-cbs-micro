@@ -166,6 +166,9 @@ class Model extends BaseModel {
             try {
                 if(documentID && !checkObjectIDs(documentID))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+                if(limit > 20){
+                    limit = 10;
+                }
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
