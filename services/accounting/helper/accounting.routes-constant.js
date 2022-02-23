@@ -29,7 +29,8 @@ const CF_ROUTINGS_ACCOUNTING = {
     GET_LIST_OF_ACCOUNT_GENERAL_JOURNAL     : `${BASE_ROUTE}${GENERAL_JOURNAL}/account-details`,
     GET_INFO_GENERAL_JOURNAL                : `${BASE_ROUTE}${GENERAL_JOURNAL}/:journalID`,
     GET_LIST_GENERAL_JOURNAL                : `${BASE_ROUTE}${GENERAL_JOURNAL}/list`,
-    GENERAL_JOURNAL                         : `${BASE_ROUTE}${GENERAL_JOURNAL}`
+    GENERAL_JOURNAL                         : `${BASE_ROUTE}${GENERAL_JOURNAL}`,
+    FINANCIAL_REPORT                        : `${BASE_ROUTE}${GENERAL_JOURNAL}/financial-report`
 
     // UPDATE_GENERAL_JOURNAL  : `${BASE_ROUTE}${GENERAL_JOURNAL}/update`,
 }

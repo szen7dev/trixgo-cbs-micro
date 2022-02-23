@@ -1,6 +1,5 @@
 
 exports.sendNotificationviaOneSignal = function(data) {
-
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz"
@@ -16,8 +15,7 @@ exports.sendNotificationviaOneSignal = function(data) {
     
     let https = require('https');
     let req = https.request(options, function(res) {  
-        res.on('data', function(data) {
-        });
+        res.on('data', function(data) {});
     });
     
     req.on('error', function(e) {

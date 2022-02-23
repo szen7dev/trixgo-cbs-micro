@@ -45,12 +45,18 @@ class Model extends BaseModel {
 
                 if (size && !checkNumberValid({ val: size }))
                     return resolve({ error: true, message: 'size_invalid' });
+
+                if(type && !checkNumberIsValidWithRange({ arrValid: [1,2,3,4], val: type }))
+                    return resolve({ error: true, message: 'type_invalid' });
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let infoAfterInsert = await this.insertData({ app, nameOrg, name, path, size, mimeType, type, userCreate: userID });
+                let infoAfterInsert = await this.insertData({ 
+                    app, nameOrg, name, path, size, mimeType, type, userCreate: userID
+                });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

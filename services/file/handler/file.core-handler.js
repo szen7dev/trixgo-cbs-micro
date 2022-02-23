@@ -83,10 +83,11 @@ module.exports = {
 
     generateLinkS3: {
         params: {
-            type : { type: "string" },
-            name : { type: "string" },
-            app  : { type: "string", optional: true },
-            size : { type: "number", optional: true },
+            mimeType : { type: "string" },
+            name     : { type: "string" },
+            type     : { type: "string", optional: true },
+            app      : { type: "string", optional: true },
+            size     : { type: "number", optional: true },
             //____(typeUpload == user)
             typeUpload : { type: "string", optional: true },
         },
@@ -95,12 +96,12 @@ module.exports = {
                 let { _id: userID } = ctx.meta.infoUser;
 
                 await this.validateEntity(ctx.params);
-                let { type, app, name, size, typeUpload } = ctx.params;
+                let { mimeType, type, app, name, size, typeUpload } = ctx.params;
                 let extension = getExtension(name);
                 let fileName  = `${uuidv4()}.${extension}`;
                 let nameOrg   = name;
 
-                let infoGenerateLink = await GENERATE_LINK_S3(fileName, type, typeUpload);
+                let infoGenerateLink = await GENERATE_LINK_S3(fileName, mimeType, typeUpload);
 
                 /**
                  * Nếu có app thì đang insert file trong app
@@ -113,7 +114,8 @@ module.exports = {
                         nameOrg,
                         name: fileName,
                         path: `${process.env.AWS_BUCKET_PATH}/${fileName}`,
-                        mimeType: type,
+                        mimeType,
+                        type,
                         size,
                         userID
                     });

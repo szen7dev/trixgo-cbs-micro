@@ -130,7 +130,7 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(!checkObjectIDs([w])) {
+                if(!checkObjectIDs([commentID])) {
                     return resolve({
                         error: true,
                         message: "Tham số commentID không hợp lệ",
