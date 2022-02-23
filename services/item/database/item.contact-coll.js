@@ -233,10 +233,36 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
      * _______Người ký xác nhận vào (Người ký nhận)
      */
     signerIn: String,
-     /**
-     * _______Người ký xác nhận chấm dứt (Người ký xa thải)
-     */
+    /**
+    * _______Người ký xác nhận chấm dứt (Người ký xa thải)
+    */
     signerOut: String,
+    
+    // Số lượng lịch sử làm việc tai các đơn vị
+    amountWorkHistory:{
+        type: Number,
+        default: 0
+    },
+    // Số lượng kinh nghiệm thự tế tham gia các dự án
+    amountProjectHistory:{
+        type: Number,
+        default: 0
+    },
+    // Số lượng kinh nghiệm theo quyết định bổ nhiệm
+    amountContractHistory:{
+        type: Number,
+        default: 0
+    },
+    // Số lượng trình độ học vấn
+    amountEducationHistory:{
+        type: Number,
+        default: 0
+    },
+    // Số lượng chứng chỉ hồ sơ khác
+    amountCertificateHistory:{
+        type: Number,
+        default: 0
+    },
 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

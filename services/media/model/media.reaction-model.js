@@ -107,11 +107,13 @@ class Model extends BaseModel {
 					});
 				}
 
-				await MEDIA_COLL.findByIdAndUpdate(mediaID, {
-					$inc: {
-						amountReaction: 1
-					}
-				})
+				if(!infoReaction) {
+					await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+						$inc: {
+							amountReaction: 1
+						}
+					})
+				}
 
                 return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
 			} catch (error) {
@@ -127,9 +129,6 @@ class Model extends BaseModel {
 	getListReaction({ userID, mediaID, lastestID, isGetTotal, type, limit = 15, select, populates, ctx }) {
 		return new Promise(async resolve => {
 			try {
-				console.log({
-					userID, mediaID, lastestID, isGetTotal, type, limit, select, populates
-				})
 				if(!checkObjectIDs([userID])) {
                     return resolve({
 						error: true, 
@@ -275,11 +274,13 @@ class Model extends BaseModel {
 					});
 				}
 
-				await MEDIA__FILE_COLL.findByIdAndUpdate(mediaID, {
-					$inc: {
-						amountReaction: 1
-					}
-				})
+				if(!infoReaction) {
+					await MEDIA__FILE_COLL.findByIdAndUpdate(mediaID, {
+						$inc: {
+							amountReaction: 1
+						}
+					})
+				}
 
                 return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
 			} catch (error) {

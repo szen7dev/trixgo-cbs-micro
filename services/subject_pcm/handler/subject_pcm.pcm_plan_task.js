@@ -146,6 +146,8 @@ module.exports = {
             fieldID          : { type: "string", optional: true },
             isSortChecklist  : { type: "string", optional: true },
             isChecklist      : { type: "string", optional: true },
+            isStatusNot3     : { type: "string", optional: true },
+            isUsersDelete    : { type: "string", optional: true },
             
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -159,7 +161,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
                 let { 
-                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, 
+                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, isStatusNot3, isUsersDelete,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
@@ -175,7 +177,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, 
-                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
+                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete,
                         keyword, limit, select, lastestID, populates
                     });
                 }

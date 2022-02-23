@@ -308,7 +308,10 @@ class Model extends BaseModel {
                                 ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                         });
-                        console.log({ listDeviceFromMobile: listDeviceFromMobile.length, listDeviceFromWebBrowser: listDeviceFromWebBrowser.length })
+                        console.log({ 
+                            listDeviceFromMobile: listDeviceFromMobile.length, 
+                            listDeviceFromWebBrowser: listDeviceFromWebBrowser.length 
+                        })
 
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
@@ -335,7 +338,7 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForMobilePush)
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
+                            // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
                         }
 
                         if (listDeviceFromWebBrowser.length > 0) {
@@ -351,7 +354,7 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForWebPush)
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
+                            // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
                         }
 
                     }

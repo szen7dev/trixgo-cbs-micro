@@ -24,9 +24,6 @@ const ITEM__ACCOUNT_HANDLER          	= require('./handler/item.account-handler'
 const ITEM__FUNDA_HANDLER          		= require('./handler/item.funda-handler');
 const ITEM__GOOD_HANDLER          		= require('./handler/item.good-handler');
 
-
-
-
 /**
  * COLLECTIONS
  */
@@ -83,6 +80,9 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
 	
 		//==========================================  DOCTYPE  ===================================
+		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,
+		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,
+		[CF_ACTIONS_ITEM.DOCTYPE_REMOVE] 						: ITEM__DOCTYPE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
 
 		//==========================================  CONTACT  ===================================

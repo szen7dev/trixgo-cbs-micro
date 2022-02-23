@@ -773,7 +773,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
+        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isStatusNot3, isUsersDelete,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -782,13 +782,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    // Lấy những công việc mình chưa xóa
-                    usersDelete: { $nin: [userID] },
-                    // Lấy những công việc chưa hoàn thành
-                    // status: { $ne: 3 }
+                let conditionObj = {
                 };
-
+                
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 if(isSortChecklist == 1){
@@ -1003,6 +999,16 @@ class Model extends BaseModel {
 
                 if(fieldID && checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID;
+                }
+
+                // Bỏ đi công việc đã hoàn thành
+                if(isStatusNot3 == 1){
+                    conditionObj.status = { $ne: 3 };
+                }
+
+                // Bỏ đi công việc đã hoàn thành
+                if(isUsersDelete == 1){
+                    conditionObj.usersDelete = { $nin: [userID] };
                 }
 
                 // Tìm kiếm theo keyword

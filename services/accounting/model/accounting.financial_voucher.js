@@ -1613,7 +1613,8 @@ class AccountingFinancialVoucher extends BaseModel {
                                     id, amount
                                 },
                             }
-                        }
+                        }   
+                        console.log({voucherUpdateSccess: id});
                             
                         return { error: false, message: 'update voucher success', data:updateVoucher }; 
                     } catch (error) {
@@ -1653,6 +1654,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         updateVoucher(finItem._id, newAmount)
                     );
                 }
+
                 //
                 const resulUpdateJ = await Promise.all(listPJ);
                 const resulUpdateV = await Promise.all(listPV);
@@ -1673,8 +1675,8 @@ class AccountingFinancialVoucher extends BaseModel {
                 console.log('successfully update DB ACOUTTING.VOUCHER ');
                 return resolve({ error : false, message:'successfully'});
             } catch (error) {
-                return resolve({ error : true, message: error.message });
                 console.log('ERROR update DB ACOUTTING.VOUCHER', error);
+                return resolve({ error : true, message: error.message });
             }
         })
     }

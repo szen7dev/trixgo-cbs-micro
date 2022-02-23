@@ -6,7 +6,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
-   //_________Mã hiệu bằng số do hệ thống tự phát sinh
+    //_________Mã hiệu bằng số do hệ thống tự phát sinh
     // suid : {
     //     type   : String,
     //     require:  true,
