@@ -116,12 +116,13 @@ module.exports = {
             keyword         : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { documentPackageID, lastestID, departmentID, keyword, select, populates } = ctx.params;
+                const { documentPackageID, lastestID, departmentID, keyword, select, populates, limit } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(documentPackageID){
@@ -130,7 +131,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
-                        departmentID, userID, lastestID, keyword, select, populates
+                        departmentID, userID, lastestID, keyword, select, populates, limit
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

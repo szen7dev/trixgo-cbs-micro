@@ -471,7 +471,7 @@ class Model extends BaseModel {
      */
     getList({
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
-        requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID,
+        requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -502,6 +502,23 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
+                if(receivedDate && typeof receivedDate === 'string'){
+					if(!IsJsonString(receivedDate))
+						return resolve({ error: true, message: 'Request params receivedDate invalid', status: 400 });
+
+					receivedDate = JSON.parse(receivedDate);
+				}
+
+                if(receivedDate){
+                    let fromDate = receivedDate.from;
+                    let toDate   = receivedDate.to;
+                    // Lấy những văn bản từ ngày đến ngày
+                    if(fromDate && toDate){
+                        conditionObj.receivedDate = { $gte: new Date(fromDate), $lte: moment(new Date(toDate)).endOf('day')._d }
+                    }
+                }
+                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)

@@ -191,11 +191,11 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getListPackage({ departmentID, userID, lastestID, keyword, limit = 10, select, populates = {} }){
+    getListPackage({ departmentID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
                 let conditionObj = { members: { $in: [userID] } };
-                let sortBy;
+                let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
