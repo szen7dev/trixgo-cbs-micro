@@ -34,10 +34,6 @@ class Model extends BaseModel {
     insert({ mediaID, parentID, content, files, images, userID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
