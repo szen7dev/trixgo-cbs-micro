@@ -658,10 +658,12 @@ module.exports = {
 
 		[`DELETE ${CF_ROUTINGS_CONTACT.CONTACT_DOCUMENT}`] :
 		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_CONTACT.CONTACT_DOCUMENT_STATISTICS_CERTIFICATE}`] :
+		[`${CF_DOMAIN_SERVICES.HUMAN}.${CF_ACTIONS_CONTACT.CONTACT_DOCUMENT_STATISTICS_CERTIFICATE}`],
 		
 		//---------------------------- END SEARVICE HUMAN (CONTACT) --------------------------------//
-
-
+		
 
 		//---------------------------🏁 START SEARVICE TRAINING 🏁--------------------------------//
 		//______traning subject
@@ -1048,6 +1050,10 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_ACCOUNTING.GENERAL_JOURNAL}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.GET_INFO_AND_GET_LIST}`],
+
+		[`GET ${CF_ROUTINGS_ACCOUNTING.FINANCIAL_REPORT}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.FINANCIAL_REPORT}`],
+
 
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 

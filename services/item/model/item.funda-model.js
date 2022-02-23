@@ -168,7 +168,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     getListFundaOfCompany({ companyID }){
         return new Promise(async (resolve) => {
             try {
@@ -185,6 +185,5 @@ class Model extends BaseModel {
     }
 
 }
-
 
 exports.MODEL = new Model;
