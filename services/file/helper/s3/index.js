@@ -12,7 +12,7 @@ let s3Object                    = new AWS.S3();
 let render_link_upload_file_s3 = ({ fileName, type, typeUpload }) =>{
     try {
         let bucket = `${config.bucket}${process.env.AWS_BUCKET_PATH || '/root/test'}`;
-        console.log({ bucket })
+        console.log({ bucket, fileName, type, typeUpload })
 
         //_____upload avatar user
         if(typeUpload == "user"){
