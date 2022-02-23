@@ -40,6 +40,9 @@ const CF_ACTIONS_ITEM = {
     /**
      * DOCTYPE
      */
+    DOCTYPE_INSERT                          : `${BASE_ACTIONS}_${DOCTYPE}_INSERT`,
+    DOCTYPE_UPDATE                          : `${BASE_ACTIONS}_${DOCTYPE}_UPDATE`,
+    DOCTYPE_REMOVE                          : `${BASE_ACTIONS}_${DOCTYPE}_REMOVE`,
     DOCTYPE_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${DOCTYPE}_GET_INFO_AND_GET_LIST`,
 
      /**

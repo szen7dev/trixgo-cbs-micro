@@ -1,26 +1,25 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
+// const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+// const ObjectID                          = require('mongoose').Types.ObjectId;
+
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant');
 
 /**
  * TOOLS
  */
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { DOCTYPE_TYPE }                  = require('../helper/item.keys-constant');
 
 /**
  * COLLECTIONS
  */
-const ITEM__DOCTYPE_COLL            				= require('../database/item.doctype-coll');
+const ITEM__DOCTYPE_COLL                = require('../database/item.doctype-coll');
 
 class Model extends BaseModel {
 
@@ -621,40 +620,181 @@ class Model extends BaseModel {
     // }
 
     /**
-     * Name: Remove Hợp đồng ✅
-     * Author: Depv
-     * Code: 
+     * Dev: MinhVH
+     * Func: Insert doctype
+     * Date: 22/02/2022
      */
-    // remove({ doctypeID }) { 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             /**
-    //              * DECALARTION VARIABLE (1)
-    //              */
+    insert({ type, name, description, companyID, parent, userID }) { 
+        return new Promise(async resolve => {
+            try {
+                const dataInsert = { name, type, description, company: companyID, userCreate: userID };
 
-    //             /** 
-    //              * VALIDATION STEP (2)
-    //              *  - Kiểm tra valid từ các input
-    //              *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-    //              */
-    //             if(!checkObjectIDs(doctypeID))
-    //                 return resolve({ error: true, message: 'Request params doctypeID invalid', status: 400 });
-                    
-    //             /**
-    //              * LOGIC STEP (3)
-    //              * 3.1: Convert type + update name (ví dụ: string -> number)
-    //              * 3.2: Operation database
-    //              */
-    //             let infoAterRemove = await ITEM__DOCTYPE_COLL.findByIdAndDelete(doctypeID);
-    //             if(!infoAterRemove)
-    //                 return resolve({ error: true, message: "can't_remove", status: 403 });
- 
-    //             return resolve({ error: false, data: infoAterRemove, status: 200 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!type || !DOCTYPE_TYPE.includes(+type)) {
+                    return resolve({
+						error: true,
+						message: "Tham số type không hợp lệ",
+						keyError: "params_type_invalid",
+						status: 400
+					})
+                }
+
+                if(!checkObjectIDs([userID])) {
+                    return resolve({
+						error: true,
+						message: "Tham số userID không hợp lệ",
+						keyError: "params_userID_invalid",
+						status: 400
+					})
+                }
+
+                if(!checkObjectIDs([companyID])) {
+                    return resolve({
+						error: true,
+						message: "Tham số companyID không hợp lệ",
+						keyError: "params_companyID_invalid",
+						status: 400
+					})
+                }
+
+                if(parent) {
+                    if(!checkObjectIDs([parent])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số parent không hợp lệ",
+                            keyError: "params_parent_invalid",
+                            status: 400
+                        })
+                    }
+
+                    dataInsert.parent = parent;
+                }
+
+                let infoAterInsert = await this.insertData(dataInsert);
+
+                if(!infoAterInsert) {
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+                }
+
+                if(parent) {
+                    await ITEM__DOCTYPE_COLL.findByIdAndUpdate(parent, {
+                        $addToSet: {
+                            childs: infoAterInsert._id
+                        }
+                    });
+                }
+
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Update doctype
+     * Date: 22/02/2022
+     */
+    update({ doctypeID, name, description, userID }) { 
+        return new Promise(async resolve => {
+            try {
+                const dataUpdate = { userUpdate: userID };
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs([doctypeID, userID])) {
+                    return resolve({
+						error: true,
+						message: "Tham số doctypeID hoặc userID không hợp lệ",
+						keyError: "params_doctypeID_or_userID_invalid",
+						status: 400
+					})
+                }
+
+                name        && (dataUpdate.name = name);
+                description && (dataUpdate.description = description);
+
+                let infoAterUpdate = await ITEM__DOCTYPE_COLL.findByIdAndUpdate(doctypeID, dataUpdate, { new: true });
+
+                if(!infoAterUpdate) {
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+                }
+
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Remove doctype
+     * Date: 22/02/2022
+     */
+    remove({ doctypeID, userID }) { 
+        return new Promise(async resolve => {
+            try {
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs([doctypeID, userID])) {
+                    return resolve({
+						error: true,
+						message: "Tham số doctypeID hoặc userID không hợp lệ",
+						keyError: "params_doctypeID_or_userID_invalid",
+						status: 400
+					})
+                }
+
+                let infoAterRemove = await ITEM__DOCTYPE_COLL.findOneAndDelete({
+                    _id: doctypeID,
+                    userCreate: userID
+                });
+
+                if(!infoAterRemove) {
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+                }
+
+                if(infoAterRemove.parent) {
+                    await ITEM__DOCTYPE_COLL.findByIdAndUpdate(infoAterRemove.parent, {
+                        $pull: {
+                            childs: infoAterRemove._id
+                        }
+                    });
+                }
+
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name: get Hợp đồng ✅
@@ -664,10 +804,6 @@ class Model extends BaseModel {
     getInfo({ doctypeID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -676,13 +812,12 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(doctypeID))
                     return resolve({ error: true, message: 'Request params doctypeID invalid', status: 400 });
                 
-                 // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -693,52 +828,65 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterGet = await ITEM__DOCTYPE_COLL.findById(doctypeID)
-                                    .select(select)
-                                    .populate(populates)
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+                let infoAterGet = await ITEM__DOCTYPE_COLL
+                    .findById(doctypeID)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoAterGet) {
+                    return resolve({
+                        error: true,
+                        message: "Doctype không tồn tại",
+                        keyError: "doctype_not_exists",
+                        status: 400
+                    })
+                }
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
     /**
      * Name  : Danh sách hợp đồng ✅
      * Author: Depv
      * Code  : 
      */
-    getList({
-        companyID, projectID, type, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ companyID, projectID, type, keyword, limit = 10, lastestID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
-                let keys	 = ['createAt__-1', '_id__-1'];
-                let sortBy;
+                let sortBy = {};
+                let keys = ['createAt__-1', '_id__-1'];
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
                     }
                 }
+
+                if(isNaN(limit) || +limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
                
                 /**
                  * LOGIC STEP (3)
@@ -749,23 +897,24 @@ class Model extends BaseModel {
                 // TRẠNG THÁI CÔNG VIỆC
                 //____________Công ty
                 if(companyID){
-                    conditionObj.company = companyID
+                    conditionObj.company = companyID;
                 }
 
                 //____________Dự án
                 if(projectID){
-                    conditionObj.project = projectID
+                    conditionObj.project = projectID;
                 }
 
                 //____________Loại doctype
                 if(type){
-                    conditionObj.type = type
+                    conditionObj.type = type;
                 }
 
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
+
                     conditionObj.$or = [
                         { name: regSearch },
                         { sign: regSearch },
@@ -788,9 +937,10 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy                = dataPagingAndSort.data.sort;
                 }
-                
-                let infoDataAfterGet = await ITEM__DOCTYPE_COLL.find(conditionObj)
-                    .limit(+limit+1)
+
+                let infoDataAfterGet = await ITEM__DOCTYPE_COLL
+                    .find(conditionObj)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
@@ -812,12 +962,11 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
