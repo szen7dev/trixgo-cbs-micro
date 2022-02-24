@@ -27,16 +27,50 @@ module.exports = {
             content         : { type: "string", optional: true },
             files           : { type: "array", optional: true },
             images          : { type: "array", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID } = ctx.meta.infoUser;
-                let { mediaID, parentID, content, files, images } = ctx.params;
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { mediaID, parentID, content, files, images, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
-                    mediaID, parentID, content, files, images, userID, ctx
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
+                    mediaID, parentID, content, files, images, select, populates, authorID
                 });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Update comment
+	 * Date: 22/02/2022
+	 */ 
+    update: {
+        auth: "required",
+        params: {
+            commentID           : { type: "string" },
+			content             : { type: "string", optional: true },
+            files               : { type: "array", optional: true },
+            images              : { type: "array", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID, content, files, images, select, populates } = ctx.params;
+
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.update({
+					commentID, authorID, content, files, images, select, populates
+				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -60,7 +94,7 @@ module.exports = {
                 const { commentID } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.delete({
-					authorID, commentID, ctx
+					authorID, commentID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,7 +114,6 @@ module.exports = {
             mediaID     : { type: "string" },
             commentID   : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
-            keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
             select      : { type: "string", optional: true },
@@ -117,7 +150,7 @@ module.exports = {
 	 * ============================ ****************** ===============================
 	 */
 
-     /**
+    /**
      * Dev: MinhVH
      * Func: Create comment file
      */
@@ -130,16 +163,50 @@ module.exports = {
             content         : { type: "string", optional: true },
             files           : { type: "array", optional: true },
             images          : { type: "array", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID } = ctx.meta.infoUser;
-                let { mediaID, fileID, parentID, content, files, images } = ctx.params;
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { mediaID, fileID, parentID, content, files, images, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insertCommentFile({
-                    mediaID, fileID, parentID, content, files, images, userID, ctx
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insertCommentFile({
+                    mediaID, fileID, parentID, content, files, images, select, populates, authorID
                 });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Update comment file
+	 * Date: 22/02/2022
+	 */ 
+    updateCommentFile: {
+        auth: "required",
+        params: {
+            commentID           : { type: "string" },
+			content             : { type: "string", optional: true },
+            files               : { type: "array", optional: true },
+            images              : { type: "array", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID, content, files, images, select, populates } = ctx.params;
+
+                const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.updateCommentFile({
+					commentID, authorID, content, files, images, select, populates
+				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
