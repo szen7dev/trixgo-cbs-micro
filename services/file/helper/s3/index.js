@@ -9,9 +9,11 @@ AWS.config.update({
 let s3Object                    = new AWS.S3();
 
 // link từ s3 upload file
-let render_link_upload_file_s3 = ({ fileName, type, typeUpload }) =>{
+let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
     try {
         let bucket = `${config.bucket}${process.env.AWS_BUCKET_PATH || '/root/test'}`;
+        // let bucket = `${config.bucket}${pathS3 || '/root/test'}`;
+
 
         //_____upload avatar user
         if(typeUpload == "user"){
@@ -33,12 +35,12 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload }) =>{
     }
 }
 
-function render_link_upload_s3(fileName, type, typeUpload) {
+function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
     return new Promise(async resolve => {
         try {
             if(!fileName || !type)
                 return resolve({ error: true, message: "params_invalid" });
-            let result = await render_link_upload_file_s3({ fileName, type, typeUpload });
+            let result = await render_link_upload_file_s3({ fileName, type, typeUpload, pathS3 });
             if(!result.error){
                 return resolve({ error: false, data: result, fileName });
             }else{
