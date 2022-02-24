@@ -140,6 +140,13 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.APP_ROLE}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_ROLE_GET_INFO_AND_GET_LIST}`],
 
+
+		/**
+		 * app user
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.APP_USER_LIST_APP_OFF_USER}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_USER_GET_INFO_AND_GET_LIST}`],
+
 		/**
 		 * app role menu
 		 */

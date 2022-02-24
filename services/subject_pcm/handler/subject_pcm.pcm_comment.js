@@ -29,7 +29,6 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images } = ctx.params;
-
                 let resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
 					taskID, parentID, authorID, type, content, bizfullname, files, images, ctx
 				});
