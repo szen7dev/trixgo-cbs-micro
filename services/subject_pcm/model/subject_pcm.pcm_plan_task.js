@@ -443,13 +443,12 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-        contractID, draft, isproposal, usersDeleteID, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+        contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
     }){ 
         return new Promise(async (resolve) => {
             try {   
-
                 /**
                  * KHU VỰC CHECK QUYỀN CẬP NHẬT CÔNG VIỆC
                  */
@@ -458,8 +457,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { };
+                let dataUpdate   = { };
                 let dataAddToset = {};
+                let dataPullAll  = {};
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -545,9 +545,14 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, usersDelete: usersDeleteID }
                 }
 
-                //_________Người liên quan
+                //_________Thêm người liên quan
                 if(checkObjectIDs(related)){
                     dataAddToset = { ...dataAddToset, related }
+                }
+
+                //_________Xoá người liên quan
+                if(checkObjectIDs(relatedRemoves)){
+                    dataPullAll = { ...dataPullAll, related: relatedRemoves }
                 }
 
                 //_________Trạng thái công việc
@@ -693,11 +698,15 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
+                if(dataPullAll){
+                    dataUpdate.$pullAll = dataPullAll;
+                }
+
                 if(checkObjectIDs(lastLogID)){
                     dataUpdate.lastLog = lastLogID;
                 }
                 
-                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
+                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });   
                 
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", status: 403 });
@@ -708,6 +717,29 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: update status mutiple ✅
+     * Author: Depv
+     * Code: 
+     */
+    updateStatusMutiple({ taskIDs }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(taskIDs))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
+				if (!infoTaskAfterUpdate) 
+                    return resolve({ error: true, message: 'cannot_update' });
+               
+                return resolve({ error: false, message: "update_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+    
 
     /**
      * Name: get info task ✅
