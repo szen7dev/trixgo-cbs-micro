@@ -7,8 +7,9 @@ const BASE_ROUTE = '/auth';
        USER              = '/users',
        REGISTER_TRIAL    = '/register_trials',
        APP_MENU          = '/app_menus',
-       APP_ROLE_MENU     = '/app_role_menus'
-       APP_ROLE          = '/app_roles'
+       APP_ROLE_MENU     = '/app_role_menus',
+       APP_ROLE          = '/app_roles',
+       APP_USER          = '/app_users'
 
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
@@ -49,6 +50,13 @@ const CF_ROUTINGS_AUTH = {
      */
     APP_ROLE_MENU                      : `${BASE_ROUTE}${APP_ROLE_MENU}`,
     APP_ROLE_MENU_PERMISSION            : `${BASE_ROUTE}${APP_ROLE_MENU}/permission`,
+
+
+    /**
+     * APP_USER
+     */
+    APP_USER                    : `${BASE_ROUTE}${APP_USER}`,
+    APP_USER_LIST_APP_OFF_USER  : `${BASE_ROUTE}${APP_USER}/list-app-of-user`,
 
     /**
      * ĐĂNG KÝ DÙNG THỬ

@@ -10,7 +10,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const AUTH__APP_USER_COLL              = require('../database/permission/auth.app_role_menu-coll');
+const AUTH__APP_USER_COLL              = require('../database/permission/auth.app_user-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 
 /**
@@ -27,14 +27,18 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, companyID,
+    getListAppOfUser({ userID,
         keyword, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { };
+                let today = new Date();
+                let conditionObj = {
+                    endTime: { $gte: today }
+                };
+
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
@@ -47,20 +51,8 @@ class Model extends BaseModel {
                     limit = 20
                 }
 
-                if(company){
-                    conditionObj.company = company;
-                }
-
-                if(app){
-                    conditionObj.app = app;
-                }
-
-                if(role){
-                    conditionObj.role = role;
-                }
-
-                if(menu){
-                    conditionObj.menu = menu;
+                if(userID){
+                    conditionObj.user = userID;
                 }
 
                 if(populates && typeof populates === 'string'){
