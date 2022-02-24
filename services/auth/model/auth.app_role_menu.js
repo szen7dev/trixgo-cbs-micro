@@ -259,7 +259,7 @@ class Model extends BaseModel {
                     },
                     {
                         $group: {
-                            _id:        null,
+                            _id:        { menu: "$menu"}, 
                             read:       { $sum: "$read"},
                             create:     { $sum: "$create"},
                             update:     { $sum: "$update"},
