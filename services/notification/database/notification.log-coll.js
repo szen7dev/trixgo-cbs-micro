@@ -72,7 +72,7 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
         ref: 'app'
     },
     /**
-     * collID
+     * collID (VD: mediaID, commentID, taskID,...)
      */
     coll: {
         kind: String,

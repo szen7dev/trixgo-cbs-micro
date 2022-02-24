@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_pin", {
     /**
      *  Người ghim bài viết
      */
-    userPin: {
+    author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },

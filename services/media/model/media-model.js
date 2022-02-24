@@ -7,6 +7,7 @@ const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constan
 const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
+const { APP_KEYS }								= require('../../../tools/keys');
 
 /**
  * TOOLS
@@ -225,19 +226,17 @@ class Model extends BaseModel {
 						condition: { ...conditionReceiver, _id: { $nin: [authorID] } },
 						select: '_id'
 					});
-	
+
 					if(!receivers.error){
-						const infoSender = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-							userID: authorID,
-							select: 'fullname'
-						});
 						receiversNoti = receivers.data.map(receiver => receiver._id);
 
 						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-							title: `${infoSender?.data?.fullname} đã tạo 1 bài viết`,
 							content: content.length > 200 ? content.substring(0, 200) : content,
 							receivers: receiversNoti,
 							path: `/media/post/${infoMediaAfterInserted._id}`,
+							languageKey: "CREATE_NEW_MEDIA",
+							app: APP_KEYS.MEDIA,
+							coll: infoMediaAfterInserted._id,
 							type: 1 // InApp (Socket)
 						});
 					}
@@ -1079,7 +1078,7 @@ class Model extends BaseModel {
         })
     }
 
-	 /**
+	/**
 	 * Dev: NPNguyen
 	 * Func: LƯU BÀI VIẾT
 	 */
