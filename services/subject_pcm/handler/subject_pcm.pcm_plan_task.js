@@ -1,12 +1,12 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const PCM_PLAN_TASK_MODEL          = require('../model/subject_pcm.pcm_plan_task').MODEL;
+const PCM_PLAN_TASK_MODEL             = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 module.exports = {
     /**
@@ -90,6 +90,7 @@ module.exports = {
             typeUpdate     : { type: "number", optional: true },
             flags          : { type: "array", optional: true },
             related        : { type: "array", optional: true },
+            relatedRemoves : { type: "array", optional: true },
             lastLogID      : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -98,7 +99,7 @@ module.exports = {
                 let {
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
-                    contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
                  } = ctx.params;
@@ -107,9 +108,37 @@ module.exports = {
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-                    contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: update status mutiple
+	 */
+    updateStatusMutiple: {
+        auth: "required",
+        params: {
+            taskIDs         : { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {
+                    taskIDs
+                 } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                // Bước check quyền
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
+                    taskIDs
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -124,7 +153,7 @@ module.exports = {
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
-        // auth: "required",
+        auth: "required",
         params: {
             // Field bổ sung
             projectID   : { type: "string", optional: true },
@@ -210,5 +239,4 @@ module.exports = {
             }
         }
     },
-
 }
