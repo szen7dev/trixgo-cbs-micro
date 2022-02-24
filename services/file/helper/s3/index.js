@@ -11,8 +11,8 @@ let s3Object                    = new AWS.S3();
 // link từ s3 upload file
 let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
     try {
-        // let bucket = `${config.bucket}${process.env.AWS_BUCKET_PATH || '/root/test'}`;
-        let bucket = `${config.bucket}${pathS3 || '/root/test'}`;
+        let bucket = `${config.bucket}${process.env.AWS_BUCKET_PATH || '/root/test'}`;
+        // let bucket = `${config.bucket}${pathS3 || '/root/test'}`;
 
 
         //_____upload avatar user
