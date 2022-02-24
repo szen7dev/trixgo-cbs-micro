@@ -912,22 +912,34 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([mediaID, userID])) {
                     return resolve({ 
                         error: true, 
-                        message: 'Request params mediaID or userID invalid', 
+                        message: 'Tham số mediaID hoặc userID không hợp lệ', 
                         keyError: 'params_mediaID_or_userID_invalid',
                         status: 400 
                     });
                 }
 
                 let infoUser = await AUTH__USER_COLL.findById(userID);
-				if(!infoUser)
-					return resolve({ error: true, message: "User is not exist", status: 403 });
+				if(!infoUser) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Người dùng không tồn tại', 
+                        keyError: 'user_not_exists',
+                        status: 400 
+                    });
+                }
 
 				let infoUserAfterUpdated = null;
 
 				if(isPin){ // Pin media
 
-					if(infoUser.mediasPin.includes(mediaID))
-						return resolve({ error: true, message: "Media is pined", status: 400 });
+					if(infoUser.mediasPin.includes(mediaID)) {
+                        return resolve({ 
+                            error: true, 
+                            message: 'Bài viết đã được pin', 
+                            keyError: 'media_is_pined',
+                            status: 400 
+                        });
+                    }
 
 					// Pin tối đa 5 media (pull last, push first)
 					if(infoUser.mediasPin.length >= 5){
@@ -957,10 +969,16 @@ class Model extends BaseModel {
 					}, { new: true });
 				}
 
-				if(!infoUserAfterUpdated)
-					return resolve({ error: true, message: "Can't update pin media", status: 403 });
+				if(!infoUserAfterUpdated) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
 
-				return resolve({ error: false, data: infoUserAfterUpdated, status: 200 });
+				return resolve({ error: false, message: "success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
@@ -980,18 +998,30 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				if(!checkObjectIDs([userID]))
-					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+				if(!checkObjectIDs([userID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tham số userID không hợp lệ', 
+                        keyError: 'params_userID_invalid',
+                        status: 400 
+                    });
+                }
 
 				let infoUser = await AUTH__USER_COLL
 					.findById(userID)
 					.select('mediasPin')
 					.lean();
 
-				if(!infoUser)
-					return resolve({ error: true, message: "User is not exist", status: 403 });
+				if(!infoUser) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Người dùng không tồn tại', 
+                        keyError: 'user_not_exists',
+                        status: 400 
+                    });
+                }
 
-                return resolve({ error: false, data: infoUser.mediasPin || [], status: 200 });
+                return resolve({ error: false, data: infoUser.mediasPin, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }

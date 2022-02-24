@@ -7,16 +7,14 @@ const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constan
 const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
+const { APP_KEYS }								= require('../../../tools/keys');
 
 /**
  * TOOLS
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString } 			= require('../../../tools/utils/utils');
-const { 
-	RANGE_BASE_PAGINATION, 
-	RANGE_BASE_PAGINATION_V2 
-} = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/playground/index');
 
 /**
  * COLLECTIONS
@@ -36,7 +34,7 @@ class Model extends BaseModel {
 	 * Func: THÊM BÀI VIẾT MỚI
      * Updated: 24/02/2022
 	 */
-	insert({
+	insertMedia({
 		title, content, type, otherID, companyID, departmentID, location, 
 		tagFriends, files, images, background, authorID, ctx
 	}) {
@@ -225,19 +223,17 @@ class Model extends BaseModel {
 						condition: { ...conditionReceiver, _id: { $nin: [authorID] } },
 						select: '_id'
 					});
-	
+
 					if(!receivers.error){
-						const infoSender = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-							userID: authorID,
-							select: 'fullname'
-						});
 						receiversNoti = receivers.data.map(receiver => receiver._id);
 
 						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-							title: `${infoSender?.data?.fullname} đã tạo 1 bài viết`,
 							content: content.length > 200 ? content.substring(0, 200) : content,
 							receivers: receiversNoti,
 							path: `/media/post/${infoMediaAfterInserted._id}`,
+							languageKey: "CREATE_NEW_MEDIA",
+							app: APP_KEYS.MEDIA,
+							coll: infoMediaAfterInserted._id,
 							type: 1 // InApp (Socket)
 						});
 					}
@@ -258,7 +254,7 @@ class Model extends BaseModel {
 	 * Func: CHỈNH SỬA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
-	update({
+	updateMedia({
 		mediaID, title, content, type, otherID, companyID, departmentID, location, 
 		tagFriends, files, images, background, authorID
 	}) {
@@ -461,7 +457,7 @@ class Model extends BaseModel {
 	 * Func: XÓA BÀI VIẾT	
      * Updated: 24/02/2022
 	 */
-	delete({ mediaID, authorID }) {
+	deleteMedia({ mediaID, authorID }) {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs([mediaID])) {
@@ -512,7 +508,7 @@ class Model extends BaseModel {
 	 * Func: THÔNG TIN BÀI VIẾT	
      * Updated: 24/02/2022
 	 */
-	getInfo({ mediaID, authorID, select, populates }) {
+	getInfoMedia({ mediaID, authorID, select, populates }) {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs([mediaID])) {
@@ -754,7 +750,7 @@ class Model extends BaseModel {
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 	
      * Updated: 24/02/2022
 	 */
-    getList({ authorID, lastestID, companyID, departmentID, otherID, mediaID, keyword, isRelated, type, limit = 20, select, populates }){
+    getListMedia({ authorID, lastestID, companyID, departmentID, otherID, mediaID, keyword, isRelated, type, limit = 20, select, populates }){
         return new Promise(async resolve => {
             try {
 				//=======================VARIABLE/CONSTANTS===================
@@ -935,159 +931,122 @@ class Model extends BaseModel {
         })
     }
 
-	
-
-
-
-
-	// NPNguyen
-
 	/**
-	 * Dev: NPNguyen
-	 * Func: ĐÓNG GÓI RENDER BÀI VIẾT	
+	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH LƯU BÀI VIẾT
+     * Date: 24/02/2022
 	 */
-	getListWithCondition({ conditionObj, limit, sortBy, lastestID }) {
-		return new Promise(async resolve => {
-            try { 
-				let conditionFind = {};
+	getListSaveMedia({ authorID, lastestID, limit = 20, select, populates }) {
+        return new Promise(async resolve => {
+			try {
+				/**
+                 * DECALARTION VARIABLE (1)
+                 */
+				let conditionObj = { author: authorID };
+				let keys = ['_id__-1', 'createAt__-1'];
+				let sortBy = {};
+				let nextCursor	= null;
 
-				if(isNaN(limit)){
+				/** 
+				 * VALIDATION STEP (2)
+				 *  - Kiểm tra valid từ các input
+				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+				 */
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
+
+				if(limit > 20 || isNaN(limit)){
 					limit = 20;
-				} else{
+				} else {
 					limit = +limit;
 				}
 
-                if(lastestID && checkObjectIDs(lastestID)) {
-					let infoMedia = await MEDIA_COLL.findById(lastestID);
-                    if(!infoMedia)
-                        return resolve({ error: true, message: "Can't get info last media", status: 403 });
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-                    let nextInfo = `${infoMedia.modifyAt}_${infoMedia._id}`;
-					let keys	 = ['modifyAt__-1', '_id__-1'];
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-					conditionFind = dataPagingAndSort.data.find;
-                }
-
-				let listMedia = await MEDIA_COLL.find({ ...conditionObj, ...conditionFind })
-					// .select("author content type location files tagFriends images background company")
-					.populate({
-						path: 'author',
-						select: 'fullname company department position image',
-						populate: { 
-							path: 'company department', 
-							select: 'name sign'
-						}
-					})
-					.populate({
-						path: 'files',
-						select: '_id name nameOrg path size type',
-					})
-					.populate({
-						path: 'images',
-						select: '_id name nameOrg path size type',
-					})
-					.populate({
-						path: 'background',
-						select: '_id name nameOrg path size type',
-					})
-					.populate({
-						path: 'tagFriends',
-						select: 'fullname',
-					})
-					.populate({
-						path: 'company',
-						select: 'name',
-					})
-					.limit(limit + 1)
-					.sort(sortBy)
-					.lean();
-
-				let nextCursor	= null;
-				if (listMedia && listMedia.length) {
-					if(listMedia.length > limit){
-						nextCursor = listMedia[limit - 1]._id;
-						listMedia.length = limit;
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: "",
+						select: ""
 					}
 				}
 
-				// GET TOTAL RECORD
-				let totalRecord = await MEDIA_COLL.countDocuments(conditionObj);
-				let totalPages = Math.ceil(totalRecord / limit);
+				let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await MEDIA__SAVE_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-				return resolve({ 
-					error: false,
-					status: 200,
-					data: { 
-						listRecords: listMedia, 
-						limit: +limit,
-						totalRecord,
-						totalPages,
-						nextCursor
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+				}
+
+				let infoDataAfterGet = await MEDIA__SAVE_COLL.find(conditionObj)
+					.limit(limit + 1)
+					.sort(sortBy)
+					.select(select)
+					.populate(populates)
+					.lean();
+
+				if(!infoDataAfterGet) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
+				}
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
 					}
-				});
-			} catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-	}
+				}
 
-	/**
-	 * Dev: NPNguyen
-	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
-	 */
-	getListSaveMedia({ userID, lastestID, limit, ctx }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-				let sortBy = {
-					modifyAt: -1,
-					createAt: -1,
-					updateAt: -1
-				};
+				let totalRecord = await MEDIA__SAVE_COLL.countDocuments(conditionObjOrg);
 
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-				if(!limit || isNaN(limit))
-					limit = 10;
-
-				limit = +limit;
-			
-				let	listMediaHavedSave = await MEDIA__SAVE_COLL.find({ userSave: { $in: userID },})
-
-                if(!listMediaHavedSave)
-                    return resolve({ error: true, message: "Can't get list media", status: 403 });
-
-				let listAfterFind = await this.getListWithCondition({
-					conditionObj: {
-						_id: [...listMediaHavedSave.map(item => item.media)]
-					},
+				return resolve({ error: false, data: {
+					listRecords: infoDataAfterGet,
 					limit,
-					sortBy,
-					lastestID,
-				});
-				return resolve(listAfterFind);
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
+					totalRecord,
+					nextCursor,
+				}, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, error: message.error, status: 500 });
+			}
+		})
     }
 
-	 /**
-	 * Dev: NPNguyen
+	/**
+	 * Dev: MinhVH
 	 * Func: LƯU BÀI VIẾT
+     * Date: 24/02/2022
 	 */
-	saveMedia({ authorID, mediaID, ctx }) {
+	saveMedia({ authorID, mediaID, isSave }) {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
+				let infoMediaAfterInserted = null;
+				let conditionObj = {
+					media: mediaID,
+					author: authorID
+				}
 
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs([authorID])) {
@@ -1118,24 +1077,29 @@ class Model extends BaseModel {
 					})
 				}
 
-				// CHECK USER HAVE SAVED MEDIA
-                let checkExistSaveMedia = await MEDIA__SAVE_COLL
-					.findOne({
-						media: mediaID,
-						author: authorID
-					})
-					.lean();
-
-				if(checkExistSaveMedia) {
-					return resolve({ error: true, message: 'You have already saved this post', status: 403 });
+				if(isSave) {
+					// Tạo lưu bài viết nếu chưa tồn tại
+					infoMediaAfterInserted = await MEDIA__SAVE_COLL.findOneAndUpdate(conditionObj, {
+						$set: {
+							modifyAt: new Date()
+						},
+						$setOnInsert: {
+							...conditionObj,
+							createAt: new Date()
+						}
+					}, { new: true, upsert: true });
+				} else {
+					infoMediaAfterInserted = await MEDIA__SAVE_COLL.findOneAndDelete(conditionObj);
 				}
 
-				let infoMediaAfterInserted = await MEDIA__SAVE_COLL.create({ 
-					...condition
-				});
-
-                if(!infoMediaAfterInserted)
-                    return resolve({ error: true, message: "Can't save media", status: 403 });
+                if(!infoMediaAfterInserted) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+				}
 
                 return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
             } catch (error) {
@@ -1145,99 +1109,104 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen
-	 * Func: XÓA BÀI VIẾT ĐÃ LƯU
-	 */
-	deleteSaveMedia({ author, mediaID, ctx }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let condition = {};
-
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
-
-				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
-
-				condition = {
-					userSave: author,
-					media: mediaID,
-				}
-
-				let infoMediaAfterDelete = await MEDIA__SAVE_COLL.findOneAndDelete({ 
-					...condition
-				});
-
-                if(!infoMediaAfterDelete)
-                    return resolve({ error: true, message: "Can't find saved media", status: 403 });
-
-                return resolve({ error: false, data: infoMediaAfterDelete, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-	/**
-	 * Dev: NPNguyen
+	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
+     * Date: 24/02/2022
 	 */
-	getListPinMedia({ userID, ctx }) {
+	getListPinMedia({ authorID, limit = 20, lastestID, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
 				let listMediaPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_MEDIA}`);
+				if(listMediaPin.error || !listMediaPin.data?.length) return resolve(listMediaPin);
 
-				if(listMediaPin.data && listMediaPin.data.length){
-					listMediaPin = await MEDIA_COLL
-						.find({ _id: { $in: listMediaPin.data }})
-						.populate({
-							path: 'author',
-							select: 'fullname company department image',
-							populate: { 
-								path: 'company department', 
-								select: 'name sign'
-							}
-						})
-						.populate({
-							path: 'files',
-							select: '_id name nameOrg path size type',
-						})
-						.populate({
-							path: 'images',
-							select: '_id name nameOrg path size type',
-						})
-						.populate({
-							path: 'background',
-							select: '_id name nameOrg path size type',
-						})
-						.populate({
-							path: 'tagFriends',
-							select: 'fullname',
-						})
-						.populate({
-							path: 'company',
-							select: 'name',
-						})
-						.lean()
-				} else{
-					listMediaPin = [];
+				/**
+				 * DECALARTION VARIABLE (1)
+				 */
+				let conditionObj = { _id: { $in: listMediaPin.data } };
+				let keys = ['_id__-1', 'createAt__-1'];
+				let nextCursor	= null;
+				let sortBy = {};
+
+				/** 
+				 * VALIDATION STEP (2)
+				 *  - Kiểm tra valid từ các input
+				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+				 */
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
 				}
 
-				return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: listMediaPin,
-						totalRecords: listMediaPin.length
+				if(limit > 20 || isNaN(limit)){
+					limit = 20;
+				} else {
+					limit = +limit;
+				}
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: "",
+						select: ""
 					}
-				})
+				}
+
+				let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await MEDIA_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+				}
+
+				let infoDataAfterGet = await MEDIA_COLL
+					.find(conditionObj)
+					.limit(limit + 1)
+					.select(select)
+					.populate(populates)
+					.lean();
+
+				if(!infoDataAfterGet) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
+					})
+				}
+
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
+
+				let totalRecord = await MEDIA_COLL.countDocuments(conditionObjOrg);
+
+				return resolve({ error: false, data: {
+					listRecords: infoDataAfterGet,
+					limit,
+					totalRecord,
+					nextCursor,
+				}, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1245,65 +1214,47 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: NPNguyen
+	 * Dev: MinhVH
 	 * Func: GHIM BÀI VIẾT
+     * Date: 24/02/2022
 	 */
-	pinMedia({ userID, mediaID, ctx }) {
+	pinMedia({ userID, mediaID, isPin, ctx }) {
         return new Promise(async (resolve) => {
             try {
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+				if(!checkObjectIDs([userID])) {
+					return resolve({
+						error: true,
+						message: "Tham số userID không hợp lệ",
+						keyError: "params_userID_invalid",
+						status: 400
+					})
+				}
 
 				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
 				}	
 
-				let checkExisted = await MEDIA_COLL.findById(mediaID);
+				const checkExisted = await MEDIA_COLL.findById(mediaID);
 				if (!checkExisted) {
-                    return resolve({ error: true, message: "Media don't exited", status: 400 });
+					return resolve({
+						error: true,
+						message: "Bài viết không tồn tại",
+						keyError: "media_not_exist",
+						status: 400
+					})
 				}
 
-				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
-					mediaID, userID, isPin: true
+				const infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
+					mediaID, userID, isPin
 				});
-				if(infoUserAfterUpdated.error)
-					return resolve(infoUserAfterUpdated);
 
-				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-	/**
-	 * Dev: NPNguyen
-	 * Func: HỦY GHIM BÀI VIẾT
-	 */
-	deletePinMedia({ userID, mediaID, ctx }) {
-        return new Promise(async (resolve) => {
-            try {
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
-				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}
-
-				let checkExisted = await MEDIA_COLL.findById(mediaID);
-				if (!checkExisted) {
-                    return resolve({ error: true, message: "Media don't exited", status: 400 });
-				}
-
-				let infoUserAfterUpdated = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.UPDATE_PIN_MEDIA}`, {
-					mediaID, userID, isPin: false
-				});
-				if(infoUserAfterUpdated.error)
-					return resolve(infoUserAfterUpdated);
-
-				return resolve({ error: false, data: infoUserAfterUpdated.data, status: 200 });
+				return resolve(infoUserAfterUpdated);
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

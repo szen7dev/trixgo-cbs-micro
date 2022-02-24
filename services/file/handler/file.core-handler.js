@@ -88,6 +88,8 @@ module.exports = {
             type     : { type: "string", optional: true },
             app      : { type: "string", optional: true },
             size     : { type: "number", optional: true },
+            //____Ứng dụng
+            taskID   :  { type: "string", optional: true },
             //____(typeUpload == user)
             typeUpload : { type: "string", optional: true },
         },
@@ -100,8 +102,12 @@ module.exports = {
                 let extension = getExtension(name);
                 let fileName  = `${uuidv4()}.${extension}`;
                 let nameOrg   = name;
+                let pathS3 = null;
+                if(taskID){
+                    // pathS3 = `${appID}/${company}/${project}/${group}/${taskID}`;
+                }
 
-                let infoGenerateLink = await GENERATE_LINK_S3(fileName, mimeType, typeUpload);
+                let infoGenerateLink = await GENERATE_LINK_S3(fileName, mimeType, typeUpload, pathS3);
 
                 /**
                  * Nếu có app thì đang insert file trong app

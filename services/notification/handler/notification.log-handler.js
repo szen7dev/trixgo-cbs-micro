@@ -28,20 +28,24 @@ module.exports = {
       */
     insertNotification: {
         params: {
-            title       : { type: "string" },
             content     : { type: "string" },
             receivers   : { type: "array" },
-            path        : { type: "string", optional: true },
             type        : { type: "number" },
+            languageKey : { type: "string" },
+            path        : { type: "string", optional: true },
+            project     : { type: "string", optional: true },
+            contract    : { type: "string", optional: true },
+            app         : { type: "string", optional: true },
+            coll        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
-                const { type, title, content, path, receivers } = ctx.params;
+                const { _id: sender } = ctx.meta.infoUser;
+                const { type, content, path, receivers, languageKey, project, contract, app, coll } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insert({
-                    type, title, content, path, sender: authorID, receivers
+                    type, content, path, sender, receivers, languageKey, project, contract, app, coll
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -99,6 +103,7 @@ module.exports = {
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
                     authorID, lastestID, keyword, limit, select, populates
                 });
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
