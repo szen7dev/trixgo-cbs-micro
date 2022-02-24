@@ -50,19 +50,19 @@ module.exports = {
 		// ================================  MEDIA  ================================
 
 		// THÊM BÀI VIẾT MỚI
-		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insertMedia,
 
 		// CHỈNH SỬA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.update,
+		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
 
 		// XÓA BÀI VIẾT	
-		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.delete,
+		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
 
 		// CHI TIẾT BÀI VIẾT	
-		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfo,
+		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
 
 		// LẤY DANH SÁCH BÀI VIẾT 	
-		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getList,
+		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
 
 		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
@@ -70,28 +70,17 @@ module.exports = {
 		// LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
 		[CF_ACTIONS_MEDIA.LIST_SEEN_MEDIA] 		            			: MEDIA_HANDLER.getListUsersSeen,
 
-
-
-
-		// NPNguyen
-
 		// LƯU BÀI VIẾT
 		[CF_ACTIONS_MEDIA.SAVE_MEDIA] 		            				: MEDIA_HANDLER.saveMedia,
 		
 		// LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 		[CF_ACTIONS_MEDIA.LIST_SAVE_MEDIA] 		            			: MEDIA_HANDLER.getListSaveMedia,
 		
-		// XÓA BÀI VIẾT ĐÃ LƯU
-		[CF_ACTIONS_MEDIA.DELETE_SAVE_MEDIA] 		            		: MEDIA_HANDLER.deleteSaveMedia,
-		
 		// GHIM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.PIN_MEDIA] 		            				: MEDIA_HANDLER.pinMedia,
 
-		// LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
+		// LẤY DANH SÁCH BÀI VIẾT ĐÃ PIN
 		[CF_ACTIONS_MEDIA.LIST_PIN_MEDIA] 		            			: MEDIA_HANDLER.getListPinMedia,
-
-		// HỦY GHIM BÀI VIẾT
-		[CF_ACTIONS_MEDIA.DELETE_PIN_MEDIA] 		            		: MEDIA_HANDLER.deletePinMedia,
 
 		// ================================  MEDIA COMMENT  ================================
 

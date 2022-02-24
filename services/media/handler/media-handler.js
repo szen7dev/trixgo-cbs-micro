@@ -22,7 +22,7 @@ module.exports = {
 	 * Func: THÊM BÀI VIẾT MỚI
      * Updated: 24/02/2022
 	 */
-    insert: {
+    insertMedia: {
         params: {
             title           : { type: "string" },
             content         : { type: "string" },
@@ -44,7 +44,7 @@ module.exports = {
                     tagFriends, files, images, background
                 } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.insert({
+                const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
                     title, content, type, otherID, companyID, departmentID, location, 
                     tagFriends, files, images, background, authorID, ctx
 				});
@@ -61,7 +61,7 @@ module.exports = {
 	 * Func: CHỈNH SỬA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
-	update: {
+	updateMedia: {
         params: {
             mediaID         : { type: "string" },
             title           : { type: "string" },
@@ -84,7 +84,7 @@ module.exports = {
                     tagFriends, files, images, background
                 } = ctx.params;
                
-                const resultAfterCallHandler = await MEDIA_MODEL.update({ 
+                const resultAfterCallHandler = await MEDIA_MODEL.updateMedia({ 
                     mediaID, title, content, type, otherID, companyID, departmentID, location, 
                     tagFriends, files, images, background, authorID, ctx
 				});
@@ -101,7 +101,7 @@ module.exports = {
 	 * Func: XÓA BÀI VIẾT	
      * Updated: 24/02/2022
 	 */
-    delete: {
+    deleteMedia: {
         params: {
             mediaID: { type: "string" },
         },
@@ -111,7 +111,7 @@ module.exports = {
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA_MODEL.delete({ 
+                let resultAfterCallHandler = await MEDIA_MODEL.deleteMedia({ 
 					mediaID, authorID
 				});
 
@@ -127,7 +127,7 @@ module.exports = {
 	 * Func: CHI TIẾT BÀI VIẾT	
      * Updated: 24/02/2022
 	 */
-    getInfo: {
+    getInfoMedia: {
         params: {
             mediaID     : { type: "string" },
             select      : { type: "string", optional: true },
@@ -139,7 +139,7 @@ module.exports = {
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA_MODEL.getInfo({ 
+                let resultAfterCallHandler = await MEDIA_MODEL.getInfoMedia({ 
 					mediaID, authorID, select, populates
 				});
 
@@ -155,7 +155,7 @@ module.exports = {
 	 * Func: LẤY DANH SÁCH BÀI VIẾT 
      * Updated: 24/02/2022
 	 */
-    getList: {
+    getListMedia: {
         params: {
             type            : { type: 'string', optional: true },
             mediaID         : { type: 'string', optional: true },
@@ -177,7 +177,7 @@ module.exports = {
                     keyword, isRelated, type, limit, select, populates
                 } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getList({ 
+                const resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
 					authorID, lastestID, companyID, departmentID, otherID, mediaID, 
                     keyword, isRelated, type, limit, select, populates
 				});
@@ -245,28 +245,24 @@ module.exports = {
         }
     },
 
-
-    
-
-
-    // NPNguyen
-
     /**
-	 * Dev: NPNguyen
+	 * Dev: MinhVH
 	 * Func: LƯU BÀI VIẾT
+     * Date: 24/02/2022
 	 */
     saveMedia: {
         params: {
-            mediaID: { type: "string" },
+            mediaID : { type: "string" },
+            isSave  : { type: "boolean" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { mediaID } = ctx.params;
+                const { mediaID, isSave } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.saveMedia({
-					authorID, mediaID, ctx
+					authorID, mediaID, isSave
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -276,23 +272,26 @@ module.exports = {
         }
     },
 
-     /**
-	 * Dev: NPNguyen
-	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
+    /**
+	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH LƯU BÀI VIẾT
+     * Date: 24/02/2022
 	 */
     getListSaveMedia: {
         params: {
-            lastestID 		: { type: "string", optional: true },
-			limit			: { type: 'string', optional: true },
+            limit       : { type: 'string', optional: true },
+            lastestID   : { type: 'string', optional: true },
+            select      : { type: 'string', optional: true },
+            populates   : { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, limit } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { lastestID, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getListSaveMedia({
-					userID, lastestID, limit, ctx
+					authorID, lastestID, limit, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -303,43 +302,25 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen
-	 * Func: XÓA BÀI VIẾT ĐÃ LƯU
+	 * Dev: MinhVH
+	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ PIN
+     * Date: 24/02/2022
 	 */
-    deleteSaveMedia: {
+    getListPinMedia: {
         params: {
-            mediaID     : { type: "string" },
+            limit       : { type: 'string', optional: true },
+            lastestID   : { type: 'string', optional: true },
+            select      : { type: 'string', optional: true },
+            populates   : { type: 'string', optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: author } = ctx.meta.infoUser;
-                const { mediaID } = ctx.params;
-
-                const resultAfterCallHandler = await MEDIA_MODEL.deleteSaveMedia({
-					author, mediaID, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-    /**
-	 * Dev: NPNguyen
-	 * Func: LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
-	 */
-    getListPinMedia: {
-        params: {},
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { limit, lastestID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getListPinMedia({
-					userID, ctx
+					authorID, limit, lastestID, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -350,46 +331,23 @@ module.exports = {
     },
 
     /**
-	 * Dev: NPNguyen
-	 * Func: GHIM BÀI VIẾT
+	 * Dev: MinhVH
+	 * Func: PIN BÀI VIẾT
+     * Date: 24/02/2022
 	 */
     pinMedia: {
         params: {
-            mediaID: { type: "string" },
+            mediaID : { type: "string" },
+            isPin   : { type: "boolean" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID } = ctx.params;
+                const { mediaID, isPin } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.pinMedia({
-					userID, mediaID, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-    
-    /**
-	 * Dev: NPNguyen
-	 * Func: HỦY GHIM BÀI VIẾT
-	 */
-    deletePinMedia: {
-        params: {
-            mediaID: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { mediaID } = ctx.params;
-
-                const resultAfterCallHandler = await MEDIA_MODEL.deletePinMedia({
-					userID, mediaID, ctx
+					userID, mediaID, isPin, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
