@@ -26,6 +26,10 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
     status: {
         type: Number
     },
+    //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
+    languageKey: {
+        type: String 
+    },  
     //_________Thuộc dự án
     project: {
         type: Schema.Types.ObjectId,
@@ -49,12 +53,24 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
     content: {
         type: String
     },
-    //_________Đường dẫn truy cập
+    /**
+     * Đường dẫn truy cập
+     * - Phục vụ cho web => truy cập vào thông tin chi tiết
+     * (/pcm/home/?taskID=60cc5c65e8e09d4502f4f95b&commentID=6216fe36687c3f576b9ddc12)
+     * - Phục vụ cho app => truy cập vào thông tin chi tiết
+     * (Làm việc với Tuấn)
+     */
     path: {
         type: String
     },
-    //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
-    key: {
-        type: String 
-    }  
+    /**
+     * Format: (áp dụng cho mobile)
+     * {
+     *      app: "",
+     *      taskID: ""
+     * }
+     */
+    routers: {
+        type: Schema.Types.Mixed
+    }
 })

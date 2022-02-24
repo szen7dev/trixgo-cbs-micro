@@ -163,10 +163,10 @@ class Model extends BaseModel {
     getList({ authorID, lastestID, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs(authorID)) {
+				if(!checkObjectIDs([authorID])) {
 					return resolve({
                         error: true,
-                        message: "Request param authorID invalid",
+                        message: "Tham số authorID không hợp lệ",
                         keyError: 'param_authorID_invalid',
                         status: 400
                     });
@@ -194,7 +194,6 @@ class Model extends BaseModel {
                     status: this.SEND_SUCCESS,
                     receiver: authorID
                 };
-
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
                 let conditionObjOrg = { ...conditionObj }

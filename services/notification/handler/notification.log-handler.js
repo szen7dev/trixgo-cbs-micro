@@ -84,7 +84,6 @@ module.exports = {
       */
     getInfoAndGetList: {
         params: {
-            notificationID  : { type: "string", optional: true },
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
 			limit 			: { type: "string", optional: true },
@@ -95,15 +94,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { notificationID, lastestID, keyword, limit, populates, select } = ctx.params;
-                let resultAfterCallHandler;
-                if(notificationID){
-                    
-                }else{
-                    resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
-                        authorID, lastestID, keyword, limit, select, populates
-                    });
-                }
+                const { lastestID, keyword, limit, populates, select } = ctx.params;
+
+                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
+                    authorID, lastestID, keyword, limit, select, populates
+                });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
