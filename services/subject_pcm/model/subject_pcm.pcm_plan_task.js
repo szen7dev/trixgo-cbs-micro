@@ -773,7 +773,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isStatusNot3, isUsersDelete,
+        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -783,6 +783,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
                 };
                 
                 let sortBy;
@@ -911,19 +913,28 @@ class Model extends BaseModel {
 
                 if(type == 1){
                     conditionObj.assignee = userID;
+                    delete conditionObj.$or
                 }
 
                 if(type == 2){
                     conditionObj.author = userID;
+                    delete conditionObj.$or
                 }
 
                 if(type == 3){
                     conditionObj.flags = { $in: [userID]};
+                    delete conditionObj.$or
+                    delete conditionObj.status
                 }
 
                 if(type == 4){
-                    conditionObj.author = userID;
+                    // conditionObj.author = userID;
+                    conditionObj.$or = [
+                        { author: userID }, 
+                        { related: { $in: [userID] } }, 
+                    ],
                     conditionObj.draft = 1;
+                    delete conditionObj.status
                 }
 
                 if(type == 5){
@@ -999,16 +1010,6 @@ class Model extends BaseModel {
 
                 if(fieldID && checkObjectIDs(fieldID)){
                     conditionObj.field = fieldID;
-                }
-
-                // Bỏ đi công việc đã hoàn thành
-                if(isStatusNot3 == 1){
-                    conditionObj.status = { $ne: 3 };
-                }
-
-                // Bỏ đi công việc đã hoàn thành
-                if(isUsersDelete == 1){
-                    conditionObj.usersDelete = { $nin: [userID] };
                 }
 
                 // Tìm kiếm theo keyword
