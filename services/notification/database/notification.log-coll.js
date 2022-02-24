@@ -62,5 +62,15 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
      */
     path: {
         type: String
+    },
+    /**
+     * Format: (áp dụng cho mobile)
+     * {
+     *      app: "",
+     *      taskID: ""
+     * }
+     */
+    routers: {
+        type: Schema.Types.Mixed
     }
 })
