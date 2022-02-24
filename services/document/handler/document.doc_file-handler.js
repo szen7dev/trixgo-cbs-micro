@@ -96,7 +96,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__DOC_FILE_MODEL.getList({
-                        documentID, userID, lastestID, limit, keyword, select, populates
+                        documentID, userID, lastestID, limit: +limit, keyword, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
