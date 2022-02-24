@@ -2,9 +2,7 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs }  				= require('../../../tools/utils/utils');
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_REACTION } 		    = require('../../reaction/helper/reaction.actions-constant');
+const { RANGE_BASE_PAGINATION_V2 }		= require('../../../tools/cursor_base/playground/index');
 const { REACTION_TYPES }			    = require('../helper/media.keys-constant');
 
 /**
@@ -25,8 +23,9 @@ class Model extends BaseModel {
     /**
 	 * Dev: MinhVH
 	 * Func: REACTION BÀI VIẾT
+	 * Updated: 22/02/2022
 	 */
-	reaction({ authorID, mediaID, typeReaction, ctx }) {
+	reaction({ authorID, mediaID, typeReaction }) {
 		return new Promise(async resolve => {
 			try {
 				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
@@ -59,12 +58,11 @@ class Model extends BaseModel {
 				const infoReaction = await MEDIA__REACTION_COLL
 					.findOne({
 						media: mediaID,
-						userCreate: authorID
+						author: authorID
 					})
-					.populate('reaction')
 					.lean();
 
-				if(infoReaction && +infoReaction?.reaction?.type === typeReaction){
+				if(infoReaction && +infoReaction.type === typeReaction){
 					const infoAfterDeleteReaction = await MEDIA__REACTION_COLL.findByIdAndDelete(infoReaction._id);
 
 					await MEDIA_COLL.findByIdAndUpdate(mediaID, {
@@ -80,25 +78,17 @@ class Model extends BaseModel {
 					});
 				}
 
-				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
-					type: typeReaction,
-					userID: authorID
-				});
-
-				if(infoAfterInsertReaction.error)
-					return resolve(infoAfterInsertReaction);
-
 				if(infoReaction) {
 					await MEDIA__REACTION_COLL.findByIdAndDelete(infoReaction._id);
 				}
 
-				const infoAfterUpdateReaction = await this.insertData({
+				const infoAfterInsertReaction = await this.insertData({
 					media: mediaID,
-					reaction: infoAfterInsertReaction?.data?._id,
-					userCreate: authorID
+					type: typeReaction,
+					author: authorID
 				})
 
-				if(!infoAfterUpdateReaction) {
+				if(!infoAfterInsertReaction) {
 					return resolve({
 						error: true, 
 						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
@@ -115,7 +105,7 @@ class Model extends BaseModel {
 					})
 				}
 
-                return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
+                return resolve({ error: false, data: infoAfterInsertReaction, status: 200 });
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
@@ -125,73 +115,153 @@ class Model extends BaseModel {
 	/**
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION BÀI VIẾT
+	 * Updated: 22/02/2022
 	 */
-	getListReaction({ userID, mediaID, lastestID, isGetTotal, type, limit = 15, select, populates, ctx }) {
-		return new Promise(async resolve => {
-			try {
-				if(!checkObjectIDs([userID])) {
-                    return resolve({
-						error: true, 
-						message: 'Tham số user ID không hợp lệ', 
-						keyError: 'params_userID_invalid',
-						status: 400
-					});
-				}
+	getListReaction({ authorID, mediaID, lastestID, isGetTotal, type, limit = 15, select, populates }) {
+		return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { media: mediaID };
+                let keys = ['_id__-1', 'createAt__-1']
+                let nextCursor	= null;
+                let sortBy = {
+					_id: -1,
+					createAt: -1,
+				};
 
-				if(!checkObjectIDs([mediaID])) {
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs([mediaID])) {
                     return resolve({
 						error: true, 
 						message: 'Tham số mediaID không hợp lệ', 
 						keyError: 'params_mediaID_invalid',
 						status: 400
 					});
-				}
+                }
 
-				let conditionReactionCore = {};
-
-				let listReactionsID = await MEDIA__REACTION_COLL
-					.find({ media: mediaID })
-					.select('reaction')
-					.lean();
-
-				if(listReactionsID.length) {
-					listReactionsID = listReactionsID.map(reaction => reaction.reaction);
-					type && (conditionReactionCore.type = type);
-
-					const listReactions = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
-						conditionObj: { ...conditionReactionCore, _id: { $in: listReactionsID } },
-						lastestID,
-						isGetTotal,
-						select,
-						populates,
-						limit,
+				if(!checkObjectIDs([authorID])) {
+                    return resolve({
+						error: true, 
+						message: 'Tham số authorID không hợp lệ', 
+						keyError: 'params_authorID_invalid',
+						status: 400
 					});
+                }
 
-					return resolve(listReactions);
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
 				} else{
-					return resolve({
-						error: false,
-						status: 200,
-						data: {
-							listRecords: [],
-							limit: 20,
-							totalRecord: 0,
-							nextCursor: null
-						}
-					})
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(isNaN(limit) || +limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
 				}
-			} catch (error) {
-				console.error(error);
-				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
+
+				type && (conditionObj.type = type);
+
+				let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await MEDIA__REACTION_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await MEDIA__REACTION_COLL
+                    .find(conditionObj)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
+
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurs",
+                        status: 422
+                    })
+                }
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                const totalRecord = await MEDIA__REACTION_COLL.countDocuments(conditionObjOrg);
+
+                if(isGetTotal) {
+                    const totalRecordLike       = await MEDIA__REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 1 });
+                    const totalRecordHeart      = await MEDIA__REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 2 });
+                    const totalRecordSmile      = await MEDIA__REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 3 });
+                    const totalRecordSurprise   = await MEDIA__REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 4 });
+                    const totalRecordSad        = await MEDIA__REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 5 });
+                    const totalRecordAngry      = await MEDIA__REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 6 });
+
+                    return resolve({
+                        error: false,
+                        status: 200,
+                        data: { 
+                            listRecords: infoDataAfterGet, 
+                            limit,
+                            nextCursor,
+                            totalRecord,
+                            totalRecordLike,
+                            totalRecordHeart,
+                            totalRecordSmile,
+                            totalRecordSurprise,
+                            totalRecordSad,
+                            totalRecordAngry
+                        }
+                    });
+                }
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
 	}
 
 	/**
 	 * Dev: MinhVH
 	 * Func: REACTION FILE
+	 * Updated: 22/02/2022
 	 */
-	reactionFile({ authorID, mediaID, fileID, typeReaction, ctx }) {
+	reactionFile({ authorID, mediaID, fileID, typeReaction }) {
 		return new Promise(async resolve => {
 			try {
 				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
@@ -225,9 +295,8 @@ class Model extends BaseModel {
 					.findOne({
 						file: fileID,
 						media: mediaID,
-						userCreate: authorID
+						author: authorID
 					})
-					.populate('reaction')
 					.lean();
 
 				if(infoReaction && +infoReaction?.reaction?.type === typeReaction){
@@ -246,14 +315,6 @@ class Model extends BaseModel {
 					});
 				}
 
-				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
-					type: typeReaction,
-					userID: authorID
-				});
-
-				if(infoAfterInsertReaction.error)
-					return resolve(infoAfterInsertReaction);
-
 				if(infoReaction) {
 					await MEDIA__FILE_REACTION_COLL.findByIdAndDelete(infoReaction._id);
 				}
@@ -261,8 +322,8 @@ class Model extends BaseModel {
 				const infoAfterUpdateReaction = await MEDIA__FILE_REACTION_COLL.create({
 					file: fileID,
 					media: mediaID,
-					reaction: infoAfterInsertReaction?.data?._id,
-					userCreate: authorID,
+					type: typeReaction,
+					author: authorID
 				})
 
 				if(!infoAfterUpdateReaction) {
@@ -275,7 +336,7 @@ class Model extends BaseModel {
 				}
 
 				if(!infoReaction) {
-					await MEDIA__FILE_COLL.findByIdAndUpdate(mediaID, {
+					await MEDIA__FILE_COLL.findByIdAndUpdate(fileID, {
 						$inc: {
 							amountReaction: 1
 						}
@@ -292,66 +353,154 @@ class Model extends BaseModel {
 	/**
 	 * Dev: MinhVH
 	 * Func: DANH SÁCH REACTION FILE
+	 * Updated: 22/02/2022
 	 */
-	getListReactionFile({ userID, fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates, ctx }) {
-		return new Promise(async resolve => {
-			try {
-				if(!checkObjectIDs([userID])) {
+	getListReactionFile({ authorID, fileID, mediaID, lastestID, isGetTotal, type, limit = 15, select, populates }) {
+		return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { media: mediaID, file: fileID };
+                let keys = ['_id__-1', 'createAt__-1']
+                let nextCursor	= null;
+                let sortBy = {
+					_id: -1,
+					createAt: -1,
+				};
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs([mediaID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số userID không hợp lệ', 
-						keyError: 'params_userID_invalid',
+						message: 'Tham số mediaID không hợp lệ', 
+						keyError: 'params_mediaID_invalid',
 						status: 400
 					});
-				}
+                }
 
-				if(!checkObjectIDs([mediaID, fileID])) {
+				if(!checkObjectIDs([fileID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số mediaID hoặc fileID không hợp lệ', 
-						keyError: 'params_mediaID_or_fileID_invalid',
+						message: 'Tham số fileID không hợp lệ', 
+						keyError: 'params_fileID_invalid',
 						status: 400
 					});
-				}
+                }
 
-				let conditionReactionCore = {};
-
-				let listReactionsID = await MEDIA__FILE_REACTION_COLL
-					.find({ media: mediaID, file: fileID })
-					.select('reaction')
-					.lean();
-
-				if(listReactionsID.length) {
-					listReactionsID = listReactionsID.map(reaction => reaction.reaction);
-					type && (conditionReactionCore.type = type);
-
-					const listReactions = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION__GET_INFO_AND_GET_LIST}`, {
-						conditionObj: { ...conditionReactionCore, _id: { $in: listReactionsID } },
-						lastestID,
-						isGetTotal,
-						select,
-						populates,
-						limit,
+				if(!checkObjectIDs([authorID])) {
+                    return resolve({
+						error: true, 
+						message: 'Tham số authorID không hợp lệ', 
+						keyError: 'params_authorID_invalid',
+						status: 400
 					});
+                }
 
-					return resolve(listReactions);
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
 				} else{
-					return resolve({
-						error: false,
-						status: 200,
-						data: {
-							listRecords: [],
-							limit: 20,
-							totalRecord: 0,
-							nextCursor: null
-						}
-					})
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(isNaN(limit) || +limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
 				}
-			} catch (error) {
-				console.error(error);
-				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
+
+				type && (conditionObj.type = type);
+
+				let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await MEDIA__FILE_REACTION_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await MEDIA__FILE_REACTION_COLL
+                    .find(conditionObj)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
+
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurs",
+                        status: 422
+                    })
+                }
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                const totalRecord = await MEDIA__FILE_REACTION_COLL.countDocuments(conditionObjOrg);
+
+                if(isGetTotal) {
+                    const totalRecordLike       = await MEDIA__FILE_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 1 });
+                    const totalRecordHeart      = await MEDIA__FILE_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 2 });
+                    const totalRecordSmile      = await MEDIA__FILE_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 3 });
+                    const totalRecordSurprise   = await MEDIA__FILE_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 4 });
+                    const totalRecordSad        = await MEDIA__FILE_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 5 });
+                    const totalRecordAngry      = await MEDIA__FILE_REACTION_COLL.countDocuments({ ...conditionObjOrg, type: 6 });
+
+                    return resolve({
+                        error: false,
+                        status: 200,
+                        data: { 
+                            listRecords: infoDataAfterGet, 
+                            limit,
+                            nextCursor,
+                            totalRecord,
+                            totalRecordLike,
+                            totalRecordHeart,
+                            totalRecordSmile,
+                            totalRecordSurprise,
+                            totalRecordSad,
+                            totalRecordAngry
+                        }
+                    });
+                }
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
 	}
 }
 
