@@ -6,12 +6,12 @@ const { checkObjectIDs }                = require('../../../tools/utils/utils');
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL = require('../database/subject_pcm.pcm_plan_task_file-coll');
+const PCM_FILE_COLL = require('../database/subject_pcm.pcm_file-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL);
+        super(PCM_FILE_COLL);
     }
 
     /**
@@ -79,7 +79,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                let infoDataAfterRemove = await SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL.findByIdAndDelete(fileID);
+                let infoDataAfterRemove = await PCM_FILE_COLL.findByIdAndDelete(fileID);
                 if(!infoDataAfterRemove)
                     return resolve({ error: true, message: "Can't remove file comment", status: 403 });
 

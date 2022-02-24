@@ -10,7 +10,7 @@ const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
-const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../../subject_pcm/helper/subject_pcm.actions-constant');
+const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_ANALYSIS } 		            = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_REACTION } 				    = require('../../reaction/helper/reaction.actions-constant');
 const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
@@ -18,14 +18,14 @@ const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COLL           = require('../database/subject_pcm.pcm_plan_task-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL      = require('../database/subject_pcm.pcm_file-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL   = require('../database/subject_pcm.pcm_comment-coll');
+const PCM_PLAN_TASK_COLL            = require('../database/subject_pcm.pcm_plan_task-coll');
+const PCM_FILE_COLL                 = require('../database/subject_pcm.pcm_file-coll');
+const PCM_COMMENT_COLL              = require('../database/subject_pcm.pcm_comment-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL);
+        super(PCM_COMMENT_COLL);
     }
 
     /**
@@ -80,7 +80,7 @@ class Model extends BaseModel {
                 //         .for([...files, ...images])
                 //         .withConcurrency(2)
                 //         .process(async fileID => {
-                //             const infoAfterCreate = await SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL.create({
+                //             const infoAfterCreate = await PCM_FILE_COLL.create({
                 //                 file: fileID,
                 //                 task: taskID
                 //             });
@@ -154,13 +154,13 @@ class Model extends BaseModel {
                 })
 
                 // Cập nhật số lượng phản hồi liên quan
-                await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                     $inc: {
                         amountResponse: 1
                     }
                 });
 
-                infoDataAfterInserted = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
+                infoDataAfterInserted = await PCM_COMMENT_COLL
                     .findById(infoDataAfterInserted._id)
                     .select('comment isMarked type task userCreate createAt')
                     .populate({
@@ -203,7 +203,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                const infoResponse = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findById(commentID).lean();
+                const infoResponse = await PCM_COMMENT_COLL.findById(commentID).lean();
                 if(!infoResponse) {
                     return resolve({ 
                         error: true, 
@@ -221,13 +221,13 @@ class Model extends BaseModel {
                 }
 
                 console.log({ commentID, isMarked, valueCalculate, dataUpdate })
-                await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                     $inc: {
                         amountResponseMarked: valueCalculate
                     }
                 });
 
-                const infoAfterUpdated = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
+                const infoAfterUpdated = await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
 
                 return resolve({ error: false, data: infoAfterUpdated, status: 200 });
             } catch (error) {
@@ -263,7 +263,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                let infoDataAfterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findOneAndDelete({
+                let infoDataAfterUpdate = await PCM_COMMENT_COLL.findOneAndDelete({
                     _id: commentID,
                     userCreate: authorID
                 });
@@ -300,7 +300,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoComment = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
+                let infoComment = await PCM_COMMENT_COLL
                     .findById(commentID)
                     .select(select)
                     .populate(populates)
@@ -381,7 +381,7 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.findById(lastestID);
+					let infoData = await PCM_COMMENT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
@@ -396,7 +396,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_COMMENT_COLL.find(conditionObj)
                     .limit(limit + 1)
                     .sort(sortBy)
                     .select(select)
@@ -420,7 +420,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjOrg);
+                let totalRecord = await PCM_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
 
                 if(!sortKey) {
@@ -469,7 +469,7 @@ class Model extends BaseModel {
                     }
                 }
 
-				let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskID).lean();
+				let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
 
 				if(!infoTask) {
                     return resolve({
@@ -484,7 +484,7 @@ class Model extends BaseModel {
 				let conditionObjBackList 		= { _id: { $gt: commentID }, task: taskID };
 				let conditionObjSearchMessage 	= { _id: commentID, task: taskID };
 
-				let infoComment = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL
+				let infoComment = await PCM_COMMENT_COLL
 					.findOne(conditionObjSearchMessage)
                     .select(select)
                     .populate(populates)
@@ -499,14 +499,14 @@ class Model extends BaseModel {
                     })
                 }
 
-				let listCommentsFront = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObjFrontList)
+				let listCommentsFront = await PCM_COMMENT_COLL.find(conditionObjFrontList)
                     .limit(5)
                     .sort({ createAt: -1, _id: -1 })
                     .select(select)
                     .populate(populates)
 					.lean();
 
-				let listCommentsBack = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.find(conditionObjBackList)
+				let listCommentsBack = await PCM_COMMENT_COLL.find(conditionObjBackList)
                     .limit(5)
                     .sort({ createAt: 1, _id: 1 })
                     .select(select)
@@ -515,8 +515,8 @@ class Model extends BaseModel {
 
 				let listComments = [...listCommentsFront.reverse(), infoComment, ...listCommentsBack];
 
-                const totalRecordFront = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjFrontList);
-                const totalRecordBack = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL.countDocuments(conditionObjBackList);
+                const totalRecordFront = await PCM_COMMENT_COLL.countDocuments(conditionObjFrontList);
+                const totalRecordBack = await PCM_COMMENT_COLL.countDocuments(conditionObjBackList);
 
 				return resolve({
 					error: false,

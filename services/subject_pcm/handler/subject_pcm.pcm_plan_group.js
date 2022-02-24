@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT__PCM_PLAN_GROUP_MODEL            = require('../model/subject_pcm.pcm_plan_group').MODEL;
+const PCM_PLAN_GROUP_MODEL            = require('../model/subject_pcm.pcm_plan_group').MODEL;
 
 module.exports = {
 
@@ -33,11 +33,11 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler; 
                 if(planGroupID){
-                    resultAfterCallHandler = await SUBJECT__PCM_PLAN_GROUP_MODEL.getInfo({
+                    resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getInfo({
                         planGroupID, select, populates, 
                     });
                 }else{
-                    resultAfterCallHandler = await SUBJECT__PCM_PLAN_GROUP_MODEL.getList({
+                    resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getList({
                         keyword, limit, userID, lastestID, projectID, select, populates, 
                     });
                 }

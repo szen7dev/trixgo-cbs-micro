@@ -17,10 +17,10 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
     },
     
     //_________Comment core
-    comment: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'comment'
-    },
+    // comment: {
+    //     type    : Schema.Types.ObjectId,
+    //     ref     : 'comment'
+    // },
     
     //_________ID reply của comment reply cuối (Chi lưu cho comment cha)
     lastestReplyID: {
@@ -28,8 +28,37 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         ref     : 'media_comment'
     },
 
-    userCreate: {
+    //_________Người tạo comment
+    author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
+
+    //_________Số lượng comment con của comment cha
+    amountCommentReply: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________Số lượng reaction con của comment cha
+    amountReaction: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________1 mảng loại cảm xúc để show trên view
+    typeReactions: [{
+        type :  Number,
+    }],
+
+    //_________Người được tag vào comment
+    tag: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }
 })
