@@ -12,6 +12,16 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
         type: Schema.Types.ObjectId,
         ref: 'app'
     },
+    //________Công ty
+    company: {
+        type:  Schema.Types.ObjectId,
+        ref : 'company'
+    },
+    //________Dự án/phòng ban
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
+    },
     //______Tên gốc
     nameOrg     : { type: String, require: true }, 
     //______Tên uuidv1
@@ -55,4 +65,4 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     }
-});
+})
