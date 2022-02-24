@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL  = require('../model/subject_pcm.pcm_plan_task_comment-model').MODEL;
+const PCM_COMMENT_MODEL  = require('../model/subject_pcm.pcm_comment-model').MODEL;
 
 module.exports = {
     /**
@@ -30,7 +30,7 @@ module.exports = {
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images } = ctx.params;
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.insert({
+                let resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
 					taskID, parentID, authorID, type, content, bizfullname, files, images, ctx
 				});
 
@@ -63,7 +63,7 @@ module.exports = {
 				// 	commentID: commentCoreID, content
 				// });
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.updateMarkResponse({
+                let resultAfterCallHandler = await PCM_COMMENT_MODEL.updateMarkResponse({
 					taskID, commentID: commentTemplateID, isMarked
 				});
 
@@ -124,12 +124,12 @@ module.exports = {
 
                 if(commentTemplateID){
                     // Get info
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.getInfo({
+                    resultAfterCallHandler = await PCM_COMMENT_MODEL.getInfo({
                         commentID: commentTemplateID, select, populates
                     });
                 } else{
                     // Get list
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.getList({
+                    resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
                         taskID, parentID, limit, lastestID, isMarked, sortKey, select, populates
                     });
                 }
@@ -158,7 +158,7 @@ module.exports = {
 				const { _id: authorID } = ctx.meta.infoUser;
                 let { taskID, commentID, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.searchCommentById({
+                let resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentById({
                     taskID, authorID, commentID, select, populates
                 });
 

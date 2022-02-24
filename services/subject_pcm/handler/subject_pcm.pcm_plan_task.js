@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_MODEL          = require('../model/subject_pcm.pcm_plan_task').MODEL;
+const PCM_PLAN_TASK_MODEL          = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 module.exports = {
     /**
@@ -53,7 +53,7 @@ module.exports = {
 				let { _id: userID } = ctx.meta.infoUser;
                 let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type } = ctx.params;
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.insert({
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
                     projectID, groupID, authorID: userID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, ctx
                 });
                 
@@ -104,7 +104,7 @@ module.exports = {
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.update({
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
                     contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
@@ -171,11 +171,11 @@ module.exports = {
                 let resultAfterCallHandler;
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
+                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
                         taskID, userID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
+                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, 
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete,
                         keyword, limit, select, lastestID, populates
@@ -202,8 +202,8 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
-                // let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.updateCompanyOfAuthorAndCompanyOfAssignee();
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
+                // let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateCompanyOfAuthorAndCompanyOfAssignee();
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

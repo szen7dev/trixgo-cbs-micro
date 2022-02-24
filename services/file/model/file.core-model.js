@@ -55,12 +55,12 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 let infoAfterInsert = await this.insertData({ 
-                    app, nameOrg, name, path, size, mimeType, type, userCreate: userID
+                    app, nameOrg, name, path, size, mimeType, type, author: userID
                 });
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
-                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
