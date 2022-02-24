@@ -17,7 +17,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				// const { _id: userID } = ctx.meta.infoUser;
                 let { app, name, path, size, userID } = ctx.params;
-                
+
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, path, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {

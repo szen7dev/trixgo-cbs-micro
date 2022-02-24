@@ -124,16 +124,6 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         ref     : 'doctype'
     },
 
-    /**
-     * 1: Mặc định
-     * 2: Lưu bài viết
-     * 3: Ghim bài viết
-     */
-    kind: {
-        type: Number,
-        default: 1
-    },
-
     //_________Số lượng reaction của media
     amountReaction: {
         type    :  Number,
@@ -151,9 +141,4 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type    :  Number,
         default : 0
     },
-
-    //_________1 mảng loại cảm xúc để show trên view(3 cái)
-    typeReactions: [{
-        type :  Number,
-    }],
 })

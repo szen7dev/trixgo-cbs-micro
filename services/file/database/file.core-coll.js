@@ -33,7 +33,7 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
      * 4. Video
      */
     type: { type: Number },
-    userCreate: {
+    author: {
         type: Schema.Types.ObjectId,
         ref: 'user',
         require: true

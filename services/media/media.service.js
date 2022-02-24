@@ -50,22 +50,22 @@ module.exports = {
 		// ================================  MEDIA  ================================
 
 		// THÊM BÀI VIẾT MỚI
-		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insertMedia,
+		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insert,
 
 		// CHỈNH SỬA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
+		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.update,
+
+		// XÓA BÀI VIẾT	
+		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.delete,
+
+		// CHI TIẾT BÀI VIẾT	
+		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfo,
+
+		// LẤY DANH SÁCH BÀI VIẾT 	
+		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getList,
 
 		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
-
-		// XÓA BÀI VIẾT	
-		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
-
-		// CHI TIẾT BÀI VIẾT	
-		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
-
-		// LẤY DANH SÁCH BÀI VIẾT 	
-		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
 
 		// LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
 		[CF_ACTIONS_MEDIA.LIST_SEEN_MEDIA] 		            			: MEDIA_HANDLER.getListUsersSeen,

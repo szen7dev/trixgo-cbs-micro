@@ -11,7 +11,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_file", {
         type    :  Schema.Types.ObjectId,
         ref     : 'media'
     },
-    
+
     file: {
         type    :  Schema.Types.ObjectId,
         ref     : 'file'
