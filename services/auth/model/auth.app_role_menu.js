@@ -191,10 +191,11 @@ class Model extends BaseModel {
      * Hiepnh (07/2/2019)
      * [x] Đã check ok
      */
-    getPermissionToAccessListMenuOfApp({ user, app, company }) {
+    getPermissionToAccessListMenuOfApp({ type=1, user, app, company }) {
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
+                    type: type,
                     company: company,
                     app: app,
                     members:  { $in: [user] }
@@ -216,9 +217,9 @@ class Model extends BaseModel {
                             create:     { $sum: "$create"},
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
-                            download:   { $sum: "$download"},
-                            upload:     { $sum: "$upload"},
-                            import:     { $sum: "$import"},
+                            // download:   { $sum: "$download"},
+                            // upload:     { $sum: "$upload"},
+                            // import:     { $sum: "$import"},
                         }
                     }
                 ]);
