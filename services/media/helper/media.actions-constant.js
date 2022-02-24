@@ -1,38 +1,30 @@
 const BASE_ACTIONS = 'ACT_MEDIA';
 const COMMENT      = 'COMMENT';
 
-/**
- * nguyên tắc chuyển đổi từ method trong .handler
- * VD: handler(insertFast) -> action(INSERT_FAST)
- */
 const CF_ACTIONS_MEDIA = {
 	/**
      * MEDIA
      */
 	INSERT_MEDIA                  					: `${BASE_ACTIONS}_INSERT`,
-	LIST_MEDIA                  			        : `${BASE_ACTIONS}_LIST`,
+	UPDATE_MEDIA                  			        : `${BASE_ACTIONS}_UPDATE`,
 	DELETE_MEDIA                  			        : `${BASE_ACTIONS}_DELETE`,
 	INFO_MEDIA                  			        : `${BASE_ACTIONS}_INFO_MEDIA`,
+	LIST_MEDIA                  			        : `${BASE_ACTIONS}_LIST`,
+
+	UPDATE_VIEW_MEDIA                  			    : `${BASE_ACTIONS}_UPDATE_VIEW_MEDIA`,
 	LIST_SEEN_MEDIA                  			    : `${BASE_ACTIONS}_LIST_SEEN_MEDIA`,
 
+     /**
+     * SAVE MEDIA
+     */
 	LIST_SAVE_MEDIA                  				: `${BASE_ACTIONS}_LIST_SAVE_MEDIA`,
-	UPDATE_MEDIA                  			        : `${BASE_ACTIONS}_UPDATE`,
-	UPDATE_VIEW_MEDIA                  			    : `${BASE_ACTIONS}_UPDATE_VIEW_MEDIA`,
 	SAVE_MEDIA                  					: `${BASE_ACTIONS}_SAVE_MEDIA`,
-	DELETE_SAVE_MEDIA                  				: `${BASE_ACTIONS}_DELETE_SAVE_MEDIA`,
+
+    /**
+     * PIN MEDIA
+     */
 	LIST_PIN_MEDIA                  				: `${BASE_ACTIONS}_LIST_PIN_MEDIA`,
 	PIN_MEDIA                  						: `${BASE_ACTIONS}_PIN_MEDIA`,
-	DELETE_PIN_MEDIA                  				: `${BASE_ACTIONS}_DELETE_PIN_MEDIA`,
-    
-	REACTION_IMAGE_MEDIA                            : `${BASE_ACTIONS}_REACTION_IMAGE_MEDIA`,
-    GET_LIST_REACTION_IMAGE_MEDIA                   : `${BASE_ACTIONS}_GET_LIST_REACTION_IMAGE_MEDIA`,
-    COMMENT_IMAGE_MEDIA     		                : `${BASE_ACTIONS}_COMMENT_IMAGE_MEDIA`,
-    GET_LIST_COMMENT_IMAGE_MEDIA	                : `${BASE_ACTIONS}_GET_LIST_COMMENT_IMAGE_MEDIA`,
-    UPDATE_COMMENT_IMAGE_MEDIA	                   	: `${BASE_ACTIONS}_UPDATE_COMMENT_IMAGE_MEDIA`,
-    DELETE_COMMENT_IMAGE_MEDIA	                    : `${BASE_ACTIONS}_DELETE_COMMENT_IMAGE_MEDIA`,
-    REACTION_COMMENT_IMAGE               		    : `${BASE_ACTIONS}_REACTION_COMMENT_IMAGE`,
-    GET_LIST_REACTION_COMMENT_IMAGE     		    : `${BASE_ACTIONS}_GET_LIST_REACTION_COMMENT_IMAGE`,
-    REPLY_COMMENT_IMAGE_MEDIA     		            : `${BASE_ACTIONS}_REPLY_COMMENT_IMAGE_MEDIA`,
 
     /**
      * REACTION
