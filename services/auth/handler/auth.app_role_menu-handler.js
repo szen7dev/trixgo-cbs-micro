@@ -112,7 +112,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, appID, type } = ctx.params;
+                let { companyID, appID, menuID, type } = ctx.params;
                 let { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
