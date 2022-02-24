@@ -1025,6 +1025,7 @@ class Model extends BaseModel {
                     // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
                     if(isChecklist == 1){
                         conditionObj.type = 2;
+                        delete conditionObj.status
                     }else{
                         conditionObj.type = 1;
                     }
