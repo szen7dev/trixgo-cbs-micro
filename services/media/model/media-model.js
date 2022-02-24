@@ -563,11 +563,11 @@ class Model extends BaseModel {
 				// Tạo người xem mới nếu chưa tồn tại
 				await MEDIA__SEEN_COLL.updateOne({
 					media: mediaID,
-					userCreate: authorID
+					author: authorID
 				}, {
 					$set: {
 						media: mediaID,
-						userCreate: authorID
+						author: authorID
 					}
 				}, { new: true, upsert: true })
 
@@ -1083,32 +1083,48 @@ class Model extends BaseModel {
 	 * Dev: NPNguyen
 	 * Func: LƯU BÀI VIẾT
 	 */
-	saveMedia({ author, mediaID, ctx }) {
+	saveMedia({ authorID, mediaID, ctx }) {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
 				let condition = {};
 
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
 
 				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
 
 				let checkExisted = await MEDIA_COLL.findById(mediaID);
 				if (!checkExisted) {
-                    return resolve({ error: true, message: "Media don't exited", status: 400 });
-				}
-
-				condition = {
-					userSave: author,
-					media: mediaID,
+					return resolve({
+						error: true,
+						message: "Bài viết không tồn tại",
+						keyError: "media_not_exists",
+						status: 400
+					})
 				}
 
 				// CHECK USER HAVE SAVED MEDIA
-                let checkExistSaveMedia = await MEDIA__SAVE_COLL.findOne(condition).lean();
+                let checkExistSaveMedia = await MEDIA__SAVE_COLL
+					.findOne({
+						media: mediaID,
+						author: authorID
+					})
+					.lean();
 
 				if(checkExistSaveMedia) {
 					return resolve({ error: true, message: 'You have already saved this post', status: 403 });

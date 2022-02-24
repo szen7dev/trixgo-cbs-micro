@@ -10,7 +10,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_seen", {
         ref     : 'media'
     },
     //_________Người xem
-    userCreate: {
+    author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },

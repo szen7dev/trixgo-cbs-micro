@@ -20,20 +20,15 @@ module.exports  = DATABASE_MIDDLEWARE("history_log", {
         default: 1
     },
     //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
-    key: {
+    languageKey: {
         type: String 
     },  
     //_________Thực hiện trên collection nào(VD: pcm_plan_task, document ...)
-    parentCollection: {
+    coll: {
         kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'parentCollection.kind' }
+        item: { type: Schema.Types.ObjectId, refPath: 'coll.kind' }
     },
-    //_________Tác động đến gì (VD: Comment, Phản hồi liên quan)
-    subCollection: {
-        kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'subCollection.kind' }
-    },
-    //_________Nội dung thực thi hành động VD: Phan Văn Đệ-TRX đã xóa bình luận "Bạn bị làm sao í"
+    //_________Nội dung (mô tả ngắn nội dung)
     content: String,
     //_________Công ty của người thực thi hành động
     companyOfAuthor: {

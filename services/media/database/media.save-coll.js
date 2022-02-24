@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_save", {
     /**
      *  Người lưu bài viết
      */
-    userSave: {
+    author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
