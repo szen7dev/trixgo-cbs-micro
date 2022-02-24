@@ -19,8 +19,8 @@ const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm
  * import inter-coll, exter-coll
  */
 const SUBJECT_PCM__PCM_PLAN_TASK_COLL           = require('../database/subject_pcm.pcm_plan_task-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL      = require('../database/subject_pcm.pcm_plan_task_file-coll');
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL   = require('../database/subject_pcm.pcm_plan_task_comment-coll');
+const SUBJECT_PCM__PCM_PLAN_TASK_FILE_COLL      = require('../database/subject_pcm.pcm_file-coll');
+const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_COLL   = require('../database/subject_pcm.pcm_comment-coll');
 
 class Model extends BaseModel {
 
