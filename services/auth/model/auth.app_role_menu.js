@@ -71,7 +71,8 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách app role menu
+     * Name  : Danh sách app role menu phục vụ cho màn hình Admin phân quyền Nhóm chức năng
+     * Màn hình: S2-1.2 (/pcm/admin/2)
      * Author: Depv
      * Code  : 
      */
@@ -191,10 +192,11 @@ class Model extends BaseModel {
      * Hiepnh (07/2/2019)
      * [x] Đã check ok
      */
-    getPermissionToAccessListMenuOfApp({ user, app, company }) {
+    getPermissionToAccessListMenuOfApp({ type=1, user, app, company }) {
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
+                    type: type,
                     company: company,
                     app: app,
                     members:  { $in: [user] }
@@ -216,14 +218,60 @@ class Model extends BaseModel {
                             create:     { $sum: "$create"},
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
-                            download:   { $sum: "$download"},
-                            upload:     { $sum: "$upload"},
-                            import:     { $sum: "$import"},
+                            // download:   { $sum: "$download"},
+                            // upload:     { $sum: "$upload"},
+                            // import:     { $sum: "$import"},
                         }
                     }
                 ]);
                 if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
                 return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+
+    /**
+     * Lấy quyền truy cập của user vào 1 màn hình chức năng (menu)
+     * Hiepnh (07/2/2019)
+     * [x] Đã check ok
+     */
+    getPermissionToAccessOneMenuOfApp({ type=1, menu, user, app, company }) {
+        return new Promise(async resolve => {
+            try {
+                let listRoles = await AUTH__APP_ROLE_COLL.find({
+                    type: type,
+                    company: company,
+                    app: app,
+                    members:  { $in: [user] }
+                })
+                .select('_id name')
+                
+                let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
+                    {
+                        $match: {
+                            "role": {
+                                $in: listRoles.map(item=>item._id)
+                            },
+                            "menu": ObjectID(menu),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id:        { menu: "$menu"}, 
+                            read:       { $sum: "$read"},
+                            create:     { $sum: "$create"},
+                            update:     { $sum: "$update"},
+                            delete:     { $sum: "$delete"},
+                            // download:   { $sum: "$download"},
+                            // upload:     { $sum: "$upload"},
+                            // import:     { $sum: "$import"},
+                        }
+                    }
+                ]);
+                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
+                return resolve({ error: false, data: listData && listData[0] || {} });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

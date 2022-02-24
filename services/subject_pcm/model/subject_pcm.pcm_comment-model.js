@@ -3,8 +3,6 @@
 /**
  * import external
  */
-const PromisePool								= require('@supercharge/promise-pool');
-
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
@@ -32,7 +30,7 @@ class Model extends BaseModel {
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates }) { 
+    insert({ taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -531,6 +529,8 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs([parentID])){
                     conditionObj.parent = parentID;
+                } else{
+                    conditionObj.parent = { $exists: false };
                 }
 
                 if(isMarked === 'true') {

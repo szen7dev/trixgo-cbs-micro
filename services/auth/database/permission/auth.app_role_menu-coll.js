@@ -70,33 +70,6 @@ module.exports  = DATABASE_MIDDLEWARE("app_role_menu", {
         type   : Number,
         default: 0
     },
-    /**
-     * Upload.
-     * 1. cho phép upload
-     * 0. không cho upload
-     */
-    upload: {
-        type   : Number,
-        default: 0
-    },
-    /**
-     * Download.
-     * 1. cho phép download
-     * 0. không cho download
-     */
-    download: {
-        type   : Number,
-        default: 0
-    },
-    /**
-     * Import.
-     * 1. cho phép import
-     * 0. không cho import
-     */
-    import: {
-        type   : Number,
-        default: 0
-    },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
