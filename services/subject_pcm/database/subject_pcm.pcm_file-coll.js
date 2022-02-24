@@ -31,7 +31,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     //________Bình luận
     comment: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'pcm_plan_task_comment'
+        ref     : 'pcm_comment'
     },
 
     //________File
@@ -40,9 +40,15 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
         ref     : 'file'
     },
     
-    //________Người khởi tạo
-    userCreate: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
-    }
+    //_________Tên gốc(Đưa qua bảng phụ để truy vấn)
+    nameOrg     : { type: String, require: true }, 
+
+    //_________Tên sau khi convert uuidv1(Đưa qua bảng phụ để truy vấn)
+    name        : { type: String, require: true }, 
+
+    //_________Author(Đưa qua bảng phụ để truy vấn)
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
 })

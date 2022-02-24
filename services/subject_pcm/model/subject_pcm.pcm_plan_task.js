@@ -790,7 +790,7 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 if(isSortChecklist == 1){
-                    keys = ['createAt__1', '_id__1'];
+                    keys = ['createAt__-1', '_id__-1'];
                 }
 
                 let start = new Date();

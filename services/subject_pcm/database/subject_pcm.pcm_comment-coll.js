@@ -4,8 +4,19 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
+    //_________taskID
+    task: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'pcm_plan_task'
+    },
     //_________Nội dung
     content: String,
+
+    //_________ID comment cha
+    parent: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'pcm_comment'
+    },
     /**
      * Phân loại
      * 1-Comment thông thường (task, document, post,...)
@@ -15,35 +26,42 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      */
     type: { type: Number, default: 1 },
 
-    //_________Đánh dấu
-    isMarked: { type: Boolean, default: false },
+    /**
+     * Phân loại công việc(ispropsal) PCM_PROPOSAL_TASK trong cf_constant
+     */
+    subType:{ type: Number, default: 0 },
 
-    //_________taskID
-    task: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'pcm_plan_task'
-    },
+    //_________Đánh dấu(Minh thay isMarked = official)
+    official: { type: Boolean, default: false },
 
-    //_________ID comment cha
-    parent: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'pcm_plan_task_comment'
-    },
-
-    //_________ID comment core
-    comment: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'comment'
-    },
+    //_________File đính kèm
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref : "file"
+    }],
     
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_plan_task_comment'
     },
-    
-    userCreate: {
+
+    amountRaction: { type: Number, default: 0 },
+
+    //_________Người tạo comment
+    author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
+
+    //_________Người được tag vào comment
+    tag: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }
 }) 
