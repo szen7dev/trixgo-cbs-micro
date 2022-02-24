@@ -81,7 +81,7 @@ module.exports = {
         params: {
             companyID       : { type: "string" },
             appID           : { type: "string" },
-            type            : { type: "number" },
+            type            : { type: "number" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
         },
         async handler(ctx) {
             try {
