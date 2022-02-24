@@ -4,19 +4,27 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
+    //_________Nội dung
+    content: String,
+
     //_________taskID
     task: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_plan_task'
     },
-    //_________Nội dung
-    content: String,
 
     //_________ID comment cha
     parent: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_comment'
     },
+    
+    //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
+    lastestReplyID: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'pcm_comment'
+    },
+
     /**
      * Phân loại
      * 1-Comment thông thường (task, document, post,...)
@@ -31,27 +39,20 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
      */
     subType:{ type: Number, default: 0 },
 
-    //_________Đánh dấu(Minh thay isMarked = official)
-    official: { type: Boolean, default: false },
+    //_________Đánh dấu
+    isMarked: { type: Boolean, default: false },
 
     //_________File đính kèm
     files: [{
         type: Schema.Types.ObjectId,
         ref : "file"
     }],
-    
-    //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
-    lastestReplyID: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'pcm_comment'
-    },
 
-
-    //_________Người tạo comment
-    author: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
-    },
+    //_________Các ảnh được đính kèm trong bài viết
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    }],
 
     //_________Số lượng comment con của comment cha
     amountCommentReply: {
@@ -65,17 +66,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         default : 0
     },
 
-    //_________1 mảng loại cảm xúc để show trên view
-    typeReactions: [{
-        type :  Number,
-    }],
+    //_________Người tạo comment
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },
 
-    //_________Người được tag vào comment
-    tag: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
-
+    //_________Người cập nhật comment
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : "user"

@@ -4,6 +4,9 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("media_comment", {
+    //_________Nội dung
+    content: String,
+
     //_________ID bài viết
     media: {
         type    :  Schema.Types.ObjectId,
@@ -15,24 +18,24 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'media_comment'
     },
-    
-    //_________Comment core
-    // comment: {
-    //     type    : Schema.Types.ObjectId,
-    //     ref     : 'comment'
-    // },
-    
+
     //_________ID reply của comment reply cuối (Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
         ref     : 'media_comment'
     },
 
-    //_________Người tạo comment
-    author: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
-    },
+    //_________Các files được đính kèm trong bài viết
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    }],
+
+     //_________Các ảnh được đính kèm trong bài viết
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    }],
 
     //_________Số lượng comment con của comment cha
     amountCommentReply: {
@@ -46,17 +49,13 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         default : 0
     },
 
-    //_________1 mảng loại cảm xúc để show trên view
-    typeReactions: [{
-        type :  Number,
-    }],
+    //_________Người tạo comment
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },
 
-    //_________Người được tag vào comment
-    tag: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
-
+    //_________Người cập nhật comment
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : "user"
