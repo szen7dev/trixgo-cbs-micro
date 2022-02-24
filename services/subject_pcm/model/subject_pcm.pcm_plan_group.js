@@ -15,7 +15,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**s
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
+const PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 
@@ -25,7 +25,7 @@ const { template } = require('lodash');
 class Model extends BaseModel {               
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_GROUP_COLL);
+        super(PCM_PLAN_GROUP_COLL);
     }
     
     /**
@@ -52,7 +52,7 @@ class Model extends BaseModel {
                     }
                 }
             
-                let infoPlanGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(planGroupID)
+                let infoPlanGroup = await PCM_PLAN_GROUP_COLL.findById(planGroupID)
                                     .select(select)
                                     .populate(populates)
 
@@ -118,7 +118,7 @@ class Model extends BaseModel {
                 let conditionObjOrg = { ...conditionObj};
                 
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(lastestID);
+					let infoData = await PCM_PLAN_GROUP_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -131,7 +131,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
 				}
                 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_PLAN_GROUP_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .select(select)
@@ -141,7 +141,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
+                let totalRecord = await PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     

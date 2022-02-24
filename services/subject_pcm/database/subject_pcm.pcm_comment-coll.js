@@ -43,16 +43,32 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
-        ref     : 'pcm_plan_task_comment'
+        ref     : 'pcm_comment'
     },
 
-    amountRaction: { type: Number, default: 0 },
 
     //_________Người tạo comment
     author: {
         type    :  Schema.Types.ObjectId,
         ref     : 'user'
     },
+
+    //_________Số lượng comment con của comment cha
+    amountCommentReply: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________Số lượng reaction con của comment cha
+    amountReaction: {
+        type    :  Number,
+        default : 0
+    },
+
+    //_________1 mảng loại cảm xúc để show trên view
+    typeReactions: [{
+        type :  Number,
+    }],
 
     //_________Người được tag vào comment
     tag: [{

@@ -8,21 +8,21 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
-const SUBJECT_PCM__USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
+const PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
+const USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
 
 const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
  */
-const SUBJECT__USER_PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
-const SUBJECT_PCM__PCM_PLAN_TASK_MODEL      = require('./subject_pcm.pcm_plan_task').MODEL;
+const PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
+const PCM_PLAN_TASK_MODEL      = require('./subject_pcm.pcm_plan_task').MODEL;
 
 class Model extends BaseModel {
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_REPORT_COLL);
+        super(PCM_PLAN_REPORT_COLL);
     }
 
     /**
@@ -82,7 +82,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
 
                 // TẠO USER_PCM_PLAN_REPORT
-                await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
+                await PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -136,7 +136,7 @@ class Model extends BaseModel {
                     dataUpdate.conditionPin = conditionPin;
                 }
                 
-                let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
+                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
 
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't update pcm plan report", status: 403 });
@@ -178,7 +178,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
               
-                let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, { state: 2 }, { new: true });
+                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, { state: 2 }, { new: true });
 
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't remove subject", status: 403 });
@@ -225,7 +225,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoData = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findById(reportID)
+                let infoData = await PCM_PLAN_REPORT_COLL.findById(reportID)
                                 .select(select)
                                 .populate(populates)
                                 .lean();
@@ -288,7 +288,7 @@ class Model extends BaseModel {
                  */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findById(lastestID);
+					let infoData = await PCM_PLAN_REPORT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -309,9 +309,9 @@ class Model extends BaseModel {
 					sortBy.score  = { $meta: "textScore" };
 				}
 
-                let listUserPcmPlanReportAccess = await SUBJECT_PCM__USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
+                let listUserPcmPlanReportAccess = await USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_PLAN_REPORT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -321,7 +321,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
+                let totalRecord = await PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     
