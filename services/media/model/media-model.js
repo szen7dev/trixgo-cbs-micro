@@ -7,6 +7,7 @@ const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constan
 const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
+const { APP_KEYS }								= require('../../../tools/keys');
 
 /**
  * TOOLS
@@ -225,19 +226,17 @@ class Model extends BaseModel {
 						condition: { ...conditionReceiver, _id: { $nin: [authorID] } },
 						select: '_id'
 					});
-	
+
 					if(!receivers.error){
-						const infoSender = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-							userID: authorID,
-							select: 'fullname'
-						});
 						receiversNoti = receivers.data.map(receiver => receiver._id);
 
 						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-							title: `${infoSender?.data?.fullname} đã tạo 1 bài viết`,
 							content: content.length > 200 ? content.substring(0, 200) : content,
 							receivers: receiversNoti,
 							path: `/media/post/${infoMediaAfterInserted._id}`,
+							languageKey: "CREATE_NEW_MEDIA",
+							app: APP_KEYS.MEDIA,
+							coll: infoMediaAfterInserted._id,
 							type: 1 // InApp (Socket)
 						});
 					}
@@ -563,11 +562,11 @@ class Model extends BaseModel {
 				// Tạo người xem mới nếu chưa tồn tại
 				await MEDIA__SEEN_COLL.updateOne({
 					media: mediaID,
-					userCreate: authorID
+					author: authorID
 				}, {
 					$set: {
 						media: mediaID,
-						userCreate: authorID
+						author: authorID
 					}
 				}, { new: true, upsert: true })
 
@@ -1079,36 +1078,52 @@ class Model extends BaseModel {
         })
     }
 
-	 /**
+	/**
 	 * Dev: NPNguyen
 	 * Func: LƯU BÀI VIẾT
 	 */
-	saveMedia({ author, mediaID, ctx }) {
+	saveMedia({ authorID, mediaID, ctx }) {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
 				let condition = {};
 
 				//=========================VALIDATION==========================
-				if(!checkObjectIDs([author]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
+					})
+				}
 
 				if (!checkObjectIDs([mediaID])) {
-                    return resolve({ error: true, message: 'Request params mediaID invalid', status: 400 });
-				}	
+					return resolve({
+						error: true,
+						message: "Tham số mediaID không hợp lệ",
+						keyError: "params_mediaID_invalid",
+						status: 400
+					})
+				}
 
 				let checkExisted = await MEDIA_COLL.findById(mediaID);
 				if (!checkExisted) {
-                    return resolve({ error: true, message: "Media don't exited", status: 400 });
-				}
-
-				condition = {
-					userSave: author,
-					media: mediaID,
+					return resolve({
+						error: true,
+						message: "Bài viết không tồn tại",
+						keyError: "media_not_exists",
+						status: 400
+					})
 				}
 
 				// CHECK USER HAVE SAVED MEDIA
-                let checkExistSaveMedia = await MEDIA__SAVE_COLL.findOne(condition).lean();
+                let checkExistSaveMedia = await MEDIA__SAVE_COLL
+					.findOne({
+						media: mediaID,
+						author: authorID
+					})
+					.lean();
 
 				if(checkExistSaveMedia) {
 					return resolve({ error: true, message: 'You have already saved this post', status: 403 });

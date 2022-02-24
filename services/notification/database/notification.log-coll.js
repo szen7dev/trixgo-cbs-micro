@@ -35,6 +35,11 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
         type: Schema.Types.ObjectId,
         ref: 'department'
     },
+    //_______Hợp đồng (option, chỉ khi truy cập vào contract thì mới có trường này)
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref : 'contract' 
+    },
     //_________Người gửi
     sender: {
         type: Schema.Types.ObjectId,
@@ -45,11 +50,7 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    //_________Tiêu đề
-    title: {
-        type: String
-    },
-    //_________Nội dung
+    //_________Nội dung (mô tả ngắn nội dung)
     content: {
         type: String
     },
@@ -64,13 +65,17 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
         type: String
     },
     /**
-     * Format: (áp dụng cho mobile)
-     * {
-     *      app: "",
-     *      taskID: ""
-     * }
+     * appID
      */
-    routers: {
-        type: Schema.Types.Mixed
-    }
+    app: {
+        type: Schema.Types.ObjectId,
+        ref: 'app'
+    },
+    /**
+     * collID (VD: mediaID, commentID, taskID,...)
+     */
+    coll: {
+        kind: String,
+        item: { type: Schema.Types.ObjectId, refPath: 'coll.kind' }
+    },
 })

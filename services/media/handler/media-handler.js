@@ -257,16 +257,16 @@ module.exports = {
 	 */
     saveMedia: {
         params: {
-            mediaID     : { type: "string" },
+            mediaID: { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: author } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
                 const { mediaID } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.saveMedia({
-					author, mediaID, ctx
+					authorID, mediaID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
