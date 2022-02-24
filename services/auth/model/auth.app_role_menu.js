@@ -254,7 +254,7 @@ class Model extends BaseModel {
                             "role": {
                                 $in: listRoles.map(item=>item._id)
                             },
-                            "menu": ObjectID(menu),
+                            // "menu": ObjectID(menu),
                         }
                     },
                     {
