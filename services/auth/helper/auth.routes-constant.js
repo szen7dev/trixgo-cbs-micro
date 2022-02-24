@@ -50,8 +50,8 @@ const CF_ROUTINGS_AUTH = {
      */
     APP_ROLE_MENU                      : `${BASE_ROUTE}${APP_ROLE_MENU}`,
     APP_ROLE_MENU_PERMISSION            : `${BASE_ROUTE}${APP_ROLE_MENU}/permission`,
-
-
+    APP_ROLE_MENU_GET_PERMISSION_TO_ACCESS_ONE_MENU_OF_APP : `${BASE_ROUTE}${APP_ROLE_MENU}/permission-to-access-one-menu-of-app`,
+    
     /**
      * APP_USER
      */

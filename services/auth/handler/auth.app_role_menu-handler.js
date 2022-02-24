@@ -81,7 +81,7 @@ module.exports = {
         params: {
             companyID       : { type: "string" },
             appID           : { type: "string" },
-            type            : { type: "number" },
+            type            : { type: "number" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
         },
         async handler(ctx) {
             try {
@@ -100,4 +100,32 @@ module.exports = {
             }
         }
     },
+
+    getPermissionToAccessOneMenuOfApp: {
+        auth: "required",
+        params: {
+            companyID       : { type: "string" },
+            appID           : { type: "string" },
+            menuID          : { type: "string" },
+            type            : { type: "number" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, appID, type } = ctx.params;
+                let { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+                
+                let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ user: userID, app: appID, company: companyID, type, menu: menuID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    
 }
