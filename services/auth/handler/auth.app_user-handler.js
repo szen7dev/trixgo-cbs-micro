@@ -23,7 +23,6 @@ module.exports = {
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -33,6 +32,27 @@ module.exports = {
                 let { keyword, limit, lastestID, select, populates } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__APP_USER.getListAppOfUser({ userID,  keyword, limit: +limit, lastestID, select, populates  });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+    
+    checkPermissionsAccessApp: {
+        auth: "required",
+        params: {
+            appID           : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID }              = ctx.meta.infoUser;
+                let { appID, select, populates } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__APP_USER.checkPermissionsAccessApp({ appID, userID, select, populates });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

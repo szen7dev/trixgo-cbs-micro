@@ -129,7 +129,48 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
+     /**
+     * Name  : Kiểm tra user còn đủ quyền truy cập app
+     * Author: Depv
+     * Code  : 
+     */
+    checkPermissionsAccessApp({ appID, userID,
+        select, populates = {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let today = new Date();
+                let conditionObj = {
+                    app: appID, user: userID,
+                    endTime: { $gte: today }
+                };
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let checkPermission = await AUTH__APP_USER_COLL.findOne(conditionObj)
+                                    .select(select)
+                                    .populate(populates)
+
+                return resolve({ error: false, data: checkPermission, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
