@@ -3,8 +3,6 @@
 /**
  * import external
  */
-const PromisePool								= require('@supercharge/promise-pool');
-
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
@@ -531,6 +529,8 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs([parentID])){
                     conditionObj.parent = parentID;
+                } else{
+                    conditionObj.parent = { $exists: false };
                 }
 
                 if(isMarked === 'true') {
