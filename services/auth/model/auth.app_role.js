@@ -50,7 +50,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Người tạo không hợp lệ", keyError: "userID_invalid", status: 400 });
 
                 // Kiểm tra chỉ cho khởi tạo nếu là Admin của app (level trong app_user=0)  
-                let checkPermission = await AUTH__APP_USER_COLL.findOne({ app, user });
+                let checkPermission = await AUTH__APP_USER_COLL.findOne({ app, user: userID });
                 if(!checkPermission || checkPermission.level != 0)
                     return resolve({ error: true, message: "Bạn không đủ quyền", keyError: "permission_denied", status: 400 });
 
