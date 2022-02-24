@@ -17,6 +17,7 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload }) =>{
         if(typeUpload == "user"){
             bucket = `${config.bucket}/files/db/users`
         }
+        console.log({ bucket, fileName, type, config })
 
         let url = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
@@ -25,6 +26,7 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload }) =>{
             ACL: "public-read",
             ContentType: type,
         });
+        console.log({ url })
         return url;
     } catch (error) {
         return { error: true, message: "Can't presign url" }

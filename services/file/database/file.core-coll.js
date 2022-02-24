@@ -7,14 +7,18 @@ const {
 }                           = require('../helper/file.keys-constant');
 
 module.exports  = DATABASE_MIDDLEWARE("file", {
+    //______Ứng dụng
     app: {
         type: Schema.Types.ObjectId,
         ref: 'app'
     },
-    nameOrg     : { type: String, require: true }, // Tên gốc
-    name        : { type: String, require: true }, // uuidv1
+    //______Tên gốc
+    nameOrg     : { type: String, require: true }, 
+    //______Tên uuidv1
+    name        : { type: String, require: true },
+    //______Mô tả file
     description : { type: String },
-    //_____Trạng thái upload file 
+    //_____Trạng thái upload file(Hệ thống cũ không có)
     status: { 
         type: Number, 
         enum:[FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],
@@ -23,8 +27,9 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
     },
     //_____Đường dẫn đến file s3 (root/test/image.png)
     path: { type: String, require: true },
+    //____Kích thước file
     size: { type: Number },
-    //_____image/jpeg
+    //_____image/jpeg(Hệ thống cũ không có)
     mimeType: { type: String },
     /**
      * 1. Hình ảnh
@@ -32,10 +37,22 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
      * 3. Audio
      * 4. Video
      */
-    type: { type: Number },
+    type: { 
+        type: Number,
+        default: 1
+    },
+    //________File được tích chọn để đánh dấu là bản chính thức/cuối/lưu kho (0/1)
+    official: {
+        type: Number,
+        default: 0
+    },
     author: {
         type: Schema.Types.ObjectId,
         ref: 'user',
         require: true
     },
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }
 });
