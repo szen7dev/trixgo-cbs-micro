@@ -34,7 +34,7 @@ module.exports = {
                 const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates
+					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
