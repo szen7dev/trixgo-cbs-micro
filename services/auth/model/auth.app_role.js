@@ -13,6 +13,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
  * import inter-coll, exter-coll
  */
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
+const AUTH__APP_USER_COLL                   = require('../database/permission/auth.app_user-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
@@ -33,7 +34,6 @@ class Model extends BaseModel {
     insert({ type, company, app, name, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                
                 if(!type)
                     return resolve({ error: true, message: "Type không hợp lệ", keyError: "type_invalid", status: 400 });
 
@@ -48,6 +48,11 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: "Người tạo không hợp lệ", keyError: "userID_invalid", status: 400 });
+
+                // Kiểm tra chỉ cho khởi tạo nếu là Admin của app (level trong app_user=0)  
+                let checkPermission = await AUTH__APP_USER_COLL.findOne({ app, user });
+                if(!checkPermission || checkPermission.level != 0)
+                    return resolve({ error: true, message: "Bạn không đủ quyền", keyError: "permission_denied", status: 400 });
 
                 let dataInsert = { type, company, app, name, userCreate: userID, members: [userID] };
 
