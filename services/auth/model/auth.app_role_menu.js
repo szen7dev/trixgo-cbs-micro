@@ -270,8 +270,8 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
-                return resolve({ error: false, data: listData && listData[0] || {} });
+                if (!listData || (listData && !listData.length)) return resolve({ error: true, message: 'permission_denied' });
+                return resolve({ error: false, data: listData && listData[0]});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
