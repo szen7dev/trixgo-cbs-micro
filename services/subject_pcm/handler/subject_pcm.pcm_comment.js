@@ -39,7 +39,7 @@ module.exports = {
 				});
                 console.log({ resultAfterCallHandler })
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });fa
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.info('=========== ERROR INSERT COMMENT PCM ============');
                 console.error(error);
