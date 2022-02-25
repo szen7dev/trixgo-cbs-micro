@@ -29,6 +29,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                console.log({ params: ctx.params });
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
