@@ -165,7 +165,10 @@ class Model extends BaseModel {
                     path: `/pcm/detail/${taskID}#${infoDataAfterInserted._id}`,
                     languageKey: "CREATE_NEW_RESPONSE",
                     app: APP_KEYS.PCM_PLAN_TASK,
-                    coll: infoDataAfterInserted._id.toString(),
+                    coll: {
+                        kind: "pcm_comment",
+                        item: infoDataAfterInserted._id.toString()
+                    },
                     type: 1 // InApp (Socket)
                 })
 
