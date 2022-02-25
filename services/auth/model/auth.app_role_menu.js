@@ -83,7 +83,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { 
-                    type: type,
                     app: app,
                     company: company,
                     role: role,
