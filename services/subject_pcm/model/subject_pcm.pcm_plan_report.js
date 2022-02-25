@@ -154,8 +154,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { };
-                
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -171,7 +169,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
               
-                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, { state: 2 }, { new: true });
+                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
 
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't remove subject", status: 403 });
@@ -283,7 +281,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-               
+                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -305,7 +303,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await PCM_PLAN_REPORT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
