@@ -20,8 +20,7 @@ module.exports = {
         params: {
             appMenuID       : { type: "string", optional: true },
             appID           : { type: "string", optional: true },
-
-            keyword         : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             select          : { type: "string", optional: true },
@@ -30,12 +29,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { appMenuID, appID, keyword, select, populates, limit, lastestID } = ctx.params;
+                let { appMenuID, appID, parentID, select, populates, limit, lastestID } = ctx.params;
                 let resultAfterCallHandler;
                 if(appMenuID){
                     resultAfterCallHandler = await AUTH__APP_MENU.getInfo({ appMenuID, select, populates });
                 }else{
-                    resultAfterCallHandler = await AUTH__APP_MENU.getList({ app: appID, keyword, limit, lastestID, select, populates });
+                    resultAfterCallHandler = await AUTH__APP_MENU.getList({ app: appID, parent: parentID, limit, lastestID, select, populates });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

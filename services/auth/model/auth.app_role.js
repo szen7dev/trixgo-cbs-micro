@@ -73,6 +73,7 @@ class Model extends BaseModel {
 
     /**
      * Name: update app role ✅
+     * - Lưu ý: không được phép update Type của Role. Khi tạo mới, type như thế nào thì giữ nguyên như vậy
      * Author: Depv
      * Code: 
      */

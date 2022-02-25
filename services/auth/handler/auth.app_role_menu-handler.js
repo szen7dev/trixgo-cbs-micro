@@ -45,9 +45,6 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             appID           : { type: "string", optional: true },
             roleID          : { type: "string", optional: true },
-            menuID          : { type: "string", optional: true },
-
-            keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             select          : { type: "string", optional: true },
@@ -56,7 +53,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { appRoleMenuID, companyID, appID, roleID, menuID, keyword, limit, lastestID, select, populates  } = ctx.params;
+                let { appRoleMenuID, companyID, appID, roleID, limit, lastestID, select, populates  } = ctx.params;
                 let { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -66,7 +63,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(appRoleMenuID){
                 }else{
-                    resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getList({ company: companyID, app: appID, role: roleID, menu: menuID, keyword, limit, lastestID, select, populates });
+                    resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getList({ company: companyID, app: appID, role: roleID, limit, lastestID, select, populates });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
