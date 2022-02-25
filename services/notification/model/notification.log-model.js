@@ -30,7 +30,7 @@ class Model extends BaseModel {
 	 * Func: Thêm thông báo
 	 * Date: 17/12/2021
 	 */
-    insert({ type, content, path, sender, receivers, languageKey, project, contract, app, coll }){
+    insert({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl }){
         return new Promise(async resolve => {
             try {
                 const dataInsert = {
@@ -41,11 +41,13 @@ class Model extends BaseModel {
                     languageKey,
                     status: this.SEND_SUCCESS
                 };
+                console.log({ mainColl, subColl });
 
-                (project    && checkObjectIDs(project))     && (dataInsert.project  = project);
-                (contract   && checkObjectIDs(contract))    && (dataInsert.contract = contract);
-                (app        && checkObjectIDs(app))         && (dataInsert.app      = app);
-                (coll       && checkObjectIDs(coll))        && (dataInsert.coll     = coll);
+                (project    && checkObjectIDs(project))         && (dataInsert.project  = project);
+                (contract   && checkObjectIDs(contract))        && (dataInsert.contract = contract);
+                (app        && checkObjectIDs(app))             && (dataInsert.app      = app);
+                (mainColl   && checkObjectIDs(mainColl.item))   && (dataInsert.mainColl = mainColl);
+                (subColl    && checkObjectIDs(subColl.item))    && (dataInsert.subColl  = subColl);
 
                 if(!content) {
                     return resolve({
@@ -83,6 +85,7 @@ class Model extends BaseModel {
                     })
                 }
 
+                console.log({ dataInsert });
                 const { results } = await PromisePool
 					.for(receivers)
 					.withConcurrency(2)
@@ -230,6 +233,7 @@ class Model extends BaseModel {
 					.limit(limit + 1)
 					.select(select)
 					.populate(populates)
+                    .populate('mainColl.item subColl.item')
 					.sort(sortBy)
 					.lean();
 

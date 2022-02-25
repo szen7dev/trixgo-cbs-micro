@@ -79,7 +79,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ app,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+        parent, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -93,8 +93,13 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(app){
+                if(parent){
+                    // Danh sách menu của một Menu cha
                     conditionObj.app = app;
+                    conditionObj.parent = parent;
+                }else{
+                    // Danh sách menu của ứng dụng
+                    conditionObj.app = app
                 }
                 
                 // LẤY NHỮNG TRƯỜNG CẦN THIẾT
@@ -114,13 +119,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
-
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI

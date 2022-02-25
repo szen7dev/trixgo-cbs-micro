@@ -23,12 +23,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách app user
+     * Name  : Danh sách app mà user được quyền truy cập
      * Author: Depv
      * Code  : 
      */
     getListAppOfUser({ userID,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+        limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -71,14 +71,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
-
+                 */
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -131,7 +124,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name  : Kiểm tra user còn đủ quyền truy cập app
+     * Name  : Kiểm tra user có quyền truy cập App hay không
      * Author: Depv
      * Code  : 
      */
@@ -161,11 +154,13 @@ class Model extends BaseModel {
                 }
 
                 let checkPermission = await AUTH__APP_USER_COLL.findOne(conditionObj)
-                                    .select(select)
-                                    .populate(populates)
+                    .select(select)
+                    .populate(populates)
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "permission_denied", status: 403 });                    
 
                 return resolve({ error: false, data: checkPermission, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
