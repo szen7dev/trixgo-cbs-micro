@@ -152,6 +152,13 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP}`],
 
+
+		/**
+		 * app company
+		 */
+		[`PUT ${CF_ROUTINGS_AUTH.APP_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_COMPANY_UPDATE}`],
+
 		/**
 		 * app role menu
 		 */
@@ -1075,7 +1082,6 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_ACCOUNTING.FINANCIAL_REPORT}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.FINANCIAL_REPORT}`],
-
 
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 
