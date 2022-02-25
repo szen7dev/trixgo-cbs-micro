@@ -66,7 +66,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(appRoleMenuID){
                 }else{
-                    resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getList({ company: companyID, app: appID, role: roleID, menu: menuID, keyword, limit, lastestID, select, populates });
+                    resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getList({ company: companyID, app: appID, role: roleID, limit, lastestID, select, populates });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
