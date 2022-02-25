@@ -103,7 +103,6 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-          
             type        : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
             subjectID   : { type: "string", optional: true },

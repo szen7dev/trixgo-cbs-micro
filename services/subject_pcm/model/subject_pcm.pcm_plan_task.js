@@ -985,7 +985,7 @@ class Model extends BaseModel {
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
                 }
-
+                
                 // typeStatus
                 // 1 Quá hạn
                 // 2 Tới hạn tuần tới
