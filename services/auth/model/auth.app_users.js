@@ -23,6 +23,14 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name  : Thêm mẩu tin
+     * - A Hiệp: lưu ý 1 user và 1 app chỉ tồn tại 1 mẩu tin duy nhất
+     * - Khi cập nhật thông tin của app_company => cũng phải cập nhật app_user theo trường endTime
+     * Author: Depv
+     * Code  : 
+     */
+
+    /**
      * Name  : Danh sách app mà user được quyền truy cập
      * Author: Depv
      * Code  : 
