@@ -11,13 +11,12 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
 const USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
 
-const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
  */
 const PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
-const PCM_PLAN_TASK_MODEL      = require('./subject_pcm.pcm_plan_task').MODEL;
 
 class Model extends BaseModel {
 
@@ -49,16 +48,13 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-
-                // if(!checkObjectIDs(projectID))
-                //     return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
                 
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                dataInsert = { company: companyID, project: projectID, userCreate: userID, userUpdate: userID };
+                dataInsert = { company: companyID, project: projectID, author: userID, userUpdate: userID };
 
                 if(type){
                     dataInsert.type = type;
@@ -80,9 +76,6 @@ class Model extends BaseModel {
 
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
-
-                // TẠO USER_PCM_PLAN_REPORT
-                await PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -250,8 +243,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {  };
-                let sortBy   = { createAt: -1, _id: -1 };
+                let conditionObj = { author: userID };
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 /** 
                  * VALIDATION STEP (2)
@@ -280,6 +274,15 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
+                // SEARCH TEXT
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
                
                 /**
                  * LOGIC STEP (3)
@@ -292,25 +295,17 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
                     conditionObj = dataPagingAndSort.data.find;
-					sortBy       = dataPagingAndSort.data.sort;
-				}
-
-                // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-
-                let listUserPcmPlanReportAccess = await USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
-
+                    sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+                
                 let infoDataAfterGet = await PCM_PLAN_REPORT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
@@ -321,7 +316,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let totalRecord = await PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
+                let totalRecord = await PCM_PLAN_REPORT_COLL.countDocuments(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     
