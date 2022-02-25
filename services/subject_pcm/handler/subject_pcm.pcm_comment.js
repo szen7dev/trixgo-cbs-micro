@@ -37,7 +37,7 @@ module.exports = {
 					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });fa
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
