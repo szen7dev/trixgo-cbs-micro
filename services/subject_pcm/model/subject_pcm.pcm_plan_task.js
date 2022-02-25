@@ -6,6 +6,7 @@ const { setTimeZone  }                  = require('../../../tools/utils/time_uti
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
@@ -118,13 +119,13 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
-                }
+                } 
                 
                 //_______File của người tạo việc
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
                 }
-
+                
                 if(checkObjectIDs(relatedIDs)){
                     dataInsert.related = relatedIDs;
                 }
@@ -974,37 +975,28 @@ class Model extends BaseModel {
                 }
 
                 // typeStatus
-                // 1 Ngày nay
+                // 1 Quá hạn
                 // 2 Tới hạn tuần tới
                 // 3 Tới hạn + 7 ngày tới
-                // 4 Quá hạn
-                // Lấy việc ngày nay
+                // Lấy việc quá hạn
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $gte: start,
-                        $lte: end,
+                        $lt: start
                     }
                 }
 
-                // Lấy việc tới hạn tuần tới
+                // lấy việc tới hạn Tuần tới
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
-                        $gte: addDate(1),
+                        $gte: start,
                         $lte: addDate(7)
                     }
                 }
 
-                // lấy việc tới hạn + 7 ngày tới
+                // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
-                        $gt: addDate(7)
-                    }
-                }
-
-                // lấy việc quá hạn
-                if(typeStatus && typeStatus == 4){
-                    conditionObj.actualFinishTime = {
-                        $lt: start
+                        $gte: addDate(7)
                     }
                 }
 
@@ -1051,7 +1043,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
+                console.log({ conditionObj });
                 let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
