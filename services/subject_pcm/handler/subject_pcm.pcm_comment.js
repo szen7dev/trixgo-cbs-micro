@@ -22,14 +22,13 @@ module.exports = {
             taskID     : { type: "string" },
             type       : { type: "number" },
             parentID   : { type: "string", optional: true },
-            // files      : { type: "array", optional: true },
-            // images     : { type: "array", optional: true },
+            files      : { type: "array", optional: true },
+            images     : { type: "array", optional: true },
             select     : { type: "string", optional: true },
             populates  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                console.log({ params: ctx.params });
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
@@ -38,7 +37,7 @@ module.exports = {
 					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });fa
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
