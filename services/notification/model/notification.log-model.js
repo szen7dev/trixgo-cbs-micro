@@ -41,7 +41,6 @@ class Model extends BaseModel {
                     languageKey,
                     status: this.SEND_SUCCESS
                 };
-                console.log({ mainColl, subColl });
 
                 (project    && checkObjectIDs(project))         && (dataInsert.project  = project);
                 (contract   && checkObjectIDs(contract))        && (dataInsert.contract = contract);
@@ -85,7 +84,6 @@ class Model extends BaseModel {
                     })
                 }
 
-                console.log({ dataInsert });
                 const { results } = await PromisePool
 					.for(receivers)
 					.withConcurrency(2)
@@ -229,11 +227,13 @@ class Model extends BaseModel {
                     conditionObj.content = new RegExp(keyword, 'i');
                 }
 
-				let listNotifications = await NOTIFICATION__LOG_COLL.find(conditionObj)
+                console.log({ populates })
+				let listNotifications = await NOTIFICATION__LOG_COLL
+                    .find(conditionObj)
 					.limit(limit + 1)
 					.select(select)
+                    .populate("sender receiver project contract")
 					.populate(populates)
-                    .populate('mainColl.item subColl.item')
 					.sort(sortBy)
 					.lean();
 
