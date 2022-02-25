@@ -21,7 +21,6 @@ module.exports = {
         params: {
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
-            keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
         },
@@ -29,9 +28,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID }          = ctx.meta.infoUser;
-                let { keyword, limit, lastestID, select, populates } = ctx.params;
+                let { limit, lastestID, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await AUTH__APP_USER.getListAppOfUser({ userID,  keyword, limit: +limit, lastestID, select, populates  });
+                let resultAfterCallHandler = await AUTH__APP_USER.getListAppOfUser({ userID, limit: +limit, lastestID, select, populates  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
