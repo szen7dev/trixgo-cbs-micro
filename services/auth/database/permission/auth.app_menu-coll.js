@@ -32,25 +32,16 @@ module.exports  = DATABASE_MIDDLEWARE("app_menu", {
         ref: "app_menu"
     },
     /**
-     * Menu con
+     * Để populate child
      */
-    childs: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "app_menu"
-        }
-    ],
-    /**
-     * Thứ tự để hiển thị giữa các menu cùng cấp
-     */
-    order: {
+    level: {
         type: Number,
         default: 1
     },
     /**
-     * Để populate child
+     * Thứ tự để hiển thị giữa các menu cùng cấp
      */
-    level: {
+    order: {
         type: Number,
         default: 1
     },
