@@ -138,3 +138,76 @@ for(let appCompany of listAppCompany){
     db.app_users.updateMany({  app: ObjectId(app), company: ObjectId(company) }, { $set: { endTime: endTime } })
 }
 --------------------------------------------------------
+
+<!-- UPDATE VALUE TRƯỜNG NÀY CHO TRƯỜNG KIA -->
+--------------------------------------------------------
+db.files.updateMany({nameOrg: {$exists: false}}, [{$set: { nameOrg: "$name" }}]);
+--------------------------------------------------------
+
+<!-- CONVERT FILE TO DOCUMENT_FILE -->
+--------------------------------------------------------
+let fileDocuments = db.files.find({document: {$exists: true}}).toArray()
+for(let file of fileDocuments) {
+    const { _id, createAt, modifyAt, company, project, author, document, comment } = file;
+    db.document_files.save({
+        isConvert: true,
+        company,
+        project,
+        createAt,
+        modifyAt,
+        userCreate: author,
+        file: _id,
+        document,
+        comment
+    })
+}
+--------------------------------------------------------
+
+<!-- Update numberFinishOfDocs cho department -->
+--------------------------------------------------------
+let listDepartment = db.departments.find({}).select("_id");
+
+listDepartment.forEach(department => {
+    let numberFinishOfDocs =  db.document_docs.count({ project: ObjectId(department._id), parent: { $exists: false }, completeStatus: 1 })
+    db.departments.findOneAndUpdate({ _id: department._id}, { $set: {numberFinishOfDocs} })
+})
+--------------------------------------------------------
+
+<!-- Update numberOfDocs cho document_package -->
+--------------------------------------------------------
+let listDocumentPackages = db.document_packages.find({}).select("_id");
+
+listDocumentPackages.forEach(documentPackage => {
+    let numberOfDocs =  db.document_docs.count({ package: ObjectId(documentPackage._id), parent: { $exists: false }})
+    db.document_packages.findOneAndUpdate({ _id: documentPackage._id}, { $set: {numberOfDocs} })
+})
+--------------------------------------------------------
+
+<!-- Update numberOfDocs cho department-coll -->
+--------------------------------------------------------
+let listDepartment = db.departments.find({}).select("_id");
+
+listDepartment.forEach(department => {
+    let numberOfDocs =  db.document_docs.count({ project: ObjectId(department._id), parent: { $exists: false }})
+    db.departments.findOneAndUpdate({ _id: department._id}, { $set: {numberOfDocs} })
+})
+--------------------------------------------------------
+
+<!-- Cập nhật authorOfCompany và assigneeOfCompany cho task -->
+--------------------------------------------------------
+let listTaskAfterUpdate =  db.pcm_plan_tasks.find({}).select("author assignee")
+                
+let amount = 0;
+listTaskAfterUpdate.map(task => {
+    let author = db.users.findOne({ _id: ObjectId(task.author)});
+    let assignee = db.users.findOne({ _id: ObjectId(task.assignee)});
+    if(author && assignee){
+        let abc =  db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)}, { 
+            $set: {
+                companyOfAuthor: author.company, 
+            companyOfAssignee: assignee.company, 
+            }
+        });
+    }
+})
+--------------------------------------------------------
