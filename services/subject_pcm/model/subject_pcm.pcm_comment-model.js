@@ -170,18 +170,8 @@ class Model extends BaseModel {
                     path: `/pcm/detail/${taskID}#${infoDataAfterInserted._id}`,
                     languageKey: "CREATE_NEW_RESPONSE",
                     app: APP_KEYS.PCM_PLAN_TASK,
-                    coll: infoDataAfterInserted._id,
+                    coll: infoDataAfterInserted._id.toString(),
                     type: 1 // InApp (Socket)
-                })
-
-                // Ghi log cho khi comment
-                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                    type: 2,
-                    coll: {
-                        kind: "pcm_plan_task",
-                        item: taskID
-                    },
-                    content: contentLog
                 })
 
                 infoDataAfterInserted = await PCM_COMMENT_COLL
