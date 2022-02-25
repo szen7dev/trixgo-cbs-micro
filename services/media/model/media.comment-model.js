@@ -31,6 +31,11 @@ class Model extends BaseModel {
     insert({ mediaID, parentID, content, files, images, authorID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
+                let dataInsert = {  
+                    media: mediaID,
+                    author: authorID
+                }
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -54,16 +59,23 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let dataInsert = {  
-                    media: mediaID,
-                    author: authorID
-                }
-
                 if(parentID) {
                     if(!checkObjectIDs([parentID])) {
                         return resolve({
@@ -157,6 +169,18 @@ class Model extends BaseModel {
                         keyError: "params_authorID_invalid",
                         status: 400
                     })
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
 
                /**
@@ -486,6 +510,18 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -590,6 +626,18 @@ class Model extends BaseModel {
                         keyError: "params_authorID_invalid",
                         status: 400
                     })
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
 
                /**

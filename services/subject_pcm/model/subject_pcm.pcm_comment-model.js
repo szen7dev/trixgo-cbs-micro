@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * import external
+ * import internal
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
@@ -9,7 +9,6 @@ const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
-const { CF_ACTIONS_ANALYSIS } 		            = require('../../analysis/helper/analysis.actions-constant');
 const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
 const { APP_KEYS }								= require('../../../tools/keys');
 
@@ -61,6 +60,18 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
                 if(!type || !PCM_COMMENT_TYPE.includes(type)) {
                     return resolve({
                         error: true,
@@ -86,7 +97,6 @@ class Model extends BaseModel {
                 let infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
                     taskID
                 });
-                console.log({ infoTask })
 
                 if(infoTask.error) return resolve(infoTask);
 
@@ -98,21 +108,6 @@ class Model extends BaseModel {
                 content && (dataInsert.content = content);
                 files   && (dataInsert.files = files);
                 images  && (dataInsert.images = images);
-
-                // if(files.length || images.length) {
-                //     const { results } = await PromisePool
-                //         .for([...files, ...images])
-                //         .withConcurrency(2)
-                //         .process(async fileID => {
-                //             const infoAfterCreate = await PCM_FILE_COLL.create({
-                //                 file: fileID,
-                //                 task: taskID
-                //             });
-                //             return infoAfterCreate;
-                //         })
-
-                //     console.log({ results })
-                // }
 
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted) {
@@ -141,26 +136,26 @@ class Model extends BaseModel {
 
                 let { author, assignee, related } = infoTask.data;
                 let receivers = [...new Set([author, assignee, ...related])];
-                let contentLog = '';
+                // let contentLog = '';
 
-                content = content.length > 200 ? content.substring(0, 200) : content;
+                // content = content.length > 200 ? content.substring(0, 200) : content;
 
-                switch (type) {
-                    case 1:
-                        contentLog = `${bizfullname} Vừa thêm bình luận mới - ${content}`;
-                        break;
-                    case 2:
-                        contentLog = `${bizfullname} Vừa thêm phản hồi mới - ${content}`;
-                        break;
-                    case 3:
-                        contentLog = `${bizfullname} Vừa thêm hiện trạng mới - ${content}`;
-                        break;
-                    case 4:
-                        contentLog = `${bizfullname} Vừa thêm giải pháp mới - ${content}`;
-                        break;
-                    default:
-                        break;
-                }
+                // switch (type) {
+                //     case 1:
+                //         contentLog = `${bizfullname} Vừa thêm bình luận mới - ${content}`;
+                //         break;
+                //     case 2:
+                //         contentLog = `${bizfullname} Vừa thêm phản hồi mới - ${content}`;
+                //         break;
+                //     case 3:
+                //         contentLog = `${bizfullname} Vừa thêm hiện trạng mới - ${content}`;
+                //         break;
+                //     case 4:
+                //         contentLog = `${bizfullname} Vừa thêm giải pháp mới - ${content}`;
+                //         break;
+                //     default:
+                //         break;
+                // }
 
                 // receivers = receivers.filter(receiverID => receiverID.toString() !== authorID.toString());
                 // Gửi thông báo cho user
@@ -224,6 +219,18 @@ class Model extends BaseModel {
                         keyError: "params_authorID_invalid",
                         status: 400
                     })
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
                 }
 
                 let infoComment = await PCM_COMMENT_COLL.findById(commentID).lean();
