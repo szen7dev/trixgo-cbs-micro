@@ -71,19 +71,24 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách app role menu phục vụ cho màn hình Admin phân quyền Nhóm chức năng
+     * Name: Danh sách app_role_menu của roleID phục vụ cho màn hình Admin phân quyền Nhóm chức năng
      * Màn hình: S2-1.2 (/pcm/admin/2)
      * Author: Depv
      * Code  : 
      */
-    getList({ company, app, role, menu,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+    getList({ company, app, role, limit = 20, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { };
+                let conditionObj = { 
+                    type: type,
+                    app: app,
+                    company: company,
+                    role: role,
+                };
+
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
@@ -94,22 +99,6 @@ class Model extends BaseModel {
                  */
                 if(limit > 20){
                     limit = 20
-                }
-
-                if(company){
-                    conditionObj.company = company;
-                }
-
-                if(app){
-                    conditionObj.app = app;
-                }
-
-                if(role){
-                    conditionObj.role = role;
-                }
-
-                if(menu){
-                    conditionObj.menu = menu;
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -128,13 +117,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
+                 */
 
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
@@ -218,9 +201,6 @@ class Model extends BaseModel {
                             create:     { $sum: "$create"},
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
-                            // download:   { $sum: "$download"},
-                            // upload:     { $sum: "$upload"},
-                            // import:     { $sum: "$import"},
                         }
                     }
                 ]);
@@ -264,9 +244,6 @@ class Model extends BaseModel {
                             create:     { $sum: "$create"},
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
-                            // download:   { $sum: "$download"},
-                            // upload:     { $sum: "$upload"},
-                            // import:     { $sum: "$import"},
                         }
                     }
                 ]);
