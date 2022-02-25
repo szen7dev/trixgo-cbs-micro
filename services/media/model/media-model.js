@@ -233,7 +233,7 @@ class Model extends BaseModel {
 							path: `/media/post/${infoMediaAfterInserted._id}`,
 							languageKey: "CREATE_NEW_MEDIA",
 							app: APP_KEYS.MEDIA,
-							coll: infoMediaAfterInserted._id,
+							coll: infoMediaAfterInserted._id.toString(),
 							type: 1 // InApp (Socket)
 						});
 					}
