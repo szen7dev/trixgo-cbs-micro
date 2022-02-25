@@ -247,7 +247,6 @@ class Model extends BaseModel {
                     listRecords: infoDataAfterGet,
                     limit,
                     totalRecord,
-                    totalPage,
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
@@ -494,7 +493,6 @@ class Model extends BaseModel {
                     listRecords: infoDataAfterGet,
                     limit,
                     totalRecord,
-                    totalPage,
                     nextCursor,
                 }, status: 200 });
             } catch (error) {
