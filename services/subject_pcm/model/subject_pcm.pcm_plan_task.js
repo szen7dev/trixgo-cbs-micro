@@ -990,7 +990,7 @@ class Model extends BaseModel {
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
                         $gte: start,
-                        $lte: addDate(7)
+                        $lt: addDate(7)
                     }
                 }
 
