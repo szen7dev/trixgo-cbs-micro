@@ -94,7 +94,9 @@ class Model extends BaseModel {
                 if(parentID){
                     await MEDIA__COMMENT_COLL.findByIdAndUpdate(parentID, { 
                         $set: {
-                            lastestReplyID: infoAterInsert._id,
+                            lastestReplyID: infoAterInsert._id
+                        },
+                        $inc: {
                             amountCommentReply: 1
                         }
                     });
@@ -526,7 +528,9 @@ class Model extends BaseModel {
                 if(parentID){
                     await MEDIA__COMMENT_FILE_COLL.findByIdAndUpdate(parentID, { 
                         $set: {
-                            lastestReplyID: infoAterInsert._id,
+                            lastestReplyID: infoAterInsert._id
+                        },
+                        $inc: {
                             amountCommentReply: 1
                         }
                     });
