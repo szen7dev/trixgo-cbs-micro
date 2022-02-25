@@ -409,7 +409,6 @@ class Model extends BaseModel {
 						"usersMissMessage.$.amount": -amountUpdateMissMessage
 					}
 				})
-				console.log({ amountUpdateMissMessage })
 
 				return resolve({ error: false, data: results, status: 200 });
             } catch (error) {
