@@ -599,7 +599,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
 	 * Dev: MinhVH 
 	 * Func: Danh sách comment tìm kiếm theo id

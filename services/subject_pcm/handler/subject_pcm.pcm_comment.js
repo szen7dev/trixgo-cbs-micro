@@ -37,7 +37,7 @@ module.exports = {
 					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });fa
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
@@ -156,7 +156,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { taskID, limit, parentID, lastestID, commentID, isMarked, sortKey, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
-
+                
                 if(commentID){
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getInfo({
                         commentID, select, populates
