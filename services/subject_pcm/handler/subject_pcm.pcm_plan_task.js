@@ -187,8 +187,6 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log({ meta: ctx.meta })
-                console.log({ params: ctx.params })
                 await this.validateEntity(ctx.params);
                 
                 let { 
@@ -212,7 +210,6 @@ module.exports = {
                         keyword, limit, select, lastestID, populates
                     });
                 }
-                console.log({ resultAfterCallHandler })
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
