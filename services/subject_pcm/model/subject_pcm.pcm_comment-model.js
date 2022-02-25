@@ -86,6 +86,7 @@ class Model extends BaseModel {
                 let infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
                     taskID
                 });
+                console.log({ infoTask })
 
                 if(infoTask.error) return resolve(infoTask);
 
