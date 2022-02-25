@@ -36,7 +36,6 @@ module.exports = {
             project     : { type: "string", optional: true },
             contract    : { type: "string", optional: true },
             app         : { type: "string", optional: true },
-            coll        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
