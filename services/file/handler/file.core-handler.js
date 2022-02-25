@@ -98,7 +98,7 @@ module.exports = {
                 let { _id: userID } = ctx.meta.infoUser;
 
                 await this.validateEntity(ctx.params);
-                let { mimeType, type, app, name, size, typeUpload } = ctx.params;
+                let { mimeType, type, app, name, size, typeUpload, taskID } = ctx.params;
                 let extension = getExtension(name);
                 let fileName  = `${uuidv4()}.${extension}`;
                 let nameOrg   = name;

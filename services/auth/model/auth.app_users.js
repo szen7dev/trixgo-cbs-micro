@@ -147,7 +147,7 @@ class Model extends BaseModel {
                     app: appID, user: userID,
                     endTime: { $gte: today }
                 };
-
+                
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
