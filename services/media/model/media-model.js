@@ -611,7 +611,7 @@ class Model extends BaseModel {
 					$inc: {
 						amountView: 1
 					}
-				}, { new: true });
+				});
 
 				// Tạo người xem mới nếu chưa tồn tại
 				await MEDIA__SEEN_COLL.updateOne({
@@ -622,12 +622,12 @@ class Model extends BaseModel {
 						media: mediaID,
 						author: authorID
 					}
-				}, { new: true, upsert: true })
+				}, { upsert: true })
 
 				return resolve({ 
 					error: false,
 					status: 200,
-					data: infoUserSeen
+					message: "success"
 				});
 			} catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
