@@ -29,6 +29,7 @@ const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-co
 const { CF_ROUTINGS_ACCOUNTING }	= require('../accounting/helper/accounting.routes-constant');
 const { CF_ROUTINGS_TIMESHEET }		= require('../timesheet/helper/timesheet.routes-constant');
 const { CF_ROUTINGS_PERSONAL }		= require('../personal/helper/personal.routes-constant');
+const { CF_ROUTINGS_DATAHUB }		= require('../datahub/helper/datahub.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -51,9 +52,10 @@ const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.action
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
-const { CF_ACTIONS_ACCOUNTING }	= require('../accounting/helper/accounting.actions-constant');
+const { CF_ACTIONS_ACCOUNTING }		= require('../accounting/helper/accounting.actions-constant');
 const { CF_ACTIONS_TIMESHEET }		= require('../timesheet/helper/timesheet.actions-constant');
 const { CF_ACTIONS_PERSONAL }		= require('../personal/helper/personal.actions-constant');
+const { CF_ACTIONS_DATAHUB }		= require('../datahub/helper/datahub.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -1103,6 +1105,23 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_CHECK_CODE}`],
 		
 		//---------------------------🏁 END SERVICE PRERSONAL 🏁---------------------------//
+
+
+		//---------------------------🏁 BEGIN SERVICE DATAHUB 🏁-------------------------//
+		
+		[`POST ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_GET_INFO_AND_GET_LIST}`],
+		
+		//---------------------------🏁 END SERVICE DATAHUB 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions
