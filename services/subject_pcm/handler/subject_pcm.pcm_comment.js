@@ -16,7 +16,7 @@ module.exports = {
 	 * Update: 22/02/2022
 	 */ 
     insert: {
-        auth: "required",
+        // auth: "required",
         params: {
 			content    : { type: "string" },
             taskID     : { type: "string" },
@@ -37,9 +37,12 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
 					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
+                console.log({ resultAfterCallHandler })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });fa
             } catch (error) {
+                console.info('=========== ERROR INSERT COMMENT PCM ============');
+                console.error(error);
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
