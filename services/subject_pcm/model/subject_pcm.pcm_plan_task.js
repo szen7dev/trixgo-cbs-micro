@@ -818,6 +818,7 @@ class Model extends BaseModel {
                 let conditionObj = {
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
+                    actualFinishTime: { $exists: true },
                 };
                 
                 let sortBy;
@@ -1125,6 +1126,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc của tôi
                  */
                 let amountTask = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true },
                     assignee: userID, 
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
