@@ -41,11 +41,12 @@ class Model extends BaseModel {
                     languageKey,
                     status: this.SEND_SUCCESS
                 };
+                console.log({ coll });
 
                 (project    && checkObjectIDs(project))     && (dataInsert.project  = project);
                 (contract   && checkObjectIDs(contract))    && (dataInsert.contract = contract);
                 (app        && checkObjectIDs(app))         && (dataInsert.app      = app);
-                (coll       && checkObjectIDs(coll))        && (dataInsert.coll     = coll);
+                (coll       && checkObjectIDs(coll.item))   && (dataInsert.coll     = coll);
 
                 if(!content) {
                     return resolve({
@@ -83,6 +84,7 @@ class Model extends BaseModel {
                     })
                 }
 
+                console.log({ dataInsert });
                 const { results } = await PromisePool
 					.for(receivers)
 					.withConcurrency(2)

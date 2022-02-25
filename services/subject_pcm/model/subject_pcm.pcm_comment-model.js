@@ -167,7 +167,7 @@ class Model extends BaseModel {
                     app: APP_KEYS.PCM_PLAN_TASK,
                     coll: {
                         kind: "pcm_comment",
-                        item: infoDataAfterInserted._id.toString()
+                        item: infoDataAfterInserted._id
                     },
                     type: 1 // InApp (Socket)
                 })
