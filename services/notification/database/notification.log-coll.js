@@ -76,13 +76,13 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
      */
     mainColl: {
         kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'coll.kind' }
+        item: { type: Schema.Types.ObjectId, refPath: 'mainColl.kind' }
     },
     /**
      * subCollID (VD: commentID, checklistID,...)
      */
     subColl: {
         kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'coll.kind' }
+        item: { type: Schema.Types.ObjectId, refPath: 'subColl.kind' }
     },
 })
