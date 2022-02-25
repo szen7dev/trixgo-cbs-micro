@@ -165,7 +165,11 @@ class Model extends BaseModel {
                     path: `/pcm/detail/${taskID}#${infoDataAfterInserted._id}`,
                     languageKey: "CREATE_NEW_RESPONSE",
                     app: APP_KEYS.PCM_PLAN_TASK,
-                    coll: {
+                    mainColl: {
+                        kind: "pcm_plan_task",
+                        item: taskID
+                    },
+                    subColl: {
                         kind: "pcm_comment",
                         item: infoDataAfterInserted._id
                     },
