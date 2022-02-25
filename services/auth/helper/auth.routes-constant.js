@@ -9,7 +9,8 @@ const BASE_ROUTE = '/auth';
        APP_MENU          = '/app_menus',
        APP_ROLE_MENU     = '/app_role_menus',
        APP_ROLE          = '/app_roles',
-       APP_USER          = '/app_users'
+       APP_USER          = '/app_users',
+       APP_COMPANY       = '/app_companies'
 
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
@@ -39,6 +40,11 @@ const CF_ROUTINGS_AUTH = {
      * APP_MENU
      */
     APP_MENU                           : `${BASE_ROUTE}${APP_MENU}`,
+
+    /**
+     * APP_COMPANY
+     */
+    APP_COMPANY                         : `${BASE_ROUTE}${APP_COMPANY}`,
     
     /**
      * APP_ROLE
