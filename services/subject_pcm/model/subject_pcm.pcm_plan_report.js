@@ -208,7 +208,12 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
               
                 /**
                  * LOGIC STEP (3)
