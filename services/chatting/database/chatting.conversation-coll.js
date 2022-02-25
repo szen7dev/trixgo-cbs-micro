@@ -14,9 +14,9 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
      * Folder chứa conversation
      */
-    groups: [{
+    folders: [{
         type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation_group'
+        ref     : 'message_conversation_folder'
     }],
     /**
      * Tên của cuộc hội thoại (Tên chat nhóm)
