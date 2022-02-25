@@ -128,3 +128,13 @@ const AUTH__USER_MODEL                          = require
 - 404 NOT FOUND	Indicates that the targeted resource does not exist.
 
 - 500 INTERNAL SERVER ERROR	An internal error occurred in the server. 
+
+
+<!-- CONVERT ENDTIME FROM APP_COMPANIES TO APP_USERS -->
+--------------------------------------------------------
+let listAppCompany = db.app_companies.find({}).toArray()
+for(let appCompany of listAppCompany){
+    let { app, company, endTime } = appCompany;
+    db.app_users.updateMany({  app: ObjectId(app), company: ObjectId(company) }, { $set: { endTime: endTime } })
+}
+--------------------------------------------------------
