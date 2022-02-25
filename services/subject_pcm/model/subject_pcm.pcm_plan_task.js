@@ -818,7 +818,6 @@ class Model extends BaseModel {
                 let conditionObj = {
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
-                    actualFinishTime: { $exists: true },
                 };
                 
                 let sortBy;
@@ -930,7 +929,7 @@ class Model extends BaseModel {
                 }
                 
                 /**
-                 * Type = 0 Việc của tôi + Giao + Liên quan
+                 * Type = 0 Việc của tôi + Giao + Liên quan(All)
                  * Type = 1 Việc của tôi
                  * Type = 2 Việc giao người khác
                  * Type = 3 Việc đánh dấu quan tâm
@@ -982,7 +981,9 @@ class Model extends BaseModel {
                 // Lấy việc quá hạn
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $lt: start
+                        $lt: start,
+                        $exists: true,
+                        $ne: null 
                     }
                 }
 
@@ -990,14 +991,18 @@ class Model extends BaseModel {
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
                         $gte: start,
-                        $lt: addDate(7)
+                        $lt: addDate(7),
+                        $exists: true,
+                        $ne: null 
                     }
                 }
-
+                
                 // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
-                        $gte: addDate(7)
+                        $gte: addDate(7),
+                        $exists: true,
+                        $ne: null 
                     }
                 }
 
@@ -1044,7 +1049,6 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                console.log({ conditionObj });
                 let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1062,6 +1066,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
+                console.log({ conditionObj, sortBy });
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
@@ -1082,7 +1087,7 @@ class Model extends BaseModel {
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
-                }   
+                }
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 
@@ -1126,7 +1131,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc của tôi
                  */
                 let amountTask = await PCM_PLAN_TASK_COLL.count({
-                    actualFinishTime: { $exists: true },
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID, 
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
