@@ -891,18 +891,30 @@ class Model extends BaseModel {
                 // Tìm kiếm điều kiên công việc nhanh chậm
                 if(isExpired && isExpired == 1){
                     //Việc bình thường
-                    conditionObj.actualFinishTime = { $gt: new Date() }
+                    conditionObj.actualFinishTime = { 
+                        $gt: new Date(),
+                        $exists: true,
+                        $ne: null  
+                    }
                 }
 
                 if(isExpired && isExpired == 2){
                     //Việc chậm
                     conditionObj.status = { $ne: 3 }
-                    conditionObj.actualFinishTime = { $lt: new Date() }
+                    conditionObj.actualFinishTime = { 
+                        $lt: new Date(),
+                        $exists: true,
+                        $ne: null  
+                    }
 				}
 
                 // Lấy những công việc từ ngày đến ngày
                 if(fromDate && toDate){
-                    conditionObj.actualFinishTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
+                    conditionObj.actualFinishTime = { 
+                        $gte: new Date(fromDate), $lte: new Date(toDate),
+                        $exists: true,
+                        $ne: null  
+                    }
 				}
 
                 // lấy những việc nháp hoặc không phải việc nháp
@@ -1141,6 +1153,7 @@ class Model extends BaseModel {
                  * Số lượng công việc thuộc đệ trình phê duyệt
                  */
                 let amountTaskIsRFa = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
                     isproposal: 2,
                     status: { $ne: 3 },
@@ -1151,6 +1164,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc thuộc yêu cầu thông tin
                  */
                 let amountTaskIsRFis = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
                     isproposal: 1,
                     status: { $ne: 3 },
@@ -1161,6 +1175,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc bạn quan tâm
                  */
                 let amountTaskIsFlags = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     flags: {
                        $in: [userID]
                     },
@@ -1171,6 +1186,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc bạn đã giao người khac
                  */
                 let amountTaskIsAssignee = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     author: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
@@ -1180,6 +1196,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc nháp
                  */
                 let amountTaskIsDraft = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     $or: [
                         { author: userID }, 
                         { related: { $in: [userID] } }, 
