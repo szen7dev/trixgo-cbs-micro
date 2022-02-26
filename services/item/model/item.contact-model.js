@@ -734,7 +734,6 @@ class Model extends BaseModel {
         })
     }
     
-
     /**
      * Name  : Báo cáo biến động nhân sự ✅
      * Author: Depv
