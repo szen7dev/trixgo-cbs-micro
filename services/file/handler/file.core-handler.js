@@ -92,7 +92,11 @@ module.exports = {
             companyID   :  { type: "string", optional: true },
             projectID   :  { type: "string", optional: true },
             groupID     :  { type: "string", optional: true },
+<<<<<<< HEAD
             packageID   :  { type: "string", optional: true },
+=======
+            packgeID    :  { type: "string", optional: true },
+>>>>>>> 8ad7973a02dd2e960354ac57cd8146c52e11173f
             //____(typeUpload == user)
             typeUpload  : { type: "string", optional: true },
         },
