@@ -1,35 +1,33 @@
-let { config } = require('../file.keys-constant');
-let AWS        = require('aws-sdk');
+let { config }              = require('../file.keys-constant');
+let { checkObjectIDs }      = require('../../../../tools/utils/utils');
+let { APP_KEYS }            = require('../../../../tools/keys');
+let AWS                     = require('aws-sdk');
 
 AWS.config.update({
     accessKeyId : config.aws_access_key_id,
     secretAccessKey : config.aws_secret_access_key,
     region: config.aws_region,
 })
-let s3Object                    = new AWS.S3();
+let s3Object = new AWS.S3();
 
 // link từ s3 upload file
 let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
     try {
-        let bucket = `${config.bucket}${process.env.AWS_BUCKET_PATH || '/root/test'}`;
-        // let bucket = `${config.bucket}${pathS3 || '/root/test'}`;
+        let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH}${pathS3}`;
 
-
-        //_____upload avatar user
         if(typeUpload == "user"){
-            bucket = `${config.bucket}/files/db/users`
+            bucket = `${config.bucket}/files/db/users`;
         }
-        console.log({ bucket, fileName, type, config })
 
-        let url = s3Object.getSignedUrl('putObject', {
+        let signedUrl = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
             Key: fileName,
             Expires: config.signedUrlExpireSeconds,
             ACL: "public-read",
             ContentType: type,
         });
-        console.log({ url })
-        return url;
+
+        return signedUrl;
     } catch (error) {
         return { error: true, message: "Can't presign url" }
     }
@@ -40,12 +38,13 @@ function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
         try {
             if(!fileName || !type)
                 return resolve({ error: true, message: "params_invalid" });
+
             let result = await render_link_upload_file_s3({ fileName, type, typeUpload, pathS3 });
-            if(!result.error){
-                return resolve({ error: false, data: result, fileName });
-            }else{
-                return resolve({ error: true, message: "Error" });
+            if(result.error) {
+                return resolve({ error: true, message: result.message });
             }
+
+            return resolve({ error: false, data: result, fileName });
         } catch (error) {
             return resolve({ error: true, message: error.message });
         }
@@ -84,5 +83,90 @@ const uploadFile = (pathFile, key) => {
 
 };
 
+/**
+ * GET PATH S3 BY APP
+ * @param {string} type 
+ * @param {string} appID 
+ * @param {string} companyID 
+ * @param {string} projectID 
+ * @param {string} groupID 
+ * @returns { error: boolean, data: string }
+ */
+const getPathS3 = ({ type, appID, companyID, projectID, groupID, packageID }) => {
+    if(type) {
+        return { error: false, data: '' };
+    }
+
+    // Validate tham số chung (tham số bắt buộc)
+    if(!appID || !checkObjectIDs([appID])) {
+        return {
+            error: true,
+            message: 'Tham số AppID không hợp lệ', 
+            keyError: 'params_appID_invalid', 
+            status: 400
+        };
+    }
+
+    if(!companyID || !checkObjectIDs([companyID])) {
+        return {
+            error: true,
+            message: 'Tham số companyID không hợp lệ', 
+            keyError: 'params_companyID_invalid', 
+            status: 400
+        };
+    }
+
+    let pathS3 = `/${appID}`;
+
+    // Khai báo constants các app
+    const COMPANIES = [
+        APP_KEYS.MEDIA,
+        APP_KEYS.PCM_PLAN_TASK,
+        APP_KEYS.DOCUMENT
+    ];
+    const PROJECTS = [
+        APP_KEYS.PCM_PLAN_TASK,
+        APP_KEYS.DOCUMENT
+    ];
+    const GROUPS = [
+        APP_KEYS.PCM_PLAN_TASK
+    ];
+
+    const PACKAGES = [
+        APP_KEYS.DOCUMENT
+    ];
+
+    // Validate tham số theo app
+    switch (appID) {
+        case APP_KEYS.MEDIA:
+            break;
+        case APP_KEYS.PCM_PLAN_TASK: {
+            if(!projectID || !checkObjectIDs([projectID]))
+                return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
+
+            if(!groupID || !checkObjectIDs([groupID]))
+                return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 };
+        }
+        default:
+            break;
+    }
+
+    // Nối đường dẫn lưu s3
+    if(COMPANIES.includes(appID)) {
+        pathS3 += `/${companyID}`;
+    }
+
+    if(PROJECTS.includes(appID)) {
+        pathS3 += `/${projectID}`;
+    }
+
+    if(GROUPS.includes(appID)) {
+        pathS3 += `/${groupID}`;
+    }
+
+    return { error: false, data: pathS3 };
+}
+
 exports.GENERATE_LINK_S3 = render_link_upload_s3;
 exports.UPLOAD_FILE_S3   = uploadFile;
+exports.GET_PATH_S3      = getPathS3;
