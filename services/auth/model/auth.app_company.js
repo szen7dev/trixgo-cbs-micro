@@ -18,7 +18,7 @@ class Model extends BaseModel {
     constructor() {
         super(AUTH__APP_COMPANY_COLL);
     }
-
+    
     /**
      * Name  : Thêm mẩu tin
      * - A Hiệp: lưu ý 1 company và 1 app chỉ tồn tại 1 mẩu tin duy nhất

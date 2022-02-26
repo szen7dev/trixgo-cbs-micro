@@ -92,7 +92,7 @@ const uploadFile = (pathFile, key) => {
  * @param {string} groupID 
  * @returns { error: boolean, data: string }
  */
-const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packgeID, conversationID }) => {
+const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
     if(type) return { error: false, data: '' };
 
     if(!appID || !checkObjectIDs([appID])) {
@@ -116,7 +116,7 @@ const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packg
         APP_KEYS.HUMAN,
     ];
     const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
-    const GROUPS = [APP_KEYS.PCM_PLAN_TASK];
+    const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
     const PACKAGES = [APP_KEYS.DOCUMENT];
     const CONVERSATIONS = [APP_KEYS.CHATTING];
 
@@ -133,8 +133,8 @@ const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packg
         return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 }; 
     }
 
-    if(PACKAGES.includes(appID) && (!packgeID || !checkObjectIDs([packgeID]))) {
-        return { error: true, message: 'Tham số packgeID không hợp lệ', keyError: 'params_packgeID_invalid', status: 400 };
+    if(PACKAGES.includes(appID) && (!packageID || !checkObjectIDs([packageID]))) {
+        return { error: true, message: 'Tham số packageID không hợp lệ', keyError: 'params_packageID_invalid', status: 400 };
     }
 
     if(CONVERSATIONS.includes(appID) && (!conversationID || !checkObjectIDs([conversationID]))) {
@@ -157,7 +157,7 @@ const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packg
             break;
         case APP_KEYS.DOCUMENT:
             appName = 'DOCUMENT';
-            pathS3 += `/${companyID}/${projectID}/${packgeID}`;
+            pathS3 += `/${companyID}/${projectID}/${packageID}`;
             break;
         case APP_KEYS.HUMAN:
             appName = 'HUMAN';
