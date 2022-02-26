@@ -33,6 +33,7 @@ class Model extends BaseModel {
     insert({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl }){
         return new Promise(async resolve => {
             try {
+                console.log({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl })
                 const dataInsert = {
                     content,
                     type,
