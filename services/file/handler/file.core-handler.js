@@ -63,6 +63,24 @@ module.exports = {
         }
     },
 
+    getInfoOfListFile: {
+        params: {
+            fileIDs: { type: "array", items: "string" }, //TODO: fake wating AUTH_SERVICE
+           
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { fileIDs } = ctx.params;
+
+                let listFiles = await FILE__CORE_MODEL.getInfoOfListFileID({ fileIDs });
+                return listFiles;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     getListFileWithStatus: {
         params: {
             status: { type: "string", optional: true },
