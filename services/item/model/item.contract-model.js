@@ -918,6 +918,206 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name  : Danh sách hợp đồng mà user là members ✅
+     * Author: Depv
+     * Code  : 
+     */
+    getListIsMembers({
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = { members: { $in: [userID] } };
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                
+                if(limit > 20){
+                    limit = 20
+                }
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+				
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+               
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+
+                if(projectID){
+                    conditionObj.project = projectID
+                }
+
+                if(parentID){
+                    conditionObj.parent = parentID
+                }
+
+                if(draft){
+                    conditionObj.draft = draft
+                }
+
+                if(outin){
+                    conditionObj.outin = outin
+                }
+
+                if(status){
+                    conditionObj.status = status
+                }
+
+                if(real){
+                    conditionObj.real = real
+                }
+
+                if(subType){
+                    conditionObj.subType = subType
+                }
+
+                if(type){
+                    conditionObj.type = type
+                }
+
+                if(field){
+                    conditionObj.field = field
+                }
+
+                if(chair){
+                    conditionObj.chair = chair
+                }
+
+                if(personInCharge){
+                    conditionObj.personInCharge = personInCharge
+                }
+
+                if(debtStatus){
+                    conditionObj.debtStatus = debtStatus
+                }
+
+                if(warehouse){
+                    conditionObj.warehouse = warehouse
+                }
+
+                if(date){
+                    conditionObj.date = date
+                }
+
+                if(startTime){
+                    conditionObj.startTime = startTime
+                }
+
+                if(endTime){
+                    conditionObj.endTime = endTime
+                }
+
+                if(buyerInfo){
+                    conditionObj.buyerInfo = buyerInfo
+                }
+
+                if(buyerBank){
+                    conditionObj.buyerBank = buyerBank
+                }
+
+                if(sellerInfo){
+                    conditionObj.sellerInfo = sellerInfo
+                }
+
+                if(sellerBank){
+                    conditionObj.sellerBank = sellerBank
+                }
+
+                if(lock){
+                    conditionObj.lock = lock
+                }
+
+                // Theo giỏi bảo lảnh
+                if(isExpiredAg == 1){
+                    conditionObj.expiredAg = { $exists: true, $ne: null } 
+                }
+                
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.name = regSearch
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj = dataPagingAndSort?.data?.find;
+					sortBy       = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort?.data?.sort;
+                }
+
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	    = null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit); 
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor
+                }, status: 200 });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

@@ -92,7 +92,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             projectID       : { type: "string", optional: true },
             groupID         : { type: "string", optional: true },
-            packgeID        : { type: "string", optional: true },
+            packageID        : { type: "string", optional: true },
             conversationID  : { type: "string", optional: true },
             //____(typeUpload == user)
             typeUpload      : { type: "string", optional: true },
@@ -102,7 +102,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { 
                     mimeType, type, appID, name, size, typeUpload, 
-                    companyID, projectID, groupID, packgeID, conversationID
+                    companyID, projectID, groupID, packageID, conversationID
                 } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
 
@@ -111,7 +111,7 @@ module.exports = {
                     companyID,
                     projectID,
                     groupID,
-                    packgeID,
+                    packageID,
                     conversationID,
                     fileName: name,
                     type: typeUpload
