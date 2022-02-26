@@ -38,11 +38,11 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
       */
      "NOTIFICATION__LOG_CREATE:MOBILE_WEB": {
         async handler(ctx) {
-            console.log(`------------------NOTIFICATION__LOG_CREATE:MOBILE_WEB----------------------`)
-            console.log("Payload:", ctx.params);
-            console.log("Sender:", ctx.nodeID);
-            console.log("Metadata:", ctx.meta);
-            console.log("The called event name:", ctx.eventName);
+            // console.log(`------------------NOTIFICATION__LOG_CREATE:MOBILE_WEB----------------------`)
+            // console.log("Payload:", ctx.params);
+            // console.log("Sender:", ctx.nodeID);
+            // console.log("Metadata:", ctx.meta);
+            // console.log("The called event name:", ctx.eventName);
 
             const { 
                 users: listRecievers, title, description, web_url, amountNoti, conversationID
