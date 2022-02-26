@@ -102,7 +102,7 @@ module.exports = {
                 let extension = getExtension(name);
                 let fileName  = `${uuidv4()}.${extension}`;
                 let nameOrg   = name;
-                let pathS3 = null;
+                let pathS3    = null;
                 if(taskID){
                     // pathS3 = `${appID}/${company}/${project}/${group}/${taskID}`;
                 }
