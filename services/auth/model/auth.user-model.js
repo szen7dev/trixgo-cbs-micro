@@ -1174,15 +1174,18 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(limit > 20){
+                if(isNaN(limit) || +limit > 20) {
 					limit = 20;
-                }
+				} else{
+					limit = +limit;
+				}
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -1191,7 +1194,7 @@ class Model extends BaseModel {
 
                 let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('receiveFromFriends');
 
-				let conditionObj = { _id: { $in: infoUserWithFriends.receiveFromFriends } };
+				let conditionObj = { _id: { $in: infoUserWithFriends?.receiveFromFriends || [] } };
                 let keys 	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
@@ -1203,7 +1206,6 @@ class Model extends BaseModel {
 				}
 
                 let conditionObjOrg = { ...conditionObj };
-
 
 				// GET CONDITION PAGINATION
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -1231,6 +1233,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
                 let totalRecord = await AUTH__USER_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -1239,8 +1242,7 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-                // Tổng số trang
-                let totalPage   = Math.ceil(totalRecord/limit);
+
                 return resolve({
 					error: false,
 					status: 200,
