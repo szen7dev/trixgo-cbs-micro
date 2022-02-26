@@ -26,6 +26,80 @@ class Model extends BaseModel {
         super(AUTH__APP_MENU_COLL);
     }
 
+    insert({ name, slug, parent, appID, authorID, order }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!name)
+                    return resolve({ error: true, keyError: "name_invalid", message: "Tên App Menu không hợp lệ" });
+
+                if(!slug)
+                    return resolve({ error: true, keyError: "slug_invalid", message: "Slug Menu không hợp lệ" });
+                
+                if(!appID)
+                    return resolve({ error: true, keyError: "appID_invalid", message: "AppID không hợp lệ" });
+
+                let dataInsert = { name, slug, app: appID, userCreate: authorID, userUpdate: authorID };
+
+                if(order){
+                    dataInsert.order = order
+                }
+
+                if(parent && ObjectID.isValid(parent)){
+                    dataInsert.parent = parent;
+                    let infoMenuParent = await AUTH__APP_MENU_COLL.findById(parent);
+                    dataInsert.level = infoMenuParent.level + 1;
+                }
+                let infoAfterInsert = await this.insertData(dataInsert);
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    update({ appMenuID, name, slug, order, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(appMenuID))
+                    return resolve({ error: true, message: "Mã app menu không hợp lệ",keyError: 'appMenuID_invalid', status: 400 });
+
+                let dataUpdate = { userUpdate: userID };
+                if(name){
+                    dataUpdate.name = name
+                }
+
+                if(slug){
+                    dataUpdate.slug = slug
+                }
+
+                if(order){
+                    dataUpdate.order = order
+                }
+                let infoAfterUpdate = await AUTH__APP_MENU_COLL.findByIdAndUpdate(appMenuID,dataUpdate, { new: true });
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    remove({ appMenuID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(appMenuID))
+                    return resolve({ error: true, message: "Mã app menu không hợp lệ", keyError: 'appMenuID_invalid', status: 400 });
+
+                let infoAfterRemove = await AUTH__APP_MENU_COLL.findByIdAndDelete(appMenuID);
+                if(!infoAfterRemove)
+                    return resolve({ error: true, message: "Xoá thất bại", keyError: 'remove_failed', status: 400 });
+
+                return resolve({ error: false, data: infoAfterRemove });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
     /**
      * Name: get app menu ✅
      * Author: Depv
@@ -46,7 +120,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input

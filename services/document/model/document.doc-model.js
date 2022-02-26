@@ -1033,16 +1033,8 @@ class Model extends BaseModel {
     updateMarkDocument({ userID, documentID, isMark }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs([userID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Request params userID invalid', 
-                        keyError: 'params_userID_invalid',
-                        status: 400 
-                    });
-                }
 
-                if(!checkObjectIDs([documentID])) {
+                if(!checkObjectIDs(documentID)) {
                     return resolve({ 
                         error: true, 
                         message: 'Request params documentID invalid', 
@@ -1051,19 +1043,19 @@ class Model extends BaseModel {
                     });
                 }
 
-                let checkPermission = await DOCUMENT__USER_COLL.findOne({
-                    document: documentID,
-                    user: userID,
-                }).lean()
+                // let checkPermission = await DOCUMENT__USER_COLL.findOne({
+                //     document: documentID,
+                //     user: userID,
+                // }).lean()
 
-                if(!checkPermission) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Permission denined document', 
-                        keyError: 'permission_denined_document',
-                        status: 403
-                    });
-                }
+                // if(!checkPermission) {
+                //     return resolve({ 
+                //         error: true, 
+                //         message: 'Permission denined document', 
+                //         keyError: 'permission_denined_document',
+                //         status: 403
+                //     });
+                // }
 
                 let infoAfterUpdate = null;
 
