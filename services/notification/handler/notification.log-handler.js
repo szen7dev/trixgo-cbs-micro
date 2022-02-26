@@ -36,16 +36,15 @@ module.exports = {
             project     : { type: "string", optional: true },
             contract    : { type: "string", optional: true },
             app         : { type: "string", optional: true },
-            coll        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: sender } = ctx.meta.infoUser;
-                const { type, content, path, receivers, languageKey, project, contract, app, coll } = ctx.params;
+                const { type, content, path, receivers, languageKey, project, contract, app, mainColl, subColl } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insert({
-                    type, content, path, sender, receivers, languageKey, project, contract, app, coll
+                    type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

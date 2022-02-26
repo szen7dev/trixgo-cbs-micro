@@ -10,6 +10,9 @@ const AUTH__REGISTER_TRIAL_HANDLER 	= require('./handler/auth.register_trial-han
 const AUTH__APP_MENU_HANDLER 		= require('./handler/auth.app_menu-handler');
 const AUTH__APP_ROLE_HANDLER 		= require('./handler/auth.app_role-handler');
 const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handler');
+const AUTH__APP_USER_HANDLER 		= require('./handler/auth.app_user-handler');
+const AUTH__APP_COMPANY_HANDLER 	= require('./handler/auth.app_company-handler');
+
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
@@ -17,6 +20,8 @@ const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');
 const AUTH__APP_COLL				= require('./database/permission/auth.app-coll');
 const AUTH__APP_MENU_COLL			= require('./database/permission/auth.app_menu-coll');
 const AUTH__APP_ROLE_COLL			= require('./database/permission/auth.app_role-coll');
+const AUTH__APP_USER_COLL			= require('./database/permission/auth.app_user-coll');
+const AUTH__APP_COMPANY_COLL		= require('./database/permission/auth.app_company-coll');
 const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_role_menu-coll');
  
 module.exports = {
@@ -29,6 +34,8 @@ module.exports = {
 		DbService(AUTH__APP_ROLE_COLL),
 		DbService(AUTH__APP_MENU_COLL),
 		DbService(AUTH__APP_ROLE_MENU_COLL),
+		DbService(AUTH__APP_USER_COLL),
+		DbService(AUTH__APP_COMPANY_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**
@@ -95,6 +102,9 @@ module.exports = {
 		[CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
 
 		// App menu
+		[CF_ACTIONS_AUTH.APP_MENU_INSERT]							: AUTH__APP_MENU_HANDLER.insert,
+		[CF_ACTIONS_AUTH.APP_MENU_UPDATE]							: AUTH__APP_MENU_HANDLER.update,
+		[CF_ACTIONS_AUTH.APP_MENU_REMOVE]							: AUTH__APP_MENU_HANDLER.remove,
 		[CF_ACTIONS_AUTH.APP_MENU_GET_INFO_AND_GET_LIST]			: AUTH__APP_MENU_HANDLER.getInfoAndGetList,
 		
 		// App role
@@ -107,7 +117,15 @@ module.exports = {
 		[CF_ACTIONS_AUTH.APP_ROLE_MENU_INSERT]						: AUTH__APP_ROLE_MENU_HANDLER.insert,
 		[CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_INFO_AND_GET_LIST]		: AUTH__APP_ROLE_MENU_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_PERMISSION]				: AUTH__APP_ROLE_MENU_HANDLER.getPermissionToAccessListMenuOfApp,
+		[CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_PERMISSION_TO_ACCESS_ONE_MENU_OF_APP]: AUTH__APP_ROLE_MENU_HANDLER.getPermissionToAccessOneMenuOfApp,
 
+		// App user
+		[CF_ACTIONS_AUTH.APP_USER_GET_INFO_AND_GET_LIST]			: AUTH__APP_USER_HANDLER.getListAppOfUser,
+		[CF_ACTIONS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP]		: AUTH__APP_USER_HANDLER.checkPermissionsAccessApp,
+		
+		// App company
+		[CF_ACTIONS_AUTH.APP_COMPANY_UPDATE]						: AUTH__APP_COMPANY_HANDLER.update,
+		
 		// Register trial
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT]						: AUTH__REGISTER_TRIAL_HANDLER.insert,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_UPDATE]						: AUTH__REGISTER_TRIAL_HANDLER.update,

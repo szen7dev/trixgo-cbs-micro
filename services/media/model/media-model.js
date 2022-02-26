@@ -233,7 +233,7 @@ class Model extends BaseModel {
 							path: `/media/post/${infoMediaAfterInserted._id}`,
 							languageKey: "CREATE_NEW_MEDIA",
 							app: APP_KEYS.MEDIA,
-							coll: infoMediaAfterInserted._id,
+							coll: infoMediaAfterInserted?._id?.toString(),
 							type: 1 // InApp (Socket)
 						});
 					}
@@ -556,17 +556,6 @@ class Model extends BaseModel {
 					})
 				}
 
-				// Tạo người xem mới nếu chưa tồn tại
-				await MEDIA__SEEN_COLL.updateOne({
-					media: mediaID,
-					author: authorID
-				}, {
-					$set: {
-						media: mediaID,
-						author: authorID
-					}
-				}, { new: true, upsert: true })
-
 				return resolve({ 
 					error: false,
 					status: 200,
@@ -622,12 +611,23 @@ class Model extends BaseModel {
 					$inc: {
 						amountView: 1
 					}
-				}, { new: true });
+				});
+
+				// Tạo người xem mới nếu chưa tồn tại
+				await MEDIA__SEEN_COLL.updateOne({
+					media: mediaID,
+					author: authorID
+				}, {
+					$set: {
+						media: mediaID,
+						author: authorID
+					}
+				}, { upsert: true })
 
 				return resolve({ 
 					error: false,
 					status: 200,
-					data: infoUserSeen
+					message: "success"
 				});
 			} catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

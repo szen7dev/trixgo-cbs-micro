@@ -72,10 +72,17 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
         ref: 'app'
     },
     /**
-     * collID (VD: mediaID, commentID, taskID,...)
+     * mainCollID (VD: mediaID, taskID,...)
      */
-    coll: {
+    mainColl: {
         kind: String,
-        item: { type: Schema.Types.ObjectId, refPath: 'coll.kind' }
+        item: { type: Schema.Types.ObjectId, refPath: 'mainColl.kind' }
+    },
+    /**
+     * subCollID (VD: commentID, checklistID,...)
+     */
+    subColl: {
+        kind: String,
+        item: { type: Schema.Types.ObjectId, refPath: 'subColl.kind' }
     },
 })

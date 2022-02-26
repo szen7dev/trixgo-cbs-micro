@@ -6,6 +6,7 @@ const { setTimeZone  }                  = require('../../../tools/utils/time_uti
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
@@ -118,13 +119,13 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
-                }
+                } 
                 
                 //_______File của người tạo việc
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
                 }
-
+                
                 if(checkObjectIDs(relatedIDs)){
                     dataInsert.related = relatedIDs;
                 }
@@ -804,7 +805,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ 
-        projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
+        projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
         isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
@@ -890,18 +891,30 @@ class Model extends BaseModel {
                 // Tìm kiếm điều kiên công việc nhanh chậm
                 if(isExpired && isExpired == 1){
                     //Việc bình thường
-                    conditionObj.actualFinishTime = { $gt: new Date() }
+                    conditionObj.actualFinishTime = { 
+                        $gt: new Date(),
+                        $exists: true,
+                        $ne: null  
+                    }
                 }
 
                 if(isExpired && isExpired == 2){
                     //Việc chậm
                     conditionObj.status = { $ne: 3 }
-                    conditionObj.actualFinishTime = { $lt: new Date() }
+                    conditionObj.actualFinishTime = { 
+                        $lt: new Date(),
+                        $exists: true,
+                        $ne: null  
+                    }
 				}
 
                 // Lấy những công việc từ ngày đến ngày
                 if(fromDate && toDate){
-                    conditionObj.actualFinishTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
+                    conditionObj.actualFinishTime = { 
+                        $gte: new Date(fromDate), $lte: new Date(toDate),
+                        $exists: true,
+                        $ne: null  
+                    }
 				}
 
                 // lấy những việc nháp hoặc không phải việc nháp
@@ -928,7 +941,7 @@ class Model extends BaseModel {
                 }
                 
                 /**
-                 * Type = 0 Việc của tôi + Giao + Liên quan
+                 * Type = 0 Việc của tôi + Giao + Liên quan(All)
                  * Type = 1 Việc của tôi
                  * Type = 2 Việc giao người khác
                  * Type = 3 Việc đánh dấu quan tâm
@@ -972,39 +985,40 @@ class Model extends BaseModel {
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
                 }
-
+                
+                if(level){
+                    conditionObj.level = level;
+                }
+                
                 // typeStatus
-                // 1 Ngày nay
+                // 1 Quá hạn
                 // 2 Tới hạn tuần tới
                 // 3 Tới hạn + 7 ngày tới
-                // 4 Quá hạn
-                // Lấy việc ngày nay
+                // Lấy việc quá hạn
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $gte: start,
-                        $lte: end,
+                        $lt: start,
+                        $exists: true,
+                        $ne: null 
                     }
                 }
 
-                // Lấy việc tới hạn tuần tới
+                // lấy việc tới hạn Tuần tới
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
-                        $gte: addDate(1),
-                        $lte: addDate(7)
+                        $gte: start,
+                        $lt: addDate(7),
+                        $exists: true,
+                        $ne: null 
                     }
                 }
-
-                // lấy việc tới hạn + 7 ngày tới
+                
+                // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
-                        $gt: addDate(7)
-                    }
-                }
-
-                // lấy việc quá hạn
-                if(typeStatus && typeStatus == 4){
-                    conditionObj.actualFinishTime = {
-                        $lt: start
+                        $gte: addDate(7),
+                        $exists: true,
+                        $ne: null 
                     }
                 }
 
@@ -1051,7 +1065,6 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
                 let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1069,6 +1082,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
+                console.log({ conditionObj, sortBy });
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
@@ -1089,7 +1103,7 @@ class Model extends BaseModel {
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
-                }   
+                }
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 
@@ -1133,6 +1147,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc của tôi
                  */
                 let amountTask = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID, 
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
@@ -1142,6 +1157,7 @@ class Model extends BaseModel {
                  * Số lượng công việc thuộc đệ trình phê duyệt
                  */
                 let amountTaskIsRFa = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
                     isproposal: 2,
                     status: { $ne: 3 },
@@ -1152,6 +1168,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc thuộc yêu cầu thông tin
                  */
                 let amountTaskIsRFis = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
                     isproposal: 1,
                     status: { $ne: 3 },
@@ -1162,6 +1179,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc bạn quan tâm
                  */
                 let amountTaskIsFlags = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     flags: {
                        $in: [userID]
                     },
@@ -1172,6 +1190,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc bạn đã giao người khac
                  */
                 let amountTaskIsAssignee = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     author: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
@@ -1181,6 +1200,7 @@ class Model extends BaseModel {
                  * Tổng số lượng công việc nháp
                  */
                 let amountTaskIsDraft = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     $or: [
                         { author: userID }, 
                         { related: { $in: [userID] } }, 

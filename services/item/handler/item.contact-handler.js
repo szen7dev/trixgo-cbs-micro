@@ -220,4 +220,31 @@ module.exports = {
         }
     },
 
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Danh sách danh bạ của hệ thống
+	 */
+    getListOfSystem: {
+        params: {
+            // Field mặc định
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { 
+                    keyword, limit, lastestID, select, populates } = ctx.params;
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListOfSystem({ keyword, limit, lastestID, select, populates });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
 }

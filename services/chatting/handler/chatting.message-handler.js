@@ -8,10 +8,6 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
 
-/**
- * COLLECTIONS
- */
-
 
 module.exports = {
     /**
@@ -57,16 +53,16 @@ module.exports = {
 	updateSeenMessage: {
         params: {
 			conversationID  : { type: 'string' },
-            messageID		: { type: 'string' }
+            messagesID		: { type: 'array' }
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { conversationID, messageID } = ctx.params;
+                const { conversationID, messagesID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.updateSeenMessage({
-					conversationID, messageID, userID
+					conversationID, messagesID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

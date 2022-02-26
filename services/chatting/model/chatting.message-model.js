@@ -319,14 +319,23 @@ class Model extends BaseModel {
 	 * Func: Cập nhật Danh sách đã xem tin nhắn trong cuộc hội thoại
 	 * Date: 30/08/2021
 	 */
-	updateSeenMessage({ conversationID, messageID, userID }){
+	updateSeenMessage({ conversationID, messagesID, userID }){
         return new Promise(async(resolve) => {
             try {
-                if(!checkObjectIDs([conversationID, messageID, userID])) {
+				if(!checkObjectIDs([userID])) {
 					return resolve({
 						error: true,
-						message: "Tham số conversationID hoặc messageID không hợp lệ",
-						keyError: "params_conversationID_or_messageID_invalid",
+						message: "Tham số userID không hợp lệ",
+						keyError: "params_userID_invalid",
+						status: 400
+					})
+				}
+
+                if(!checkObjectIDs([conversationID, ...messagesID])) {
+					return resolve({
+						error: true,
+						message: "Tham số conversationID hoặc messagesID không hợp lệ",
+						keyError: "params_conversationID_or_messagesID_invalid",
 						status: 400
 					})
 				}
@@ -348,32 +357,40 @@ class Model extends BaseModel {
 					})
 				}
 
-                let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-                if(!infoMessage) {
-					return resolve({
-						error: true,
-						message: "Tin nhắn không tồn tại",
-						keyError: "message_not_exists",
-						status: 400
+				let amountUpdateMissMessage = 0;
+				const { results } = await PromisePool
+					.for(messagesID)
+					.withConcurrency(2)
+					.process(async messageID => {
+						let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
+
+						/**
+						 * Tin nhắn không nằm trong 2 trường hợp:
+						 * 1: đã nhận
+						 * 2: đã xem
+						 */
+						if(![2,3].includes(infoMessage.status)) {
+							let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+								$addToSet: {
+									usersSeen: userID
+								}
+							}, { new: true });
+
+							// Cập nhật trạng thái đã xem (khi tất cả thành viên đều đã xem)
+							if(infoConversation.members.length === infoMessageAfterUpdate.usersSeen.length) {
+								infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+									$set: { status: 2 }
+								}, { new: true });
+							}
+
+							amountUpdateMissMessage++;
+							return infoMessageAfterUpdate;
+						}
+
+						return infoMessage;
 					})
-				}
 
-				if(infoMessage.status === 3) {
-					return resolve({
-						error: true,
-						message: "Tin nhắn đã được thu hồi",
-						keyError: "message_is_recall",
-						status: 403
-					})
-				}
-
-				let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-					$addToSet: {
-						usersSeen: userID
-					}
-				}, { new: true });
-
-				if(!infoMessageAfterUpdate) {
+				if(!results || !results.length) {
 					return resolve({
 						error: true,
 						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -382,14 +399,18 @@ class Model extends BaseModel {
 					})
 				}
 
-				// Cập nhật trạng thái đã xem (khi tất cả thành viên đều đã xem)
-				if(infoConversation.members.length === infoMessageAfterUpdate.usersSeen.length) {
-					infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-						$set: { status: 2 }
-					}, { new: true });
-				}
+				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
+					_id: conversationID,
+					usersMissMessage: {
+						$elemMatch: { userID }
+					}
+				}, {
+					$inc: {
+						"usersMissMessage.$.amount": -amountUpdateMissMessage
+					}
+				})
 
-				return resolve({ error: false, data: infoMessageAfterUpdate, status: 200 });
+				return resolve({ error: false, data: results, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

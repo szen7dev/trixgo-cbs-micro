@@ -1,0 +1,14 @@
+// liệt kê các actions của hệ thống
+const BASE_ACTIONS          = 'ACT_DATAHUB';
+const DATAHUB_TYPE          = 'DATAHUB_TYPE';
+
+const CF_ACTIONS_DATAHUB = {
+    /**
+    * DATAHUB_TYPE
+    */
+    DATAHUB_TYPE_INSERT                 : `${BASE_ACTIONS}_${DATAHUB_TYPE}_INSERT`,
+    DATAHUB_TYPE_UPDATE                 : `${BASE_ACTIONS}_${DATAHUB_TYPE}_UPDATE`,
+    DATAHUB_TYPE_REMOVE                 : `${BASE_ACTIONS}_${DATAHUB_TYPE}_REMOVE`,
+    DATAHUB_TYPE_GET_INFO_AND_GET_LIST  : `${BASE_ACTIONS}_${DATAHUB_TYPE}_GET_INFO_AND_GET_LIST`,
+}
+exports.CF_ACTIONS_DATAHUB = CF_ACTIONS_DATAHUB;

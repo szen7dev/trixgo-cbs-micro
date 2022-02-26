@@ -10,7 +10,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 /**
  * import inter-coll, exter-coll
  */
-const AUTH__APP_USER_COLL              = require('../database/permission/auth.app_role_menu-coll');
+const AUTH__APP_USER_COLL              = require('../database/permission/auth.app_user-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 
 /**
@@ -23,18 +23,30 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách app user
+     * Name  : Thêm mẩu tin
+     * - A Hiệp: lưu ý 1 user và 1 app chỉ tồn tại 1 mẩu tin duy nhất
+     * - Khi cập nhật thông tin của app_company => cũng phải cập nhật app_user theo trường endTime
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, companyID,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+
+    /**
+     * Name  : Danh sách app mà user được quyền truy cập
+     * Author: Depv
+     * Code  : 
+     */
+    getListAppOfUser({ userID,
+        limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { };
+                let today = new Date();
+                let conditionObj = {
+                    endTime: { $gte: today }
+                };
+
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
@@ -47,20 +59,8 @@ class Model extends BaseModel {
                     limit = 20
                 }
 
-                if(company){
-                    conditionObj.company = company;
-                }
-
-                if(app){
-                    conditionObj.app = app;
-                }
-
-                if(role){
-                    conditionObj.role = role;
-                }
-
-                if(menu){
-                    conditionObj.menu = menu;
+                if(userID){
+                    conditionObj.user = userID;
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -79,14 +79,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
-
+                 */
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -137,7 +130,50 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
+     /**
+     * Name  : Kiểm tra user có quyền truy cập App hay không
+     * Author: Depv
+     * Code  : 
+     */
+    checkPermissionsAccessApp({ appID, userID,
+        select, populates = {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let today = new Date();
+                let conditionObj = {
+                    app: appID, user: userID,
+                    endTime: { $gte: today }
+                };
+                
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let checkPermission = await AUTH__APP_USER_COLL.findOne(conditionObj)
+                    .select(select)
+                    .populate(populates)
+
+                if(!checkPermission)
+                    return resolve({ error: true, message: "permission_denied", status: 403 });                    
+
+                return resolve({ error: false, data: checkPermission, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

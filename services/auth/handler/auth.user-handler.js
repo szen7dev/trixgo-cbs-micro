@@ -173,9 +173,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-				let { lastestID, keyword, filter, select, limit, populates } = ctx.params;
+				let { lastestID, keyword, select, limit, populates } = ctx.params;
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListUserReceiveFromFriends({
-                    userID, lastestID, keyword, filter, limit, select, populates
+                    userID, lastestID, keyword, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

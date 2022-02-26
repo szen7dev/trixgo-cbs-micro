@@ -30,9 +30,10 @@ class Model extends BaseModel {
 	 * Func: Thêm thông báo
 	 * Date: 17/12/2021
 	 */
-    insert({ type, content, path, sender, receivers, languageKey, project, contract, app, coll }){
+    insert({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl }){
         return new Promise(async resolve => {
             try {
+                console.log({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl })
                 const dataInsert = {
                     content,
                     type,
@@ -42,10 +43,11 @@ class Model extends BaseModel {
                     status: this.SEND_SUCCESS
                 };
 
-                (project    && checkObjectIDs(project))     && (dataInsert.project  = project);
-                (contract   && checkObjectIDs(contract))    && (dataInsert.contract = contract);
-                (app        && checkObjectIDs(app))         && (dataInsert.app      = app);
-                (coll       && checkObjectIDs(coll))        && (dataInsert.coll     = coll);
+                (project    && checkObjectIDs(project))         && (dataInsert.project  = project);
+                (contract   && checkObjectIDs(contract))        && (dataInsert.contract = contract);
+                (app        && checkObjectIDs(app))             && (dataInsert.app      = app);
+                (mainColl   && checkObjectIDs(mainColl.item))   && (dataInsert.mainColl = mainColl);
+                (subColl    && checkObjectIDs(subColl.item))    && (dataInsert.subColl  = subColl);
 
                 if(!content) {
                     return resolve({
@@ -226,9 +228,11 @@ class Model extends BaseModel {
                     conditionObj.content = new RegExp(keyword, 'i');
                 }
 
-				let listNotifications = await NOTIFICATION__LOG_COLL.find(conditionObj)
+				let listNotifications = await NOTIFICATION__LOG_COLL
+                    .find(conditionObj)
 					.limit(limit + 1)
 					.select(select)
+                    .populate("mainColl.item subColl.item")
 					.populate(populates)
 					.sort(sortBy)
 					.lean();

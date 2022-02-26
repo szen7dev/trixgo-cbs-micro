@@ -57,7 +57,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
 
     //_________Người cập nhật comment
     userUpdate: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
+        type    : Schema.Types.ObjectId,
+        ref     : "user"
     }
 })

@@ -1,6 +1,5 @@
 const MEDIA = 'MEDIA';
 
-// danh sách events socket
 exports.EVENT_SOCKET_CONSTANT_MEDIA = {
 
     //========================== CLIENT SEND TO SERVER =============================
@@ -30,5 +29,4 @@ exports.EVENT_SOCKET_CONSTANT_MEDIA = {
     MEDIA_SSC_REACTION_COMMENT                          : `${MEDIA}_SSC_REACTION_COMMENT`,
     MEDIA_SSC_REACTION_IMAGE                            : `${MEDIA}_SSC_REACTION_IMAGE`,
     MEDIA_SSC_COMMENT_IMAGE                             : `${MEDIA}_SSC_COMMENT_IMAGE`,
-
 }

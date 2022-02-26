@@ -13,6 +13,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
  * import inter-coll, exter-coll
  */
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
+const AUTH__APP_USER_COLL                   = require('../database/permission/auth.app_user-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
@@ -33,7 +34,6 @@ class Model extends BaseModel {
     insert({ type, company, app, name, description, userID }) { 
         return new Promise(async (resolve) => {
             try {
-                
                 if(!type)
                     return resolve({ error: true, message: "Type không hợp lệ", keyError: "type_invalid", status: 400 });
 
@@ -48,6 +48,11 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: "Người tạo không hợp lệ", keyError: "userID_invalid", status: 400 });
+
+                // Kiểm tra chỉ cho khởi tạo nếu là Admin của app (level trong app_user=0)  
+                let checkPermission = await AUTH__APP_USER_COLL.findOne({ app, user: userID });
+                if(!checkPermission || checkPermission.level != 0)
+                    return resolve({ error: true, message: "Bạn không đủ quyền", keyError: "permission_denied", status: 400 });
 
                 let dataInsert = { type, company, app, name, userCreate: userID, members: [userID] };
 
@@ -68,6 +73,7 @@ class Model extends BaseModel {
 
     /**
      * Name: update app role ✅
+     * - Lưu ý: không được phép update Type của Role. Khi tạo mới, type như thế nào thì giữ nguyên như vậy
      * Author: Depv
      * Code: 
      */
@@ -159,7 +165,6 @@ class Model extends BaseModel {
     getInfo({ appRoleID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                console.log({  appRoleID, select, populates });
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -189,13 +194,13 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterRemove = await AUTH__APP_ROLE_COLL.findById(appRoleID)
+                let infoDataAfterGet = await AUTH__APP_ROLE_COLL.findById(appRoleID)
                                     .select(select)
                                     .populate(populates)
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "cant_not_get_info", status: 403 });
  
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
+                return resolve({ error: false, data: infoDataAfterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

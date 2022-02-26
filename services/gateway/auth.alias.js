@@ -29,6 +29,7 @@ const { CF_ROUTINGS_ANALYSIS }		= require('../analysis/helper/analysis.routes-co
 const { CF_ROUTINGS_ACCOUNTING }	= require('../accounting/helper/accounting.routes-constant');
 const { CF_ROUTINGS_TIMESHEET }		= require('../timesheet/helper/timesheet.routes-constant');
 const { CF_ROUTINGS_PERSONAL }		= require('../personal/helper/personal.routes-constant');
+const { CF_ROUTINGS_DATAHUB }		= require('../datahub/helper/datahub.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -51,9 +52,10 @@ const { CF_ACTIONS_OPERATION } 		= require('../operation/helper/operation.action
 const { CF_ACTIONS_NOTIFICATION }	= require('../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_REACTION }		= require('../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_ANALYSIS }		= require('../analysis/helper/analysis.actions-constant');
-const { CF_ACTIONS_ACCOUNTING }	= require('../accounting/helper/accounting.actions-constant');
+const { CF_ACTIONS_ACCOUNTING }		= require('../accounting/helper/accounting.actions-constant');
 const { CF_ACTIONS_TIMESHEET }		= require('../timesheet/helper/timesheet.actions-constant');
 const { CF_ACTIONS_PERSONAL }		= require('../personal/helper/personal.actions-constant');
+const { CF_ACTIONS_DATAHUB }		= require('../datahub/helper/datahub.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -125,6 +127,15 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.APP_MENU}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_INFO_AND_GET_LIST}`],
 
+		[`POST ${CF_ROUTINGS_AUTH.APP_MENU}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_AUTH.APP_MENU}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_AUTH.APP_MENU}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_REMOVE}`],
+
 		/**
 		 * app role
 		 */
@@ -140,6 +151,23 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_AUTH.APP_ROLE}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_ROLE_GET_INFO_AND_GET_LIST}`],
 
+
+		/**
+		 * app user
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.APP_USER_LIST_APP_OFF_USER}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_USER_GET_INFO_AND_GET_LIST}`],
+
+		[`GET ${CF_ROUTINGS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP}`],
+
+
+		/**
+		 * app company
+		 */
+		[`PUT ${CF_ROUTINGS_AUTH.APP_COMPANY}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_COMPANY_UPDATE}`],
+
 		/**
 		 * app role menu
 		 */
@@ -151,6 +179,9 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_AUTH.APP_ROLE_MENU_PERMISSION}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_PERMISSION}`],
+
+		[`GET ${CF_ROUTINGS_AUTH.APP_ROLE_MENU_GET_PERMISSION_TO_ACCESS_ONE_MENU_OF_APP}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_ROLE_MENU_GET_PERMISSION_TO_ACCESS_ONE_MENU_OF_APP}`],
 
 		/**
 		 * Register trial
@@ -539,6 +570,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`],
 
+		[`GET ${CF_ROUTINGS_ITEM.LIST_CONTRACT_IS_MEMBERS}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS}`],
+
 		[`POST ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_INSERT}`],
 
@@ -559,6 +593,9 @@ module.exports = {
 
 		[`PUT ${CF_ROUTINGS_ITEM.CONTACTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`],
+
+		[`GET ${CF_ROUTINGS_ITEM.CONTACTS_GET_LIST_OF_SYSTEM}`] :
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM}`],
 
 		/**
 		 * Warehouse
@@ -746,6 +783,9 @@ module.exports = {
 		[`POST ${CF_ROUTINGS_MEDIA.COMMENT_MEDIA}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INSERT_COMMENT_MEDIA}`],
 
+		[`PUT ${CF_ROUTINGS_MEDIA.COMMENT_MEDIA}`] :
+		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.UPDATE_COMMENT_MEDIA}`],
+
 		[`DELETE ${CF_ROUTINGS_MEDIA.COMMENT_MEDIA}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA}`],
 
@@ -754,6 +794,9 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_MEDIA.COMMENT_FILE}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INSERT_COMMENT_FILE}`],
+
+		[`PUT ${CF_ROUTINGS_MEDIA.COMMENT_FILE}`] :
+		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.UPDATE_COMMENT_FILE}`],
 
 		[`DELETE ${CF_ROUTINGS_MEDIA.COMMENT_FILE}`] :
 		[`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.DELETE_COMMENT_FILE}`],
@@ -826,6 +869,9 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT_PCM__PCM_PLAN_TASK_COMMENT}`] :
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_GET_INFO_AND_GET_LIST}`],
+
+		[`PUT ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_UPDATE_MARK}`] :
+		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_UPDATE_MARK}`],
 
 		[`GET ${CF_ROUTINGS_SUBJECT_PCM.SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_SEARCH_BY_ID}`] :
 		[`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_SEARCH_BY_ID}`],
@@ -1052,7 +1098,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ACCOUNTING.FINANCIAL_REPORT}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.FINANCIAL_REPORT}`],
 
-
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 
 
@@ -1081,6 +1126,23 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_CHECK_CODE}`],
 		
 		//---------------------------🏁 END SERVICE PRERSONAL 🏁---------------------------//
+
+
+		//---------------------------🏁 BEGIN SERVICE DATAHUB 🏁-------------------------//
+		
+		[`POST ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_DATAHUB.DATAHUB_TYPE}`] :
+		[`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_TYPE_GET_INFO_AND_GET_LIST}`],
+		
+		//---------------------------🏁 END SERVICE DATAHUB 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions
