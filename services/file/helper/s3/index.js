@@ -92,26 +92,16 @@ const uploadFile = (pathFile, key) => {
  * @param {string} groupID 
  * @returns { error: boolean, data: string }
  */
-const getPathS3 = ({ type, appID, companyID, projectID, groupID }) => {
+const getPathS3 = ({ type, appID, companyID, projectID, groupID, packgeID }) => {
     if(type) {
         return { error: false, data: '' };
     }
 
-    // Validate tham số chung (tham số bắt buộc)
     if(!appID || !checkObjectIDs([appID])) {
         return {
             error: true,
             message: 'Tham số AppID không hợp lệ', 
             keyError: 'params_appID_invalid', 
-            status: 400
-        };
-    }
-
-    if(!companyID || !checkObjectIDs([companyID])) {
-        return {
-            error: true,
-            message: 'Tham số companyID không hợp lệ', 
-            keyError: 'params_companyID_invalid', 
             status: 400
         };
     }
@@ -122,40 +112,38 @@ const getPathS3 = ({ type, appID, companyID, projectID, groupID }) => {
     const COMPANIES = [
         APP_KEYS.MEDIA,
         APP_KEYS.PCM_PLAN_TASK,
+        APP_KEYS.DOCUMENT,
     ];
-    const PROJECTS = [
-        APP_KEYS.PCM_PLAN_TASK
-    ];
-    const GROUPS = [
-        APP_KEYS.PCM_PLAN_TASK
-    ];
+    const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
+    const GROUPS = [APP_KEYS.PCM_PLAN_TASK];
+    const PACKAGES = [APP_KEYS.DOCUMENT];
 
     // Validate tham số theo app
-    switch (appID) {
-        case APP_KEYS.MEDIA:
-            break;
-        case APP_KEYS.PCM_PLAN_TASK: {
-            if(!projectID || !checkObjectIDs([projectID]))
-                return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
+    if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) 
+        return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
 
-            if(!groupID || !checkObjectIDs([groupID]))
-                return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 };
-        }
-        default:
-            break;
-    }
+    if(PROJECTS.includes(appID) && (!projectID || !checkObjectIDs([projectID]))) 
+        return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
+
+    if(GROUPS.includes(appID) && (!groupID || !checkObjectIDs([groupID])))
+        return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 }; 
+
+    if(PACKAGES.includes(appID) && (!packgeID || !checkObjectIDs([packgeID])))
+        return { error: true, message: 'Tham số packgeID không hợp lệ', keyError: 'params_packgeID_invalid', status: 400 };
 
     // Nối đường dẫn lưu s3
-    if(COMPANIES.includes(appID)) {
-        pathS3 += `/${companyID}`;
-    }
-
-    if(PROJECTS.includes(appID)) {
-        pathS3 += `/${projectID}`;
-    }
-
-    if(GROUPS.includes(appID)) {
-        pathS3 += `/${groupID}`;
+    switch (appID) {
+        case APP_KEYS.MEDIA:
+            pathS3 += `/${companyID}`;
+            break;
+        case APP_KEYS.PCM_PLAN_TASK:
+            pathS3 += `/${companyID}/${projectID}/${groupID}`;
+            break;
+        case APP_KEYS.DOCUMENT:
+            pathS3 += `/${companyID}/${projectID}/${packgeID}`;
+            break;
+        default:
+            break;
     }
 
     return { error: false, data: pathS3 };

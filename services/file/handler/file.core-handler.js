@@ -92,13 +92,14 @@ module.exports = {
             companyID   :  { type: "string", optional: true },
             projectID   :  { type: "string", optional: true },
             groupID     :  { type: "string", optional: true },
+            packgeID    :  { type: "string", optional: true },
             //____(typeUpload == user)
             typeUpload  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { mimeType, type, app, name, size, typeUpload, companyID, projectID, groupID } = ctx.params;
+                let { mimeType, type, app, name, size, typeUpload, companyID, projectID, groupID, packgeID } = ctx.params;
 
                 let { _id: userID } = ctx.meta.infoUser;
                 let extension       = getExtension(name);
@@ -110,6 +111,7 @@ module.exports = {
                     companyID,
                     projectID,
                     groupID,
+                    packgeID,
                     type: typeUpload
                 });
                 if(pathS3.error) return pathS3;
