@@ -156,5 +156,6 @@
 
 exports.APP_KEYS = {
     MEDIA: "5df4ce16506d9b3c587948ca",
+    CHATTING: "5dfe4c1b51dc622100bb9d8f",
     PCM_PLAN_TASK: "5dfe4b9051dc622100bb9d89"
 }

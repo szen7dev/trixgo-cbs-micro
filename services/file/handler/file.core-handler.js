@@ -1,7 +1,7 @@
 const uuidv4                            = require('uuid').v4;
 const { getExtension }                  = require('../../../tools/utils/utils');
-let { GENERATE_LINK_S3 }                = require('../helper/s3');
-let FILE__CORE_MODEL                    = require('../model/file.core-model').MODEL;
+const { GENERATE_LINK_S3, GET_PATH_S3 } = require('../helper/s3');
+const FILE__CORE_MODEL                  = require('../model/file.core-model').MODEL;
 
 module.exports = {
     insert: {
@@ -83,31 +83,38 @@ module.exports = {
 
     generateLinkS3: {
         params: {
-            mimeType : { type: "string" },
-            name     : { type: "string" },
-            type     : { type: "string", optional: true },
-            app      : { type: "string", optional: true },
-            size     : { type: "number", optional: true },
+            mimeType    : { type: "string" },
+            name        : { type: "string" },
+            type        : { type: "string", optional: true },
+            size        : { type: "number", optional: true },
+            app         : { type: "string", optional: true },
             //____Ứng dụng
-            taskID   :  { type: "string", optional: true },
+            companyID   :  { type: "string", optional: true },
+            projectID   :  { type: "string", optional: true },
+            groupID     :  { type: "string", optional: true },
             //____(typeUpload == user)
-            typeUpload : { type: "string", optional: true },
+            typeUpload  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                let { _id: userID } = ctx.meta.infoUser;
-
                 await this.validateEntity(ctx.params);
-                let { mimeType, type, app, name, size, typeUpload, taskID } = ctx.params;
-                let extension = getExtension(name);
-                let fileName  = `${uuidv4()}.${extension}`;
-                let nameOrg   = name;
-                let pathS3 = null;
-                if(taskID){
-                    // pathS3 = `${appID}/${company}/${project}/${group}/${taskID}`;
-                }
+                let { mimeType, type, app, name, size, typeUpload, companyID, projectID, groupID } = ctx.params;
 
-                let infoGenerateLink = await GENERATE_LINK_S3(fileName, mimeType, typeUpload, pathS3);
+                let { _id: userID } = ctx.meta.infoUser;
+                let extension       = getExtension(name);
+                let fileName        = `${name}__${uuidv4()}.${extension}`;
+                let nameOrg         = name;
+
+                let pathS3          = GET_PATH_S3({
+                    appID: app,
+                    companyID,
+                    projectID,
+                    groupID,
+                    type: typeUpload
+                });
+                if(pathS3.error) return pathS3;
+
+                let infoGenerateLink = await GENERATE_LINK_S3(fileName, mimeType, typeUpload, pathS3.data);
 
                 /**
                  * Nếu có app thì đang insert file trong app
@@ -119,7 +126,7 @@ module.exports = {
                         app,
                         nameOrg,
                         name: fileName,
-                        path: `${process.env.AWS_BUCKET_PATH}/${fileName}`,
+                        path: `/${process.env.AWS_BUCKET_PATH}${pathS3.data}/${fileName}`,
                         mimeType,
                         type,
                         size,

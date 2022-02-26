@@ -31,7 +31,7 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
     //_____Trạng thái upload file(Hệ thống cũ không có)
     status: { 
         type: Number, 
-        enum:[FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],
+        enum: [FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS],
         require: true, 
         default: FILE_PROCESSING
     },
