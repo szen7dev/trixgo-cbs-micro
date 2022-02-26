@@ -196,7 +196,7 @@ class Model extends BaseModel {
 				// Init condition object
 				let conditionObj 	= { 
                     status: this.SEND_SUCCESS,
-                    // receiver: authorID
+                    receiver: authorID
                 };
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
@@ -227,12 +227,11 @@ class Model extends BaseModel {
                     conditionObj.content = new RegExp(keyword, 'i');
                 }
 
-                console.log({ populates })
 				let listNotifications = await NOTIFICATION__LOG_COLL
                     .find(conditionObj)
 					.limit(limit + 1)
 					.select(select)
-                    // .populate("sender receiver project contract")
+                    .populate("mainColl.item subColl.item")
 					.populate(populates)
 					.sort(sortBy)
 					.lean();
