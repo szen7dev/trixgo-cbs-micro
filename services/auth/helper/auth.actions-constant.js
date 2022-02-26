@@ -66,6 +66,9 @@ const CF_ACTIONS_AUTH = {
     /**
 	 * APP_MENU
 	 */
+    APP_MENU_INSERT                       : `${BASE_ACTIONS}_${APP_MENU}_INSERT`,
+    APP_MENU_UPDATE                       : `${BASE_ACTIONS}_${APP_MENU}_UPDATE`,
+    APP_MENU_REMOVE                       : `${BASE_ACTIONS}_${APP_MENU}_REMOVE`,
     APP_MENU_GET_INFO_AND_GET_LIST        : `${BASE_ACTIONS}_${APP_MENU}_GET_INFO_AND_GET_LIST`,
 
     /**
