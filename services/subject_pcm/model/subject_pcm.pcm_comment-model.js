@@ -135,7 +135,7 @@ class Model extends BaseModel {
                 });
 
                 let { author, assignee, related } = infoTask.data;
-                let receivers = [...new Set([author, assignee, ...related])];
+                let listReceivers = [...new Set([author, assignee, ...related])];
                 // let contentLog = '';
 
                 // content = content.length > 200 ? content.substring(0, 200) : content;
@@ -157,7 +157,12 @@ class Model extends BaseModel {
                 //         break;
                 // }
 
-                // receivers = receivers.filter(receiverID => receiverID.toString() !== authorID.toString());
+                let receivers = listReceivers.filter(receiverID => receiverID.toString() !== authorID.toString());
+                console.log({
+                    receivers,
+                    listReceivers
+                });
+
                 // Gửi thông báo cho user
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     content,
@@ -184,7 +189,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     result: infoDataAfterInserted,
-                    receivers
+                    receivers: listReceivers
                 }, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
