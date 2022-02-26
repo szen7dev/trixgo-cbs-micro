@@ -805,7 +805,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ 
-        projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
+        projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
         isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
@@ -984,6 +984,10 @@ class Model extends BaseModel {
 
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
+                }
+                
+                if(level){
+                    conditionObj.level = level;
                 }
                 
                 // typeStatus
