@@ -665,7 +665,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)

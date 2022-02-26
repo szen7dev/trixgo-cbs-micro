@@ -1,7 +1,8 @@
-let { config }              = require('../file.keys-constant');
-let { checkObjectIDs }      = require('../../../../tools/utils/utils');
-let { APP_KEYS }            = require('../../../../tools/keys');
-let AWS                     = require('aws-sdk');
+let { config }                          = require('../file.keys-constant');
+let { checkObjectIDs, getExtension }    = require('../../../../tools/utils/utils');
+let { APP_KEYS }                        = require('../../../../tools/keys');
+let uuidv4                              = require('uuid').v4;
+let AWS                                 = require('aws-sdk');
 
 AWS.config.update({
     accessKeyId : config.aws_access_key_id,
@@ -10,7 +11,6 @@ AWS.config.update({
 })
 let s3Object = new AWS.S3();
 
-// link từ s3 upload file
 let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
     try {
         let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH}${pathS3}`;
@@ -92,10 +92,8 @@ const uploadFile = (pathFile, key) => {
  * @param {string} groupID 
  * @returns { error: boolean, data: string }
  */
-const getPathS3 = ({ type, appID, companyID, projectID, groupID, packageID }) => {
-    if(type) {
-        return { error: false, data: '' };
-    }
+const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
+    if(type) return { error: false, data: '' };
 
     if(!appID || !checkObjectIDs([appID])) {
         return {
@@ -107,50 +105,82 @@ const getPathS3 = ({ type, appID, companyID, projectID, groupID, packageID }) =>
     }
 
     let pathS3 = `/${appID}`;
+    let appName = '';
 
     // Khai báo constants các app
     const COMPANIES = [
         APP_KEYS.MEDIA,
+        APP_KEYS.CHATTING,
         APP_KEYS.PCM_PLAN_TASK,
         APP_KEYS.DOCUMENT,
+        APP_KEYS.HUMAN,
     ];
     const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
     const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
     const PACKAGES = [APP_KEYS.DOCUMENT];
+    const CONVERSATIONS = [APP_KEYS.CHATTING];
 
     const PACKAGES = [
         APP_KEYS.DOCUMENT
     ];
 
     // Validate tham số theo app
-    if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) 
+    if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) {
         return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
+    }
 
-    if(PROJECTS.includes(appID) && (!projectID || !checkObjectIDs([projectID]))) 
+    if(PROJECTS.includes(appID) && (!projectID || !checkObjectIDs([projectID]))) {
         return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
+    }
 
-    if(GROUPS.includes(appID) && (!groupID || !checkObjectIDs([groupID])))
+    if(GROUPS.includes(appID) && (!groupID || !checkObjectIDs([groupID]))) {
         return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 }; 
+    }
 
-    if(PACKAGES.includes(appID) && (!packageID || !checkObjectIDs([packageID])))
+    if(PACKAGES.includes(appID) && (!packageID || !checkObjectIDs([packageID]))) {
         return { error: true, message: 'Tham số packageID không hợp lệ', keyError: 'params_packageID_invalid', status: 400 };
+    }
+
+    if(CONVERSATIONS.includes(appID) && (!conversationID || !checkObjectIDs([conversationID]))) {
+        return { error: true, message: 'Tham số conversationID không hợp lệ', keyError: 'params_conversationID_invalid', status: 400 };
+    }
 
     // Nối đường dẫn lưu s3
     switch (appID) {
         case APP_KEYS.MEDIA:
+            appName = 'MEDIA';
             pathS3 += `/${companyID}`;
             break;
+        case APP_KEYS.CHATTING:
+            appName = 'CHATTING';
+            pathS3 += `/${companyID}/${conversationID}`;
+            break;
         case APP_KEYS.PCM_PLAN_TASK:
+            appName = 'PCM_PLAN_TASK';
             pathS3 += `/${companyID}/${projectID}/${groupID}`;
             break;
         case APP_KEYS.DOCUMENT:
+            appName = 'DOCUMENT';
             pathS3 += `/${companyID}/${projectID}/${packageID}`;
+            break;
+        case APP_KEYS.HUMAN:
+            appName = 'HUMAN';
+            pathS3 += `/${companyID}`;
             break;
         default:
             break;
     }
-    
-    return { error: false, data: pathS3 };
+
+    let extension   = getExtension(fileName);
+    let newFileName = `${fileName}___${uuidv4()}___${appName}.${extension}`;
+
+    return { 
+        error: false, 
+        data: {
+            newFileName,
+            pathS3
+        }
+    };
 }
 
 exports.GENERATE_LINK_S3 = render_link_upload_s3;
