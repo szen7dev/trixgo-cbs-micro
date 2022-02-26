@@ -83,52 +83,55 @@ module.exports = {
 
     generateLinkS3: {
         params: {
-            mimeType    : { type: "string" },
-            name        : { type: "string" },
-            type        : { type: "string", optional: true },
-            size        : { type: "number", optional: true },
-            app         : { type: "string", optional: true },
+            mimeType        : { type: "string" },
+            name            : { type: "string" },
+            type            : { type: "string", optional: true },
+            size            : { type: "number", optional: true },
             //____Ứng dụng
-            companyID   :  { type: "string", optional: true },
-            projectID   :  { type: "string", optional: true },
-            groupID     :  { type: "string", optional: true },
-            packgeID    :  { type: "string", optional: true },
+            appID           : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            groupID         : { type: "string", optional: true },
+            packgeID        : { type: "string", optional: true },
+            conversationID  : { type: "string", optional: true },
             //____(typeUpload == user)
-            typeUpload  : { type: "string", optional: true },
+            typeUpload      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { mimeType, type, app, name, size, typeUpload, companyID, projectID, groupID, packgeID } = ctx.params;
-
+                let { 
+                    mimeType, type, appID, name, size, typeUpload, 
+                    companyID, projectID, groupID, packgeID, conversationID
+                } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
-                let extension       = getExtension(name);
-                let fileName        = `${name}__${uuidv4()}.${extension}`;
-                let nameOrg         = name;
 
-                let pathS3          = GET_PATH_S3({
-                    appID: app,
+                let generatePathS3  = GET_PATH_S3({
+                    appID,
                     companyID,
                     projectID,
                     groupID,
                     packgeID,
+                    conversationID,
+                    fileName: name,
                     type: typeUpload
                 });
-                if(pathS3.error) return pathS3;
+                if(generatePathS3.error) return generatePathS3;
 
-                let infoGenerateLink = await GENERATE_LINK_S3(fileName, mimeType, typeUpload, pathS3.data);
+                let { newFileName, pathS3 } = generatePathS3.data;
+                let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
 
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
                  */
                 let infoFileAfterInsert = null;
-                if(app && !infoGenerateLink.error){
+                if(appID && !infoGenerateLink.error){
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
-                        app,
-                        nameOrg,
-                        name: fileName,
-                        path: `/${process.env.AWS_BUCKET_PATH}${pathS3.data}/${fileName}`,
+                        app: appID,
+                        nameOrg: name,
+                        name: newFileName,
+                        path: `/${process.env.AWS_BUCKET_PATH}${pathS3}/${newFileName}`,
                         mimeType,
                         type,
                         size,
