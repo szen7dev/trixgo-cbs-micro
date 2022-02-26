@@ -299,5 +299,61 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: Depv ✅
+	 * Func: LẤY DANH SÁCH HỢP ĐỒNG MÀ USER LÀ MEMBERS
+	 * Date: 19/08/2021
+	 */
+    getListIsMembers: {
+        auth: "required",
+        params: {
+            projectID           : { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
+            draft               : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+            status              : { type: "string", optional: true },
+            real                : { type: "string", optional: true },
+            subType             : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
+            field               : { type: "string", optional: true },
+            chair               : { type: "string", optional: true },
+            personInCharge      : { type: "string", optional: true },
+            debtStatus          : { type: "string", optional: true },
+            warehouse           : { type: "string", optional: true },
+            companyID           : { type: "string", optional: true },
+            isExpiredAg         : { type: "string", optional: true },
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
+                    debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, isExpiredAg, isMember,
+                    keyword, limit, lastestID, select, populates
+                } = ctx.params;
+
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id;
+                }
+
+                let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
+                    companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
+                    debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
+                    keyword, limit, lastestID, select, populates
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
 }

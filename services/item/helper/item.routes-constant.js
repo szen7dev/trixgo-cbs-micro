@@ -24,12 +24,14 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================CONTRACT=========================================//
     CONTRACTS                                  : `${BASE_ROUTE}${CONTRACT}`,
-    
+    LIST_CONTRACT_IS_MEMBERS                   : `${BASE_ROUTE}/list-contract-is-members`,
+
     // ================================DOCTYPE==========================================//
     DOCTYPES                                   : `${BASE_ROUTE}${DOCTYPE}`,
 
     // ================================CONTACT==========================================//
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
+    CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
 
     // ================================WAREHOUSE=======================================//
     WAREHOUSES                                 : `${BASE_ROUTE}${WAREHOUSE}`,

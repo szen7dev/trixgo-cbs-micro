@@ -239,23 +239,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { 
                     keyword, limit, lastestID, select, populates } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
-
-                if(!companyID){
-                    companyID = company._id
-                }
-
-                let resultAfterCallHandler;
-                if(contactID){
-                    resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
-                        contactID, select, populates
-                    });
-                }else{
-                    resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
-                        lastestID, userID, keyword, limit, select, populates
-                    });
-                }
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListOfSystem({ keyword, limit, lastestID, select, populates });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -263,7 +247,4 @@ module.exports = {
             }
         }
     },
-
-
-
 }

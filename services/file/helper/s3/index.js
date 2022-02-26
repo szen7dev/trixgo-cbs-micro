@@ -120,10 +120,6 @@ const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packa
     const PACKAGES = [APP_KEYS.DOCUMENT];
     const CONVERSATIONS = [APP_KEYS.CHATTING];
 
-    const PACKAGES = [
-        APP_KEYS.DOCUMENT
-    ];
-
     // Validate tham số theo app
     if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) {
         return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
