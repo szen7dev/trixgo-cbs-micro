@@ -107,7 +107,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 10-Tiến độ
      * 11-Biên bản họp
      */
-    isproposal: { type: Number, default: 0 }, // Sẽ bỏ đi
     subtype: { type: Number, default: 0 }, // Thay thế cho isproposal để tiện cho việc xử lý code
     /**
      * Phân loại tiến độ
