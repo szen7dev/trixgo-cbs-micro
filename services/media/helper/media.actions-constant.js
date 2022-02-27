@@ -15,6 +15,11 @@ const CF_ACTIONS_MEDIA = {
 	LIST_SEEN_MEDIA                  			     : `${BASE_ACTIONS}_LIST_SEEN_MEDIA`,
 
      /**
+      * FILE MEDIA
+      */
+     GET_INFO_AND_GET_LIST_MEMDIA_FILE                 : `${BASE_ACTIONS}_${COMMENT}_GET_INFO_AND_GET_LIST_MEMDIA_FILE`,
+
+     /**
      * SAVE MEDIA
      */
 	LIST_SAVE_MEDIA                  				: `${BASE_ACTIONS}_LIST_SAVE_MEDIA`,

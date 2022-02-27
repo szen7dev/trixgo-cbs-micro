@@ -13,6 +13,7 @@ const { CF_ACTIONS_MEDIA } 	            = require('./helper/media.actions-consta
  * HANDLERS
  */
 const MEDIA_HANDLER    					= require('./handler/media-handler');
+const MEDIA__FILE_HANDLER    			= require('./handler/media.file-handler');
 const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
 const MEDIA__REACTION_HANDLER    		= require('./handler/media.reaction-handler');
 
@@ -81,6 +82,10 @@ module.exports = {
 
 		// LẤY DANH SÁCH BÀI VIẾT ĐÃ PIN
 		[CF_ACTIONS_MEDIA.LIST_PIN_MEDIA] 		            			: MEDIA_HANDLER.getListPinMedia,
+
+		// ================================  MEDIA FILE  ================================
+		[CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_MEMDIA_FILE]			: MEDIA__FILE_HANDLER.getInfoAndGetListMediaFile,
+
 
 		// ================================  MEDIA COMMENT  ================================
 

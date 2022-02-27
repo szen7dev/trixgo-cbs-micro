@@ -902,7 +902,7 @@ class Model extends BaseModel {
 					nextCursor,
 				}, status: 200 });
 			} catch (error) {
-				return resolve({ error: true, error: message.error, status: 500 });
+				return resolve({ error: true, error: error.message, status: 500 });
 			}
 		})
 	}
@@ -1191,7 +1191,7 @@ class Model extends BaseModel {
 					nextCursor,
 				}, status: 200 });
 			} catch (error) {
-				return resolve({ error: true, error: message.error, status: 500 });
+				return resolve({ error: true, error: error.message, status: 500 });
 			}
 		})
     }
