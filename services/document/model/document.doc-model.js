@@ -570,7 +570,7 @@ class Model extends BaseModel {
                     conditionObj.storage = storageID
                 }
 
-                if(checkObjectIDs(requestResponse)){
+                if(requestResponse){
                     conditionObj.requestResponse = requestResponse
                 }
 
