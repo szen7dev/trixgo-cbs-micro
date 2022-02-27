@@ -85,7 +85,7 @@ module.exports = {
         params: {
             mimeType        : { type: "string" },
             name            : { type: "string" },
-            type            : { type: "string" },
+            type            : { type: "number" },
             size            : { type: "number" },
             //____Ứng dụng
             appID           : { type: "string", optional: true },
