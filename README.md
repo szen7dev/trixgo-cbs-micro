@@ -202,7 +202,7 @@ listTaskAfterUpdate.map(task => {
     let author = db.users.findOne({ _id: ObjectId(task.author)});
     let assignee = db.users.findOne({ _id: ObjectId(task.assignee)});
     if(author && assignee){
-        let abc =  db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)}, { 
+        let abc =  db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)}, {
             $set: {
                 companyOfAuthor: author.company, 
             companyOfAssignee: assignee.company, 
@@ -211,3 +211,9 @@ listTaskAfterUpdate.map(task => {
     }
 })
 --------------------------------------------------------
+
+<!-- Cập nhật trường isproposal thành trường subtype -->
+--------------------------------------------------------
+db.pcm_plan_tasks.updateMany({}, [{$set: { subtype: "$isproposal" }}])
+--------------------------------------------------------
+
