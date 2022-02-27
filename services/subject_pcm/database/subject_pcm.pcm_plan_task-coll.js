@@ -203,12 +203,12 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
     }],
-    //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
+    //_________File của người tạo việc
     authorAttachs: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_file"
     }],
-    //_________File của người thực hiện-cân nhắc bỏ do không linh hoạt phiên bản
+    //_________File của người thực hiện
     assigneeAttachs: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_file"
