@@ -1,11 +1,17 @@
 "use strict";
 
 /**
+ * EXTERNAL PACKAGE
+ */
+const PromisePool								= require('@supercharge/promise-pool');
+
+/**
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION }				= require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
 const { APP_KEYS }								= require('../../../tools/keys');
 
@@ -13,13 +19,14 @@ const { APP_KEYS }								= require('../../../tools/keys');
  * TOOLS
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } 			= require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, isEmptyObject } = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/playground/index');
 
 /**
  * COLLECTIONS
  */
 const MEDIA_COLL					        	= require('../database/media-coll');
+const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
 const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
 const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
 
@@ -42,6 +49,7 @@ class Model extends BaseModel {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
 				let dataInsert = {};
+				let dataUpdate = {};
 				let receiversNoti = [];
 				let conditionReceiver = {};
 
@@ -138,45 +146,6 @@ class Model extends BaseModel {
 					dataInsert.department = departmentID;
 				}
 
-				if (background) {
-					if(!checkObjectIDs([background])) {
-						return resolve({
-							error: true,
-							message: "Tham số background không hợp lệ",
-							keyError: "params_background_invalid",
-							status: 400
-						})
-					}
-
-					dataInsert.background = background;
-				}
-
-				if (files && files.length) {
-					if(!checkObjectIDs(files)) {
-						return resolve({
-							error: true,
-							message: "Tham số files không hợp lệ",
-							keyError: "params_files_invalid",
-							status: 400
-						})
-					}
-
-					dataInsert.files = files;
-				}
-
-				if (images && images.length) {
-					if(!checkObjectIDs(images)) {
-						return resolve({
-							error: true,
-							message: "Tham số images không hợp lệ",
-							keyError: "params_images_invalid",
-							status: 400
-						})
-					}
-
-					dataInsert.images = images;
-				}
-
 				if (tagFriends && tagFriends.length) {
 					if(!checkObjectIDs(tagFriends)) {
 						return resolve({
@@ -199,6 +168,124 @@ class Model extends BaseModel {
 						keyError: "error_occurred",
 						status: 422
 					})
+				}
+
+				const mediaID = infoMediaAfterInserted._id;
+
+				if (background) {
+					if(!checkObjectIDs([background])) {
+						return resolve({
+							error: true,
+							message: "Tham số background không hợp lệ",
+							keyError: "params_background_invalid",
+							status: 400
+						})
+					}
+
+					const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+						fileID: background
+					});
+
+					if(!infoFileCore.error) {
+						const { app, company, name, nameOrg, description, status, path, size, mimeType, type, author } = infoFileCore.data;
+
+						const infoAfterInserted = await MEDIA__FILE_COLL.create({
+							media: mediaID,
+							file: fileID,
+							app, company, 
+							name, nameOrg, path, size, mimeType, 
+							description, status, type, author
+						});
+	
+						dataUpdate.background = infoAfterInserted._id;
+					}
+				}
+
+				if (files && files.length) {
+					if(!checkObjectIDs(files)) {
+						return resolve({
+							error: true,
+							message: "Tham số files không hợp lệ",
+							keyError: "params_files_invalid",
+							status: 400
+						})
+					}
+
+					let { results, errors } = await PromisePool
+						.for(files)
+						.withConcurrency(2)
+						.process(async fileID => {
+							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID
+							});
+
+							if(infoFileCore.error) return null;
+
+							const { 
+								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+							} = infoFileCore.data;
+							console.log({
+								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+							})
+
+							const infoAfterInserted = await MEDIA__FILE_COLL.create({
+								media: mediaID,
+								file: fileID,
+								app, company, 
+								name, nameOrg, path, size, mimeType, 
+								description, status, type, author
+							});
+							return infoAfterInserted._id;
+						})
+
+					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
+						dataUpdate.files = results;
+					}
+				}
+
+				if (images && images.length) {
+					if(!checkObjectIDs(images)) {
+						return resolve({
+							error: true,
+							message: "Tham số images không hợp lệ",
+							keyError: "params_images_invalid",
+							status: 400
+						})
+					}
+
+					let { results, errors } = await PromisePool
+						.for(images)
+						.withConcurrency(2)
+						.process(async fileID => {
+							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID
+							});
+
+							if(infoFileCore.error) return null;
+
+							const { 
+								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+							} = infoFileCore.data;
+
+							const infoAfterInserted = await MEDIA__FILE_COLL.create({
+								media: mediaID,
+								file: fileID,
+								app, company, 
+								name, nameOrg, path, size, mimeType, 
+								description, status, type, author
+							});
+							return infoAfterInserted._id;
+						})
+
+					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
+						dataUpdate.images = results;
+					}
+				}
+
+				if(!isEmptyObject(dataUpdate)) {
+					await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate);
 				}
 
 				switch (type) {
@@ -230,7 +317,7 @@ class Model extends BaseModel {
 						ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 							content: content.length > 200 ? content.substring(0, 200) : content,
 							receivers: receiversNoti,
-							path: `/media/post/${infoMediaAfterInserted._id}`,
+							path: `/media/post/${mediaID}`,
 							languageKey: "CREATE_NEW_MEDIA",
 							app: APP_KEYS.MEDIA,
 							coll: infoMediaAfterInserted?._id?.toString(),
@@ -401,7 +488,27 @@ class Model extends BaseModel {
 						})
 					}
 
-					dataUpdate.background = background;
+					const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+						fileID: background
+					});
+
+					if(!infoFileCore.error) {
+						const { app, company, name, nameOrg, description, status, path, size, mimeType, type, author } = infoFileCore.data;
+
+						const infoAfterInserted = await MEDIA__FILE_COLL.create({
+							media: mediaID,
+							file: fileID,
+							app, company, 
+							name, nameOrg, path, size, mimeType, 
+							description, status, type, author
+						});
+
+						if(infoAfterInserted && infoMedia.background) {
+							await MEDIA__FILE_COLL.findByIdAndDelete(infoMedia.background);
+						}
+
+						dataUpdate.background = infoAfterInserted._id;
+					}
 				}
 
 				if (files && files.length) {
@@ -414,9 +521,37 @@ class Model extends BaseModel {
 						})
 					}
 
-					dataUpdate.files = files;
-				} else{
-					dataUpdate.files = [];
+					let { results, errors } = await PromisePool
+						.for(files)
+						.withConcurrency(2)
+						.process(async fileID => {
+							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID
+							});
+
+							if(infoFileCore.error) return null;
+
+							const { 
+								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+							} = infoFileCore.data;
+
+							const infoAfterInserted = await MEDIA__FILE_COLL.create({
+								media: mediaID,
+								file: fileID,
+								app, company, 
+								name, nameOrg, path, size, mimeType, 
+								description, status, type, author
+							});
+
+							return infoAfterInserted._id;
+						})
+
+					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
+
+						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.files } });
+						dataUpdate.files = results;
+					}
 				}
 
 				if (images && images.length) {
@@ -429,9 +564,36 @@ class Model extends BaseModel {
 						})
 					}
 
-					dataUpdate.images = images;
-				} else{
-					dataUpdate.images = [];
+					let { results, errors } = await PromisePool
+						.for(images)
+						.withConcurrency(2)
+						.process(async fileID => {
+							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID
+							});
+
+							if(infoFileCore.error) return null;
+
+							const { 
+								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+							} = infoFileCore.data;
+
+							const infoAfterInserted = await MEDIA__FILE_COLL.create({
+								media: mediaID,
+								file: fileID,
+								app, company, 
+								name, nameOrg, path, size, mimeType, 
+								description, status, type, author
+							});
+							return infoAfterInserted._id;
+						})
+
+					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
+
+						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.images } });
+						dataUpdate.images = results;
+					}
 				}
 
 				let infoAfterUpdate = await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate, { new: true });
@@ -996,7 +1158,8 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
 				}
 
-				let infoDataAfterGet = await MEDIA__SAVE_COLL.find(conditionObj)
+				let infoDataAfterGet = await MEDIA__SAVE_COLL
+					.find(conditionObj)
 					.limit(limit + 1)
 					.sort(sortBy)
 					.select(select)

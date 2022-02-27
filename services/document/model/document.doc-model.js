@@ -441,7 +441,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { members: { $in: [userID]} };
+                let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                
@@ -562,6 +562,7 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
+                console.log({ conditionObj });
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){

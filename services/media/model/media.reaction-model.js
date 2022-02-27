@@ -284,7 +284,7 @@ class Model extends BaseModel {
 					return resolve({
 						error: true, 
 						message: 'Bài viết không tồn tại', 
-						keyError: 'media_is_not_exists',
+						keyError: 'media_not_exists',
 						status: 400
 					});
 				}
@@ -298,7 +298,7 @@ class Model extends BaseModel {
 					})
 					.lean();
 
-				if(infoReaction && +infoReaction?.reaction?.type === typeReaction){
+				if(infoReaction && +infoReaction?.type === typeReaction){
 					const infoAfterDeleteReaction = await MEDIA__FILE_REACTION_COLL.findByIdAndDelete(infoReaction._id);
 
 					await MEDIA__FILE_COLL.findByIdAndUpdate(fileID, {

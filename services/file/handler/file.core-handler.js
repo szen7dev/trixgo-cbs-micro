@@ -1,5 +1,3 @@
-const uuidv4                            = require('uuid').v4;
-const { getExtension }                  = require('../../../tools/utils/utils');
 const { GENERATE_LINK_S3, GET_PATH_S3 } = require('../helper/s3');
 const FILE__CORE_MODEL                  = require('../model/file.core-model').MODEL;
 
@@ -28,9 +26,9 @@ module.exports = {
 
     update: {
         params: {
-            fileID: { type: "string" },
-            status: { type: "string", optional: true },
-            description: { type: "string", optional: true },
+            fileID      : { type: "string" },
+            status      : { type: "string", optional: true },
+            description : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -48,17 +46,21 @@ module.exports = {
 
     getInfoFile: {
         params: {
-            userID: { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            fileID      : { type: "string" },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fileID, userID } = ctx.params;
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { fileID, select, populates } = ctx.params;
 
-                let infoFile = await FILE__CORE_MODEL.getInfoFile({ fileID, userID });
+                const infoFile = await FILE__CORE_MODEL.getInfoFile({ authorID, fileID, select, populates });
+
                 return infoFile;
             } catch (error) {
-                return { error: true, message: error.message };
+                return { error: true, message: error.message, status: 500 };
             }
         }
     },
@@ -85,7 +87,7 @@ module.exports = {
         params: {
             mimeType        : { type: "string" },
             name            : { type: "string" },
-            type            : { type: "string" },
+            type            : { type: "number" },
             size            : { type: "number" },
             //____Ứng dụng
             appID           : { type: "string", optional: true },

@@ -130,36 +130,58 @@ class Model extends BaseModel {
         })
     }
 
-    getInfoFile({ fileID, userID }) {
+    getInfoFile({ fileID, authorID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                 /** 
+                /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(fileID, userID))
-                    return resolve({ error: true, message: 'object_invalid' });
+                if(!checkObjectIDs([fileID, authorID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số fileID hoặc authorID không hợp lệ",
+                        keyError: "params_fileID_or_authorID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
+                let infoFile = await FILE__CORE_COLL
+                    .findById(fileID)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
-                let conditionObj = {
-                    userCreate: userID
-                };
+                if (!infoFile) {
+                    return resolve({
+                        error: true,
+                        message: "File không tồn tại",
+                        keyError: "file_not_exists",
+                        status: 400
+                    })
+                }
 
-                let infoFile = await FILE__CORE_COLL.findOne(conditionObj)
-                if (!infoFile)
-                    return resolve({ error: true, message: 'cannot_get_info' });
-
-                return resolve({ error: false, data: infoFile });
+                return resolve({ error: false, data: infoFile, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

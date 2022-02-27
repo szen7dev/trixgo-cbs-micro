@@ -189,7 +189,7 @@ module.exports = {
         }
     },
 
-     /**
+    /**
 	 * Dev: MinhVH
 	 * Func: CẬP NHẬT LƯỢT XEM BÀI VIẾT
      * Updated: 24/02/2022

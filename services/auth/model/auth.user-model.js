@@ -19,7 +19,6 @@ const AUTH__COMPANY_COLL                = require('../database/auth.company-coll
 // const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
 const { randomStringFixLengthCode } 
                                         = require('../../../tools/utils/string_utils');
-const timeUtils                         = require('../../../tools/utils/time_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
 const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 }         = require('../../../tools/cursor_base/playground/index');
@@ -27,13 +26,12 @@ const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const { 
     PLATFORM_TRIXGO, PLATFORM_WYNDIX,
-    LEVEL_ADMIN, LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
+    LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
     STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK,
 }                                       = require('../helper/auth.keys-constant');
 const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_CHATTING }           = require('../../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
 
@@ -402,27 +400,24 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
+    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 10;
+				if(isNaN(limit) || +limit > 20) {
+					limit = 20;
 				} else{
 					limit = +limit;
 				}
 
-                if(limit > 20){
-					limit = 20;
-                }
-
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -433,7 +428,6 @@ class Model extends BaseModel {
 
 				let conditionObj 	= { _id: { $in: infoUserWithFriends.friends } };
 				let conditionFind 	= {};
-				let objSort 	 	= {};
                 let sortBy = {
 					createAt: -1,
                     modifyAt: -1,
@@ -459,11 +453,11 @@ class Model extends BaseModel {
 				if(keyword){
 					keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
 				}
 
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
                     .populate(populates)
@@ -472,6 +466,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
                 let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -480,9 +475,6 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-
-                // Tổng số trang
-                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({
 					error: false,
@@ -496,6 +488,7 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
