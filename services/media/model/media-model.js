@@ -20,6 +20,7 @@ const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/pla
  * COLLECTIONS
  */
 const MEDIA_COLL					        	= require('../database/media-coll');
+const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
 const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
 const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
 
@@ -160,6 +161,12 @@ class Model extends BaseModel {
 							status: 400
 						})
 					}
+
+					// ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+
+					// });
+
+					// MEDIA__FILE_COLL
 
 					dataInsert.files = files;
 				}
@@ -996,7 +1003,8 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
 				}
 
-				let infoDataAfterGet = await MEDIA__SAVE_COLL.find(conditionObj)
+				let infoDataAfterGet = await MEDIA__SAVE_COLL
+					.find(conditionObj)
 					.limit(limit + 1)
 					.sort(sortBy)
 					.select(select)

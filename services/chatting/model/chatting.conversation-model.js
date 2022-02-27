@@ -45,7 +45,7 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: MinhVH - 04/08/2021
 	 */
-	insertConversation({ name, description, bizfullname, authorID, membersID, isPrivate, ctx }) {
+	insertConversation({ name, description, bizfullname, authorID, membersID, isPrivate, company, ctx }) {
         return new Promise(async (resolve) => {
             try {
 				if(!checkObjectIDs([authorID, ...membersID]) || !membersID || !membersID.length) {
@@ -127,6 +127,7 @@ class Model extends BaseModel {
 					name,
 					description,
 					isPrivate,
+					company: company._id,
 					authors: [authorID],
 					members: [...new Set([authorID, ...membersID])]
 				});
