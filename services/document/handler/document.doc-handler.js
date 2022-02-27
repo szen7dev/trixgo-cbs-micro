@@ -217,7 +217,7 @@ module.exports = {
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
-
+                
                 if(!companyID){
                     companyID = company._id
                 }
