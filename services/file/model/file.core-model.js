@@ -29,34 +29,99 @@ class Model extends BaseModel {
      *   lưu ý:
      *      app: là các name constant
      * */
-    insert({ app, nameOrg, name, path, size, mimeType, type, userID }) {
+    insert({ appID, companyID, projectID, nameOrg, name, path, size, mimeType, type, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                const dataInsert = {
+                    nameOrg, 
+                    name, 
+                    path, 
+                    size, 
+                    mimeType, 
+                    type, 
+                    author: userID
+                }
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'object_invalid' });
+                if(!checkObjectIDs([userID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    });
+                }
 
-                if (size && !checkNumberValid({ val: size }))
-                    return resolve({ error: true, message: 'size_invalid' });
+                if(size && !checkNumberValid({ val: size })) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số size không hợp lệ",
+                        keyError: "params_size_invalid",
+                        status: 400
+                    });
+                }
 
-                if(type && !checkNumberIsValidWithRange({ arrValid: [1,2,3,4], val: type }))
-                    return resolve({ error: true, message: 'type_invalid' });
+                if(type && !checkNumberIsValidWithRange({ arrValid: [1,2,3,4], val: type })) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số type không hợp lệ",
+                        keyError: "params_type_invalid",
+                        status: 400
+                    });
+                }
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
-                let infoAfterInsert = await this.insertData({ 
-                    app, nameOrg, name, path, size, mimeType, type, author: userID
-                });
+                if(appID) {
+                    if(!checkObjectIDs([appID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số appID không hợp lệ",
+                            keyError: "params_appID_invalid",
+                            status: 400
+                        });
+                    }
+
+                    dataInsert.app = appID;
+                }
+
+                if(companyID) {
+                    if(!checkObjectIDs([companyID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số companyID không hợp lệ",
+                            keyError: "params_companyID_invalid",
+                            status: 400
+                        });
+                    }
+
+                    dataInsert.company = companyID;
+                }
+
+                if(projectID) {
+                    if(!checkObjectIDs([projectID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số projectID không hợp lệ",
+                            keyError: "params_projectID_invalid",
+                            status: 400
+                        });
+                    }
+
+                    dataInsert.project = projectID;
+                }
+
+                let infoAfterInsert = await this.insertData(dataInsert);
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });

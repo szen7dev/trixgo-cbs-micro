@@ -94,7 +94,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             projectID       : { type: "string", optional: true },
             groupID         : { type: "string", optional: true },
-            packageID        : { type: "string", optional: true },
+            packageID       : { type: "string", optional: true },
             conversationID  : { type: "string", optional: true },
             //____(typeUpload == user)
             typeUpload      : { type: "string", optional: true },
@@ -103,7 +103,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    mimeType, type, appID, name, size, typeUpload, 
+                    appID, mimeType, type, name, size, typeUpload, 
                     companyID, projectID, groupID, packageID, conversationID
                 } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
@@ -130,7 +130,9 @@ module.exports = {
                 let infoFileAfterInsert = null;
                 if(appID && !infoGenerateLink.error){
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
-                        app: appID,
+                        appID,
+                        companyID,
+                        projectID,
                         nameOrg: name,
                         name: newFileName,
                         path: `/${process.env.AWS_BUCKET_PATH}${pathS3}/${newFileName}`,
