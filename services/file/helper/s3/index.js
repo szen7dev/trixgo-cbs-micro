@@ -85,11 +85,6 @@ const uploadFile = (pathFile, key) => {
 
 /**
  * GET PATH S3 BY APP
- * @param {string} type 
- * @param {string} appID 
- * @param {string} companyID 
- * @param {string} projectID 
- * @param {string} groupID 
  * @returns { error: boolean, data: string }
  */
 const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {

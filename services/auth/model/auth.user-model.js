@@ -402,27 +402,24 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
+    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 10;
+				if(isNaN(limit) || +limit > 20) {
+					limit = 20;
 				} else{
 					limit = +limit;
 				}
 
-                if(limit > 20){
-					limit = 20;
-                }
-
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -433,7 +430,6 @@ class Model extends BaseModel {
 
 				let conditionObj 	= { _id: { $in: infoUserWithFriends.friends } };
 				let conditionFind 	= {};
-				let objSort 	 	= {};
                 let sortBy = {
 					createAt: -1,
                     modifyAt: -1,
@@ -459,11 +455,11 @@ class Model extends BaseModel {
 				if(keyword){
 					keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
 				}
 
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
                     .populate(populates)
@@ -472,6 +468,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
                 let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -480,9 +477,6 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-
-                // Tổng số trang
-                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({
 					error: false,
@@ -496,6 +490,7 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
