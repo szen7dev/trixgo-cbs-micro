@@ -599,6 +599,7 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
+                console.log({ conditionObj });
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
