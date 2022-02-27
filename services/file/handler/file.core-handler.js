@@ -47,8 +47,8 @@ module.exports = {
     getInfoFile: {
         params: {
             fileID      : { type: "string" },
-            select      : { type: "string" },
-            populates   : { type: "string" },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

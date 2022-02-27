@@ -133,13 +133,6 @@ class Model extends BaseModel {
     getInfoFile({ fileID, authorID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = {
-                    author: authorID
-                };
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
@@ -172,7 +165,7 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 let infoFile = await FILE__CORE_COLL
-                    .findOne(conditionObj)
+                    .findById(fileID)
                     .select(select)
                     .populate(populates)
                     .lean();
