@@ -806,7 +806,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
+        isproposal, subType, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -936,8 +936,12 @@ class Model extends BaseModel {
                 }
 
                 //Phân loại công việc
-                if(isproposal){
-                    conditionObj.isproposal = isproposal;
+                // if(isproposal){
+                //     conditionObj.isproposal = isproposal;
+                // }
+                // Phân loại công việc trước dùng isproposal
+                if(subType){
+                    conditionObj.subType = subType;
                 }
                 
                 /**
@@ -1082,7 +1086,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
-                console.log({ conditionObj, sortBy });
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
@@ -1211,6 +1214,86 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     amountTask, amountTaskIsRFa, amountTaskIsRFis, amountTaskIsFlags, amountTaskIsAssignee, amountTaskIsDraft
+                }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Lấy số lượng task đấu thầu ✅
+     * Author: Depv
+     */
+    getBadgeBidding({ userID }){
+        return new Promise(async resolve => {
+            try {
+                /**
+                 *  Đang dự thầu
+                 */
+                let amountBiddingInProgress = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    assignee: userID, 
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 2
+                })
+
+                /**
+                 *  Hoàn thành dự thầu
+                 */
+                let amountBiddingInComplete = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    assignee: userID, 
+                    status: 3,
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 2
+                })
+
+                /**
+                 *  Đang mời thầu
+                 */
+                let amountBiddingInviting = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 1,
+                    $or: [
+                        {
+                            author: userID
+                        },
+                        {
+                            related: { $in: [userID] }
+                        },
+                    ]
+                })
+
+                /**
+                 *  Hoàn thành mời thầu
+                 */
+                let amountBiddingInvitingComplete = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 1,
+                    status: 3,
+                    $or: [
+                        {
+                            author: userID
+                        },
+                        {
+                            related: { $in: [userID] }
+                        },
+                    ]
+                })
+
+                return resolve({ error: false, data: {
+                    amountBiddingInProgress,
+                    amountBiddingInComplete,
+                    amountBiddingInviting,
+                    amountBiddingInvitingComplete
                 }});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
