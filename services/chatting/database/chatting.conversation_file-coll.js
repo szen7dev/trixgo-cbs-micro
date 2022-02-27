@@ -12,6 +12,8 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_file", {
      * Loại file
      * 1. Hình ảnh
      * 2. File
+     * 3. Audio
+     * 4. Video
      */
     fileType: Number,
     conversation: {
