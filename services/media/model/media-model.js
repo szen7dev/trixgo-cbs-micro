@@ -345,7 +345,7 @@ class Model extends BaseModel {
 	 */
 	updateMedia({
 		mediaID, title, content, type, otherID, companyID, departmentID, location, 
-		tagFriends, files, images, background, authorID
+		tagFriends, files, images, background, authorID, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -523,8 +523,20 @@ class Model extends BaseModel {
 						})
 					}
 
+					let newFiles = [];
+					let oldFiles = [];
+					if(infoMedia.files && infoMedia.files.length) {
+						files.map(fileID => {
+							if(!infoMedia.files.includes(fileID)) {
+								newFiles[newFiles.length] = fileID;
+							} else{
+								oldFiles[oldFiles.length] = fileID;
+							}
+						});
+					}
+
 					let { results, errors } = await PromisePool
-						.for(files)
+						.for(newFiles)
 						.withConcurrency(2)
 						.process(async fileID => {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
@@ -552,7 +564,7 @@ class Model extends BaseModel {
 						results = results.filter(Boolean);
 
 						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.files } });
-						dataUpdate.files = results;
+						dataUpdate.files = [...oldFiles, ...results];
 					}
 				} else{
 					dataUpdate.files = [];
@@ -568,8 +580,24 @@ class Model extends BaseModel {
 						})
 					}
 
+					let newFiles = [];
+					let oldFiles = [];
+					if(infoMedia.images && infoMedia.images.length) {
+						images.map(fileID => {
+							console.log({ fileID, check: infoMedia.images.includes(fileID) })
+							if(!infoMedia.images.includes(fileID)) {
+								newFiles[newFiles.length] = fileID;
+							} else{
+								oldFiles[oldFiles.length] = fileID;
+							}
+						});
+					} else{
+						newFiles = images;
+					}
+					console.log({ oldFiles, newFiles })
+
 					let { results, errors } = await PromisePool
-						.for(images)
+						.for(newFiles)
 						.withConcurrency(2)
 						.process(async fileID => {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
@@ -592,11 +620,12 @@ class Model extends BaseModel {
 							return infoAfterInserted._id;
 						})
 
+					console.log({ results, errors });
 					if(results.length && !errors.length) {
 						results = results.filter(Boolean);
 
 						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.images } });
-						dataUpdate.images = results;
+						dataUpdate.images = [...oldFiles, ...results];
 					}
 				} else{
 					dataUpdate.images = [];
