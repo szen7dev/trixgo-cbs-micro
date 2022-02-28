@@ -306,8 +306,14 @@ class Model extends BaseModel {
 	updateConversationNamePrivate({ userID, bizfullname }) {
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+				if(!checkObjectIDs([userID])) {
+					return resolve({
+						error: true,
+						message: "Tham số userID không hợp lệ",
+						keyError: "params_userID_invalid",
+						status: 400
+					})
+				}
 
 				let condition = {
 					isPrivate: true,
@@ -337,8 +343,14 @@ class Model extends BaseModel {
 						return infoAfterUpdated;
 					})
 
-				if(!results || !results.length)
-					return resolve({ error: true, message: "Can't update conversation", status: 422 });
+				if(!results || !results.length) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+				}
 
 				return resolve({ error: false, data: results, status: 200 });
 			} catch (error) {
@@ -952,8 +964,14 @@ class Model extends BaseModel {
 	getListMessagesConversationWithPage({ conversationID, lastestID, userID, keyword, limit = 15, filter = {}, select = {} }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([conversationID, userID]))
-					return resolve({ error: true, message: "Request param invalid", status: 400 });
+				if(!checkObjectIDs([conversationID, userID])) {
+					return resolve({
+						error: true,
+						message: "Tham số conversationID hoặc userID không hợp lệ",
+						keyError: "params_conversationID_or_userID_invalid",
+						status: 400
+					})
+				}
 
 				if(isNaN(limit) || +limit > 20) {
 					limit = 15;
@@ -981,8 +999,14 @@ class Model extends BaseModel {
 					members: { $all: [userID] }
 				}).lean();
 
-				if(!checkExistConversation)
-					return resolve({ error: true, message: "You aren't member", status: 403 });
+				if(!checkExistConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
+						keyError: "you_are_not_member_of_conversation",
+						status: 403
+					})
+				}
 
 				// Init condition object
 				let conditionObj 	= { conversation: conversationID };
