@@ -30,7 +30,7 @@ class Model extends BaseModel {
     constructor() {
         super(DATAHUB_PACKAGE_COLL);
     }
-
+ 
     /**
 	 * Name: insert datahub package✅
 	 * Author: Depv
@@ -86,24 +86,60 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    update({ datahubProjectID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
+    update({ datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
         return new Promise(async resolve => {
             try {
                 
                 let dataUpdate = { userUpdate: userID };
+                if(project){
+                    dataUpdate.project = project;
+                }
+
+                if(client){
+                    dataUpdate.client = client;
+                }
+
+                if(field){
+                    dataUpdate.field = field;
+                }
+
                 if(name){
                     dataUpdate.name = name;
                 }
 
-                if(description){
-                    dataUpdate.description = description;
+                if(sign){
+                    dataUpdate.sign = sign;
                 }
 
-                if(popular){
-                    dataUpdate.popular = popular;
+                if(note){
+                    dataUpdate.note = note;
                 }
 
-                let infoAfterUpdate = await DATAHUB_PACKAGE_COLL.findByIdAndUpdate(datahubID, dataUpdate, { new: true });
+                if(value){
+                    dataUpdate.value = value;
+                }
+
+                if(vatValue){
+                    dataUpdate.vatValue = vatValue;
+                }
+
+                if(date){
+                    dataUpdate.date = date;
+                }
+
+                if(startTime){
+                    dataUpdate.startTime = startTime;
+                }
+
+                if(endTime){
+                    dataUpdate.endTime = endTime;
+                }
+
+                if(status){
+                    dataUpdate.status = status;
+                }
+
+                let infoAfterUpdate = await DATAHUB_PACKAGE_COLL.findByIdAndUpdate(datahubPackageID, dataUpdate, { new: true });
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
                 
@@ -119,13 +155,13 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-	remove({ datahubID }) { 
+	remove({ datahubPackageID }) { 
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(datahubID))
-                    return resolve({ error: true, message: 'Mã datahub không hợp lệ', keyError: "datahubID_invalid", status: 400 });
+                if(!checkObjectIDs(datahubPackageID))
+                    return resolve({ error: true, message: 'Mã datahubPackageID không hợp lệ', keyError: "datahubPackageID_invalid", status: 400 });
                 
-                let infoAterRemove = await DATAHUB_PACKAGE_COLL.findByIdAndDelete(datahubID)
+                let infoAterRemove = await DATAHUB_PACKAGE_COLL.findByIdAndDelete(datahubPackageID)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
  
@@ -141,7 +177,7 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-	getInfo({ datahubID, select, populates }) { 
+	getInfo({ datahubPackageID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -152,8 +188,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(datahubID))
-                    return resolve({ error: true, message: 'Request params datahubID invalid', status: 400 });
+                if(!checkObjectIDs(datahubPackageID))
+                    return resolve({ error: true, message: 'Request params datahubPackageID invalid', status: 400 });
                 
                  // populates
                  if(populates && typeof populates === 'string'){
@@ -172,7 +208,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterGet = await DATAHUB_PACKAGE_COLL.findById(datahubID)
+                let infoAterGet = await DATAHUB_PACKAGE_COLL.findById(datahubPackageID)
                                     .select(select)
                                     .populate(populates)
                 if(!infoAterGet)
@@ -184,13 +220,13 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
 	 * Dev: Depv
 	 * Func: Lấy danh sách datahub package
 	 * Date: 26/10/2021
 	 */
-    getList({ type, popular, userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
                 let conditionObj = {};
@@ -199,14 +235,6 @@ class Model extends BaseModel {
 
                 if(limit > 20){
                     limit = 20;
-                }
-
-                if(type){
-                    conditionObj.type = type;
-                }
-
-                if(popular){
-                    conditionObj.popular = popular;
                 }
 
 				if(!checkObjectIDs(userID))

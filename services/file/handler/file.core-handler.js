@@ -1,5 +1,7 @@
 const { GENERATE_LINK_S3, GET_PATH_S3 } = require('../helper/s3');
 const FILE__CORE_MODEL                  = require('../model/file.core-model').MODEL;
+let uuidv4                              = require('uuid').v4;
+let { getExtension }                    = require('../../../tools/utils/utils');
 
 module.exports = {
     insert: {
@@ -121,8 +123,14 @@ module.exports = {
                 if(generatePathS3.error) return generatePathS3;
 
                 let { newFileName, pathS3 } = generatePathS3.data;
-                let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
 
+                if(typeUpload == "user"){
+                    let extension   = getExtension(name);
+                    newFileName = `${uuidv4()}.${extension}`;
+                }
+
+                let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
+                console.log({ infoGenerateLink });
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
