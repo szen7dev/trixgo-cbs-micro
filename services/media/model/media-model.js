@@ -218,6 +218,7 @@ class Model extends BaseModel {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
 								fileID
 							});
+							console.log({ infoFile: infoFileCore.data });
 
 							if(infoFileCore.error) return null;
 
@@ -261,6 +262,7 @@ class Model extends BaseModel {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
 								fileID
 							});
+							console.log({ infoFile: infoFileCore.data });
 
 							if(infoFileCore.error) return null;
 
@@ -552,6 +554,8 @@ class Model extends BaseModel {
 						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.files } });
 						dataUpdate.files = results;
 					}
+				} else{
+					dataUpdate.files = [];
 				}
 
 				if (images && images.length) {
@@ -594,6 +598,8 @@ class Model extends BaseModel {
 						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.images } });
 						dataUpdate.images = results;
 					}
+				} else{
+					dataUpdate.images = [];
 				}
 
 				let infoAfterUpdate = await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate, { new: true });
