@@ -6,15 +6,18 @@ const { CF_ACTIONS_DATAHUB } 	       	= require('./helper/datahub.actions-consta
 
 const DATAHUB_TYPE_COLL					= require('./database/datahub_type-coll');
 const DATAHUB_PROJECT_COLL				= require('./database/datahub_project-coll');
+const DATAHUB_PACKAGE_COLL				= require('./database/datahub_package-coll');
 
 const DATAHUB_TYPE_HANDLER   			= require('./handler/datahub.datahub_type-handler');
 const DATAHUB_PROJECT_HANDLER   		= require('./handler/datahub.datahub_project-handler');
+const DATAHUB_PACKAGE_HANDLER   		= require('./handler/datahub.datahub_package-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DATAHUB,
 	mixins: [
 		DbService(DATAHUB_TYPE_COLL),  
 		DbService(DATAHUB_PROJECT_COLL),  
+		DbService(DATAHUB_PACKAGE_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.DATAHUB])
     ],
 
@@ -46,6 +49,12 @@ module.exports = {
 		[CF_ACTIONS_DATAHUB.DATAHUB_PROJECT_UPDATE]   			 	: DATAHUB_PROJECT_HANDLER.update,
 		[CF_ACTIONS_DATAHUB.DATAHUB_PROJECT_REMOVE]					: DATAHUB_PROJECT_HANDLER.remove,
 		[CF_ACTIONS_DATAHUB.DATAHUB_PROJECT_GET_INFO_AND_GET_LIST]	: DATAHUB_PROJECT_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB PACKAGE   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_PACKAGE_INSERT]   			 	: DATAHUB_PACKAGE_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_PACKAGE_UPDATE]   			 	: DATAHUB_PACKAGE_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_PACKAGE_REMOVE]					: DATAHUB_PACKAGE_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_PACKAGE_GET_INFO_AND_GET_LIST]	: DATAHUB_PACKAGE_HANDLER.getInfoAndGetList,
 	},
 	
 	/**
