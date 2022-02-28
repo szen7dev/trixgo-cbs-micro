@@ -42,7 +42,7 @@ class Model extends BaseModel {
                 if(!name)
                     return resolve({ error: true, message: "Tên datahub không hợp lệ", keyError: 'params_invalid' });
 
-                if(checkObjectIDs(project, client, field))
+                if(!checkObjectIDs(project, client, field))
                     return resolve({ error: true, message: "project || client || field invalid", keyError: 'params_invalid' });
 
                 let dataInsert = { project, client, field, name, value, vatValue, userCreate: userID };
