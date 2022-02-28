@@ -239,7 +239,7 @@ class Model extends BaseModel {
                     });
 
                 if (!isExist)
-                    return resolve({ error: true, message: 'email_not_exist' });
+                    return resolve({ error: true, message: 'email_not_exist', status: 200 });
 
                 const isMatchPass = await compare(password, isExist.password);
                 if (!isMatchPass) return resolve({

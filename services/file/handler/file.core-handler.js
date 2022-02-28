@@ -123,14 +123,13 @@ module.exports = {
                 if(generatePathS3.error) return generatePathS3;
 
                 let { newFileName, pathS3 } = generatePathS3.data;
-
+                // Trường hợp upload anh cho avatar hoặc signature
                 if(typeUpload == "user"){
                     let extension   = getExtension(name);
                     newFileName = `${uuidv4()}.${extension}`;
                 }
 
                 let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
-                console.log({ infoGenerateLink });
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
