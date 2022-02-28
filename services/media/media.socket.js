@@ -15,7 +15,6 @@ const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
  * COLLECTIONS
  */
 // const MEDIA_COLL					        	= require('./database/media-coll');
-
 exports.MEDIA_SOCKET = {
 
     'CLIENT_SEND_MEDIA_TEST': async function(data, ack) { 

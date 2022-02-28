@@ -23,7 +23,7 @@ class Model extends BaseModel {
     constructor() {
         super(PCM_COMMENT_COLL);
     }
-
+    
     /**
 	 * Dev: MinhVH 
 	 * Func: Thêm comment
@@ -686,7 +686,7 @@ class Model extends BaseModel {
 				const listComments = [...listCommentsFront.reverse(), infoComment, ...listCommentsBack];
 
                 const totalRecordFront = await PCM_COMMENT_COLL.countDocuments(conditionObjFrontList);
-                const totalRecordBack = await PCM_COMMENT_COLL.countDocuments(conditionObjBackList);
+                const totalRecordBack  = await PCM_COMMENT_COLL.countDocuments(conditionObjBackList);
 
 				return resolve({
 					error: false,

@@ -312,7 +312,7 @@ class Model extends BaseModel {
 						condition: { ...conditionReceiver, _id: { $nin: [authorID] } },
 						select: '_id'
 					});
-
+					
 					if(!receivers.error){
 						receiversNoti = receivers.data.map(receiver => receiver._id);
 
