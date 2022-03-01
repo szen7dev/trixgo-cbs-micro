@@ -167,7 +167,7 @@ class Model extends BaseModel {
 
                 if(!checkPermission)
                     return resolve({ error: true, message: "permission denied", keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });                    
-                return resolve({ error: false, message: "permission success", status: 200 });
+                return resolve({ error: false, data: checkPermission, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
