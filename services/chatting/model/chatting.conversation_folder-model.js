@@ -1,6 +1,11 @@
 "use strict";
 
 /**
+ * EXTERNAL
+ */
+const PromisePool									= require('@supercharge/promise-pool');
+
+/**
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
@@ -27,7 +32,7 @@ class Model extends BaseModel {
 	insert({ name, includedConversationsID, excludedConversationsID, authorID }) {
         return new Promise(async (resolve) => {
             try {
-				if(!checkObjectIDs(includedConversationsID) && !checkObjectIDs(excludedConversationsID)) {
+				if(!checkObjectIDs([...includedConversationsID, ...excludedConversationsID])) {
 					return resolve({ 
 						error: true, 
 						message: 'Tham số includedConversationsID hoặc excludedConversationsID là không hợp lệ', 
@@ -37,7 +42,7 @@ class Model extends BaseModel {
 				}
 
 				let checkExistsFolder = await CHATTING__CONVERSATION_FOLDER_COLL
-					.findOne({ name, author: authorID })
+					.findOne({ name: name.trim(), author: authorID })
 					.lean();
 
 				if(checkExistsFolder) {
@@ -45,7 +50,7 @@ class Model extends BaseModel {
 						error: true, 
 						message: 'Folder đã tồn tại',
 						keyError: 'folder_is_exists',
-						status: 403
+						status: 400
 					});
 				}
 
@@ -77,6 +82,14 @@ class Model extends BaseModel {
 					});
 				}
 
+				if(includedConversationsID.length) {
+					await CHATTING__CONVERSATION_COLL.updateMany({ _id: { $in: includedConversationsID } }, {
+						$addToSet: {
+							folders: infoAfterInsert._id
+						}
+					});
+				}
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -95,7 +108,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([folderID])) {
 					return resolve({ 
 						error: true, 
-						message: "Tham số folder ID không hợp lệ", 
+						message: "Tham số folderID không hợp lệ", 
 						keyError: 'params_folderID_invalid',
 						status: 400
 					});
@@ -110,7 +123,7 @@ class Model extends BaseModel {
 					return resolve({ 
 						error: true, 
 						message: "Folder không tồn tại", 
-						keyError: 'folder_is_not_exists',
+						keyError: 'folder_not_exists',
 						status: 400
 					});
 				}
@@ -145,6 +158,22 @@ class Model extends BaseModel {
 						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
 						keyError: 'error_occurs',
 						status: 422
+					});
+				}
+
+				if(dataUpdate.includedConversations && dataUpdate.includedConversations.length) {
+					await CHATTING__CONVERSATION_COLL.updateMany({ _id: { $in: dataUpdate.includedConversations } }, {
+						$addToSet: {
+							folders: folderID
+						}
+					});
+				}
+
+				if(dataUpdate.excludedConversations && dataUpdate.excludedConversations.length) {
+					await CHATTING__CONVERSATION_COLL.updateMany({ _id: { $in: dataUpdate.excludedConversations } }, {
+						$pullAll: {
+							folders: folderID
+						}
 					});
 				}
 
@@ -221,9 +250,9 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([authorID])) {
 					return resolve({
 						error: true,
-						message: "Tham số author ID không hợp lệ",
+						message: "Tham số authorID không hợp lệ",
 						keyError: "params_authorID_invalid",
-						status: 400,
+						status: 400
 					})
 				}
 
@@ -268,7 +297,7 @@ class Model extends BaseModel {
 					sortBy = dataPagingAndSort.data.sort;
                 }
 
-				let listFolder = await CHATTING__CONVERSATION_FOLDER_COLL
+				let listFolders = await CHATTING__CONVERSATION_FOLDER_COLL
 					.find(conditionObj)
 					.limit(limit + 1)
 					.sort(sortBy)
@@ -280,10 +309,10 @@ class Model extends BaseModel {
 				let totalRecord = await CHATTING__CONVERSATION_FOLDER_COLL.countDocuments(conditionObjOrg);
 				let nextCursor  = null;
 
-				if(listFolder && listFolder.length){
-					if(listFolder.length > limit){
-						nextCursor = listFolder[limit - 1]._id;
-						listFolder.length = limit;
+				if(listFolders && listFolders.length){
+					if(listFolders.length > limit){
+						nextCursor = listFolders[limit - 1]._id;
+						listFolders.length = limit;
 					}
 				}
 
@@ -291,7 +320,7 @@ class Model extends BaseModel {
 					error: false,
 					status: 200,
 					data: {
-						listRecords: listFolder,
+						listRecords: listFolders,
 						limit,
 						totalRecord,
 						nextCursor
@@ -314,9 +343,9 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([folderID, authorID])) {
 					return resolve({
 						error: true,
-						message: "Tham số folder ID hoặc author ID không hợp lệ",
+						message: "Tham số folderID hoặc authorID không hợp lệ",
 						keyError: "params_folderID_or_authorID_invalid",
-						status: 400,
+						status: 400
 					})
 				}
 
@@ -341,14 +370,14 @@ class Model extends BaseModel {
 						error: true,
 						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyError: "error_occurs",
-						status: 422,
+						status: 422
 					})
 				}
 
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoAfterDelete,
+					data: infoAfterDelete
 				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });

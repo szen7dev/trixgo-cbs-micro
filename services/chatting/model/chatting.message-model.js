@@ -402,7 +402,10 @@ class Model extends BaseModel {
 				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 					_id: conversationID,
 					usersMissMessage: {
-						$elemMatch: { userID }
+						$elemMatch: { 
+							userID, 
+							amount: { $gte: amountUpdateMissMessage }
+						}
 					}
 				}, {
 					$inc: {

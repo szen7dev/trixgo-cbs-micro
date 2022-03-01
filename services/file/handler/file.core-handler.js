@@ -1,7 +1,5 @@
 const { GENERATE_LINK_S3, GET_PATH_S3 } = require('../helper/s3');
 const FILE__CORE_MODEL                  = require('../model/file.core-model').MODEL;
-let uuidv4                              = require('uuid').v4;
-let { getExtension }                    = require('../../../tools/utils/utils');
 
 module.exports = {
     insert: {
@@ -118,16 +116,11 @@ module.exports = {
                     packageID,
                     conversationID,
                     fileName: name,
-                    type: typeUpload
+                    typeUpload
                 });
                 if(generatePathS3.error) return generatePathS3;
 
                 let { newFileName, pathS3 } = generatePathS3.data;
-                // Trường hợp upload anh cho avatar hoặc signature
-                if(typeUpload == "user"){
-                    let extension   = getExtension(name);
-                    newFileName = `${uuidv4()}.${extension}`;
-                }
 
                 let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
                 /**

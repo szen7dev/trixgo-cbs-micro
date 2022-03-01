@@ -316,6 +316,10 @@ class Model extends BaseModel {
     updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {
             try {
+                console.log('====== updateDeviceLogin =========');
+                console.log({
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env
+                })
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -326,11 +330,23 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
-                    return resolve({ error: true, message: 'platform_invalid' });
+                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform })) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số platform không hợp lệ",
+                        keyError: "params_platform_invalid",
+                        status: 400
+                    })
+                }
 
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'object_invalid' });
+                if(!checkObjectIDs([userID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    })
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -338,10 +354,16 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 let isExist = await AUTH__USER_COLL.findById(userID);
-                if (!isExist)
-                    return resolve({ error: true, message: 'user_not_exists' });
-                
-                 /**
+                if (!isExist) {
+                    return resolve({
+                        error: true,
+                        message: "Người dùng không tồn tại",
+                        keyError: "user_not_exists",
+                        status: 400
+                    })
+                }
+
+                /**
                  * UPDATE LAST DEVICE (cập nhật device cuối cùng login)
                  * Nếu DeviceID tồn tại => cập nhật deviceName + fcm_token
                  */
