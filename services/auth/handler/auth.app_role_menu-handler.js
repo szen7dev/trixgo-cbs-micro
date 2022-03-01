@@ -78,7 +78,7 @@ module.exports = {
         params: {
             companyID       : { type: "string" },
             appID           : { type: "string" },
-            type            : { type: "number" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
+            type            : { type: "string" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
         },
         async handler(ctx) {
             try {
@@ -104,7 +104,7 @@ module.exports = {
             companyID       : { type: "string" },
             appID           : { type: "string" },
             menuID          : { type: "string" },
-            type            : { type: "number" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
+            type            : { type: "string" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
         },
         async handler(ctx) {
             try {

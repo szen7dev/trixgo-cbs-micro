@@ -166,7 +166,7 @@ class Model extends BaseModel {
                     .populate(populates)
 
                 if(!checkPermission)
-                    return resolve({ error: true, message: "Từ chối quyền truy cập", keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });                    
+                    return resolve({ error: true, message: "permission denied", keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });                    
                 return resolve({ error: false, message: "permission success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

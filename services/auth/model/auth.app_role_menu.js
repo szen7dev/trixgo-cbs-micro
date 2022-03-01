@@ -179,12 +179,14 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
-                    type: type,
+                    // type: type,
                     company: company,
                     app: app,
                     members:  { $in: [user] }
                 })
                 .select('_id name')
+
+                console.log({ listRoles });
                 
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
