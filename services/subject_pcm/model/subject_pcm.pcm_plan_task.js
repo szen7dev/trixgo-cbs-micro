@@ -10,6 +10,7 @@ const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -81,7 +82,7 @@ class Model extends BaseModel {
                      */
                     if(Number(isproposal) != 1){
                         if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
-                            return resolve({ error: true, message: 'permission_denied' })
+                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
                     }
                     companyID = company._id;
                 }
@@ -284,7 +285,7 @@ class Model extends BaseModel {
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
+                    return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
 
                 //_________B4. Cập nhật ngược lại cho parent (Công việc cha, nhóm công việc, tài liệu-Docre)
@@ -710,7 +711,7 @@ class Model extends BaseModel {
                 let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });   
                 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't_update_task", status: 403 });
+                    return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) { 
@@ -732,7 +733,7 @@ class Model extends BaseModel {
 
                 let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
 				if (!infoTaskAfterUpdate) 
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
                
                 return resolve({ error: false, message: "update_success" });
             } catch (error) {
@@ -770,7 +771,7 @@ class Model extends BaseModel {
                                 .populate(populates).lean();
 
 				if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get' });
+                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
                 // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
@@ -1097,7 +1098,7 @@ class Model extends BaseModel {
 
                 // Kiểm tra nếu không có dữ liệu
                 if(!infoDataAfterGet)
-                   return resolve({ error: true, message: "Can't get data", status: 403 });
+                   return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
                 // nextCursor phần tử cuối cùng khi phân trang
                 let nextCursor	= null;
