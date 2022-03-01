@@ -161,3 +161,14 @@ exports.APP_KEYS = {
     DOCUMENT: "5e47867080019357cce04746",
     HUMAN: "61e049c9fdebf77b072d1b13",
 }
+
+exports.KEY_ERROR  = {
+    PERMISSION_DENIED   : "permission_denied",
+    INSERT_FAILED       : "insert_failed",
+    UPDATE_FAILED       : "update_failed",
+    DELETE_FAILED       : "delete_failed",
+    GET_INFO_FAILED     : "get_info_failed",
+    GET_LIST_FAILED     : "get_list_failed",
+    PARAMS_INVALID      : "params_invalid",
+}
+
