@@ -7,8 +7,10 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 
     if(resultAfterCallHandler && resultAfterCallHandler.error){
         error = {
-            message: resultAfterCallHandler.message,
-            keyError: resultAfterCallHandler.keyError || 'result_after_call_handler'
+            data: {
+                message: resultAfterCallHandler.message,
+                keyError: resultAfterCallHandler.keyError || 'result_after_call_handler'
+            }
         }
     }
 
@@ -28,8 +30,10 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 
 	if(error_message){
 		error = { 
-            message: error_message,
-            keyError: 'server_error'
+            data: {
+                message: error_message,
+                keyError: 'server_error'
+            }
         }
 	}
 
