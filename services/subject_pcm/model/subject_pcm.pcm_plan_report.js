@@ -4,6 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -75,7 +76,7 @@ class Model extends BaseModel {
                 let infoAterInsert = await this.insertData(dataInsert);
 
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: KEY_ERROR.INSERT_FAILED, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -132,7 +133,7 @@ class Model extends BaseModel {
                 let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't update pcm plan report", status: 403 });
+                    return resolve({ error: true, message: "Can't update pcm plan report", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -172,7 +173,7 @@ class Model extends BaseModel {
                 let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't remove subject", status: 403 });
+                    return resolve({ error: true, message: "Can't remove subject", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
 
                 return resolve({ error: false, message: "Remove success", status: 200 });
             } catch (error) {
@@ -226,7 +227,7 @@ class Model extends BaseModel {
                                 .populate(populates)
                                 .lean();
                 if(!infoData)
-                    return resolve({ error: true, message: "Can't get info subject", status: 403 });
+                    return resolve({ error: true, message: "Can't get info subject", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
@@ -317,7 +318,7 @@ class Model extends BaseModel {
                     .lean();
                 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
 
                 let totalRecord = await PCM_PLAN_REPORT_COLL.countDocuments(conditionObjOrg);
 				let nextCursor	= null;
