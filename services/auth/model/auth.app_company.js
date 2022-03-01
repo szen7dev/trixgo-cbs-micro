@@ -2,6 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, objectID }                        
                                         = require('../../../tools/utils/utils');
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 /**s
  * import inter-coll, exter-coll
@@ -60,7 +61,7 @@ class Model extends BaseModel {
                 
                 let infoAterUpdate = await AUTH__APP_COMPANY_COLL.findByIdAndUpdate(appCompanyID, dataUpdate);
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "cannot_update", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 if(endTime){
                     if(infoAterUpdate.endTime.getTime() != (new Date(endTime)).getTime()){

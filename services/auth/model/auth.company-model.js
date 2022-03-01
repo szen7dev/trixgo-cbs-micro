@@ -2,6 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { _isValid }                      = require('../../../tools/utils/utils');
+const { KEY_ERROR }                     = require('../../../tools/keys');
 
 const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
@@ -37,7 +38,7 @@ class Model extends BaseModel {
                     name
                 });
                 if(!infoCompanyAfterSave)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
 
                 return resolve({ error: false, data: infoCompanyAfterSave });
             } catch (error) {
@@ -79,7 +80,7 @@ class Model extends BaseModel {
 
                 let infoCompanyAfterSave = await that.insertData(dataInsert);
                 if(!infoCompanyAfterSave)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
 
                 return resolve({ error: false, data: infoCompanyAfterSave });
             } catch (error) {
@@ -119,7 +120,7 @@ class Model extends BaseModel {
                 let infoCompanyAfterUpdate = await AUTH__COMPANY_COLL.findByIdAndUpdate(companyID, dataUpdate, { new: true })
 
                 if(!infoCompanyAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
 
                 return resolve({ error: false, data: infoCompanyAfterUpdate });
             } catch (error) {
