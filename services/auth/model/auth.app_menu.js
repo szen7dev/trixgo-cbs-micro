@@ -8,6 +8,7 @@ const moment                            = require("moment");
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 
 /**s
@@ -91,7 +92,7 @@ class Model extends BaseModel {
 
                 let infoAfterRemove = await AUTH__APP_MENU_COLL.findByIdAndDelete(appMenuID);
                 if(!infoAfterRemove)
-                    return resolve({ error: true, message: "Xoá thất bại", keyError: 'remove_failed', status: 400 });
+                    return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 400 });
 
                 return resolve({ error: false, data: infoAfterRemove });
             } catch (error) {
@@ -137,7 +138,7 @@ class Model extends BaseModel {
                                         .select(select)
                                         .populate(populates);
                 if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
+                    return resolve({ error: true, message: KEY_ERROR.GET_INFO_FAILED, status: 403 });
  
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
@@ -218,7 +219,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

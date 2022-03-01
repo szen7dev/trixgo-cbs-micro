@@ -2,6 +2,7 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs }                = require('../../../tools/utils/utils');
+const { KEY_ERROR }			            = require('../../../tools/keys');
     
 /**
  * import inter-coll, exter-coll
@@ -46,7 +47,7 @@ class Model extends BaseModel {
                 dataInsert = { company, project, comment, task, file, userCreate: authorID };
                 let infoDataAfterInserted = await this.insertData(dataInsert); 
                 if(!infoDataAfterInserted)
-                    return resolve({ error: true, message: "Can't create task file", status: 403 });
+                    return resolve({ error: true, message: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
@@ -81,7 +82,7 @@ class Model extends BaseModel {
                  */  
                 let infoDataAfterRemove = await PCM_FILE_COLL.findByIdAndDelete(fileID);
                 if(!infoDataAfterRemove)
-                    return resolve({ error: true, message: "Can't remove file comment", status: 403 });
+                    return resolve({ error: true, message: KEY_ERROR.DELETE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoDataAfterRemove, status: 200 });
             } catch (error) {

@@ -4,6 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -56,7 +57,7 @@ class Model extends BaseModel {
                                     .select(select)
                                     .populate(populates)
 
-                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get' });
+                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 return resolve({ error: false, data: infoPlanGroup });
             } catch (error) {
@@ -139,7 +140,7 @@ class Model extends BaseModel {
                     .lean(); 
                 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
                 let totalRecord = await PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
 				let nextCursor	= null;

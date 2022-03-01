@@ -6,7 +6,7 @@ const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const moment                            = require("moment");
 const ObjectID                          = require('mongoose').Types.ObjectId;
-
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 /**
  * import inter-coll, exter-coll
  */
@@ -65,7 +65,7 @@ class Model extends BaseModel {
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+						return resolve({ error: true, message: 'Request params populates invalid' });
 
 					populates = JSON.parse(populates);
 				}else{
@@ -85,10 +85,10 @@ class Model extends BaseModel {
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__APP_USER_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastest" });
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+						return resolve({ error: true, message: "Can't get range pagination" });
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
 				}else{
@@ -104,7 +104,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -151,7 +151,7 @@ class Model extends BaseModel {
                 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+						return resolve({ error: true, message: 'Request params populates invalid', status: 200 });
 
 					populates = JSON.parse(populates);
 				}else{
@@ -166,8 +166,7 @@ class Model extends BaseModel {
                     .populate(populates)
 
                 if(!checkPermission)
-                    return resolve({ error: true, message: "permission_denied", status: 403 });                    
-
+                    return resolve({ error: true, message: "permission denied", keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });                    
                 return resolve({ error: false, data: checkPermission, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

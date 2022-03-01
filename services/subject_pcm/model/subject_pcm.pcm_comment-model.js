@@ -10,7 +10,7 @@ const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domai
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
 const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
-const { APP_KEYS }								= require('../../../tools/keys');
+const { APP_KEYS, KEY_ERROR }					= require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -473,7 +473,7 @@ class Model extends BaseModel {
                     return resolve({ 
                         error: true, 
                         message: 'Comment không tồn tại', 
-                        keyError: 'comment_not_exists', 
+                        keyError: KEY_ERROR.GET_INFO_FAILED, 
                         status: 400
                     });
                 }
