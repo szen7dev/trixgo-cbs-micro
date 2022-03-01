@@ -179,15 +179,13 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
-                    // type: type,
+                    type: type,
                     company: company,
                     app: app,
                     members:  { $in: [user] }
                 })
                 .select('_id name')
 
-                console.log({ listRoles });
-                
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
                         $match: {
@@ -206,7 +204,8 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
+                if (!listData) 
+                    return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -249,7 +248,9 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                if (!listData || (listData && !listData.length)) return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+
+                if (!listData || (listData && !listData.length)) 
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
                 return resolve({ error: false, data: listData && listData[0]});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
