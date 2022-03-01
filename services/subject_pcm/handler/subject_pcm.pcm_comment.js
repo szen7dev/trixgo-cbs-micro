@@ -32,7 +32,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
-
+                
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
 					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
@@ -70,7 +70,7 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
 					commentID, authorID, content, files, images, select, populates, amountCommentReply, amountReaction
 				});
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

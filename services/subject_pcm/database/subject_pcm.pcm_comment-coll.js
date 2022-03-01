@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
 
     //_________Đánh dấu
     isMarked: { type: Boolean, default: false },
-
+    
     //_________File đính kèm
     files: [{
         type: Schema.Types.ObjectId,

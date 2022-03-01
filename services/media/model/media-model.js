@@ -4,6 +4,7 @@
  * EXTERNAL PACKAGE
  */
 const PromisePool								= require('@supercharge/promise-pool');
+const ObjectID                          		= require('mongoose').Types.ObjectId;
 
 /**
  * CONSTANTS
@@ -218,29 +219,24 @@ class Model extends BaseModel {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
 								fileID
 							});
-							console.log({ infoFile: infoFileCore.data });
 
-							if(infoFileCore.error) return null;
-
-							const { 
-								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-							} = infoFileCore.data;
-							console.log({
-								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-							})
-
-							const infoAfterInserted = await MEDIA__FILE_COLL.create({
-								media: mediaID,
-								file: fileID,
-								app, company, 
-								name, nameOrg, path, size, mimeType, 
-								description, status, type, author
-							});
-							return infoAfterInserted._id;
+							if(infoFileCore.error) {
+								const { 
+									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+								} = infoFileCore.data;
+	
+								const infoAfterInserted = await MEDIA__FILE_COLL.create({
+									media: mediaID,
+									file: fileID,
+									app, company, 
+									name, nameOrg, path, size, mimeType, 
+									description, status, type, author
+								});
+								return infoAfterInserted._id;
+							}
 						})
 
 					if(results.length && !errors.length) {
-						results = results.filter(Boolean);
 						dataUpdate.files = results;
 					}
 				}
@@ -262,26 +258,24 @@ class Model extends BaseModel {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
 								fileID
 							});
-							console.log({ infoFile: infoFileCore.data });
 
-							if(infoFileCore.error) return null;
-
-							const { 
-								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-							} = infoFileCore.data;
-
-							const infoAfterInserted = await MEDIA__FILE_COLL.create({
-								media: mediaID,
-								file: fileID,
-								app, company, 
-								name, nameOrg, path, size, mimeType, 
-								description, status, type, author
-							});
-							return infoAfterInserted._id;
+							if(!infoFileCore.error) {
+								const { 
+									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+								} = infoFileCore.data;
+	
+								const infoAfterInserted = await MEDIA__FILE_COLL.create({
+									media: mediaID,
+									file: fileID,
+									app, company, 
+									name, nameOrg, path, size, mimeType, 
+									description, status, type, author
+								});
+								return infoAfterInserted._id;
+							}
 						})
 
 					if(results.length && !errors.length) {
-						results = results.filter(Boolean);
 						dataUpdate.images = results;
 					}
 				}
@@ -312,7 +306,7 @@ class Model extends BaseModel {
 						condition: { ...conditionReceiver, _id: { $nin: [authorID] } },
 						select: '_id'
 					});
-
+					
 					if(!receivers.error){
 						receiversNoti = receivers.data.map(receiver => receiver._id);
 
@@ -345,7 +339,7 @@ class Model extends BaseModel {
 	 */
 	updateMedia({
 		mediaID, title, content, type, otherID, companyID, departmentID, location, 
-		tagFriends, files, images, background, authorID
+		tagFriends, files, images, background, authorID, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -523,36 +517,50 @@ class Model extends BaseModel {
 						})
 					}
 
-					let { results, errors } = await PromisePool
-						.for(files)
+					let newFiles = [];
+					let oldFiles = [];
+					if(infoMedia.files && infoMedia.files.length) {
+						const listFilesOld = infoMedia.files.map(fileID => fileID.toString());
+
+						files.map(fileID => {
+							if(!listFilesOld.includes(fileID)) {
+								newFiles[newFiles.length] = ObjectID(fileID);
+							} else{
+								oldFiles[oldFiles.length] = ObjectID(fileID);
+							}
+						});
+					} else{
+						newFiles = files;
+					}
+
+					const { results, errors } = await PromisePool
+						.for(newFiles)
 						.withConcurrency(2)
 						.process(async fileID => {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-								fileID
+								fileID: fileID.toString()
 							});
 
-							if(infoFileCore.error) return null;
-
-							const { 
-								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-							} = infoFileCore.data;
-
-							const infoAfterInserted = await MEDIA__FILE_COLL.create({
-								media: mediaID,
-								file: fileID,
-								app, company, 
-								name, nameOrg, path, size, mimeType, 
-								description, status, type, author
-							});
-
-							return infoAfterInserted._id;
+							if(!infoFileCore.error) {
+								const { 
+									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+								} = infoFileCore.data;
+	
+								const infoAfterInserted = await MEDIA__FILE_COLL.create({
+									media: mediaID,
+									file: fileID,
+									app, company, 
+									name, nameOrg, path, size, mimeType, 
+									description, status, type, author
+								});
+								return infoAfterInserted._id;
+							}
 						})
 
 					if(results.length && !errors.length) {
-						results = results.filter(Boolean);
-
-						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.files } });
-						dataUpdate.files = results;
+						dataUpdate.files = [...oldFiles, ...results];
+					} else{
+						dataUpdate.files = oldFiles;
 					}
 				} else{
 					dataUpdate.files = [];
@@ -568,35 +576,50 @@ class Model extends BaseModel {
 						})
 					}
 
-					let { results, errors } = await PromisePool
-						.for(images)
+					let newFiles = [];
+					let oldFiles = [];
+					if(infoMedia.images && infoMedia.images.length) {
+						const listImagesOld = infoMedia.images.map(fileID => fileID.toString());
+
+						images.map(fileID => {
+							if(!listImagesOld.includes(fileID)) {
+								newFiles[newFiles.length] = ObjectID(fileID);
+							} else{
+								oldFiles[oldFiles.length] = ObjectID(fileID);
+							}
+						});
+					} else{
+						newFiles = images;
+					}
+
+					const { results, errors } = await PromisePool
+						.for(newFiles)
 						.withConcurrency(2)
 						.process(async fileID => {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-								fileID
+								fileID: fileID.toString()
 							});
 
-							if(infoFileCore.error) return null;
-
-							const { 
-								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-							} = infoFileCore.data;
-
-							const infoAfterInserted = await MEDIA__FILE_COLL.create({
-								media: mediaID,
-								file: fileID,
-								app, company, 
-								name, nameOrg, path, size, mimeType, 
-								description, status, type, author
-							});
-							return infoAfterInserted._id;
+							if(!infoFileCore.error) {
+								const { 
+									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+								} = infoFileCore.data;
+	
+								const infoAfterInserted = await MEDIA__FILE_COLL.create({
+									media: mediaID,
+									file: fileID,
+									app, company, 
+									name, nameOrg, path, size, mimeType, 
+									description, status, type, author
+								});
+								return infoAfterInserted._id;
+							}
 						})
 
 					if(results.length && !errors.length) {
-						results = results.filter(Boolean);
-
-						await MEDIA__FILE_COLL.deleteMany({ _id: { $in: infoMedia.images } });
-						dataUpdate.images = results;
+						dataUpdate.images = [...oldFiles, ...results];
+					} else{
+						dataUpdate.images = oldFiles;
 					}
 				} else{
 					dataUpdate.images = [];

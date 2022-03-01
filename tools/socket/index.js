@@ -3,7 +3,7 @@ exports.sendDataToMultilSocketsOfListUser = function ({ listUserConnected, arrRe
 
     if(!listUserConnected || !event  || !io) return;
     if(!arrReceiver || !arrReceiver.length) return;
-
+    
     arrReceiver.forEach(userID => {
         if(listUserConnected[userID]){
             let listSocket = listUserConnected[userID].sockets;
