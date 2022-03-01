@@ -104,7 +104,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list" });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -166,9 +166,9 @@ class Model extends BaseModel {
                     .populate(populates)
 
                 if(!checkPermission)
-                    return resolve({ error: true, message: "permission_denied", status: 403 });                    
+                    return resolve({ error: true, message: "permission_denied" });                    
 
-                return resolve({ error: false, data: checkPermission, status: 200 });
+                return resolve({ error: false, message: "Check prmission success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
