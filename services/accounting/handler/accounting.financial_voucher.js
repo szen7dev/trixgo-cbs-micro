@@ -37,13 +37,13 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
                 let  resultAfterCallHandler;
 
-                let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
+                let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
                 
                 if(infoFundaCompany.error){
                     resultAfterCallHandler.message = 'Not found funda comany ';
                     return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
                 }
-                fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
+                fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insertFull({ 
                     authorID : userID, companyID: company._id, ctx,
                     fundaID, type, date, 
@@ -164,8 +164,8 @@ module.exports = {
                 //get funda from cache
 
                 if(!fundaID){
-                    const infoFundaCompany          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER}`,{ });
-                    fundaID = infoFundaCompany.data && infoFundaCompany.data[0]._id;
+                    const infoFundaCompany          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 }
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getListVoucherOfCompany({ fundaID , currentPage, 

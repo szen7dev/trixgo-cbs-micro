@@ -1646,7 +1646,8 @@ class Model extends BaseModel {
                 // Danh sách các tài khoản lưỡng tính
                 // let arrAccLT = ['128','131','136','138','141','331','334','335','336','338','341']
                 let arrAccLT = []//'128','131','136','138','141','331','334','335','336','338','341'
-                let arrAccLTObject  =  await  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`,{ limit: '20', status : 1, type : 2, level : 1 })
+                let arrAccLTObject  =  await  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`,
+                { limit: '20', status : 1, type : 2, level : 1, isAccountingService: true });
                 
                 if(arrAccLTObject.error)
                     return resolve({ error: true, message: `DebtTrackingReport error: ${arrAccLTObject.message}`, status: 400 })
@@ -1980,6 +1981,627 @@ class Model extends BaseModel {
         });
     }
 
+    // Danh sách công nợ
+    debtTracking({ctx, companyID, fundaID, fromDate, toDate  }){
+        return new Promise(async(resolve)=>{
+            /**
+            * BA
+            * - LẤY CÂY TÀI KHOẢN KẾ TOÁN
+            * - LẤY DỮ LIỆU ĐẦU KỲ
+            * - LẤY DỮ LIỆU CUỐI KỲ
+            * => Hiển thị dữ liệu theo dạng Cộng nợ: Mỗi Customer và Account sẽ chỉ tồn tại số dư cuối kỳ hoặc Bên NỢ hoặc bên CÓ
+            */
+            let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: true, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+            let listDataSAsyn        = this.getDataGroupByAccountAndContactS({ companyID, fundaID, fromDate });
+
+            //  * - LẤY DỮ LIỆU TRONG KỲ
+            let listDataAsyn         = this.getDataGroupByAccountAndContact({ companyID, fundaID, fromDate, toDate })
+            
+            const [  listAccounts, listDataS, listData ] = await Promise.all([ listAccountsAsync, listDataSAsyn, listDataAsyn ]);
+            // Chuẩn bị các mãn
+            let arrayAccountDK            = []; //  Danh sách thông tin giá trị tài khoản vào đầu kì :  đầu kì 1/1/năm_đang_xét + từ 1/1/năm_đang_xét -> date đang xét
+            let arrayAccountTK            = []; //  Danh sách thông tin giá trị tài khoản trong kì : theo ngày đang xét 
+            let arrayAccountCK            = []; //  Danh sách thông tin giá trị tài khoản cuối kì : Lưu ý tính toán phải dựa vào từng cập giá trị theo khách hàng
+
+            // Tính toán số liệu đầu kì + tách công nợ theo từng khách hàng đầu kì
+            function ToltalDK({ newDebit, newCredit, isLastPoint }){
+                //TK nợ
+                newDebit.forEach(async item=>{
+                    
+                    //  1.Tách theo từng đầu tài khoản sau đó gọp tổng lại
+                    if( item && item._id && item._id.debit){
+                    
+                        let accountDebit = arrayAccountDK[item._id.debit];
+
+                        // Nếu mà mãn đầu kì  có đầu tài khoản này thì cộng tiếp 
+                        // Lưu vào  arrayAccountDK để sau này dễ lấy ra
+
+                        let  customerID  = item._id.customerDebit;
+                        if(accountDebit){
+                            if(accountDebit[customerID]){
+                                accountDebit[customerID].amountPriceDebit = Number( accountDebit[customerID].amountPriceDebit || 0 ) + Number(item.amountPrice || 0);    
+                            }else{
+                                accountDebit[customerID] = {};
+                                accountDebit[customerID].amountPriceDebit = Number(item.amountPrice || 0);
+                                accountDebit[customerID].customer = customerID;
+                            }
+                            // accountDebit.amountPrice        = Number(accountDebit.amountPrice || 0)  + Number(item.amountPrice || 0);
+                            // accountDebit.amountPriceDebit   = Number(accountDebit.amountPriceDebit || 0) + Number(item.amountPrice || 0);
+                        }else{
+                        // Nếu chưa có thì khởi tạo thông tin cho tài khoản
+                        //Llưu vào  arrayAccountDK để sau này dễ lấy ra
+                        
+                            arrayAccountDK[item._id.debit]                    = {};
+                            arrayAccountDK[item._id.debit][customerID]        = {};
+
+                            // arrayAccountDK[item._id.debit][customerID].amountPrice        = Number(item.amountPrice || 0);
+                            arrayAccountDK[item._id.debit][customerID].amountPriceDebit   = Number(item.amountPrice || 0);
+                            arrayAccountDK[item._id.debit][customerID].customerDebit      = item._id.customerDebit;
+                            arrayAccountDK[item._id.debit][customerID].debit              = item._id.debit;
+                        }
+                        
+
+                        // Tách tài khoản theo từng đầu công nợ theo từng khách hàng
+                        // Xử lý mãng khách hàng theo từng đầu tài khoảng cho tính toán cuối kỳ 
+                        // Cách thức tương tự chạy kế chuyển : [CF_ROUTINGS_FINANCIAL.FORWORD_UPDATE_22]
+                        // Xử dụng một mãn : arrayAccountCK  cuối kỳ để lưu thông tin của khách hàng sau này tiện tính toán
+
+                        let accountCK = arrayAccountCK[item._id.debit];
+
+                        // Nếu đầu tài khoản đã có 
+                        if(accountCK){
+                            let  customerID  = item._id.customerDebit;
+
+                            // Nếu đầu tài khoản này đã có khách hàng này 
+                            if(accountCK[customerID]){
+                                accountCK[customerID].amountPriceDebit = Number( accountCK[customerID].amountPriceDebit || 0) + Number(item.amountPrice || 0);    
+                            }else{
+                                
+                                // Nếu chưa có thì tạo mới thông tin khách hàng trong tài khoản này theo bên nợ vì đang duyệt mãng debitx
+                                accountCK[customerID] = {};
+                                accountCK[customerID].amountPriceDebit = Number(item.amountPrice || 0);
+                                accountCK[customerID].customer = customerID;
+                            }
+
+                        }else{
+
+                            // Nếu đầu tài khoản chưa có thì tạo đầu tài khoản kèm theo khách hàng đang xét
+                            arrayAccountCK[item._id.debit] = {};
+                            arrayAccountCK[item._id.debit][item._id.customerDebit] = {};
+                            arrayAccountCK[item._id.debit][item._id.customerDebit].customer = item._id.customerDebit;
+                            arrayAccountCK[item._id.debit][item._id.customerDebit].amountPriceDebit = Number(item.amountPrice || 0); //  openingS + Dk
+                        }
+                
+                    }
+                })
+
+                // Tương tự phần debit nhưng đổi các gía trị lưu thành creadit
+                newCredit.forEach(async item=>{
+                
+                    if( item && item._id && item._id.credit){
+                    
+                        let accountCrebit = arrayAccountDK[item._id.credit]
+                    
+
+                        // if(accountCrebit){
+                        //     accountCrebit.amountPrice             =  Number(accountCrebit.amountPrice  || 0) - Number(item.amountPrice || 0);
+                        //     accountCrebit.amountPriceCredit       =  Number(accountCrebit.amountPriceCredit || 0 ) + Number(item.amountPrice || 0);
+                        // }else{
+                        //     arrayAccountDK[item._id.credit]                    = {};
+                        //     arrayAccountDK[item._id.credit].amountPrice        = Number(item.amountPrice || 0);
+                        //     arrayAccountDK[item._id.credit].amountPriceCredit  = Number(item.amountPrice || 0);
+                        //     arrayAccountDK[item._id.credit].customerCredit     = item._id.customerCredit;
+                        //     arrayAccountDK[item._id.credit].credit             = item._id.credit;
+                        // }
+
+                        let  customerID  = item._id.customerCredit;
+                        if(arrayAccountDK[item._id.credit]){
+                            if(arrayAccountDK[item._id.credit][customerID]){
+                                arrayAccountDK[item._id.credit][customerID].accountCrebit = Number( arrayAccountDK[item._id.credit][customerID].accountCrebit || 0 ) + Number(item.amountPrice || 0);    
+                            }else{
+                                arrayAccountDK[item._id.credit][customerID] = {};
+                                arrayAccountDK[item._id.credit][customerID].accountCrebit = Number(item.amountPrice || 0);
+                                arrayAccountDK[item._id.credit][customerID].customer = customerID;
+                            }
+                            // accountCrebit.amountPrice        = Number(accountCrebit.amountPrice || 0)  + Number(item.amountPrice || 0);
+                            // accountCrebit.amountPriceDebit   = Number(accountCrebit.amountPriceDebit || 0) + Number(item.amountPrice || 0);
+                        }else{
+                        // Nếu chưa có thì khởi tạo thông tin cho tài khoản
+                        //Llưu vào  arrayAccountDK để sau này dễ lấy ra
+                        
+                            arrayAccountDK[item._id.credit]                    = {};
+                            arrayAccountDK[item._id.credit][customerID]        = {};
+
+                            arrayAccountDK[item._id.credit][customerID].amountPrice        =  0 - Number(item.amountPrice || 0);
+                            arrayAccountDK[item._id.credit][customerID].accountCrebit   = Number(item.amountPrice || 0);
+                            arrayAccountDK[item._id.credit][customerID].customerCredit      = item._id.customerCredit;
+                            arrayAccountDK[item._id.credit][customerID].credit              = item._id.credit;
+                        }
+
+                        // Xử lý mãng khách hàng theo từng đầu tài khoảng cho tính toán cuối kỳ
+                        let accountCK = arrayAccountCK[item._id.credit];
+                        if(accountCK){
+                            let  customerID  = item._id.customerCredit;
+                            if(accountCK[customerID]){
+                                accountCK[customerID].amountPriceCredit = Number(accountCK[customerID].amountPriceCredit || 0) + Number(item.amountPrice || 0);    
+                            }else{
+                                accountCK[customerID] = {};
+                                accountCK[customerID].amountPriceCredit = Number(item.amountPrice || 0);
+                                accountCK[customerID].customer = customerID;
+                            }
+
+                        }else{
+                            arrayAccountCK[item._id.credit] = {};
+                            arrayAccountCK[item._id.credit][item._id.customerCredit] = {};
+                            arrayAccountCK[item._id.credit][item._id.customerCredit].customer          = item._id.customerCredit;
+                            arrayAccountCK[item._id.credit][item._id.customerCredit].amountPriceCredit = Number(item.amountPrice || 0); //  openingS + Dk
+                        }
+                
+                    }
+                });
+            }
+        
+            // Xử lý trong kì tương tự đầu kì
+            function ToltalTK({ newDebit, newCredit }){
+        
+                newDebit.forEach(item=>{
+
+                    //  1.Nếu đã có customer đó rồi thì xử lý cộng thêm số
+                    if( item && item._id && item._id.debit){
+                        let accountDebit = arrayAccountTK[item._id.debit];
+
+                        if(accountDebit){
+                            accountDebit.amountPrice        = Number(accountDebit.amountPrice || 0) + Number(item.amountPrice || 0);
+                            accountDebit.amountPriceDebit   = Number(accountDebit.amountPriceDebit || 0) + Number(item.amountPrice || 0);
+                        }else{
+                            arrayAccountTK[item._id.debit]                    = {};
+                            arrayAccountTK[item._id.debit].amountPrice        = Number(item.amountPrice || 0);
+                            arrayAccountTK[item._id.debit].amountPriceDebit   = Number(item.amountPrice || 0);
+                            arrayAccountTK[item._id.debit].customerDebit      = item._id.customerDebit;
+                            arrayAccountTK[item._id.debit].debit              = item._id.debit;
+                        }
+
+                        // Xử lý mãng khách hàng theo từng đầu tài khoảng cho tính toán cuối kỳ
+                        let accountCK = arrayAccountCK[item._id.debit];
+
+                        if(accountCK){
+                            let  customerID  = item._id.customerDebit;
+
+                            if(accountCK[customerID]){
+                                accountCK[customerID].amountPriceDebit = Number( accountCK[customerID].amountPriceDebit || 0 ) + Number(item.amountPrice || 0);    
+                            }else{
+                                accountCK[customerID] = {};
+                                accountCK[customerID].amountPriceDebit = Number(item.amountPrice || 0);
+                                accountCK[customerID].customer = customerID;
+                            }
+                        }else{
+                            arrayAccountCK[item._id.debit] = {};
+                            arrayAccountCK[item._id.debit][item._id.customerDebit] = {};
+                            arrayAccountCK[item._id.debit][item._id.customerDebit].customer = item._id.customerDebit;
+                            arrayAccountCK[item._id.debit][item._id.customerDebit].amountPriceDebit = Number(item.amountPrice || 0); //  openingS + Dk
+                        }
+                    }
+                })
+
+                newCredit.forEach(item=>{
+
+                    if( item && item._id && item._id.credit){
+
+                        let accountCrebit = arrayAccountTK[item._id.credit]
+
+                        if(accountCrebit){
+                            accountCrebit.amountPrice             =  Number(accountCrebit.amountPrice  || 0) - Number(item.amountPrice || 0);
+                            accountCrebit.amountPriceCredit       =  Number(accountCrebit.amountPriceCredit || 0 ) + Number(item.amountPrice || 0);
+                        }else{
+                            arrayAccountTK[item._id.credit]                    = {};
+                            arrayAccountTK[item._id.credit].amountPrice        = Number(item.amountPrice || 0);
+                            arrayAccountTK[item._id.credit].amountPriceCredit  = Number(item.amountPrice || 0);
+                            arrayAccountTK[item._id.credit].customerCredit     = item._id.customerCredit;
+                            arrayAccountTK[item._id.credit].credit             = item._id.credit;
+                        }
+
+                        // Xử lý mãng khách hàng theo từng đầu tài khoảng cho tính toán cuối kỳ
+                        let accountCK = arrayAccountCK[item._id.credit];
+
+                        if(accountCK){
+                            let  customerID  = item._id.customerCredit;
+
+                            if(accountCK[customerID]){
+                                accountCK[customerID].amountPriceCredit = Number(accountCK[customerID].amountPriceCredit || 0 ) + Number(item.amountPrice || 0);    
+                            }else{
+                                accountCK[customerID] = {};
+                                accountCK[customerID].amountPriceCredit = Number(item.amountPrice || 0);
+                                accountCK[customerID].customer = customerID;
+                            }
+                        }else{
+                            arrayAccountCK[item._id.credit] = {};
+                            arrayAccountCK[item._id.credit][item._id.customerCredit] = {};
+                            arrayAccountCK[item._id.credit][item._id.customerCredit].customer          = item._id.customerCredit;
+                            arrayAccountCK[item._id.credit][item._id.customerCredit].amountPriceCredit = Number(item.amountPrice || 0); //  openingS + Dk
+                        }
+                    }else{
+                        // console.log({s : arrayAccount[ item._id.credit]})
+                    }
+                
+                })
+            }
+
+            // Xử dụng để tính toán giá trị cuối kì cho các tài khoản có  tài khoản con
+            function getValueCK({  accountInfo, parentID, parentName  }){
+
+                // Nếu tài  khoản đó có tài khoản con
+                if(accountInfo && accountInfo.childs){
+
+                    // Kiểm tra nếu chưa có trong mãn cuối kì thì tiến hành tạo cho tài khoản cha một phần tử trong mãn.
+                    // Lý do tài khoản cha chưa có : do tất cả công nợ nằm hết tài khoản con
+
+                    // Tạo nếu không có giá trị đầu kì
+                    if(!arrayAccountDK[parentID]){
+                        arrayAccountDK[parentID]                    = {};
+                        // arrayAccountDK[parentID].amountPrice        = 0;
+                        // arrayAccountDK[parentID].amountPriceDebit   = 0;
+                        // arrayAccountDK[parentID].amountPriceCredit  = 0;
+                        // arrayAccountDK[parentID].debit              = parentID;
+                    }
+
+                    // Tạo nếu không có giá trị trong kì
+                    if(!arrayAccountTK[parentID]){
+                        arrayAccountTK[parentID]                    = {};
+                        arrayAccountTK[parentID].amountPrice        = 0;
+                        arrayAccountTK[parentID].amountPriceDebit   = 0;
+                        arrayAccountTK[parentID].amountPriceCredit  = 0;
+                        arrayAccountTK[parentID].credit             = parentID;
+                    }
+
+                    // Nếu chưa có giá trị cuối kì
+                    if(!arrayAccountCK[parentID]){
+                        arrayAccountCK[parentID] = {}
+                    }
+
+                    // Duyệt mãng của những tài khoản con
+                    accountInfo.childs.forEach(accountChil=>{
+                    
+                        if(accountChil.status == 1){
+                        
+                            // Kiểm tra nếu tài khoản con có giá trị công nợ đầu kì thì tiến hành cộng dồn cho tài khoản cha
+                            if(arrayAccountDK[accountChil._id]){
+                                // XỬ LÝ CHO TÀI KHOẢN  CÓ ĐẦU KÌ
+                                // Nếu có thông tin về Đầu kì của tài khoản đang xét
+                                let openingAmountDebitAll = 0, openingRemainAmountCreitAll = 0;
+                                // Lấy tất cả khách hàng có nợ có trong tài khoản này
+                                let key1 = Object.keys(arrayAccountDK[accountChil._id]);
+                            
+                                // duyệt qua các khách hàng
+                                for(let i =0; i<key1.length; i ++){
+                                    let  _index  = key1[i];
+                                    let customer = arrayAccountDK[accountChil._id][_index];
+                                
+                                    if(Number(customer.amountPriceDebit || 0) - Number(customer.accountCrebit|| 0 )  > 0){
+                                        let remainAmountDebit = Number(customer.amountPriceDebit || 0) - Number(customer.accountCrebit || 0)
+                                        openingAmountDebitAll = Number(openingAmountDebitAll) + remainAmountDebit;
+                                    
+                                    }
+                                    if(Number(customer.accountCrebit || 0) - Number(customer.amountPriceDebit || 0 ) > 0){
+                                        let remainAmountCredit = Number(customer.accountCrebit || 0) - Number(customer.amountPriceDebit || 0)
+                                        openingRemainAmountCreitAll = Number(openingRemainAmountCreitAll) + remainAmountCredit
+                                    }	
+                                }
+                                // Lấy  tổng đầu kì cho một tài khoản
+                                accountChil.openingAmountDebitAll = openingAmountDebitAll || 0;
+                                accountChil.openingAmountCreditAll = openingRemainAmountCreitAll || 0;
+                                // accountInfo.openingAmountCreditAll  =  openingRemainAmountCreitAll;
+                                // accountInfo.openingAmountDebitAll =  openingAmountDebitAll;
+                                arrayAccountDK[parentID].openingAmountDebitAll  = Number(arrayAccountDK[parentID].openingAmountDebitAll || 0) + Number(arrayAccountDK[accountChil._id].openingAmountDebitAll || 0);
+                                arrayAccountDK[parentID].openingAmountCreditAll = Number(arrayAccountDK[parentID].openingAmountCreditAll || 0) + Number(arrayAccountDK[accountChil._id].openingAmountDebitAll || 0);
+                            }else{
+                                accountChil.openingAmountDebitAll =  0;
+                                accountChil.openingAmountCreditAll = 0;
+                            }
+
+                            // Kiểm tra nếu tài khoản con có giá trị công nợ trong kì thì tiến hành cộng dồn cho tài khoản cha
+                            if(arrayAccountTK[accountChil._id]){
+                                arrayAccountTK[parentID].amountPriceDebit = Number(arrayAccountTK[parentID].amountPriceDebit || 0) + Number( arrayAccountTK[accountChil._id].amountPriceDebit || 0);
+                                arrayAccountTK[parentID].amountPriceCredit = Number( arrayAccountTK[parentID].amountPriceCredit || 0) + Number( arrayAccountTK[accountChil._id].amountPriceCredit || 0);
+                            }
+                        
+                            // Xử lý cuối kì
+                            // Duyệt hết tất cả các khách hàng của tài khoản con
+                            if(arrayAccountCK[accountChil._id]){
+                                let key1 = Object.keys(arrayAccountCK[accountChil._id]);
+                                for(let i =0; i<key1.length; i ++){
+                                    let  _index  = key1[i]
+                                    let customer = arrayAccountCK[accountChil._id][_index]
+                                    if(arrayAccountCK[parentID][_index]){
+                                        arrayAccountCK[parentID][_index].amountPriceDebit  =  Number( arrayAccountCK[parentID][_index].amountPriceDebit || 0) + Number(customer.amountPriceDebit|| 0);
+                                        arrayAccountCK[parentID][_index].amountPriceCredit =  Number( arrayAccountCK[parentID][_index].amountPriceCredit || 0) + Number(customer.amountPriceCredit|| 0);
+                                    }else{
+                                        arrayAccountCK[parentID][_index] = {}
+                                        arrayAccountCK[parentID][_index].amountPriceDebit  =  Number( arrayAccountCK[parentID][_index].amountPriceDebit || 0) + Number(customer.amountPriceDebit|| 0);
+                                        arrayAccountCK[parentID][_index].amountPriceCredit =  Number( arrayAccountCK[parentID][_index].amountPriceCredit || 0) + Number(customer.amountPriceCredit|| 0);
+                                    }
+                                }
+                            }
+
+                        
+
+                            // Lấy tổng trong kì cho một tài khoản
+                            if(arrayAccountTK[accountChil._id]){
+                                accountChil.amountDebitAll = arrayAccountTK[accountChil._id].amountPriceDebit || 0;
+                                accountChil.amountCreditAll = arrayAccountTK[accountChil._id].amountPriceCredit || 0;
+                            }else{
+                                accountChil.amountDebitAll =  0;
+                                accountChil.amountCreditAll = 0;
+                            }
+                            
+                            // Xử lý số liệu cuối kì
+
+                            // Mặt định giá trị cuôi kì của mõi tài khoản là 0
+                            let remainAmountDebitAll = 0, remainAmountCreditAll =0;
+                            accountChil.remainAmountDebitAll =  remainAmountDebitAll;
+                            accountChil.remainAmountCreditAll = remainAmountCreditAll;
+
+                            // Nếu có thông tin về cuôi kì của tài khoản đang xét
+                            if(arrayAccountCK[accountChil._id]){
+                                
+                                    // Lấy tất cả khách hàng có nợ có trong tài khoản này
+                                    let key1 = Object.keys(arrayAccountCK[accountChil._id]);
+                                
+                                    // duyệt qua các khách hàng
+                                    for(let i =0; i<key1.length; i ++){
+                                        let  _index  = key1[i];
+                                        let customer = arrayAccountCK[accountChil._id][_index];
+                                    
+                                        // Tính toán
+                                        //_________Số liệu cuối kỳ
+                                    
+                                        if(Number(customer.amountPriceDebit || 0) - Number(customer.amountPriceCredit|| 0 )  > 0){
+                                            let remainAmountDebit = Number(customer.amountPriceDebit || 0) - Number(customer.amountPriceCredit || 0)
+                                            remainAmountDebitAll = Number(remainAmountDebitAll) + remainAmountDebit;
+                                        }
+                                        if(Number(customer.amountPriceCredit || 0) - Number(customer.amountPriceDebit || 0 ) > 0){
+                                            let remainAmountCredit = Number(customer.amountPriceCredit || 0) - Number(customer.amountPriceDebit || 0)
+                                            remainAmountCreditAll = Number(remainAmountCreditAll) + remainAmountCredit
+                                        }	
+                                    }
+                                
+                                    // Tổng hợp theo tài khoản cha 
+                                    accountChil.remainAmountDebitAll  =  remainAmountDebitAll;
+                                    accountChil.remainAmountCreditAll =  remainAmountCreditAll;
+                                
+                                    if(!arrAccLT.includes(parentName)){
+                                        if(Number(accountChil.remainAmountDebitAll) > Number(accountChil.remainAmountCreditAll)){
+                                            accountChil.remainAmountDebitAll    =   Number(remainAmountDebitAll) - Number(remainAmountCreditAll);;
+                                            accountChil.remainAmountCreditAll   = 0;
+                                        }else{
+                                            if(Number(accountChil.remainAmountDebitAll) == Number(accountChil.remainAmountCreditAll)){
+                                                accountChil.remainAmountDebitAll    =  0;
+                                                accountChil.remainAmountCreditAll   =  0;
+                                            }else{
+                                                accountChil.remainAmountCreditAll   =  Number(remainAmountCreditAll) - Number(remainAmountDebitAll);
+                                                accountChil.remainAmountDebitAll    =  0;
+                                            }
+                                        }
+                                    }
+                                    const newInfoAccountChild = {
+                                        _id: accountChil._id,
+                                        name: accountChil.name,
+                                        description: accountChil.description,
+                                        company: accountChil.company,
+                                        childs: accountChil.childs,
+                                        level: accountChil.level,
+                                        state: accountChil.state,
+                                        amountDebitAll: accountChil.amountDebitAll,
+                                        amountCreditAll: accountChil.amountCreditAll,
+                                        openingAmountCreditAll: accountChil.openingAmountCreditAll,
+                                        openingAmountDebitAll: accountChil.openingAmountDebitAll,
+                                        remainAmountCreditAll: accountChil.remainAmountCreditAll,
+                                        remainAmountDebitAll: accountChil.remainAmountDebitAll,
+                                        // remainAmountDebitAllChilds: accountChil.remainAmountDebitAllChilds,
+                                        // remainAmountCreditAllChilds: accountChil.remainAmountCreditAllChilds
+                                    }
+                                    arrayChil.push(newInfoAccountChild)
+                            }else{
+                            
+                                // Tổng hợp theo tài khoản cha 
+                                accountChil.remainAmountDebitAll  =  0;
+                                accountChil.remainAmountCreditAll =  0;
+                                const newInfoAccountChild = {
+                                    _id: accountChil._id,
+                                    name: accountChil.name,
+                                    description: accountChil.description,
+                                    company: accountChil.company,
+                                    childs: accountChil.childs,
+                                    level: accountChil.level,
+                                    state: accountChil.state,
+                                    amountDebitAll: accountChil.amountDebitAll,
+                                    amountCreditAll: accountChil.amountCreditAll,
+                                    openingAmountCreditAll: accountChil.openingAmountCreditAll,
+                                    openingAmountDebitAll: accountChil.openingAmountDebitAll,
+                                    remainAmountCreditAll: accountChil.remainAmountCreditAll,
+                                    remainAmountDebitAll: accountChil.remainAmountDebitAll,
+                                    // remainAmountDebitAllChilds: accountChil.remainAmountDebitAllChilds,
+                                    // remainAmountCreditAllChilds: accountChil.remainAmountCreditAllChilds
+                                }
+                                arrayChil.push(newInfoAccountChild)
+                            }
+                        
+                            // Nếu tài khoản con còn các tài khoản con nữa thì tiếp tục làm duyệt qua
+                            if(accountChil.childs){
+                                getValueCK({  accountInfo : accountChil, parentID  })
+                            }
+                        }   
+                    })
+                    
+                }
+                
+            }
+
+
+            // Danh sách các tài khoản lưỡng tính
+            // let arrAccLT = ['128','131','136','138','141','331','334','335','336','338','341']
+            let arrAccLT = [];
+            let arrAccLTObject  =  await  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`,
+            { limit: '20', status : 1, type : 2, level : 1, isAccountingService: true })
+                
+            if(arrAccLTObject.error)
+                return resolve({ error: true, message: `DebtTrackingReport error: ${arrAccLTObject.message}`, status: 400 })
+                arrAccLTObject.data.listRecords.forEach(item=> { 
+                arrAccLT.push(item.name)
+            });
+
+            // 1.XỬ LÝ SỐ LIỆU ĐẦU KỲ.(kèm theo lưu thông tin của khách hàng theo từng đầu tài khoản  phục vụ việc tổng hợp CUỐI KÌ)
+            ToltalDK({ newDebit : (listDataS.dataS && listDataS.dataS._debit) || [] , newCredit : (listDataS.dataS && listDataS.dataS._credit) || [] })
+            ToltalDK({ newDebit : (listDataS.data && listDataS.data._debit) || [] , newCredit : (listDataS.data && listDataS.data._credit) || [] })
+            
+            // 2.XỬ LÝ SỐ LIỆU TRONG KỲ.(kèm theo lưu thông tin của khách hàng theo từng đầu tài khoản  phục vụ việc tổng hợp CUỐI KÌ)
+            ToltalTK({ newDebit : (listData.data && listData.data._debit) || [] , newCredit : (listData.data && listData.data._credit) || [] })
+
+            // 3.DUYỆT QUA TỪNG TÀI KHOẢN ĐỂ TỔNG HỢP CÔNG NỢ CUỐI CÙNG (ĐẦU KÌ ; TRONG KÌ; CUỐI KÌ).
+            let newListAccount = []
+            let arrayChil = [];
+
+            listAccounts && listAccounts.data && listAccounts.data.forEach(accountInfo=>{   
+                if(arrAccLT.includes(accountInfo.name)){
+                    arrayChil = [];
+                    // Kiểm tra trường hợp có  danh sach tài khoản con
+                    getValueCK({ accountInfo : accountInfo, parentID :accountInfo._id, parentName : accountInfo.name });
+                
+                    // Lấy  tổng đầu kì cho một tài khoản
+                    // if(arrayAccountDK[accountInfo._id]){
+                    //     accountInfo.openingAmountDebitAll = arrayAccountDK[accountInfo._id].amountPriceDebit || 0;
+                    //     accountInfo.openingAmountCreditAll = arrayAccountDK[accountInfo._id].amountPriceCredit || 0;
+                    // }else{
+                    //     accountInfo.openingAmountDebitAll =  0;
+                    //     accountInfo.openingAmountCreditAll = 0;
+                    // }
+
+                    // Lấy tổng trong kì cho một tài khoản
+                    if(arrayAccountTK[accountInfo._id]){
+                        accountInfo.amountDebitAll  = arrayAccountTK[accountInfo._id].amountPriceDebit || 0;
+                        accountInfo.amountCreditAll = arrayAccountTK[accountInfo._id].amountPriceCredit || 0;
+                    }else{
+                        accountInfo.amountDebitAll  =  0;
+                        accountInfo.amountCreditAll = 0;
+                    }
+
+                    // XỬ LÝ CHO TÀI KHOẢN  CÓ ĐẦU KÌ
+                    // Nếu có thông tin về Đầu kì của tài khoản đang xét
+                    let openingAmountDebitAll = 0, openingRemainAmountCreitAll = 0;
+
+                    if(arrayAccountDK[accountInfo._id]){
+                        
+                        // Lấy tất cả khách hàng có nợ có trong tài khoản này
+                        let key1 = Object.keys(arrayAccountDK[accountInfo._id]);
+                    
+                        // duyệt qua các khách hàng
+                        for(let i =0; i<key1.length; i ++){
+                            let  _index  = key1[i];
+                            let customer = arrayAccountDK[accountInfo._id][_index];
+                        
+                            if(Number(customer.amountPriceDebit || 0) - Number(customer.accountCrebit|| 0 )  > 0){
+                                let remainAmountDebit = Number(customer.amountPriceDebit || 0) - Number(customer.accountCrebit || 0)
+                                openingAmountDebitAll = Number(openingAmountDebitAll) + remainAmountDebit;
+                                
+                            }
+                            if(Number(customer.accountCrebit || 0) - Number(customer.amountPriceDebit || 0 ) > 0){
+                                let remainAmountCredit      = Number(customer.accountCrebit || 0) - Number(customer.amountPriceDebit || 0)
+                                openingRemainAmountCreitAll = Number(openingRemainAmountCreitAll) + remainAmountCredit
+                                
+                            }	
+                        }
+                        
+                    }
+                        
+                    accountInfo.openingAmountCreditAll  =  openingRemainAmountCreitAll;
+                    accountInfo.openingAmountDebitAll   =  openingAmountDebitAll;
+
+                    
+
+                    arrayChil && arrayChil.forEach(item=>{
+                        accountInfo.openingAmountCreditAll = Number(accountInfo.openingAmountCreditAll || 0) + Number(item.openingAmountCreditAll || 0);
+                        accountInfo.openingAmountDebitAll  = Number(accountInfo.openingAmountDebitAll || 0) + Number(item.openingAmountDebitAll || 0);
+                    })
+                    
+                    // Xử lý số liệu cuối kì
+
+                    // Mặt định giá trị cuôi kì của mõi tài khoản là 0
+                    let remainAmountDebitAll = 0, remainAmountCreditAll =0;
+                    accountInfo.remainAmountDebitAll    =  remainAmountDebitAll;
+                    accountInfo.remainAmountCreditAll   = remainAmountCreditAll;
+                    
+                    // Nếu có thông tin về cuôi kì của tài khoản đang xét
+                    if(arrayAccountCK[accountInfo._id]){
+
+                            // Lấy tất cả khách hàng có nợ có trong tài khoản này
+                            let key1 = Object.keys(arrayAccountCK[accountInfo._id]);
+                        
+                            // duyệt qua các khách hàng
+                            for(let i =0; i<key1.length; i ++){
+                                let  _index  = key1[i];
+                                let customer = arrayAccountCK[accountInfo._id][_index];
+                            
+                                // Tính toán
+                                //_________Số liệu cuối kỳ
+                            
+                                if(Number(customer.amountPriceDebit || 0) - Number(customer.amountPriceCredit|| 0 )  > 0){
+                                    let remainAmountDebit = Number(customer.amountPriceDebit || 0) - Number(customer.amountPriceCredit || 0)
+                                    remainAmountDebitAll  = Number(remainAmountDebitAll) + remainAmountDebit;
+                                }
+                                if(Number(customer.amountPriceCredit || 0) - Number(customer.amountPriceDebit || 0 ) > 0){
+                                    let remainAmountCredit = Number(customer.amountPriceCredit || 0) - Number(customer.amountPriceDebit || 0)
+                                    remainAmountCreditAll  = Number(remainAmountCreditAll) + remainAmountCredit
+                                }	
+                            }
+                        
+                            // Tổng hợp theo tài khoản cha 
+                            accountInfo.remainAmountDebitAll  =  remainAmountDebitAll;
+                            accountInfo.remainAmountCreditAll =  remainAmountCreditAll;
+                            if(!arrAccLT.includes(accountInfo.name)){
+                                if(Number(accountInfo.remainAmountDebitAll) > Number(accountInfo.remainAmountCreditAll)){
+                                    accountInfo.remainAmountDebitAll    =   Number(remainAmountDebitAll) - Number(remainAmountCreditAll);;
+                                    accountInfo.remainAmountCreditAll   = 0;
+                                }else{
+                                    if(Number(accountInfo.remainAmountDebitAll) == Number(accountInfo.remainAmountCreditAll)){
+                                        accountInfo.remainAmountDebitAll    =  0;
+                                        accountInfo.remainAmountCreditAll   =  0;
+                                    }else{
+                                        accountInfo.remainAmountCreditAll   =  Number(remainAmountCreditAll) - Number(remainAmountDebitAll);
+                                        accountInfo.remainAmountDebitAll    =  0;
+                                    }
+                                }
+                            }
+                            accountInfo.plushValue  = true;
+                            
+                            arrayChil && arrayChil.forEach(item=>{
+                                accountInfo.remainAmountCreditAllChilds = Number(accountInfo.remainAmountCreditAllChilds || 0) + Number(item.remainAmountCreditAll);
+                                accountInfo.remainAmountDebitAllChilds  = Number(accountInfo.remainAmountDebitAllChilds || 0) + Number(item.remainAmountDebitAll);
+                            })
+
+                            const newInfoAccount = {
+                                _id: accountInfo._id,
+                                name: accountInfo.name,
+                                description: accountInfo.description,
+                                company: accountInfo.company,
+                                childs: accountInfo.childs,
+                                level: accountInfo.level,
+                                state: accountInfo.state,
+                                amountDebitAll: accountInfo.amountDebitAll,
+                                amountCreditAll: accountInfo.amountCreditAll,
+                                openingAmountCreditAll: accountInfo.openingAmountCreditAll,
+                                openingAmountDebitAll: accountInfo.openingAmountDebitAll,
+                                remainAmountCreditAll: accountInfo.remainAmountCreditAll,
+                                remainAmountDebitAll: accountInfo.remainAmountDebitAll,
+                                remainAmountDebitAllChilds: accountInfo.remainAmountDebitAllChilds,
+                                remainAmountCreditAllChilds: accountInfo.remainAmountCreditAllChilds
+                            }
+                            newListAccount.push(newInfoAccount);
+                    }
+                     
+                }
+            });
+            return resolve({ error: false, data: { listAccount: newListAccount } });
+        });
+    }
 
 }
 exports.MODEL = new Model;

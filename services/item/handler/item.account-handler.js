@@ -30,14 +30,13 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { accountID, companyID, keyword, 
                     limit, lastestID, select, populates,
-                    status, type, level,
+                    status, type, level, isAccountingService
                 } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
-                console.log({___ : limit})
                 let resultAfterCallHandler;
                 if(accountID){
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getInfo({
@@ -46,7 +45,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getList({
                         companyID, lastestID, keyword, select, limit, populates,
-                        status, type, level,
+                        status, type, level, isAccountingService
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
