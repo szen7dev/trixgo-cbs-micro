@@ -33,43 +33,6 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-
-
-// const ObjectID                      = require('mongoose').Types.ObjectId;
-
-// const BaseModel                     = require('../intalize/base_model');
-// const { isEmptyObject }             = require('../../utils/utils');
-
-// const cfJws                         = require('../../config/cf_jws');
-// const { checkObjectIDs }            = require('../../utils/utils');
-// const XLSX      = require('xlsx');
-
-// const AUTH__COMPANY_COLL                  = require('../../database/core/company-coll');
-// const CONTACT_COLL                  = require('../../database/core/contact-coll');
-// const DEPARTMENT_COLL               = require('../../database/core/department-coll');
-// const POSITION_COLL                 = require('../../database/core/position-coll');
-// const CONTRACT_COLL                 = require('../../database/core/contract-coll');
-// const REMOVE_FILE_COLL              = require('../../database/core/file_removed-coll');
-// const PCM_PLAN_GROUP_COLL           = require('../../database/apps/pcm/pcm_plan_group-coll');
-
-
-// const DB_APP_USER_MODEL             = require('../../models/core/app_user').MODEL;
-// const GROUP_OF_FRIEND_MODEL         = require('../../models/core/group_of_friend').MODEL;
-// const FILE_REMOVE_MODEL             = require('../../models/core/file_removed').MODEL;
-
-// const STRING_UTILS                  = require('../../utils/string_utils');
-// const { sendMailForgetPassword, sendMailNewAccount }    = require('../../mailer/module/mail_user');
-// let { socket_product }              = require('../../config/cf_mode');
-// let { cachingInfoUser } = require('../../utils/caching');
-
-/**
- * worker: (mail)
- * sử dụng WORKER_POOLS(WOKER_THREADS) thay_cho sendMailForgetPassword, sendMailNewAccount (MAIN_THREAD)
- */
-// let workerpool          = require('workerpool');
-// let pool                = workerpool.pool(`${__dirname}/../../workers/mail/mail.worker.js`);
-// let MAIL_CONSTANTS      = require('../../workers/constants/mail');
-
 class Model extends BaseModel {
 
     constructor() {
@@ -482,7 +445,7 @@ class Model extends BaseModel {
                     .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
-                    .populate(populates)
+                    // .populate(populates)
                     .sort(sortBy)
 					.lean();
 
@@ -701,37 +664,6 @@ class Model extends BaseModel {
         })
     }
 
-	// implement by: MINHVH ✅ 
-	getInfoById({ userID, select }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid' });
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - kiểm tra valid từ các input
-                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: convert type + update name (ví dụ: string -> number)
-                 *  3.2: operation database
-                 */    
-              
-                let infoUser = await AUTH__USER_COLL.findById(userID)
-					.select(select)
-					.lean();
-
-                return resolve({ error: false, data: infoUser });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
-    }
 
 	// implement by: MINHVH ✅ 
 	getListUserWithCondition({ condition, select, filter = {} }) {
@@ -1454,7 +1386,7 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
-                
+
                 if(checkObjectIDs(projectID)){
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
@@ -1470,7 +1402,6 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-                
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__USER_COLL.findById(lastestID);
@@ -1507,7 +1438,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObj);
+                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

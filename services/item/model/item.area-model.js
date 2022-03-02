@@ -131,9 +131,10 @@ class Model extends BaseModel {
                     sortBy       = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await ITEM__AREA_COLL.find(conditionObj)
+                let infoDataAfterGet = await ITEM__AREA_COLL
+                    .find(conditionObj)
                     .select(select)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean(); 
@@ -159,7 +160,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
