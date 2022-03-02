@@ -1398,7 +1398,7 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = { ...conditionObj };
