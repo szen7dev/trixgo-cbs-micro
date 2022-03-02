@@ -55,7 +55,7 @@ class Model extends BaseModel {
                 if(!checkPermission || checkPermission.level != 0)
                     return resolve({ error: true, message: "Bạn không đủ quyền", keyError: KEY_ERROR.PERMISSION_DENIED, status: 400 });
 
-                let dataInsert = { type, company, app, name, userCreate: userID, members: [userID] };
+                let dataInsert = { type, company, app, name, userCreate: userID, userUpdate: userID, members: [userID] };
 
                 if(description){
                     dataInsert.description = description;
@@ -88,7 +88,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { modifyAt: new Date(), userUpdate: userID };
                 if(name){
                     dataUpdate.name = name;
                 }
