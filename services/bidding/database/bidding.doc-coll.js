@@ -4,6 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
  * HỒ SƠ GÓI THẦU
+ * - Phục vụ làm Tư vấn giá
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     //_________Khu vực
@@ -16,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
-    //_________Nhà thầu trúng thầu
+    //_________Nhà thầu trúng thầu (sau thay cho Task)
     bidder: {
         type: Schema.Types.ObjectId,
         ref : "company"
