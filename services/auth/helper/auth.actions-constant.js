@@ -62,7 +62,8 @@ const CF_ACTIONS_AUTH = {
 	 * COMPANY
 	 */
     GET_INFO_AND_GET_LIST_COMPANY        : `${BASE_ACTIONS}_${COMPANY}_GET_INFO_AND_GET_LIST`,
-
+    COMPANY_INSERT                       : `${BASE_ACTIONS}_${COMPANY}_INSERT`,
+    COMPANY_UPDATE                       : `${BASE_ACTIONS}_${COMPANY}_UPDATE`,
     /**
 	 * APP_MENU
 	 */
