@@ -220,7 +220,7 @@ class Model extends BaseModel {
 								fileID
 							});
 
-							if(infoFileCore.error) {
+							if(!infoFileCore.error) {
 								const { 
 									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
 								} = infoFileCore.data;
@@ -237,6 +237,7 @@ class Model extends BaseModel {
 						})
 
 					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
 						dataUpdate.files = results;
 					}
 				}
@@ -276,6 +277,7 @@ class Model extends BaseModel {
 						})
 
 					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
 						dataUpdate.images = results;
 					}
 				}
@@ -533,7 +535,7 @@ class Model extends BaseModel {
 						newFiles = files;
 					}
 
-					const { results, errors } = await PromisePool
+					let { results, errors } = await PromisePool
 						.for(newFiles)
 						.withConcurrency(2)
 						.process(async fileID => {
@@ -558,6 +560,7 @@ class Model extends BaseModel {
 						})
 
 					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
 						dataUpdate.files = [...oldFiles, ...results];
 					} else{
 						dataUpdate.files = oldFiles;
@@ -592,7 +595,7 @@ class Model extends BaseModel {
 						newFiles = images;
 					}
 
-					const { results, errors } = await PromisePool
+					let { results, errors } = await PromisePool
 						.for(newFiles)
 						.withConcurrency(2)
 						.process(async fileID => {
@@ -617,6 +620,7 @@ class Model extends BaseModel {
 						})
 
 					if(results.length && !errors.length) {
+						results = results.filter(Boolean);
 						dataUpdate.images = [...oldFiles, ...results];
 					} else{
 						dataUpdate.images = oldFiles;
