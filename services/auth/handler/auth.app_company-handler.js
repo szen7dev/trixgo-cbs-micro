@@ -94,9 +94,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { appCompanyID, companyID, select, populates, limit, lastestID } = ctx.params;
+                let { appCompanyID, companyID, select, populates, limit, lastestID } = ctx.params;  
                 let resultAfterCallHandler;
-
+                
                 if(appCompanyID){
                     resultAfterCallHandler = await AUTH__APP_COMPANY.getInfo({ appCompanyID, select, populates });
                 }else{

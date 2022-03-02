@@ -594,6 +594,7 @@ module.exports = {
         params: {
             userID      : { type: "string", optional: true },
             projectID   : { type: "string", optional: true },
+            companyID   : { type: "string", optional: true },
 
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -605,18 +606,18 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    userID, projectID, 
+                    userID, projectID, companyID,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
                 let resultAfterCallHandler;
-                
+                console.log({ companyID });
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
                         userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
-                        projectID, keyword, limit, lastestID, select, populates, ctx
+                        projectID, companyID, keyword, limit, lastestID, select, populates, ctx
                     });
                 }
 
