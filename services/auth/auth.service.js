@@ -23,7 +23,7 @@ const AUTH__APP_ROLE_COLL			= require('./database/permission/auth.app_role-coll'
 const AUTH__APP_USER_COLL			= require('./database/permission/auth.app_user-coll');
 const AUTH__APP_COMPANY_COLL		= require('./database/permission/auth.app_company-coll');
 const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_role_menu-coll');
- 
+
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
 	mixins: [
@@ -126,6 +126,7 @@ module.exports = {
 		// App user
 		[CF_ACTIONS_AUTH.APP_USER_GET_INFO_AND_GET_LIST]			: AUTH__APP_USER_HANDLER.getListAppOfUser,
 		[CF_ACTIONS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP]		: AUTH__APP_USER_HANDLER.checkPermissionsAccessApp,
+		[CF_ACTIONS_AUTH.APP_USER_GET_LIST]							: AUTH__APP_USER_HANDLER.getList,
 		
 		// App company
 		[CF_ACTIONS_AUTH.APP_COMPANY_INSERT]						: AUTH__APP_COMPANY_HANDLER.insert,

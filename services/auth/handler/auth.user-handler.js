@@ -610,7 +610,6 @@ module.exports = {
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
                 let resultAfterCallHandler;
-                console.log({ companyID });
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
                         userID, select, populates
@@ -620,7 +619,7 @@ module.exports = {
                         projectID, companyID, keyword, limit, lastestID, select, populates, ctx
                     });
                 }
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
