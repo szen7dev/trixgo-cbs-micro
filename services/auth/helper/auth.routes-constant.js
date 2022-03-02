@@ -50,6 +50,7 @@ const CF_ROUTINGS_AUTH = {
      * APP_ROLE
      */
     APP_ROLE                           : `${BASE_ROUTE}${APP_ROLE}`,
+    APP_ROLE_REMOVE_MANY               : `${BASE_ROUTE}${APP_ROLE}/remove-many`,
 
     /**
      * APP_ROLE_MENU

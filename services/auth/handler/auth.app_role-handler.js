@@ -82,6 +82,24 @@ module.exports = {
         }
     },
 
+    removeMany: {
+        auth: "required",
+        params: {
+            appRoleIDs: { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID } = ctx.meta.infoUser;
+                let { appRoleIDs } = ctx.params;
+                let resultAfterCallHandler = await AUTH__APP_ROLE.removeMany({ appRoleIDs });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
     getInfoAndGetList: {
         auth: "required",
         params: {
