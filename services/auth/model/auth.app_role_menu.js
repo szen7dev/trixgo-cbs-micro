@@ -185,7 +185,7 @@ class Model extends BaseModel {
                     members:  { $in: [user] }
                 })
                 .select('_id name')
-
+                
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
                         $match: {
@@ -202,7 +202,7 @@ class Model extends BaseModel {
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
                         }
-                    }
+                    },
                 ]);
                 if (!listData) 
                     return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
