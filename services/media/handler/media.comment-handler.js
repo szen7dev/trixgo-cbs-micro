@@ -191,12 +191,12 @@ module.exports = {
     updateCommentFile: {
         auth: "required",
         params: {
-            commentID           : { type: "string" },
-			content             : { type: "string", optional: true },
-            files               : { type: "array", optional: true },
-            images              : { type: "array", optional: true },
-            select              : { type: "string", optional: true },
-            populates           : { type: "string", optional: true },
+            commentID   : { type: "string" },
+			content     : { type: "string", optional: true },
+            files       : { type: "array", optional: true },
+            images      : { type: "array", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

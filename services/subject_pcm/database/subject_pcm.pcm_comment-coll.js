@@ -18,7 +18,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_comment'
     },
-    
+
     //_________ID reply của comment reply cuối(Chi lưu cho comment cha)
     lastestReplyID: {
         type    :  Schema.Types.ObjectId,
@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
 
     //_________Đánh dấu
     isMarked: { type: Boolean, default: false },
-
+    
     //_________File đính kèm
     files: [{
         type: Schema.Types.ObjectId,

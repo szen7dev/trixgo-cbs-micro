@@ -7,12 +7,12 @@ const Schema                = require('mongoose').Schema;
  * - Mỗi contractorID chỉ ứng với 1 fieldID
  */
 module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
-    //_________Lĩnh vực
+    //_________Lĩnh vực(*)
     field: {
         type: Schema.Types.ObjectId,
         ref : "datahub_type"
     }, 
-    //_________Nhà thầu thực hiện dịch vụ/lĩnh vực
+    //_________Nhà thầu thực hiện dịch vụ/lĩnh vực(*)
     contractor: {
         type: Schema.Types.ObjectId,
         ref : "company"

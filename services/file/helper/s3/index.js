@@ -85,15 +85,26 @@ const uploadFile = (pathFile, key) => {
 
 /**
  * GET PATH S3 BY APP
- * @param {string} type 
- * @param {string} appID 
- * @param {string} companyID 
- * @param {string} projectID 
- * @param {string} groupID 
  * @returns { error: boolean, data: string }
  */
-const getPathS3 = ({ type, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
-    if(type) return { error: false, data: '' };
+const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
+    // Trường hợp upload anh cho avatar hoặc signature
+    switch (typeUpload) {
+        case 'user': {
+            const extension = getExtension(fileName);
+            const newFileName = `${uuidv4()}.${extension}`;
+
+            return { 
+                error: false, 
+                data: {
+                    newFileName,
+                    pathS3: ''
+                }
+            };
+        }
+        default:
+            break;
+    }
 
     if(!appID || !checkObjectIDs([appID])) {
         return {

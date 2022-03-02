@@ -10,20 +10,20 @@ const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domai
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
 const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
-const { APP_KEYS }								= require('../../../tools/keys');
+const { APP_KEYS, KEY_ERROR }					= require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
  */
-const PCM_PLAN_TASK_COLL            = require('../database/subject_pcm.pcm_plan_task-coll');
-const PCM_COMMENT_COLL              = require('../database/subject_pcm.pcm_comment-coll');
+const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
+const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 
 class Model extends BaseModel {
 
     constructor() {
         super(PCM_COMMENT_COLL);
     }
-
+    
     /**
 	 * Dev: MinhVH 
 	 * Func: Thêm comment
@@ -109,8 +109,8 @@ class Model extends BaseModel {
                 files   && (dataInsert.files = files);
                 images  && (dataInsert.images = images);
 
-                let infoDataAfterInserted = await this.insertData(dataInsert); 
-                if(!infoDataAfterInserted) {
+                let infoAterInsert = await this.insertData(dataInsert); 
+                if(!infoAterInsert) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -119,10 +119,13 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(parentID) {
-                    await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, {
+                if(parentID){
+                    await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, { 
                         $set: {
-                            lastestReplyID: infoDataAfterInserted._id
+                            lastestReplyID: infoAterInsert._id
+                        },
+                        $inc: {
+                            amountCommentReply: 1
                         }
                     });
                 }
@@ -167,7 +170,7 @@ class Model extends BaseModel {
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     content,
                     receivers,
-                    path: `/pcm/detail/${taskID}#${infoDataAfterInserted._id}`,
+                    path: `/pcm/detail/${taskID}#${infoAterInsert._id}`,
                     languageKey: "CREATE_NEW_RESPONSE",
                     app: APP_KEYS.PCM_PLAN_TASK,
                     mainColl: {
@@ -176,19 +179,19 @@ class Model extends BaseModel {
                     },
                     subColl: {
                         kind: "pcm_comment",
-                        item: infoDataAfterInserted._id
+                        item: infoAterInsert._id
                     },
                     type: 1 // InApp (Socket)
                 })
 
-                infoDataAfterInserted = await PCM_COMMENT_COLL
-                    .findById(infoDataAfterInserted._id)
+                infoAterInsert = await PCM_COMMENT_COLL
+                    .findById(infoAterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
 
                 return resolve({ error: false, data: {
-                    result: infoDataAfterInserted,
+                    result: infoAterInsert,
                     receivers: listReceivers
                 }, status: 200 });
             } catch (error) {
@@ -202,7 +205,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
 	 */ 
-    update({ commentID, authorID, content, files, images, select, populates, amountCommentReply, amountReaction }) {
+    update({ commentID, authorID, content, files, images, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -262,18 +265,6 @@ class Model extends BaseModel {
                 *  3.2: operation database
                 */    
                 content && (dataUpdate.content = content);
-
-                if(amountCommentReply){
-                    dataUpdate.$inc = {
-                        amountCommentReply
-                    }
-                }
-
-                if(amountReaction){
-                    dataUpdate.$inc = {
-                        amountReaction
-                    }
-                }
 
                 // CẬP NHẬT FILE MỚI
                 if(files.length && checkObjectIDs(files)){
@@ -409,6 +400,19 @@ class Model extends BaseModel {
                     });
                 }
 
+                const infoComment = await PCM_COMMENT_COLL
+                    .findOne({ _id: commentID, type: 2 })
+                    .lean();
+
+                if(infoComment) {
+                    return resolve({
+                        error: true,
+                        message: "Comment không tồn tại hoặc comment là phải hồi",
+                        keyError: "comment_not_exists_or_comment_is_response",
+                        status: 400
+                    })
+                }
+
                 let infoDataAfterDelete = await PCM_COMMENT_COLL.findOneAndDelete({
                     _id: commentID,
                     author: authorID
@@ -469,7 +473,7 @@ class Model extends BaseModel {
                     return resolve({ 
                         error: true, 
                         message: 'Comment không tồn tại', 
-                        keyError: 'comment_not_exists', 
+                        keyError: KEY_ERROR.GET_INFO_FAILED, 
                         status: 400
                     });
                 }
@@ -486,7 +490,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, isMarked, sortKey, select, populates }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, type, isMarked, sortKey, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -545,6 +549,10 @@ class Model extends BaseModel {
 
                 if(isMarked === 'true') {
                     conditionObj.isMarked = true;
+                }
+
+                if(type) {
+                    conditionObj.type = type;
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -686,7 +694,7 @@ class Model extends BaseModel {
 				const listComments = [...listCommentsFront.reverse(), infoComment, ...listCommentsBack];
 
                 const totalRecordFront = await PCM_COMMENT_COLL.countDocuments(conditionObjFrontList);
-                const totalRecordBack = await PCM_COMMENT_COLL.countDocuments(conditionObjBackList);
+                const totalRecordBack  = await PCM_COMMENT_COLL.countDocuments(conditionObjBackList);
 
 				return resolve({
 					error: false,

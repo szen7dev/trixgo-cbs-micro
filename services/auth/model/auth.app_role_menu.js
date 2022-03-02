@@ -16,6 +16,7 @@ const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/au
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
+const { KEY_ERROR }                         = require('../../../tools/keys');
 
 /**
  * import inter-model, exter-model
@@ -69,7 +70,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Name: Danh sách app_role_menu của roleID phục vụ cho màn hình Admin phân quyền Nhóm chức năng
      * Màn hình: S2-1.2 (/pcm/admin/2)
@@ -142,7 +143,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -201,9 +202,10 @@ class Model extends BaseModel {
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
                         }
-                    }
+                    },
                 ]);
-                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
+                if (!listData) 
+                    return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -246,7 +248,9 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                if (!listData || (listData && !listData.length)) return resolve({ error: true, message: 'permission_denied' });
+
+                if (!listData || (listData && !listData.length)) 
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
                 return resolve({ error: false, data: listData && listData[0]});
             } catch (error) {
                 return resolve({ error: true, message: error.message });

@@ -32,7 +32,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
-
+                
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
 					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
@@ -58,19 +58,17 @@ module.exports = {
             images              : { type: "array", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
-            amountCommentReply  : { type: "number", optional: true },
-            amountReaction      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { commentID, content, files, images, select, populates, amountCommentReply, amountReaction } = ctx.params;
+                const { commentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
-					commentID, authorID, content, files, images, select, populates, amountCommentReply, amountReaction
+					commentID, authorID, content, files, images, select, populates
 				});
-
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -142,6 +140,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             taskID              : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
             isMarked            : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
@@ -154,7 +153,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, limit, parentID, lastestID, commentID, isMarked, sortKey, select, populates } = ctx.params;
+                let { taskID, limit, parentID, lastestID, commentID, type, isMarked, sortKey, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
                 
                 if(commentID){
@@ -163,7 +162,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
-                        taskID, parentID, limit, lastestID, isMarked, sortKey, select, populates
+                        taskID, parentID, limit, lastestID, type, isMarked, sortKey, select, populates
                     });
                 }
 

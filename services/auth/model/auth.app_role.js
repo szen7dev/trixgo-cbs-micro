@@ -8,6 +8,7 @@ const moment                            = require("moment");
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }                     = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -52,9 +53,9 @@ class Model extends BaseModel {
                 // Kiểm tra chỉ cho khởi tạo nếu là Admin của app (level trong app_user=0)  
                 let checkPermission = await AUTH__APP_USER_COLL.findOne({ app, user: userID });
                 if(!checkPermission || checkPermission.level != 0)
-                    return resolve({ error: true, message: "Bạn không đủ quyền", keyError: "permission_denied", status: 400 });
+                    return resolve({ error: true, message: "Bạn không đủ quyền", keyError: KEY_ERROR.PERMISSION_DENIED, status: 400 });
 
-                let dataInsert = { type, company, app, name, userCreate: userID, members: [userID] };
+                let dataInsert = { type, company, app, name, userCreate: userID, userUpdate: userID, members: [userID] };
 
                 if(description){
                     dataInsert.description = description;
@@ -62,7 +63,7 @@ class Model extends BaseModel {
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: "cannot_insert", status: 422 });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 422 });
  
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -87,7 +88,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { modifyAt: new Date(), userUpdate: userID };
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -110,7 +111,7 @@ class Model extends BaseModel {
                 
                 let infoAterUpdate = await AUTH__APP_ROLE_COLL.findByIdAndUpdate(appRoleID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "cannot_update", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
  
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -146,10 +147,46 @@ class Model extends BaseModel {
                  */
                 let infoAterRemove = await AUTH__APP_ROLE_COLL.findByIdAndDelete(appRoleID);
                 if(!infoAterRemove)
-                    return resolve({ error: true, message: 'Xóa thất bại', keyError: "cannot_remove", status: 403 });
+                    return resolve({ error: true, message: 'Xóa thất bại', keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
                
                 //Bước tiếp theo xóa app_role_menu
 
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Remove app role ✅
+     * Author: Depv
+     * Code: 
+     */
+    removeMany({ appRoleIDs }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(appRoleIDs))
+                    return resolve({ error: true, message: 'Mã nhóm chức năng không hợp lệ', keyError: "appRoleIDs_invalid", status: 400 });
+                    
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await AUTH__APP_ROLE_COLL.deleteMany({ _id: { $in: appRoleIDs }});
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: 'Xóa thất bại', keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
+                console.log({ appRoleIDs });
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -180,7 +217,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -198,7 +234,7 @@ class Model extends BaseModel {
                                     .select(select)
                                     .populate(populates)
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "cant_not_get_info", status: 403 });
+                    return resolve({ error: true, message: "Lấy thông tin thấy bại", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
  
                 return resolve({ error: false, data: infoDataAfterGet, status: 200 });
             } catch (error) {
@@ -293,7 +329,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

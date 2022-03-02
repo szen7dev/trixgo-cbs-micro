@@ -4,6 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -59,7 +60,7 @@ class Model extends BaseModel {
                 });
 
                 if(checkExist)
-                    return resolve({  error: true, message: "User_subject_exist", status: 403  });
+                    return resolve({  error: true, message: "User_subject_exist", status: 200  });
 
                 dataInsert = { user: userID, subject: subjectID, author, role };
 
@@ -71,7 +72,7 @@ class Model extends BaseModel {
                 let infoAterInsert = await this.insertData(dataInsert);    
 
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Can't insert user_pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: "Can't insert user_pcm_plan_report", keyError: KEY_ERROR.INSERT_FAILED, status: 200 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -116,7 +117,7 @@ class Model extends BaseModel {
                 let infoAterUpdate = await USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate, { new: true });
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't update user_pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: "Can't update user_pcm_plan_report", keyError: KEY_ERROR.UPDATE_FAILED, status: 200 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -155,7 +156,7 @@ class Model extends BaseModel {
                 let infoAterRemove = await USER_PCM_PLAN_REPORT_COLL.findByIdAndDelete(userSubjectID);
 
                 if(!infoAterRemove)
-                    return resolve({ error: true, message: "Can't remove user_pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: "Can't remove user_pcm_plan_report", keyError: KEY_ERROR.DELETE_FAILED, status: 200 });
 
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
@@ -208,7 +209,7 @@ class Model extends BaseModel {
                     .populate(populates)
 
                 if(!infoUserSubject)
-                    return resolve({ error: true, message: "Can't info user_pcm_plan_report", status: 403 });
+                    return resolve({ error: true, message: "Can't info user_pcm_plan_report", keyError: KEY_ERROR.GET_INFO_FAILED, status: 200 });
 
                 return resolve({ error: false, data: infoUserSubject, status: 200 });
             } catch (error) {
@@ -299,7 +300,7 @@ class Model extends BaseModel {
 				// let totalRecord = await USER_PCM_PLAN_REPORT_COLL.count(conditionObj);
                 let totalCurrentPage = await USER_PCM_PLAN_REPORT_COLL.count(conditionFind);
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
                     
                 let totalRecord = await USER_PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
 				let nextCursor	= null;

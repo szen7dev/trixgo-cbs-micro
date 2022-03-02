@@ -10,6 +10,7 @@ const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -81,7 +82,7 @@ class Model extends BaseModel {
                      */
                     if(Number(isproposal) != 1){
                         if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
-                            return resolve({ error: true, message: 'permission_denied' })
+                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
                     }
                     companyID = company._id;
                 }
@@ -284,7 +285,7 @@ class Model extends BaseModel {
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
+                    return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
 
                 //_________B4. Cập nhật ngược lại cho parent (Công việc cha, nhóm công việc, tài liệu-Docre)
@@ -710,7 +711,7 @@ class Model extends BaseModel {
                 let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });   
                 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't_update_task", status: 403 });
+                    return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) { 
@@ -732,7 +733,7 @@ class Model extends BaseModel {
 
                 let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
 				if (!infoTaskAfterUpdate) 
-                    return resolve({ error: true, message: 'cannot_update' });
+                    return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
                
                 return resolve({ error: false, message: "update_success" });
             } catch (error) {
@@ -770,7 +771,7 @@ class Model extends BaseModel {
                                 .populate(populates).lean();
 
 				if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get' });
+                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
                 // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
@@ -806,7 +807,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
+        isproposal, subType, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -936,8 +937,12 @@ class Model extends BaseModel {
                 }
 
                 //Phân loại công việc
-                if(isproposal){
-                    conditionObj.isproposal = isproposal;
+                // if(isproposal){
+                //     conditionObj.isproposal = isproposal;
+                // }
+                // Phân loại công việc trước dùng isproposal
+                if(subType){
+                    conditionObj.subType = subType;
                 }
                 
                 /**
@@ -1082,7 +1087,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
-                console.log({ conditionObj, sortBy });
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
@@ -1094,7 +1098,7 @@ class Model extends BaseModel {
 
                 // Kiểm tra nếu không có dữ liệu
                 if(!infoDataAfterGet)
-                   return resolve({ error: true, message: "Can't get data", status: 403 });
+                   return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
                 // nextCursor phần tử cuối cùng khi phân trang
                 let nextCursor	= null;
@@ -1211,6 +1215,86 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     amountTask, amountTaskIsRFa, amountTaskIsRFis, amountTaskIsFlags, amountTaskIsAssignee, amountTaskIsDraft
+                }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Lấy số lượng task đấu thầu ✅
+     * Author: Depv
+     */
+    getBadgeBidding({ userID }){
+        return new Promise(async resolve => {
+            try {
+                /**
+                 *  Đang dự thầu
+                 */
+                let amountBiddingInProgress = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    assignee: userID, 
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 2
+                })
+
+                /**
+                 *  Hoàn thành dự thầu
+                 */
+                let amountBiddingInComplete = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    assignee: userID, 
+                    status: 3,
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 2
+                })
+
+                /**
+                 *  Đang mời thầu
+                 */
+                let amountBiddingInviting = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 1,
+                    $or: [
+                        {
+                            author: userID
+                        },
+                        {
+                            related: { $in: [userID] }
+                        },
+                    ]
+                })
+
+                /**
+                 *  Hoàn thành mời thầu
+                 */
+                let amountBiddingInvitingComplete = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 1,
+                    status: 3,
+                    $or: [
+                        {
+                            author: userID
+                        },
+                        {
+                            related: { $in: [userID] }
+                        },
+                    ]
+                })
+
+                return resolve({ error: false, data: {
+                    amountBiddingInProgress,
+                    amountBiddingInComplete,
+                    amountBiddingInviting,
+                    amountBiddingInvitingComplete
                 }});
             } catch (error) {
                 return resolve({ error: true, message: error.message });

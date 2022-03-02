@@ -19,7 +19,6 @@ const AUTH__COMPANY_COLL                = require('../database/auth.company-coll
 // const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
 const { randomStringFixLengthCode } 
                                         = require('../../../tools/utils/string_utils');
-const timeUtils                         = require('../../../tools/utils/time_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
 const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 }         = require('../../../tools/cursor_base/playground/index');
@@ -27,51 +26,13 @@ const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const { 
     PLATFORM_TRIXGO, PLATFORM_WYNDIX,
-    LEVEL_ADMIN, LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
+    LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
     STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK,
 }                                       = require('../helper/auth.keys-constant');
 const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_CHATTING }           = require('../../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-
-
-// const ObjectID                      = require('mongoose').Types.ObjectId;
-
-// const BaseModel                     = require('../intalize/base_model');
-// const { isEmptyObject }             = require('../../utils/utils');
-
-// const cfJws                         = require('../../config/cf_jws');
-// const { checkObjectIDs }            = require('../../utils/utils');
-// const XLSX      = require('xlsx');
-
-// const AUTH__COMPANY_COLL                  = require('../../database/core/company-coll');
-// const CONTACT_COLL                  = require('../../database/core/contact-coll');
-// const DEPARTMENT_COLL               = require('../../database/core/department-coll');
-// const POSITION_COLL                 = require('../../database/core/position-coll');
-// const CONTRACT_COLL                 = require('../../database/core/contract-coll');
-// const REMOVE_FILE_COLL              = require('../../database/core/file_removed-coll');
-// const PCM_PLAN_GROUP_COLL           = require('../../database/apps/pcm/pcm_plan_group-coll');
-
-
-// const DB_APP_USER_MODEL             = require('../../models/core/app_user').MODEL;
-// const GROUP_OF_FRIEND_MODEL         = require('../../models/core/group_of_friend').MODEL;
-// const FILE_REMOVE_MODEL             = require('../../models/core/file_removed').MODEL;
-
-// const STRING_UTILS                  = require('../../utils/string_utils');
-// const { sendMailForgetPassword, sendMailNewAccount }    = require('../../mailer/module/mail_user');
-// let { socket_product }              = require('../../config/cf_mode');
-// let { cachingInfoUser } = require('../../utils/caching');
-
-/**
- * worker: (mail)
- * sử dụng WORKER_POOLS(WOKER_THREADS) thay_cho sendMailForgetPassword, sendMailNewAccount (MAIN_THREAD)
- */
-// let workerpool          = require('workerpool');
-// let pool                = workerpool.pool(`${__dirname}/../../workers/mail/mail.worker.js`);
-// let MAIL_CONSTANTS      = require('../../workers/constants/mail');
-
 class Model extends BaseModel {
 
     constructor() {
@@ -318,6 +279,10 @@ class Model extends BaseModel {
     updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {
             try {
+                console.log('====== updateDeviceLogin =========');
+                console.log({
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env
+                })
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -328,11 +293,23 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
-                    return resolve({ error: true, message: 'platform_invalid' });
+                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform })) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số platform không hợp lệ",
+                        keyError: "params_platform_invalid",
+                        status: 400
+                    })
+                }
 
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'object_invalid' });
+                if(!checkObjectIDs([userID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    })
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -340,10 +317,16 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 let isExist = await AUTH__USER_COLL.findById(userID);
-                if (!isExist)
-                    return resolve({ error: true, message: 'user_not_exists' });
-                
-                 /**
+                if (!isExist) {
+                    return resolve({
+                        error: true,
+                        message: "Người dùng không tồn tại",
+                        keyError: "user_not_exists",
+                        status: 400
+                    })
+                }
+
+                /**
                  * UPDATE LAST DEVICE (cập nhật device cuối cùng login)
                  * Nếu DeviceID tồn tại => cập nhật deviceName + fcm_token
                  */
@@ -411,27 +394,24 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
+    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 10;
+				if(isNaN(limit) || +limit > 20) {
+					limit = 20;
 				} else{
 					limit = +limit;
 				}
 
-                if(limit > 20){
-					limit = 20;
-                }
-
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -442,7 +422,6 @@ class Model extends BaseModel {
 
 				let conditionObj 	= { _id: { $in: infoUserWithFriends.friends } };
 				let conditionFind 	= {};
-				let objSort 	 	= {};
                 let sortBy = {
 					createAt: -1,
                     modifyAt: -1,
@@ -468,19 +447,20 @@ class Model extends BaseModel {
 				if(keyword){
 					keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
 				}
 
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
-                    .populate(populates)
+                    // .populate(populates)
                     .sort(sortBy)
 					.lean();
 
 				// GET TOTAL RECORD
                 let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -489,9 +469,6 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-
-                // Tổng số trang
-                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({
 					error: false,
@@ -505,6 +482,7 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -695,7 +673,7 @@ class Model extends BaseModel {
         })
     }
 
-	// implement by: MINHVH ✅ 
+    // implement by: MINHVH ✅ 
 	getInfoById({ userID, select }) {
         return new Promise(async (resolve) => {
             try {
@@ -726,6 +704,7 @@ class Model extends BaseModel {
             }
         })
     }
+
 
 	// implement by: MINHVH ✅ 
 	getListUserWithCondition({ condition, select, filter = {} }) {
@@ -1448,7 +1427,7 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID
                 }
-                
+
                 if(checkObjectIDs(projectID)){
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
@@ -1460,11 +1439,10 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-                
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__USER_COLL.findById(lastestID);
@@ -1501,7 +1479,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObj);
+                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

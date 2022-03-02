@@ -23,7 +23,7 @@ const AUTH__APP_ROLE_COLL			= require('./database/permission/auth.app_role-coll'
 const AUTH__APP_USER_COLL			= require('./database/permission/auth.app_user-coll');
 const AUTH__APP_COMPANY_COLL		= require('./database/permission/auth.app_company-coll');
 const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_role_menu-coll');
- 
+
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
 	mixins: [
@@ -99,7 +99,10 @@ module.exports = {
 		[CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST]				: AUTH__USER_HANDLER.getInfoAndGetList,
 		
 		// Company
+		[CF_ACTIONS_AUTH.COMPANY_INSERT]							: AUTH__COMPANY_HANDLER.insert,
+		[CF_ACTIONS_AUTH.COMPANY_UPDATE]							: AUTH__COMPANY_HANDLER.update,
 		[CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
+	
 
 		// App menu
 		[CF_ACTIONS_AUTH.APP_MENU_INSERT]							: AUTH__APP_MENU_HANDLER.insert,
@@ -111,6 +114,7 @@ module.exports = {
 		[CF_ACTIONS_AUTH.APP_ROLE_INSERT]							: AUTH__APP_ROLE_HANDLER.insert,
 		[CF_ACTIONS_AUTH.APP_ROLE_UPDATE]							: AUTH__APP_ROLE_HANDLER.update,
 		[CF_ACTIONS_AUTH.APP_ROLE_REMOVE]							: AUTH__APP_ROLE_HANDLER.remove,
+		[CF_ACTIONS_AUTH.APP_ROLE_REMOVE_MANY]						: AUTH__APP_ROLE_HANDLER.removeMany,
 		[CF_ACTIONS_AUTH.APP_ROLE_GET_INFO_AND_GET_LIST]			: AUTH__APP_ROLE_HANDLER.getInfoAndGetList,
 
 		// App role menu
@@ -122,9 +126,13 @@ module.exports = {
 		// App user
 		[CF_ACTIONS_AUTH.APP_USER_GET_INFO_AND_GET_LIST]			: AUTH__APP_USER_HANDLER.getListAppOfUser,
 		[CF_ACTIONS_AUTH.APP_USER_CHECK_PERMISSIONS_ACCESS_APP]		: AUTH__APP_USER_HANDLER.checkPermissionsAccessApp,
+		[CF_ACTIONS_AUTH.APP_USER_GET_LIST]							: AUTH__APP_USER_HANDLER.getList,
 		
 		// App company
+		[CF_ACTIONS_AUTH.APP_COMPANY_INSERT]						: AUTH__APP_COMPANY_HANDLER.insert,
 		[CF_ACTIONS_AUTH.APP_COMPANY_UPDATE]						: AUTH__APP_COMPANY_HANDLER.update,
+		[CF_ACTIONS_AUTH.APP_COMPANY_REMOVE]						: AUTH__APP_COMPANY_HANDLER.remove,
+		[CF_ACTIONS_AUTH.APP_COMPANY_GET_INFO_AND_GET_LIST]			: AUTH__APP_COMPANY_HANDLER.getInfoAndGetList,
 		
 		// Register trial
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT]						: AUTH__REGISTER_TRIAL_HANDLER.insert,

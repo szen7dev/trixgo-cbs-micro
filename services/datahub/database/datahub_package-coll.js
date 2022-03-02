@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
         ref : "datahub_project"
     },
     //_________Chủ đầu tư
-    client: {
+    client: { 
         type: Schema.Types.ObjectId,
         ref : "company"
     },

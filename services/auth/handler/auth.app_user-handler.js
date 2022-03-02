@@ -15,6 +15,31 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
 const AUTH__APP_USER = require('../model/auth.app_users').MODEL;
 
 module.exports = {
+
+    getList: {
+        auth: "required",
+        params: {
+            appID           : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID }          = ctx.meta.infoUser;
+                let { appID, companyID, limit, lastestID, select, populates } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__APP_USER.getList({  appID, companyID, limit: +limit, lastestID, select, populates  });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
     
     getListAppOfUser: {
         auth: "required",

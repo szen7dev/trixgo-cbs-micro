@@ -240,4 +240,25 @@ module.exports = {
             }
         }
     },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Lấy số lượng công việc đấu thầu
+	 */
+    getBadgeBidding: {
+        auth: "required",
+        params: {},
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                // Bước check quyền
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getBadgeBidding({ userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }
