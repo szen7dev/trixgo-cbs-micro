@@ -217,7 +217,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input

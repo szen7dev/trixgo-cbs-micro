@@ -11,7 +11,8 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index');
  * import inter-coll, exter-coll
  */
 const AUTH__APP_USER_COLL              = require('../database/permission/auth.app_user-coll');
-const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
+const AUTH__APP_COMPANY_COLL           = require('../database/permission/auth.app_company-coll');
+const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -27,8 +28,63 @@ class Model extends BaseModel {
      * - A Hiệp: lưu ý 1 user và 1 app chỉ tồn tại 1 mẩu tin duy nhất
      * - Khi cập nhật thông tin của app_company => cũng phải cập nhật app_user theo trường endTime
      * Author: Depv
-     * Code  : 
+     * Code  :      
      */
+    insert({ appCompanyID, users, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let infoAppCompany = await AUTH__APP_COMPANY_COLL.findById(appCompanyID);
+                if(!infoAppCompany)
+                    return resolve({ error: true, message: "App của công ty không tồn tại", keyError: "app_company_not_exist", status: 200 });
+
+                let { app, company, maxCount, endTime } = infoAppCompany;
+                // Lấy số lương user hiện tại của app và company
+                let amountAppUser = await AUTH__APP_USER_COLL.count({ app, company });
+
+                // Tính số lương app user có thể cho phép để thêm
+                let amountAppUserAccess = (maxCount - amountAppUser);
+
+                // Số lượng user mà dưới client gửi lên
+                let amountUserCurrent   = users.length;
+
+                // Kiểm tra số lượng user gửi lên mà lớn hơn số lượng user cho phép thì báo lỗi
+                if(amountUserCurrent > amountAppUserAccess)
+                    return resolve({ error: true, message: "Người dùng vượt quá số lượng cho phép", keyError: "User_exceeds_the_allowed_number", status: 200 });
+
+                for (const user of users) {
+                    let checkExist = await AUTH__APP_USER_COLL.findOne({ app, company, user })
+                    if(checkExist)
+                        return resolve({ error: true, message: "Người dùng đã tồn tại trong app user", keyError: "user_existed_in_app_user", status: 200 });
+                    // Bắt đầu thêm
+                    let infoAterInsert = await this.insertData({ app, company, user, endTime, userCreate: userID, userUpdate: userID });
+                }
+
+                return resolve({ error: false, message: "Thêm thành công", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    remove({ appUserID }) { 
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(appUserID))
+                    return resolve({ error: true, message: "appUserID không phải objectID", keyError: KEY_ERROR.PARAMS_INVALID, status: 200 });
+                
+                let infoAfterRemove = await AUTH__APP_USER_COLL.findByIdAndDelete(appUserID);
+                if(!infoAfterRemove)
+                    return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 200 });
+
+                return resolve({ error: false, message: "Xoá thành công", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name  : Danh sách app mà user được quyền truy cập
