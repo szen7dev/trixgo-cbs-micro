@@ -70,7 +70,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Name: Danh sách app_role_menu của roleID phục vụ cho màn hình Admin phân quyền Nhóm chức năng
      * Màn hình: S2-1.2 (/pcm/admin/2)
