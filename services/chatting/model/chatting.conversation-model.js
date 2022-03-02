@@ -1522,7 +1522,7 @@ class Model extends BaseModel {
 								})
 								.lean());
 
-							listMessage = await Promise.all(listMessage);s
+							listMessage = await Promise.all(listMessage);
 							let messages = [];
 
 							for (const message of listMessage) {
