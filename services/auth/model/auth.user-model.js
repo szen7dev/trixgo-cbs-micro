@@ -482,7 +482,7 @@ class Model extends BaseModel {
                     .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
-                    .populate(populates)
+                    // .populate(populates)
                     .sort(sortBy)
 					.lean();
 
