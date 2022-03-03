@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const DOCUMENT__DOC_FILE_MODEL                   = require('../model/document.doc_file-model').MODEL;
+const BIDDING__BILL_MODEL                   = require('../model/bidding.bill-model').MODEL;
 
 module.exports = {
     /**

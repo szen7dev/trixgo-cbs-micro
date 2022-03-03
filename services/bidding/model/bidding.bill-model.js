@@ -20,7 +20,7 @@ const BaseModel                                 	= require('../../../tools/db/ba
 const stringUtils									= require('../../../tools/utils/string_utils');
 const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/document.keys-constant');
+// const { DOC_DIRECTION_TYPE, DOC_TYPE }              = require('../helper/bidding.keys-constant');
 const {
     checkObjectIDs,
     IsJsonString,
@@ -39,7 +39,7 @@ const BIDDING__QUOTATION_COLL           				    = require('../database/bidding.q
 class Model extends BaseModel {
 
     constructor() {
-        super(DOCUMENT__DOC_COLL);
+        super(BIDDING__BILL_COLL);
     }
     
 	/**
