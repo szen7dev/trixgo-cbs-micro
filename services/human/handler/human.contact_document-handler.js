@@ -90,20 +90,20 @@ module.exports = {
             contract                : { type: "string", optional: true },
             timeMobilize            : { type: "string", optional: true },
             factor                  : { type: "string", optional: true },
-            fileID                  : { type: "string", optional: true },
+            filesID                 : { type: "array", optional: true  },
             fileRemoveID            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { contactDocumentID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description,
-                     sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, fileID, fileRemoveID } = ctx.params;
+                     sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, filesID, fileRemoveID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.update({
                     authorID: userID, documentID: contactDocumentID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, 
                     client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, 
-                    factor, fileID, fileRemoveID
+                    factor, filesID, fileRemoveID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
