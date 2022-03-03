@@ -30,13 +30,16 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :      
      */
-    insert({ appCompanyID, users, userID }) {
+    insert({ appID, companyID, users, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let infoAppCompany = await AUTH__APP_COMPANY_COLL.findById(appCompanyID);
+
+                let infoAppCompany = await AUTH__APP_COMPANY_COLL.findOne({ app: appID, company: companyID });
+                console.log({  appID, companyID, users, infoAppCompany });
+
                 if(!infoAppCompany)
                     return resolve({ error: true, message: "App của công ty không tồn tại", keyError: "app_company_not_exist", status: 200 });
 
