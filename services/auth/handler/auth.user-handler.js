@@ -51,7 +51,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform, domain } = ctx.params;
-
+		console.log({ email, password, platform, domain })
                 /**
                  * validate code platform-domain
                  */
@@ -67,7 +67,7 @@ module.exports = {
                 }
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
                 // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
-
+		console.log({ infoUser, isValidatePlatform })
                 return infoUser;
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -421,6 +421,37 @@ module.exports = {
     },
 
     /**
+	 * Dev: MinhVH
+	 * Func: Hàm tạo mới user
+	 * Date: 03/03/2022
+	 */
+    insert: {
+        auth: "required",
+        params: {
+            email           : { type: "string" },
+            fullname        : { type: "string" },
+            level           : { type: "number" },
+            departmentID    : { type: "string" },
+            positionID      : { type: "string" },
+            companyID       : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { email, fullname, level, departmentID, positionID, companyID } = ctx.params;
+
+                const resultAfterCallHandler = await AUTH__USER_MODEL.insert({
+                    email, fullname, level, departmentID, positionID, companyID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Code: F0017
      * Author: Depv
      * Name: Cập nhật thông tin user
@@ -431,12 +462,18 @@ module.exports = {
             currentPass   : { type: "string", optional: true },
             newPass       : { type: "string", optional: true },
             email         : { type: "string", optional: true },
+            fullname      : { type: "string", optional: true },
             phone         : { type: "string", optional: true },
             birthDay      : { type: "string", optional: true },
             gender        : { type: "string", optional: true },
             lang          : { type: "string", optional: true },
             image         : { type: "string", optional: true },
             signature     : { type: "string", optional: true },
+            level         : { type: "number", optional: true },
+            userID        : { type: "string", optional: true },
+            companyID     : { type: "string", optional: true },
+            positionID    : { type: "string", optional: true },
+            departmentID  : { type: "string", optional: true },
             sendRequestToFriendID   : { type: "string", optional: true },
             acceptFriendRequestID   : { type: "string", optional: true },
             removeFriendRequestID   : { type: "string", optional: true },
@@ -445,18 +482,50 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
-                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID } = ctx.params;
-				let { _id: userID, company } = ctx.meta.infoUser;
+                let { 
+                    userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID,
+                    companyID, departmentID, positionID, level
+                } = ctx.params;
+				let { _id: currentUserID } = ctx.meta.infoUser;
+
+                if(!userID) {
+                    userID = currentUserID;
+                }
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
-                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx,
+                    companyID, departmentID, positionID, level
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Hàm xóa user
+	 * Date: 03/03/2022
+	 */
+    delete: {
+        auth: "required",
+        params: {
+            usersID: { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { usersID } = ctx.params;
+
+                const resultAfterCallHandler = await AUTH__USER_MODEL.delete({ usersID });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
@@ -607,8 +676,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { 
                     userID, projectID, companyID,
-                    keyword, limit, lastestID, select, populates
+                    keyword, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
+
                 let resultAfterCallHandler;
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
@@ -616,7 +686,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
-                        projectID, companyID, keyword, limit, lastestID, select, populates, ctx
+                        projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll
                     });
                 }
                 

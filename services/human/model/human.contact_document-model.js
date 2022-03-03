@@ -116,7 +116,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  fileID, fileRemoveID }){
+    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID }){
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(authorID) || !_isValid(documentID))
@@ -195,7 +195,7 @@ class Model extends BaseModel {
                     dataUpdate.timeMobilize = timeMobilize;
                 }
 
-                if(!checkObjectIDs(field2)){
+                if(checkObjectIDs(field2)){
                     dataUpdate.field2 = field2;
                 }
                
@@ -223,13 +223,15 @@ class Model extends BaseModel {
                     dataUpdate.factor = factor;
                 }
 
-                if(fileID && _isValid(fileID)){
-                    dataUpdate.$addToSet = { files: fileID };
+                if(checkObjectIDs(filesID)){
+                    dataUpdate.$addToSet = { files: filesID };
                 }   
                 
                 if(fileRemoveID && _isValid(fileRemoveID)){
                     dataUpdate.$pull = { files: fileRemoveID };
                 }
+
+                console.log({ dataUpdate });
 
                 let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)

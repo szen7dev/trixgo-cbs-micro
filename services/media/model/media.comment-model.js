@@ -361,7 +361,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, parentID, limit = 5, lastestID, select, populates }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -412,6 +412,15 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(isLoadAll) {
+                    let listComments = await MEDIA__COMMENT_COLL
+                        .find({})
+                        .select('author')
+                        .lean(); 
+
+                    return resolve({ error: false, data: listComments, status: 200 });
+                }
+
 				let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await MEDIA__COMMENT_COLL.findById(lastestID);
@@ -454,8 +463,8 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
 
-                    infoDataAfterGet = infoDataAfterGet.reverse();
-                    nextCursor	     = infoDataAfterGet[0]._id;
+                    // infoDataAfterGet = infoDataAfterGet.reverse();
+                    // nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
                 let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);

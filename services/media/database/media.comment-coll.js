@@ -31,7 +31,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
         ref: 'file'
     }],
 
-     //_________Các ảnh được đính kèm trong bài viết
+    //_________Các ảnh được đính kèm trong bài viết
     images: [{
         type: Schema.Types.ObjectId,
         ref: 'file'
