@@ -5,8 +5,9 @@ const { EVENT_SOCKET_CONSTANT_COMMENT }    		= require('./helper/reaction.events
 const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
 // const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm.actions-constant');
-const { APP_TYPE } 								= require('./helper/reaction.keys-constant');
- 
+const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
+const { APP_KEYS } 								= require('../../tools/keys');
+
 /**
  * Utils
  */
@@ -38,7 +39,7 @@ exports.REACTION_SOCKET = {
 		let arrReceiver = [];
 
 		switch (app) {
-			case APP_TYPE.PCM_PLAN_TASK: {
+			case APP_KEYS.PCM_PLAN_TASK: {
 				// infoComment = await broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_GET_INFO_AND_GET_LIST}`, {
 				// 	commentTemplateID: commentID, select, populates
 				// });
@@ -60,7 +61,17 @@ exports.REACTION_SOCKET = {
 				webUrl = `https://staging.cbs.trixgo.com/pcm/detail/${infoObject?.data?._id}`;
 				break;
 			}
-			case APP_TYPE.MEDIA: {
+			case APP_KEYS.MEDIA: {
+				infoObject = await broker.call(`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INFO_MEDIA}`, {
+					mediaID: objectID, select, populates
+				}, {
+					meta: {
+						infoUser: { _id: userID }
+					}
+				});
+
+				descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 bình luận`;
+				webUrl = `https://staging.cbs.trixgo.com/media/post/${infoObject?.data?._id}`;
 				break;
 			}
 			default:
