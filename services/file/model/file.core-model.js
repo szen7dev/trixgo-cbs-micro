@@ -1,4 +1,5 @@
 "use strict";
+const ObjectID                                  = require('mongoose').Types.ObjectId;
 
 const FILE__CORE_COLL                           = require('../database/file.core-coll');
 
@@ -247,6 +248,42 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoFile, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    getInfoOfListFileID({ fileIDs }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                 /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(...fileIDs))
+                    return resolve({ error: true, message: 'object_invalid' });
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: convert type + update name (ví dụ: string -> number)
+                 *  3.2: operation database
+                 */    
+
+                let conditionObj = {
+                    _id: {
+                        $in: [...fileIDs.map(item => ObjectID(item))]
+                    }
+                };
+
+                let listInfoFiles = await FILE__CORE_COLL.find(conditionObj)
+                if (!listInfoFiles)
+                    return resolve({ error: true, message: 'cannot_get_info' });
+
+                return resolve({ error: false, data: listInfoFiles });
+            } catch (error) {
+                return resolve({ error: true, message: message });
             }
         })
     }

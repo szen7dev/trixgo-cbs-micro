@@ -343,6 +343,15 @@ class Model extends BaseModel {
                                 deviceName      : device.deviceName, 
                                 registrationID  : registrationID,
                                 oneSignalID     : oneSignalID,
+                               /**
+                                 * vì mobile có 2 loại app khác nhau
+                                 *  1/ CBS
+                                 *      - WEB CBS
+                                 *      - APP CBS
+                                 *      - WEB TEASER
+                                 *  2/ Teaser
+                                 *      - APP Teaser
+                                 */
                                 env
                             };
                         }

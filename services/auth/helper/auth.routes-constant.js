@@ -65,7 +65,6 @@ const CF_ROUTINGS_AUTH = {
     APP_USER                                : `${BASE_ROUTE}${APP_USER}`,
     APP_USER_LIST_APP_OFF_USER              : `${BASE_ROUTE}${APP_USER}/list-app-of-user`,
     APP_USER_CHECK_PERMISSIONS_ACCESS_APP   : `${BASE_ROUTE}${APP_USER}/check-permissions-access-app`,
-
     /**
      * ĐĂNG KÝ DÙNG THỬ
      */
