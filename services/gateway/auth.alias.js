@@ -96,8 +96,14 @@ module.exports = {
 		/**
 		 * Code: A0019
 		 */
+		[`POST ${CF_ROUTINGS_AUTH.USERS}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_INSERT}`],
+
 		[`PUT ${CF_ROUTINGS_AUTH.USERS}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_AUTH.USERS}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_DELETE}`],
 
 		// Lấy danh sách member theo điều kiện
 		[`GET ${CF_ROUTINGS_AUTH.USERS}`] :

@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
      * CẤU HÌNH PHÂN LOẠI
      */ 
     //_________Công ty Phát hành hồ sơ mời thầu/Công ty tạo ra task
-    company: {
+    client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
@@ -21,43 +21,38 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
         type: Schema.Types.ObjectId,
         ref : "pcm_plan_task"
     }, 
-    //_________Mã công tác trong datahub (phục vụ thống kê)
-    datahubJob: {
-        type: Schema.Types.ObjectId,
-        ref : "datahub_job"
-    },
+    // //_________Hồ sơ dự thầu
+    // bidsDocument: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "pcm_plan_task"
+    // },
     /**
      * DỮ LIỆU DỰ THẦU
      */ 
+    //_________Công ty dự thầu
+    contractor: {
+        type: Schema.Types.ObjectId,
+        ref : "company"
+    },
     //_________Hạng mục
     item: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_group"
+        ref : "bidding_bill"
     }, 
     //_________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_group"
+        ref : "bidding_bill"
     },  
     //_________Công việc mời thầu
     job: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_job"
+        ref : "bidding_bill"
     }, 
-    //_________Công ty dự thầu
-    companyBid: {
+    //_________Mã công tác trong datahub (phục vụ thống kê)
+    datahubJob: {
         type: Schema.Types.ObjectId,
-        ref : "company"
-    },
-    //_________Công ty dự thầu (sau thay cho companyBid)
-    bidder: {
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    },
-    //_________Hồ sơ dự thầu
-    bidsDocument: {
-        type: Schema.Types.ObjectId,
-        ref : "pcm_plan_task"
+        ref : "datahub_job"
     },
     //_________Khối lượng chào thầu
     quantity: { type: Number, default: 0 },
@@ -67,29 +62,24 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
     machineUnitPrice: { type: Number, default: 0 },
     //_________Đơn giá chào thầu vật tư
     materialUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu
+    /**
+     * Đơn giá chào thầu
+     * Tính = laborUnitPrice+machineUnitPrice+materialUnitPrice
+     */
     unitPrice: { type: Number, default: 0 },
     //_________Thuế giá trị gia tăng (VAT-%)
     vat: { type: Number, default: 10 },
-    //_________Thuế giá trị gia tăng (VAT-giá trị)
+    /**
+     * Thuế giá trị gia tăng (VAT-giá trị)
+     * - Tính = (unitPrice)*vat%
+     */
     vatValue: { type: Number, default: 0 },
     /**
      * USD-NGOẠI TỆ
+     * - Xử lý sau
      */  
-    //_________Tỷ giá hối đoái
-    fcuExRate: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu nhân công
-    fcuLaborUnitPrice: Number,
-    //_________Đơn giá chào thầu máy móc/thiết bị
-    fcuMachineUnitPrice: Number,
-    //_________Đơn giá chào thầu vật tư
-    fcuMaterialUnitPrice: Number,
-    //_________Đơn giá chào thầu
-    fcuUnitPrice: Number,
-    //_________Thuế giá trị gia tăng (VAT-giá trị)
-    fcuVatValue: Number,
     /**
-     * VIỆC PHÁT SINH
+     * CHÀO VIỆC PHÁT SINH
      */  
     //_________Tên công việc
     name: String,

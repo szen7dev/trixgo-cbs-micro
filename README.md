@@ -3,6 +3,19 @@
 
 <!-- Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục -->
 
+## **CÁC BƯỚC TRIỂN KHAI API CHO MỘT SERVICE**
+===Lấy item làm mẫu===
+1. Xây dựng collection trong thư mục Database
+2. Xây dựng Model
+3. Xây dựng Handler (bản chất là bước kiểm soát tham biến từ Client truyền lên, option bỏ qua => bắt buộc)
+4. Khai báo tại Helper:
+- Khai báo tại action
+- Khai báo tại routes
+- Quản lý các Socket event
+- Quản lý các constant theo từng service
+5. Đăng ký các service cho hệ thống hiểu => action (item.service)
+6. Đăng ký tại auth.alias.js để hệ thống hiểu
+
 ## **Import Convention**
 ```javascript
 
