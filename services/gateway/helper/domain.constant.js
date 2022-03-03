@@ -22,6 +22,7 @@ let CF_DOMAIN_SERVICES = {
     TIMESHEET       : 'timesheet',
     PERSONAL        : 'personal',
     DATAHUB         : 'datahub',
+    BIDDING         : 'biiding',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;
