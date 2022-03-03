@@ -7,7 +7,7 @@ const CacheCleaner                	    = require("../../tools/mixins/cache.clean
  * DOMAIN AND ACTIONS
  */
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 	        	= require('./helper/item.actions-constant');
+const { CF_ACTIONS_ITEM } 	        	= require('../item/helper/item.actions-constant');
 
 /**
  * HANDLERS
