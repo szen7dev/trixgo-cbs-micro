@@ -123,7 +123,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    commentID, mediaID, parentID, limit, lastestID, select, populates
+                    commentID, mediaID, parentID, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
                 let resultAfterCallHandler;
 
@@ -133,7 +133,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, parentID, limit, lastestID, select, populates
+                        mediaID, parentID, limit, lastestID, select, populates, isLoadAll
                     });
                 }
 
