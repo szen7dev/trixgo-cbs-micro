@@ -1017,12 +1017,125 @@ class Model extends BaseModel {
     }
 
     /**
+	 * Dev: MinhVH
+	 * Func: Hàm tạo mới user
+	 * Date: 03/03/2022
+	 */
+    insert({ email, fullname, level, departmentID, positionID, companyID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!email || !fullname) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số email và fullname không hợp lệ",
+                        keyError: "params_email_or_fullname_invalid",
+                        status: 400
+                    })
+                }
+
+                if(!companyID || !checkObjectIDs([companyID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số companyID không hợp lệ",
+                        keyError: "params_companyID_invalid",
+                        status: 400
+                    })
+                }
+
+                let emailValid = email.toLowerCase().trim();
+                let password = '12345TRX@#';
+
+                // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
+                let isExistUser = await AUTH__USER_COLL.findOne({ email: emailValid });
+
+                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
+                if (isExistUser) {
+                    return resolve({
+                        error: true,
+                        message: "Email đã tồn tại",
+                        keyError: "email_is_exists",
+                        status: 400
+                    })
+                }
+
+                let hashPassword = await hash(password, 8);
+                if (!hashPassword) {
+                    return resolve({
+                        error: true,
+                        message: "Không thể hash password",
+                        keyError: "can_not_hash_password",
+                        status: 400
+                    })
+                }
+
+                // Lấy thông tin công ty để gán ký hiệu công ty
+                let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
+
+                let dataInsert = {
+                    email: emailValid,
+                    fullname,
+                    password: hashPassword,
+                    company: companyID
+                }
+
+                if(fullname){
+                    dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
+                }
+
+                if(departmentID && checkObjectIDs([departmentID])){
+                    dataInsert.department = departmentID;
+                }
+                
+                if(positionID && checkObjectIDs([positionID])){
+                    dataInsert.position = positionID;
+                }
+
+                if(Number(level) === 0 || Number(level) === 1){
+                    dataInsert.level = +level;
+                }
+
+                let infoUserAfterInsert = await this.insertData(dataInsert);
+                if (!infoUserAfterInsert) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                }
+
+                // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
+                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+                // let listUserInCompany = await USER_COLL.find({ company: companyID });
+                // let arrUserID = listUserInCompany.map(item => item._id);
+                // // Update bạn bè với các thành viên của công ty
+                // let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                //     friends: arrUserID,
+                // }, { new: true });
+
+                // // Update cho các thành viên công ty nhận bạn bè mới
+                // for(const item of listUserInCompany){
+                //     await USER_COLL.findByIdAndUpdate(item._id, {
+                //         $addToSet: {
+                //             friends: infoUserAfterInsert._id
+                //         }
+                //     }, { new: true });
+                // }
+                
+                return resolve({ error: false, data: infoUserAfterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            } 
+        });
+    }  
+
+    /**
 	 * Dev: Depv
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, 
-        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx }) {
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level,
+        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID))
@@ -1066,6 +1179,22 @@ class Model extends BaseModel {
 
                 if(signature){
                     dataUpdate.signature = signature;
+                }
+
+                if(level){
+                    dataUpdate.level = level;
+                }
+
+                if(companyID){
+                    dataUpdate.company = companyID;
+                }
+
+                if(departmentID){
+                    dataUpdate.department = departmentID;
+                }
+
+                if(positionID){
+                    dataUpdate.position = positionID;
                 }
 
                 // Gửi yêu cầu kết bạn tới người khác
@@ -1142,11 +1271,37 @@ class Model extends BaseModel {
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataUpdate, { new: true });
                 if(!infoUserAfterUpdate)
                     return resolve({ error: false, message: "Cập nhật thất bại", keyError: "cannot_update" });
-                    
+
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
             } catch (error) { 
                 return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Hàm xóa user
+	 * Date: 03/03/2022
+	 */
+    delete({ usersID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!usersID.length || !checkObjectIDs(usersID)) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số usersID không hợp lệ",
+                        keyError: "params_usersID_invalid",
+                        status: 400
+                    })
+                }
+
+                const infoAfterDelete = await AUTH__USER_COLL.deleteMany({ _id: { $in: usersID } });
+
+                return resolve({ error: false, data: infoAfterDelete, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -1388,14 +1543,13 @@ class Model extends BaseModel {
      */
     getListV2({
         companyID, projectID, 
-        keyword, limit = 10, lastestID, select, populates= {}, ctx }) { 
+        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                };
+                let conditionObj = {};
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
                
@@ -1419,13 +1573,14 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-                if(companyID){
-                    conditionObj.company = companyID
+                 */
+                if(companyID && checkObjectIDs([companyID])){
+                    conditionObj.company = companyID;
                 }
 
                 if(checkObjectIDs(projectID)){
@@ -1442,8 +1597,17 @@ class Model extends BaseModel {
                     conditionObj.bizfullname = new RegExp(keyword, 'i');
                 }
 
+                // Cờ dùng để call service, không truyền qua api
+                if(isLoadAll && checkObjectIDs([companyID])) {
+                    let infoDataAfterGet = await AUTH__USER_COLL
+                        .find({ company: companyID })
+                        .select('_id')
+                        .lean();
+
+                    return resolve({ error: true, data: infoDataAfterGet, status: 200 });
+                }
+
                 let conditionObjOrg = { ...conditionObj };
-                // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__USER_COLL.findById(lastestID);
 					if(!infoData)
@@ -1459,15 +1623,15 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy = dataPagingAndSort.data.sort;
                 }
-                
-                let infoDataAfterGet = await AUTH__USER_COLL.find(conditionObj)
+
+                let infoDataAfterGet = await AUTH__USER_COLL
+                    .find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean(); 
 
-                // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -1489,7 +1653,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

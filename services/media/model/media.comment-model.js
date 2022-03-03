@@ -361,7 +361,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, parentID, limit = 5, lastestID, select, populates }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -410,6 +410,15 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(isLoadAll) {
+                    let listComments = await MEDIA__COMMENT_COLL
+                        .find({})
+                        .select('author')
+                        .lean(); 
+
+                    return resolve({ error: false, data: listComments, status: 200 });
                 }
 
 				let conditionObjOrg = { ...conditionObj };
