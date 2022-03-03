@@ -36,6 +36,45 @@ module.exports = {
         }
     },
 
+    update: {
+        auth: "required",
+        params: {
+            appID           : { type: "string" },
+            companyID       : { type: "string" },
+            memberID        : { type: "string" },
+            level           : { type: "number" }, 
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID }          = ctx.meta.infoUser;
+                let { appID, companyID, memberID, level } = ctx.params;
+                let resultAfterCallHandler = await AUTH__APP_USER.update({ appID, companyID, memberID, level, userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    remove: {
+        auth: "required",
+        params: {
+            appUserIDs           : { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID }          = ctx.meta.infoUser;
+                let { appUserIDs  } = ctx.params;
+                let resultAfterCallHandler = await AUTH__APP_USER.remove({ appUserIDs });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
     getList: {
         auth: "required",
         params: {
