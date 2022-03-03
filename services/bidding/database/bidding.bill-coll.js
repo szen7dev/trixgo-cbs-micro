@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
         ref : "area"
     },
     //_________Chủ đầu tư (lấy từ task mời thầu => thuộc phân vùng của Chủ đầu tư)
-    company: {
+    client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
@@ -34,12 +34,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
     //_________Hạng mục
     item: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_group"
+        ref : "bidding_bill"
     },
     //_________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_group"
+        ref : "bidding_bill"
     },
     //_________Level
     level: {
@@ -79,6 +79,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
     quantity2: { type: Number, default: 0 },
     /**
      * ĐƠN GIÁ NET
+     * - Tính từ DataHub đưa sang
      */
     //_________Đơn giá chào thầu vật tư
     materialUnitPrice: { type: Number, default: 0 },
@@ -90,9 +91,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
     unitprice: { type: Number, default: 0 },
     //_________Thành tiền tính toán từ Datahub
     amount: { type: Number, default: 0 },
-    /**
-     * HỆ SỐ CHI PHÍ KHÁC (100+15-16%)
-     */
+    //_________Hệ số chi phí khác
     factor: { type: Number, default: 1 }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
@@ -105,5 +104,4 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
-
 })

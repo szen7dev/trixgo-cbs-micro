@@ -107,7 +107,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_document_request", {
     /**
      * 4-GIẢI PHÁP TỔ CHỨC
      */
-    //_________Nội dung
+    //_________Nội dung/Phân cấp cha-con
     solutionContent: String,
     //_________Nội dung cha
     parent: {

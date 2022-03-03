@@ -61,7 +61,7 @@ module.exports = {
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID
                 } = ctx.params;
-
+                
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
