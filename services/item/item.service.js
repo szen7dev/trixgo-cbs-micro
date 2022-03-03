@@ -61,7 +61,7 @@ module.exports = {
 	* Service dependencies
 	*/
 	dependencies: [],
-
+	
 	/**
 	* Actions
 	*/

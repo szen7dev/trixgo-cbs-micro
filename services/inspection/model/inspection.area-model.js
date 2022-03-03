@@ -23,7 +23,7 @@ class Model extends BaseModel {
     constructor() {
         super(INSPECTION__AREA_COLL);
     }
-
+    
     /**
      *  Thêm mẩu tin: Depv ✅
      *  F0226
