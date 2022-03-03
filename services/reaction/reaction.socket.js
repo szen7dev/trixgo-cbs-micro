@@ -106,14 +106,14 @@ exports.REACTION_SOCKET = {
 				break;
 		}
 
-		// if(!arrReceiver.length) {
-		// 	return sendDataToMultilSocketsOfListUser({ 
-		// 		listUserConnected: listUserActive,
-		// 		arrReceiver: [userID],
-		// 		data: { error: true, message: "Người nhận không hợp lệ" }, 
-		// 		event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
-		// 	});
-		// }
+		if(!arrReceiver.length) {
+			return sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive,
+				arrReceiver: [userID],
+				data: { error: true, message: "Người nhận không hợp lệ" }, 
+				event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
+			});
+		}
 
 		// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== userID.toString());
 
