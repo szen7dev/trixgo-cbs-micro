@@ -4,7 +4,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
-
     /**
      * Cuộc hội thoại
      */
