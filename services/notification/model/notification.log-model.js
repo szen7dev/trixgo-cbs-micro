@@ -308,22 +308,35 @@ class Model extends BaseModel {
                     let listDeviceFromMobile        = [];
                     let listDeviceFromWebBrowser    = [];
 
+                    /**
+                     * cần tìm app_id_with_env
+                     *  - nếu là env của devices(auth.user-coll) =  1 hoặc 3 => ONESIGNAL_APP_CBS ('8d5db406-1628-4a23-bf40-8bb53bf582ba)
+                     *  - nếu là MOBILE_TEARSER -> ONESIGNAL_APP_TEASER  (79acfc09-966a-48f5-a9ea-44d90410014f)
+                     */
+                    let _findAppIdWithEnv = env => [this.WEB_CBS, this.MOBILE_CBS].include(+env) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
+
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
                             let { devices } = user;
                             listDeviceFromMobile = [
                                 ...listDeviceFromMobile,
-                                ...devices.filter(item => item.env == (this.MOBILE_TEARSER || this.MOBILE_CBS) && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == (this.MOBILE_TEARSER || this.MOBILE_CBS) && item.oneSignalID).map(item => {
+                                    return {
+                                        oneSignalID: item.oneSignalID,
+                                        app_id: _findAppIdWithEnv(item.env),
+                                    }
+                                })
                             ]
                             listDeviceFromWebBrowser = [
                                 ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.env == this.WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == this.WEB_CBS && item.oneSignalID).map(item => {
+                                    return {
+                                        oneSignalID: item.oneSignalID,
+                                        app_id: _findAppIdWithEnv(item.env),
+                                    }
+                                })
                             ]
                         });
-                        console.log({ 
-                            listDeviceFromMobile: listDeviceFromMobile.length, 
-                            listDeviceFromWebBrowser: listDeviceFromWebBrowser.length 
-                        })
 
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
@@ -332,8 +345,31 @@ class Model extends BaseModel {
                         }
 
                         if (listDeviceFromMobile.length > 0) {
-                            // MOBILE PUSH
-                            let dataForMobilePush = {
+                            /**
+                             * chia mảng listDeviceFromMobile thành 2 nhóm để push theo app_id của (CBS và TEASER)
+                             */
+                            let listDeviceFromMobileWith_CBS        = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_CBS);
+                            let listDeviceFromMobileWith_TEASER     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+
+                            // =================== MOBILE PUSH (CBS) ===================
+                            let dataForMobilePushCBS = {
+                                ...dataForSend,
+                                data: objDataForSend,
+                                app_id: ONESIGNAL_APP_CBS,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
+                                ios_badgeType: 'Increase',
+                                ios_badgeCount: 1,
+                                include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
+                            }
+                            if(objDataForSend.amountNoti) {
+                                dataForMobilePushCBS.ios_badgeType = 'SetTo';
+                                dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
+                            }
+                            sendNotificationviaOneSignal(dataForMobilePushCBS)
+
+                            //  =================== MOBILE PUSH (TEASER) ===================
+                            let dataForMobilePushTeaser = {
                                 ...dataForSend,
                                 data: objDataForSend,
                                 app_id: ONESIGNAL_APP_TEASER,
@@ -341,31 +377,49 @@ class Model extends BaseModel {
                                 android_sound: 'teaser',
                                 ios_badgeType: 'Increase',
                                 ios_badgeCount: 1,
-                                include_player_ids: listDeviceFromMobile
+                                include_player_ids: listDeviceFromMobileWith_TEASER.map(item => item.oneSignalID)
                             }
-
                             if(objDataForSend.amountNoti) {
-                                dataForMobilePush.ios_badgeType = 'SetTo';
-                                dataForMobilePush.ios_badgeCount = objDataForSend.amountNoti;
+                                dataForMobilePushTeaser.ios_badgeType = 'SetTo';
+                                dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
                             }
 
-                            sendNotificationviaOneSignal(dataForMobilePush)
+                            sendNotificationviaOneSignal(dataForMobilePushTeaser)
+
                             // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
                         }
 
                         if (listDeviceFromWebBrowser.length > 0) {
-                            // WEB PUSH
-                            let dataForWebPush = {
+                            let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
+                            let listDeviceFromWebBrowserWith_TEASER     = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+
+                            // WEB PUSH = CBS
+                            let dataForWebPushCBS = {
                                 ...dataForSend,
                                 data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
                                 web_url,
-                                include_player_ids: listDeviceFromWebBrowser
+                                include_player_ids: listDeviceFromWebBrowserWith_CBS.map(item => item.oneSignalID)
                             }
 
-                            sendNotificationviaOneSignal(dataForWebPush)
+                            sendNotificationviaOneSignal(dataForWebPushCBS)
+
+
+                            // WEB PUSH = TEASER
+                            let dataForWebPushTeaser = {
+                                ...dataForSend,
+                                data: objDataForSend,
+                                app_id: ONESIGNAL_APP_TEASER,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
+                                web_url,
+                                include_player_ids: listDeviceFromWebBrowserWith_TEASER.map(item => item.oneSignalID)
+                            }
+
+                            sendNotificationviaOneSignal(dataForWebPushTeaser)
+
                             // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
                         }
 
