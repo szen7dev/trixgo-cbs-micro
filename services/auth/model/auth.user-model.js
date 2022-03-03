@@ -1604,7 +1604,7 @@ class Model extends BaseModel {
                         .select('_id')
                         .lean();
 
-                    return resolve({ error: true, data: infoDataAfterGet, status: 200 });
+                    return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
 
                 let conditionObjOrg = { ...conditionObj };
