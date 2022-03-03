@@ -3,7 +3,7 @@
  */
 const { EVENT_SOCKET_CONSTANT_COMMENT }    		= require('./helper/reaction.events-socket-constant');
 const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant');
-// const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 const { APP_KEYS } 								= require('../../tools/keys');
@@ -69,6 +69,34 @@ exports.REACTION_SOCKET = {
 						infoUser: { _id: userID }
 					}
 				});
+				console.log({ infoObject })
+
+				const listUserReceive = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+					companyID: infoObject?.data?.company?.toString(),
+					isLoadAll: true
+				}, {
+					meta: {
+						infoUser: { _id: userID }
+					}
+				});
+				console.log({ listUserReceive })
+
+				if(!listUserReceive.error) {
+					arrReceiver = listUserReceive.data.map(user => user._id);
+				}
+
+				// const listComments = await broker.call(`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_MEDIA}`, {
+				// 	mediaID: objectID, isLoadAll: true
+				// }, {
+				// 	meta: {
+				// 		infoUser: { _id: userID }
+				// 	}
+				// });
+
+				// if(!listComments.error) {
+				// 	const listReceiver = listComments.data.map(comment => comment.author);
+				// 	arrReceiver = [...new Set(listReceiver)];
+				// }
 
 				descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 bình luận`;
 				webUrl = `https://staging.cbs.trixgo.com/media/post/${infoObject?.data?._id}`;
@@ -78,14 +106,14 @@ exports.REACTION_SOCKET = {
 				break;
 		}
 
-		if(!arrReceiver.length) {
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive,
-				arrReceiver: [userID],
-				data: { error: true, message: "Người nhận không hợp lệ" }, 
-				event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
-			});
-		}
+		// if(!arrReceiver.length) {
+		// 	return sendDataToMultilSocketsOfListUser({ 
+		// 		listUserConnected: listUserActive,
+		// 		arrReceiver: [userID],
+		// 		data: { error: true, message: "Người nhận không hợp lệ" }, 
+		// 		event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
+		// 	});
+		// }
 
 		// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== userID.toString());
 

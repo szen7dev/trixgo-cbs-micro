@@ -45,6 +45,8 @@ const CF_ACTIONS_AUTH = {
     // KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
     USER_GET_INFO_AND_GET_LIST          : `${BASE_ACTIONS}_${USER}_GET_INFO_AND_GET_LIST`,
     USER_UPDATE                         : `${BASE_ACTIONS}_${USER}_UPDATE`,
+    USER_INSERT                         : `${BASE_ACTIONS}_${USER}_INSERT`,
+    USER_DELETE                         : `${BASE_ACTIONS}_${USER}_DELETE`,
     
 	/**
 	 * CHATTING
