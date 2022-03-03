@@ -229,4 +229,60 @@ listTaskAfterUpdate.map(task => {
 --------------------------------------------------------
 db.pcm_plan_tasks.updateMany({}, [{$set: { subtype: "$isproposal" }}])
 --------------------------------------------------------
+<!-- CONVERT COMMENT PCM -->
+let listcommentPCM = db.comments.find({ task: { $exists: true, $ne: null } }).toArray();
 
+for (const comment of listcommentPCM) {
+    let { content, task, parent, childs, type, official, subType, files, author, userUpdate, createAt, modifyAt } = comment;
+    
+    let dataInsert = { official, type, task, author, userUpdate, createAt, modifyAt, isDataConvert: 1, files: [], images: []};
+    
+    if(content){
+        dataInsert.content =content;
+    }
+    
+    if(parent){
+        dataInsert.parent =parent;
+    }
+    
+    if(subType){
+        dataInsert.subType = subType;
+    }
+    
+    if(files && files.length > 0){
+        let listFileComment = db.files.find({ _id: { $in: files.map(file => ObjectId(file))} }).toArray();
+        for (const file of listFileComment) {
+            // db.pcm_files.save(dataInsertFilePcm);
+            if(file.type == 1){
+                // Hình ảnh
+                dataInsert.images.push(file._id)
+                // Tạo file bên pcm_file
+            }else{
+                // File
+               dataInsert.files.push(file._id)
+            }
+        }
+    }
+    
+    // Tính số lượng reaction
+    let amountReaction = db.reactions.count({ comment: comment._id})
+    dataInsert.amountReaction = amountReaction;
+    
+    // Tính số lượng comment con
+    if(childs && childs.length){
+        dataInsert.amountCommentReply = childs.length;
+        dataInsert.lastestReplyID = childs.pop();
+    }
+    
+    let infoAfterInsert =  db.pcm_comments.save(dataInsert);
+}
+
+
+<!-- CONVERT FILE PCM -->
+
+let listFilePCM = db.files.find({ planTask: { $exists: true, $ne: null }}).limit(100).toArray();
+
+for (const file of listFilePCM) {
+    let { _id: fileCoreID, company, project, planGroup: group, planTask: task, type, name , author, createAt, modifyAt } = file;
+    db.pcm_files.save({ company, project, group, task, file: fileCoreID, type, nameOrg: name, name, author, isDataConvert: 1, createAt, modifyAt   });
+}   
