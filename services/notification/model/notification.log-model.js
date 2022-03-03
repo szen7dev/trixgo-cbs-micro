@@ -23,6 +23,11 @@ class Model extends BaseModel {
         this.SEND_SUCCESS = 1;
         this.SEND_FAILED  = 2;
         this.SEEN         = 3;
+
+
+        this.WEB_CBS           = 1;
+        this.MOBILE_TEARSER    = 2;
+        this.MOBILE_CBS        = 3;
     }
 
     /**
@@ -275,8 +280,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                const WEB_CBS           = 1;
-                const MOBILE_TEARSER    = 2;
 
                 /** 
                  * VALIDATION STEP (2)
@@ -310,11 +313,11 @@ class Model extends BaseModel {
                             let { devices } = user;
                             listDeviceFromMobile = [
                                 ...listDeviceFromMobile,
-                                ...devices.filter(item => item.env == MOBILE_TEARSER && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == (this.MOBILE_TEARSER || this.MOBILE_CBS) && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                             listDeviceFromWebBrowser = [
                                 ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
+                                ...devices.filter(item => item.env == this.WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                         });
                         console.log({ 

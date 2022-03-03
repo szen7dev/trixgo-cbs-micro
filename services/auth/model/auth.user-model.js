@@ -343,6 +343,15 @@ class Model extends BaseModel {
                                 deviceName      : device.deviceName, 
                                 registrationID  : registrationID,
                                 oneSignalID     : oneSignalID,
+                               /**
+                                 * vì mobile có 2 loại app khác nhau
+                                 *  1/ CBS
+                                 *      - WEB CBS
+                                 *      - APP CBS
+                                 *      - WEB TEASER
+                                 *  2/ Teaser
+                                 *      - APP Teaser
+                                 */
                                 env
                             };
                         }
@@ -655,6 +664,38 @@ class Model extends BaseModel {
 					.populate('company', select.company)
 					.populate('department', select.department)
 					.populate('position', select.position)
+					.lean();
+
+                return resolve({ error: false, data: infoUser });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    // implement by: MINHVH ✅ 
+	getInfoById({ userID, select }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                if(!checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'Request params userID invalid' });
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - kiểm tra valid từ các input
+                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: convert type + update name (ví dụ: string -> number)
+                 *  3.2: operation database
+                 */    
+              
+                let infoUser = await AUTH__USER_COLL.findById(userID)
+					.select(select)
 					.lean();
 
                 return resolve({ error: false, data: infoUser });

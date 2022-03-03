@@ -201,12 +201,9 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal
         /**
          * vì mobile có 2 loại app khác nhau
-         *  1/ CBS
-         *      - WEB CBS
-         *      - APP CBS
-         *      - WEB TEASER
-         *  2/ Teaser
-         *      - APP Teaser
+         *  1/ WEB_CBS
+         *  2/ MOBILE_TEARSER
+         *  3/ MOBILE_CBS
          */
         env: {
             type: Number,
