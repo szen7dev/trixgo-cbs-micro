@@ -302,7 +302,7 @@ class Model extends BaseModel {
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listStatusValid, val: status }) && status != 'all')
                     return resolve({ error: true, message: 'status_invalid' });
-
+                    
                 /**
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
