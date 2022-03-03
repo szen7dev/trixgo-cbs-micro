@@ -72,13 +72,39 @@ class Model extends BaseModel {
         })
     }
 
-    remove({ appUserID }) { 
+
+    update({ appID, companyID, memberID, level, userID }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(appUserID))
-                    return resolve({ error: true, message: "appUserID không phải objectID", keyError: KEY_ERROR.PARAMS_INVALID, status: 200 });
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                let checkExist = await AUTH__APP_USER_COLL.findOne({ app: appID, company: companyID, user: memberID });
+
+                if(!checkExist)
+                    return resolve({ error: true, message: "App user không tồn tại", keyError: "app_user_not_exist", status: 200 });
                 
-                let infoAfterRemove = await AUTH__APP_USER_COLL.findByIdAndDelete(appUserID);
+                let infoAterUpdate = await AUTH__APP_USER_COLL.findOneAndUpdate({ app: appID, company: companyID, user: memberID}, { 
+                    level, userUpdate: userID, modifyAt: new Date() 
+                }, { new: true });
+
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 200 });
+
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    remove({ appUserIDs }) { 
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(appUserIDs))
+                    return resolve({ error: true, message: "appUserIDs không phải objectID", keyError: KEY_ERROR.PARAMS_INVALID, status: 200 });
+                let infoAfterRemove = await AUTH__APP_USER_COLL.deleteMany({ _id: { $in: appUserIDs }});
                 if(!infoAfterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 200 });
 
