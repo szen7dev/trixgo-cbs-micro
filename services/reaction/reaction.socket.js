@@ -72,7 +72,8 @@ exports.REACTION_SOCKET = {
 				console.log({ infoObject })
 
 				const listUserReceive = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-					companyID: infoObject?.data?.company
+					companyID: infoObject?.data?.company?.toString(),
+					isLoadAll: true
 				}, {
 					meta: {
 						infoUser: { _id: userID }
@@ -80,9 +81,9 @@ exports.REACTION_SOCKET = {
 				});
 				console.log({ listUserReceive })
 
-				// if(!listUserReceive.error) {
-				// 	arrReceiver = listUserReceive.data.map(user => user._id);
-				// }
+				if(!listUserReceive.error) {
+					arrReceiver = listUserReceive.data.map(user => user._id);
+				}
 
 				// const listComments = await broker.call(`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_MEDIA}`, {
 				// 	mediaID: objectID, isLoadAll: true
