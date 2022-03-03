@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_document_apply", {
      */
     type: { type: Number, default: 1 },
     //_________Công ty Phát hành hồ sơ mời thầu/Công ty tạo ra task
-    company: {
+    client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
@@ -24,8 +24,8 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_document_apply", {
         type: Schema.Types.ObjectId,
         ref : "pcm_plan_task"
     },
-    //_________Công ty Dự thầu/Thí sinh
-    companyBid: {
+    //_________Nhà thầu dự thầu
+    contractor: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },

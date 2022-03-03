@@ -17,7 +17,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     },
 
     //________Nhóm dữ liệu
-    planGroup: {
+    group: {
         type: Schema.Types.ObjectId,
         ref: 'pcm_plan_group'
     },
@@ -28,7 +28,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
         ref     : 'pcm_plan_task'
     },
 
-    //________Bình luận
+    //________Bình luận(Convert data sẽ ko có trường này)
     comment: {
         type    :  Schema.Types.ObjectId,
         ref     : 'pcm_comment'
@@ -38,6 +38,17 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     file: {
         type    :  Schema.Types.ObjectId,
         ref     : 'file'
+    },
+
+    /**
+     * 1. Hình ảnh
+     * 2. Audio
+     * 3. file
+     * 4. Video
+     */
+    type: { 
+        type: Number,
+        default: 1
     },
     
     //_________Tên gốc(Đưa qua bảng phụ để truy vấn)
