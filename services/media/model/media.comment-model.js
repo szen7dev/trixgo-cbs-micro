@@ -454,8 +454,8 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
 
-                    infoDataAfterGet = infoDataAfterGet.reverse();
-                    nextCursor	     = infoDataAfterGet[0]._id;
+                    // infoDataAfterGet = infoDataAfterGet.reverse();
+                    // nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
                 let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
