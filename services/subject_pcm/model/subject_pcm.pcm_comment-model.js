@@ -139,7 +139,7 @@ class Model extends BaseModel {
 
                 let { author, assignee, related, project, contract } = infoTask.data;
                 related = related.map(userID => userID.toString());
-                let listReceivers = [...new Set([author, assignee, ...related])];
+                let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                 // let contentLog = '';
 
                 // content = content.length > 200 ? content.substring(0, 200) : content;
@@ -161,7 +161,7 @@ class Model extends BaseModel {
                 //         break;
                 // }
 
-                let receivers = listReceivers.filter(receiverID => receiverID.toString() !== authorID.toString());
+                let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
                 console.log({
                     receivers,
                     listReceivers,
