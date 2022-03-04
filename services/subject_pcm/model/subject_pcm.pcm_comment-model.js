@@ -138,6 +138,7 @@ class Model extends BaseModel {
                 });
 
                 let { author, assignee, related, project, contract } = infoTask.data;
+                related = related.map(userID => userID.toString());
                 let listReceivers = [...new Set([author, assignee, ...related])];
                 // let contentLog = '';
 
@@ -163,7 +164,8 @@ class Model extends BaseModel {
                 let receivers = listReceivers.filter(receiverID => receiverID.toString() !== authorID.toString());
                 console.log({
                     receivers,
-                    listReceivers
+                    listReceivers,
+                    authorID
                 });
 
                 // Gửi thông báo cho user
