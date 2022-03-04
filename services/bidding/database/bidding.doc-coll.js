@@ -7,6 +7,23 @@ const Schema                = require('mongoose').Schema;
  * - Phục vụ làm Tư vấn giá
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
+    /**
+     * Phân loại
+     * 1-Hồ sơ gói thầu-Thuộc kế hoạch lựa chọn nhà thầu
+     * 2-Hồ sơ mời thầu (parent)
+     * 3-Hồ sơ dự thầu (parent)
+     * 4-Báo cáo đánh giá (parent)
+     */
+    type: { type: Number, default: 1 },
+    //_________Công việc cha | Công việc chứa checklist
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "pcm_plan_task"
+    },
+    level: {
+        type: Number,
+        default: 1
+    },
     //_________Khu vực
     area: {
         type: Schema.Types.ObjectId,
@@ -17,15 +34,15 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },
     //_________Nhà thầu trúng thầu (sau thay cho Task)
     bidder: {
         type: Schema.Types.ObjectId,
         ref : "company"
-    },
-    //_________Công việc phát hành hồ sơ mời thầu
-    task: {
-        type: Schema.Types.ObjectId,
-        ref : "pcm_plan_task"
     },
     //_________Tên
     name: String,

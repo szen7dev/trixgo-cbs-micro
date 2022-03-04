@@ -12,16 +12,18 @@ const { CF_ACTIONS_BIDDING } 	        	= require('./helper/bidding.actions-const
 /**
  * HANDLERS
  */
-const BIDDING__BILL_HANDLER            = require('./handler/bidding.bill-handler');
+const BIDDING__DOC_HANDLER            = require('./handler/bidding.doc-handler');
 
 /**
  * COLLECTIONS
  */
+const BIDDING__DOC_COLL				= require('./database/bidding.doc-coll');
 const BIDDING__BILL_COLL				= require('./database/bidding.bill-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.BIDDING,
 	mixins: [
+		DbService(BIDDING__DOC_COLL),
 		DbService(BIDDING__BILL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.BIDDING])
     ],
@@ -42,12 +44,11 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
-		//==========================================  CONTRACT  ==================================
-		// [CF_ACTIONS_BIDDING.INSERT_DOCUMENT] 						: ITEM__CONTRACT_HANDLER.insert,
-		// [CF_ACTIONS_BIDDING.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
-		// [CF_ACTIONS_BIDDING.CONTRACT_REMOVE] 						: ITEM__CONTRACT_HANDLER.remove,
-		// [CF_ACTIONS_BIDDING.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
-		// [CF_ACTIONS_BIDDING.CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS]	: ITEM__CONTRACT_HANDLER.getListIsMembers,
+		//==========================================  BIDDING_DOC  ==================================//
+		[CF_ACTIONS_BIDDING.BIDDING_DOC_INSERT] 						: BIDDING__DOC_HANDLER.insert,
+		// [CF_ACTIONS_BIDDING.BIDDING_DOC_UPDATE] 						: BIDDING__DOC_HANDLER.update,
+		[CF_ACTIONS_BIDDING.BIDDING_DOC_REMOVE] 						: BIDDING__DOC_HANDLER.remove,
+		[CF_ACTIONS_BIDDING.BIDDING_DOC_GET_INFO_AND_GET_LIST] 			: BIDDING__DOC_HANDLER.getInfoAndGetList,
 
 		//==========================================  DEPARTMENT  ================================
 		
