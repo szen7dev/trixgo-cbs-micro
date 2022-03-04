@@ -51,7 +51,6 @@ module.exports = {
 		[CF_ACTIONS_BIDDING.BIDDING_DOC_GET_INFO_AND_GET_LIST] 			: BIDDING__DOC_HANDLER.getInfoAndGetList,
 
 		//==========================================  DEPARTMENT  ================================
-		
 	},
 
 	/**

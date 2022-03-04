@@ -105,9 +105,9 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                content && (dataInsert.content = content);
-                files   && (dataInsert.files = files);
-                images  && (dataInsert.images = images);
+                content && (dataInsert.content  = content);
+                files   && (dataInsert.files    = files);
+                images  && (dataInsert.images   = images);
 
                 let infoAterInsert = await this.insertData(dataInsert); 
                 if(!infoAterInsert) {
@@ -137,39 +137,18 @@ class Model extends BaseModel {
                     }
                 });
 
-                let { author, assignee, related } = infoTask.data;
-                let listReceivers = [...new Set([author, assignee, ...related])];
-                // let contentLog = '';
+                let { author, assignee, related, project, contract } = infoTask.data;
+                related = related.map(userID => userID.toString());
 
-                // content = content.length > 200 ? content.substring(0, 200) : content;
-
-                // switch (type) {
-                //     case 1:
-                //         contentLog = `${bizfullname} Vừa thêm bình luận mới - ${content}`;
-                //         break;
-                //     case 2:
-                //         contentLog = `${bizfullname} Vừa thêm phản hồi mới - ${content}`;
-                //         break;
-                //     case 3:
-                //         contentLog = `${bizfullname} Vừa thêm hiện trạng mới - ${content}`;
-                //         break;
-                //     case 4:
-                //         contentLog = `${bizfullname} Vừa thêm giải pháp mới - ${content}`;
-                //         break;
-                //     default:
-                //         break;
-                // }
-
-                let receivers = listReceivers.filter(receiverID => receiverID.toString() !== authorID.toString());
-                console.log({
-                    receivers,
-                    listReceivers
-                });
+                let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 // Gửi thông báo cho user
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     content,
                     receivers,
+                    project: project?.toString(),
+                    contract: contract?.toString(),
                     path: `/pcm/detail/${taskID}#${infoAterInsert._id}`,
                     languageKey: "CREATE_NEW_RESPONSE",
                     app: APP_KEYS.PCM_PLAN_TASK,
@@ -205,7 +184,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
 	 */ 
-    update({ commentID, authorID, content, files, images, select, populates }) {
+    update({ taskID, commentID, authorID, content, files, images, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -248,14 +227,27 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoComment = await PCM_COMMENT_COLL.findById(commentID).lean();
+                let infoComment = await PCM_COMMENT_COLL
+                    .findOne({
+                        _id: commentID,
+                        task: taskID
+                    }).lean();
 
-                if(!infoComment || infoComment.type === 2) {
+                if(!infoComment) {
                     return resolve({
                         error: true,
-                        message: "Comment không tồn tại hoặc comment là phải hồi",
-                        keyError: "comment_not_exists_or_comment_is_response",
+                        message: "Comment không tồn tại hoặc comment không thuộc task hiện tại",
+                        keyError: "comment_not_exists_or_comment_not_belong_task",
                         status: 400
+                    })
+                }
+
+                if(infoComment.type === 2) {
+                    return resolve({
+                        error: true,
+                        message: "Phản hồi liên quan không thể cập nhật",
+                        keyError: "response_cannot_update",
+                        status: 403
                     })
                 }
 
@@ -313,7 +305,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật đánh dấu response
 	 * Date: 22/02/2022
 	 */
-    updateMarkResponse({ taskID, commentID, isMarked }) {
+    updateMarkResponse({ taskID, commentID, official }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs([taskID, commentID])) {
@@ -335,16 +327,16 @@ class Model extends BaseModel {
                     });
                 }
 
-                const dataUpdate = { isMarked };
-                const valueCalculate = -1;
+                const dataUpdate = { official };
+                let valueCalculate = -1;
 
-                if(isMarked) {
+                if(official) {
                     valueCalculate = 1;
                 }
 
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                     $inc: {
-                        amountResponseMarked: valueCalculate
+                        amountMarkedResponse: valueCalculate
                     }
                 });
 
@@ -490,7 +482,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, type, isMarked, sortKey, select, populates }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -547,8 +539,8 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false };
                 }
 
-                if(isMarked === 'true') {
-                    conditionObj.isMarked = true;
+                if(official === 'true') {
+                    conditionObj.official = true;
                 }
 
                 if(type) {
@@ -600,9 +592,9 @@ class Model extends BaseModel {
                 let totalRecord = await PCM_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
 
-                if(!sortKey) {
-                    infoDataAfterGet = infoDataAfterGet.reverse();
-                }
+                // if(!sortKey) {
+                //     infoDataAfterGet = infoDataAfterGet.reverse();
+                // }
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,

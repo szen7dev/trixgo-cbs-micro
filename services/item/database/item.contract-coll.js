@@ -4,7 +4,9 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  HỢP ĐỒNG KINH TẾ
+ * HỢP ĐỒNG KINH TẾ
+ * NGÂN SÁCH DỰ ÁN => VỚI CHỦ ĐẦU TƯ (HỢP ĐỒNG MUA VÀO)
+ * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
  */
 module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
@@ -45,12 +47,22 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Number,
         default: 1
     },
-    //_________Phân loại chính thức/nháp (1-Chính thức/2-Nháp) 
+    /**
+     * Phân loại chính thức/nháp
+     * 1-Chính thức (đã chuyển thành hợp đồng)
+     * 2-Đang là gói thầu
+     */
     draft: { type: Number, default: 1 },
+    /**
+     * Phân loại trạng thái (cân nhắc sử dụng cho cả trạng thái thầu và hợp đồng)
+     * 1-Đang triển khai
+     * 2-Đang bàn giao
+     * 3-Hoàn thành
+     * 4-Tạm dừng
+     */
+    status: { type: Number, default: 1 },
     //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
     outin: { type: Number, default: 1 },
-    //_________Phân loại trạng thái (1-Đang triển khai/2-Đang bàn giao/3-Hoàn thành/4-Tạm dừng) (DEPARTMENT_STATUS in cf_constant)
-    status: { type: Number, default: 1 },
     //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
     real: { type: Number, default: 1 },
     //_________Phân loại khác (1-Thông thường/2-Đặc biệt) (CONTRACT_SUB_TYPES in cf_constant)
@@ -177,7 +189,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
      * USD-NGOẠI TỆ
      */ 
 
-
     /**
      * THÔNG TIN NGÂN SÁCH
      */
@@ -197,6 +208,14 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     expenses: { type: Number, default: 0 },
     //_________Lợi nhuận
     profit: { type: Number, default: 0 },
+
+    /**
+     * ĐẤU THẦU
+     */
+    //_______Giá trúng thầu
+    tenderPrice: { type: Number, default: 0 },
+    //_______VAT trúng thầu
+    tenderPriceAT: { type: Number, default: 0 },
 
     /**
      * BẢO LÃNH

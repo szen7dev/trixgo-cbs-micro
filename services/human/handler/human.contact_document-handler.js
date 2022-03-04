@@ -126,7 +126,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
                 let { contactDocumentID } = ctx.params;
-                let resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.remove({ contactDocumentID });
+                let resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.remove({ contactDocumentID, ctx });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

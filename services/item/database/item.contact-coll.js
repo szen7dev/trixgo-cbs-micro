@@ -238,27 +238,27 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     */
     signerOut: String,
     
-    // Số lượng lịch sử làm việc tai các đơn vị
+    // Số lượng lịch sử làm việc tai các đơn vị (type = 1)
     amountWorkHistory:{
         type: Number,
         default: 0
     },
-    // Số lượng kinh nghiệm thự tế tham gia các dự án
+    // Số lượng kinh nghiệm thự tế tham gia các dự án (type = 2)
     amountProjectHistory:{
         type: Number,
         default: 0
     },
-    // Số lượng kinh nghiệm theo quyết định bổ nhiệm
+    // Số lượng kinh nghiệm theo quyết định bổ nhiệm (type = 3)
     amountContractHistory:{
         type: Number,
         default: 0
     },
-    // Số lượng trình độ học vấn
+    // Số lượng trình độ học vấn (type = 4)
     amountEducationHistory:{
         type: Number,
         default: 0
     },
-    // Số lượng chứng chỉ hồ sơ khác
+    // Số lượng chứng chỉ hồ sơ khác (type = 5)
     amountCertificateHistory:{
         type: Number,
         default: 0

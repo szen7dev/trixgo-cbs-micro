@@ -140,6 +140,12 @@ module.exports = {
             contractDate     : { type: "string", optional: true },
             contractValid    : { type: "string", optional: true },
             contractExpire   : { type: "string", optional: true },
+
+            amountWorkHistory        : { type: "string", optional: true },
+            amountProjectHistory     : { type: "string", optional: true },
+            amountContractHistory    : { type: "string", optional: true },
+            amountEducationHistory   : { type: "string", optional: true },
+            amountCertificateHistory : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -147,14 +153,19 @@ module.exports = {
                 let { 
                     contactID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, 
                     linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, 
-                    sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+                    sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire,
+                    amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                console.log({ contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory});
                 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({
                     contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
+                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire,   
+                    amountWorkHistory: +amountWorkHistory, amountProjectHistory: +amountProjectHistory,
+                    amountContractHistory: +amountContractHistory , amountEducationHistory: +amountEducationHistory, amountCertificateHistory: +amountCertificateHistory, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
