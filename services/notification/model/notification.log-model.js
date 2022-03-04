@@ -191,6 +191,7 @@ class Model extends BaseModel {
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
 				} else{
 					populates = {
@@ -201,8 +202,9 @@ class Model extends BaseModel {
 
 				// Init condition object
 				let conditionObj 	= { 
-                    status: this.SEND_SUCCESS,
-                    receiver: authorID
+                    // status: this.SEND_SUCCESS,
+                    // receiver: authorID,
+                    mainColl: { $exists: true }
                 };
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
@@ -237,7 +239,10 @@ class Model extends BaseModel {
                     .find(conditionObj)
 					.limit(limit + 1)
 					.select(select)
-                    .populate("mainColl.item subColl.item")
+                    .populate({
+                        path: "receiver sender",
+                        select: "_id bizfullname email image"
+                    })
 					.populate(populates)
 					.sort(sortBy)
 					.lean();

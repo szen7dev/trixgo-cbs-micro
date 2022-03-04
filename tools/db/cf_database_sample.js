@@ -17,3 +17,8 @@ module.exports = {
         _mongodb_port: process.env.MONGO_PORT   || '27017'
     },
 };
+
+// Xử lý Authen cho việc truy cập DB
+// db.createUser({ user: "admin_cbs",
+//                  pwd: "dAGT5ttW6CLrsTuw",
+//                  roles: [{ role: "readWrite", db: "cbs_staging" }] })

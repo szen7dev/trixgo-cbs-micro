@@ -36,13 +36,12 @@ class Model extends BaseModel {
                 let dataInsert = { app, company, maxCount, maxData, startTime, endTime, userCreate: userID, userUpdate: userID };
                 
                 let checkExist = await AUTH__APP_COMPANY_COLL.findOne({ app, company });
-                console.log({ checkExist });
                 if(checkExist)
-                    return resolve({ error: true, message: "App của công ty đã tồn tại", keyError: "app_company_exist", status: 200 });
+                    return resolve({ error: true, message: "App của công ty đã tồn tại", keyError: "app_company_exist", status: 400 });
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 422 });
 
                 // Cập nhật endTime cho app user
                 await AUTH__APP_USER_COLL.updateMany({ app, company }, { $set: { endTime }});
@@ -85,7 +84,7 @@ class Model extends BaseModel {
                     dataUpdate.endTime = endTime;
                 }
                 
-                let infoAterUpdate = await AUTH__APP_COMPANY_COLL.findByIdAndUpdate(appCompanyID, dataUpdate);
+                let infoAterUpdate = await AUTH__APP_COMPANY_COLL.findByIdAndUpdate(appCompanyID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
