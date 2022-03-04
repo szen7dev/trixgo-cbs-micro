@@ -20,7 +20,7 @@ const BIDDING__BILL_HANDLER            = require('./handler/bidding.bill-handler
 const BIDDING__BILL_COLL				= require('./database/bidding.bill-coll');
 
 module.exports = {
-	name: CF_DOMAIN_SERVICES.ITEM,
+	name: CF_DOMAIN_SERVICES.BIDDING,
 	mixins: [
 		DbService(BIDDING__BILL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.BIDDING])
