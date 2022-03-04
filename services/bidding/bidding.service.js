@@ -13,7 +13,7 @@ const { CF_ACTIONS_BIDDING } 	        	= require('./helper/bidding.actions-const
  * HANDLERS
  */
 const BIDDING__BILL_HANDLER            = require('./handler/bidding.bill-handler');
-
+	
 /**
  * COLLECTIONS
  */
