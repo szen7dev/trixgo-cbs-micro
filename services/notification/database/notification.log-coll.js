@@ -29,7 +29,7 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
     //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
     languageKey: {
         type: String 
-    },  
+    },
     //_________Thuộc dự án
     project: {
         type: Schema.Types.ObjectId,
