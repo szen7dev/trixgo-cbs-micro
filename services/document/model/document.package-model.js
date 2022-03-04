@@ -261,7 +261,7 @@ class Model extends BaseModel {
                 let totalRecord = await DOCUMENT__PACKAGE_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
-
+                
 				if(listPackages && listPackages.length){
 					if(listPackages.length > limit){
 						nextCursor = listPackages[limit - 1]._id;
