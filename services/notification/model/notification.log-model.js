@@ -200,11 +200,9 @@ class Model extends BaseModel {
                     }
                 }
 
-				// Init condition object
 				let conditionObj 	= { 
                     // status: this.SEND_SUCCESS,
-                    // receiver: authorID,
-                    mainColl: { $exists: true }
+                    receiver: authorID,
                 };
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
@@ -280,6 +278,7 @@ class Model extends BaseModel {
 	 * Date: ...
 	 */
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
+        
         return new Promise(async (resolve) => {
              try {
                 /**
@@ -305,6 +304,7 @@ class Model extends BaseModel {
 
                 if (!infoAfterCall.error) {
                     let { data: { listRecords } } = infoAfterCall;
+                    console.log("🚀 ~ file: notification.log-model.js ~ line 309 ~ Model ~ returnnewPromise ~ listRecords", listRecords)
 
                     /**
                      * @param listDeviceFromMobile "danh sách device ENV: TEASER"
@@ -318,31 +318,31 @@ class Model extends BaseModel {
                      *  - nếu là env của devices(auth.user-coll) =  1 hoặc 3 => ONESIGNAL_APP_CBS ('8d5db406-1628-4a23-bf40-8bb53bf582ba)
                      *  - nếu là MOBILE_TEARSER -> ONESIGNAL_APP_TEASER  (79acfc09-966a-48f5-a9ea-44d90410014f)
                      */
-                    let _findAppIdWithEnv = env => [this.WEB_CBS, this.MOBILE_CBS].include(+env) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
+                    let _findAppIdWithEnv = env => [this.WEB_CBS, this.MOBILE_CBS].includes(+env) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
 
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
                             let { devices } = user;
                             listDeviceFromMobile = [
                                 ...listDeviceFromMobile,
-                                ...devices.filter(item => item.env == (this.MOBILE_TEARSER || this.MOBILE_CBS) && item.oneSignalID).map(item => {
+                                ...devices.filter(item => item.oneSignalID && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
                                     return {
-                                        oneSignalID: item.oneSignalID,
-                                        app_id: _findAppIdWithEnv(item.env),
+                                        oneSignalID: itemReturn.oneSignalID,
+                                        app_id: _findAppIdWithEnv(itemReturn.env),
                                     }
                                 })
                             ]
                             listDeviceFromWebBrowser = [
                                 ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.env == this.WEB_CBS && item.oneSignalID).map(item => {
+                                ...devices.filter(item => item.oneSignalID && item.env == this.WEB_CBS).map(itemReturn => {
                                     return {
-                                        oneSignalID: item.oneSignalID,
-                                        app_id: _findAppIdWithEnv(item.env),
+                                        oneSignalID: itemReturn.oneSignalID,
+                                        app_id: _findAppIdWithEnv(itemReturn.env),
                                     }
                                 })
                             ]
                         });
-
+                      
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
                             headings: { "en": title },
@@ -354,7 +354,9 @@ class Model extends BaseModel {
                              * chia mảng listDeviceFromMobile thành 2 nhóm để push theo app_id của (CBS và TEASER)
                              */
                             let listDeviceFromMobileWith_CBS        = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_CBS);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 353 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_CBS", listDeviceFromMobileWith_CBS)
                             let listDeviceFromMobileWith_TEASER     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 355 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_TEASER", listDeviceFromMobileWith_TEASER)
 
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
@@ -396,7 +398,9 @@ class Model extends BaseModel {
 
                         if (listDeviceFromWebBrowser.length > 0) {
                             let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS", listDeviceFromWebBrowserWith_CBS)
                             let listDeviceFromWebBrowserWith_TEASER     = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER", listDeviceFromWebBrowserWith_TEASER)
 
                             // WEB PUSH = CBS
                             let dataForWebPushCBS = {
