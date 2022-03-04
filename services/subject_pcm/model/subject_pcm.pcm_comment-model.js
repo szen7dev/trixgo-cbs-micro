@@ -105,9 +105,9 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                content && (dataInsert.content = content);
-                files   && (dataInsert.files = files);
-                images  && (dataInsert.images = images);
+                content && (dataInsert.content  = content);
+                files   && (dataInsert.files    = files);
+                images  && (dataInsert.images   = images);
 
                 let infoAterInsert = await this.insertData(dataInsert); 
                 if(!infoAterInsert) {
@@ -137,7 +137,7 @@ class Model extends BaseModel {
                     }
                 });
 
-                let { author, assignee, related } = infoTask.data;
+                let { author, assignee, related, project, contract } = infoTask.data;
                 let listReceivers = [...new Set([author, assignee, ...related])];
                 // let contentLog = '';
 
@@ -161,15 +161,13 @@ class Model extends BaseModel {
                 // }
 
                 let receivers = listReceivers.filter(receiverID => receiverID.toString() !== authorID.toString());
-                console.log({
-                    receivers,
-                    listReceivers
-                });
 
                 // Gửi thông báo cho user
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     content,
                     receivers,
+                    project: project?.toString(),
+                    contract: contract?.toString(),
                     path: `/pcm/detail/${taskID}#${infoAterInsert._id}`,
                     languageKey: "CREATE_NEW_RESPONSE",
                     app: APP_KEYS.PCM_PLAN_TASK,

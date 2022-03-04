@@ -203,8 +203,7 @@ class Model extends BaseModel {
 				// Init condition object
 				let conditionObj 	= { 
                     // status: this.SEND_SUCCESS,
-                    // receiver: authorID,
-                    mainColl: { $exists: true }
+                    receiver: authorID,
                 };
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
