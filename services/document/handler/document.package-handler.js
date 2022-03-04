@@ -131,7 +131,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
-                        departmentID, userID, lastestID, keyword, select, populates, limit
+                        departmentID, userID, lastestID, keyword, select, populates, limit: +limit
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

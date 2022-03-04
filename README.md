@@ -288,3 +288,17 @@ for (const file of listFilePCM) {
     let { _id: fileCoreID, company, project, planGroup: group, planTask: task, type, name , author, createAt, modifyAt } = file;
     db.pcm_files.save({ company, project, group, task, file: fileCoreID, type, nameOrg: name, name, author, isDataConvert: 1, createAt, modifyAt   });
 }   
+
+<!-- CẬP NHẬT SỐ LƯỢNG CONTACT_DOCUMENT CHO CONTACT-->
+
+let listContact = db.contacts.find({}).select("_id")
+
+listContact.forEach(contact => {
+    let amountWorkHistory =  db.contact_documents.count({ contact: ObjectId(contact._id), type: 1 });
+    let amountProjectHistory =  db.contact_documents.count({ contact: ObjectId(contact._id), type: 2 });
+    let amountContractHistory =  db.contact_documents.count({ contact: ObjectId(contact._id), type: 3 });
+    let amountEducationHistory =  db.contact_documents.count({ contact: ObjectId(contact._id), type: 4 });
+    let amountCertificateHistory =  db.contact_documents.count({ contact: ObjectId(contact._id), type: 5 });
+    
+    db.contacts.findOneAndUpdate({ _id: contact._id}, { $set: {amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory,  amountCertificateHistory } })
+})
