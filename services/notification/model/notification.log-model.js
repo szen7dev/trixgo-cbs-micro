@@ -275,6 +275,7 @@ class Model extends BaseModel {
 	 * Date: ...
 	 */
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
+        
         return new Promise(async (resolve) => {
              try {
                 /**
@@ -349,7 +350,9 @@ class Model extends BaseModel {
                              * chia mảng listDeviceFromMobile thành 2 nhóm để push theo app_id của (CBS và TEASER)
                              */
                             let listDeviceFromMobileWith_CBS        = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_CBS);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 353 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_CBS", listDeviceFromMobileWith_CBS)
                             let listDeviceFromMobileWith_TEASER     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 355 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_TEASER", listDeviceFromMobileWith_TEASER)
 
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
@@ -391,7 +394,9 @@ class Model extends BaseModel {
 
                         if (listDeviceFromWebBrowser.length > 0) {
                             let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS", listDeviceFromWebBrowserWith_CBS)
                             let listDeviceFromWebBrowserWith_TEASER     = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER", listDeviceFromWebBrowserWith_TEASER)
 
                             // WEB PUSH = CBS
                             let dataForWebPushCBS = {
