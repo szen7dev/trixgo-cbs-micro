@@ -159,19 +159,21 @@ db.files.updateMany({nameOrg: {$exists: false}}, [{$set: { nameOrg: "$name" }}])
 
 <!-- CONVERT FILE TO DOCUMENT_FILE -->
 --------------------------------------------------------
-let fileDocuments = db.files.find({document: {$exists: true}}).toArray()
+let fileDocuments = db.files.find({ document: {$exists: true, $ne: null}}).toArray()
 for(let file of fileDocuments) {
-    const { _id, createAt, modifyAt, company, project, author, document, comment } = file;
+    const { _id, createAt, modifyAt, company, project, author, document, name, type } = file;
     db.document_files.save({
-        isConvert: true,
         company,
         project,
+        document,
+        file: _id,
+        type,
+        nameOrg: name,
+        name,
+        author,
         createAt,
         modifyAt,
-        userCreate: author,
-        file: _id,
-        document,
-        comment
+        isDataConvert: 1
     })
 }
 --------------------------------------------------------
@@ -230,19 +232,20 @@ listTaskAfterUpdate.map(task => {
 db.pcm_plan_tasks.updateMany({}, [{$set: { subtype: "$isproposal" }}])
 --------------------------------------------------------
 <!-- CONVERT COMMENT PCM -->
-let listcommentPCM = db.comments.find({ task: { $exists: true, $ne: null } }).toArray();
+let listcommentPCM = db.comments.find({ task: { $exists: true, $ne: null } }).limit(100).toArray();
 
 for (const comment of listcommentPCM) {
-    let { content, task, parent, childs, type, official, subType, files, author, userUpdate, createAt, modifyAt } = comment;
+    let { _id: commentCoreID, content, task, parent, childs, type, official, subType, files, author, userUpdate, createAt, modifyAt } = comment;
     
-    let dataInsert = { official, type, task, author, userUpdate, createAt, modifyAt, isDataConvert: 1, files: [], images: []};
+    let dataInsert = { official, type, task, author, userUpdate, createAt, modifyAt, isDataConvert: 1, commentCoreID, files: [], images: []};
     
     if(content){
         dataInsert.content =content;
     }
     
     if(parent){
-        dataInsert.parent =parent;
+        let infoCommentParent = db.pcm_comments.findOne({ commentCoreID: ObjectId(parent) })
+        dataInsert.parent =infoCommentParent._id;
     }
     
     if(subType){
@@ -274,8 +277,7 @@ for (const comment of listcommentPCM) {
         dataInsert.lastestReplyID = childs.pop();
     }
     
-    let infoAfterInsert =  db.pcm_comments.save(dataInsert);
-}
+    db.pcm_comments.save(dataInsert);
 
 
 <!-- CONVERT FILE PCM -->
