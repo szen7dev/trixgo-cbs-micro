@@ -200,7 +200,6 @@ class Model extends BaseModel {
                     }
                 }
 
-				// Init condition object
 				let conditionObj 	= { 
                     // status: this.SEND_SUCCESS,
                     receiver: authorID,
