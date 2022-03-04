@@ -7,6 +7,7 @@ const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant'
 const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 const { APP_KEYS } 								= require('../../tools/keys');
+const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant')
 
 /**
  * Utils
@@ -136,7 +137,8 @@ exports.REACTION_SOCKET = {
 			users: arrReceiver,
 			title: 'THÔNG BÁO',
 			description: descriptionMSS,
-			web_url: webUrl
+			web_url: webUrl,
+			env: ENV_DEVICE_WEB_CBS
 		});
 	},
 
