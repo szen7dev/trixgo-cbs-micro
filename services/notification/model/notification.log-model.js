@@ -246,7 +246,7 @@ class Model extends BaseModel {
 					.lean();
 
 				// GET TOTAL RECORD
-				let totalRecord = await NOTIFICATION__LOG_COLL.count(conditionObjOrg);
+				let totalRecord = await NOTIFICATION__LOG_COLL.countDocuments(conditionObjOrg);
 				let nextCursor  = null;
 
 				if(listNotifications && listNotifications.length){
