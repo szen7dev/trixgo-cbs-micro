@@ -213,15 +213,18 @@ class Model extends BaseModel {
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
+                console.log('========== insert pcm_plan_task =========');
+                console.log({ infoAterInsert, parentID, type })
                 if(parentID && type === 2) {
                     const webUrl = `/pcm/detail/${parentID}#checklist_${infoAterInsert._id}`;
                     const infoTask = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
 
-                    let { name: taskName, author, assiclgnee, related, project, contract } = infoTask;
+                    let { name: taskName, author, assignee, related, project, contract } = infoTask;
                     related = related.map(userID => userID.toString());
     
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    console.log({ receivers })
 
                     const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                         userID: assigneeID,
@@ -246,8 +249,10 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
+                    console.log({ infoAssignee })
 
                     if(!infoAssignee.error) {
+                        console.log({ data: infoAssignee.data })
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                             users: [infoAssignee?.data?._id],
                             title: `THÔNG BÁO: ${taskName}`,
