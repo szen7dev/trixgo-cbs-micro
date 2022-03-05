@@ -8,8 +8,6 @@ const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
-const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
-const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
 
 /**
@@ -98,11 +96,16 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                let infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
-                    taskID
-                });
+                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
 
-                if(infoTask.error) return resolve(infoTask);
+                if(!infoTask) {
+                    return resolve({
+                        error: true,
+                        message: "Công việc không tồn tại",
+                        keyError: "task_not_exists",
+                        status: 400
+                    })
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -141,7 +144,7 @@ class Model extends BaseModel {
                     }
                 });
 
-                let { author, assignee, related, project, contract } = infoTask.data;
+                let { author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
 
                 let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
@@ -152,7 +155,7 @@ class Model extends BaseModel {
                     receivers,
                     project: project?.toString(),
                     contract: contract?.toString(),
-                    path: `/pcm/detail/${taskID}#${infoAterInsert._id}`,
+                    path: `/pcm/detail/${taskID}#response_${infoAterInsert._id}`,
                     languageKey: type === 1 ? LANGUAGE_KEYS.CREATE_COMMENT_PCM : LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
                     app: APP_KEYS.PCM_PLAN_TASK,
                     mainColl: {
