@@ -3,6 +3,11 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }      = require('../../../tools/cursor_base/playground/index');
+const { CF_DOMAIN_SERVICES }            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
+const { APP_KEYS, LANGUAGE_KEYS }       = require('../../../tools/keys');
 
 /**s
  * import inter-coll, exter-coll
@@ -28,9 +33,10 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Create comment media
      */
-    insert({ mediaID, parentID, content, files, images, authorID, select, populates }) { 
+    insert({ mediaID, parentID, content, files, images, authorID, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {
+                let arrReceiver = [];
                 let dataInsert = {  
                     media: mediaID,
                     author: authorID
@@ -89,6 +95,8 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
+                const infoMedia = await MEDIA_COLL.findById(mediaID).lean();
+
                 content && (dataInsert.content  = content);
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
@@ -119,6 +127,70 @@ class Model extends BaseModel {
                     $inc: {
                         amountComment: 1
                     }
+                })
+
+                /**
+                 * Loại bài viết
+                 * 1: Bài viết công ty (Thành viên trong công ty)
+                 * 2: Dự án, phòng ban
+                 * 3: Chuyển đổi số
+                 * 4: Hệ thống
+                 * 5: Bài viết cá nhân
+                 * ..... Sau bổ sung thêm vài loại bài viết
+                 */
+                switch (infoMedia.type) {
+                    case 1: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            companyID: infoMedia?.company?.toString(),
+                            isLoadAll: true
+                        }, { meta });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.map(user => user._id);
+                        }
+                        break;
+                    }
+                    case 2: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                            departmentID: infoMedia?.department?.toString(),
+                            select: "members"
+                        }, { meta });
+
+                        if(!listUserReceive.error) {
+                            arrReceiver = listReceivers.data?.members;
+                        }
+                    }
+                    case 3:
+                    case 4: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            isLoadAll: true
+                        }, { meta });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.map(user => user._id);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                // Insert thông báo cho user
+                await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    content,
+                    receivers: arrReceiver,
+                    path: `/media/home/${mediaID}#${infoAterInsert._id}`,
+                    languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                    app: APP_KEYS.MEDIA,
+                    mainColl: {
+                        kind: "media",
+                        item: mediaID
+                    },
+                    subColl: {
+                        kind: "media_comment",
+                        item: infoAterInsert._id
+                    },
+                    type: 1 // InApp (Socket)
                 })
 
                 infoAterInsert = await MEDIA__COMMENT_COLL
