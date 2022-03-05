@@ -33,7 +33,6 @@ class Model extends BaseModel {
     insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -213,8 +212,10 @@ class Model extends BaseModel {
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                console.log('========== insert pcm_plan_task =========');
-                console.log({ infoAterInsert, parentID, type })
+                /**
+                 * Tạo checklist mới
+                 * + Insert thông báo vào DB và bắn Cloud MSS
+                 */
                 if(parentID && type === 2) {
                     const webUrl = `/pcm/detail/${parentID}#checklist_${infoAterInsert._id}`;
                     const infoTask = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
@@ -224,7 +225,6 @@ class Model extends BaseModel {
     
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-                    console.log({ receivers })
 
                     const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                         userID: assigneeID,
@@ -249,10 +249,8 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
-                    console.log({ infoAssignee })
 
                     if(!infoAssignee.error) {
-                        console.log({ data: infoAssignee.data })
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                             users: [infoAssignee?.data?._id],
                             title: `THÔNG BÁO: ${taskName}`,
