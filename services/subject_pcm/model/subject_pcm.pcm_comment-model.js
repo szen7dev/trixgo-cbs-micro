@@ -10,7 +10,7 @@ const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domai
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
 const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
-const { APP_KEYS, KEY_ERROR }					= require('../../../tools/keys');
+const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
@@ -22,26 +22,39 @@ class Model extends BaseModel {
 
     constructor() {
         super(PCM_COMMENT_COLL);
+
+        this.COMMENT_PCM = 1;
+        this.RESPONSE_PCM = 2;
     }
-    
+
     /**
 	 * Dev: MinhVH 
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx }) { 
+    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { type, task: taskID, author: authorID };
+                const dataInsert = { type, task: taskID, author: authorID };
+                const TYPE_COMMENT = [this.COMMENT_PCM, this.RESPONSE_PCM];
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(!TYPE_COMMENT.includes(type)) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số type không hợp lệ",
+                        keyError: "params_type_invalid",
+                        status: 400
+                    })
+                }
+
                 if(!checkObjectIDs([taskID])) {
                     return resolve({
                         error: true,
@@ -70,15 +83,6 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
-                }
-
-                if(!type || !PCM_COMMENT_TYPE.includes(type)) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số type không hợp lệ",
-                        keyError: "params_type_invalid",
-                        status: 400
-                    })
                 }
 
                 if(parentID) {
@@ -150,7 +154,7 @@ class Model extends BaseModel {
                     project: project?.toString(),
                     contract: contract?.toString(),
                     path: `/pcm/detail/${taskID}#${infoAterInsert._id}`,
-                    languageKey: "CREATE_NEW_RESPONSE",
+                    languageKey: type === 1 ? LANGUAGE_KEYS.CREATE_COMMENT_PCM : LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
                     app: APP_KEYS.PCM_PLAN_TASK,
                     mainColl: {
                         kind: "pcm_plan_task",

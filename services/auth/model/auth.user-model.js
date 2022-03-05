@@ -1552,7 +1552,26 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
-               
+
+                // Cờ dùng để call service, không truyền qua api
+                if(isLoadAll) {
+                    let infoDataAfterGet = [];
+
+                    if(companyID && checkObjectIDs([companyID])) {
+                        infoDataAfterGet = await AUTH__USER_COLL
+                            .find({ company: companyID })
+                            .select('_id')
+                            .lean();
+                    } else{
+                        infoDataAfterGet = await AUTH__USER_COLL
+                            .find({})
+                            .select('_id')
+                            .lean()
+                    }
+
+                    return resolve({ error: false, data: infoDataAfterGet, status: 200 });
+                }
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -1567,7 +1586,7 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
 					populates = {
                         path  : "",
                         select: ""
@@ -1595,16 +1614,6 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.bizfullname = new RegExp(keyword, 'i');
-                }
-
-                // Cờ dùng để call service, không truyền qua api
-                if(isLoadAll && checkObjectIDs([companyID])) {
-                    let infoDataAfterGet = await AUTH__USER_COLL
-                        .find({ company: companyID })
-                        .select('_id')
-                        .lean();
-
-                    return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
 
                 let conditionObjOrg = { ...conditionObj };

@@ -576,7 +576,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                // populate
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });

@@ -28,3 +28,11 @@ let APP_PCM                     = 'PCM';
 exports.SOCIAL_POST_LIKE                      = `${APP_SOCIAL}.SOCIAL_POST_LIKE`;
 exports.SOCIAL_COMMENT_LIKE                   = `${APP_SOCIAL}.SOCIAL_COMMENT_LIKE`;
 exports.SOCIAL_SEND_NOTICE_COMMENT_TO_MEMBERS = `${APP_SOCIAL}.SOCIAL_SEND_NOTICE_COMMENT_TO_MEMBERS`;
+
+
+/**
+ * DANH SÁCH ENV THEO field devices TẠI AUTH.USER-COLL
+ */
+exports.ENV_DEVICE_WEB_CBS = 1;
+exports.ENV_DEVICE_APP_CBS = 3;
+exports.ENV_DEVICE_APP_TEASER = 2;

@@ -37,7 +37,7 @@ module.exports = {
                 const { mediaID, parentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
-                    mediaID, parentID, content, files, images, select, populates, authorID
+                    mediaID, parentID, content, files, images, select, populates, authorID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -173,7 +173,7 @@ module.exports = {
                 const { mediaID, fileID, parentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insertCommentFile({
-                    mediaID, fileID, parentID, content, files, images, select, populates, authorID
+                    mediaID, fileID, parentID, content, files, images, select, populates, authorID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

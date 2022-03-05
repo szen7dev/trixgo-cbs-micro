@@ -3,7 +3,6 @@
 /**
  * EXTERNAL
  */
-const PromisePool									= require('@supercharge/promise-pool');
 
 /**
  * TOOLS
@@ -29,18 +28,9 @@ class Model extends BaseModel {
 	 * Func: Thêm folder mới
 	 * Date: 11/02/2022
 	 */
-	insert({ name, includedConversationsID, excludedConversationsID, authorID }) {
+	insert({ name, authorID }) {
         return new Promise(async (resolve) => {
             try {
-				if(!checkObjectIDs([...includedConversationsID, ...excludedConversationsID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số includedConversationsID hoặc excludedConversationsID là không hợp lệ', 
-						keyError: 'params_includedConversationsID_or_excludedConversationsID_invalid',
-						status: 400 
-					});
-				}
-
 				let checkExistsFolder = await CHATTING__CONVERSATION_FOLDER_COLL
 					.findOne({ name: name.trim(), author: authorID })
 					.lean();
@@ -54,22 +44,8 @@ class Model extends BaseModel {
 					});
 				}
 
-				if(excludedConversationsID.length) {
-					const listConversationsExcluded = await CHATTING__CONVERSATION_COLL
-						.find({
-							_id: { $nin: excludedConversationsID },
-							members: { $in: [authorID] }
-						})
-						.select('_id')
-						.lean();
-
-					includedConversationsID = listConversationsExcluded.map(conversation => conversation._id);
-				}
-
                 let infoAfterInsert = await this.insertData({
 					name,
-					includedConversations: includedConversationsID,
-					excludedConversations: excludedConversationsID,
 					author: authorID
 				});
 
@@ -79,14 +55,6 @@ class Model extends BaseModel {
 						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
 						keyError: 'error_occurs',
 						status: 422
-					});
-				}
-
-				if(includedConversationsID.length) {
-					await CHATTING__CONVERSATION_COLL.updateMany({ _id: { $in: includedConversationsID } }, {
-						$addToSet: {
-							folders: infoAfterInsert._id
-						}
 					});
 				}
 
@@ -102,9 +70,11 @@ class Model extends BaseModel {
 	 * Func: Cập nhật folder
 	 * Date: 11/02/2022
 	 */
-	update({ folderID, name, includedConversationsID, excludedConversationsID, authorID }) {
+	update({ folderID, name, authorID }) {
 		return new Promise(async resolve => {
 			try {
+				let dataUpdate 	= {};
+
 				if(!checkObjectIDs([folderID])) {
 					return resolve({ 
 						error: true, 
@@ -128,25 +98,7 @@ class Model extends BaseModel {
 					});
 				}
 
-				let dataUpdate 	= {};
 				name && (dataUpdate.name = name);
-
-				if(includedConversationsID.length && checkObjectIDs(includedConversationsID)) {
-					dataUpdate.includedConversations = includedConversationsID;
-				}
-
-				if(excludedConversationsID.length && checkObjectIDs(excludedConversationsID)) {
-					const listConversationsExcluded = await CHATTING__CONVERSATION_COLL
-						.find({
-							_id: { $nin: excludedConversationsID },
-							members: { $in: [authorID] }
-						})
-						.select('_id')
-						.lean();
-
-					dataUpdate.includedConversations = listConversationsExcluded.map(conversation => conversation._id);
-					dataUpdate.excludedConversations = excludedConversationsID;
-				}
 
 				let infoAfterUpdate = await CHATTING__CONVERSATION_FOLDER_COLL.findByIdAndUpdate(folderID, {
 					$set: dataUpdate
@@ -161,19 +113,75 @@ class Model extends BaseModel {
 					});
 				}
 
-				if(dataUpdate.includedConversations && dataUpdate.includedConversations.length) {
-					await CHATTING__CONVERSATION_COLL.updateMany({ _id: { $in: dataUpdate.includedConversations } }, {
-						$addToSet: {
-							folders: folderID
-						}
+				return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Thêm cuộc hội thoại vào folder
+	 * Date: 04/03/2022
+	 */
+	updateConversationToFolder({ foldersID, conversationID, isRemove, authorID }) {
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs(foldersID)) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số foldersID không hợp lệ", 
+						keyError: 'params_foldersID_invalid',
+						status: 400
 					});
 				}
 
-				if(dataUpdate.excludedConversations && dataUpdate.excludedConversations.length) {
-					await CHATTING__CONVERSATION_COLL.updateMany({ _id: { $in: dataUpdate.excludedConversations } }, {
+				if(!checkObjectIDs([conversationID])) {
+					return resolve({ 
+						error: true, 
+						message: "Tham số conversationID không hợp lệ", 
+						keyError: 'params_conversationID_invalid',
+						status: 400
+					});
+				}
+
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [authorID] }
+				}).lean();
+
+				if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên cuộc hội thoại", 
+						keyError: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
+
+				let infoAfterUpdate = null;
+
+				if(isRemove) {
+					infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pullAll: {
-							folders: folderID
+							folders: foldersID
 						}
+					}, { new: true });
+				} else{
+					infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$addToSet: {
+							folders: foldersID
+						}
+					}, { new: true });
+				}
+
+				if(!infoAfterUpdate) {
+					return resolve({ 
+						error: true, 
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+						keyError: 'error_occurs',
+						status: 422
 					});
 				}
 
