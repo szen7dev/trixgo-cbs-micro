@@ -52,7 +52,7 @@ exports.REACTION_SOCKET = {
 
 					if(infoObject.error) break;
 
-					const { author, assignee, related } = infoObject.data;
+					let { author, assignee, related } = infoObject.data;
 					related = related.map(userID => userID.toString());
 
 					arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
