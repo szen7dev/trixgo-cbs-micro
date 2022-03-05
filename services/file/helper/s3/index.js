@@ -16,8 +16,7 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
         let bucket = `${config.bucket}/${process.env.AWS_BUCKET_PATH}${pathS3}`;
 
         if(typeUpload == "user"){
-            // bucket = `${config.bucket}/files/db/users`;
-            bucket = `${config.bucket}/files/db/userss`;
+            bucket = `${config.bucket}/files/db/users`;
         }
 
         if(typeUpload == "contact"){
