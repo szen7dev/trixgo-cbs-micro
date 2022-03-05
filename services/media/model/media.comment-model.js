@@ -143,7 +143,7 @@ class Model extends BaseModel {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                             companyID: infoMedia?.company?.toString(),
                             isLoadAll: true
-                        }, { meta });
+                        });
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
@@ -154,7 +154,7 @@ class Model extends BaseModel {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                             departmentID: infoMedia?.department?.toString(),
                             select: "members"
-                        }, { meta });
+                        });
 
                         if(!listUserReceive.error) {
                             arrReceiver = listReceivers.data?.members;
@@ -164,7 +164,7 @@ class Model extends BaseModel {
                     case 4: {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                             isLoadAll: true
-                        }, { meta });
+                        });
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
