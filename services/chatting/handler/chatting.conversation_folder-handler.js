@@ -78,17 +78,17 @@ module.exports = {
     updateConversationToFolder: {
         params: {
             conversationID  : { type: "string" },
-            foldersID       : { type: "array" },
-            isRemove        : { type: "boolean", optional: true },
+            addFoldersID    : { type: "array", optional: true },
+            removeFoldersID : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { foldersID, conversationID, isRemove } = ctx.params;
+                const { conversationID, addFoldersID, removeFoldersID } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.updateConversationToFolder({
-					foldersID, conversationID, isRemove, authorID
+					conversationID, addFoldersID, removeFoldersID, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

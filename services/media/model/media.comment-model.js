@@ -31,12 +31,94 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
+     * Func: Insert noti to DB
+     */
+    createNotification({ infoMedia, authorID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                let arrReceiver = [];
+
+                /**
+                 * Loại bài viết
+                 * 1: Bài viết công ty (Thành viên trong công ty)
+                 * 2: Dự án, phòng ban
+                 * 3: Chuyển đổi số
+                 * 4: Hệ thống
+                 * 5: Bài viết cá nhân
+                 * ..... Sau bổ sung thêm vài loại bài viết
+                 */
+                 switch (infoMedia.type) {
+                    case 1: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            companyID: infoMedia?.company?.toString(),
+                            isLoadAll: true
+                        });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.map(user => user._id);
+                        }
+                        break;
+                    }
+                    case 2: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                            departmentID: infoMedia?.department?.toString(),
+                            select: "members"
+                        });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.members;
+                        }
+                    }
+                    case 3:
+                    case 4: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            isLoadAll: true
+                        });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.map(user => user._id);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+
+                if(arrReceiver.length) {
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content,
+                        receivers: arrReceiver,
+                        path: `/media/home/${mediaID}#${infoAterInsert._id}`,
+                        languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                        app: APP_KEYS.MEDIA,
+                        mainColl: {
+                            kind: "media",
+                            item: mediaID
+                        },
+                        subColl: {
+                            kind: "media_comment",
+                            item: infoAterInsert._id
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
+
+                return resolve({ error: false, message: 'success', status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
      * Func: Create comment media
      */
     insert({ mediaID, parentID, content, files, images, authorID, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                let arrReceiver = [];
                 let dataInsert = {  
                     media: mediaID,
                     author: authorID
@@ -97,6 +179,15 @@ class Model extends BaseModel {
 
                 const infoMedia = await MEDIA_COLL.findById(mediaID).lean();
 
+                if(!infoMedia) {
+                    return resolve({
+                        error: true,
+                        message: "Bài viết không tồn tại",
+                        keyError: "media_not_exists",
+                        status: 400
+                    })
+                }
+
                 content && (dataInsert.content  = content);
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
@@ -129,69 +220,8 @@ class Model extends BaseModel {
                     }
                 })
 
-                /**
-                 * Loại bài viết
-                 * 1: Bài viết công ty (Thành viên trong công ty)
-                 * 2: Dự án, phòng ban
-                 * 3: Chuyển đổi số
-                 * 4: Hệ thống
-                 * 5: Bài viết cá nhân
-                 * ..... Sau bổ sung thêm vài loại bài viết
-                 */
-                switch (infoMedia.type) {
-                    case 1: {
-                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                            companyID: infoMedia?.company?.toString(),
-                            isLoadAll: true
-                        });
-
-                        if(!listReceivers.error) {
-                            arrReceiver = listReceivers.data?.map(user => user._id);
-                        }
-                        break;
-                    }
-                    case 2: {
-                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                            departmentID: infoMedia?.department?.toString(),
-                            select: "members"
-                        });
-
-                        if(!listReceivers.error) {
-                            arrReceiver = listReceivers.data?.members;
-                        }
-                    }
-                    case 3:
-                    case 4: {
-                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                            isLoadAll: true
-                        });
-
-                        if(!listReceivers.error) {
-                            arrReceiver = listReceivers.data?.map(user => user._id);
-                        }
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                // Insert thông báo cho user
-                await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    content,
-                    receivers: arrReceiver,
-                    path: `/media/home/${mediaID}#${infoAterInsert._id}`,
-                    languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
-                    app: APP_KEYS.MEDIA,
-                    mainColl: {
-                        kind: "media",
-                        item: mediaID
-                    },
-                    subColl: {
-                        kind: "media_comment",
-                        item: infoAterInsert._id
-                    },
-                    type: 1 // InApp (Socket)
-                })
+                // Insert notification to DB
+                this.createNotification({ infoMedia, authorID, ctx });
 
                 infoAterInsert = await MEDIA__COMMENT_COLL
                     .findById(infoAterInsert._id)
@@ -565,7 +595,7 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Create comment file
      */
-    insertCommentFile({ mediaID, fileID, parentID, content, files, images, select, populates, authorID }) { 
+    insertCommentFile({ mediaID, fileID, parentID, content, files, images, select, populates, authorID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /** 
@@ -628,6 +658,17 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
+                const infoMedia = await MEDIA_COLL.findById(mediaID).lean();
+
+                if(!infoMedia) {
+                    return resolve({
+                        error: true,
+                        message: "Bài viết không tồn tại",
+                        keyError: "media_not_exists",
+                        status: 400
+                    })
+                }
+
                 content && (dataInsert.content  = content);
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
@@ -659,6 +700,9 @@ class Model extends BaseModel {
                         amountComment: 1
                     }
                 })
+
+                // Insert notification to DB
+                this.createNotification({ infoMedia, authorID, ctx });
 
                 infoAterInsert = await MEDIA__COMMENT_FILE_COLL
                     .findById(infoAterInsert._id)

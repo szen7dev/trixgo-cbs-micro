@@ -16,6 +16,7 @@ const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-consta
 const { CF_ACTIONS_ITEM }               		= require('../../item/helper/item.actions-constant');
 const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
 const { APP_KEYS, LANGUAGE_KEYS }				= require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS } 					= require('../../notification/helper/notification.keys-constant');
 
 /**
  * TOOLS
@@ -45,7 +46,7 @@ class Model extends BaseModel {
 	 */
 	insertMedia({
 		title, content, type, otherID, companyID, departmentID, location, 
-		tagFriends, files, images, background, authorID, ctx
+		tagFriends, files, images, background, authorID, bizfullname, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -53,6 +54,8 @@ class Model extends BaseModel {
 				let dataInsert = {};
 				let dataUpdate = {};
 				let arrReceiver = [];
+				let titleMSS = 'THÔNG BÁO';
+				let descriptionMSS = '';
 
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs([authorID])) {
@@ -305,16 +308,21 @@ class Model extends BaseModel {
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
                         }
+
+						titleMSS = 'NỘI BỘ CÔNG TY';
+						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         break;
                     }
                     case 2: {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                             departmentID: department?.toString(),
-                            select: "members"
+                            select: "name members"
                         });
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
+							titleMSS = listReceivers.data?.name;
+							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
                     }
                     case 3:
@@ -325,14 +333,25 @@ class Model extends BaseModel {
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
+
+							if(mediaType === 3) {
+								titleMSS = 'CHUYỂN ĐỔI SỐ';
+								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+							} else{
+								titleMSS = 'HỆ THỐNG';
+								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+							}
                         }
                         break;
                     }
                     default:
+						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         break;
                 }
 
-				if(arrReceiver.length){
+				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+
+				if(arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 						content: content.length > 200 ? content.substring(0, 200) : content,
 						receivers: arrReceiver,
@@ -344,6 +363,14 @@ class Model extends BaseModel {
 							item: mediaID.toString()
 						},
 						type: 1 // InApp (Socket)
+					});
+
+					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+						users: arrReceiver,
+						title: titleMSS,
+						description: descriptionMSS,
+						web_url: `/media/post/${mediaID}`,
+						env: ENV_DEVICE_WEB_CBS
 					});
 				}
 

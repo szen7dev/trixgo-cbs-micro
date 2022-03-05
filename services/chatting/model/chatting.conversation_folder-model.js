@@ -125,18 +125,9 @@ class Model extends BaseModel {
 	 * Func: Thêm cuộc hội thoại vào folder
 	 * Date: 04/03/2022
 	 */
-	updateConversationToFolder({ foldersID, conversationID, isRemove, authorID }) {
+	updateConversationToFolder({ conversationID, addFoldersID, removeFoldersID, authorID }) {
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs(foldersID)) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số foldersID không hợp lệ", 
-						keyError: 'params_foldersID_invalid',
-						status: 400
-					});
-				}
-
 				if(!checkObjectIDs([conversationID])) {
 					return resolve({ 
 						error: true, 
@@ -162,16 +153,18 @@ class Model extends BaseModel {
 
 				let infoAfterUpdate = null;
 
-				if(isRemove) {
+				if(removeFoldersID.length) {
 					infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$pullAll: {
-							folders: foldersID
+							folders: removeFoldersID
 						}
 					}, { new: true });
-				} else{
+				}
+
+				if(addFoldersID.length) {
 					infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 						$addToSet: {
-							folders: foldersID
+							folders: addFoldersID
 						}
 					}, { new: true });
 				}
