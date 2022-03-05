@@ -23,10 +23,8 @@ exports.REACTION_SOCKET = {
 			let broker							= socket.$service.broker;
 			let listUserActive             		= socket.$service.listUserConnected;
 			let bizfullname             		= socket.$service.bizfullname;
-			let userID                     		= socket.client.user;
+			let userID             				= socket.$service.userID;
 			let io                         		= socket.$service.io;
-
-			console.log({ socket, service: socket.$service });
 
 			let { objectID, infoComment, parentID, select, populates, app } = data;
 
@@ -39,6 +37,7 @@ exports.REACTION_SOCKET = {
 				});
 			}
 
+			let titleMSS = 'THÔNG BÁO';
 			let descriptionMSS = '';
 			let webUrl = '';
 			let infoObject = null;
@@ -58,11 +57,11 @@ exports.REACTION_SOCKET = {
 					let { author, assignee, related } = infoObject.data;
 					related = related.map(userID => userID.toString());
 
-					arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
-					infoObject = infoObject.data;
-
-					descriptionMSS = `${infoComment?.author?.bizfullname} đã tạo 1 phản hồi`;
-					webUrl = `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
+					arrReceiver 		= [...new Set([author.toString(), assignee.toString(), ...related])];
+					infoObject 			= infoObject.data;
+					titleMSS			= infoObject.name?.length > 100 ? infoObject.name.substring(0, 100) : infoObject.name;
+					descriptionMSS 		= `${bizfullname} đã tạo 1 phản hồi liên quan`;
+					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
 					break;
 				}
 				case APP_KEYS.MEDIA: {
@@ -120,9 +119,10 @@ exports.REACTION_SOCKET = {
 							break;
 					}
 
-					infoObject = infoObject.data;
-					descriptionMSS = `${infoComment?.author?.bizfullname} đã tạo 1 bình luận`;
-					webUrl = `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
+					infoObject 			= infoObject.data;
+					titleMSS 			= infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title;
+					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận cho bài viết`;
+					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
 					break;
 				}
 				default:
@@ -156,7 +156,7 @@ exports.REACTION_SOCKET = {
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 				users: arrReceiver,
-				title: 'THÔNG BÁO',
+				title: titleMSS,
 				description: descriptionMSS,
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS

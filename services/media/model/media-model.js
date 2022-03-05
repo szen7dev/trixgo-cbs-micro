@@ -54,6 +54,7 @@ class Model extends BaseModel {
 				let dataInsert = {};
 				let dataUpdate = {};
 				let arrReceiver = [];
+				let titleMSS = 'THÔNG BÁO';
 				let descriptionMSS = '';
 
 				//=========================VALIDATION==========================
@@ -308,7 +309,8 @@ class Model extends BaseModel {
                             arrReceiver = listReceivers.data?.map(user => user._id);
                         }
 
-						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết nội bộ công ty`;
+						titleMSS = 'NỘI BỘ CÔNG TY';
+						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         break;
                     }
                     case 2: {
@@ -319,7 +321,8 @@ class Model extends BaseModel {
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
-							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết trong phòng ban ${listReceivers.data?.name}`;
+							titleMSS = listReceivers.data?.name;
+							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
                     }
                     case 3:
@@ -332,9 +335,11 @@ class Model extends BaseModel {
                             arrReceiver = listReceivers.data?.map(user => user._id);
 
 							if(mediaType === 3) {
-								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết chuyển đổi số`;
+								titleMSS = 'CHUYỂN ĐỔI SỐ';
+								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
 							} else{
-								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết trên hệ thống`;
+								titleMSS = 'HỆ THỐNG';
+								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
 							}
                         }
                         break;
@@ -362,7 +367,7 @@ class Model extends BaseModel {
 
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 						users: arrReceiver,
-						title: 'THÔNG BÁO',
+						title: titleMSS,
 						description: descriptionMSS,
 						web_url: `/media/post/${mediaID}`,
 						env: ENV_DEVICE_WEB_CBS
