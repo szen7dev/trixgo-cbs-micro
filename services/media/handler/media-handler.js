@@ -38,7 +38,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { 
                     title, content, type, otherID, companyID, departmentID, location, 
                     tagFriends, files, images, background
@@ -46,7 +46,7 @@ module.exports = {
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
                     title, content, type, otherID, companyID, departmentID, location, 
-                    tagFriends, files, images, background, authorID, ctx
+                    tagFriends, files, images, background, authorID, bizfullname, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

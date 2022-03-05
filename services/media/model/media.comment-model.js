@@ -175,23 +175,26 @@ class Model extends BaseModel {
                         break;
                 }
 
-                // Insert thông báo cho user
-                await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    content,
-                    receivers: arrReceiver,
-                    path: `/media/home/${mediaID}#${infoAterInsert._id}`,
-                    languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
-                    app: APP_KEYS.MEDIA,
-                    mainColl: {
-                        kind: "media",
-                        item: mediaID
-                    },
-                    subColl: {
-                        kind: "media_comment",
-                        item: infoAterInsert._id
-                    },
-                    type: 1 // InApp (Socket)
-                })
+                arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+
+                if(arrReceiver.length) {
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content,
+                        receivers: arrReceiver,
+                        path: `/media/home/${mediaID}#${infoAterInsert._id}`,
+                        languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                        app: APP_KEYS.MEDIA,
+                        mainColl: {
+                            kind: "media",
+                            item: mediaID
+                        },
+                        subColl: {
+                            kind: "media_comment",
+                            item: infoAterInsert._id
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
 
                 infoAterInsert = await MEDIA__COMMENT_COLL
                     .findById(infoAterInsert._id)

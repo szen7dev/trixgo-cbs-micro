@@ -25,7 +25,9 @@ exports.REACTION_SOCKET = {
 			let userID                     		= socket.client.user;
 			let io                         		= socket.$service.io;
 
-			let { objectID, infoComment, parentID, select, populates, app } = data;
+			console.log({ socket });
+
+			let { objectID, infoComment, bizfullname, parentID, select, populates, app } = data;
 
 			if(!infoComment || !app){
 				return sendDataToMultilSocketsOfListUser({ 
@@ -58,7 +60,7 @@ exports.REACTION_SOCKET = {
 					arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
 					infoObject = infoObject.data;
 
-					descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 phản hồi`;
+					descriptionMSS = `${infoComment?.author?.bizfullname} đã tạo 1 phản hồi`;
 					webUrl = `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
 					break;
 				}
@@ -118,7 +120,7 @@ exports.REACTION_SOCKET = {
 					}
 
 					infoObject = infoObject.data;
-					descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 bình luận`;
+					descriptionMSS = `${infoComment?.author?.bizfullname} đã tạo 1 bình luận`;
 					webUrl = `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
 					break;
 				}
@@ -126,17 +128,15 @@ exports.REACTION_SOCKET = {
 					break;
 			}
 
-			// if(!arrReceiver.length) {
-			// 	return sendDataToMultilSocketsOfListUser({ 
-			// 		listUserConnected: listUserActive,
-			// 		arrReceiver: [userID],
-			// 		data: { error: true, message: "Người nhận không hợp lệ" }, 
-			// 		event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
-			// 	});
-			// }
-
 			console.log({ arrReceiver });
-			if(!arrReceiver.length) return;
+			if(!arrReceiver.length) {
+				return sendDataToMultilSocketsOfListUser({ 
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: { error: true, data: arrReceiver, message: "Người nhận không hợp lệ" }, 
+					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
+				});
+			}
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 

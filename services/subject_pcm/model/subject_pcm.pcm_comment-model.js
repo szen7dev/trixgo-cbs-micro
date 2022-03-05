@@ -147,7 +147,6 @@ class Model extends BaseModel {
                 let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                 let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
-                // Gửi thông báo cho user
                 await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                     content,
                     receivers,
