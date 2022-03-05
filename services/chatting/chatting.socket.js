@@ -450,7 +450,7 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
 		const { members, usersMute } = infoConversation;
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 

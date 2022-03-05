@@ -6,6 +6,7 @@ const { CF_DOMAIN_SERVICES } 					= require('../gateway/helper/domain.constant')
 const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
+const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
 const { APP_KEYS } 								= require('../../tools/keys');
 const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant')
 
@@ -29,7 +30,7 @@ exports.REACTION_SOCKET = {
 			return sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Tham số comment ID hoặc app không hợp lệ" }, 
+				data: { error: true, message: "Tham số infoComment hoặc app không hợp lệ" }, 
 				event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 		}
@@ -38,85 +39,103 @@ exports.REACTION_SOCKET = {
 		let webUrl = '';
 		let infoObject = null;
 		let arrReceiver = [];
+		let meta = {
+			infoUser: { _id: userID }
+		}
 
 		switch (app) {
 			case APP_KEYS.PCM_PLAN_TASK: {
-				// infoComment = await broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_GET_INFO_AND_GET_LIST}`, {
-				// 	commentTemplateID: commentID, select, populates
-				// });
-
 				infoObject = await broker.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
 					taskID: objectID, select, populates
-				}, {
-					meta: {
-						infoUser: { _id: userID }
-					}
-				});
+				}, { meta });
 
-				if(!infoObject.error) {
-					const { author, assignee, related } = infoObject.data;
-					arrReceiver = [...new Set([author, assignee, ...related])];
-				}
+				if(infoObject.error) break;
+
+				const { author, assignee, related } = infoObject.data;
+				related = related.map(userID => userID.toString());
+
+				arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
+				infoObject = infoObject.data;
 
 				descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 phản hồi`;
-				webUrl = `https://staging.cbs.trixgo.com/pcm/detail/${infoObject?.data?._id}`;
+				webUrl = `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
 				break;
 			}
 			case APP_KEYS.MEDIA: {
 				infoObject = await broker.call(`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.INFO_MEDIA}`, {
 					mediaID: objectID, select, populates
-				}, {
-					meta: {
-						infoUser: { _id: userID }
-					}
-				});
-				console.log({ infoObject })
+				}, { meta });
 
-				const listUserReceive = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-					companyID: infoObject?.data?.company?.toString(),
-					isLoadAll: true
-				}, {
-					meta: {
-						infoUser: { _id: userID }
-					}
-				});
-				console.log({ listUserReceive })
+				if(infoObject.error) break;
 
-				if(!listUserReceive.error) {
-					arrReceiver = listUserReceive.data.map(user => user._id);
+				const { company, department } = infoObject.data;
+
+				/**
+				 * Loại bài viết
+				 * 1: Bài viết công ty (Thành viên trong công ty)
+				 * 2: Dự án, phòng ban
+				 * 3: Chuyển đổi số
+				 * 4: Hệ thống
+				 * 5: Bài viết cá nhân
+				 * ..... Sau bổ sung thêm vài loại bài viết
+				 */
+				switch (infoObject.type) {
+					case 1: {
+						const listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+							companyID: company?.toString(),
+							isLoadAll: true
+						}, { meta });
+
+						if(!listReceivers.error) {
+							arrReceiver = listReceivers.data?.map(user => user._id);
+						}
+						break;
+					}
+					case 2: {
+						const listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+							departmentID: department?.toString(),
+							select: "members"
+						}, { meta });
+
+						if(!listUserReceive.error) {
+							arrReceiver = listReceivers.data?.members;
+						}
+					}
+					case 3:
+					case 4: {
+						const listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+							isLoadAll: true
+						}, { meta });
+
+						if(!listReceivers.error) {
+							arrReceiver = listReceivers.data?.map(user => user._id);
+						}
+						break;
+					}
+					default:
+						break;
 				}
 
-				// const listComments = await broker.call(`${CF_DOMAIN_SERVICES.MEDIA}.${CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_MEDIA}`, {
-				// 	mediaID: objectID, isLoadAll: true
-				// }, {
-				// 	meta: {
-				// 		infoUser: { _id: userID }
-				// 	}
-				// });
-
-				// if(!listComments.error) {
-				// 	const listReceiver = listComments.data.map(comment => comment.author);
-				// 	arrReceiver = [...new Set(listReceiver)];
-				// }
-
+				infoObject = infoObject.data;
 				descriptionMSS = `${infoComment?.userCreate?.bizfullname} đã tạo 1 bình luận`;
-				webUrl = `https://staging.cbs.trixgo.com/media/post/${infoObject?.data?._id}`;
+				webUrl = `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
 				break;
 			}
 			default:
 				break;
 		}
 
-		if(!arrReceiver.length) {
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive,
-				arrReceiver: [userID],
-				data: { error: true, message: "Người nhận không hợp lệ" }, 
-				event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
-			});
-		}
+		// if(!arrReceiver.length) {
+		// 	return sendDataToMultilSocketsOfListUser({ 
+		// 		listUserConnected: listUserActive,
+		// 		arrReceiver: [userID],
+		// 		data: { error: true, message: "Người nhận không hợp lệ" }, 
+		// 		event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
+		// 	});
+		// }
 
-		// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== userID.toString());
+		console.log({ arrReceiver });
+		if(!arrReceiver.length) return;
 
 		// SEND SOCKET
 		sendDataToMultilSocketsOfListUser({ 
@@ -125,7 +144,7 @@ exports.REACTION_SOCKET = {
 			data: {
 				error: false,
 				data: {
-					infoObject: infoObject.data,
+					infoObject,
 					infoComment,
 					app
 				}
