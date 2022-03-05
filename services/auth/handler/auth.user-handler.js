@@ -51,7 +51,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform, domain } = ctx.params;
-		console.log({ email, password, platform, domain })
+
                 /**
                  * validate code platform-domain
                  */
