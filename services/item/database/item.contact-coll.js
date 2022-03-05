@@ -263,7 +263,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
-
+    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

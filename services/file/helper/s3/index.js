@@ -19,6 +19,14 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
             bucket = `${config.bucket}/files/db/users`;
         }
 
+        if(typeUpload == "contact"){
+            bucket = `${config.bucket}/files/db/contacts`;
+        }
+        
+        if(typeUpload == "project"){
+            bucket = `${config.bucket}/files/db/projects`;
+        }
+
         let signedUrl = s3Object.getSignedUrl('putObject', {
             Bucket: bucket,
             Key: fileName,
@@ -102,6 +110,33 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
                 }
             };
         }
+
+        case 'contact': {
+            const extension = getExtension(fileName);
+            const newFileName = `${uuidv4()}.${extension}`;
+
+            return { 
+                error: false, 
+                data: {
+                    newFileName,
+                    pathS3: ''
+                }
+            };
+        }
+
+        case 'project': {
+            const extension = getExtension(fileName);
+            const newFileName = `${uuidv4()}.${extension}`;
+
+            return { 
+                error: false, 
+                data: {
+                    newFileName,
+                    pathS3: ''
+                }
+            };
+        }
+
         default:
             break;
     }
