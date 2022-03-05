@@ -88,7 +88,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
     //_________Đơn giá chào thầu máy móc/thiết bị
     machineUnitPrice: { type: Number, default: 0 },
     //_________Đơn giá tính toán từ Datahub
-    unitprice: { type: Number, default: 0 },
+    unitPrice: { type: Number, default: 0 },
     //_________Thành tiền tính toán từ Datahub
     amount: { type: Number, default: 0 },
     //_________Hệ số chi phí khác
