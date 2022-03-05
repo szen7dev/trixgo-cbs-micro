@@ -125,7 +125,7 @@ class Model extends BaseModel {
 	 * Func: Thêm cuộc hội thoại vào folder
 	 * Date: 04/03/2022
 	 */
-	addConversationToFolder({ foldersID, conversationID, authorID }) {
+	updateConversationToFolder({ foldersID, conversationID, isRemove, authorID }) {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs(foldersID)) {
@@ -160,11 +160,21 @@ class Model extends BaseModel {
 					});
 				}
 
-				const infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-					$addToSet: {
-						folders: foldersID
-					}
-				}, { new: true });
+				let infoAfterUpdate = null;
+
+				if(isRemove) {
+					infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$pullAll: {
+							folders: foldersID
+						}
+					}, { new: true });
+				} else{
+					infoAfterUpdate = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+						$addToSet: {
+							folders: foldersID
+						}
+					}, { new: true });
+				}
 
 				if(!infoAfterUpdate) {
 					return resolve({ 

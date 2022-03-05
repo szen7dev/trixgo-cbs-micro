@@ -47,7 +47,7 @@ const CF_ROUTINGS_CHATTING = {
      */
 	INSERT_FOLDER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/create-folder`,
     UPDATE_FOLDER_CONVERSATION           		    : `${BASE_ROUTE}${CONVERSATION}/update-folder`,
-    ADD_CONVERSATION_TO_FOLDER           		    : `${BASE_ROUTE}${CONVERSATION}/add-conversation-to-folder`,
+    UPDATE_CONVERSATION_TO_FOLDER           		: `${BASE_ROUTE}${CONVERSATION}/update-conversation-to-folder`,
 	DELETE_FOLDER_CONVERSATION              		: `${BASE_ROUTE}${CONVERSATION}/delete-folder`,
     GET_INFO_FOLDER_CONVERSATION             		: `${BASE_ROUTE}${CONVERSATION}/info-folder`,
     GET_LIST_FOLDER_CONVERSATION            	    : `${BASE_ROUTE}${CONVERSATION}/list-folder`,

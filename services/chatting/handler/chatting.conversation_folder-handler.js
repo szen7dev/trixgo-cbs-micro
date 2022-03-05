@@ -75,19 +75,20 @@ module.exports = {
 	 * Func: Cập nhật folder
 	 * Date: 11/02/2022
 	 */
-    addConversationToFolder: {
+    updateConversationToFolder: {
         params: {
             conversationID  : { type: "string" },
-            foldersID       : { type: "array" }
+            foldersID       : { type: "array" },
+            isRemove        : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { foldersID, conversationID } = ctx.params;
+                const { foldersID, conversationID, isRemove } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.addConversationToFolder({
-					foldersID, conversationID, authorID
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.updateConversationToFolder({
+					foldersID, conversationID, isRemove, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
