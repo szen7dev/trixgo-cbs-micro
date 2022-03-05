@@ -43,13 +43,7 @@ class Model extends BaseModel {
                 let dataInsert = { };
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
                 let infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type')
-                // let dateConcatnate = setTimeZone(new Date(`${expiredTime} ${expiredHour}:00`)).format('Y-MM-DD H:m:sZ');
-                
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+             
                 let companyID;
                 if(!parentID){
                     // call service department để lấy thông tin
@@ -217,219 +211,12 @@ class Model extends BaseModel {
                     dataInsert.template = Number(template);
                 }
 
-                //_________Trường hợp tạo việc từ Workflow mẫu
-                if(workflowTemplateID && ObjectID.isValid(workflowTemplateID)){
-                    let infoWorkflowTemplate = await PCM_PLAN_TASK_COLL.findById(workflowTemplateID);
-                    let startTimeFromWorkflowTemplate   = infoWorkflowTemplate.startTime;
-                    let expiredTimeFromWorkflowTemplate = infoWorkflowTemplate.expiredTime;
-                    let relatedFromWorkflowTemplate     = infoWorkflowTemplate.related;
-
-                    // Tổng số ngày chênh lệch giửa 2 ngày
-                    let amountDate          = numberOfNightsBetweenDates(startTimeFromWorkflowTemplate, expiredTimeFromWorkflowTemplate);
-                    let expiredTimeFormat   = new Date(startTime);
-                    let expiredTimeAfterSet = expiredTimeFormat.setDate(expiredTimeFormat.getDate() + amountDate); 
-
-                    dataInsert.templateApply= workflowTemplateID; // Gán ID để phục vụ show Dashboard theo quy trình
-                    dataInsert.assignee     = infoWorkflowTemplate.assignee;
-                    dataInsert.expiredTime  = expiredTimeAfterSet;
-                    dataInsert.actualFinishTime = expiredTimeAfterSet
-                    dataInsert.related      = relatedFromWorkflowTemplate;
-                    dataInsert.note         = infoWorkflowTemplate.note;
-                    dataInsert.isproposal   = infoWorkflowTemplate.isproposal;
-                    dataInsert.field        = infoWorkflowTemplate.field;
-                }
-
-                //_________Trường hợp tạo việc từ nhân bản 1 việc khác
-                if(taskCopy && ObjectID.isValid(taskCopy)){
-                    let infoTaskCopy            = await PCM_PLAN_TASK_COLL.findById(taskCopy);
-                    let startTimeFromTaskCopy   = infoTaskCopy.startTime;
-                    let expiredTimeFromTaskCopy = infoTaskCopy.actualFinishTime;
-
-                    // Tổng số ngày chênh lệch giửa 2 ngày
-                    let amountDate = numberOfNightsBetweenDates(startTimeFromTaskCopy, expiredTimeFromTaskCopy);
-
-                    let expiredTimeFormat   = new Date(startTime);
-                    let expiredTimeAfterSet = expiredTimeFormat.setDate(expiredTimeFormat.getDate() + amountDate); 
-
-                    dataInsert.expiredTime       = expiredTimeAfterSet;
-                    dataInsert.actualFinishTime  = expiredTimeAfterSet;
-                }
-               
-                //Xử lý thêm Nhắc nhở trước thời hạn hoàn thành (h)
-                if(reminderExpired){
-                    let reminderExpiredTemp = new Date(reminderExpired);
-                    if(hoursReminderExpired){
-                        reminderExpiredTemp.setHours(hoursReminderExpired);
-                    }
-                    dataInsert.reminderExpired = reminderExpiredTemp;
-                }
-
-                //Thời hạn tự động biến việc nháp thành chính thức
-                if(draftExpired){
-                    let draftExpiredTemp = new Date(draftExpired);
-                    if(hoursDraftExpired){
-                        draftExpiredTemp.setHours(hoursDraftExpired);
-                    }
-                    dataInsert.draftExpired = draftExpiredTemp;
-                }
-
-                //Thời hạn add người liên quan
-                if(addRelatedExpired){
-                    let addRelatedExpiredTemp = new Date(addRelatedExpired);
-                    if(hoursAddRelatedExpired){
-                        addRelatedExpiredTemp.setHours(hoursAddRelatedExpired);
-                    }
-                    dataInsert.addRelatedExpired = addRelatedExpiredTemp;
-                }
 
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-
-                //_________B4. Cập nhật ngược lại cho parent (Công việc cha, nhóm công việc, tài liệu-Docre)
-                let taskID = infoAterInsert._id;
-
-                /**
-                 * CẬP NHẬT LẠI THÔNG TIN CHO CÁC COLLECTION LIÊN ĐỚI
-                 */
-                //__________Công việc cha
-                if(parentID) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
-                        $addToSet: { childs: taskID } 
-                    }, { new: true });
-                }
- 
-                //__________Nhóm công việc
-                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, {
-                    $addToSet: { tasks: taskID }   
-                }, { new: true })
-                 
-                //__________Tin nhắn (nếu có)
-                //  if(messageID && ObjectID.isValid(messageID)){
-                //      await MESSAGE_COLL.findByIdAndUpdate(messageID, { task: taskID }, { new: true });
-                //  }
- 
-                 //__________Văn bản (nếu có)
-                //  if(documentID){
-                //      await DOCUMENT_DOC_COLL.findByIdAndUpdate(documentID, {
-                //          $addToSet: { tasks: taskID }
-                //      }, { new: true });
-                //  }
- 
-                 //__________Board (nếu có)
-                //  if(boardID){
-                //      await PCM_PLAN_BOARD_COLL.findByIdAndUpdate(boardID, {
-                //          $addToSet: { 
-                //              tasks: {
-                //                  task: taskID
-                //              } 
-                //          }
-                //      }, { new: true });
-                //  }
- 
-                 //_________Thông báo công việc mới tạo
-                //  if(author !== assignee){
-                //      if(assignee){
-                //          await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                //              $addToSet: { 
-                //                  news: assignee
-                //              }
-                //          }, { new: true });
-                //      }
-                //  }
- 
-                 /*
-                 * Nếu có Nhóm báo váo thì push vào nhóm báo cáo
-                 * Nếu không có thì push vào Báo có chính (Depv)
-                 */
-                //  if(groupReportID && ObjectID.isValid(groupReportID)){
-                //      //_________Add task trong báo cáo nhóm xác định
-                //      await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(groupReportID, {
-                //          $addToSet: {
-                //              tasks: {
-                //                  task: taskID
-                //              }
-                //          }
-                //      }, { new: true });
-                //  }else{
-                //      //_________Add task trong báo cáo nhóm gốc
-                //      if(reportID && ObjectID.isValid(reportID)){
-                //          await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, {
-                //              $addToSet: {
-                //                  tasks: {
-                //                      task: taskID
-                //                  }
-                //              }
-                //          }, { new: true });
-                //      }
-                //  }
- 
-                //_________Trường hợp tạo Đệ trình từ Mẫu thì copy checklist mẫu
-                if(workflowTemplateID && ObjectID.isValid(workflowTemplateID)){
-
-                    let infoWorkflowTemplate = await PCM_PLAN_TASK_COLL.findById(workflowTemplateID).populate('subtasks');
-                    let checklistFromWordflowTemplate = infoWorkflowTemplate.subtasks;
-
-                    let arrChecklistCopy = [];
-                    let TYPE_CHECKLIST = 2;
-
-                    await( async function() {
-                        for (let checklist of checklistFromWordflowTemplate) {
-
-                            //  Tổng số ngày chênh lệch giữa 2 ngày
-                            let amountDateChecklist = numberOfNightsBetweenDates(checklist.startTime, checklist.actualFinishTime);
-                            
-                            let expiredTimeChecklistFormat = new Date(startTime);
-                            let expiredTimeAfterSet = expiredTimeChecklistFormat.setDate(expiredTimeChecklistFormat.getDate() + amountDateChecklist); 
-                            let checkListAfterInsert = await that.insertFromCopy({
-                                taskID, 
-                                workflowTemplateID, 
-                                templateApply: checklist._id,
-                                author: checklist.author,
-                                assignee: checklist.assignee,
-                                name: checklist.name,
-                                startTime: startTime,
-                                expiredTime: expiredTimeAfterSet,
-                                type: TYPE_CHECKLIST
-                            });
-                            arrChecklistCopy.push(checkListAfterInsert.data._id);
-                        }
-                    })()
-                    // Update checklist cho task
-                    // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { checklists: arrChecklistCopy });
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
-                }
- 
-                //_________Trường hợp nhân bản công việc thì copy checklist mẫu
-                if(taskCopy && ObjectID.isValid(taskCopy)){
-                // Các tên biến này được copy từ trường hợp tạo workflow nên vẫn giữ nguyên
-                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskCopy);
-                let listCheckList = infoTask.subtasks;
-                let startTimeTask = infoTask.startTime;
-                let arrChecklistCopy = [];
-                let TYPE_CHECKLIST = 2;
-
-                await( async function() {
-                    for (let checklist of listCheckList) {
-
-                    let infoTask = await PCM_PLAN_TASK_COLL.findById(checklist).select("_id company name sign field assignee author related project group isproposal description note childs,startTime, expiredTime  ");
-                    // let { company, name, sign, field, assignee, author, related, project, group, isproposal, description, note, childs, startTime, expiredTime } = infoTask
-                    let { company, sign, field, assignee, author, related, project, group, isproposal, description, note, childs, startTime, expiredTime } = infoTask
-                    
-                    //  Tổng số ngày chênh lệch giữa 2 ngày
-                    let amountDateChecklist = numberOfNightsBetweenDates(startTimeTask, expiredTime);
-                    let expiredTimeChecklistFormat = new Date();
-                    let expiredTimeAfterSet = expiredTimeChecklistFormat.setDate(expiredTimeChecklistFormat.getDate() + amountDateChecklist); 
-                
-                    let dataInsertChild = { taskID, name: `Copy of - ${name}`, sign, field, assignee, author, related, project, group, isproposal, description, note, draft: 1, startTime: new Date(), expireDate: expiredTimeAfterSet }
-                    let infoTaskChild = await that.insertSubtask(dataInsertChild);
-                    arrChecklistCopy.push(infoTaskChild.data.infoAfterInsert._id);
-                    }
-                })()
-                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
-                }
  
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -1301,36 +1088,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-     * Name: Api thêm 2 trường dữ liệu companyOfAuthor và companyOfAssignee ✅
-     * Author: Depv
-     */
-    updateCompanyOfAuthorAndCompanyOfAssignee(){
-        return new Promise(async resolve => {
-            try {
-                
-                let listTaskAfterUpdate = await PCM_PLAN_TASK_COLL.find({}).select("author assignee")
-                                        .populate({
-                                            path: "author assignee",
-                                            select: "company"
-                                        });
-                let amount = 0;
-                for (const task of listTaskAfterUpdate) {
-                    let abc = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(task._id, { 
-                        companyOfAuthor: task.author.company, 
-                        companyOfAssignee: task.assignee.company, 
-                    }, { new: true });
-                    amount++;
-                }
-
-                return resolve({ error: false, message: "Vui lòng đợi" });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
 }
 
 exports.MODEL = new Model;

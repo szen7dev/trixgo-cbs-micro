@@ -143,23 +143,23 @@ const AUTH__USER_MODEL                          = require
 - 500 INTERNAL SERVER ERROR	An internal error occurred in the server. 
 
 
-<!-- CONVERT ENDTIME FROM APP_COMPANIES TO APP_USERS -->
+<!-- CONVERT ENDTIME FROM APP_COMPANIES TO APP_USERS -->(xong)
 --------------------------------------------------------
-let listAppCompany = db.app_companies.find({}).toArray()
+let listAppCompany = db.app_companies.find({}).select("app company endTime").toArray()
 for(let appCompany of listAppCompany){
     let { app, company, endTime } = appCompany;
-    db.app_users.updateMany({  app: ObjectId(app), company: ObjectId(company) }, { $set: { endTime: endTime } })
+    db.app_users.updateMany({  app: ObjectId(app), company: ObjectId(company) }, { $set: { endTime } })
 }
 --------------------------------------------------------
 
-<!-- UPDATE VALUE TRƯỜNG NÀY CHO TRƯỜNG KIA -->
+<!-- UPDATE VALUE TRƯỜNG NÀY CHO TRƯỜNG KIA -->(Xong)
 --------------------------------------------------------
 db.files.updateMany({nameOrg: {$exists: false}}, [{$set: { nameOrg: "$name" }}]);
 --------------------------------------------------------
 
-<!-- CONVERT FILE TO DOCUMENT_FILE -->
+<!-- CONVERT FILE TO DOCUMENT_FILE -->(Xong)
 --------------------------------------------------------
-let fileDocuments = db.files.find({ document: {$exists: true, $ne: null}}).toArray()
+let fileDocuments = db.files.find({ document: {$exists: true, $ne: null} }).toArray()
 for(let file of fileDocuments) {
     const { _id, createAt, modifyAt, company, project, author, document, name, type } = file;
     db.document_files.save({
@@ -208,31 +208,9 @@ listDepartment.forEach(department => {
 })
 --------------------------------------------------------
 
-<!-- Cập nhật authorOfCompany và assigneeOfCompany cho task -->
---------------------------------------------------------
-let listTaskAfterUpdate =  db.pcm_plan_tasks.find({}).select("author assignee")
-                
-let amount = 0;
-listTaskAfterUpdate.map(task => {
-    let author = db.users.findOne({ _id: ObjectId(task.author)}).select("company");
-    let assignee = db.users.findOne({ _id: ObjectId(task.assignee)}).select("company");
-    if(author && assignee){
-        db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)}, {
-            $set: {
-                companyOfAuthor: author.company, 
-                companyOfAssignee: assignee.company, 
-            }
-        });
-    }
-})
---------------------------------------------------------
 
-<!-- Cập nhật trường isproposal thành trường subtype -->
---------------------------------------------------------
-db.pcm_plan_tasks.updateMany({}, [{$set: { subtype: "$isproposal" }}])
---------------------------------------------------------
-<!-- CONVERT COMMENT PCM -->
-let listcommentPCM = db.comments.find({ task: { $exists: true, $ne: null } }).limit(100).toArray();
+<!-- CONVERT COMMENT PCM -->(Xong)
+let listcommentPCM = db.comments.find({ task: { $exists: true, $ne: null } }).toArray();
 
 for (const comment of listcommentPCM) {
     let { _id: commentCoreID, content, task, parent, childs, type, official, subType, files, author, userUpdate, createAt, modifyAt } = comment;
@@ -245,7 +223,7 @@ for (const comment of listcommentPCM) {
     
     if(parent){
         let infoCommentParent = db.pcm_comments.findOne({ commentCoreID: ObjectId(parent) })
-        dataInsert.parent =infoCommentParent._id;
+        dataInsert.parent =infoCommentParent?._id;
     }
     
     if(subType){
@@ -278,16 +256,17 @@ for (const comment of listcommentPCM) {
     }
     
     db.pcm_comments.save(dataInsert);
+}
 
-<!-- CONVERT FILE PCM -->
-let listFilePCM = db.files.find({ planTask: { $exists: true, $ne: null }}).limit(100).toArray();
+<!-- CONVERT FILE PCM -->(Xong)
+let listFilePCM = db.files.find({ planTask: { $exists: true, $ne: null }}).toArray();
 
 for (const file of listFilePCM) {
     let { _id: fileCoreID, company, project, planGroup: group, planTask: task, type, name , author, createAt, modifyAt } = file;
-    db.pcm_files.save({ company, project, group, task, file: fileCoreID, type, nameOrg: name, name, author, isDataConvert: 1, createAt, modifyAt   });
+    db.pcm_files.save({ company, project, group, task, file: fileCoreID, type, nameOrg: name, name, author, isDataConvert: 1, createAt, modifyAt });
 }
 
-<!-- CẬP NHẬT SỐ LƯỢNG CONTACT_DOCUMENT CHO CONTACT-->
+<!-- CẬP NHẬT SỐ LƯỢNG CONTACT_DOCUMENT CHO CONTACT-->(Xong)
 let listContact = db.contacts.find({}).select("_id")
 
 listContact.forEach(contact => {
@@ -299,3 +278,40 @@ listContact.forEach(contact => {
     
     db.contacts.findOneAndUpdate({ _id: contact._id}, { $set: {amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory,  amountCertificateHistory } })
 })
+
+<!-- PRECALCULATE FOR TASK-->(Xong)
+let listTask=  db.pcm_plan_tasks.find({}).toArray();
+
+for (const task of listTask) {
+    
+    let author = db.users.findOne({ _id: ObjectId(task?.author)})
+    let assignee = db.users.findOne({ _id: ObjectId(task?.assignee)})
+    
+    let amountChecklist = db.pcm_plan_tasks.count({ parent: task._id, type: 2 });
+    let amountFinishedChecklist = db.pcm_plan_tasks.count({ parent: task._id, type: 2, status: 3 });
+    
+    let amountSubtask = db.pcm_plan_tasks.count({ parent: task._id, type: 1 });
+    let amountFinishedSubtask = db.pcm_plan_tasks.count({ parent: task._id, type: 1, status: 3 });
+    
+    let amountResponse = db.pcm_comments.count({ task: task._id, type: 2 });
+    let amountMarkedResponse = db.pcm_comments.count({ task: task._id, type: 2, official: 1 });
+    
+    db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)},
+        [
+            {
+                $set: { 
+                    subtype: "$isproposal",
+                    companyOfAuthor: author?.company, 
+                    companyOfAssignee: assignee?.company, 
+                    amountChecklist,
+                    amountFinishedChecklist,
+                    amountSubtask,
+                    amountFinishedSubtask,
+                    amountResponse,
+                    amountMarkedResponse
+                }
+                
+            }
+        ]
+    );
+}
