@@ -156,7 +156,7 @@ class Model extends BaseModel {
                             select: "members"
                         });
 
-                        if(!listUserReceive.error) {
+                        if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
                         }
                     }
