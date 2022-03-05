@@ -24,7 +24,7 @@ const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').M
 const CHATTING__MESSAGE_POLL_MODEL 				= require('./model/chatting.message_poll-model').MODEL;
 const CHATTING__MESSAGE_REMINDER_MODEL 			= require('./model/chatting.message_reminder-model').MODEL;
 const CHATTING__MESSAGE_NPS_MODEL 				= require('./model/chatting.message_nps-model').MODEL;
-
+const { ENV_DEVICE_APP_TEASER } 				= require('../notification/helper/notification.keys-constant')
 
 exports.CHATTING_SOCKET = {
 
@@ -607,7 +607,8 @@ exports.CHATTING_SOCKET = {
 					description,
 					amountNoti: amountMissMessage,
 					conversationID: infoConversation._id,
-					web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`
+					web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`,
+					env: ENV_DEVICE_APP_TEASER
 				});
 			}
 		})
@@ -1193,7 +1194,8 @@ exports.CHATTING_SOCKET = {
 				users: [userID],
 				title: 'Thông báo nhắc hẹn',
 				description: content,
-				web_url: `https://staging.cbs.trixgo.com`
+				web_url: `https://staging.cbs.trixgo.com`,
+				env: ENV_DEVICE_APP_TEASER
 			});
 		}
 
@@ -1206,7 +1208,8 @@ exports.CHATTING_SOCKET = {
 			users: arrReceiver,
 			title: 'Thông báo nhắc hẹn',
 			description: content,
-			web_url: `https://staging.cbs.trixgo.com`
+			web_url: `https://staging.cbs.trixgo.com`,
+			env: ENV_DEVICE_APP_TEASER
 		});
     },
 

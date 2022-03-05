@@ -8,7 +8,7 @@ const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constan
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { sendNotificationviaOneSignal }          = require('../../../tools/cloudmsg/noti.send');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
-
+const { ENV_DEVICE_APP_CBS, ENV_DEVICE_APP_TEASER, ENV_DEVICE_WEB_CBS } = require('../helper/notification.keys-constant')
 const { 
     NOTI_TYPE,
     ONESIGNAL_APP_CBS,
@@ -276,11 +276,27 @@ class Model extends BaseModel {
 	 * Dev: KhanhLD
 	 * Func: Gửi noti đến mobile và web
 	 * Date: ...
+     * --------------
+     * env là loại app sẽ push tới
+     * VD: env = 1 hoặc = 3 => chỉ push tới app CBS
+     *     env = 2 => chỉ push tới app Teaser
 	 */
-    sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
+    sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, env, ctx }) {
         
         return new Promise(async (resolve) => {
              try {
+                /**
+                 * từ env là giá trị
+                 *      1/ WEB_CBS          
+                        2/ MOBILE_TEARSER   
+                        3/ MOBILE_CBS      
+
+                        -> CẦN TÌM ra
+                            VD: env = 1 => listEnvReceiveNoti = [1, 3]. Vì 1 và 3 là 2 giá trị của CBS nên cần đẩy về cho app và web
+                            VD: env = 2 => listEnvReceiveNoti = [1, 2]. vì 2 là ứng dụng teaser, nên sẽ đẩy về CBS web(có chứa app chatting), và App Teaser
+                 */
+                let listEnvReceiveNoti = [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS].includes(+env) ? [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS] : [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER];
+                console.log("🚀 ~ file: notification.log-model.js ~ line 301 ~ Model ~ returnnewPromise ~ listEnvReceiveNoti", listEnvReceiveNoti)
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -318,14 +334,20 @@ class Model extends BaseModel {
                      *  - nếu là env của devices(auth.user-coll) =  1 hoặc 3 => ONESIGNAL_APP_CBS ('8d5db406-1628-4a23-bf40-8bb53bf582ba)
                      *  - nếu là MOBILE_TEARSER -> ONESIGNAL_APP_TEASER  (79acfc09-966a-48f5-a9ea-44d90410014f)
                      */
-                    let _findAppIdWithEnv = env => [this.WEB_CBS, this.MOBILE_CBS].includes(+env) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
+                    let _findAppIdWithEnv = envItem => [this.WEB_CBS, this.MOBILE_CBS].includes(+envItem) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
 
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
                             let { devices } = user;
                             listDeviceFromMobile = [
                                 ...listDeviceFromMobile,
-                                ...devices.filter(item => item.oneSignalID && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
+                                /**
+                                 * item.oneSignalID: là điều kiện chắc chắn obj trong devices phải có key để onesignal push noti
+                                 * listEnvReceiveNoti.includes(item.env): tùy vào ACTION mà sẽ push noti theo từng loại app
+                                 * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
+                                 * 
+                                 */
+                                ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
                                     return {
                                         oneSignalID: itemReturn.oneSignalID,
                                         app_id: _findAppIdWithEnv(itemReturn.env),
@@ -334,7 +356,7 @@ class Model extends BaseModel {
                             ]
                             listDeviceFromWebBrowser = [
                                 ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.oneSignalID && item.env == this.WEB_CBS).map(itemReturn => {
+                                ...devices.filter(item => item.oneSignalID  && listEnvReceiveNoti.includes(item.env) && item.env == +env && item.env == this.WEB_CBS).map(itemReturn => {
                                     return {
                                         oneSignalID: itemReturn.oneSignalID,
                                         app_id: _findAppIdWithEnv(itemReturn.env),
