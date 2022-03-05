@@ -72,6 +72,7 @@ module.exports = {
                         // Xét user Online
                         const _infoUser =  await USER_MODEL.getDataById(userID);
                         this.setUserOnline({ _infoUser });
+                        // this.bizfullname = _infoUser.bizfullname;
                         // this.sendUserOnline({ _infoUser });
 
                         next();
@@ -166,8 +167,9 @@ module.exports = {
                 }
                 let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
 
-                this.logger.info("Authenticated via JWT: ", infoUser.username);
+                this.logger.info("Authenticated via JWT: ", infoUser.bizfullname);
                 this.userID = infoUser._id;
+                this.bizfullname = infoUser.bizfullname;
 
                 return Promise.resolve(this.userID);
             } catch (error) {
@@ -339,6 +341,7 @@ module.exports = {
         this.initSocketIO(server);
         this.listUserConnected = [];
         this.userID;
+        this.bizfullname;
     },
 
     /**

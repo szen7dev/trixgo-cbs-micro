@@ -22,12 +22,13 @@ exports.REACTION_SOCKET = {
 			let socket                     		= this;
 			let broker							= socket.$service.broker;
 			let listUserActive             		= socket.$service.listUserConnected;
+			let bizfullname             		= socket.$service.bizfullname;
 			let userID                     		= socket.client.user;
 			let io                         		= socket.$service.io;
 
-			console.log({ socket });
+			console.log({ socket, service: socket.$service });
 
-			let { objectID, infoComment, bizfullname, parentID, select, populates, app } = data;
+			let { objectID, infoComment, parentID, select, populates, app } = data;
 
 			if(!infoComment || !app){
 				return sendDataToMultilSocketsOfListUser({ 
