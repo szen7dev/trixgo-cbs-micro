@@ -237,7 +237,7 @@ class Model extends BaseModel {
     update({ 
         contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire,
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
     }){
         return new Promise(async (resolve) => {
@@ -316,6 +316,10 @@ class Model extends BaseModel {
 
                 if(status){
                     dataUpdate.status = status;
+                }
+
+                if(image){
+                    dataUpdate.image = image;
                 }
 
                 if(gender && !isNaN(gender)){

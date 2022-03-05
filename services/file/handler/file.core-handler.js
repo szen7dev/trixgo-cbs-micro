@@ -107,6 +107,14 @@ module.exports = {
                     companyID, projectID, groupID, packageID, conversationID
                 } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
+                // Tuấn
+                if(typeUpload && typeUpload == "user" && userID =="5fb500a8a0f90f086b2b25f1"){
+                    return { error: true, message: "Tài khoản của bạn bị cấm sử dụng chức năng này, vì quy phạm sử sụng hình ảnh cá nhân của người khác" };
+                }
+                // Minh
+                if(typeUpload && typeUpload == "user" && userID =="5f90ed0d5e842b7c18dff972"){
+                    return { error: true, message: "Tài khoản của bạn bị cấm sử dụng chức năng này, vì quy phạm sử sụng hình ảnh cá nhân của người khác" };
+                }
 
                 let generatePathS3  = GET_PATH_S3({
                     appID,

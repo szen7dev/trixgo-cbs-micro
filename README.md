@@ -184,7 +184,7 @@ let listDepartment = db.departments.find({}).select("_id");
 
 listDepartment.forEach(department => {
     let numberFinishOfDocs =  db.document_docs.count({ project: ObjectId(department._id), parent: { $exists: false }, completeStatus: 1 })
-    db.departments.findOneAndUpdate({ _id: department._id}, { $set: {numberFinishOfDocs} })
+    db.departments.findOneAndUpdate({ _id: department._id}, { $set: { numberFinishOfDocs } })
 })
 --------------------------------------------------------
 
@@ -214,13 +214,13 @@ let listTaskAfterUpdate =  db.pcm_plan_tasks.find({}).select("author assignee")
                 
 let amount = 0;
 listTaskAfterUpdate.map(task => {
-    let author = db.users.findOne({ _id: ObjectId(task.author)});
-    let assignee = db.users.findOne({ _id: ObjectId(task.assignee)});
+    let author = db.users.findOne({ _id: ObjectId(task.author)}).select("company");
+    let assignee = db.users.findOne({ _id: ObjectId(task.assignee)}).select("company");
     if(author && assignee){
-        let abc =  db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)}, {
+        db.pcm_plan_tasks.findOneAndUpdate({_id: ObjectId(task._id)}, {
             $set: {
                 companyOfAuthor: author.company, 
-            companyOfAssignee: assignee.company, 
+                companyOfAssignee: assignee.company, 
             }
         });
     }
@@ -257,7 +257,7 @@ for (const comment of listcommentPCM) {
         for (const file of listFileComment) {
             // db.pcm_files.save(dataInsertFilePcm);
             if(file.type == 1){
-                // Hình ảnh
+                // Hình ảnh 
                 dataInsert.images.push(file._id)
                 // Tạo file bên pcm_file
             }else{
@@ -279,18 +279,15 @@ for (const comment of listcommentPCM) {
     
     db.pcm_comments.save(dataInsert);
 
-
 <!-- CONVERT FILE PCM -->
-
 let listFilePCM = db.files.find({ planTask: { $exists: true, $ne: null }}).limit(100).toArray();
 
 for (const file of listFilePCM) {
     let { _id: fileCoreID, company, project, planGroup: group, planTask: task, type, name , author, createAt, modifyAt } = file;
     db.pcm_files.save({ company, project, group, task, file: fileCoreID, type, nameOrg: name, name, author, isDataConvert: 1, createAt, modifyAt   });
-}   
+}
 
 <!-- CẬP NHẬT SỐ LƯỢNG CONTACT_DOCUMENT CHO CONTACT-->
-
 let listContact = db.contacts.find({}).select("_id")
 
 listContact.forEach(contact => {
