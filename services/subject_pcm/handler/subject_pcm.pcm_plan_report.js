@@ -128,7 +128,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.getList({
-                        type, parentID, userID, keyword, limit, lastestID, select, populates
+                        type, parentID, userID, keyword, limit: +limit, lastestID, select, populates
                     })
                 }
                 

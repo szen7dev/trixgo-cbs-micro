@@ -38,7 +38,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getList({
-                        keyword, limit, userID, lastestID, projectID, select, populates, 
+                        keyword, limit: +limit, userID, lastestID, projectID, select, populates, 
                     });
                 }
                 

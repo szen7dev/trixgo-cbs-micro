@@ -130,7 +130,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await USER_PCM_PLAN_REPORT_MODEL.getList({
-                        keyword, limit, lastestID, userID, parentID, select, populates
+                        keyword, limit: +limit, lastestID, userID, parentID, select, populates
                     });
                 }
                 

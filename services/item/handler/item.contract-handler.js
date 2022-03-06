@@ -346,7 +346,7 @@ module.exports = {
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
                     companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
-                    keyword, limit, lastestID, select, populates
+                    keyword, limit: +limit, lastestID, select, populates
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

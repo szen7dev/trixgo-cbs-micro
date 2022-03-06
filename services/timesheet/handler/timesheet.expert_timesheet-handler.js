@@ -140,7 +140,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        parentID, companyID, projectID, keyword, limit, lastestID, select, populates
+                        parentID, companyID, projectID, keyword, limit: +limit, lastestID, select, populates
                     });
                 }
 

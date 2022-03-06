@@ -232,7 +232,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getList({
                         companyID, lastestID, userID, type, 
-                        keyword, limit, select, populates
+                        keyword, limit: +limit, select, populates
                     });
                 }
 
