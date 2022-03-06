@@ -134,7 +134,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getList({
-                        companyID, projectID, lastestID, userID, type, keyword, limit: +limit, select, populates
+                        companyID, projectID, lastestID, userID, type, keyword, limit, select, populates
                     });
                 }
 

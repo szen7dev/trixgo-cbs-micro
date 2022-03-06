@@ -37,7 +37,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__AREA_MODEL.getList({
-                        companyID: company._id, lastestID, keyword, select, limit: +limit, populates
+                        companyID: company._id, lastestID, keyword, select, limit, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

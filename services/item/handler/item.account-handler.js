@@ -37,7 +37,6 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id
                 }
-                console.log({___ : limit})
                 let resultAfterCallHandler;
                 if(accountID){
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getInfo({
@@ -45,7 +44,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit: +limit, populates,
+                        companyID, lastestID, keyword, select, limit, populates,
                         status, type, level,
                     });
                 }

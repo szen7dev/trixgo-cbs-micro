@@ -116,7 +116,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__STORAGE_MODEL.getList({
-                        companyID, projectID, lastestID, keyword, limit: +limit, select, populates
+                        companyID, projectID, lastestID, keyword, limit, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

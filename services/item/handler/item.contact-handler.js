@@ -221,7 +221,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
-                        lastestID, userID, keyword, limit: +limit, select, populates
+                        lastestID, userID, keyword, limit, select, populates
                     });
                 }
                 

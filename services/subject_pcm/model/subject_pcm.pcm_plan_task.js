@@ -643,6 +643,11 @@ class Model extends BaseModel {
     }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */

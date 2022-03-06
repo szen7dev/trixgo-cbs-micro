@@ -42,7 +42,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__WAREHOUSE_MODEL.getList({
-                        companyID, lastestID, keyword, limit: +limit, select, populates
+                        companyID, lastestID, keyword, limit, select, populates
                     });
                 }
 

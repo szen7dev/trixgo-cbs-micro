@@ -163,7 +163,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
-                        taskID, parentID, limit: +limit, lastestID, type, official, sortKey, select, populates
+                        taskID, parentID, limit, lastestID, type, official, sortKey, select, populates
                     });
                 }
 
