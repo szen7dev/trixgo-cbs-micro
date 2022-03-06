@@ -93,6 +93,10 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
 
+                if(limit > 10){
+                    limit = 20
+                }
+
                 let sortBy;
                 let conditionObj = { level: 3 };
                 let keys	 = ['createAt__-1', '_id__-1'];
