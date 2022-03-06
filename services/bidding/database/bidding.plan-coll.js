@@ -14,10 +14,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
      */    
     /**
      * Phân loại
-     * 1-Hồ sơ gói thầu-Thuộc kế hoạch lựa chọn nhà thầu
-     * 1.1-Hồ sơ mời thầu (parent)
-     * 1.1.1-Hồ sơ dự thầu (parent)
-     * 1.1.1.1-Báo cáo đánh giá (parent)
+     * 1-Kế hoạch lựa chọn nhà thầu
+     * 2-Hồ sơ mời thầu
+     * 3-Hồ sơ dự thầu
+     * 4-Báo cáo đánh giá
      */
     type: { type: Number, default: 1 },
     //_________Lĩnh vực
@@ -25,13 +25,13 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref : "datahub_type"
     },      
-    //_________Khu vực
+    //_________Khu vực (xã/phường)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },    
     //_________Chủ đầu tư
-    company: {
+    client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
@@ -43,7 +43,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     /**
      * THÔNG TIN GÓI THẦU
      */    
-    //_________Hồ sơ cha
+    //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
         ref: "bidding_plan"
@@ -59,7 +59,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     //_________Ghi chú
     note: String,
     /**
-     * Trạng thái
+     * Trạng thái triển khai lựa chọn nhà thầu
      * 1-Chưa thực hiện
      * 2-Đang triển khai
      * 3-Đã hoàn thành
@@ -73,7 +73,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     actualStartTime: { type: Date, default: null },
     //_________Thực tế kết thúc chọn
     actualFinishTime: { type: Date, default: null },
-    //_________Hình thức lựa chọn nhà thầu
+    /**
+     * Hình thức lựa chọn nhà thầu
+     * 1-Chào giá cạnh tranh
+     * 2-Đấu thầu
+     * 3-Chỉ định thầu
+     */
     form: { type: Number, default: 1 },
     //_________Loại hợp đồng
     contractType: { type: Number, default: 1 },
