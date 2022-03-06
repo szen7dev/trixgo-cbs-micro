@@ -131,7 +131,7 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-	getInfo({ datahubID, select, populates }) { 
+	getInfo({ datahubTypeID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -142,8 +142,8 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(datahubID))
-                    return resolve({ error: true, message: 'Request params datahubID invalid', status: 400 });
+                if(!checkObjectIDs(datahubTypeID))
+                    return resolve({ error: true, message: 'Request params datahubTypeID invalid', status: 400 });
                 
                  // populates
                  if(populates && typeof populates === 'string'){
@@ -162,7 +162,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterGet = await DATAHUB_TYPE_COLL.findById(datahubID)
+                let infoAterGet = await DATAHUB_TYPE_COLL.findById(datahubTypeID)
                                     .select(select)
                                     .populate(populates)
                 if(!infoAterGet)
@@ -180,7 +180,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getList({ type, popular, userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ type, popular, parentID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
                 let conditionObj = {};
@@ -189,10 +189,18 @@ class Model extends BaseModel {
 
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit
                 }
 
                 if(type){
                     conditionObj.type = type;
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID;
+                }else{
+                    conditionObj.parent = { $exists: false };
                 }
 
                 if(popular){
