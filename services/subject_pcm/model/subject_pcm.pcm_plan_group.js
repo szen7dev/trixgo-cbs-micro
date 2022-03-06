@@ -74,6 +74,12 @@ class Model extends BaseModel {
     getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */

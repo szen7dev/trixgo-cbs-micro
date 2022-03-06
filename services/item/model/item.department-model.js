@@ -627,7 +627,9 @@ class Model extends BaseModel {
                 let keys	      = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
-                    limit = 20;
+                    limit = 20
+                }else{
+                    limit = +limit
                 }
 
                 if(isMember == 1){

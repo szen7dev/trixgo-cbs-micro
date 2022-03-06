@@ -169,7 +169,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getList({
-                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates
+                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit: +limit, populates
                     });
                 }
 

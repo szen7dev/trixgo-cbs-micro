@@ -735,6 +735,8 @@ class Model extends BaseModel {
                 
                 if(limit > 20){
                     limit = 20
+                }else{
+                    limit = +limit
                 }
                 /** 
                  * VALIDATION STEP (2)

@@ -92,6 +92,11 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
 
                 let sortBy;
                 let conditionObj = { level: 3 };

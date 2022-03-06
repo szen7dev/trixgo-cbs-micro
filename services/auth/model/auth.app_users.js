@@ -38,8 +38,6 @@ class Model extends BaseModel {
                  */
 
                 let infoAppCompany = await AUTH__APP_COMPANY_COLL.findOne({ app: appID, company: companyID });
-                console.log({  appID, companyID, users, infoAppCompany });
-
                 if(!infoAppCompany)
                     return resolve({ error: true, message: "App của công ty không tồn tại", keyError: "app_company_not_exist", status: 200 });
 

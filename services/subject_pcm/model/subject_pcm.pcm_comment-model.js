@@ -33,6 +33,7 @@ class Model extends BaseModel {
     insert({ taskID, parentID, authorID, type, content, files, images, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -491,6 +492,11 @@ class Model extends BaseModel {
     getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */

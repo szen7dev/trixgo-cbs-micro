@@ -37,7 +37,6 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id
                 }
-                console.log({___ : limit})
                 let resultAfterCallHandler;
                 if(accountID){
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getInfo({
