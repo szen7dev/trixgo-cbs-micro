@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_finreport", {
     //_________Năm tài chính
     fiscalYear: { type: Number, default: 0 },
     //_________Tổng tài sản
-    asset: { type: Number, default: 0 }, //////////// Cân nhắc sử dụng NULL để giảm data các mẩu tin
+    asset: { type: Number, default: 0 },
     //_________Tổng nợ
     liabilitiy: { type: Number, default: 0 },
     //_________Giá trị tài sản ròng

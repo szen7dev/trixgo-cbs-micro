@@ -46,7 +46,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
      * 3: Chuyển đổi số
      * 4: Hệ thống
      * 5: Bài viết cá nhân
-     * ..... Sau bổ sung thêm vài loại bài viết
+     * 6: Bài viết giới thiệu công ty
 	 */
     type: {
         type: Number,
