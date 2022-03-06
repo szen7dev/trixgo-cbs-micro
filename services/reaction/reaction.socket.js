@@ -23,7 +23,7 @@ exports.REACTION_SOCKET = {
 			let broker							= socket.$service.broker;
 			let listUserActive             		= socket.$service.listUserConnected;
 			let bizfullname             		= socket.$service.bizfullname;
-			let userID             				= socket.$service.userID;
+			let userID             				= socket.client.user;
 			let io                         		= socket.$service.io;
 
 			let { objectID, infoComment, parentID, select, populates, app } = data;
