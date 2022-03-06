@@ -12,12 +12,12 @@ const { CF_ACTIONS_BIDDING } 	        	= require('./helper/bidding.actions-const
 /**
  * HANDLERS
  */
-const BIDDING__DOC_HANDLER            = require('./handler/bidding.doc-handler');
+const BIDDING__DOC_HANDLER            = require('./handler/bidding.plan-handler');
 
 /**
  * COLLECTIONS
  */
-const BIDDING__DOC_COLL				= require('./database/bidding.doc-coll');
+const BIDDING__DOC_COLL				= require('./database/bidding.plan-coll');
 const BIDDING__BILL_COLL				= require('./database/bidding.bill-coll');
 
 module.exports = {

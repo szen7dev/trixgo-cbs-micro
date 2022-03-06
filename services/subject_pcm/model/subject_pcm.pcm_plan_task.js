@@ -1,16 +1,16 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-const { KEY_ERROR }			            = require('../../../tools/keys');
+const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/notification.actions-constant');
+const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS } = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -19,9 +19,6 @@ const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_p
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
-/**
- * import inter-model, exter-model
- */
 class Model extends BaseModel {               
 
     constructor() {
@@ -33,10 +30,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, ctx }) { 
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -211,12 +207,59 @@ class Model extends BaseModel {
                     dataInsert.template = Number(template);
                 }
 
-
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
+                /**
+                 * Tạo checklist mới
+                 * + Insert thông báo vào DB và bắn Cloud MSS
+                 */
+                if(parentID && type === 2) {
+                    const webUrl = `/pcm/detail/${parentID}#checklist_${infoAterInsert._id}`;
+                    const infoTask = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+
+                    let { name: taskName, author, assignee, related, project, contract } = infoTask;
+                    related = related.map(userID => userID.toString());
+    
+                    const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                    const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+
+                    const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+                        userID: assigneeID,
+                        select: '_id'
+                    });
+    
+                    await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content: name,
+                        receivers,
+                        project: project?.toString(),
+                        contract: contract?.toString(),
+                        path: webUrl,
+                        languageKey: LANGUAGE_KEYS.CREATE_CHECKLIST_PCM,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: parentID
+                        },
+                        subColl: {
+                            kind: "pcm_plan_task",
+                            item: infoAterInsert._id
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+
+                    if(!infoAssignee.error) {
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                            users: [infoAssignee?.data?._id],
+                            title: `THÔNG BÁO: ${taskName}`,
+                            description: `${bizfullname} đã tạo 1 checklist cho bạn`,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+                    }
+                }
  
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {

@@ -30,7 +30,7 @@ const {
 /**
  * COLLECTIONS
  */
-const BIDDING__DOC_COLL               				        = require('../database/bidding.doc-coll');
+const BIDDING__DOC_COLL               				        = require('../database/bidding.plan-coll');
 const BIDDING__DOCUMENT_REQUEST_COLL           				= require('../database/bidding.document_request-coll');
 const BIDDING__DOCUMENT_APPLY_COLL           				= require('../database/bidding.document_apply-coll');
 const BIDDING__BILL_COLL           				            = require('../database/bidding.bill-coll');

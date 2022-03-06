@@ -23,10 +23,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Công việc phát hành hồ sơ mời thầu
-    task: {
+    //_________Thuộc hồ sơ gói thầu
+    doc: {
         type: Schema.Types.ObjectId,
-        ref : "pcm_plan_task"
+        ref : "bidding_doc"
     },
     /**
      * CẤU TRÚC ĐỆ QUY
@@ -50,10 +50,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
      * THÔNG TIN CĂN BẢN
      */
     //_________Mã công tác trong DataHub (xét sau)
-    // datahubJob: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "datahub_job"
-    // },
+    datahubJob: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_job"
+    },
     //_________Tên
     name: String,
     //_________Mô tả
@@ -89,6 +89,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
     machineUnitPrice: { type: Number, default: 0 },
     //_________Đơn giá tính toán từ Datahub
     unitPrice: { type: Number, default: 0 },
+    //_________Thuế giá trị gia tăng (VAT-%)
+    vat: { type: Number, default: 10 },
+    //_________Thuế giá trị gia tăng (VAT-giá trị)
+    vatValue: { type: Number, default: 0 },
     //_________Thành tiền tính toán từ Datahub
     amount: { type: Number, default: 0 },
     //_________Hệ số chi phí khác
