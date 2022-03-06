@@ -84,7 +84,7 @@ class Model extends BaseModel {
                 }
 
                 if(parentID) {
-                    if(checkObjectIDs([parentID])) {
+                    if(!checkObjectIDs([parentID])) {
                         return resolve({
                             error: true,
                             message: "Tham số parentID không hợp lệ",

@@ -129,13 +129,14 @@ class Model extends BaseModel {
 					isPrivate,
 					company: company._id,
 					authors: [authorID],
-					members: [...new Set([authorID, ...membersID])]
+					members: [...new Set([authorID, ...membersID])],
+					author: authorID
 				});
 
                 if(!infoConversationAfterInserted) {
 					return resolve({ 
 						error: true, 
-						message: 'Đã xảy ra lỗi', 
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
 						keyError: 'error_occurs',
 						status: 422
 					});
@@ -508,7 +509,7 @@ class Model extends BaseModel {
 				if(checkExistConversation.authors.includes(memberID)){
 
 					// Nếu là root author -> dc xoá các author khác
-					if(checkExistConversation.authors[0].toString() === authorID){
+					if(checkExistConversation.author.toString() === authorID){
 						pullMemberObj.authors = [memberID];
 						pullMemberObj.members = [memberID];
 					} else{
@@ -620,7 +621,7 @@ class Model extends BaseModel {
 					typeMessage = 105; // Xét thêm admin cuộc hội thoại
 
 				} else{ // Cập nhật admin thành member
-					if(checkExistConversation.authors[0].toString() === memberID.toString()) {
+					if(checkExistConversation.author.toString() === memberID.toString()) {
 						return resolve({ 
 							error: true, 
 							message: 'Không thể xóa người tạo cuộc hội thoại', 
@@ -893,7 +894,7 @@ class Model extends BaseModel {
 								name: conversationOfMember.name,
 								description: conversationOfMember.description,
 								members: conversationOfMember.members.slice(0,4),
-								infoOwner: conversationOfMember.authors && conversationOfMember.authors[0],
+								infoOwner: conversationOfMember.authors && conversationOfMember.author,
 								avatar: conversationOfMember.avatar && conversationOfMember.avatar.path
 							};
 
@@ -1847,7 +1848,7 @@ class Model extends BaseModel {
 				if(!checkExistConversation)
 					return resolve({ error: true, message: "You are't author of conversation", status: 403 });
 
-				if(checkExistConversation.authors[0].toString() !== userID.toString())
+				if(checkExistConversation.author.toString() !== userID.toString())
 					return resolve({ error: true, message: "You are't root author of conversation (access denined)", status: 403 });
 
 				let infoAfterDelete = await CHATTING__CONVERSATION_COLL.findByIdAndDelete(conversationID);
@@ -2162,6 +2163,7 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+				console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

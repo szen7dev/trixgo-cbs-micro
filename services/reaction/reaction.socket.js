@@ -57,10 +57,26 @@ exports.REACTION_SOCKET = {
 					let { author, assignee, related } = infoObject.data;
 					related = related.map(userID => userID.toString());
 
+					switch (infoComment.type) {
+						case 1:
+							descriptionMSS = `${bizfullname} đã tạo 1 bình luận`;
+							break;
+						case 2:
+							descriptionMSS = `${bizfullname} đã tạo 1 phản hồi liên quan`;
+							break;
+						case 3:
+							descriptionMSS = `${bizfullname} đã tạo 1 hiện trạng`;
+							break;
+						case 4:
+							descriptionMSS = `${bizfullname} đã tạo 1 giải pháp`;
+							break
+						default:
+							break;
+					}
+
 					arrReceiver 		= [...new Set([author.toString(), assignee.toString(), ...related])];
 					infoObject 			= infoObject.data;
-					titleMSS			= infoObject.name?.length > 100 ? infoObject.name.substring(0, 100) : infoObject.name;
-					descriptionMSS 		= `${bizfullname} đã tạo 1 phản hồi liên quan`;
+					titleMSS			= `CÔNG VIỆC: ${infoObject.name?.length > 100 ? infoObject.name?.substring(0, 100) : infoObject.name}`;
 					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
 					break;
 				}
@@ -120,8 +136,8 @@ exports.REACTION_SOCKET = {
 					}
 
 					infoObject 			= infoObject.data;
-					titleMSS 			= infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title;
-					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận cho bài viết`;
+					titleMSS 			= `BÀI VIẾT: ${infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title}`;
+					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận`;
 					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
 					break;
 				}
