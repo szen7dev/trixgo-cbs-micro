@@ -131,7 +131,7 @@ class Model extends BaseModel {
 	 * Code: 
 	 */
     update({ datahubProjectID, client, address, area3, location, name, sign, note, projectType, buildingType, buildingGrade, 
-        basementNumber, basementArea, floorNumber, floorArea, status, userID }) {
+        basementNumber, basementArea, floorNumber, floorArea, status, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 
@@ -150,6 +150,18 @@ class Model extends BaseModel {
 
                 if(area3){
                     dataUpdate.area3 = area3;
+                     // Call service area để lấy area1 và area2 => Xử lý sau
+                     let infoArea3 = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST}`, {
+                        areaID: area3, populates: JSON.stringify({"path": "parent", "select": "name sign parent level", "populate": {"path": "parent", "select": "name sign parent level"}})
+                    })
+                    let area2 = infoArea3?.data?.parent?._id;
+                    let area1 = infoArea3?.data?.parent?.parent?._id;
+                    if(area2){
+                        dataUpdate.area2 = area2;
+                    }
+                    if(area1){
+                        dataUpdate.area1 = area1;
+                    }
                 }
 
                 if(location){

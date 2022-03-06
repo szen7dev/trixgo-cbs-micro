@@ -19,6 +19,8 @@ const {
     checkObjectIDs,
     IsJsonString,
 } = require('../../../tools/utils/utils');
+const { KEY_ERROR } = require('../../../tools/keys');
+
 
 /**
  * COLLECTIONS
@@ -36,12 +38,14 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    insert({ fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID }) {
+    insert({ contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID }) {
         return new Promise(async resolve => {
             try { 
-               
+                
+                if(!checkObjectIDs(contractor))
+                    return resolve({ error: true, message: "contractor Không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { fiscalYear, userCreate: userID, userUpdate: userID };
+                let dataInsert = { contractor, fiscalYear, userCreate: userID, userUpdate: userID };
                 if(asset){
                     dataInsert.asset = asset;
                 }
@@ -56,6 +60,10 @@ class Model extends BaseModel {
 
                 if(currentAsset){
                     dataInsert.currentAsset = currentAsset;
+                }
+
+                if(shortTermLiabilitiy){
+                    dataInsert.shortTermLiabilitiy = shortTermLiabilitiy;
                 }
 
                 if(workingCapital){
@@ -94,7 +102,7 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    update({ datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID  }) {
+    update({ datahubFinreportID, fiscalYear, asset, liabilitiy, netWorth, currentAsset, shortTermLiabilitiy, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID  }) {
         return new Promise(async resolve => {
             try {
                 
@@ -117,6 +125,10 @@ class Model extends BaseModel {
 
                 if(currentAsset){
                     dataUpdate.currentAsset = currentAsset;
+                }
+
+                if(shortTermLiabilitiy){
+                    dataInsert.shortTermLiabilitiy = shortTermLiabilitiy;
                 }
 
                 if(workingCapital){
@@ -225,17 +237,19 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách datahub finreport
 	 * Date: 26/10/2021
 	 */
-    getList({ userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ contractorID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {};
+                let conditionObj = { contractor: contractorID };
                 let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit;
                 }
-
+ 
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
