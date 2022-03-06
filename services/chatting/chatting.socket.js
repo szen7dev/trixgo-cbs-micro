@@ -529,7 +529,7 @@ exports.CHATTING_SOCKET = {
 			}).select('usersMissMessage').lean();
 
 			listAllConversation.map(conversation => {
-				const user = conversation.usersMissMessage.find(user => 
+				const user = conversation.usersMissMessage?.find(user => 
 					user.userID.toString() === memberID.toString());
 
 				user && (amountMissMessage += user.amount);

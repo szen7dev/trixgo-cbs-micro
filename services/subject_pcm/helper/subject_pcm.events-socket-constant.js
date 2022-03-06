@@ -4,7 +4,11 @@ exports.EVENT_SOCKET_CONSTANT_SUBJECT_PCM = {
 
     //========================== CLIENT SEND TO SERVER =============================
     SUBJECT_PCM_CSS_ADD_CHECKLIST              : `${SUBJECT_PCM}_CSS_ADD_CHECKLIST`,
+    SUBJECT_PCM_CSS_ADD_CHILD_TASK             : `${SUBJECT_PCM}_CSS_ADD_CHILD_TASK`,
+    SUBJECT_PCM_CSS_ADD_RELATION_USER          : `${SUBJECT_PCM}_CSS_ADD_RELATION_USER`,
 
     //======================== SERVER SEND TO CLIENT ===========================
     SUBJECT_PCM_SSC_ADD_CHECKLIST              : `${SUBJECT_PCM}_SSC_ADD_CHECKLIST`,
+    SUBJECT_PCM_SSC_ADD_CHILD_TASK             : `${SUBJECT_PCM}_SSC_ADD_CHILD_TASK`,
+    SUBJECT_PCM_SSC_ADD_RELATION_USER          : `${SUBJECT_PCM}_SSC_ADD_RELATION_USER`,
 }

@@ -1370,7 +1370,7 @@ class Model extends BaseModel {
                     .find(conditionObj)
                     .select(select)
                     .limit(limit + 1)
-                    .populate(populates)
+                    // .populate(populates)
                     .sort(sortBy)
 					.lean();
 
@@ -1641,7 +1641,7 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
-                    .populate(populates)
+                    // .populate(populates)
                     .lean(); 
 
                 if(!infoDataAfterGet)

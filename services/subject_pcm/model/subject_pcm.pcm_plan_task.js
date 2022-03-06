@@ -225,7 +225,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 /**
-                 * Tạo checklist mới
+                 * Tạo checklist hoặc việc con mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
                 if(parentID && [1,2].includes(type)) {
@@ -295,7 +295,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
         contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID, bizfullname, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {   
@@ -560,6 +560,44 @@ class Model extends BaseModel {
                 
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+                if(related.length) {
+                    /**
+                     * Thêm người liên quan trong công việc
+                     * + Insert thông báo vào DB và bắn Cloud MSS
+                     */
+                    const webUrl = `/pcm/detail/${taskID}`;
+                    const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+
+                    let { name: taskName, author, assignee, related: relatedTask, project, contract } = infoTask;
+                    relatedTask = relatedTask.map(userID => userID.toString());
+    
+                    const listReceivers = [...new Set([author.toString(), assignee.toString(), ...relatedTask])];
+                    const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+
+                    await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content: taskName,
+                        receivers,
+                        project: project?.toString(),
+                        contract: contract?.toString(),
+                        path: webUrl,
+                        languageKey: LANGUAGE_KEYS.ADD_RELATION_USER,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        users: related,
+                        title: `CÔNG VIỆC: ${taskName}`,
+                        description: `${bizfullname} đã thêm bạn làm người liên quan`,
+                        web_url: webUrl,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+                }
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) { 
