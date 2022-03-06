@@ -80,6 +80,11 @@ class Model extends BaseModel {
     getList({ company, app, role, limit = 20, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -97,9 +102,7 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(limit > 20){
-                    limit = 20
-                }
+              
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))

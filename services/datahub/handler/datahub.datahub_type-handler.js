@@ -97,9 +97,10 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            datahubID : { type: "string", optional: true },
+            datahubTypeID : { type: "string", optional: true },
             type      : { type: "string", optional: true },
-            popular      : { type: "string", optional: true },
+            popular     : { type: "string", optional: true },
+            parentID    : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -111,17 +112,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubID, type, popular, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { datahubTypeID, type, popular, parentID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(datahubID){
+                if(datahubTypeID){
                     resultAfterCallHandler = await DATAHUB_TYPE_MODEL.getInfo({
-                        datahubID, select, populates
+                        datahubTypeID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_TYPE_MODEL.getList({
-                        type, popular, userID, lastestID, keyword, limit: +limit, select, populates
+                        type, popular, parentID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
                 

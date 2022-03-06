@@ -92,7 +92,7 @@ module.exports = {
                 let { _id: userID }          = ctx.meta.infoUser;
                 let { appID, companyID, limit, lastestID, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await AUTH__APP_USER.getList({  appID, companyID, limit: +limit, lastestID, select, populates  });
+                let resultAfterCallHandler = await AUTH__APP_USER.getList({  appID, companyID, limit, lastestID, select, populates  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
