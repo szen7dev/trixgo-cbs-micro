@@ -117,12 +117,15 @@ class Model extends BaseModel {
         limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
+
                 // let today = new Date();
                 let conditionObj = {
-                    // endTime: { $gte: today }
                 };
 
                 let sortBy;
@@ -133,9 +136,7 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(limit > 20){
-                    limit = 20
-                }
+             
 
                 if(appID){
                     conditionObj.app = appID;

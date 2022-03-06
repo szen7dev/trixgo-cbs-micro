@@ -189,6 +189,13 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
+                
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
+
                 let sortBy;
                 let conditionObj = { };
                 let keys	 = ['createAt__-1', '_id__-1'];
