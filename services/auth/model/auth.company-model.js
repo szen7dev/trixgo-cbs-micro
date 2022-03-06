@@ -24,7 +24,7 @@ class Model extends BaseModel {
     constructor() {
         super(require('../database/auth.company-coll'));
     }
-
+    
     insert({ name, sign, taxid, address, area, userID }) {
         return new Promise(async (resolve) => {
             try {

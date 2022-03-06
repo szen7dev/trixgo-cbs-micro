@@ -93,7 +93,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
 
-                if(limit > 10){
+                if(limit > 20){
                     limit = 20
                 }
 
