@@ -23,7 +23,6 @@ exports.SUBJECT_SOCKET = {
 			let listUserActive             		= socket.$service.listUserConnected;
 			let userID             				= socket.$service.userID;
 			let io                         		= socket.$service.io;
-
 			let { taskID, checklistID } 		= data;
 
 			if(!taskID || !checklistID){
@@ -35,11 +34,15 @@ exports.SUBJECT_SOCKET = {
 				});
 			}
 
-			const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+			const infoTask = await PCM_PLAN_TASK_COLL
+				.findById(taskID)
+				.select('_id author assignee related')
+				.lean();
 
 			const infoCheckList = await PCM_PLAN_TASK_COLL
 				.findById(checklistID)
-				.populate('assignee', '_id bizfullname')
+				.select('_id name assignee expiredTime parent status')
+				.populate('assignee', '_id bizfullname fullname image')
 				.lean();
 
 			if(!infoCheckList || !infoTask) {
@@ -56,6 +59,7 @@ exports.SUBJECT_SOCKET = {
 
 			const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
 			const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+			console.log({ receivers });
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 

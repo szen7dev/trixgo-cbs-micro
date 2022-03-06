@@ -45,16 +45,18 @@ module.exports = {
             amountoftime     : { type: "string", optional: true },
             amountPerHour    : { type: "string", optional: true },
             field            : { type: "string", optional: true },
+            select           : { type: "string", optional: true },
+            populates        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 
 				let { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type } = ctx.params;
+                let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, select, populates } = ctx.params;
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, bizfullname, ctx
+                    projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, bizfullname, select, populates, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -176,6 +178,8 @@ module.exports = {
             fieldID          : { type: "string", optional: true },
             isSortChecklist  : { type: "string", optional: true },
             isChecklist      : { type: "string", optional: true },
+            isChildTask      : { type: "string", optional: true },
+            isSortChildTask  : { type: "string", optional: true },
             isStatusNot3     : { type: "string", optional: true },
             isUsersDelete    : { type: "string", optional: true },
             
@@ -191,7 +195,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
                 let { 
-                    taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, isStatusNot3, isUsersDelete,
+                    taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
@@ -207,7 +211,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, 
-                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete,
+                        isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, select, lastestID, populates
                     });
                 }

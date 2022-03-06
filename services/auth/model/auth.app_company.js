@@ -189,10 +189,6 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
                 let sortBy;
                 let conditionObj = { };
                 let keys	 = ['createAt__-1', '_id__-1'];

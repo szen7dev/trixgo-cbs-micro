@@ -30,7 +30,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, ctx }) { 
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -88,6 +88,18 @@ class Model extends BaseModel {
                 
                 if(!checkObjectIDs(assigneeID))
                     return resolve({ error: true, message: 'assignee_invalid', status: 400 });
+
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
                 
                 /**
                  * LOGIC STEP (3)
@@ -216,7 +228,7 @@ class Model extends BaseModel {
                  * Tạo checklist mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
-                if(parentID && type === 2) {
+                if(parentID && [1,2].includes(type)) {
                     const webUrl = `/pcm/detail/${parentID}#checklist_${infoAterInsert._id}`;
                     const infoTask = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
 
@@ -253,15 +265,21 @@ class Model extends BaseModel {
                     if(!infoAssignee.error) {
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                             users: [infoAssignee?.data?._id],
-                            title: `THÔNG BÁO: ${taskName}`,
-                            description: `${bizfullname} đã tạo 1 checklist cho bạn`,
+                            title: `CÔNG VIỆC: ${taskName}`,
+                            description: `${bizfullname} đã tạo 1 ${type === 1 ? 'việc con' : 'checklist'} cho bạn`,
                             web_url: webUrl,
                             env: ENV_DEVICE_WEB_CBS
                         });
                     }
                 }
+
+                const infoTask = await PCM_PLAN_TASK_COLL
+                    .findById(infoAterInsert._id)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
  
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoTask, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -637,8 +655,8 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
-        isproposal, subType, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
-        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
+        isproposal, subType, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
+        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
         return new Promise(async (resolve) => {
@@ -658,7 +676,7 @@ class Model extends BaseModel {
                 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                if(isSortChecklist == 1){
+                if(isSortChecklist == 1 || isSortChildTask == 1){
                     keys = ['createAt__-1', '_id__-1'];
                 }
 
@@ -879,9 +897,14 @@ class Model extends BaseModel {
                     // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
                     if(isChecklist == 1){
                         conditionObj.type = 2;
-                        delete conditionObj.status
-                    }else{
+                        delete conditionObj.status;
+                    } else{
                         conditionObj.type = 1;
+                    }
+
+                    if(isChildTask == 1){
+                        conditionObj.type = 1;
+                        delete conditionObj.status;
                     }
                 }
 
