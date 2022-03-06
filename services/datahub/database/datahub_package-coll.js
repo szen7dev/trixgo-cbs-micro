@@ -45,7 +45,7 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_package", {
     floorNumber: { type: Number, default: 0 },
     //_________Diện tích tầng cao => được lấy theo thông tin của project trong của datahub_project
     floorArea: { type: Number, default: 0 }, 
-    //_________Lĩnh vực (type=1) => được lấy theo thông tin của project trong của datahub_project
+    //_________Lĩnh vực (type=1)
     field: {
         type: Schema.Types.ObjectId,
         ref : "datahub_type"

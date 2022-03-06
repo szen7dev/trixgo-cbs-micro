@@ -15,6 +15,7 @@ module.exports = {
 	 */
     insert: {
         params: {
+            contractor        : { type: "string" },
             fiscalYear        : { type: "number" },
             asset             : { type: "number", optional: true  },
             liabilitiy        : { type: "number", optional: true  },
@@ -29,11 +30,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax } = ctx.params;
+                let { contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.insert({
-                    fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID
+                    contractor, fiscalYear, asset, liabilitiy, netWorth, currentAsset, workingCapital, grossRevenue, grossConstructionRevenue, grossProfit, grossProfitAfterTax, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -110,6 +111,8 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             datahubFinreportID : { type: "string", optional: true },
+            contractorID: { type: "string" },
+
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -120,7 +123,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubFinreportID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { datahubFinreportID, contractorID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -130,7 +133,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_FINREPORT_MODEL.getList({
-                        userID, lastestID, keyword, limit: +limit, select, populates
+                        contractorID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
                 
