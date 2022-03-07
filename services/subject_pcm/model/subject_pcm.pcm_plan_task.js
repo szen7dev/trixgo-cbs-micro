@@ -713,6 +713,7 @@ class Model extends BaseModel {
                 // Bắt đầu kiểm tra quyền
                 let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
                 let { author, assignee, related, group } = infoTaskToCheckPermission;
+                
                 let isAuthor = false;
                 let isAssignee = false;
                 let isRelated = false;
@@ -724,13 +725,15 @@ class Model extends BaseModel {
                 if(assignee.toString() == userID.toString()){
                     isAssignee = true;
                 }
+                related = related.map(item => `${item}`);
                 if(related.includes(userID)){
                     isRelated = true;
                 }
-                if(group && group.members && group.members.includes(userID)){
+
+                if(group && group.members && group.members.includes(userID.toString())){
                     isMemberGroup = true;
                 }
-
+                
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 

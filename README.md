@@ -349,8 +349,7 @@ listConversations.forEach(conversation => {
             _id, company, authors: author, avatar: logo, messagesPin: pin, usersMissMessage: arrMissMessage, isPrivate, isRename, config,  isDataConvert: 1
         }
     })
-    
- })
+})
 
 <!-- UPDATE MESSAGE-->(Xong)
 let listMessage = db.message_messages.find({}).toArray();
@@ -361,3 +360,8 @@ for(const messageInfo of listMessage){
     }
     db.message_messages.findOneAndUpdate({ _id: messageInfo._id }, { $set: { usersSeen, isDataConvert: 1, type: 0 }})
 }
+
+<!-- XOÁ TẤT CẢ DỮ LIỆU THÔNG BÁO THÁNG 1 TRỞ VỀ TRƯỚC-->(Xong)
+let dateRemove = new Date("2022-2-1");
+db.notifications.count({createAt: { $gt: dateRemove }})
+

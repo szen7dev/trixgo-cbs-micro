@@ -199,10 +199,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
 				let conditionObj 	= { 
                     // status: this.SEND_SUCCESS,
                     receiver: authorID,
+                    status: { $ne: 3 }
                 };
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
