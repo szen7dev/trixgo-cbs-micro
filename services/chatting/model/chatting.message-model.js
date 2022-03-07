@@ -634,7 +634,6 @@ class Model extends BaseModel {
 										}
 									},
 								}, { new: true });
-								console.log({ infoMessageAfterUpdated, files: infoMessageAfterUpdated.files });
 
 								if(infoMessageAfterUpdated && !infoMessageAfterUpdated.files.length){
 									await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
