@@ -769,10 +769,8 @@ exports.CHATTING_SOCKET = {
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
 			arrReceiver: infoConversation.members,
-			data: {
-				error: false,
-				data: infoAfterRevoke
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
+			data: infoAfterRevoke, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
 		});
 	},
 

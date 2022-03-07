@@ -611,7 +611,7 @@ class Model extends BaseModel {
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
 
 								// Update last message for conversation
-								let isLastMessage = checkExistConversation.lastMessage.toString() === message._id.toString();
+								let isLastMessage = checkExistConversation.lastMessage?.toString() === message._id.toString();
 
 								if(isLastMessage){
 									let lastMessageOfConversation = await CHATTING__MESSAGE_COLL
@@ -634,6 +634,7 @@ class Model extends BaseModel {
 										}
 									},
 								}, { new: true });
+								console.log({ infoMessageAfterUpdated, files: infoMessageAfterUpdated.files });
 
 								if(infoMessageAfterUpdated && !infoMessageAfterUpdated.files.length){
 									await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
