@@ -43,7 +43,7 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 
 		return { error: true, status: ctx.meta.$statusCode, ...error };
     }
-
+    
     ctx.meta.$statusCode    = 200;
     ctx.meta.$statusMessage = resultAfterCallHandler.message || 'success';
 

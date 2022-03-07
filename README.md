@@ -349,8 +349,7 @@ listConversations.forEach(conversation => {
             _id, company, authors: author, avatar: logo, messagesPin: pin, usersMissMessage: arrMissMessage, isPrivate, isRename, config,  isDataConvert: 1
         }
     })
-    
- })
+})
 
 <!-- UPDATE MESSAGE-->(Xong)
 let listMessage = db.message_messages.find({}).toArray();
@@ -361,3 +360,31 @@ for(const messageInfo of listMessage){
     }
     db.message_messages.findOneAndUpdate({ _id: messageInfo._id }, { $set: { usersSeen, isDataConvert: 1, type: 0 }})
 }
+
+<!-- XOÁ TẤT CẢ DỮ LIỆU THÔNG BÁO THÁNG 1 TRỞ VỀ TRƯỚC-->(Xong)
+let dateRemove = new Date("2022-2-1");
+db.notifications.count({createAt: { $gt: dateRemove }})
+let listNotification = db.notifications.find({}).toArray();
+
+<!--CONVERT NOTIFICATION-->(Xong)
+for(let noti of listNotification){
+    let { _id, status, url, type } = noti;
+    let taskID = url.substr(18, 24);
+    let path = `/pcm/detail/${taskID}`
+    let languageKey = type;
+    let app = '5dfe4b9051dc622100bb9d89';
+    
+    if(status == 1){
+        status = 3;
+    }
+    
+    let mainColl = {
+        kind: "pcm_plan_task",
+        item: taskID
+    };
+    
+    let isDataConvert = 1;
+    let dataUpdate = { path, languageKey, app, status, mainColl }
+    db.notifications.findOneAndUpdate({ _id: ObjectId(_id)}, { $set: dataUpdate })
+}
+
