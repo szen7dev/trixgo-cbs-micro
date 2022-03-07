@@ -114,7 +114,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ 
-        departmentID, name, admins, adminRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+        departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
         pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -130,6 +130,7 @@ class Model extends BaseModel {
                 let dataUpdate   = {};
                 let dataAddToSet = {};
                 let dataPull     = {};
+                let dataInc      = {};
                 
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: "Request params departmentID invalid" });
@@ -158,8 +159,8 @@ class Model extends BaseModel {
                     dataAddToSet.admins = admins;
                 }
 
-                if(checkObjectIDs(adminRemove)){
-                    dataPull.admins = adminRemove;
+                if(checkObjectIDs(adminsRemove)){
+                    dataPull.admins = adminsRemove;
                 }
 
                 if(checkObjectIDs(members)){
@@ -510,21 +511,21 @@ class Model extends BaseModel {
                     dataUpdate.numberOfInspections = numberOfInspections;
                 }
 
-                if(dataAddToSet){
-                    dataUpdate.$addToSet = dataAddToSet;
-                }
-
-                if(dataPull){
-                    dataUpdate.$pullAll = dataPull;
-                }
-
-                let dataInc = {};
                 if(numberOfDocs){
                     dataInc.numberOfDocs = numberOfDocs;
                 }
 
                 if(numberFinishOfDocs){
                     dataInc.numberFinishOfDocs = numberFinishOfDocs;
+                }
+
+                // Xử lý addToSet, pullAll, inc
+                if(dataAddToSet){
+                    dataUpdate.$addToSet = dataAddToSet;
+                }
+
+                if(dataPull){
+                    dataUpdate.$pullAll = dataPull;
                 }
 
                 if(dataInc){
