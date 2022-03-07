@@ -277,6 +277,7 @@ class Model extends BaseModel {
     
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    console.log({ listReceivers, receivers })
 
                     const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                         userID: assigneeID,
@@ -301,6 +302,7 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
+                    console.log({ infoAssignee })
 
                     if(!infoAssignee.error) {
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -618,13 +620,12 @@ class Model extends BaseModel {
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
                     const webUrl = `/pcm/detail/${taskID}`;
-                    const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
-
-                    let { name: taskName, author, assignee, related: relatedTask, project, contract } = infoTask;
+                    let { name: taskName, author, assignee, related: relatedTask, project, contract } = infoAterUpdate;
                     relatedTask = relatedTask.map(userID => userID.toString());
     
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...relatedTask])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+                    console.log({ listReceivers, receivers, related })
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,
