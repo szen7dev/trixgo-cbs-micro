@@ -79,7 +79,8 @@ class Model extends BaseModel {
                     buildingGrade: !isNaN(buildingGrade) ? Number(buildingGrade) : 1,
                     buildingType: !isNaN(buildingType) ? Number(buildingType) : 1,
                     investmentAmount: !isNaN(investmentAmount) ? Number(investmentAmount) : 0,
-                    admins: [authorID]
+                    admins: [authorID],
+                    members: [authorID],
                 }
 
                 if(pm && _isValid(pm)){
