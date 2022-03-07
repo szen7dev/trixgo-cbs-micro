@@ -18,16 +18,19 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            type            : { type: "number", optional: true },
-            name            : { type: "string", optional: true },
+            type            : { type: "number" },
+            name            : { type: "string" },
+            sign            : { type: "string" },
+            startTime       : { type: "string" },
+            expiredTime     : { type: "string" },
+            milestones      : { type: "number" },
+            completedMilestones: { type: "number" },
+
             description     : { type: "string", optional: true },
             // company         : { type: "string", optional: true },
             parent          : { type: "string", optional: true },
-            sign            : { type: "string", optional: true },
             owner           : { type: "string", optional: true },
             address         : { type: "string", optional: true },
-            startDate       : { type: "string", optional: true },
-            endDate         : { type: "string", optional: true },
             pm              : { type: "string", optional: true },
             status          : { type: "string", optional: true },
             note            : { type: "string", optional: true },
@@ -40,19 +43,16 @@ module.exports = {
             area            : { type: "string", optional: true },
             members         : { type: "array", optional: true },
             admins          : { type: "array", optional: true },
+            admins          : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  type, name, description, parent, sign, owner, address, startDate, endDate, pm, status, note,
-                    assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, admins,
-                    members, numberOfDocs, numberFinishOfDocs } = ctx.params;
-
+                let { type, name, sign, startTime, expiredTime, milestones, completedMilestones  } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                    type, name, description, company, parent, sign, owner, address, startDate, endDate, pm, status, 
-                    note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID: userID, admins,
-                    numberOfDocs, numberFinishOfDocs, members, ctx
+                   company, type, name, sign, startTime, expiredTime, milestones, completedMilestones, authorID: userID, ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

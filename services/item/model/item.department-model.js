@@ -30,7 +30,7 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, description, company, parent, sign, owner, address, startDate, endDate, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, admins, members, ctx }) {
+    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
@@ -70,8 +70,10 @@ class Model extends BaseModel {
                     sign: `${infoCompany.data.sign}.${sign}`,
                     owner, 
                     address, 
-                    startTime: startDate, 
-                    expiredTime: endDate, 
+                    startTime: startTime, 
+                    actualStartTime: startTime,
+                    expiredTime: expiredTime, 
+                    actualFinishTime: expiredTime,
                     status: !isNaN(status) ? Number(status) : 1, 
                     note, 
                     projectCapital: !isNaN(projectCapital) ? Number(projectCapital) : 1, 
@@ -80,7 +82,9 @@ class Model extends BaseModel {
                     buildingType: !isNaN(buildingType) ? Number(buildingType) : 1,
                     investmentAmount: !isNaN(investmentAmount) ? Number(investmentAmount) : 0,
                     admins: [authorID],
-                    members: [authorID],
+                    members: [authorID], 
+                    milestones,
+                    completedMilestones
                 }
 
                 if(pm && _isValid(pm)){
