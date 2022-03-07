@@ -732,11 +732,11 @@ class Model extends BaseModel {
                 }
 
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
-                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });
+                    return resolve({ error: false, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
                 // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem
                 if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
-                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });
+                    return resolve({ error: false, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
                 // Kết thúc kiểm tra quyền
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
@@ -744,7 +744,7 @@ class Model extends BaseModel {
                                 .populate(populates).lean();
 
 				if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED, status: 200 });
+                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
