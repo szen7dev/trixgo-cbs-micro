@@ -40,15 +40,10 @@ class Model extends BaseModel {
                 
                 if(!sign)
                     return resolve({ error: true, message: 'Request params sign(*) invalid', status: 400 });
-                
-                if(!area)
-                    return resolve({ error: true, message: 'Request params area(*) invalid', status: 400 });
-
-                if(!type)
-                    return resolve({ error: true, message: 'Request params type(*) invalid', status: 400 });
+               
 
                 // Lấy thông tin công ty để gán ký hiệu công ty vào tên dự án
-                let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_OR_GET_LIST_COMPANY}`, {
+                let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
                     companyID: company
                 });
 
@@ -84,6 +79,7 @@ class Model extends BaseModel {
                     buildingGrade: !isNaN(buildingGrade) ? Number(buildingGrade) : 1,
                     buildingType: !isNaN(buildingType) ? Number(buildingType) : 1,
                     investmentAmount: !isNaN(investmentAmount) ? Number(investmentAmount) : 0,
+                    admins: [authorID]
                 }
 
                 if(pm && _isValid(pm)){
@@ -103,18 +99,6 @@ class Model extends BaseModel {
                     dataInsert.parent = parent;
                     dataInsert.level = infoMenuParent.level + 1;
                 }
-                //________Xóa phần tử trùng nhau trong mảng
-                admins  = [...new Set([ ...admins, authorID])];;
-                members = [...new Set([ ...members, authorID])];;
-
-                if(checkObjectIDs(admins)){
-                    dataInsert.admins = admins;
-                }
-
-                if(checkObjectIDs(members)){
-                    dataInsert.members = members;
-                }
-                
 
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 return resolve({ error: false, data: infoAfterInsert });
@@ -745,6 +729,8 @@ class Model extends BaseModel {
 
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit
                 }
 
                 /** 
