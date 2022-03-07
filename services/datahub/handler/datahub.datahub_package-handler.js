@@ -53,7 +53,6 @@ module.exports = {
         params: {
             datahubPackageID: { type: "string" },
             project         : { type: "string", optional: true },
-            client          : { type: "string", optional: true },
             field           : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
@@ -68,11 +67,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
+                let { datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.update({
-                    datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
+                    datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

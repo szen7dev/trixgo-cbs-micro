@@ -48,7 +48,7 @@ class Model extends BaseModel {
 
                 let { client, area1, area2, area3, projectType, buildingType, 
                     buildingGrade, basementNumber, basementArea, floorNumber, floorArea } = await DATAHUB_PROJECT_COLL.findById(project)
-               
+                    
                 let dataInsert = {
                     contractor, project, field, name, value, vatValue, userCreate: userID,
                     client, area1, area2, area3, projectType, buildingType,
@@ -95,17 +95,18 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    update({ datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
+    update({ datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
         return new Promise(async resolve => {
             try {
                 
                 let dataUpdate = { userUpdate: userID };
                 if(project){
-                    dataUpdate.project = project;
-                }
-
-                if(client){
-                    dataUpdate.client = client;
+                    let { client, area1, area2, area3, projectType, buildingType, 
+                        buildingGrade, basementNumber, basementArea, floorNumber, floorArea } = await DATAHUB_PROJECT_COLL.findById(project)
+                    dataUpdate = { 
+                        ...dataUpdate, project, client, area1, area2, area3, projectType, buildingType, 
+                        buildingGrade, basementNumber, basementArea, floorNumber, floorArea 
+                    }
                 }
 
                 if(field){
@@ -147,7 +148,7 @@ class Model extends BaseModel {
                 if(status){
                     dataUpdate.status = status;
                 }
-
+                console.log({ datahubPackageID, dataUpdate });
                 let infoAfterUpdate = await DATAHUB_PACKAGE_COLL.findByIdAndUpdate(datahubPackageID, dataUpdate, { new: true });
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
