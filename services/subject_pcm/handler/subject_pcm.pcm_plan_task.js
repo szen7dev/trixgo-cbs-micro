@@ -125,22 +125,25 @@ module.exports = {
     /**
 	 * Dev: Depv ✅
 	 * Func: update status mutiple
+	 * type: 1-Việc con/ 2- checklist
 	 */
     updateStatusMutiple: {
         auth: "required",
         params: {
             taskIDs         : { type: "array" },
+            parentID        : { type: "string" },
+            type            : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    taskIDs
+                    taskIDs, parentID, type
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    taskIDs
+                    parentID, taskIDs, type
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

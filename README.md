@@ -315,3 +315,49 @@ for (const task of listTask) {
         ]
     );
 }
+
+<!-- UPDATE CONVERSATION-->(Xong)
+let listConversations  = db.message_conversations.find({}).toArray();
+
+listConversations.forEach(conversation => {
+    let { _id, name, description, members, author, lastMessage, logo, pin, arrMissMessage, arrUserMuteMessage  } = conversation;
+    let company = null;
+    if(author && author[0]){
+        let infoAuthor = db.users.findOne({ _id: ObjectId(author[0])})
+        company = infoAuthor?.company;
+    }
+    
+    let isPrivate = true;
+    
+    if(members && members.length > 2){
+        isPrivate = false;
+    }
+    let isRename = false;
+    
+    let config = {
+        configHighlight: 1,
+        configSeeOldMessage: 1,
+        configEditInfo: 1,
+        configCreateNote: 1,
+        configCreatePoll: 1,
+        configPinMessage: 1,
+        configSendMessage: 1
+    }
+    
+    db.message_conversations.findOneAndUpdate({_id: ObjectId(_id)},{
+        $set: { 
+            _id, company, authors: author, avatar: logo, messagesPin: pin, usersMissMessage: arrMissMessage, isPrivate, isRename, config,  isDataConvert: 1
+        }
+    })
+    
+ })
+
+<!-- UPDATE MESSAGE-->(Xong)
+let listMessage = db.message_messages.find({}).toArray();
+for(const messageInfo of listMessage){
+    let usersSeen = messageInfo.listSeen?.map(item => item);
+    if(!usersSeen){
+        usersSeen = []
+    }
+    db.message_messages.findOneAndUpdate({ _id: messageInfo._id }, { $set: { usersSeen, isDataConvert: 1, type: 0 }})
+}

@@ -92,6 +92,7 @@ class Model extends BaseModel {
                             select: '_id'
                         })
                     });
+
                     let { author, assignee, company, isproposal } = infoTaskParent.data;
                     /**   
                      * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
@@ -119,9 +120,37 @@ class Model extends BaseModel {
                     type,
                 }
 
+                //precalculated
+                // companyOfAuthor
+                // companyOfAssignee
+                // subtype (Xử lý sau)
+                // amountChecklist
+                // amountFinishedChecklist
+                // amountSubtask
+                // amountFinishedSubtask
+                // amountResponse
+                // amountMarkedResponse
+                let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                    userID: authorID, select: "_id company"
+                })
+
+                let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                    userID: assigneeID, select: "_id company"
+                })
+                // companyOfAuthor
+                if(!infoAuthor.error){
+                    data.companyOfAuthor = infoAuthor.data.company;
+                }
+
+                // companyOfAssignee
+                if(!infoAssignee.error){
+                    data.companyOfAssignee = infoAuthor.data.company;
+                }
+
+                // Việc con hoặc check list
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
-                } 
+                }
                 
                 //_______File của người tạo việc
                 if(checkObjectIDs(authorAttachs)){
@@ -222,6 +251,17 @@ class Model extends BaseModel {
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+
+                // Cập nhật amountChecklist hoặc amountSubtask cho việc cha
+                if(parentID && checkObjectIDs(parentID)){
+                    // Việc con
+                    if(type == 1){
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $set: { amountSubtask: { $inc: 1 }}})
+                    }else{
+                        // checklist
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $set: { amountChecklist: { $inc: 1 }}})
+                    }
+                }
 
                 /**
                  * Tạo checklist hoặc việc con mới
@@ -560,6 +600,17 @@ class Model extends BaseModel {
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
+                // Cập nhật amountFinishedChecklist hoặc amountFinishedSubtask cho việc cha
+                if(infoAterUpdate.parent && status == 3){
+                    // Việc con
+                    if(infoAterUpdate.type == 1){
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $set: { amountFinishedSubtask: { $inc: 1 }}})
+                    }else{
+                        // checklist
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $set: { amountFinishedChecklist: { $inc: 1 }}})
+                    }
+                }
+
                 if(related.length) {
                     /**
                      * Thêm người liên quan trong công việc
@@ -609,16 +660,26 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    updateStatusMutiple({ taskIDs }){
+    updateStatusMutiple({ taskIDs, parentID, type }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(taskIDs))
+                if (!checkObjectIDs(taskIDs, parentID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
 				if (!infoTaskAfterUpdate) 
                     return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
-               
+                let amountTaskAndChecklist = taskIDs.length;
+                // Việc con
+                if (type == 1) {
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {  $set: { $inc : { amountFinishedSubtask: amountTaskAndChecklist }} })
+                }
+                
+                // Checklist
+                if (type == 2) {
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {  $set: { $inc : { amountFinishedChecklist: amountTaskAndChecklist }} })
+                }
+                
                 return resolve({ error: false, message: "update_success" });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -649,7 +710,35 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+                // Bắt đầu kiểm tra quyền
+                let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
+                let { author, assignee, related, group } = infoTaskToCheckPermission;
+                let isAuthor = false;
+                let isAssignee = false;
+                let isRelated = false;
+                let isMemberGroup = false;
 
+                if(author.toString() == userID.toString()){
+                    isAuthor = true;
+                }
+                if(assignee.toString() == userID.toString()){
+                    isAssignee = true;
+                }
+                if(related.includes(userID)){
+                    isRelated = true;
+                }
+                if(group && group.members && group.members.includes(userID)){
+                    isMemberGroup = true;
+                }
+
+                if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+
+                // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem
+                if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+
+                // Kết thúc kiểm tra quyền
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
                                 .populate(populates).lean();
@@ -657,26 +746,6 @@ class Model extends BaseModel {
 				if (!infoTask) 
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
-                //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
-                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                //     $pull: { 
-                //         news: userID
-                //     },
-                //     $addToSet: {
-                //         viewedUsers: userID
-                //     }
-                // }, { new: true })
-
-				// let logID = infoTask && infoTask.lastLog;
-
-                //_________Update usersSeen lastLog
-                // if(logID){
-                //     await PCM_PLAN_LOG_COLL.findByIdAndUpdate(logID, { 
-                //         $addToSet: {
-                //             usersSeen: userID
-                //         }
-                //     });
-                // }
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

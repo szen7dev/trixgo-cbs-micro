@@ -118,6 +118,11 @@ class Model extends BaseModel {
                 images  && (dataInsert.images   = images);
 
                 let infoAterInsert = await this.insertData(dataInsert); 
+                // Cập nhật amountResponse cho phản hồi liên quan
+                if(type == 2){
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+                }
+
                 if(!infoAterInsert) {
                     return resolve({
                         error: true,
