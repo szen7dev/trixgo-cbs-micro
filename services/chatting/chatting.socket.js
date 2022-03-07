@@ -453,7 +453,7 @@ exports.CHATTING_SOCKET = {
 
 			const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
 			const { members, usersMute } = infoConversation;
-			const listMemberIDMuteConversation = usersMute?.map(userID => userID.toString());
+			const listMemberIDMuteConversation = usersMute?.map(userID => userID.toString()) || [];
 
 			// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
 			// const arrReceiver = members.filter(memberID => {
@@ -600,7 +600,7 @@ exports.CHATTING_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
 				});
 
-				if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())) {
+				if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation?.includes(memberID.toString())) {
 					// SEND CLOUD-MSG
 					broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 						users: [memberID],
