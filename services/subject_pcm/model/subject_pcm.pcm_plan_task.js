@@ -119,7 +119,7 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                     type,
                 }
-
+                
                 //precalculated
                 // companyOfAuthor
                 // companyOfAssignee
@@ -139,12 +139,12 @@ class Model extends BaseModel {
                 })
                 // companyOfAuthor
                 if(!infoAuthor.error){
-                    data.companyOfAuthor = infoAuthor.data.company;
+                    dataInsert.companyOfAuthor = infoAuthor.data.company;
                 }
 
                 // companyOfAssignee
                 if(!infoAssignee.error){
-                    data.companyOfAssignee = infoAuthor.data.company;
+                    dataInsert.companyOfAssignee = infoAuthor.data.company;
                 }
 
                 // Việc con hoặc check list
