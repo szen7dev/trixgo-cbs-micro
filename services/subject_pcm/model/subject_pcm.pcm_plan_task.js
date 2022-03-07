@@ -120,7 +120,7 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                     type,
                 }
-
+                
                 //precalculated
                 // companyOfAuthor
                 // companyOfAssignee
@@ -140,12 +140,12 @@ class Model extends BaseModel {
                 })
                 // companyOfAuthor
                 if(!infoAuthor.error){
-                    data.companyOfAuthor = infoAuthor.data.company;
+                    dataInsert.companyOfAuthor = infoAuthor.data.company;
                 }
 
                 // companyOfAssignee
                 if(!infoAssignee.error){
-                    data.companyOfAssignee = infoAuthor.data.company;
+                    dataInsert.companyOfAssignee = infoAuthor.data.company;
                 }
 
                 // Việc con hoặc check list
@@ -277,7 +277,6 @@ class Model extends BaseModel {
     
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-                    console.log({ listReceivers, receivers })
 
                     const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                         userID: assigneeID,
@@ -735,11 +734,11 @@ class Model extends BaseModel {
                 }
 
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
-                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });
 
                 // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem
                 if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
-                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });
 
                 // Kết thúc kiểm tra quyền
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
@@ -747,7 +746,7 @@ class Model extends BaseModel {
                                 .populate(populates).lean();
 
 				if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
+                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED, status: 200 });
 
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
