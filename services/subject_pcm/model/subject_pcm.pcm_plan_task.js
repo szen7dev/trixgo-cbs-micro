@@ -713,7 +713,35 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+                // Bắt đầu kiểm tra quyền
+                let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
+                let { author, assignee, related, group } = infoTaskToCheckPermission;
+                let isAuthor = false;
+                let isAssignee = false;
+                let isRelated = false;
+                let isMemberGroup = false;
 
+                if(author.toString() == userID.toString()){
+                    isAuthor = true;
+                }
+                if(assignee.toString() == userID.toString()){
+                    isAssignee = true;
+                }
+                if(related.includes(userID)){
+                    isRelated = true;
+                }
+                if(group && group.members && group.members.includes(userID)){
+                    isMemberGroup = true;
+                }
+
+                if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+
+                // Nếu là công việc nháp, không phải là người tạo việc mà là người thực hiện thì không cho phép người thực hiện được vào xem
+                if(Number(infoTaskToCheckPermission.draft) === 1 && isAssignee && !isAuthor &&!isRelated)
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+
+                // Kết thúc kiểm tra quyền
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
                                 .populate(populates).lean();
@@ -721,26 +749,6 @@ class Model extends BaseModel {
 				if (!infoTask) 
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
-                //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
-                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                //     $pull: { 
-                //         news: userID
-                //     },
-                //     $addToSet: {
-                //         viewedUsers: userID
-                //     }
-                // }, { new: true })
-
-				// let logID = infoTask && infoTask.lastLog;
-
-                //_________Update usersSeen lastLog
-                // if(logID){
-                //     await PCM_PLAN_LOG_COLL.findByIdAndUpdate(logID, { 
-                //         $addToSet: {
-                //             usersSeen: userID
-                //         }
-                //     });
-                // }
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
