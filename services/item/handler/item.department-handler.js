@@ -200,6 +200,33 @@ module.exports = {
             }
         }
     },
+
+      
+    /**
+	 * Dev: Depv ✅
+	 * Func: Xoá dự án phòng ban
+	 */
+    remove: {
+        auth: "required",
+        params: {
+            departmentID    : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  departmentID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+            
+                let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.remove({
+                    departmentID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
     
     /**
 	 * Dev: Depv ✅

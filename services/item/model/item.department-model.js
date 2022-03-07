@@ -5,6 +5,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 const _isValid                          = require("mongoose").Types.ObjectId;
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 /**
  * import inter-coll, exter-coll
@@ -84,7 +85,8 @@ class Model extends BaseModel {
                     admins: [authorID],
                     members: [authorID], 
                     milestones,
-                    completedMilestones
+                    completedMilestones,
+                    userCreate: authorID,
                 }
 
                 if(pm && _isValid(pm)){
@@ -546,6 +548,37 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Xoá dự án/phòng ban ✅
+     * Author: Depv
+     * Code: F00401
+     */
+    remove({ departmentID, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+
+                if(!checkObjectIDs(departmentID))
+                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
+                if(!infoDepartment)
+                    return resolve({ error: true, message: "không tìm thấy ID", keyError: KEY_ERROR.GET_INFO_FAILED,  status: 403 });
+
+                if(infoDepartment.userCreate != userID)
+                    return resolve({ error: true, message: "Bạn phải là người tạo ra dự án/phòng ban này mới được xoá", keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 });
+
+                let infoAfterRemove = await ITEM__DEPARTMENT_COLL.findByIdAndDelete(departmentID);
+                if(!infoAfterRemove)
+                return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
+
+                return resolve({ error: false, message: "Xoá thành công", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
     /**
      * Name: Lấy thông tin dự án/phòng ban ✅
