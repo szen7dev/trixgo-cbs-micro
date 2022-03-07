@@ -44,7 +44,7 @@ module.exports = {
             workflowTemplate : { type: "string", optional: true },
             amountoftime     : { type: "string", optional: true },
             amountPerHour    : { type: "string", optional: true },
-            field            : { type: "string", optional: true },
+            fieldID          : { type: "string", optional: true },
             select           : { type: "string", optional: true },
             populates        : { type: "string", optional: true },
         },

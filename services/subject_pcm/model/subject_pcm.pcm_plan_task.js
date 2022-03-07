@@ -36,46 +36,10 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { };
+                let dataInsert = {};
+                let infoGroup = null;
+                let companyID = null;
                 let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
-                let infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type')
-             
-                let companyID;
-                if(!parentID){
-                    // call service department để lấy thông tin
-                    
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-                    /**
-                     * Company lấy theo company của project
-                     * Chứ không phải lấy theo company của user tạo task
-                     */ 
-                    companyID = infoProject.data.company;
-                    if(!companyID)
-                        return res.json({ error: true, message: "company_invalid" }); 
-                    
-                }else{
-                    // Lấy thông tin công ty theo công việc cha
-                    let infoTaskParent = await this.getInfo({ 
-                        taskID: parentID, 
-                        userID: authorID,
-                        populates: JSON.stringify({
-                            path: 'author assignee',
-                            select: '_id'
-                        })
-                    });
-                    let { author, assignee, company, isproposal } = infoTaskParent.data;
-                    /**   
-                     * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
-                     * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
-                     */
-                    if(Number(isproposal) != 1){
-                        if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
-                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
-                    }
-                    companyID = company._id;
-                }
 
                 if(!name)
                     return resolve({ error: true, message: 'name_invalid', status: 400 });
@@ -100,12 +64,47 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
+                if(!parentID){
+                    // call service department để lấy thông tin
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                        departmentID: projectID
+                    })
+                    /**
+                     * Company lấy theo company của project
+                     * Chứ không phải lấy theo company của user tạo task
+                     */ 
+                    companyID = infoProject?.data?.company;
+                    if(!companyID)
+                        return resolve({ error: true, message: "company_invalid", status: 400 }); 
+                } else{
+                    // Lấy thông tin công ty theo công việc cha
+                    let infoTaskParent = await this.getInfo({ 
+                        taskID: parentID, 
+                        userID: authorID,
+                        populates: JSON.stringify({
+                            path: 'author assignee',
+                            select: '_id'
+                        })
+                    });
+                    let { author, assignee, company, isproposal } = infoTaskParent.data;
+                    /**   
+                     * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
+                     * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
+                     */
+                    if(Number(isproposal) != 1){
+                        if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
+                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 })
+                    }
+                    companyID = company._id;
+                }
+
+                infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
                 dataInsert = {  
                     name, 
                     company : companyID,
@@ -224,7 +223,6 @@ class Model extends BaseModel {
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                console.log({ parentID, type })
                 /**
                  * Tạo checklist hoặc việc con mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
@@ -238,7 +236,6 @@ class Model extends BaseModel {
     
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-                    console.log({ listReceivers, receivers })
 
                     const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                         userID: assigneeID,
@@ -263,7 +260,6 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
-                    console.log({ infoAssignee })
 
                     if(!infoAssignee.error) {
                         ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -779,7 +775,7 @@ class Model extends BaseModel {
 
                 // Tìm kiếm nếu có trạng thái công việc
                 if(status){
-                    conditionObj.status = { $in: status }
+                    conditionObj.status = { $in: [status] }
                 }
 
                 // Tìm kiếm điều kiên công việc nhanh chậm
@@ -968,6 +964,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+                console.log({ 'CONDITION_BEFORE': conditionObj })
                 let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -985,6 +982,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
+                console.log({ 'CONDITION_AFTER': conditionObj })
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
