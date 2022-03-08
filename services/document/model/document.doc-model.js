@@ -461,7 +461,7 @@ class Model extends BaseModel {
 					populates = JSON.parse(populates);
 				}else{
                     populates = {
-                        path: "",
+                        path: "null",
                         select: ""
                     }
                 }
@@ -562,8 +562,6 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-                console.log({ conditionObj });
-
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
