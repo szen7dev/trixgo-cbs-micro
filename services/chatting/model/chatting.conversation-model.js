@@ -40,7 +40,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: VinhHV
+	 * Dev: MinhVH
 	 * Func: Tạo cuộc hội thoại
 	 * Date: ...
 	 * Updated: MinhVH - 04/08/2021
@@ -230,9 +230,11 @@ class Model extends BaseModel {
 						type: 103
 					})
 
-					await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-						$set: { isRename: true }
-					});
+					if(infoAfterUpdate.isRename === false) {
+						await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+							$set: { isRename: true }
+						});
+					}
 				}
 
 				if(avatar){
@@ -1953,7 +1955,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID)) {
 					return resolve({ 
 						error: true, 
-						message: 'Tham số user ID không hợp lệ', 
+						message: 'Tham số userID không hợp lệ', 
 						keyError: 'params_userID_invalid',
 						status: 400 
 					});
@@ -2112,7 +2114,7 @@ class Model extends BaseModel {
 					for (const conversation of listConversation) {
 						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
 						if(conversation.isPrivate && !conversation.isRename) {
-							const [memberName1st, memberName2st] = conversation.name.split('_');
+							const [memberName1st, memberName2st] = conversation.name?.split('_');
 
 							if(bizfullname === memberName1st && memberName2st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
@@ -2134,7 +2136,7 @@ class Model extends BaseModel {
 				}).select('usersMissMessage').lean();
 
 				listAllConversation.map(conversation => {
-					const user = conversation.usersMissMessage.find(user => 
+					const user = conversation?.usersMissMessage?.find(user => 
 						user.userID.toString() === userID.toString());
 
 					user && (amountMissMessage += user.amount);

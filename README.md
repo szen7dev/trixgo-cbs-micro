@@ -403,9 +403,9 @@ for(let user of listUser){
 
 
 <!-- CONVERT MESSAGE CONVERSATION --> (MINH)
-let listMessage = db.message_messages.find({}).toArray();
+let listMessages = db.message_messages.find({}).toArray();
 
-for(const infoMessage of listMessage){
+for(const infoMessage of listMessages){
     let { _id, listSeen, status, files } = infoMessage;
     let listFiles = [];
     let isImage = false;
@@ -427,13 +427,13 @@ for(const infoMessage of listMessage){
                     file,
                     author
                 })
-                
+
                 if(!isImage && type == 1) {
                     isImage = true;
                 }
-                
+
                 listFiles[listFiles.length] = {
-                    file,
+                    file: fileAfterInsert.insertedId,
                     status: 1,
                     usersDelete: []
                 }
@@ -441,7 +441,21 @@ for(const infoMessage of listMessage){
         })
     }
 
-    const infoAfterUpdate = db.message_messages.findOneAndUpdate({ _id: ObjectId(_id) }, {
+    if(listSeen && listSeen.length) {
+        listSeen = [...new Set(listSeen)];
+    }
+
+    db.message_messages.findOneAndUpdate({ _id: ObjectId(_id) }, {
+        $unset: {
+            listSeen: 1,
+            bug: 1,
+            taskID: 1,
+            ticket: 1,
+            priority: 1,
+            expiredTime: 1,
+            fixedbug: 1,
+            __v: 1
+        },
         $set: {
             usersSeen: listSeen || [],
             usersAssigned: [],
@@ -453,21 +467,13 @@ for(const infoMessage of listMessage){
             type: !listFiles.length ? 0 : (isImage ? 1 : 2),
             isDataConvert: 1, 
         }
-    })
-
-    console.log({ infoAfterUpdate })
+    }, { returnNewDocument: true })
 }
 
 
 <!-- CONVERT CONVERSATION --> (MINH)
 
-let listConversations  = db.message_conversations.find({ 
-    // $and: [
-    //     { author: { $ne: [] } },
-    //     { author: { $ne: null } },
-    //     { author: { $exists: true } },
-    // ]
-}).toArray();
+let listConversations  = db.message_conversations.find({}).toArray();
 
 let config = {
     configHighlight: 1,
@@ -484,7 +490,7 @@ listConversations.forEach(conversation => {
     let company = null;
 
     if(author && author.length && author[0]){
-        let infoAuthor = db.users.findOne({ _id: ObjectId(author[0])})
+        let infoAuthor = db.users.findOne({ _id: ObjectId(author[0]) })
         company = infoAuthor?.company;
     }
     
@@ -504,12 +510,14 @@ listConversations.forEach(conversation => {
         })
     }
     
-    const infoAfterUpdate = db.message_conversations.findOneAndUpdate({_id: ObjectId(_id)},{
+    db.message_conversations.findOneAndUpdate({ _id: ObjectId(_id) },{
         $unset: {
             links: 1,
-            // arrMissMessage: 1,
+            arrMissMessage: 1,
             taskID: 1,
-            arrMesageTypingUsers: 1
+            arrUserMuteMessage: 1,
+            arrMesageTypingUsers: 1,
+            __v: 1
         },
         $set: { 
             _id, 
@@ -529,7 +537,5 @@ listConversations.forEach(conversation => {
             author: (author && author.length) ? author[0] : null,
             isDataConvert: 1
         }
-    })
-
-    console.log({ infoAfterUpdate })
+    }, { returnNewDocument: true })
 })

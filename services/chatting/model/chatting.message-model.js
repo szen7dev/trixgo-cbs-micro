@@ -13,6 +13,7 @@ const { REACTION_TYPES }							= require('../helper/chatting.keys-constant');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.actions-constant');
+const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 
 /**
  * TOOLS
@@ -121,7 +122,7 @@ class Model extends BaseModel {
 	 * Date: 06/08/2021
 	 */
     insertMessage({
-		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0
+		conversationID, senderID, content, receiversID, parentID, usersAssigned, files, location, type = 0, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -206,21 +207,48 @@ class Model extends BaseModel {
 
 				// MESSAGE IMAGES, FILES
 				if(files && files.length && checkNumberIsValidWithRange({ arrValid: [1,2], val: type })){
-					const { results } = await PromisePool
+					let { results } = await PromisePool
 						.for(files)
 						.withConcurrency(2)
 						.process(async file => {
-							const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
-								fileName: file.name,
-								fileType: type,
-								conversationID,
-								fileID: file._id,
-								authorID: senderID
+							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID: file._id?.toString()
+							}, {
+								meta: {
+									infoUser: { _id: senderID }
+								}
 							});
-							return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+
+							if(!infoFileCore.error) {
+								const { 
+									app, company, name, nameOrg, description, path, size, mimeType, type, author
+								} = infoFileCore.data;
+
+								const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
+									conversationID,
+									fileID: file._id,
+									appID: app, companyID: company, authorID: author,
+									name, nameOrg, path, size, mimeType, 
+									description, type
+								});
+
+								return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+							}
+
+							// const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
+							// 	fileName: file.name,
+							// 	fileType: type,
+							// 	conversationID,
+							// 	fileID: file._id,
+							// 	authorID: senderID
+							// });
+							// return { file: infoAfterInserted.data && infoAfterInserted.data._id }
 						})
 
-					dataInsertMessage.files = results;
+					if(results.length) {
+						results = results.filter(Boolean);
+						dataInsertMessage.files = results;
+					}
 				}
 
 				// MESSAGE LINK
@@ -1035,7 +1063,7 @@ class Model extends BaseModel {
 						listRecords: listMessagesPined,
 						currentPage: page,
 						limit,
-						totalRecord: infoConversation.messagesPin.length
+						totalRecord: infoConversation.messagesPin?.length
 					}
 				});
             } catch (error) {

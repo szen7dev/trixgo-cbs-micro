@@ -31,15 +31,22 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: 22/02/2022
 	 */
-    insert({ fileName, fileType, conversationID, fileID, authorID }){
+    insert({ companyID, appID, name, nameOrg, description, path, size, mimeType, type, conversationID, fileID, authorID }){
         return new Promise(async (resolve) => {
             try {
 				if(!checkObjectIDs([conversationID, fileID, authorID]))
 					return resolve({ error: true, message: "Request Params Invalid", status: 400 });
 
                 let infoMessageAfterInserted = await this.insertData({ 
-					fileName, 
-					fileType,
+					company: companyID, 
+					app: appID,
+					name,
+					nameOrg,
+					description,
+					path,
+					size,
+					mimeType,
+					type,
 					conversation: conversationID, 
 					file: fileID, 
 					author: authorID

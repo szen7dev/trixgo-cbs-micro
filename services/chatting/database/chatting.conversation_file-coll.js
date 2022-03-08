@@ -4,18 +4,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("message_conversation_file", {
-    // /**
-    //  * Tên file (tương ứng tên file trong file_core)
-    //  */
-    // fileName: String,
-    // /**
-    //  * Loại file
-    //  * 1. Hình ảnh
-    //  * 2. File
-    //  * 3. Audio
-    //  * 4. Video
-    //  */
-    // fileType: Number,
     conversation: {
         type    :  Schema.Types.ObjectId,
         ref     : 'message_conversation'
@@ -28,6 +16,16 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_file", {
     /**
      * FILE_CORE
      */
+     //______Ứng dụng
+    app: {
+        type: Schema.Types.ObjectId,
+        ref: 'app'
+    },
+    //________Công ty
+    company: {
+        type:  Schema.Types.ObjectId,
+        ref : 'company'
+    },
     //______Tên gốc
     nameOrg     : { type: String, require: true }, 
     //______Tên uuidv1
