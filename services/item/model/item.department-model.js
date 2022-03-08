@@ -794,9 +794,10 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
                     populates = JSON.parse(populates);
                 }else{
+                    // chưa fix được trường hợp không truyền populate thì lỗi
                     populates = {
-                        path: "",
-                        select: ""
+                        path: "contract",
+                        select: "_id"
                     }
                 }
 
