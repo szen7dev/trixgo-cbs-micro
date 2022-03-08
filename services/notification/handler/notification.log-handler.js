@@ -100,7 +100,7 @@ module.exports = {
                 const { lastestID, keyword, limit, populates, select } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
-                    authorID, lastestID, keyword, limit: +limit, select, populates
+                    authorID, lastestID, keyword, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
