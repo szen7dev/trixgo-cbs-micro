@@ -390,3 +390,146 @@ for(let noti of listNotification){
     db.notifications.findOneAndUpdate({ _id: ObjectId(_id)}, { $set: dataUpdate })
 }
 
+<!--CONVERT APP USER-->(Xong)
+let listUser = db.users.find({}).select("company _id").toArray();
+let listApp = ["61e049c9fdebf77b072d1b13", "5e47867080019357cce04746", "5dfe4c1b51dc622100bb9d8f", "5dfe4b9051dc622100bb9d89","5df4ce16506d9b3c587948ca"];
+
+for(let user of listUser){
+    let {_id, company } = user;
+    for(let appID of listApp){
+         db.app_users.insert({ company, app: appID, user: _id, endTime: new Date("2022-12-31"), level: 1, numLog: 0, userCreate: ObjectId("6078102a1283502250f8ba12") })
+    }
+}
+
+
+<!-- CONVERT MESSAGE CONVERSATION --> (MINH)
+let listMessage = db.message_messages.find({}).toArray();
+
+for(const infoMessage of listMessage){
+    let { _id, listSeen, status, files } = infoMessage;
+    let listFiles = [];
+    let isImage = false;
+    
+    if(files && files.length) {
+        files.map(file => {
+            const fileInfo = db.files.findOne({ _id: ObjectId(file) });
+
+            if(fileInfo) {
+                const { name, nameOrg, path, size, type, author } = fileInfo;
+                const fileAfterInsert = db.message_conversation_files.insertOne({
+                    name,
+                    nameOrg,
+                    path,
+                    size,
+                    type,
+                    mimeType: type == 1 ? "image/jpeg" : "",
+                    conversation: _id,
+                    file,
+                    author
+                })
+                
+                if(!isImage && type == 1) {
+                    isImage = true;
+                }
+                
+                listFiles[listFiles.length] = {
+                    file,
+                    status: 1,
+                    usersDelete: []
+                }
+            }
+        })
+    }
+
+    const infoAfterUpdate = db.message_messages.findOneAndUpdate({ _id: ObjectId(_id) }, {
+        $set: {
+            usersSeen: listSeen || [],
+            usersAssigned: [],
+            reactions: [],
+            usersDelete: [],
+            files: listFiles,
+            status: status == 1 ? 2 : 1,
+            location: null,
+            type: !listFiles.length ? 0 : (isImage ? 1 : 2),
+            isDataConvert: 1, 
+        }
+    })
+
+    console.log({ infoAfterUpdate })
+}
+
+
+<!-- CONVERT CONVERSATION --> (MINH)
+
+let listConversations  = db.message_conversations.find({ 
+    // $and: [
+    //     { author: { $ne: [] } },
+    //     { author: { $ne: null } },
+    //     { author: { $exists: true } },
+    // ]
+}).toArray();
+
+let config = {
+    configHighlight: 1,
+    configSeeOldMessage: 1,
+    configEditInfo: 1,
+    configCreateNote: 1,
+    configCreatePoll: 1,
+    configPinMessage: 1,
+    configSendMessage: 1
+}
+
+listConversations.forEach(conversation => {
+    let { _id, name, description, members, author, lastMessage, logo, pin, arrMissMessage, arrUserMuteMessage  } = conversation;
+    let company = null;
+
+    if(author && author.length && author[0]){
+        let infoAuthor = db.users.findOne({ _id: ObjectId(author[0])})
+        company = infoAuthor?.company;
+    }
+    
+    let isPrivate = true;
+    let usersMissMessage = [];
+    
+    if(members && members.length > 2){
+        isPrivate = false;
+    }
+    
+    if(arrMissMessage && arrMissMessage.length) {
+        arrMissMessage.map(user => {
+            usersMissMessage[usersMissMessage.length] = {
+                userID: user.userID,
+                amount: user.amout
+            }
+        })
+    }
+    
+    const infoAfterUpdate = db.message_conversations.findOneAndUpdate({_id: ObjectId(_id)},{
+        $unset: {
+            links: 1,
+            // arrMissMessage: 1,
+            taskID: 1,
+            arrMesageTypingUsers: 1
+        },
+        $set: { 
+            _id, 
+            company, 
+            authors: author, 
+            avatar: logo, 
+            messagesPin: pin ? [pin] : [], 
+            usersMissMessage, 
+            isPrivate, 
+            isRename: false, 
+            config,
+            folders: [],
+            usersMute: [],
+            usersHide: [],
+            usersDeleteHistory: [],
+            lastMessage,
+            author: (author && author.length) ? author[0] : null,
+            isDataConvert: 1
+        }
+    })
+
+    console.log({ infoAfterUpdate })
+})
