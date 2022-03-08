@@ -87,14 +87,11 @@ class Model extends BaseModel {
                 let infoAterUpdate = await AUTH__APP_COMPANY_COLL.findByIdAndUpdate(appCompanyID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
                 if(endTime){
-                    if(infoAterUpdate.endTime.getTime() != (new Date(endTime)).getTime()){
-                        let app     = infoAterUpdate.app;
-                        let company = infoAterUpdate.company;
-                        //Cập nhật endTime cho App_User
-                        await AUTH__APP_USER_COLL.updateMany({ app, company }, { $set: { endTime }});
-                    }
+                    let app     = infoAterUpdate.app;
+                    let company = infoAterUpdate.company;
+                    //Cập nhật endTime cho App_User
+                    await AUTH__APP_USER_COLL.updateMany({ app, company }, { $set: { endTime }});
                 }
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });

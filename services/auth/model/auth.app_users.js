@@ -136,7 +136,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
 
                 if(appID){
                     conditionObj.app = appID;
