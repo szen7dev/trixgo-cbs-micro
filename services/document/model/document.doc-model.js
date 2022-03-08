@@ -452,6 +452,8 @@ class Model extends BaseModel {
                  */
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit;
                 }
 				
                 if(populates && typeof populates === 'string'){
@@ -579,11 +581,11 @@ class Model extends BaseModel {
                 }
                 
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
-                    ?.limit(+limit+1)
-                    ?.sort(sortBy)
-                    ?.select(select)
-                    ?.populate(populates)
-                    ?.lean(); 
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
