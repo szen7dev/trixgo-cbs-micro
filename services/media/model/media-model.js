@@ -324,6 +324,7 @@ class Model extends BaseModel {
 							titleMSS = listReceivers.data?.name;
 							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
+						break;
                     }
                     case 3:
                     case 4: {
@@ -353,7 +354,8 @@ class Model extends BaseModel {
 
 				if(arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-						content: content.length > 200 ? content.substring(0, 200) : content,
+						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
+						project: departmentID,
 						receivers: arrReceiver,
 						path: `/media/post/${mediaID}`,
 						languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,

@@ -296,7 +296,7 @@ class Model extends BaseModel {
                             VD: env = 2 => listEnvReceiveNoti = [1, 2]. vì 2 là ứng dụng teaser, nên sẽ đẩy về CBS web(có chứa app chatting), và App Teaser
                  */
                 let listEnvReceiveNoti = [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS].includes(+env) ? [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS] : [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER];
-                console.log("🚀 ~ file: notification.log-model.js ~ line 301 ~ Model ~ returnnewPromise ~ listEnvReceiveNoti", listEnvReceiveNoti)
+                console.log("🚀 ~ file: notification.log-model.js ~ line 301 ~ Model ~ returnnewPromise ~ listEnvReceiveNoti")
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -320,7 +320,7 @@ class Model extends BaseModel {
 
                 if (!infoAfterCall.error) {
                     let { data: { listRecords } } = infoAfterCall;
-                    console.log("🚀 ~ file: notification.log-model.js ~ line 309 ~ Model ~ returnnewPromise ~ listRecords", listRecords)
+                    console.log("🚀 ~ file: notification.log-model.js ~ line 309 ~ Model ~ returnnewPromise ~ listRecords")
 
                     /**
                      * @param listDeviceFromMobile "danh sách device ENV: TEASER"
@@ -376,9 +376,10 @@ class Model extends BaseModel {
                              * chia mảng listDeviceFromMobile thành 2 nhóm để push theo app_id của (CBS và TEASER)
                              */
                             let listDeviceFromMobileWith_CBS        = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_CBS);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 353 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_CBS", listDeviceFromMobileWith_CBS)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 353 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_CBS")
+
                             let listDeviceFromMobileWith_TEASER     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 355 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_TEASER", listDeviceFromMobileWith_TEASER)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 355 ~ Model ~ returnnewPromise ~ listDeviceFromMobileWith_TEASER")
 
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
@@ -420,9 +421,10 @@ class Model extends BaseModel {
 
                         if (listDeviceFromWebBrowser.length > 0) {
                             let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS", listDeviceFromWebBrowserWith_CBS)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS")
+
                             let listDeviceFromWebBrowserWith_TEASER     = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER", listDeviceFromWebBrowserWith_TEASER)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER")
 
                             // WEB PUSH = CBS
                             let dataForWebPushCBS = {
@@ -436,7 +438,6 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForWebPushCBS)
-
 
                             // WEB PUSH = TEASER
                             let dataForWebPushTeaser = {

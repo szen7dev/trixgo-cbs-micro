@@ -275,7 +275,7 @@ class Model extends BaseModel {
     * Author: Depv
     * Code: 
     */
-   remove({ contactDocumentID, ctx }) { 
+    remove({ contactDocumentID, ctx }) { 
        return new Promise(async (resolve) => {
            try {
                 /**
@@ -289,7 +289,7 @@ class Model extends BaseModel {
                 */
                 if(!checkObjectIDs(contactDocumentID))
                    return resolve({ error: true, message: 'Request params contactDocumentID invalid', status: 400 });
-             
+
                 /**
                 * LOGIC STEP (3)
                 * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -329,7 +329,6 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
-                console.log({ error });
                 return resolve({ error: true, message: error.message, status: 500 });
             }
        })
