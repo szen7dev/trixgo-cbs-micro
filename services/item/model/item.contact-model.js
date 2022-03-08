@@ -484,6 +484,9 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Cập nhật thất bại" });
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

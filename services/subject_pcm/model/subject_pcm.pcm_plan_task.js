@@ -763,7 +763,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
-        isproposal, subType, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
+        isproposal, subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -902,8 +902,8 @@ class Model extends BaseModel {
                 //     conditionObj.isproposal = isproposal;
                 // }
                 // Phân loại công việc trước dùng isproposal
-                if(subType){
-                    conditionObj.subType = subType;
+                if(subtype){
+                    conditionObj.subtype = subtype;
                 }
                 
                 /**
@@ -1131,7 +1131,7 @@ class Model extends BaseModel {
                 let amountTaskIsRFa = await PCM_PLAN_TASK_COLL.count({
                     actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
-                    isproposal: 2,
+                    subtype: 2,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
                 })
@@ -1142,7 +1142,7 @@ class Model extends BaseModel {
                 let amountTaskIsRFis = await PCM_PLAN_TASK_COLL.count({
                     actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
-                    isproposal: 1,
+                    subtype: 1,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
                 })

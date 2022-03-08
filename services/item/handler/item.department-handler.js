@@ -298,8 +298,7 @@ module.exports = {
 				let { _id: userID } = ctx.meta.infoUser;
                
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
-                    companyID, lastestID, userID, type, 
-                    keyword, limit, select, populates
+                    companyID, lastestID, userID, type, keyword, limit, select, populates
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

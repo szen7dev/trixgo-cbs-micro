@@ -715,7 +715,7 @@ class Model extends BaseModel {
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select) 
                     .populate(populates)
@@ -781,8 +781,8 @@ class Model extends BaseModel {
                     conditionObj.company = companyID
                 }
                 
-                if([1,2].includes(type)){
-                    conditionObj.type = +type;
+                if(type && [1,2].includes(type)){
+                    conditionObj.type = type;
                 }
 
                 if(!checkObjectIDs(userID))
@@ -794,6 +794,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
                     populates = JSON.parse(populates);
                 }else{
+                    // chưa fix được trường hợp không truyền populate thì lỗi
                     populates = {
                         path: "",
                         select: ""
@@ -828,7 +829,7 @@ class Model extends BaseModel {
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select) 
                     .populate(populates)

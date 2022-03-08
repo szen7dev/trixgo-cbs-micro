@@ -171,7 +171,7 @@ module.exports = {
             collection  : { type: "string", optional: true },
             assigneeID  : { type: "string", optional: true },
             authorID    : { type: "string", optional: true },
-            isproposal  : { type: "string", optional: true },
+            subtype     : { type: "string", optional: true },
             isExpired   : { type: "string", optional: true },
             fromDate    : { type: "string", optional: true },
             toDate      : { type: "string", optional: true },
@@ -198,7 +198,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
                 let { 
-                    taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
+                    taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
@@ -213,7 +213,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, 
+                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, 
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, select, lastestID, populates
                     });
