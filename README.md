@@ -393,11 +393,11 @@ for(let noti of listNotification){
 <!--CONVERT APP USER-->(Xong)
 let listUser = db.users.find({}).select("company _id").toArray();
 let listApp = ["61e049c9fdebf77b072d1b13", "5e47867080019357cce04746", "5dfe4c1b51dc622100bb9d8f", "5dfe4b9051dc622100bb9d89","5df4ce16506d9b3c587948ca"];
-
+let createAt = new Date();
 for(let user of listUser){
     let {_id, company } = user;
     for(let appID of listApp){
-         db.app_users.insert({ company, app: appID, user: _id, endTime: new Date("2022-12-31"), level: 1, numLog: 0, userCreate: ObjectId("6078102a1283502250f8ba12") })
+         db.app_users.insert({ company, app: ObjectId(appID), user: _id, endTime: new Date("2022-12-31"), level: 1, numLog: 0, userCreate: ObjectId("6078102a1283502250f8ba12"), createAt, isDataConvert: 1  })
     }
 }
 
