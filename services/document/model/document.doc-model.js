@@ -461,7 +461,7 @@ class Model extends BaseModel {
 					populates = JSON.parse(populates);
 				}else{
                     populates = {
-                        path: "null",
+                        path: "",
                         select: ""
                     }
                 }

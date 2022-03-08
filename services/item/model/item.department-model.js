@@ -796,8 +796,8 @@ class Model extends BaseModel {
                 }else{
                     // chưa fix được trường hợp không truyền populate thì lỗi
                     populates = {
-                        path: "contract",
-                        select: "_id"
+                        path: "",
+                        select: ""
                     }
                 }
 
