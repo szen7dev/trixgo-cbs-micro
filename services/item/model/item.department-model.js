@@ -715,7 +715,7 @@ class Model extends BaseModel {
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select) 
                     .populate(populates)
@@ -781,8 +781,8 @@ class Model extends BaseModel {
                     conditionObj.company = companyID
                 }
                 
-                if([1,2].includes(type)){
-                    conditionObj.type = +type;
+                if(type && [1,2].includes(type)){
+                    conditionObj.type = type;
                 }
 
                 if(!checkObjectIDs(userID))
@@ -828,7 +828,7 @@ class Model extends BaseModel {
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select) 
                     .populate(populates)
