@@ -340,30 +340,33 @@ class Model extends BaseModel {
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
                             let { devices } = user;
-                            listDeviceFromMobile = [
-                                ...listDeviceFromMobile,
-                                /**
-                                 * item.oneSignalID: là điều kiện chắc chắn obj trong devices phải có key để onesignal push noti
-                                 * listEnvReceiveNoti.includes(item.env): tùy vào ACTION mà sẽ push noti theo từng loại app
-                                 * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
-                                 * 
-                                 */
-                                ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
-                                    return {
-                                        oneSignalID: itemReturn.oneSignalID,
-                                        app_id: _findAppIdWithEnv(itemReturn.env),
-                                    }
-                                })
-                            ]
-                            listDeviceFromWebBrowser = [
-                                ...listDeviceFromWebBrowser,
-                                ...devices.filter(item => item.oneSignalID  && listEnvReceiveNoti.includes(item.env) && item.env == +env && item.env == this.WEB_CBS).map(itemReturn => {
-                                    return {
-                                        oneSignalID: itemReturn.oneSignalID,
-                                        app_id: _findAppIdWithEnv(itemReturn.env),
-                                    }
-                                })
-                            ]
+
+                            if(devices && devices.length) {
+                                listDeviceFromMobile = [
+                                    ...listDeviceFromMobile,
+                                    /**
+                                     * item.oneSignalID: là điều kiện chắc chắn obj trong devices phải có key để onesignal push noti
+                                     * listEnvReceiveNoti.includes(item.env): tùy vào ACTION mà sẽ push noti theo từng loại app
+                                     * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
+                                     * 
+                                     */
+                                    ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
+                                        return {
+                                            oneSignalID: itemReturn.oneSignalID,
+                                            app_id: _findAppIdWithEnv(itemReturn.env),
+                                        }
+                                    })
+                                ]
+                                listDeviceFromWebBrowser = [
+                                    ...listDeviceFromWebBrowser,
+                                    ...devices.filter(item => item.oneSignalID  && listEnvReceiveNoti.includes(item.env) && item.env == +env && item.env == this.WEB_CBS).map(itemReturn => {
+                                        return {
+                                            oneSignalID: itemReturn.oneSignalID,
+                                            app_id: _findAppIdWithEnv(itemReturn.env),
+                                        }
+                                    })
+                                ]
+                            }
                         });
                       
                         // định nghĩa obj onesignal dùng chung cho web và app
@@ -372,7 +375,7 @@ class Model extends BaseModel {
                             contents: { "en": description },
                         }
 
-                        if (listDeviceFromMobile.length > 0) {
+                        if (listDeviceFromMobile && listDeviceFromMobile.length) {
                             /**
                              * chia mảng listDeviceFromMobile thành 2 nhóm để push theo app_id của (CBS và TEASER)
                              */
