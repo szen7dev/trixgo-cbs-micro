@@ -586,7 +586,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean(); 
-
+                
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -597,7 +597,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-
+                
                 let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
@@ -882,7 +882,7 @@ class Model extends BaseModel {
 
                 let conditionObj  = { document: documentID };
                 let sortBy;
-                let keys	 = ['modifyAt__-1', '_id__-1'];  
+                let keys	 = ['modifyAt__-1', '_id__-1'];
 
 
                 let conditionObjOrg = { ...conditionObj };

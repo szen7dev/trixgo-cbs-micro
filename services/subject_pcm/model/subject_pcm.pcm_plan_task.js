@@ -687,7 +687,6 @@ class Model extends BaseModel {
         })
     }
     
-
     /**
      * Name: get info task ✅
      * Author: Depv

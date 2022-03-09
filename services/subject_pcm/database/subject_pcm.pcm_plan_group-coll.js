@@ -94,5 +94,4 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }
-   
 });
