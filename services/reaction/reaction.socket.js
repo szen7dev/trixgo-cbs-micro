@@ -173,13 +173,13 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
 
 			console.log({ AFTER: arrReceiver })
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: arrReceiver,
+				users: [...arrReceiver, userID],
 				title: titleMSS,
 				description: descriptionMSS,
 				dataSend: {
