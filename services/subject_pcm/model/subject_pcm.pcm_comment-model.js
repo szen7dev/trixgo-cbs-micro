@@ -118,10 +118,6 @@ class Model extends BaseModel {
                 images  && (dataInsert.images   = images);
 
                 let infoAterInsert = await this.insertData(dataInsert); 
-                // Cập nhật amountResponse cho phản hồi liên quan
-                if(type == 2){
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
-                }
 
                 if(!infoAterInsert) {
                     return resolve({
@@ -143,12 +139,16 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Cập nhật số lượng phản hồi liên quan
-                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                    $inc: {
-                        amountResponse: 1
-                    }
-                });
+                switch (type) {
+                    case 1: // Pre-calculate comment
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
+                        break;
+                    case 2: // Pre-calculate related response
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+                        break;
+                    default:
+                        break;
+                }
 
                 let { author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
@@ -156,24 +156,26 @@ class Model extends BaseModel {
                 let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                 let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
-                await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    content,
-                    receivers,
-                    project: project?.toString(),
-                    contract: contract?.toString(),
-                    path: `/pcm/detail/${taskID}#response_${infoAterInsert._id}`,
-                    languageKey: type === 1 ? LANGUAGE_KEYS.CREATE_COMMENT_PCM : LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
-                    app: APP_KEYS.PCM_PLAN_TASK,
-                    mainColl: {
-                        kind: "pcm_plan_task",
-                        item: taskID
-                    },
-                    subColl: {
-                        kind: "pcm_comment",
-                        item: infoAterInsert._id
-                    },
-                    type: 1 // InApp (Socket)
-                })
+                if(receivers.length) {
+                    await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content,
+                        receivers,
+                        project: project?.toString(),
+                        contract: contract?.toString(),
+                        path: `/pcm/detail/${taskID}#response_${infoAterInsert._id}`,
+                        languageKey: type === 1 ? LANGUAGE_KEYS.CREATE_COMMENT_PCM : LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        subColl: {
+                            kind: "pcm_comment",
+                            item: infoAterInsert._id
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
 
                 infoAterInsert = await PCM_COMMENT_COLL
                     .findById(infoAterInsert._id)
@@ -181,10 +183,9 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                return resolve({ error: false, data: {
-                    result: infoAterInsert,
-                    receivers: listReceivers
-                }, status: 200 });
+                infoAterInsert.receivers = receivers;
+
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

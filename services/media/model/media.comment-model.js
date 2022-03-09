@@ -8,6 +8,7 @@ const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/not
 const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
 const { APP_KEYS, LANGUAGE_KEYS }       = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**s
  * import inter-coll, exter-coll
@@ -33,7 +34,7 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Insert noti to DB
      */
-    createNotification({ infoMedia, authorID, ctx }) {
+    createNotification({ infoMedia, infoComment, authorID, ctx }) {
         return new Promise(async resolve => {
             try {
                 let arrReceiver = [];
@@ -88,24 +89,24 @@ class Model extends BaseModel {
 
                 if(arrReceiver.length) {
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content,
+                        content: infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content,
                         receivers: arrReceiver,
-                        path: `/media/home/${mediaID}#${infoAterInsert._id}`,
+                        path: `/media/home/${infoMedia._id}#${infoComment._id}`,
                         languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
                         app: APP_KEYS.MEDIA,
                         mainColl: {
                             kind: "media",
-                            item: mediaID
+                            item: infoMedia._id
                         },
                         subColl: {
                             kind: "media_comment",
-                            item: infoAterInsert._id
+                            item: infoComment._id
                         },
                         type: 1 // InApp (Socket)
                     })
                 }
 
-                return resolve({ error: false, message: 'success', status: 200 });
+                return resolve({ error: false, data: arrReceiver, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -221,7 +222,13 @@ class Model extends BaseModel {
                 })
 
                 // Insert notification to DB
-                this.createNotification({ infoMedia, authorID, ctx });
+                const infoAfterCreateNoti = await this.createNotification({ 
+                    infoMedia, 
+                    infoComment: infoAterInsert, 
+                    authorID, 
+                    ctx 
+                });
+                if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
 
                 infoAterInsert = await MEDIA__COMMENT_COLL
                     .findById(infoAterInsert._id)
@@ -229,9 +236,10 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
+                infoAterInsert.receivers = infoAfterCreateNoti.data;
+
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
-                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -702,13 +710,21 @@ class Model extends BaseModel {
                 })
 
                 // Insert notification to DB
-                this.createNotification({ infoMedia, authorID, ctx });
+                const infoAfterCreateNoti = await this.createNotification({ 
+                    infoMedia, 
+                    infoComment: infoAterInsert, 
+                    authorID, 
+                    ctx 
+                });
+                if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
 
                 infoAterInsert = await MEDIA__COMMENT_FILE_COLL
                     .findById(infoAterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
+
+                infoAterInsert.receivers = infoAfterCreateNoti.data;
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {

@@ -185,6 +185,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     amountFinishedSubtask: {
         type: Number, default: 0
     },
+    //_________Tổng số lượng bình luận
+    amountComment: {
+        type: Number, default: 0
+    },
     //_________Tổng số lượng phản hồi liên quan
     amountResponse: {
         type: Number, default: 0
