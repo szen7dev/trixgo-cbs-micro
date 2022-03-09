@@ -335,7 +335,6 @@ class Model extends BaseModel {
                      *  - nếu là MOBILE_TEARSER -> ONESIGNAL_APP_TEASER  (79acfc09-966a-48f5-a9ea-44d90410014f)
                      */
                     let _findAppIdWithEnv = envItem => [this.WEB_CBS, this.MOBILE_CBS].includes(+envItem) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
-                    console.log({ listRecords })
 
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
@@ -426,12 +425,12 @@ class Model extends BaseModel {
                             // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
                         }
 
-                        if (listDeviceFromWebBrowser.length > 0) {
+                        if (listDeviceFromWebBrowser.length) {
                             let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS", listDeviceFromWebBrowserWith_CBS)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS", listDeviceFromWebBrowserWith_CBS.length)
 
                             let listDeviceFromWebBrowserWith_TEASER     = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER", listDeviceFromWebBrowserWith_TEASER)
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER", listDeviceFromWebBrowserWith_TEASER.length)
 
                             // WEB PUSH = CBS
                             let dataForWebPushCBS = {
@@ -443,7 +442,8 @@ class Model extends BaseModel {
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowserWith_CBS.map(item => item.oneSignalID)
                             }
-
+                            console.info('WEB PUSH = CBS')
+                            console.log({ include_player_ids: dataForWebPushCBS.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushCBS)
 
                             // WEB PUSH = TEASER
@@ -456,7 +456,8 @@ class Model extends BaseModel {
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowserWith_TEASER.map(item => item.oneSignalID)
                             }
-
+                            console.info('WEB PUSH = TEASER')
+                            console.log({ include_player_ids: dataForWebPushTeaser.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushTeaser)
 
                             // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
