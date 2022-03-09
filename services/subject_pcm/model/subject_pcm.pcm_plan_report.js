@@ -4,25 +4,25 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
-const SUBJECT_PCM__USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
+const PCM_PLAN_REPORT_COLL        = require('../database/subject_pcm.pcm_plan_report-coll');
+const USER_PCM_PLAN_REPORT_COLL   = require('../database/subject_pcm.user_pcm_plan_report-coll');
 
-const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
  */
-const SUBJECT__USER_PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
-const SUBJECT_PCM__PCM_PLAN_TASK_MODEL      = require('./subject_pcm.pcm_plan_task').MODEL;
+const PCM_PLAN_REPORT_MODEL   = require('./subject_pcm.user_pcm_plan_report').MODEL;
 
 class Model extends BaseModel {
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_REPORT_COLL);
+        super(PCM_PLAN_REPORT_COLL);
     }
 
     /**
@@ -49,16 +49,13 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-
-                // if(!checkObjectIDs(projectID))
-                //     return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
                 
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                dataInsert = { company: companyID, project: projectID, userCreate: userID, userUpdate: userID };
+                dataInsert = { company: companyID, project: projectID, author: userID, userUpdate: userID };
 
                 if(type){
                     dataInsert.type = type;
@@ -79,10 +76,7 @@ class Model extends BaseModel {
                 let infoAterInsert = await this.insertData(dataInsert);
 
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Can't insert pcm_plan_report", status: 403 });
-
-                // TẠO USER_PCM_PLAN_REPORT
-                await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.insert({ userID, subjectID: infoAterInsert._id, role: 1, author: userID });
+                    return resolve({ error: true, message: KEY_ERROR.INSERT_FAILED, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -136,10 +130,10 @@ class Model extends BaseModel {
                     dataUpdate.conditionPin = conditionPin;
                 }
                 
-                let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
+                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't update pcm plan report", status: 403 });
+                    return resolve({ error: true, message: "Can't update pcm plan report", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -161,8 +155,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { };
-                
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -178,10 +170,10 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
               
-                let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, { state: 2 }, { new: true });
+                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't remove subject", status: 403 });
+                    return resolve({ error: true, message: "Can't remove subject", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
 
                 return resolve({ error: false, message: "Remove success", status: 200 });
             } catch (error) {
@@ -217,7 +209,12 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
               
                 /**
                  * LOGIC STEP (3)
@@ -225,12 +222,12 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoData = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findById(reportID)
+                let infoData = await PCM_PLAN_REPORT_COLL.findById(reportID)
                                 .select(select)
                                 .populate(populates)
                                 .lean();
                 if(!infoData)
-                    return resolve({ error: true, message: "Can't get info subject", status: 403 });
+                    return resolve({ error: true, message: "Can't get info subject", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoData, status: 200 });
             } catch (error) {
@@ -250,8 +247,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {  };
-                let sortBy   = { createAt: -1, _id: -1 };
+                let conditionObj = { author: userID };
+                let sortBy;
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 /** 
                  * VALIDATION STEP (2)
@@ -280,7 +278,16 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
+
+                // SEARCH TEXT
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -288,30 +295,22 @@ class Model extends BaseModel {
                  */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.findById(lastestID);
+					let infoData = await PCM_PLAN_REPORT_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
                     conditionObj = dataPagingAndSort.data.find;
-					sortBy       = dataPagingAndSort.data.sort;
-				}
+                    sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
 
-                // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
-
-                let listUserPcmPlanReportAccess = await SUBJECT_PCM__USER_PCM_PLAN_REPORT_COLL.find({ user: userID });
-
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_PLAN_REPORT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -319,9 +318,9 @@ class Model extends BaseModel {
                     .lean();
                 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
 
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_REPORT_COLL.countDocuments(conditionObj);
+                let totalRecord = await PCM_PLAN_REPORT_COLL.countDocuments(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     

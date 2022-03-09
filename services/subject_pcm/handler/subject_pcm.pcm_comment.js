@@ -1,18 +1,19 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }       = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL  = require('../model/subject_pcm.pcm_plan_task_comment-model').MODEL;
+const PCM_COMMENT_MODEL                     = require('../model/subject_pcm.pcm_comment-model').MODEL;
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: MinhVH
 	 * Func: Tạo comment
 	 * Date: 17/08/2021
+	 * Update: 22/02/2022
 	 */ 
     insert: {
         auth: "required",
@@ -23,15 +24,17 @@ module.exports = {
             parentID   : { type: "string", optional: true },
             files      : { type: "array", optional: true },
             images     : { type: "array", optional: true },
+            select     : { type: "string", optional: true },
+            populates  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { content, taskID, type, parentID, files, images } = ctx.params;
-
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.insert({
-					taskID, parentID, authorID, type, content, bizfullname, files, images, ctx
+                const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
+                
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
+					taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -41,30 +44,58 @@ module.exports = {
         }
     },
 
-    /**
-	 * Dev: Depv ✅
+     /**
+	 * Dev: MinhVH
 	 * Func: Cập nhật comment
-	 * Date: 17/08/2021
-	 */
+	 * Date: 22/02/2022
+	 */ 
     update: {
         auth: "required",
         params: {
-			commentTemplateID   : { type: "string" },
-			taskID              : { type: "string" },
-            isMarked            : { type: "boolean", optional: true },
+			content             : { type: "string" },
+            commentID           : { type: "string" },
+            files               : { type: "array", optional: true },
+            images              : { type: "array", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                const { taskID, commentTemplateID, isMarked } = ctx.params;
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { commentID, content, files, images, select, populates } = ctx.params;
 
-                // Call service comment core để cập nhật
-                // let infoCommentCore = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.COMMENT_UPDATE}`, {
-				// 	commentID: commentCoreID, content
-				// });
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
+					commentID, authorID, content, files, images, select, populates
+				});
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.updateMarkResponse({
-					taskID, commentID: commentTemplateID, isMarked
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật đánh dấu comment
+	 * Date: 17/08/2021
+	 * Update: 22/02/2022
+	 */
+    updateMarkResponse: {
+        auth: "required",
+        params: {
+			commentID   : { type: "string" },
+			taskID      : { type: "string" },
+            isMarked    : { type: "boolean", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+                const { taskID, commentID, isMarked } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.updateMarkResponse({
+					taskID, commentID, isMarked
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,22 +106,23 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: MinhVH
 	 * Func: Xóa comment
 	 * Date: 17/08/2021
+	 * Update: 22/02/2022
 	 */
-    remove: {
+    delete: {
         auth: "required",
         params: {
-			commentTemplateID: { type: "string" },
+			commentID: { type: "string" },
         }, 
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { commentTemplateID } = ctx.params;
+                const { commentID } = ctx.params;
 
-                const resultAfterCallHandler = await INSPECTION__TEMPLATE_DOC_COMMENT_MODEL.remove({ commentID: commentTemplateID, authorID });
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.delete({ commentID, authorID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -101,17 +133,19 @@ module.exports = {
 
     /**
 	 * Dev: Depv 
-	 * Func: Danh sách hoặc chi tiết ✅
+	 * Func: Danh sách hoặc chi tiết comment
 	 * Date: 17/08/2021
+	 * Update: 22/02/2022
 	 */
     getInfoAndGetList: {
         params: {
             taskID              : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
             isMarked            : { type: "string", optional: true },
             limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-            commentTemplateID   : { type: "string", optional: true },
+            commentID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
@@ -119,18 +153,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, limit, parentID, lastestID, commentTemplateID, isMarked, sortKey, select, populates } = ctx.params;
+                let { taskID, limit, parentID, lastestID, commentID, type, isMarked, sortKey, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
-
-                if(commentTemplateID){
-                    // Get info
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.getInfo({
-                        commentID: commentTemplateID, select, populates
+                
+                if(commentID){
+                    resultAfterCallHandler = await PCM_COMMENT_MODEL.getInfo({
+                        commentID, select, populates
                     });
                 } else{
-                    // Get list
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.getList({
-                        taskID, parentID, limit, lastestID, isMarked, sortKey, select, populates
+                    resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
+                        taskID, parentID, limit, lastestID, type, isMarked, sortKey, select, populates
                     });
                 }
 
@@ -142,9 +174,11 @@ module.exports = {
     },
 
     /**
-     * Name   : Danh sách comment tìm kiếm theo id ✅
-     * Author : MinhVH
-     */
+	 * Dev: MinhVH
+	 * Func: Danh sách comment tìm kiếm theo id
+	 * Date: ...
+	 * Update: 22/02/2022
+	 */
     searchCommentById: {
         params: {
             taskID      : { type: "string" },
@@ -158,7 +192,7 @@ module.exports = {
 				const { _id: authorID } = ctx.meta.infoUser;
                 let { taskID, commentID, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_COMMENT_MODEL.searchCommentById({
+                let resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentById({
                     taskID, authorID, commentID, select, populates
                 });
 

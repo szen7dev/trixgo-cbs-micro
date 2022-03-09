@@ -4,6 +4,7 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
@@ -15,7 +16,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**s
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
+const PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 
@@ -25,7 +26,7 @@ const { template } = require('lodash');
 class Model extends BaseModel {               
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_GROUP_COLL);
+        super(PCM_PLAN_GROUP_COLL);
     }
     
     /**
@@ -52,11 +53,11 @@ class Model extends BaseModel {
                     }
                 }
             
-                let infoPlanGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(planGroupID)
+                let infoPlanGroup = await PCM_PLAN_GROUP_COLL.findById(planGroupID)
                                     .select(select)
                                     .populate(populates)
 
-                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get' });
+                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 return resolve({ error: false, data: infoPlanGroup });
             } catch (error) {
@@ -118,7 +119,7 @@ class Model extends BaseModel {
                 let conditionObjOrg = { ...conditionObj};
                 
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(lastestID);
+					let infoData = await PCM_PLAN_GROUP_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -131,7 +132,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
 				}
                 
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_PLAN_GROUP_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .select(select)
@@ -139,9 +140,9 @@ class Model extends BaseModel {
                     .lean(); 
                 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
+                let totalRecord = await PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
                     

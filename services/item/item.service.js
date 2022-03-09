@@ -24,9 +24,6 @@ const ITEM__ACCOUNT_HANDLER          	= require('./handler/item.account-handler'
 const ITEM__FUNDA_HANDLER          		= require('./handler/item.funda-handler');
 const ITEM__GOOD_HANDLER          		= require('./handler/item.good-handler');
 
-
-
-
 /**
  * COLLECTIONS
  */
@@ -74,6 +71,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTRACT_REMOVE] 						: ITEM__CONTRACT_HANDLER.remove,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS]	: ITEM__CONTRACT_HANDLER.getListIsMembers,
 
 		//==========================================  DEPARTMENT  ================================
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,
@@ -83,12 +81,17 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
 	
 		//==========================================  DOCTYPE  ===================================
+		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,
+		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,
+		[CF_ACTIONS_ITEM.DOCTYPE_REMOVE] 						: ITEM__DOCTYPE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
 
 		//==========================================  CONTACT  ===================================
 		[CF_ACTIONS_ITEM.CONTACT_INSERT] 						: ITEM__CONTACT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.CONTACT_UPDATE] 						: ITEM__CONTACT_HANDLER.update,
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM] 			: ITEM__CONTACT_HANDLER.getListOfSystem,
+
 		
 		//==========================================  WAREHOUSE  =================================
 		[CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST] 		: ITEM__WAREHOUSE_HANDLER.getInfoAndGetList,

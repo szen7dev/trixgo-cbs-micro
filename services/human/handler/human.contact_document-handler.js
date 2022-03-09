@@ -144,6 +144,8 @@ module.exports = {
             contactDocumentID : { type: "string", optional: true },
             type              : { type: "string", optional: true },
             contactID         : { type: "string", optional: true },
+            companyID         : { type: "string", optional: true },
+            isDuration3Month  : { type: "string", optional: true },
             
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -155,9 +157,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactDocumentID, type, contactID, keyword, limit, lastestID, select, populates } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
-
+                let { contactDocumentID, type, contactID, isDuration3Month, companyID, keyword, limit, lastestID, select, populates } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+                if(!companyID){
+                    companyID = company._id;
+                }
                 let resultAfterCallHandler;
                 if(contactDocumentID){
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getInfo({
@@ -165,7 +169,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getList({
-                        companyID: company._id, type, contactID, lastestID, keyword, select, limit, populates
+                        companyID, type, contactID, isDuration3Month, lastestID, keyword, select, limit, populates
                     });
                 }
 

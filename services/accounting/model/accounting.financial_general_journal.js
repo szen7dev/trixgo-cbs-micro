@@ -2603,6 +2603,546 @@ class Model extends BaseModel {
         });
     }
 
+        //_________DANH SÁCH KHÁCH HÀNG THỰC HIỆN GIAO DỊCH TRONG KỲ 
+    // Tính năng sử dụng: Theo dõi công nợ
+    // Author: HiepNH
+    getListContactOfCompanyGroupByAccount({companyID, fundaID, contractID, accountID, toDate}) {
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1. Gồm cả phiếu kết chuyển cuối kỳ của Khách hàng qua các năm
+                 * 2. Do có 1 số khách hàng chỉ phát sinh tới cuối kỳ trước
+                 */
+                //____________Get nestedArray of account
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+                
+                let conditionObj;
+
+                if(!fundaID){
+                    if(!contractID){
+                        conditionObj = { 
+                            company: companyID,
+                            // forward: 0, 
+                            cancel: 0,
+                            date: { $lte: moment(toDate).toDate() }
+                        }
+                    }else{
+                        conditionObj = { 
+                            // company: companyID,
+                            contract: contractID,
+                            // forward: 0,
+                            cancel: 0,
+                            date: { $lte: moment(toDate).toDate() }
+                        }
+                    }
+                }else{
+                    if(!contractID){
+                        conditionObj = { 
+                            funda: fundaID,
+                            // forward: 0,
+                            cancel: 0,
+                            date: { $lte: moment(toDate).toDate() }
+                        }
+                    }else{
+                        conditionObj = { 
+                            // funda: fundaID,
+                            contract: contractID,
+                            // forward: 0,
+                            cancel: 0,
+                            date: { $lte: moment(toDate).toDate() }
+                        }
+                    }
+                }
+
+                let listData1 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: {
+                            conditionObj
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { contact: '$customerDebit' },
+                        }
+                    } 
+                ])
+                let listData2 = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: {
+                            conditionObj
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { contact: '$customerCredit' },
+                        }
+                    } 
+                ])
+
+                let arrCustomers = []
+                for(const item of listData1){
+                    if(!arrCustomers.includes(item._id.contact.toString())){
+                        arrCustomers.push(item._id.contact.toString())
+                    }
+                }
+                for(const item of listData2){
+                    if(!arrCustomers.includes(item._id.contact.toString())){
+                        arrCustomers.push(item._id.contact.toString())
+                    }
+                }
+
+                // let listData = await CONTACT_COLL.find({_id: {$in: arrCustomers}}).select('_id name sign phone taxid')
+                // console.log(listData)
+              
+                return resolve({ error: false, data: arrCustomers });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    } 
+    //_________CÔNG NỢ ĐẦU KỲ PHÂN LOẠI THEO KHÁCH HÀNG (OK)
+    // Tính năng sử dụng: Theo dõi công nợ
+    // Author: HiepNH
+    getListOpeningCombineGroupByAccountAndContact({ ctx, companyID, fundaID, contractID, accountID, fromDate }) {
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                //____________Get nestedArray of account
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+                console.log({fundaID})
+                let conditionObj1;
+                let conditionObj2;
+
+                //____________Lấy năm của ngày đầu kỳ
+                let year = moment(fromDate).toDate().getFullYear() //!!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm)
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
+                console.log({year,firstDayOfYear })
+                if(!fundaID){
+                    if(!contractID){
+                        conditionObj1 = {
+                            company: ObjectID(companyID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            company: ObjectID(companyID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }else{
+                        conditionObj1 = {
+                            company: ObjectID(companyID),
+                            contract: ObjectID(contractID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            company: ObjectID(companyID),
+                            contract: ObjectID(contractID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }
+                }else{
+                    if(!contractID){
+                        conditionObj1 = {
+                            funda: ObjectID(fundaID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            funda: ObjectID(fundaID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }else{
+                        conditionObj1 = {
+                            funda: ObjectID(fundaID),
+                            contract: ObjectID(contractID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            funda: ObjectID(fundaID),
+                            contract: ObjectID(contractID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }
+                }
+                console.log({conditionObj1})
+                let listDataS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        customerDebit:1,
+                                        amount:1,
+                                        forward:1,
+                                        cancel:1
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        forward: 1,
+                                        cancel: 0
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { contact: '$customerDebit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                   
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        customerDebit:1,
+                                        amount:1,
+                                        forward:1,
+                                        cancel:1
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        forward: 1,
+                                        cancel: 0
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { contact: '$customerCredit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                        }
+                    }
+                ])
+                
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        customerDebit:1,
+                                        amount:1,
+                                        forward:1,
+                                        cancel:1
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        forward: 0,
+                                        cancel: 0,
+                                        date: { 
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                },  
+                                {
+                                    $group: {
+                                        _id: { contact: '$customerDebit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                   
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        customerDebit:1,
+                                        amount:1,
+                                        forward:1,
+                                        cancel:1
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        forward: 0,
+                                        cancel: 0,
+                                        date: { 
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                },  
+                                {
+                                    $group: {
+                                        _id: { contact: '$customerCredit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                        }
+                    }
+                ]);
+
+
+                // Convert dữ liệu sang mảng có Key là các itemID để tiện cho việc hiển thị ra view
+                let arrDebitS = [], arrCreditS = [], arrDebit = [], arrCredit = [];
+                listDataS[0]._debit.forEach(element=>{
+                    let key = element._id.contact;
+                    if (!Array.isArray(arrDebitS[key])) {
+                        arrDebitS[key] = [];
+                    }
+                    arrDebitS[key].push(element);
+                });
+
+                listDataS[0]._credit.forEach(element=>{
+                    let key = element._id.contact;
+                    if (!Array.isArray(arrCreditS[key])) {
+                        arrCreditS[key] = [];
+                    }
+                    arrCreditS[key].push(element);
+                }); 
+
+                listData[0]._debit.forEach(element=>{
+                    let key = element._id.contact;
+                    if (!Array.isArray(arrDebit[key])) {
+                        arrDebit[key] = [];
+                    }
+                    arrDebit[key].push(element);
+                });
+
+                listData[0]._credit.forEach(element=>{
+                    let key = element._id.contact;
+                    if (!Array.isArray(arrCredit[key])) {
+                        arrCredit[key] = [];
+                    }
+                    arrCredit[key].push(element);
+                });
+
+                return resolve({ error: false, data: { arrDebitS, arrCreditS, arrDebit, arrCredit } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }  
+
+    //_________CÔNG NỢ TRONG KỲ PHÂN LOẠI THEO KHÁCH HÀNG (OK)
+    // Tính năng sử dụng: Theo dõi công nợ
+    // Author: HiepNH
+    getListCombineGroupByAccountAndContact({ ctx, companyID, fundaID, contractID, accountID, fromDate, toDate}) {
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                //__________Get nestedArray of account
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+
+                let conditionObj1;
+                let conditionObj2;
+                
+                if(!fundaID){
+                    if(!contractID){
+                        conditionObj1 = {
+                            company: ObjectID(companyID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            company: ObjectID(companyID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }else{
+                        conditionObj1 = {
+                            company: ObjectID(companyID),
+                            contract: ObjectID(contractID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            company: ObjectID(companyID),
+                            contract: ObjectID(contractID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }
+                }else{
+                    if(!contractID){
+                        conditionObj1 = {
+                            funda: ObjectID(fundaID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            funda: ObjectID(fundaID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }                      
+                    }else{
+                        conditionObj1 = {
+                            funda: ObjectID(fundaID),
+                            contract: ObjectID(contractID),
+                            debit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                        conditionObj2 = {
+                            funda: ObjectID(fundaID),
+                            contract: ObjectID(contractID),
+                            credit:  {
+                                $in: arrObjectID.data
+                            }
+                        }
+                    }
+                }
+
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $project : { 
+                                        customerDebit:1,
+                                        amount:1,
+                                        forward:1,
+                                        cancel:1,
+                                        date:1
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        forward: 0,
+                                        cancel: 0,
+                                        date: { 
+                                            $gte: moment(fromDate).toDate(),
+                                            $lte: moment(toDate).toDate(),
+                                        },
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { contact: '$customerDebit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                   
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $project : { 
+                                        customerDebit:1,
+                                        amount:1,
+                                        forward:1,
+                                        cancel:1,
+                                        date:1
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        forward: 0,
+                                        cancel: 0,
+                                        date: { 
+                                            $gte: moment(fromDate).toDate(),
+                                            $lte: moment(toDate).toDate(),
+                                        },
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { contact: '$customerCredit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                        }
+                    }
+                ]);
+                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
+                // console.log(listData[0])
+
+                // Convert dữ liệu sang mảng có Key là các itemID để tiện cho việc hiển thị ra view
+                let arrDebit = [], arrCredit = [];
+                listData[0]._debit.forEach(element=>{
+                    let key = element._id.contact;
+                    if (!Array.isArray(arrDebit[key])) {
+                        arrDebit[key] = [];
+                    }
+                    const newElement = {
+                        _id : { contact: element._id.contact }, amountPrice: element.amountPrice
+                    }
+                    arrDebit[key].push(newElement);
+                });
+
+                listData[0]._credit.forEach(element=>{
+                    let key = element._id.contact;
+                    if (!Array.isArray(arrCredit[key])) {
+                        arrCredit[key] = [];
+                    }
+                    const newElement = {
+                        _id : { contact: element._id.contact }, amountPrice: element.amountPrice
+                    }
+                    arrCredit[key].push(newElement);
+                });
+
+                return resolve({ error: false, data: { arrDebit, arrCredit} });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }  
+
+    debtTrackingAccountWithCusomerDetails({  ctx, companyID, fundaID, contractID, accountID, fromDate, toDate  }){
+        return new Promise(async(resolve)=>{
+            try {
+                let listJournalsOpening =  this.getListOpeningCombineGroupByAccountAndContact({ ctx, fundaID, accountID, fromDate });
+                //_________Công nợ trong kỳ các khách hàng
+                let listJournals =  this.getListCombineGroupByAccountAndContact({ ctx, fundaID, accountID, fromDate, toDate });
+                let [ _listJournalsOpening, _listJournals] =  await Promise.all([listJournalsOpening, listJournals ]);
+                return resolve({ error: false, data:{  _listJournalsOpening, _listJournals } })     
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+
 }
 exports.MODEL = new Model;
 var ACCOUNTING__FINANCIAL_VOUCHER     = require('../model/accounting.financial_voucher').MODEL;

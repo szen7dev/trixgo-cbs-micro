@@ -26,10 +26,19 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
     status: {
         type: Number
     },
+    //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
+    languageKey: {
+        type: String 
+    },  
     //_________Thuộc dự án
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
+    },
+    //_______Hợp đồng (option, chỉ khi truy cập vào contract thì mới có trường này)
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref : 'contract' 
     },
     //_________Người gửi
     sender: {
@@ -41,20 +50,39 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-    //_________Tiêu đề
-    title: {
-        type: String
-    },
-    //_________Nội dung
+    //_________Nội dung (mô tả ngắn nội dung)
     content: {
         type: String
     },
-    //_________Đường dẫn truy cập
+    /**
+     * Đường dẫn truy cập
+     * - Phục vụ cho web => truy cập vào thông tin chi tiết
+     * (/pcm/home/?taskID=60cc5c65e8e09d4502f4f95b&commentID=6216fe36687c3f576b9ddc12)
+     * - Phục vụ cho app => truy cập vào thông tin chi tiết
+     * (Làm việc với Tuấn)
+     */
     path: {
         type: String
     },
-    //_________Key để xử lý ngôn ngữ (services\notification\helper\notification.keys-constant.js)
-    key: {
-        type: String 
-    }  
+    /**
+     * appID
+     */
+    app: {
+        type: Schema.Types.ObjectId,
+        ref: 'app'
+    },
+    /**
+     * mainCollID (VD: mediaID, taskID,...)
+     */
+    mainColl: {
+        kind: String,
+        item: { type: Schema.Types.ObjectId, refPath: 'mainColl.kind' }
+    },
+    /**
+     * subCollID (VD: commentID, checklistID,...)
+     */
+    subColl: {
+        kind: String,
+        item: { type: Schema.Types.ObjectId, refPath: 'subColl.kind' }
+    },
 })

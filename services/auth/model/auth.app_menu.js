@@ -8,6 +8,7 @@ const moment                            = require("moment");
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 
 /**s
@@ -24,6 +25,80 @@ class Model extends BaseModel {
 
     constructor() {
         super(AUTH__APP_MENU_COLL);
+    }
+
+    insert({ name, slug, parent, appID, authorID, order }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!name)
+                    return resolve({ error: true, keyError: "name_invalid", message: "Tên App Menu không hợp lệ" });
+
+                if(!slug)
+                    return resolve({ error: true, keyError: "slug_invalid", message: "Slug Menu không hợp lệ" });
+                
+                if(!appID)
+                    return resolve({ error: true, keyError: "appID_invalid", message: "AppID không hợp lệ" });
+
+                let dataInsert = { name, slug, app: appID, userCreate: authorID, userUpdate: authorID };
+
+                if(order){
+                    dataInsert.order = order
+                }
+
+                if(parent && ObjectID.isValid(parent)){
+                    dataInsert.parent = parent;
+                    let infoMenuParent = await AUTH__APP_MENU_COLL.findById(parent);
+                    dataInsert.level = infoMenuParent.level + 1;
+                }
+                let infoAfterInsert = await this.insertData(dataInsert);
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    update({ appMenuID, name, slug, order, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(appMenuID))
+                    return resolve({ error: true, message: "Mã app menu không hợp lệ",keyError: 'appMenuID_invalid', status: 400 });
+
+                let dataUpdate = { userUpdate: userID };
+                if(name){
+                    dataUpdate.name = name
+                }
+
+                if(slug){
+                    dataUpdate.slug = slug
+                }
+
+                if(order){
+                    dataUpdate.order = order
+                }
+                let infoAfterUpdate = await AUTH__APP_MENU_COLL.findByIdAndUpdate(appMenuID,dataUpdate, { new: true });
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    remove({ appMenuID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(appMenuID))
+                    return resolve({ error: true, message: "Mã app menu không hợp lệ", keyError: 'appMenuID_invalid', status: 400 });
+
+                let infoAfterRemove = await AUTH__APP_MENU_COLL.findByIdAndDelete(appMenuID);
+                if(!infoAfterRemove)
+                    return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 400 });
+
+                return resolve({ error: false, data: infoAfterRemove });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 
     /**
@@ -46,7 +121,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -64,7 +138,7 @@ class Model extends BaseModel {
                                         .select(select)
                                         .populate(populates);
                 if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
+                    return resolve({ error: true, message: KEY_ERROR.GET_INFO_FAILED, status: 403 });
  
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
@@ -79,7 +153,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ app,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+        parent, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -93,8 +167,13 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(app){
+                if(parent){
+                    // Danh sách menu của một Menu cha
                     conditionObj.app = app;
+                    conditionObj.parent = parent;
+                }else{
+                    // Danh sách menu của ứng dụng
+                    conditionObj.app = app
                 }
                 
                 // LẤY NHỮNG TRƯỜNG CẦN THIẾT
@@ -114,13 +193,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
-
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
@@ -147,7 +219,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

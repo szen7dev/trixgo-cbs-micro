@@ -19,7 +19,6 @@ const AUTH__COMPANY_COLL                = require('../database/auth.company-coll
 // const { checkValidPhoneNumber, validEmail, removeUtf8AndJoinSpace, makeid, randomStringFixLengthCode } = require('../../../tools/utils/string_utils');
 const { randomStringFixLengthCode } 
                                         = require('../../../tools/utils/string_utils');
-const timeUtils                         = require('../../../tools/utils/time_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
 const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 }         = require('../../../tools/cursor_base/playground/index');
@@ -27,13 +26,12 @@ const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const { 
     PLATFORM_TRIXGO, PLATFORM_WYNDIX,
-    LEVEL_ADMIN, LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
+    LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
     STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK,
 }                                       = require('../helper/auth.keys-constant');
 const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_CHATTING }           = require('../../chatting/helper/chatting.actions-constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
 
@@ -318,6 +316,10 @@ class Model extends BaseModel {
     updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {
             try {
+                console.log('====== updateDeviceLogin =========');
+                console.log({
+                    userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env
+                })
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -328,11 +330,23 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
-                    return resolve({ error: true, message: 'platform_invalid' });
+                if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform })) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số platform không hợp lệ",
+                        keyError: "params_platform_invalid",
+                        status: 400
+                    })
+                }
 
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'object_invalid' });
+                if(!checkObjectIDs([userID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    })
+                }
 
                 /**
                  * LOGIC STEP (3)
@@ -340,10 +354,16 @@ class Model extends BaseModel {
                  *  3.2: operation database
                  */    
                 let isExist = await AUTH__USER_COLL.findById(userID);
-                if (!isExist)
-                    return resolve({ error: true, message: 'user_not_exists' });
-                
-                 /**
+                if (!isExist) {
+                    return resolve({
+                        error: true,
+                        message: "Người dùng không tồn tại",
+                        keyError: "user_not_exists",
+                        status: 400
+                    })
+                }
+
+                /**
                  * UPDATE LAST DEVICE (cập nhật device cuối cùng login)
                  * Nếu DeviceID tồn tại => cập nhật deviceName + fcm_token
                  */
@@ -402,27 +422,24 @@ class Model extends BaseModel {
     }
 
     // implement by: MINHVH ✅ 
-    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates = {} }){
+    getListFriend({ userID, lastestID, keyword, limit = 10, select, populates }){
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-				if(isNaN(limit)) {
-					limit = 10;
+				if(isNaN(limit) || +limit > 20) {
+					limit = 20;
 				} else{
 					limit = +limit;
 				}
 
-                if(limit > 20){
-					limit = 20;
-                }
-
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -433,7 +450,6 @@ class Model extends BaseModel {
 
 				let conditionObj 	= { _id: { $in: infoUserWithFriends.friends } };
 				let conditionFind 	= {};
-				let objSort 	 	= {};
                 let sortBy = {
 					createAt: -1,
                     modifyAt: -1,
@@ -459,11 +475,11 @@ class Model extends BaseModel {
 				if(keyword){
 					keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
 				}
 
                 const listFriends = await AUTH__USER_COLL
-                    .find({ ...conditionObj, ...conditionFind }, { ...objSort })
+                    .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
                     .populate(populates)
@@ -472,6 +488,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
                 let totalRecord = await AUTH__USER_COLL.count(conditionObj);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -480,9 +497,6 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-
-                // Tổng số trang
-                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({
 					error: false,
@@ -496,6 +510,7 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -912,22 +927,34 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([mediaID, userID])) {
                     return resolve({ 
                         error: true, 
-                        message: 'Request params mediaID or userID invalid', 
+                        message: 'Tham số mediaID hoặc userID không hợp lệ', 
                         keyError: 'params_mediaID_or_userID_invalid',
                         status: 400 
                     });
                 }
 
                 let infoUser = await AUTH__USER_COLL.findById(userID);
-				if(!infoUser)
-					return resolve({ error: true, message: "User is not exist", status: 403 });
+				if(!infoUser) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Người dùng không tồn tại', 
+                        keyError: 'user_not_exists',
+                        status: 400 
+                    });
+                }
 
 				let infoUserAfterUpdated = null;
 
 				if(isPin){ // Pin media
 
-					if(infoUser.mediasPin.includes(mediaID))
-						return resolve({ error: true, message: "Media is pined", status: 400 });
+					if(infoUser.mediasPin.includes(mediaID)) {
+                        return resolve({ 
+                            error: true, 
+                            message: 'Bài viết đã được pin', 
+                            keyError: 'media_is_pined',
+                            status: 400 
+                        });
+                    }
 
 					// Pin tối đa 5 media (pull last, push first)
 					if(infoUser.mediasPin.length >= 5){
@@ -957,10 +984,16 @@ class Model extends BaseModel {
 					}, { new: true });
 				}
 
-				if(!infoUserAfterUpdated)
-					return resolve({ error: true, message: "Can't update pin media", status: 403 });
+				if(!infoUserAfterUpdated) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
 
-				return resolve({ error: false, data: infoUserAfterUpdated, status: 200 });
+				return resolve({ error: false, message: "success", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
@@ -980,18 +1013,30 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				if(!checkObjectIDs([userID]))
-					return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+				if(!checkObjectIDs([userID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tham số userID không hợp lệ', 
+                        keyError: 'params_userID_invalid',
+                        status: 400 
+                    });
+                }
 
 				let infoUser = await AUTH__USER_COLL
 					.findById(userID)
 					.select('mediasPin')
 					.lean();
 
-				if(!infoUser)
-					return resolve({ error: true, message: "User is not exist", status: 403 });
+				if(!infoUser) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Người dùng không tồn tại', 
+                        keyError: 'user_not_exists',
+                        status: 400 
+                    });
+                }
 
-                return resolve({ error: false, data: infoUser.mediasPin || [], status: 200 });
+                return resolve({ error: false, data: infoUser.mediasPin, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
@@ -1144,15 +1189,18 @@ class Model extends BaseModel {
 				if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(limit > 20){
+                if(isNaN(limit) || +limit > 20) {
 					limit = 20;
-                }
+				} else{
+					limit = +limit;
+				}
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -1161,7 +1209,7 @@ class Model extends BaseModel {
 
                 let infoUserWithFriends = await AUTH__USER_COLL.findById(userID).select('receiveFromFriends');
 
-				let conditionObj = { _id: { $in: infoUserWithFriends.receiveFromFriends } };
+				let conditionObj = { _id: { $in: infoUserWithFriends?.receiveFromFriends || [] } };
                 let keys 	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
 
@@ -1173,7 +1221,6 @@ class Model extends BaseModel {
 				}
 
                 let conditionObjOrg = { ...conditionObj };
-
 
 				// GET CONDITION PAGINATION
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -1201,6 +1248,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
                 let totalRecord = await AUTH__USER_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
 
 				if(listFriends && listFriends.length){
@@ -1209,8 +1257,7 @@ class Model extends BaseModel {
 						listFriends.length = limit;
 					}
 				}
-                // Tổng số trang
-                let totalPage   = Math.ceil(totalRecord/limit);
+
                 return resolve({
 					error: false,
 					status: 200,

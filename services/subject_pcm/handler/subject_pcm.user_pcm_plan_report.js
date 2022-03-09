@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT__USER_PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.user_pcm_plan_report').MODEL;
+const USER_PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.user_pcm_plan_report').MODEL;
 
 module.exports = {
     
@@ -29,7 +29,7 @@ module.exports = {
                 let ROLE_VIEW = 2;
 
                 for (const userID of users) {
-                    let infoAfterInsert = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.insert({
+                    let infoAfterInsert = await USER_PCM_PLAN_REPORT_MODEL.insert({
                         userID, subjectID, role: ROLE_VIEW, author
                     });
                     resultAfterCallHandler.push(infoAfterInsert);
@@ -59,7 +59,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.update({
+                let resultAfterCallHandler = await USER_PCM_PLAN_REPORT_MODEL.update({
                     userSubjectID, role
                 });
                 
@@ -87,7 +87,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.remove({
+                let resultAfterCallHandler = await USER_PCM_PLAN_REPORT_MODEL.remove({
                     userSubjectID
                 });
                 
@@ -125,11 +125,11 @@ module.exports = {
                 
                 let resultAfterCallHandler;
                 if(userSubjectID){
-                    resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.getInfo({
+                    resultAfterCallHandler = await USER_PCM_PLAN_REPORT_MODEL.getInfo({
                         userSubjectID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await SUBJECT__USER_PCM_PLAN_REPORT_MODEL.getList({
+                    resultAfterCallHandler = await USER_PCM_PLAN_REPORT_MODEL.getList({
                         keyword, limit, lastestID, userID, parentID, select, populates
                     });
                 }

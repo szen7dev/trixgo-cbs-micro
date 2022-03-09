@@ -7,9 +7,7 @@ const Schema                = require('mongoose').Schema;
  *  File đính kèm hồ sơ
  */
 module.exports  = DATABASE_MIDDLEWARE("document_file", {
-    nameOrg     : { type: String, require: true }, // Tên gốc
-    name        : { type: String, require: true }, // uuidv1
-
+    
     //_________Công ty
     company: {
         type:  Schema.Types.ObjectId,
@@ -20,6 +18,12 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
+    },
+
+    //_________Gói thầu
+    package: {
+        type: Schema.Types.ObjectId,
+        ref: "document_package"
     },
 
     //_________Văn bản
@@ -40,8 +44,14 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
         ref: "file"
     },
 
-    //_________Author
-    userCreate: {
+    //_________Tên gốc(Đưa qua bảng phụ để truy vấn)
+    nameOrg     : { type: String, require: true }, 
+
+    //_________Tên sau khi convert uuidv1(Đưa qua bảng phụ để truy vấn)
+    name        : { type: String, require: true }, 
+
+    //_________Author(Đưa qua bảng phụ để truy vấn)
+    author: {
         type: Schema.Types.ObjectId,
         ref: "user"
     }, 

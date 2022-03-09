@@ -74,10 +74,11 @@ module.exports = {
 	 */
     getInfoAndGetList: {
         params: {
-			documentID    : { type: "string", optional: true },
+			documentID      : { type: "string", optional: true },
 			docFileID       : { type: "string", optional: true },
             
             lastestID       : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
@@ -86,7 +87,7 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { docFileID, documentID, keyword, select, lastestID, populates } = ctx.params;
+                const { docFileID, documentID, keyword, select, lastestID, limit, populates } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(docFileID){
@@ -95,7 +96,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__DOC_FILE_MODEL.getList({
-                        documentID, userID, lastestID, keyword, select, populates
+                        documentID, userID, lastestID, limit: +limit, keyword, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

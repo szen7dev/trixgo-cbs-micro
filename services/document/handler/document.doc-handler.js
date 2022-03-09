@@ -207,55 +207,27 @@ module.exports = {
             keyword         : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
 			select          : { type: "string", optional: true },
+			receivedDate    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { 
-                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
-
-                if(!companyID){
-                    companyID = company._id
-                }
+                
+                // if(!companyID){
+                //     companyID = company._id
+                // }
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
-                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword, limit, lastestID, select, populates
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword,
+                    limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx }); 
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-	/**
-	 * Dev: MinhVH
-	 * Func: Danh sách tính chất văn bản
-	 * Date: 27/10/2021
-	 */
-    getListDoctype: {
-        params: {
-            lastestID   	: { type: "string", optional: true },
-            keyword     	: { type: "string", optional: true },
-			companyID		: { type: "string", optional: true },
-            departmentID	: { type: "string", optional: true },
-            limit       	: { type: "number", optional: true },
-			select      	: { type: "string", optional: true },
-            filter      	: { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, companyID, departmentID, keyword, limit, select, filter } = ctx.params;
-
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getListDoctype({
-                    lastestID, userID, companyID, departmentID, keyword, limit, select, filter
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }

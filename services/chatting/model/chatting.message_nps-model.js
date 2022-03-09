@@ -1,6 +1,11 @@
 "use strict";
 
 /**
+ * EXTERNAL
+ */
+const ObjectID                                  	= require('mongoose').Types.ObjectId;
+
+/**
  * CONSTANTS
  */
 const { NPS_TYPE } 									= require('../helper/chatting.keys-constant');
@@ -117,7 +122,7 @@ class Model extends BaseModel {
 				// UPDATE LAST MESSAGE
                 await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
                     lastMessage: infoMessageNps._id, modifyAt: Date.now()
-                }, { new: true });
+                });
 
 				// UPDATE AMOUNT MESSAGE USER MISS IN CONVERSATION
 				await CHATTING__MESSAGE_MODEL.updateUserMissMessage({ 
@@ -493,6 +498,104 @@ class Model extends BaseModel {
 						nextCursor
 					}
 				});
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+	/**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách user vote nps
+	 * Date: 22/02/2022
+	 */
+	getListUsersVote({ conversationID, messageNPSID, lastestID, limit = 10, select, populates, authorID }) {
+		return new Promise(async resolve => {
+			try {
+				const conditionObj = {};
+				const scores = [1,2,3,4,5,6,7,8,9,10];
+
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400,
+					})
+				}
+
+				if(!checkObjectIDs([conversationID, messageNPSID])) {
+					return resolve({
+						error: true,
+						message: "Tham số conversationID hoặc messageNPSID không hợp lệ",
+						keyError: "params_conversationID__or_messageNPSID_invalid",
+						status: 400,
+					})
+				}
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
+					_id: conversationID,
+					members: { $in: [authorID] }
+                }).lean();
+
+                if(!checkExistConversation) {
+					return resolve({ 
+						error: true, 
+						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						keyEror: 'you_are_not_member_of_conversation',
+						status: 403
+					});
+				}
+
+				const infoMessageNPS = await CHATTING__MESSAGE_NPS_COLL
+					.findById(messageNPSID)
+					.select(select)
+					.populate(populates)
+					.lean();
+
+				if(!infoMessageNPS) {
+					return resolve({ 
+						error: true, 
+						message: "Tin nhắn không tồn tại", 
+						keyEror: 'message_not_exists',
+						status: 400
+					});
+				}
+
+				let groupScore = await CHATTING__MESSAGE_NPS_COLL.aggregate([
+                    {
+                        $match: {
+                            _id: ObjectID(messageNPSID)
+                        }
+                    },
+                    { 
+                        $group: {
+                            _id: "$usersVote.score",
+                            amount: { $sum: 1 },
+                        } 
+                    }
+                ]);
+				console.log({ groupScore })
+
+				// if(infoMessageNPS.type === 1) {
+				// 	scores.map(score => {
+				// 		infoMessageNPS.usersVote.find(user => user.score === score);
+				// 	})
+				// }
+
+				return resolve({ error: false, status: 200 });
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}

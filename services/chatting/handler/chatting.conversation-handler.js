@@ -41,11 +41,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
+				const { _id: authorID, company, bizfullname } = ctx.meta.infoUser;
                 const { name, description, membersID, isPrivate } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.insertConversation({
-					name, description, bizfullname, authorID, membersID, isPrivate, ctx
+					name, description, bizfullname, authorID, membersID, isPrivate, company, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

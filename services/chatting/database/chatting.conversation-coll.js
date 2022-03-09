@@ -5,6 +5,22 @@ const Schema                = require('mongoose').Schema;
 
 module.exports = DATABASE_MIDDLEWARE("message_conversation", {
     /**
+     * ID Công ty của người tạo conversation
+     */
+    company: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'company'
+    },
+
+    /**
+     * Folder chứa conversation
+     */
+    folders: [{
+        type    : Schema.Types.ObjectId,
+        ref     : 'message_conversation_folder'
+    }],
+
+    /**
      * Tên của cuộc hội thoại (Tên chat nhóm)
      */
     name: {
@@ -49,14 +65,6 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
         type    : Schema.Types.ObjectId,
         ref     : 'file'
     },
-
-    /**
-     * Folder chứa conversation
-     */
-    groups: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation_group'
-    }],
 
     /**
      * Tin nhắn được ghim

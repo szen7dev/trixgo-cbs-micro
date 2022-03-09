@@ -27,6 +27,7 @@ const CF_ACTIONS_ITEM = {
     CONTRACT_UPDATE                          : `${BASE_ACTIONS}_${CONTRACT}_CONTRACT_UPDATE`,
     CONTRACT_REMOVE                          : `${BASE_ACTIONS}_${CONTRACT}_CONTRACT_REMOVE`,
     CONTRACT_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${CONTRACT}_CONTRACT_GET_INFO_AND_GET_LIST`,
+    CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS    : `${BASE_ACTIONS}_${CONTRACT}_CONTRACT_GET_LIST_IS_MEMBER`,
 
     /**
      * DEPARTMENT
@@ -40,6 +41,9 @@ const CF_ACTIONS_ITEM = {
     /**
      * DOCTYPE
      */
+    DOCTYPE_INSERT                          : `${BASE_ACTIONS}_${DOCTYPE}_INSERT`,
+    DOCTYPE_UPDATE                          : `${BASE_ACTIONS}_${DOCTYPE}_UPDATE`,
+    DOCTYPE_REMOVE                          : `${BASE_ACTIONS}_${DOCTYPE}_REMOVE`,
     DOCTYPE_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${DOCTYPE}_GET_INFO_AND_GET_LIST`,
 
      /**
@@ -49,6 +53,7 @@ const CF_ACTIONS_ITEM = {
     CONTACT_UPDATE                          : `${BASE_ACTIONS}_${CONTACT}_UPDATE`,
     CONTACT_REMOVE                          : `${BASE_ACTIONS}_${CONTACT}_REMOVE`,
     CONTACT_GET_INFO_AND_GET_LIST           : `${BASE_ACTIONS}_${CONTACT}_GET_INFO_AND_GET_LIST`,
+    CONTACT_GET_LIST_OF_SYSTEM              : `${BASE_ACTIONS}_${CONTACT}_GET_LIST_OF_SYSTEM`,
 
     /**
      * WAREHOUSE

@@ -7,8 +7,10 @@ const BASE_ROUTE = '/auth';
        USER              = '/users',
        REGISTER_TRIAL    = '/register_trials',
        APP_MENU          = '/app_menus',
-       APP_ROLE_MENU     = '/app_role_menus'
-       APP_ROLE          = '/app_roles'
+       APP_ROLE_MENU     = '/app_role_menus',
+       APP_ROLE          = '/app_roles',
+       APP_USER          = '/app_users',
+       APP_COMPANY       = '/app_companies'
 
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
@@ -38,6 +40,11 @@ const CF_ROUTINGS_AUTH = {
      * APP_MENU
      */
     APP_MENU                           : `${BASE_ROUTE}${APP_MENU}`,
+
+    /**
+     * APP_COMPANY
+     */
+    APP_COMPANY                         : `${BASE_ROUTE}${APP_COMPANY}`,
     
     /**
      * APP_ROLE
@@ -49,6 +56,14 @@ const CF_ROUTINGS_AUTH = {
      */
     APP_ROLE_MENU                      : `${BASE_ROUTE}${APP_ROLE_MENU}`,
     APP_ROLE_MENU_PERMISSION            : `${BASE_ROUTE}${APP_ROLE_MENU}/permission`,
+    APP_ROLE_MENU_GET_PERMISSION_TO_ACCESS_ONE_MENU_OF_APP : `${BASE_ROUTE}${APP_ROLE_MENU}/permission-to-access-one-menu-of-app`,
+    
+    /**
+     * APP_USER
+     */
+    APP_USER                                : `${BASE_ROUTE}${APP_USER}`,
+    APP_USER_LIST_APP_OFF_USER              : `${BASE_ROUTE}${APP_USER}/list-app-of-user`,
+    APP_USER_CHECK_PERMISSIONS_ACCESS_APP   : `${BASE_ROUTE}${APP_USER}/check-permissions-access-app`,
 
     /**
      * ĐĂNG KÝ DÙNG THỬ

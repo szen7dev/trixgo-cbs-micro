@@ -231,7 +231,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 const {  accountID, fromDate, toDate   } = ctx.params;
-                let { fundaID } = ctx.params;
+                let { fundaID  } = ctx.params;
                 if(!fundaID){
                     const infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
                     if(infoFundaCompany.error){
@@ -240,11 +240,17 @@ module.exports = {
                     }
                     fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 }
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTracking({ ctx, accountID, fromDate, toDate,fundaID })
+                let resultAfterCallHandler;
+                if (accountID) {
+                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTrackingAccountWithCusomerDetails({ ctx, fundaID, accountID, fromDate, toDate });
+                }else{
+                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTracking({ ctx, accountID, fromDate, toDate,fundaID });
+                }
+                console.log({ resultAfterCallHandler })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);
-                return { error: true, message: error.message };
+                return { error: true, message: error.message }; 
             }
         }
     },

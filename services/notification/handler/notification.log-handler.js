@@ -28,20 +28,23 @@ module.exports = {
       */
     insertNotification: {
         params: {
-            title       : { type: "string" },
             content     : { type: "string" },
             receivers   : { type: "array" },
-            path        : { type: "string", optional: true },
             type        : { type: "number" },
+            languageKey : { type: "string" },
+            path        : { type: "string", optional: true },
+            project     : { type: "string", optional: true },
+            contract    : { type: "string", optional: true },
+            app         : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
-                const { type, title, content, path, receivers } = ctx.params;
+                const { _id: sender } = ctx.meta.infoUser;
+                const { type, content, path, receivers, languageKey, project, contract, app, mainColl, subColl } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.insert({
-                    type, title, content, path, sender: authorID, receivers
+                    type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -84,7 +87,6 @@ module.exports = {
       */
     getInfoAndGetList: {
         params: {
-            notificationID  : { type: "string", optional: true },
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
 			limit 			: { type: "string", optional: true },
@@ -95,15 +97,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { notificationID, lastestID, keyword, limit, populates, select } = ctx.params;
-                let resultAfterCallHandler;
-                if(notificationID){
-                    
-                }else{
-                    resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
-                        authorID, lastestID, keyword, limit, select, populates
-                    });
-                }
+                const { lastestID, keyword, limit, populates, select } = ctx.params;
+
+                const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
+                    authorID, lastestID, keyword, limit, select, populates
+                });
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

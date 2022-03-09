@@ -159,7 +159,6 @@ class Model extends BaseModel {
 					.populate(populates)
 					.lean();
 
-                console.log({ listReactions, select, populates, limit, sortBy, conditionObj: conditionObj._id.$in })
                 if(!listReactions) {
                     return resolve({ 
                         error: true, 

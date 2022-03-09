@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const SUBJECT__PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.pcm_plan_report').MODEL;
+const PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.pcm_plan_report').MODEL;
 
 module.exports = {
     /**
@@ -26,7 +26,7 @@ module.exports = {
                 let { type, name, parentID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.insert({
+                let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.insert({
                     companyID: company._id, type, name, parentID, userID
                 });
                 
@@ -57,7 +57,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.update({
+                let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.update({
                     reportID: subjectID, name, type, userID, select, conditionPin
                 });
                 
@@ -85,7 +85,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.remove({
+                let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.remove({
                     reportID: subjectID
                 });
                 
@@ -103,7 +103,6 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-          
             type        : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
             subjectID   : { type: "string", optional: true },
@@ -124,11 +123,11 @@ module.exports = {
                     
                 let resultAfterCallHandler;
                 if(subjectID){
-                    resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getInfo({
+                    resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.getInfo({
                         reportID: subjectID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await SUBJECT__PCM_PLAN_REPORT_MODEL.getList({
+                    resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.getList({
                         type, parentID, userID, keyword, limit, lastestID, select, populates
                     })
                 }

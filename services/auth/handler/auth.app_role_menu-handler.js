@@ -45,9 +45,6 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             appID           : { type: "string", optional: true },
             roleID          : { type: "string", optional: true },
-            menuID          : { type: "string", optional: true },
-
-            keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             select          : { type: "string", optional: true },
@@ -56,7 +53,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { appRoleMenuID, companyID, appID, roleID, menuID, keyword, limit, lastestID, select, populates  } = ctx.params;
+                let { appRoleMenuID, companyID, appID, roleID, limit, lastestID, select, populates  } = ctx.params;
                 let { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -66,7 +63,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(appRoleMenuID){
                 }else{
-                    resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getList({ company: companyID, app: appID, role: roleID, menu: menuID, keyword, limit, lastestID, select, populates });
+                    resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getList({ company: companyID, app: appID, role: roleID, limit, lastestID, select, populates });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -81,22 +78,51 @@ module.exports = {
         params: {
             companyID       : { type: "string" },
             appID           : { type: "string" },
+            type            : { type: "string" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, appID } = ctx.params;
+                let { companyID, appID, type } = ctx.params;
                 let { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
                 
-                let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessListMenuOfApp({ user: userID, app: appID, company: companyID });
+                let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessListMenuOfApp({ user: userID, app: appID, company: companyID, type });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
+
+    getPermissionToAccessOneMenuOfApp: {
+        auth: "required",
+        params: {
+            companyID       : { type: "string" },
+            appID           : { type: "string" },
+            menuID          : { type: "string" },
+            type            : { type: "string" }, // Để biết truy cập nhóm chức năng ở ứng dụng hay dự án
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, appID, menuID, type } = ctx.params;
+                let { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+                
+                let resultAfterCallHandler = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ user: userID, app: appID, company: companyID, type, menu: menuID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    
 }

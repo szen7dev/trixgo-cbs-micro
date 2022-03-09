@@ -11,7 +11,7 @@ const CF_ROUTINGS_MEDIA = {
     INFO_MEDIA                  		        : `${BASE_ROUTE}/:mediaID`,
     SAVE_MEDIA                  		        : `${BASE_ROUTE}/save`,
     PIN_MEDIA                  		            : `${BASE_ROUTE}/pin`,
-    WATCHED_MEDIA                  		        : `${BASE_ROUTE}/watched`,
+    FILE_MEDIA                  		        : `${BASE_ROUTE}/files`,
 
     REACTION_MEDIA                              : `${BASE_ROUTE}${REACTIONS}`,
     REACTION_FILE               		        : `${BASE_ROUTE}${REACTIONS}/file`,

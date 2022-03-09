@@ -1,12 +1,12 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_MODEL          = require('../model/subject_pcm.pcm_plan_task').MODEL;
+const PCM_PLAN_TASK_MODEL             = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 module.exports = {
     /**
@@ -53,7 +53,7 @@ module.exports = {
 				let { _id: userID } = ctx.meta.infoUser;
                 let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type } = ctx.params;
 
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.insert({
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
                     projectID, groupID, authorID: userID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, ctx
                 });
                 
@@ -90,6 +90,7 @@ module.exports = {
             typeUpdate     : { type: "number", optional: true },
             flags          : { type: "array", optional: true },
             related        : { type: "array", optional: true },
+            relatedRemoves : { type: "array", optional: true },
             lastLogID      : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -98,18 +99,46 @@ module.exports = {
                 let {
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
-                    contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
                  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.update({
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-                    contractID, draft, isproposal, usersDelete, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: update status mutiple
+	 */
+    updateStatusMutiple: {
+        auth: "required",
+        params: {
+            taskIDs         : { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {
+                    taskIDs
+                 } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+                // Bước check quyền
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
+                    taskIDs
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -124,12 +153,13 @@ module.exports = {
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
-        // auth: "required",
+        auth: "required",
         params: {
             // Field bổ sung
             projectID   : { type: "string", optional: true },
             draft       : { type: "string", optional: true },
             type        : { type: "string", optional: true },
+            level       : { type: "string", optional: true },
             status      : { type: "string", optional: true },
             typeStatus  : { type: "string", optional: true },
             taskID      : { type: "string", optional: true },
@@ -161,7 +191,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 
                 let { 
-                    taskID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, isStatusNot3, isUsersDelete,
+                    taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, isExpired, isStatusNot3, isUsersDelete,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
@@ -171,12 +201,12 @@ module.exports = {
                 let resultAfterCallHandler;
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getInfo({
+                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
                         taskID, userID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, typeStatus, collection, assigneeID, authorID, isproposal, 
+                    resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
+                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, isproposal, 
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete,
                         keyword, limit, select, lastestID, populates
                     });
@@ -202,8 +232,8 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 // Bước check quyền
-                let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
-                // let resultAfterCallHandler = await SUBJECT_PCM__PCM_PLAN_TASK_MODEL.updateCompanyOfAuthorAndCompanyOfAssignee();
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTask({ userID });
+                // let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateCompanyOfAuthorAndCompanyOfAssignee();
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -211,4 +241,24 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: Depv ✅
+	 * Func: Lấy số lượng công việc đấu thầu
+	 */
+    getBadgeBidding: {
+        auth: "required",
+        params: {},
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+
+                // Bước check quyền
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getBadgeBidding({ userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }

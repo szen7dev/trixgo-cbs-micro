@@ -6,16 +6,18 @@ const { setTimeZone  }                  = require('../../../tools/utils/time_uti
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { KEY_ERROR }			            = require('../../../tools/keys');
 
 /**
  * import inter-coll, exter-coll
  */
-const SUBJECT_PCM__PCM_PLAN_TASK_COLL       = require('../database/subject_pcm.pcm_plan_task-coll');
-const SUBJECT_PCM__PCM_PLAN_GROUP_COLL      = require('../database/subject_pcm.pcm_plan_group-coll');
-const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
+const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
+const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-model, exter-model
@@ -23,7 +25,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_bas
 class Model extends BaseModel {               
 
     constructor() {
-        super(SUBJECT_PCM__PCM_PLAN_TASK_COLL);
+        super(PCM_PLAN_TASK_COLL);
     }
 
     /**
@@ -39,8 +41,8 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = { };
-                let suid = await stringUtils.randomAndCheckExists(SUBJECT_PCM__PCM_PLAN_TASK_COLL, 'suid');
-                let infoGroup = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type')
+                let suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+                let infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type')
                 // let dateConcatnate = setTimeZone(new Date(`${expiredTime} ${expiredHour}:00`)).format('Y-MM-DD H:m:sZ');
                 
                 /** 
@@ -80,7 +82,7 @@ class Model extends BaseModel {
                      */
                     if(Number(isproposal) != 1){
                         if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
-                            return resolve({ error: true, message: 'permission_denied' })
+                            return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
                     }
                     companyID = company._id;
                 }
@@ -118,13 +120,13 @@ class Model extends BaseModel {
 
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
-                }
+                } 
                 
                 //_______File của người tạo việc
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
                 }
-
+                
                 if(checkObjectIDs(relatedIDs)){
                     dataInsert.related = relatedIDs;
                 }
@@ -217,7 +219,7 @@ class Model extends BaseModel {
 
                 //_________Trường hợp tạo việc từ Workflow mẫu
                 if(workflowTemplateID && ObjectID.isValid(workflowTemplateID)){
-                    let infoWorkflowTemplate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(workflowTemplateID);
+                    let infoWorkflowTemplate = await PCM_PLAN_TASK_COLL.findById(workflowTemplateID);
                     let startTimeFromWorkflowTemplate   = infoWorkflowTemplate.startTime;
                     let expiredTimeFromWorkflowTemplate = infoWorkflowTemplate.expiredTime;
                     let relatedFromWorkflowTemplate     = infoWorkflowTemplate.related;
@@ -239,7 +241,7 @@ class Model extends BaseModel {
 
                 //_________Trường hợp tạo việc từ nhân bản 1 việc khác
                 if(taskCopy && ObjectID.isValid(taskCopy)){
-                    let infoTaskCopy            = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskCopy);
+                    let infoTaskCopy            = await PCM_PLAN_TASK_COLL.findById(taskCopy);
                     let startTimeFromTaskCopy   = infoTaskCopy.startTime;
                     let expiredTimeFromTaskCopy = infoTaskCopy.actualFinishTime;
 
@@ -283,7 +285,7 @@ class Model extends BaseModel {
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", status: 403 });
+                    return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
 
                 //_________B4. Cập nhật ngược lại cho parent (Công việc cha, nhóm công việc, tài liệu-Docre)
@@ -294,13 +296,13 @@ class Model extends BaseModel {
                  */
                 //__________Công việc cha
                 if(parentID) {
-                    await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {
                         $addToSet: { childs: taskID } 
                     }, { new: true });
                 }
  
                 //__________Nhóm công việc
-                await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, {
+                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, {
                     $addToSet: { tasks: taskID }   
                 }, { new: true })
                  
@@ -330,7 +332,7 @@ class Model extends BaseModel {
                  //_________Thông báo công việc mới tạo
                 //  if(author !== assignee){
                 //      if(assignee){
-                //          await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                //          await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                 //              $addToSet: { 
                 //                  news: assignee
                 //              }
@@ -367,7 +369,7 @@ class Model extends BaseModel {
                 //_________Trường hợp tạo Đệ trình từ Mẫu thì copy checklist mẫu
                 if(workflowTemplateID && ObjectID.isValid(workflowTemplateID)){
 
-                    let infoWorkflowTemplate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(workflowTemplateID).populate('subtasks');
+                    let infoWorkflowTemplate = await PCM_PLAN_TASK_COLL.findById(workflowTemplateID).populate('subtasks');
                     let checklistFromWordflowTemplate = infoWorkflowTemplate.subtasks;
 
                     let arrChecklistCopy = [];
@@ -396,14 +398,14 @@ class Model extends BaseModel {
                         }
                     })()
                     // Update checklist cho task
-                    // await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { checklists: arrChecklistCopy });
-                    await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
+                    // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { checklists: arrChecklistCopy });
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
                 }
  
                 //_________Trường hợp nhân bản công việc thì copy checklist mẫu
                 if(taskCopy && ObjectID.isValid(taskCopy)){
                 // Các tên biến này được copy từ trường hợp tạo workflow nên vẫn giữ nguyên
-                let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskCopy);
+                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskCopy);
                 let listCheckList = infoTask.subtasks;
                 let startTimeTask = infoTask.startTime;
                 let arrChecklistCopy = [];
@@ -412,7 +414,7 @@ class Model extends BaseModel {
                 await( async function() {
                     for (let checklist of listCheckList) {
 
-                    let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(checklist).select("_id company name sign field assignee author related project group isproposal description note childs,startTime, expiredTime  ");
+                    let infoTask = await PCM_PLAN_TASK_COLL.findById(checklist).select("_id company name sign field assignee author related project group isproposal description note childs,startTime, expiredTime  ");
                     // let { company, name, sign, field, assignee, author, related, project, group, isproposal, description, note, childs, startTime, expiredTime } = infoTask
                     let { company, sign, field, assignee, author, related, project, group, isproposal, description, note, childs, startTime, expiredTime } = infoTask
                     
@@ -426,7 +428,7 @@ class Model extends BaseModel {
                     arrChecklistCopy.push(infoTaskChild.data.infoAfterInsert._id);
                     }
                 })()
-                await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
+                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { subtasks: arrChecklistCopy });
                 }
  
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
@@ -443,13 +445,12 @@ class Model extends BaseModel {
      */
     update({ typeUpdate,
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-        contractID, draft, isproposal, usersDeleteID, related, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
+        contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
     }){ 
         return new Promise(async (resolve) => {
             try {   
-
                 /**
                  * KHU VỰC CHECK QUYỀN CẬP NHẬT CÔNG VIỆC
                  */
@@ -458,8 +459,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { };
+                let dataUpdate   = { };
                 let dataAddToset = {};
+                let dataPullAll  = {};
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -545,9 +547,14 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, usersDelete: usersDeleteID }
                 }
 
-                //_________Người liên quan
+                //_________Thêm người liên quan
                 if(checkObjectIDs(related)){
                     dataAddToset = { ...dataAddToset, related }
+                }
+
+                //_________Xoá người liên quan
+                if(checkObjectIDs(relatedRemoves)){
+                    dataPullAll = { ...dataPullAll, related: relatedRemoves }
                 }
 
                 //_________Trạng thái công việc
@@ -693,14 +700,18 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
+                if(dataPullAll){
+                    dataUpdate.$pullAll = dataPullAll;
+                }
+
                 if(checkObjectIDs(lastLogID)){
                     dataUpdate.lastLog = lastLogID;
                 }
                 
-                let infoAterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
+                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });   
                 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't_update_task", status: 403 });
+                    return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) { 
@@ -708,6 +719,29 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: update status mutiple ✅
+     * Author: Depv
+     * Code: 
+     */
+    updateStatusMutiple({ taskIDs }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(taskIDs))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
+				if (!infoTaskAfterUpdate) 
+                    return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
+               
+                return resolve({ error: false, message: "update_success" });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+    
 
     /**
      * Name: get info task ✅
@@ -732,15 +766,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(taskID)
+                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                                 .select(select)
                                 .populate(populates).lean();
 
 				if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get' });
+                    return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 //_________Remove khỏi thông tin những người chưa xem những thay đổi mới
-                // await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                // await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                 //     $pull: { 
                 //         news: userID
                 //     },
@@ -772,8 +806,8 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ 
-        projectID, assigneeID, authorID, status, draft, type, typeStatus, collection, 
-        isproposal, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isStatusNot3, isUsersDelete,
+        projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
+        isproposal, subType, isExpired, fromDate, toDate, signGroupOfTask, isChecklist,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -783,12 +817,14 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
                 };
                 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 if(isSortChecklist == 1){
-                    keys = ['createAt__1', '_id__1'];
+                    keys = ['createAt__-1', '_id__-1'];
                 }
 
                 let start = new Date();
@@ -815,11 +851,11 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let signGroup = new RegExp(keyword, 'i');
  
-                    let listGroupBySign = await  SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ sign: signGroup });
+                    let listGroupBySign = await  PCM_PLAN_GROUP_COLL.find({ sign: signGroup });
                     let listGroupBySignID = listGroupBySign.map(item => item._id);
-                    listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, _id: { $in: listGroupBySignID } });
+                    listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, _id: { $in: listGroupBySignID } });
                  }else{
-                    listGroups = await SUBJECT_PCM__PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
+                    listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
                 }
                  
                 // Lấy công việc mà mình được quyền truy cập
@@ -856,18 +892,30 @@ class Model extends BaseModel {
                 // Tìm kiếm điều kiên công việc nhanh chậm
                 if(isExpired && isExpired == 1){
                     //Việc bình thường
-                    conditionObj.actualFinishTime = { $gt: new Date() }
+                    conditionObj.actualFinishTime = { 
+                        $gt: new Date(),
+                        $exists: true,
+                        $ne: null  
+                    }
                 }
 
                 if(isExpired && isExpired == 2){
                     //Việc chậm
                     conditionObj.status = { $ne: 3 }
-                    conditionObj.actualFinishTime = { $lt: new Date() }
+                    conditionObj.actualFinishTime = { 
+                        $lt: new Date(),
+                        $exists: true,
+                        $ne: null  
+                    }
 				}
 
                 // Lấy những công việc từ ngày đến ngày
                 if(fromDate && toDate){
-                    conditionObj.actualFinishTime = { $gte: new Date(fromDate), $lte: new Date(toDate) }
+                    conditionObj.actualFinishTime = { 
+                        $gte: new Date(fromDate), $lte: new Date(toDate),
+                        $exists: true,
+                        $ne: null  
+                    }
 				}
 
                 // lấy những việc nháp hoặc không phải việc nháp
@@ -889,12 +937,16 @@ class Model extends BaseModel {
                 }
 
                 //Phân loại công việc
-                if(isproposal){
-                    conditionObj.isproposal = isproposal;
+                // if(isproposal){
+                //     conditionObj.isproposal = isproposal;
+                // }
+                // Phân loại công việc trước dùng isproposal
+                if(subType){
+                    conditionObj.subType = subType;
                 }
                 
                 /**
-                 * Type = 0 Việc của tôi + Giao + Liên quan
+                 * Type = 0 Việc của tôi + Giao + Liên quan(All)
                  * Type = 1 Việc của tôi
                  * Type = 2 Việc giao người khác
                  * Type = 3 Việc đánh dấu quan tâm
@@ -911,57 +963,67 @@ class Model extends BaseModel {
 
                 if(type == 1){
                     conditionObj.assignee = userID;
+                    delete conditionObj.$or
                 }
 
                 if(type == 2){
                     conditionObj.author = userID;
+                    delete conditionObj.$or
                 }
 
                 if(type == 3){
                     conditionObj.flags = { $in: [userID]};
+                    delete conditionObj.$or
+                    delete conditionObj.status
                 }
 
                 if(type == 4){
-                    conditionObj.author = userID;
+                    // conditionObj.author = userID;
+                    conditionObj.$or = [
+                        { author: userID }, 
+                        { related: { $in: [userID] } }, 
+                    ],
                     conditionObj.draft = 1;
+                    delete conditionObj.status
                 }
 
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
                 }
-
+                
+                if(level){
+                    conditionObj.level = level;
+                }
+                
                 // typeStatus
-                // 1 Ngày nay
+                // 1 Quá hạn
                 // 2 Tới hạn tuần tới
                 // 3 Tới hạn + 7 ngày tới
-                // 4 Quá hạn
-                // Lấy việc ngày nay
+                // Lấy việc quá hạn
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $gte: start,
-                        $lte: end,
+                        $lt: start,
+                        $exists: true,
+                        $ne: null 
                     }
                 }
 
-                // Lấy việc tới hạn tuần tới
+                // lấy việc tới hạn Tuần tới
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
-                        $gte: addDate(1),
-                        $lte: addDate(7)
+                        $gte: start,
+                        $lt: addDate(7),
+                        $exists: true,
+                        $ne: null 
                     }
                 }
-
-                // lấy việc tới hạn + 7 ngày tới
+                
+                // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
-                        $gt: addDate(7)
-                    }
-                }
-
-                // lấy việc quá hạn
-                if(typeStatus && typeStatus == 4){
-                    conditionObj.actualFinishTime = {
-                        $lt: start
+                        $gte: addDate(7),
+                        $exists: true,
+                        $ne: null 
                     }
                 }
 
@@ -982,6 +1044,7 @@ class Model extends BaseModel {
                     // isChecklist == 1 là lấy danh sách checklist, nếu ko truyền isChecklist mà có truyền parentID thì sẽ lấy công việc con
                     if(isChecklist == 1){
                         conditionObj.type = 2;
+                        delete conditionObj.status
                     }else{
                         conditionObj.type = 1;
                     }
@@ -1001,27 +1064,16 @@ class Model extends BaseModel {
                     conditionObj.field = fieldID;
                 }
 
-                // Bỏ đi công việc đã hoàn thành
-                if(isStatusNot3 == 1){
-                    conditionObj.status = { $ne: 3 };
-                }
-
-                // Bỏ đi công việc đã hoàn thành
-                if(isUsersDelete == 1){
-                    conditionObj.usersDelete = { $nin: [userID] };
-                }
-
                 // Tìm kiếm theo keyword
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
                 let conditionObjOrg = {...conditionObj};
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findById(lastestID);
+					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
@@ -1037,7 +1089,7 @@ class Model extends BaseModel {
                 }
 
                 // Bắt đầu query trong db
-                let infoDataAfterGet = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find(conditionObj)
+                let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .select(select)
                     .populate(populates)
@@ -1046,7 +1098,7 @@ class Model extends BaseModel {
 
                 // Kiểm tra nếu không có dữ liệu
                 if(!infoDataAfterGet)
-                   return resolve({ error: true, message: "Can't get data", status: 403 });
+                   return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
                 // nextCursor phần tử cuối cùng khi phân trang
                 let nextCursor	= null;
@@ -1055,9 +1107,9 @@ class Model extends BaseModel {
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
-                }   
+                }
                 // Tổng số việc tìm thấy
-                let totalRecord = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count(conditionObjOrg);
+                let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
                 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
@@ -1098,7 +1150,8 @@ class Model extends BaseModel {
                 /**
                  * Tổng số lượng công việc của tôi
                  */
-                let amountTask = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                let amountTask = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID, 
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
@@ -1107,7 +1160,8 @@ class Model extends BaseModel {
                 /**
                  * Số lượng công việc thuộc đệ trình phê duyệt
                  */
-                let amountTaskIsRFa = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                let amountTaskIsRFa = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
                     isproposal: 2,
                     status: { $ne: 3 },
@@ -1117,7 +1171,8 @@ class Model extends BaseModel {
                 /**
                  * Tổng số lượng công việc thuộc yêu cầu thông tin
                  */
-                let amountTaskIsRFis = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                let amountTaskIsRFis = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     assignee: userID,
                     isproposal: 1,
                     status: { $ne: 3 },
@@ -1127,7 +1182,8 @@ class Model extends BaseModel {
                 /**
                  * Tổng số lượng công việc bạn quan tâm
                  */
-                let amountTaskIsFlags = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                let amountTaskIsFlags = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     flags: {
                        $in: [userID]
                     },
@@ -1137,7 +1193,8 @@ class Model extends BaseModel {
                 /**
                  * Tổng số lượng công việc bạn đã giao người khac
                  */
-                let amountTaskIsAssignee = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                let amountTaskIsAssignee = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     author: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
@@ -1146,7 +1203,8 @@ class Model extends BaseModel {
                 /**
                  * Tổng số lượng công việc nháp
                  */
-                let amountTaskIsDraft = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.count({
+                let amountTaskIsDraft = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
                     $or: [
                         { author: userID }, 
                         { related: { $in: [userID] } }, 
@@ -1165,6 +1223,86 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Lấy số lượng task đấu thầu ✅
+     * Author: Depv
+     */
+    getBadgeBidding({ userID }){
+        return new Promise(async resolve => {
+            try {
+                /**
+                 *  Đang dự thầu
+                 */
+                let amountBiddingInProgress = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    assignee: userID, 
+                    status: { $ne: 3 },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 2
+                })
+
+                /**
+                 *  Hoàn thành dự thầu
+                 */
+                let amountBiddingInComplete = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    assignee: userID, 
+                    status: 3,
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 2
+                })
+
+                /**
+                 *  Đang mời thầu
+                 */
+                let amountBiddingInviting = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 1,
+                    $or: [
+                        {
+                            author: userID
+                        },
+                        {
+                            related: { $in: [userID] }
+                        },
+                    ]
+                })
+
+                /**
+                 *  Hoàn thành mời thầu
+                 */
+                let amountBiddingInvitingComplete = await PCM_PLAN_TASK_COLL.count({
+                    actualFinishTime: { $exists: true, $ne: null  },
+                    usersDelete: { $nin: [userID] },
+                    subtype: 4,
+                    level: 1,
+                    status: 3,
+                    $or: [
+                        {
+                            author: userID
+                        },
+                        {
+                            related: { $in: [userID] }
+                        },
+                    ]
+                })
+
+                return resolve({ error: false, data: {
+                    amountBiddingInProgress,
+                    amountBiddingInComplete,
+                    amountBiddingInviting,
+                    amountBiddingInvitingComplete
+                }});
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Api thêm 2 trường dữ liệu companyOfAuthor và companyOfAssignee ✅
      * Author: Depv
      */
@@ -1172,14 +1310,14 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 
-                let listTaskAfterUpdate = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.find({}).select("author assignee")
+                let listTaskAfterUpdate = await PCM_PLAN_TASK_COLL.find({}).select("author assignee")
                                         .populate({
                                             path: "author assignee",
                                             select: "company"
                                         });
                 let amount = 0;
                 for (const task of listTaskAfterUpdate) {
-                    let abc = await SUBJECT_PCM__PCM_PLAN_TASK_COLL.findByIdAndUpdate(task._id, { 
+                    let abc = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(task._id, { 
                         companyOfAuthor: task.author.company, 
                         companyOfAssignee: task.assignee.company, 
                     }, { new: true });

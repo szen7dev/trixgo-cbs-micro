@@ -1,5 +1,6 @@
 "use strict";
 
+const PromisePool								= require('@supercharge/promise-pool');
 const NOTIFICATION__LOG_COLL                    = require('../database/notification.log-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
@@ -29,31 +30,29 @@ class Model extends BaseModel {
 	 * Func: Thêm thông báo
 	 * Date: 17/12/2021
 	 */
-    insert({ type, title, content, path, sender, receivers }){
+    insert({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl }){
         return new Promise(async resolve => {
             try {
+                console.log({ type, content, path, sender, receivers, languageKey, project, contract, app, mainColl, subColl })
                 const dataInsert = {
-                    title,
                     content,
                     type,
                     path,
                     sender,
+                    languageKey,
                     status: this.SEND_SUCCESS
                 };
 
-                if(!title) {
-                    return resolve({
-                        error: true,
-                        message: 'Request params title invalid',
-                        keyError: 'params_title_invalid',
-                        status: 400
-                    });
-                }
+                (project    && checkObjectIDs(project))         && (dataInsert.project  = project);
+                (contract   && checkObjectIDs(contract))        && (dataInsert.contract = contract);
+                (app        && checkObjectIDs(app))             && (dataInsert.app      = app);
+                (mainColl   && checkObjectIDs(mainColl.item))   && (dataInsert.mainColl = mainColl);
+                (subColl    && checkObjectIDs(subColl.item))    && (dataInsert.subColl  = subColl);
 
                 if(!content) {
                     return resolve({
                         error: true,
-                        message: 'Request params content invalid',
+                        message: 'Tham số content không hợp lệ',
                         keyError: 'params_content_invalid',
                         status: 400
                     });
@@ -62,16 +61,16 @@ class Model extends BaseModel {
                 if(!NOTI_TYPE.includes(type)) {
                     return resolve({
                         error: true,
-                        message: 'Request params type notification invalid',
-                        keyError: 'params_type_notification_invalid',
+                        message: 'Tham số type không hợp lệ',
+                        keyError: 'params_type_invalid',
                         status: 400
                     });
                 }
 
-                if(!checkObjectIDs(sender)) {
+                if(!checkObjectIDs([sender])) {
                     return resolve({
                         error: true,
-                        message: 'Request params sender invalid',
+                        message: 'Tham số sender không hợp lệ',
                         keyError: 'params_sender_invalid',
                         status: 400
                     });
@@ -80,29 +79,34 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(receivers)){
                     return resolve({
                         error: true,
-                        message: 'Request params receivers invalid',
+                        message: 'Tham số receivers không hợp lệ',
                         keyError: 'params_receivers_invalid',
                         status: 400,
                     })
                 }
 
-                const infoInsertNotiAsync = receivers.map(receiver => this.insertData({
-                    ...dataInsert,
-                    receiver
-                }))
+                const { results } = await PromisePool
+					.for(receivers)
+					.withConcurrency(2)
+					.process(async receiver => {
+						const infoAfterInsert = await this.insertData({
+                            ...dataInsert,
+                            receiver
+                        });
 
-                const infoAfterInsertNoti = await Promise.all(infoInsertNotiAsync);
-                
-                if(!infoAfterInsertNoti) {
+                        return infoAfterInsert;
+					})
+
+                if(!results || !results.length) {
                     return resolve({
                         error: true,
-                        message: 'Create notification failed',
-                        keyError: 'failed_create_notification',
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
                         status: 422
                     });
                 }
 
-                return resolve({ error: false, data: infoAfterInsertNoti, status: 200 });
+                return resolve({ error: false, data: results, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -122,16 +126,16 @@ class Model extends BaseModel {
                 if(!statusValid.includes(status)) {
                     return resolve({
                         error: true,
-                        message: 'Request params status invalid',
+                        message: 'Tham số status không hợp lệ',
                         keyError: 'params_status_invalid',
                         status: 400
                     });
                 }
 
-                if(!checkObjectIDs(notificationID)) {
+                if(!checkObjectIDs([notificationID])) {
                     return resolve({
                         error: true,
-                        message: 'Request params notificationID invalid',
+                        message: 'Tham số notificationID không hợp lệ',
                         keyError: 'params_notificationID_invalid',
                         status: 400
                     });
@@ -142,12 +146,12 @@ class Model extends BaseModel {
                 if(!infoAfterUpdateStatus) {
                     return resolve({
                         error: true,
-                        message: 'Update status notification faled',
-                        keyError: 'failed_UPDATE_NOTIFICATION',
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
                         status: 422
                     });
                 }
-                
+
                 return resolve({ error: false, data: infoAfterUpdateStatus, status: 200 });
             } catch(error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -159,14 +163,15 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: Lấy danh sách thông báo
 	 * Date: 17/12/2021
+	 * Updated: 22/02/2022
 	 */
     getList({ authorID, lastestID, keyword, limit = 20, select, populates }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs(authorID)) {
+				if(!checkObjectIDs([authorID])) {
 					return resolve({
                         error: true,
-                        message: "Request param authorID invalid",
+                        message: "Tham số authorID không hợp lệ",
                         keyError: 'param_authorID_invalid',
                         status: 400
                     });
@@ -182,7 +187,7 @@ class Model extends BaseModel {
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 					populates = JSON.parse(populates);
-				}else{
+				} else{
 					populates = {
                         path: "", 
                         select: ""
@@ -194,15 +199,14 @@ class Model extends BaseModel {
                     status: this.SEND_SUCCESS,
                     receiver: authorID
                 };
-
                 let keys	        = ['_id__-1', 'createAt__-1'];
 				let sortBy;
                 let conditionObjOrg = { ...conditionObj }
 
 				// GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoNotification = await NOTIFICATION__LOG_COLL.findById(lastestID);
-					if(!infoNotification)
+					let infoData = await NOTIFICATION__LOG_COLL.findById(lastestID);
+					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last notification", status: 400 });
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
@@ -212,7 +216,7 @@ class Model extends BaseModel {
 
                     conditionObj = dataPagingAndSort.data.find;
                     sortBy       = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
@@ -221,13 +225,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.title = regSearch;
+                    conditionObj.content = new RegExp(keyword, 'i');
                 }
 
-				let listNotifications = await NOTIFICATION__LOG_COLL.find(conditionObj)
+				let listNotifications = await NOTIFICATION__LOG_COLL
+                    .find(conditionObj)
 					.limit(limit + 1)
 					.select(select)
+                    .populate("mainColl.item subColl.item")
 					.populate(populates)
 					.sort(sortBy)
 					.lean();
@@ -248,7 +253,7 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listNotifications,
-						limit: +limit,
+						limit,
 						totalRecord,
 						nextCursor
 					}
@@ -258,8 +263,12 @@ class Model extends BaseModel {
 			}
 		})
 	}
-   
 
+    /**
+	 * Dev: KhanhLD
+	 * Func: Gửi noti đến mobile và web
+	 * Date: ...
+	 */
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, ctx }) {
         return new Promise(async (resolve) => {
              try {
@@ -308,7 +317,10 @@ class Model extends BaseModel {
                                 ...devices.filter(item => item.env == WEB_CBS && item.oneSignalID).map(item => item.oneSignalID)
                             ]
                         });
-                        console.log({ listDeviceFromMobile: listDeviceFromMobile.length, listDeviceFromWebBrowser: listDeviceFromWebBrowser.length })
+                        console.log({ 
+                            listDeviceFromMobile: listDeviceFromMobile.length, 
+                            listDeviceFromWebBrowser: listDeviceFromWebBrowser.length 
+                        })
 
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
@@ -335,7 +347,7 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForMobilePush)
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
+                            // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
                         }
 
                         if (listDeviceFromWebBrowser.length > 0) {
@@ -351,7 +363,7 @@ class Model extends BaseModel {
                             }
 
                             sendNotificationviaOneSignal(dataForWebPush)
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
+                            // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
                         }
 
                     }

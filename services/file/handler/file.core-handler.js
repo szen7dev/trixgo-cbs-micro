@@ -1,7 +1,5 @@
-const uuidv4                            = require('uuid').v4;
-const { getExtension }                  = require('../../../tools/utils/utils');
-let { GENERATE_LINK_S3 }                = require('../helper/s3');
-let FILE__CORE_MODEL                    = require('../model/file.core-model').MODEL;
+const { GENERATE_LINK_S3, GET_PATH_S3 } = require('../helper/s3');
+const FILE__CORE_MODEL                  = require('../model/file.core-model').MODEL;
 
 module.exports = {
     insert: {
@@ -17,7 +15,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				// const { _id: userID } = ctx.meta.infoUser;
                 let { app, name, path, size, userID } = ctx.params;
-                
+
                 let infoFileAfterInsert = await FILE__CORE_MODEL.insert({ app, name, path, size, userID });
                 return infoFileAfterInsert;
             } catch (error) {
@@ -28,9 +26,9 @@ module.exports = {
 
     update: {
         params: {
-            fileID: { type: "string" },
-            status: { type: "string", optional: true },
-            description: { type: "string", optional: true },
+            fileID      : { type: "string" },
+            status      : { type: "string", optional: true },
+            description : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -48,17 +46,21 @@ module.exports = {
 
     getInfoFile: {
         params: {
-            userID: { type: "string" }, //TODO: fake wating AUTH_SERVICE
+            fileID      : { type: "string" },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fileID, userID } = ctx.params;
+                const { _id: authorID } = ctx.meta.infoUser;
+                const { fileID, select, populates } = ctx.params;
 
-                let infoFile = await FILE__CORE_MODEL.getInfoFile({ fileID, userID });
+                const infoFile = await FILE__CORE_MODEL.getInfoFile({ authorID, fileID, select, populates });
+
                 return infoFile;
             } catch (error) {
-                return { error: true, message: error.message };
+                return { error: true, message: error.message, status: 500 };
             }
         }
     },
@@ -83,37 +85,59 @@ module.exports = {
 
     generateLinkS3: {
         params: {
-            type : { type: "string" },
-            name : { type: "string" },
-            app  : { type: "string", optional: true },
-            size : { type: "number", optional: true },
+            mimeType        : { type: "string" },
+            name            : { type: "string" },
+            type            : { type: "number" },
+            size            : { type: "number" },
+            //____Ứng dụng
+            appID           : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            groupID         : { type: "string", optional: true },
+            packageID       : { type: "string", optional: true },
+            conversationID  : { type: "string", optional: true },
             //____(typeUpload == user)
-            typeUpload : { type: "string", optional: true },
+            typeUpload      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
+                await this.validateEntity(ctx.params);
+                let { 
+                    appID, mimeType, type, name, size, typeUpload, 
+                    companyID, projectID, groupID, packageID, conversationID
+                } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
 
-                await this.validateEntity(ctx.params);
-                let { type, app, name, size, typeUpload } = ctx.params;
-                let extension = getExtension(name);
-                let fileName  = `${uuidv4()}.${extension}`;
-                let nameOrg   = name;
+                let generatePathS3  = GET_PATH_S3({
+                    appID,
+                    companyID,
+                    projectID,
+                    groupID,
+                    packageID,
+                    conversationID,
+                    fileName: name,
+                    typeUpload
+                });
+                if(generatePathS3.error) return generatePathS3;
 
-                let infoGenerateLink = await GENERATE_LINK_S3(fileName, type, typeUpload);
+                let { newFileName, pathS3 } = generatePathS3.data;
 
+                let infoGenerateLink = await GENERATE_LINK_S3(newFileName, mimeType, typeUpload, pathS3);
                 /**
                  * Nếu có app thì đang insert file trong app
                  * Nếu không có app thì đang insert trong user(image, signature)
                  */
                 let infoFileAfterInsert = null;
-                if(app && !infoGenerateLink.error){
+                if(appID && !infoGenerateLink.error){
                     infoFileAfterInsert = await FILE__CORE_MODEL.insert({
-                        app,
-                        nameOrg,
-                        name: fileName,
-                        path: `${process.env.AWS_BUCKET_PATH}/${fileName}`,
-                        mimeType: type,
+                        appID,
+                        companyID,
+                        projectID,
+                        nameOrg: name,
+                        name: newFileName,
+                        path: `/${process.env.AWS_BUCKET_PATH}${pathS3}/${newFileName}`,
+                        mimeType,
+                        type,
                         size,
                         userID
                     });

@@ -16,6 +16,7 @@ const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/au
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
+const { KEY_ERROR }                         = require('../../../tools/keys');
 
 /**
  * import inter-model, exter-model
@@ -71,18 +72,23 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách app role menu
+     * Name: Danh sách app_role_menu của roleID phục vụ cho màn hình Admin phân quyền Nhóm chức năng
+     * Màn hình: S2-1.2 (/pcm/admin/2)
      * Author: Depv
      * Code  : 
      */
-    getList({ company, app, role, menu,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+    getList({ company, app, role, limit = 20, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { };
+                let conditionObj = { 
+                    app: app,
+                    company: company,
+                    role: role,
+                };
+
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
@@ -93,22 +99,6 @@ class Model extends BaseModel {
                  */
                 if(limit > 20){
                     limit = 20
-                }
-
-                if(company){
-                    conditionObj.company = company;
-                }
-
-                if(app){
-                    conditionObj.app = app;
-                }
-
-                if(role){
-                    conditionObj.role = role;
-                }
-
-                if(menu){
-                    conditionObj.menu = menu;
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -127,13 +117,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                }
+                 */
 
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
@@ -159,7 +143,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: "cannot_get_list", status: 403 });
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
                     
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -191,16 +175,17 @@ class Model extends BaseModel {
      * Hiepnh (07/2/2019)
      * [x] Đã check ok
      */
-    getPermissionToAccessListMenuOfApp({ user, app, company }) {
+    getPermissionToAccessListMenuOfApp({ type=1, user, app, company }) {
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
+                    type: type,
                     company: company,
                     app: app,
                     members:  { $in: [user] }
                 })
                 .select('_id name')
-                
+
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
                         $match: {
@@ -216,14 +201,57 @@ class Model extends BaseModel {
                             create:     { $sum: "$create"},
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
-                            download:   { $sum: "$download"},
-                            upload:     { $sum: "$upload"},
-                            import:     { $sum: "$import"},
                         }
                     }
                 ]);
-                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
+                if (!listData) 
+                    return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
                 return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+
+    /**
+     * Lấy quyền truy cập của user vào 1 màn hình chức năng (menu)
+     * Hiepnh (07/2/2019)
+     * [x] Đã check ok
+     */
+    getPermissionToAccessOneMenuOfApp({ type=1, menu, user, app, company }) {
+        return new Promise(async resolve => {
+            try {
+                let listRoles = await AUTH__APP_ROLE_COLL.find({
+                    type: type,
+                    company: company,
+                    app: app,
+                    members:  { $in: [user] }
+                })
+                .select('_id name')
+                
+                let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
+                    {
+                        $match: {
+                            "role": {
+                                $in: listRoles.map(item=>item._id)
+                            },
+                            "menu": ObjectID(menu),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id:        { menu: "$menu"}, 
+                            read:       { $sum: "$read"},
+                            create:     { $sum: "$create"},
+                            update:     { $sum: "$update"},
+                            delete:     { $sum: "$delete"},
+                        }
+                    }
+                ]);
+
+                if (!listData || (listData && !listData.length)) 
+                    return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
+                return resolve({ error: false, data: listData && listData[0]});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

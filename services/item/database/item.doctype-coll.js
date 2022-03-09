@@ -7,14 +7,29 @@ const Schema    = require('mongoose').Schema;
  *  PHÂN LOẠI KHÁC
  */
 module.exports  = DATABASE_MIDDLEWARE("doctype", {
-    /**
-     * PHÂN LOẠI
-     * 1-Theo Lĩnh vực hồ sơ
-     * 2-Theo Tính chất hồ sơ
-     * 3-Theo lĩnh vực kinh doanh
-     * 4-Theo Loại khách hàng
-     * 5-Theo bộ môn
-     */
+    /** PHÂN LOẠI
+        1 - Văn Bản Lĩnh vực hồ sơ
+        2 - Văn Bản Tính chất hồ sơ
+        3 - Lĩnh vực kinh doanh
+        4- Khách hàng phân loại
+        5-Công việc, Phân loại khác
+        6-Nhân sự, Trình độ
+        7-Nhân sự, Chuyên ngành
+        8-Nhận sự, Loại HDLD
+        9-Nhân sự tình trạng làm việc
+        10-Nhân sự Thâm niên
+        11-CRM, Phân loại lao động
+        12-CRM-Hồ sơ chi tiết của giai đoạn
+        13-Nhân sự, chúc vụ
+        14-Nhân sự loại chứng chỉ
+        15-Nhân sự, Nội dung chứng chỉ
+        16-Hợp đồng phân loại công nợ
+        17-Hợp đồng nguyên nhân phát sinh
+        18-Chung-Nguyên nhân thất bại
+        20-Chung các lỗi hay gặp
+        21- Công việc, Đánh giá chất lượng
+        22-Theo service (áp dụng cho message nps)
+    */
     type: { type: Number, default: 1 },
     //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
     belongSystem: { type: Number, default: 0 },
@@ -32,7 +47,12 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     parent: {
         type: Schema.Types.ObjectId,
         ref: "doctype"
-    },    
+    },
+    //_________Phần tử con (áp dụng cho message nps)
+    childs: [{
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    }], 
     //_________Tên
     name: String,
     //_________Mô tả

@@ -13,6 +13,7 @@ const { CF_ACTIONS_MEDIA } 	            = require('./helper/media.actions-consta
  * HANDLERS
  */
 const MEDIA_HANDLER    					= require('./handler/media-handler');
+const MEDIA__FILE_HANDLER    			= require('./handler/media.file-handler');
 const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
 const MEDIA__REACTION_HANDLER    		= require('./handler/media.reaction-handler');
 
@@ -55,9 +56,6 @@ module.exports = {
 		// CHỈNH SỬA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
 
-		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
-		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
-
 		// XÓA BÀI VIẾT	
 		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
 
@@ -67,13 +65,11 @@ module.exports = {
 		// LẤY DANH SÁCH BÀI VIẾT 	
 		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
 
+		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
+		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
+
 		// LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
 		[CF_ACTIONS_MEDIA.LIST_SEEN_MEDIA] 		            			: MEDIA_HANDLER.getListUsersSeen,
-
-
-
-
-		// NPNguyen
 
 		// LƯU BÀI VIẾT
 		[CF_ACTIONS_MEDIA.SAVE_MEDIA] 		            				: MEDIA_HANDLER.saveMedia,
@@ -81,25 +77,25 @@ module.exports = {
 		// LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 		[CF_ACTIONS_MEDIA.LIST_SAVE_MEDIA] 		            			: MEDIA_HANDLER.getListSaveMedia,
 		
-		// XÓA BÀI VIẾT ĐÃ LƯU
-		[CF_ACTIONS_MEDIA.DELETE_SAVE_MEDIA] 		            		: MEDIA_HANDLER.deleteSaveMedia,
-		
 		// GHIM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.PIN_MEDIA] 		            				: MEDIA_HANDLER.pinMedia,
 
-		// LẤY DANH SÁCH BÀI VIẾT ĐÃ GHIM
+		// LẤY DANH SÁCH BÀI VIẾT ĐÃ PIN
 		[CF_ACTIONS_MEDIA.LIST_PIN_MEDIA] 		            			: MEDIA_HANDLER.getListPinMedia,
 
-		// HỦY GHIM BÀI VIẾT
-		[CF_ACTIONS_MEDIA.DELETE_PIN_MEDIA] 		            		: MEDIA_HANDLER.deletePinMedia,
+		// ================================  MEDIA FILE  ================================
+		[CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_MEMDIA_FILE]			: MEDIA__FILE_HANDLER.getInfoAndGetListMediaFile,
+
 
 		// ================================  MEDIA COMMENT  ================================
 
 		[CF_ACTIONS_MEDIA.INSERT_COMMENT_MEDIA]   						: MEDIA__COMMENT_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.UPDATE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.update,
 		[CF_ACTIONS_MEDIA.DELETE_COMMENT_MEDIA]            				: MEDIA__COMMENT_HANDLER.delete,
 		[CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_MEDIA]			: MEDIA__COMMENT_HANDLER.getInfoAndGetList,
 
 		[CF_ACTIONS_MEDIA.INSERT_COMMENT_FILE]   						: MEDIA__COMMENT_HANDLER.insertCommentFile,
+		[CF_ACTIONS_MEDIA.UPDATE_COMMENT_FILE]            				: MEDIA__COMMENT_HANDLER.updateCommentFile,
 		[CF_ACTIONS_MEDIA.DELETE_COMMENT_FILE]            				: MEDIA__COMMENT_HANDLER.deleteCommentFile,
 		[CF_ACTIONS_MEDIA.GET_INFO_AND_GET_LIST_COMMENT_FILE]			: MEDIA__COMMENT_HANDLER.getInfoAndGetListCommentFile,
 

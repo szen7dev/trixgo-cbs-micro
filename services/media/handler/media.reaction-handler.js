@@ -13,6 +13,7 @@ module.exports = {
     /**
 	 * Dev: MinhVH
 	 * Func: THẢ CẢM XÚC TRONG BÀI VIẾT
+     * Updated: 22/02/2022
 	 */
     reaction: {
         params: {
@@ -26,7 +27,7 @@ module.exports = {
                 const { mediaID, typeReaction } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.reaction({
-					authorID, mediaID, typeReaction, ctx
+					authorID, mediaID, typeReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -39,6 +40,7 @@ module.exports = {
     /**
 	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC TRONG BÀI VIẾT
+     * Updated: 22/02/2022
 	 */
     getListReaction: {
         params: {
@@ -53,11 +55,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
                 const { mediaID, type, lastestID, isGetTotal, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.getListReaction({
-					userID, mediaID, type, lastestID, isGetTotal, limit, select, populates, ctx
+					authorID, mediaID, type, lastestID, isGetTotal, limit, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -70,6 +72,7 @@ module.exports = {
     /**
 	 * Dev: MinhVH
 	 * Func: THẢ CẢM XÚC FILE TRONG BÀI VIẾT
+     * Updated: 22/02/2022
 	 */
     reactionFile: {
         params: {
@@ -84,7 +87,7 @@ module.exports = {
                 const { mediaID, fileID, typeReaction } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.reactionFile({
-					authorID, mediaID, fileID, typeReaction, ctx
+					authorID, mediaID, fileID, typeReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -97,6 +100,7 @@ module.exports = {
     /**
 	 * Dev: MinhVH
 	 * Func: LẤY DANH SÁCH USER ĐÃ THẢ CẢM XÚC FILE TRONG BÀI VIẾT
+     * Updated: 22/02/2022
 	 */
     getListReactionFile: {
         params: {
@@ -112,11 +116,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
                 const { fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__REACTION_MODEL.getListReactionFile({
-					userID, fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates, ctx
+					authorID, fileID, mediaID, lastestID, isGetTotal, type, limit, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
