@@ -396,6 +396,8 @@ class Model extends BaseModel {
                                 dataForMobilePushCBS.ios_badgeType = 'SetTo';
                                 dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
                             }
+                            console.info('MOBILE PUSH (CBS)')
+                            console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids })
                             sendNotificationviaOneSignal(dataForMobilePushCBS)
 
                             //  =================== MOBILE PUSH (TEASER) ===================
@@ -413,7 +415,8 @@ class Model extends BaseModel {
                                 dataForMobilePushTeaser.ios_badgeType = 'SetTo';
                                 dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
                             }
-
+                            console.info('MOBILE PUSH (TEASER)')
+                            console.log({ include_player_ids: dataForMobilePushTeaser.include_player_ids })
                             sendNotificationviaOneSignal(dataForMobilePushTeaser)
 
                             // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
@@ -421,10 +424,10 @@ class Model extends BaseModel {
 
                         if (listDeviceFromWebBrowser.length > 0) {
                             let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS")
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 395 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_CBS", listDeviceFromWebBrowserWith_CBS)
 
                             let listDeviceFromWebBrowserWith_TEASER     = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
-                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER")
+                            console.log("🚀 ~ file: notification.log-model.js ~ line 397 ~ Model ~ returnnewPromise ~ listDeviceFromWebBrowserWith_TEASER", listDeviceFromWebBrowserWith_TEASER)
 
                             // WEB PUSH = CBS
                             let dataForWebPushCBS = {
