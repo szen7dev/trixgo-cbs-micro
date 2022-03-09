@@ -6,7 +6,6 @@ const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 
-
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
@@ -28,16 +27,90 @@ class Model extends BaseModel {
     constructor() {
         super(PCM_PLAN_GROUP_COLL);
     }
+
+    /**
+     * Name: insert group ✅
+     * Author: Depv
+     * Code:
+     */
+    insert({ projectID, name, sign, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'projectID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                
+                let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ project: projectID, name, sign });
+                if(checkExist)
+                    return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+
+                let infoAfterInsert = await this.insertData({ project: projectID, name, sign, userCreate: userID });
+                if (!infoAfterInsert) 
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    /**
+     * Name: update group ✅
+     * Author: Depv
+     * Code:
+     */
+    update({ groupID, name, sign, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(groupID))
+                    return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                
+                let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ _id: { $ne: groupID }, name, sign });
+                if(checkExist)
+                    return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
+
+                let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, { name, sign, userUpdate: userID, modifyAt: new Date() }, { new: true });
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+    
+    /**
+     * Name: remove group ✅
+     * Author: Depv
+     * Code:
+     */
+    remove({ groupID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(groupID))
+                    return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                
+                let infoAfterRemove = await PCM_PLAN_GROUP_COLL.findByIdAndDelete(groupID);
+                if (!infoAfterRemove) 
+                    return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
+
+                return resolve({ error: false, data: infoAfterRemove });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    };
     
     /**
      * Name: get info user_pcm_plan_group ✅
      * Author: Depv
      * Code:
      */
-    getInfo({ planGroupID, select, populates={} }) {
+    getInfo({ groupID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(planGroupID))
+                if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'param_invalid' });
                 
                 // populate
@@ -53,7 +126,7 @@ class Model extends BaseModel {
                     }
                 }
             
-                let infoPlanGroup = await PCM_PLAN_GROUP_COLL.findById(planGroupID)
+                let infoPlanGroup = await PCM_PLAN_GROUP_COLL.findById(groupID)
                                     .select(select)
                                     .populate(populates)
 
@@ -115,15 +188,14 @@ class Model extends BaseModel {
                 if(projectID){
                     conditionObj.project = projectID;
                 }
-
+                
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                
-                let conditionObjOrg = { ...conditionObj};
-                
+
+                let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_GROUP_COLL.findById(lastestID);
 					if(!infoData)

@@ -23,6 +23,7 @@ exports.KEY_ERROR  = {
     GET_INFO_FAILED     : "get_info_failed",
     GET_LIST_FAILED     : "get_list_failed",
     PARAMS_INVALID      : "params_invalid",
+    ITEM_EXISTED        : "item_existed",
 }
 
 /* 1 createdAt:12/14/2019, 6:57:10 PM*/
