@@ -335,6 +335,7 @@ class Model extends BaseModel {
                      *  - nếu là MOBILE_TEARSER -> ONESIGNAL_APP_TEASER  (79acfc09-966a-48f5-a9ea-44d90410014f)
                      */
                     let _findAppIdWithEnv = envItem => [this.WEB_CBS, this.MOBILE_CBS].includes(+envItem) ? ONESIGNAL_APP_CBS : ONESIGNAL_APP_TEASER;
+                    console.log({ listRecords })
 
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
