@@ -267,32 +267,42 @@ class Model extends BaseModel {
                  * Tạo checklist hoặc việc con mới
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
-                if(parentID && [1,2].includes(type)) {
-                    const webUrl = `/pcm/detail/${parentID}#checklist_${infoAterInsert._id}`;
-                    const infoTask = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+                if([1,2].includes(type)) {
+                    let webUrl = '';
+                    let titleMSS = '';
+                    let descriptionMSS = '';
+                    let languageKey = '';
+                    let taskID = parentID;
+                    let isChecklist = type === 2;
+
+                    if(!parentID) {
+                        taskID = infoAterInsert._id;
+                        webUrl = `/pcm/detail/${taskID}`;
+                        languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
+                    } else {
+                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAterInsert._id}`;
+                        languageKey = isChecklist ? LANGUAGE_KEYS.CREATE_CHECKLIST_PCM : LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
+                    }
+
+                    let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
 
                     let { name: taskName, author, assignee, related, project, contract } = infoTask;
                     related = related.map(userID => userID.toString());
-    
+
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
-                    const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-                        userID: assigneeID,
-                        select: '_id'
-                    });
-    
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: name,
                         receivers,
                         project: project?.toString(),
                         contract: contract?.toString(),
                         path: webUrl,
-                        languageKey: LANGUAGE_KEYS.CREATE_CHECKLIST_PCM,
+                        languageKey,
                         app: APP_KEYS.PCM_PLAN_TASK,
                         mainColl: {
                             kind: "pcm_plan_task",
-                            item: parentID
+                            item: taskID
                         },
                         subColl: {
                             kind: "pcm_plan_task",
@@ -301,15 +311,30 @@ class Model extends BaseModel {
                         type: 1 // InApp (Socket)
                     })
 
-                    if(!infoAssignee.error) {
-                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-                            users: [infoAssignee?.data?._id],
-                            title: `CÔNG VIỆC: ${taskName}`,
-                            description: `${bizfullname} đã tạo 1 ${type === 1 ? 'việc con' : 'checklist'} cho bạn`,
-                            web_url: webUrl,
-                            env: ENV_DEVICE_WEB_CBS
+                    if(parentID) {
+                        const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+                            userID: assigneeID,
+                            select: '_id'
                         });
+
+                        if(!infoAssignee.error) {
+                            receivers = [infoAssignee?.data?._id];
+                        }
+
+                        titleMSS        = `THÔNG BÁO`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 việc`;
+                    } else {
+                        titleMSS        = `CÔNG VIỆC: ${taskName}`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
                     }
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        users: receivers,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        web_url: webUrl,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
                 }
 
                 const infoTask = await PCM_PLAN_TASK_COLL
@@ -604,10 +629,10 @@ class Model extends BaseModel {
                 if(infoAterUpdate.parent && status == 3){
                     // Việc con
                     if(infoAterUpdate.type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $set: { amountFinishedSubtask: { $inc: 1 }}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountFinishedSubtask: 1}})
                     }else{
                         // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $set: { amountFinishedChecklist: { $inc: 1 }}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
 
@@ -619,10 +644,9 @@ class Model extends BaseModel {
                     const webUrl = `/pcm/detail/${taskID}`;
                     let { name: taskName, author, assignee, related: relatedTask, project, contract } = infoAterUpdate;
                     relatedTask = relatedTask.map(userID => userID.toString());
-    
+
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...relatedTask])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
-                    console.log({ listReceivers, receivers, related })
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,

@@ -24,7 +24,6 @@ class Model extends BaseModel {
         this.SEND_FAILED  = 2;
         this.SEEN         = 3;
 
-
         this.WEB_CBS           = 1;
         this.MOBILE_TEARSER    = 2;
         this.MOBILE_CBS        = 3;
@@ -282,8 +281,7 @@ class Model extends BaseModel {
      *     env = 2 => chỉ push tới app Teaser
 	 */
     sendNotiMobileAndWebPush({ users, title, description, objDataForSend, web_url, env, ctx }) {
-        
-        return new Promise(async (resolve) => {
+        return new Promise(async resolve => {
              try {
                 /**
                  * từ env là giá trị
@@ -459,8 +457,6 @@ class Model extends BaseModel {
                             console.info('WEB PUSH = TEASER')
                             console.log({ include_player_ids: dataForWebPushTeaser.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushTeaser)
-
-                            // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataForWebPush", dataForWebPush)
                         }
 
                     }
