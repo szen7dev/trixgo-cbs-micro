@@ -196,5 +196,4 @@ exports.SUBJECT_SOCKET = {
 			console.error(error);
 		}
 	},
-
 }

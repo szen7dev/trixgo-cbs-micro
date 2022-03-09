@@ -180,6 +180,10 @@ exports.REACTION_SOCKET = {
 				users: arrReceiver,
 				title: titleMSS,
 				description: descriptionMSS,
+				dataSend: {
+					infoObject,
+					infoComment
+				},
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS
 			});
