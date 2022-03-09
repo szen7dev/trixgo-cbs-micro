@@ -8,7 +8,7 @@ const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
 const { APP_KEYS } 								= require('../../tools/keys');
-const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant')
+const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant');
 
 /**
  * Utils
@@ -26,7 +26,7 @@ exports.REACTION_SOCKET = {
 			let userID             				= socket.client.user;
 			let io                         		= socket.$service.io;
 
-			let { objectID, infoComment, parentID, select, populates, app } = data;
+			let { objectID, infoComment, parentID, method, select, populates, app } = data;
 
 			if(!infoComment || !app){
 				return sendDataToMultilSocketsOfListUser({ 
@@ -87,7 +87,7 @@ exports.REACTION_SOCKET = {
 
 					if(infoObject.error) break;
 
-					const { company, department } = infoObject.data;
+					const { company, department, type } = infoObject.data;
 
 					/**
 					 * Loại bài viết
@@ -98,7 +98,7 @@ exports.REACTION_SOCKET = {
 					 * 5: Bài viết cá nhân
 					 * ..... Sau bổ sung thêm vài loại bài viết
 					 */
-					switch (infoObject.type) {
+					switch (type) {
 						case 1: {
 							const listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
 								companyID: company?.toString(),
@@ -119,6 +119,7 @@ exports.REACTION_SOCKET = {
 							if(!listUserReceive.error) {
 								arrReceiver = listReceivers.data?.members;
 							}
+							break;
 						}
 						case 3:
 						case 4: {
@@ -145,7 +146,6 @@ exports.REACTION_SOCKET = {
 					break;
 			}
 
-			console.log({ arrReceiver });
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
 					listUserConnected: listUserActive,
@@ -155,6 +155,8 @@ exports.REACTION_SOCKET = {
 				});
 			}
 
+			console.log({ BEFORE: arrReceiver })
+
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
@@ -162,6 +164,8 @@ exports.REACTION_SOCKET = {
 				data: {
 					error: false,
 					data: {
+						method,
+						parentID,
 						infoObject,
 						infoComment,
 						app
@@ -169,11 +173,19 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
+			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+
+			console.log({ AFTER: arrReceiver })
+
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: arrReceiver,
+				users: [...arrReceiver, userID],
 				title: titleMSS,
 				description: descriptionMSS,
+				dataSend: {
+					infoObject,
+					infoComment
+				},
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS
 			});

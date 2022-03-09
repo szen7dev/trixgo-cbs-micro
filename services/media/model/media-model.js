@@ -321,7 +321,7 @@ class Model extends BaseModel {
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
-							titleMSS = listReceivers.data?.name;
+							titleMSS = `PHÒNG BAN: ${listReceivers.data?.name}`;
 							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
 						break;

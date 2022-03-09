@@ -212,7 +212,7 @@ class Model extends BaseModel {
 						.withConcurrency(2)
 						.process(async file => {
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-								fileID: file._id?.toString()
+								fileID: file._id
 							}, {
 								meta: {
 									infoUser: { _id: senderID }
@@ -234,15 +234,6 @@ class Model extends BaseModel {
 
 								return { file: infoAfterInserted.data && infoAfterInserted.data._id }
 							}
-
-							// const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
-							// 	fileName: file.name,
-							// 	fileType: type,
-							// 	conversationID,
-							// 	fileID: file._id,
-							// 	authorID: senderID
-							// });
-							// return { file: infoAfterInserted.data && infoAfterInserted.data._id }
 						})
 
 					if(results.length) {
@@ -1355,7 +1346,7 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([userID, messageID])) {
                     return resolve({
 						error: true, 
-						message: 'Tham số message ID hoặc user ID không hợp lệ', 
+						message: 'Tham số messageID hoặc userID không hợp lệ', 
 						keyError: 'params_messageID_or_userID_invalid',
 						status: 400
 					});
@@ -1376,8 +1367,8 @@ class Model extends BaseModel {
 				if(!infoMessage) {
 					return resolve({
 						error: true,
-						message: 'Đã có lỗi xảy ra',
-						keyError: 'error_occurs',
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+						keyError: 'error_occurred',
 						status: 422
 					})
 				}
@@ -1387,7 +1378,7 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: infoMessage.reactions,
-						totalRecord: infoMessage.reactions.length,
+						totalRecord: infoMessage.reactions?.length,
 					}
 				});
 			} catch (error) {

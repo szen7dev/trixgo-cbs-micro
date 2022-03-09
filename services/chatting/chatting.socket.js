@@ -607,6 +607,9 @@ exports.CHATTING_SOCKET = {
 						title: senderFullname,
 						description,
 						amountNoti: amountMissMessage,
+						dataSend: {
+							conversationID: infoConversation._id
+						},
 						conversationID: infoConversation._id,
 						web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`,
 						env: ENV_DEVICE_APP_TEASER

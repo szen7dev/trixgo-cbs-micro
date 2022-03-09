@@ -51,8 +51,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             *  3/ MOBILE_CBS       
              */
             const { 
-                users: listRecievers, title, description, web_url, amountNoti, conversationID,
-                env
+                users: listRecievers, title, description, web_url, amountNoti, conversationID, dataSend, env
             } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
@@ -63,6 +62,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
                 objDataForSend: {
                     screenkey: 'DETAIL_PAGE',
                     amountNoti,
+                    dataSend,
                     conversationID
                 }, 
                 web_url,
