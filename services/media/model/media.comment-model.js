@@ -86,7 +86,6 @@ class Model extends BaseModel {
                 }
 
                 arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-                console.log({ arrReceiver })
 
                 if(arrReceiver.length) {
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
@@ -229,7 +228,6 @@ class Model extends BaseModel {
                     authorID, 
                     ctx 
                 });
-                console.log({ infoAfterCreateNoti })
                 if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
 
                 infoAterInsert = await MEDIA__COMMENT_COLL
@@ -239,7 +237,6 @@ class Model extends BaseModel {
                     .lean();
 
                 infoAterInsert.receivers = infoAfterCreateNoti.data;
-                console.log({ infoAterInsert })
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {

@@ -155,7 +155,7 @@ exports.REACTION_SOCKET = {
 				});
 			}
 
-			console.log({ arrReceiver });
+			console.log({ BEFORE: arrReceiver })
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
@@ -174,6 +174,8 @@ exports.REACTION_SOCKET = {
 			});
 
 			arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+
+			console.log({ AFTER: arrReceiver })
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
