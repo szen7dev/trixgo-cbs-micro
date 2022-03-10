@@ -315,13 +315,13 @@ class Model extends BaseModel {
                     }
                     case 2: {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                            departmentID: department?.toString(),
+                            departmentID,
                             select: "name members"
                         });
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
-							titleMSS = `PHÒNG BAN: ${listReceivers.data?.name}`;
+							titleMSS = listReceivers.data?.name;
 							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
 						break;
@@ -352,7 +352,7 @@ class Model extends BaseModel {
 
 				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
-				if(arrReceiver.length) {
+				if(arrReceiver && arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
 						project: departmentID,
@@ -381,6 +381,7 @@ class Model extends BaseModel {
 					receivers: arrReceiver
 				}, status: 200 });
             } catch (error) {
+				console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

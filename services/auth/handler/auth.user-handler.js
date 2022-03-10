@@ -248,9 +248,7 @@ module.exports = {
     // send noti via cloudmessaging
     getListUserByIdForPushMobile: {
         auth: "required",
-        params: {
-            // users : { type: "string" },
-        },
+        params: {},
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);

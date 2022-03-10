@@ -27,7 +27,7 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Lấy danh sách file trong cuộc hội thoại
+	 * Func: Thêm file trong cuộc hội thoại
 	 * Date: ...
 	 * Updated: 22/02/2022
 	 */
@@ -131,11 +131,11 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fileName = new RegExp(keyword, 'i');
+                    conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
 				if(type && FILE_TYPE.includes(+type)) {
-					conditionObj.fileType = type;
+					conditionObj.type = type;
 				}
 
 				if(authorID && checkObjectIDs([authorID])) {

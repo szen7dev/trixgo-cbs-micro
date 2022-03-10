@@ -462,6 +462,8 @@ class Model extends BaseModel {
                     }
                 }
             } catch (error) {
+                console.info('==========sendNotiMobileAndWebPush==========');
+                console.error(error);
                 return resolve({ error: true, message: error.message });
             }
         })

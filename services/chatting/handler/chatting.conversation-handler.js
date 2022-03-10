@@ -14,6 +14,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const CHATTING__CONVERSATION_MODEL              = require('../model/chatting.conversation-model').MODEL;
 const CHATTING__CONVERSATION_FILE_MODEL         = require('../model/chatting.conversation_file-model').MODEL;
+const CHATTING__CONVERSATION_LINK_MODEL         = require('../model/chatring.conversation_link-model').MODEL;
 
 
 module.exports = {
@@ -74,32 +75,6 @@ module.exports = {
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.updateConversation({
 					conversationID, userID, name, description, avatar, ctx
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Kiểm tra tồn tại cuộc hội thoại
-	 * Date: 11/01/2022
-	 */
-	checkExistsConversation: {
-        params: {
-            memberID: { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { memberID } = ctx.params;
-
-                const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.checkExistsConversation({
-					memberID, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -275,7 +250,7 @@ module.exports = {
 	 * Date: ...
 	 * Updated: MinhVH - 04/08/2021
 	 */
-	 getInfoConversationByID: {
+    getInfoConversationByID: {
         params: {
             conversationID: { type: "string" },
         },
@@ -425,10 +400,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, select } = ctx.params;
+                let { conversationID } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMemberSendMessagesMediaConversation({ 
-					conversationID, userID, select
+					conversationID, userID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -604,16 +579,21 @@ module.exports = {
 	 */
 	getListMembersConversationByID: {
         params: {
-            conversationID: { type: "string" },
+            conversationID  : { type: "string" },
+            lastestID       : { type: "string", optional: true },
+            level           : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, select } = ctx.params;
+                let { _id: authorID } = ctx.meta.infoUser;
+                let { conversationID, lastestID, level, limit, select, populates } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMembersConversationByID({ 
-					conversationID, userID, select
+					conversationID, authorID, lastestID, level, limit, select, populates
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -682,16 +662,19 @@ module.exports = {
 	 */
 	getListConversationMissMessage: {
         params: {
-			lastestID 	: { type: "string", optional: true },
+			lastestID   : { type: "string", optional: true },
+			limit       : { type: "string", optional: true },
+			filter      : { type: "string", optional: true },
+			select      : { type: "string", optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { lastestID, filter, select } = ctx.params;
+                const { lastestID, limit, filter, select } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListConversationMissMessage({ 
-					userID, lastestID, filter, select
+					userID, lastestID, limit, filter, select
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -727,6 +710,41 @@ module.exports = {
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_FILE_MODEL.getList({ 
 					userID, lastestID, conversationID, authorID, fromDate, toDate, type, keyword, limit, select, populates
+				})
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách link trong cuộc hội thoại
+	 * Date: 10/01/2022
+	 */
+	getListLinkConversation: {
+        params: {
+			conversationID 	: { type: "string" },
+			messageID 	    : { type: "string", optional: true },
+			authorID 	    : { type: "string", optional: true },
+			lastestID 	    : { type: "string", optional: true },
+			fromDate 	    : { type: "string", optional: true },
+			toDate 	        : { type: "string", optional: true },
+			keyword 	    : { type: "string", optional: true },
+			limit           : { type: "string", optional: true },
+			select 	        : { type: "string", optional: true },
+			populates       : { type: "string", optional: true },
+		},
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
+                const { conversationID, messageID, authorID, lastestID, fromDate, toDate, keyword, limit, select, populates } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_LINK_MODEL.getList({ 
+					userID, conversationID, messageID, authorID, lastestID, fromDate, toDate, keyword, limit, select, populates
 				})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

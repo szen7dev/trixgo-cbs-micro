@@ -88,6 +88,7 @@ exports.REACTION_SOCKET = {
 					if(infoObject.error) break;
 
 					const { company, department, type } = infoObject.data;
+					console.log({ company, department, type })
 
 					/**
 					 * Loại bài viết
@@ -112,11 +113,12 @@ exports.REACTION_SOCKET = {
 						}
 						case 2: {
 							const listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+								companyID: company?.toString(),
 								departmentID: department?.toString(),
 								select: "members"
 							}, { meta });
 
-							if(!listUserReceive.error) {
+							if(!listReceivers.error) {
 								arrReceiver = listReceivers.data?.members;
 							}
 							break;
@@ -139,12 +141,13 @@ exports.REACTION_SOCKET = {
 					infoObject 			= infoObject.data;
 					titleMSS 			= `BÀI VIẾT: ${infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title}`;
 					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận`;
-					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
+					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?._id}`;
 					break;
 				}
 				default:
 					break;
 			}
+			console.log({ LENGTH: arrReceiver.length })
 
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
@@ -154,8 +157,7 @@ exports.REACTION_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}
-
-			console.log({ BEFORE: arrReceiver })
+			arrReceiver = arrReceiver.map(receiverID => receiverID.toString());
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
@@ -174,8 +176,7 @@ exports.REACTION_SOCKET = {
 			});
 
 			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
-
-			console.log({ AFTER: arrReceiver })
+			console.log({ arrReceiver, userID })
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

@@ -257,10 +257,10 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     // Việc con
                     if(type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $set: { amountSubtask: { $inc: 1 }}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountSubtask: 1}})
                     }else{
                         // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $set: { amountChecklist: { $inc: 1 }}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChecklist: 1}})
                     }
                 }
 
@@ -290,8 +290,8 @@ class Model extends BaseModel {
                     let { name: taskName, author, assignee, related, project, contract } = infoTask;
                     related = related.map(userID => userID.toString());
 
-                    const listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    const receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                    let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: name,
@@ -322,11 +322,11 @@ class Model extends BaseModel {
                             receivers = [infoAssignee?.data?._id];
                         }
 
-                        titleMSS        = `THÔNG BÁO`;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 việc`;
-                    } else {
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
+                    } else {
+                        titleMSS        = `THÔNG BÁO`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                     }
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -346,6 +346,7 @@ class Model extends BaseModel {
  
                 return resolve({ error: false, data: infoTask, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
