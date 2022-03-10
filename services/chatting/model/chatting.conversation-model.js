@@ -154,7 +154,8 @@ class Model extends BaseModel {
 						await CHATTING__CONVERSATION_MEMBER_COLL.create({
 							member: memberID,
 							conversation: infoConversationAfterInserted._id,
-							addedBy: authorID
+							addedBy: authorID,
+							level: authorID === memberID ? 'ADMIN' : 'MEMBER'
 						})
 					});
 
@@ -272,47 +273,6 @@ class Model extends BaseModel {
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
-	}
-
-	/**
-	 * Dev: MinhVH
-	 * Func: Kiểm tra tồn tại cuộc hội thoại
-	 * Date: 11/01/2022
-	 */
-	checkExistsConversation({ memberID, userID }) {
-		return new Promise(async resolve => {
-			try {
-				if(!checkObjectIDs([memberID, userID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số member ID hoặc user ID không hợp lệ', 
-						keyError: 'params_memberID_or_userID_invalid',
-						status: 400 
-					});
-				}
-
-				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					isPrivate: true,
-					members: {
-						$elemMatch: {
-							$in: [memberID, userID]
-						}
-					}
-				}).lean();
-
-				if(checkExistConversation)
-					return resolve({ error: false, data: checkExistConversation, status: 200 });
-
-				return resolve({ 
-					error: true, 
-					message: 'Cuộc hội thoại không tồn tại', 
-					keyError: 'conversation_not_exitsts',
-					status: 400 
-				});
-			} catch (error) {
-				return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
 			}
 		})
 	}
@@ -641,6 +601,7 @@ class Model extends BaseModel {
 				}
 
 				let infoConversationAfterUpdated = null;
+				let level = '';
 				let typeMessage = 0;
 
 				// Cập nhật member thành admin
@@ -661,6 +622,7 @@ class Model extends BaseModel {
 					}, { new: true });
 
 					typeMessage = 105; // Xét thêm admin cuộc hội thoại
+					level = 'ADMIN';
 
 				} else{ // Cập nhật admin thành member
 					if(checkExistConversation.author.toString() === memberID.toString()) {
@@ -679,6 +641,7 @@ class Model extends BaseModel {
 					}, { new: true });
 
 					typeMessage = 106; // Xoá bỏ quyền admin của member trong cuộc hội thoại
+					level = 'MEMBER';
 				}
 
                 if(!infoConversationAfterUpdated) {
@@ -696,6 +659,13 @@ class Model extends BaseModel {
 					type: typeMessage,
 					usersAssigned: [memberID],
 					receiversID: checkExistConversation.members,
+				})
+
+				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndUpdate({
+					conversation: conversationID,
+					member: memberID
+				}, {
+					$set: { level }
 				})
 
                 return resolve({ 
@@ -957,45 +927,113 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: 10/08/2021 - MinhVH
 	 */
-	getListMembersConversationByID({ conversationID, userID, select = {} }){
+	getListMembersConversationByID({ conversationID, authorID, lastestID, level, limit = 15, select, populates }){
         return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs([conversationID, userID]))
-                    return resolve({ error: true, message: 'Request params invalid', status: 400 });
+			try {
+				/**
+                 * DECALARTION VARIABLE (1)
+                 */
+				let conditionObj = { conversation: conversationID };
+				let keys = ['createAt__-1', '_id__-1'];
+				let sortBy = {};
+				let nextCursor	= null;
 
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
+				/** 
+				 * VALIDATION STEP (2)
+				 *  - Kiểm tra valid từ các input
+				 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+				 */
+				if(!checkObjectIDs([conversationID])) {
+					return resolve({
+						error: true,
+						message: "Tham số conversationID không hợp lệ",
+						keyError: "params_conversationID_invalid",
+						status: 400
+					})
 				}
 
-                const infoConversation = await CHATTING__CONVERSATION_COLL
-					.findOne({
-						_id: conversationID,
-						members: { $in: [userID] }
+				if(!checkObjectIDs([authorID])) {
+					return resolve({
+						error: true,
+						message: "Tham số authorID không hợp lệ",
+						keyError: "params_authorID_invalid",
+						status: 400
 					})
-					.populate({
-						path: 'members',
-						select: select.members
+				}
+
+				if(limit > 20 || isNaN(limit)){
+					limit = 20;
+				} else {
+					limit = +limit;
+				}
+
+				if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+						path: "",
+						select: ""
+					}
+				}
+
+				level && (conditionObj.level = level);
+
+				let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await CHATTING__CONVERSATION_MEMBER_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+					let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+				}
+
+				let infoDataAfterGet = await CHATTING__CONVERSATION_MEMBER_COLL
+					.find(conditionObj)
+					.limit(limit + 1)
+					.sort(sortBy)
+					.select(select)
+					.populate(populates)
+					.lean();
+
+				if(!infoDataAfterGet) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurs",
+						status: 422
 					})
-                    .lean();
+				}
 
-                if (!infoConversation)
-                    return resolve({ error: true, message: "You aren't member of conversation", status: 403 });
+				if(infoDataAfterGet && infoDataAfterGet.length){
+					if(infoDataAfterGet.length > limit){
+						nextCursor = infoDataAfterGet[limit - 1]._id;
+						infoDataAfterGet.length = limit;
+					}
+				}
 
-                return resolve({
-					error: false,
-					data: {
-						listRecords: infoConversation.members,
-						totalRecord: infoConversation.members.length
-					},
-					status: 200
-				});
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
+				let totalRecord = await CHATTING__CONVERSATION_MEMBER_COLL.countDocuments(conditionObjOrg);
+
+				return resolve({ error: false, data: {
+					listRecords: infoDataAfterGet,
+					limit,
+					totalRecord,
+					nextCursor,
+				}, status: 200 });
+			} catch (error) {
+				return resolve({ error: true, error: error.message, status: 500 });
+			}
+		})
     }
 
 	/**
@@ -2306,12 +2344,10 @@ class Model extends BaseModel {
 				let nextCursor	= null;
 
 				if(listConversationMissMessage && listConversationMissMessage.length){
-
 					if(listConversationMissMessage.length > limit){
 						nextCursor = listConversationMissMessage[limit - 1]._id;
 						listConversationMissMessage.length = limit;
 					}
-
 				}
 
 				return resolve({

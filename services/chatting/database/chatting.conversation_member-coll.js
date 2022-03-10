@@ -41,7 +41,6 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
      * Thời gian cuối cùng seen
      */
     timeLastSeen: {
-        type: Date,
-        default: Date.now()
+        type: Date
     }
 });

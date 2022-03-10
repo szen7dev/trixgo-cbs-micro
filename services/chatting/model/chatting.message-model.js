@@ -39,6 +39,7 @@ const CHATTING__CONVERSATION_COLL                   = require('../database/chatt
 /**
  * MODELS
  */
+const CHATTING__CONVERSATION_MEMBER_COLL			= require('../database/chatting.conversation_member-coll');
 const CHATTING__CONVERSATION_FILE_MODEL				= require('../model/chatting.conversation_file-model').MODEL;
 const CHATTING__CONVERSATION_LINK_MODEL				= require('../model/chatring.conversation_link-model').MODEL;
 
@@ -242,23 +243,6 @@ class Model extends BaseModel {
 					}
 				}
 
-				// MESSAGE LINK
-				if(content){
-					let urlRegex = /((((https|http|HTTP|HTTPS|ftp)?:\/\/)|(www\.))[^\s]+)/g;
-					let allLinks = content.match(urlRegex);
-
-					if(allLinks && allLinks.length){
-						await PromisePool
-							.for(allLinks)
-							.withConcurrency(2)
-							.process(async link => CHATTING__CONVERSATION_LINK_MODEL.insert({
-								conversationID,
-								authorID: senderID,
-								link
-							}))
-					}
-				}
-
 				let infoMessageAfterInserted = null;
 				let numberMissMessage		 = 1;
 
@@ -313,6 +297,24 @@ class Model extends BaseModel {
 					})
 				}
 
+				// MESSAGE LINK
+				if(content){
+					let urlRegex = /((((https|http|HTTP|HTTPS|ftp)?:\/\/)|(www\.))[^\s]+)/g;
+					let allLinks = content.match(urlRegex);
+
+					if(allLinks && allLinks.length){
+						await PromisePool
+							.for(allLinks)
+							.withConcurrency(2)
+							.process(async link => CHATTING__CONVERSATION_LINK_MODEL.insert({
+								conversationID,
+								messageID: infoMessageAfterInserted._id,
+								authorID: senderID,
+								link
+							}))
+					}
+				}
+
 				// UPDATE LAST MESSAGE & UPDATE SHOW CONVERSATION HIDE
                 await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
 					$set: {
@@ -360,12 +362,13 @@ class Model extends BaseModel {
 				}
 
 				// CHECK USER IS MEMBER OF CONVERSATION
-				let infoConversation = await CHATTING__CONVERSATION_COLL.findOne({
-					_id: conversationID,
-					members: { $in: [userID] }
-				})
-				.select('members')
-				.lean();
+				let infoConversation = await CHATTING__CONVERSATION_COLL
+					.findOne({
+						_id: conversationID,
+						members: { $in: [userID] }
+					})
+					.select('members')
+					.lean();
 
 				if(!infoConversation) {
 					return resolve({
@@ -385,10 +388,10 @@ class Model extends BaseModel {
 
 						/**
 						 * Tin nhắn không nằm trong 2 trường hợp:
-						 * 1: đã nhận
+						 * 0: đã gửi nhưng chưa xem/ chưa nhận))
 						 * 2: đã xem
 						 */
-						if(![2,3].includes(infoMessage.status)) {
+						if(![0,2].includes(infoMessage.status)) {
 							let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
 								$addToSet: {
 									usersSeen: userID
@@ -413,10 +416,19 @@ class Model extends BaseModel {
 					return resolve({
 						error: true,
 						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurs",
+						keyError: "error_occurred",
 						status: 422
 					})
 				}
+
+				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndUpdate({
+					conversation: conversationID,
+					member: userID
+				}, {
+					$set: {
+						timeLastSeen: Date.now()
+					}
+				})
 
 				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 					_id: conversationID,

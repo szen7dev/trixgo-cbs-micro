@@ -488,7 +488,7 @@ exports.CHATTING_SOCKET = {
 					.populate({
 						path: 'parent',
 						populate: {
-							path: 'sender files.file',
+							path: 'sender usersAssigned files.file',
 							populate: {
 								path: 'file',
 								select: 'name path size'
