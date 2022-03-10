@@ -10,6 +10,7 @@ const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.action
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/notification.actions-constant');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS } = require('../../../tools/keys');
+const { sendNoticeToMember }            = require('../../../tools/mailer/module/notice_pcm_task');
 const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**
@@ -1291,6 +1292,55 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Gửi thông báo email tới các thành viên trong task
+     * Hiepnh
+     */
+    sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate('author assignee related project');
+                if (!infoTask) 
+                    return resolve({ error: true, message: 'cannot_get_info_task' });
+
+                /**
+                 * CẤU TRÚC EMAIL
+                 * Người nhận email
+                 * Tiêu đề
+                 * Nội dung
+                 */    
+                // let listMembers = await USER_COLL.find({_id: { $in: receivers }});
+
+                let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                    arrayID: receivers, select: "_id email"
+                })
+                listMembers = listMembers?.data?.listRecords || []
+                console.log(listMembers)
+                let arrayMailSend ='';
+                let indexMember = 0;
+                for(const item of listMembers){
+                    if(indexMember != listMembers.length){
+                        arrayMailSend += `${item.email},`;
+                        
+                    }else{
+                        arrayMailSend += `${item.email}`;
+                    }
+                    indexMember++;
+                }
+
+                await sendNoticeToMember({ email: arrayMailSend, title, content: { sender, notice, infoTask } });
+                // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: arrayMailSend, title, content: { sender, notice, infoTask } } });
+                // pool
+                //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: arrayMailSend, title, content: { sender, notice, infoTask } })])
+            
+                return resolve({ error: false, data: listMembers });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+
 }
 
 exports.MODEL = new Model;

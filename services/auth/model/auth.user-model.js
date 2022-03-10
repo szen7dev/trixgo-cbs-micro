@@ -1542,7 +1542,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getListV2({
-        companyID, projectID, 
+        companyID, projectID, arrayID,
         keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
@@ -1575,6 +1575,11 @@ class Model extends BaseModel {
                     }
 
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
+                }
+
+                // Lấy user theo mảng id
+                if(arrayID && arrayID.length){
+                    conditionObj._id = { $in: arrayID }
                 }
 
                 /** 

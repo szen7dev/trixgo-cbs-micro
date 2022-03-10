@@ -258,7 +258,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-
                 // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getBadgeBidding({ userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -267,4 +266,35 @@ module.exports = {
             }
         }
     },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Gửi email trong task
+	 */
+    sendEmailToMembersInTask: {
+        auth: "required",
+        params: { 
+            taskID   : { type: "string" },
+            title    : { type: "string" },
+            notice   : { type: "string" },
+            members  : { type: "array"  },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, email, fullname } = ctx.meta.infoUser;
+                let { taskID, title, notice, members } = ctx.params;
+                members.push(userID);
+
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.sendEmailToMembersInTask({ taskID, title, notice, 
+                    sender: { email, fullname }, receivers: members, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+    
 }

@@ -37,7 +37,6 @@ module.exports = {
         }
     },
 
-
     /**
 	 * Dev: Depv ✅
 	 * Func: update Group
@@ -45,18 +44,22 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            groupID   : { type: "string" },
-            name      : { type: "string" },
-            sign      : { type: "string" },
+            groupID      : { type: "string" },
+            name         : { type: "string", optional: true },
+            sign         : { type: "string", optional: true },
+            members      : { type: "array", optional: true },
+            admins       : { type: "array", optional: true },
+            membersRemove: { type: "array", optional: true },
+            adminsRemove : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  groupID, name, sign } = ctx.params;
+                let {  groupID, name, sign, members, membersRemove, admins, adminsRemove } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.update({
-                    groupID, name, sign, userID
+                    groupID, name, sign, userID, members, membersRemove, admins, adminsRemove
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -65,7 +68,6 @@ module.exports = {
             }
         }
     },
-
     
     /**
 	 * Dev: Depv ✅
@@ -95,13 +97,38 @@ module.exports = {
 
     /**
 	 * Dev: Depv ✅
+	 * Func: remove Group
+	 */
+    removeMany: {
+        auth: "required",
+        params: {
+            groupsID   : { type: "array" }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  groupsID } = ctx.params; 
+				const { _id: userID } = ctx.meta.infoUser;
+                let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.removeMany({
+                    groupsID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv ✅
 	 * Func: getList and getInfo pcm_plan_report
 	 */
-    getInfoAndGetList: {
+    getInfoAndGetList: { 
         auth: "required",
         params: {
             projectID   : { type: "string", optional: true },
-            groupID : { type: "string", optional: true },
+            groupID     : { type: "string", optional: true },
             //========================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
