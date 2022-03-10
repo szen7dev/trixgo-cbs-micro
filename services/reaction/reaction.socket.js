@@ -155,7 +155,7 @@ exports.REACTION_SOCKET = {
 				});
 			}
 
-			console.log({ BEFORE: arrReceiver })
+			console.log({ BEFORE: arrReceiver, userID })
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
@@ -173,9 +173,7 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
-
-			console.log({ AFTER: arrReceiver })
+			arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

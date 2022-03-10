@@ -26,6 +26,7 @@ const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils'
  */
 const CHATTING__MESSAGE_COLL						= require('../database/chatting.message-coll');
 const CHATTING__CONVERSATION_COLL               	= require('../database/chatting.conversation-coll');
+const CHATTING__CONVERSATION_MEMBER_COLL           	= require('../database/chatting.conversation_member-coll');
 const CHATTING__CONVERSATION_LINK_COLL          	= require('../database/chatting.conversation_link-coll');
 
 /**
@@ -113,11 +114,11 @@ class Model extends BaseModel {
 						});
 					}
 
-					if(membersID.length >= 100) {
+					if(membersID.length >= 1000) {
 						return resolve({ 
 							error: true, 
-							message: 'Số lượng thành viên không được lớn hơn 100', 
-							keyError: 'number_of_members_over_100',
+							message: 'Số lượng thành viên không được lớn hơn 1000', 
+							keyError: 'number_of_members_over_1000',
 							status: 400
 						});
 					}
@@ -141,6 +142,21 @@ class Model extends BaseModel {
 						status: 422
 					});
 				}
+
+				if(isPrivate) {
+					membersID = [...new Set([authorID, ...membersID])];
+				}
+
+				await PromisePool
+					.for(membersID)
+					.withConcurrency(2)
+					.process(async memberID => {
+						await CHATTING__CONVERSATION_MEMBER_COLL.create({
+							member: memberID,
+							conversation: infoConversationAfterInserted._id,
+							addedBy: authorID
+						})
+					});
 
 				const infoConversation = await CHATTING__CONVERSATION_COLL
 					.findById(infoConversationAfterInserted._id)
@@ -200,7 +216,7 @@ class Model extends BaseModel {
 				}
 
 				let infoMessageNotification = null;
-				let dataUpdate 	= {};
+				let dataUpdate = {};
 				name 		&& (dataUpdate.name 		= name);
                 description && (dataUpdate.description 	= description);
 
@@ -216,7 +232,7 @@ class Model extends BaseModel {
 				if(!infoAfterUpdate) {
 					return resolve({ 
 						error: true, 
-						message: "Có lỗi xảy ra", 
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
 						keyError: 'error_occurs',
 						status: 422
 					});
@@ -450,6 +466,24 @@ class Model extends BaseModel {
 					type: 101
 				})
 
+				// INSERT MEMBER TO CONVERSATION
+				await PromisePool
+					.for(membersID)
+					.withConcurrency(2)
+					.process(async memberID => {
+						const infoMember = await CHATTING__CONVERSATION_MEMBER_COLL
+							.findOne({ member: memberID, conversation: conversationID })
+							.lean();
+
+						if(!infoMember) {
+							await CHATTING__CONVERSATION_MEMBER_COLL.create({
+								member: memberID,
+								conversation: conversationID,
+								addedBy: authorID
+							})
+						}
+					});
+
                 return resolve({ 
 					error: false, 
 					data: {
@@ -552,6 +586,12 @@ class Model extends BaseModel {
 					conversationID,
 					type: 102
 				})
+
+				// DELETE MEMBER IN CONVERSATION
+				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({ 
+					member: memberID, 
+					conversation: conversationID 
+				});
 
                 return resolve({ 
 					error: false, 
@@ -912,7 +952,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Dev: VinhHV
+	 * Dev: MinhVH
 	 * Func: Lấy danh sách members cuộc hội thoại
 	 * Date: ...
 	 * Updated: 10/08/2021 - MinhVH
@@ -1070,12 +1110,12 @@ class Model extends BaseModel {
 						path: 'parent',
 						select: select.parent,
 						populate: {
-							path: 'sender files.file',
+							path: 'sender usersAssigned files.file',
+							select: `_id bizfullname fullname image ${select.files}`,
 							populate: {
 								path: 'file',
 								select: 'name nameOrg path size'
 							},
-							select: `_id bizfullname fullname image ${select.files}`
 						}
 					})
 					.populate({
@@ -1565,25 +1605,18 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách thành viên gửi tin nhắn media cuộc hội thoại
 	 * Date: 13/08/2021
 	 */
-	getListMemberSendMessagesMediaConversation({ conversationID, userID, select = {} }){
+	getListMemberSendMessagesMediaConversation({ conversationID, userID }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
 
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL
 					.findOne({
 						_id: conversationID,
 						members: { $all: [userID] }
 					})
-					.populate('members', select.infoMember)
+					.populate('members', '_id fullname bizfullname email phone image')
 					.lean();
 
 				if(!checkExistConversation)
@@ -1810,11 +1843,16 @@ class Model extends BaseModel {
 				if(!infoAfterUpdated) {
 					return resolve({ 
 						error: true, 
-						message: "Đã xảy ra lỗi", 
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
 						keyError: 'error_occurred',
 						status: 422
 					});
 				}
+
+				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({ 
+					member: userID, 
+					conversation: conversationID 
+				});
 
 				return resolve({ 
 					error: false, 
@@ -1841,7 +1879,6 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([conversationID, userID]))
 					return resolve({ error: true, message: "Request param invalid", status: 400 });
 
-				// Check user exist in conversation
 				let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
 					_id: conversationID,
 					authors: { $in: [userID] }
@@ -1855,13 +1892,24 @@ class Model extends BaseModel {
 
 				let infoAfterDelete = await CHATTING__CONVERSATION_COLL.findByIdAndDelete(conversationID);
 
-				if(!infoAfterDelete)
-					return resolve({ error: true, message: "Can't delete conversation", status: 403 });
+				if(!infoAfterDelete) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+				}
+
+				await CHATTING__CONVERSATION_MEMBER_COLL.deleteMany({ 
+					member: { $in: checkExistConversation.members }, 
+					conversation: conversationID 
+				});
 
 				return resolve({
 					error: false,
 					status: 200,
-					data: infoAfterDelete,
+					data: infoAfterDelete
 				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });

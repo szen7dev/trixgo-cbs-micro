@@ -29,9 +29,19 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
     },
 
     /**
+     * Level thành viên
+     */
+    level: {
+        type: String,
+        enum: ['MEMBER', 'ADMIN'],
+        default: 'MEMBER'
+    },
+
+    /**
      * Thời gian cuối cùng seen
      */
     timeLastSeen: {
-        type: Date
+        type: Date,
+        default: Date.now()
     }
 });

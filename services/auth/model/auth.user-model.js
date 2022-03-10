@@ -201,25 +201,51 @@ class Model extends BaseModel {
                         select: '_id name sign image'
                     });
 
-                if (!isExist)
-                    return resolve({ error: true, message: 'email_not_exist' });
+                if (!isExist) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Email không tồn tại',
+                        keyError: "email_not_exists",
+                        status: 400
+                    });
+                }
+
+                if(isExist.platform !== +platform) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Flatform không hợp lệ',
+                        keyError: "platform_invalid",
+                        status: 400
+                    });
+                }
 
                 const isMatchPass = await compare(password, isExist.password);
-                if (!isMatchPass) return resolve({
-                    error: true,
-                    message: 'password_not_exist'
-                });
+                if (!isMatchPass) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Mật khẩu không trùng khớp',
+                        keyError: "password_not_match",
+                        status: 400
+                    });
+                }
+  
+                if (isExist.status == STATUS_BLOCK) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tài khoản của bạn đã bị khóa',
+                        keyError: "account_is_blocked",
+                        status: 403
+                    });
+                }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: convert type + update name (ví dụ: string -> number)
-                 *  3.2: operation database
-                 */    
-                if (isExist.status == STATUS_BLOCK) 
-                    return resolve({ error: true, message: 'user_blocked' });
-
-                if (isExist.status == STATUS_INACTIVE) 
-                    return resolve({ error: true, message: 'user_not_active' });
+                if (isExist.status == STATUS_INACTIVE) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tài khoản của bạn chưa được kích hoạt',
+                        keyError: "account_is_not_active",
+                        status: 403
+                    });
+                }
                 
                 // delete isExist.password;
                 // delete isExist.bookmarks;
@@ -235,7 +261,6 @@ class Model extends BaseModel {
                     name: isExist.name,
                     fullname: isExist.fullname,
                     bizfullname: isExist.bizfullname,
-                    // birthDay: isExist.birthDay,
                     company: isExist.company,
                     // department: isExist.department,
                     // position: isExist.position,
@@ -243,16 +268,11 @@ class Model extends BaseModel {
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
-                    // numLog: isExist.numLog,
-                    // lastLogs: isExist.lastLogs,
-                    // noticeConfig: isExist.noticeConfig,
-                    // deviceName: isExist.deviceName,
-                    // deviceID: isExist.deviceID,
-                    // registrationID: isExist.registrationID,
                     _id: isExist._id,
                 }
 
                 const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
+
                 // update lastLog of user
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
@@ -268,13 +288,15 @@ class Model extends BaseModel {
                 
                 return resolve({
                     error: false,
-                    data: { user: newExist, token }
+                    data: { user: newExist, token },
+                    status: 200
                 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
     // implement by: KHANHNEY✅ 
     updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {

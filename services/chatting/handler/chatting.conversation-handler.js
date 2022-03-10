@@ -425,10 +425,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID } = ctx.meta.infoUser;
-                let { conversationID, select } = ctx.params;
+                let { conversationID } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMemberSendMessagesMediaConversation({ 
-					conversationID, userID, select
+					conversationID, userID
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

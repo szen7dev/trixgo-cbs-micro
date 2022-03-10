@@ -322,7 +322,7 @@ class Model extends BaseModel {
                         }
 
                         titleMSS        = `THÔNG BÁO`;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 việc`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                     } else {
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
