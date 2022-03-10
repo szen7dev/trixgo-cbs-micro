@@ -350,7 +350,8 @@ class Model extends BaseModel {
                         break;
                 }
 
-				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				console.log({ arrReceiver, mediaType, titleMSS, descriptionMSS })
 
 				if(arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
@@ -381,6 +382,7 @@ class Model extends BaseModel {
 					receivers: arrReceiver
 				}, status: 200 });
             } catch (error) {
+				console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
