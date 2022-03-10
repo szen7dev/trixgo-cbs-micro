@@ -632,7 +632,6 @@ class Model extends BaseModel {
                         devices: 1
                     })
                     .lean();
-                console.log({ listUsers })
 
                 return resolve({ 
 					error: false,
@@ -642,6 +641,7 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+                console.info('getListUsersForPushMobile')
                 console.error(error)
                 return resolve({ error: true, message: error.message, status: 500 });
             }
