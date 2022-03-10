@@ -147,7 +147,7 @@ exports.REACTION_SOCKET = {
 				default:
 					break;
 			}
-			console.log({ arrReceiver, userID })
+			console.log({ arrReceiver, receiverCloud: [...arrReceiver, userID], userID })
 
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
@@ -174,7 +174,7 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

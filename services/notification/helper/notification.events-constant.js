@@ -53,6 +53,7 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             const { 
                 users: listRecievers, title, description, web_url, amountNoti, conversationID, dataSend, env
             } = ctx.params;
+            console.log({ PARAMS: ctx.params })
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
             const result = await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({ 
