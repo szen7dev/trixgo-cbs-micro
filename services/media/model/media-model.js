@@ -318,11 +318,10 @@ class Model extends BaseModel {
                             departmentID,
                             select: "name members"
                         });
-						console.log({ departmentID, listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
-							titleMSS = `PHÒNG BAN: ${listReceivers.data?.name}`;
+							titleMSS = listReceivers.data?.name;
 							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
 						break;
@@ -351,8 +350,7 @@ class Model extends BaseModel {
                         break;
                 }
 
-				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-				console.log({ arrReceiver, mediaType, titleMSS, descriptionMSS })
+				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
