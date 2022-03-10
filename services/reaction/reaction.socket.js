@@ -116,7 +116,7 @@ exports.REACTION_SOCKET = {
 								select: "members"
 							}, { meta });
 
-							if(!listUserReceive.error) {
+							if(!listReceivers.error) {
 								arrReceiver = listReceivers.data?.members;
 							}
 							break;
