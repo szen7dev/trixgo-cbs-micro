@@ -88,6 +88,7 @@ exports.REACTION_SOCKET = {
 					if(infoObject.error) break;
 
 					const { company, department, type } = infoObject.data;
+					console.log({ company, department, type })
 
 					/**
 					 * Loại bài viết
@@ -145,6 +146,7 @@ exports.REACTION_SOCKET = {
 				default:
 					break;
 			}
+			console.log({ arrReceiver, userID })
 
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
@@ -154,8 +156,6 @@ exports.REACTION_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}
-
-			console.log({ arrReceiver, userID })
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
