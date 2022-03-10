@@ -315,10 +315,10 @@ class Model extends BaseModel {
                     }
                     case 2: {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                            departmentID: department?.toString(),
+                            departmentID,
                             select: "name members"
                         });
-						console.log({ listReceivers })
+						console.log({ departmentID, listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;

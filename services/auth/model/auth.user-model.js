@@ -197,7 +197,7 @@ class Model extends BaseModel {
                         platform: +platform
                     })
                     .populate({
-                        path: 'company',
+                        path: 'company department',
                         select: '_id name sign image'
                     });
 
@@ -262,8 +262,7 @@ class Model extends BaseModel {
                     fullname: isExist.fullname,
                     bizfullname: isExist.bizfullname,
                     company: isExist.company,
-                    // department: isExist.department,
-                    // position: isExist.position,
+                    department: isExist.department,
                     image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,
