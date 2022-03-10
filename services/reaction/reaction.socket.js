@@ -141,13 +141,13 @@ exports.REACTION_SOCKET = {
 					infoObject 			= infoObject.data;
 					titleMSS 			= `BÀI VIẾT: ${infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title}`;
 					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận`;
-					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?.data?._id}`;
+					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/media/post/${infoObject?._id}`;
 					break;
 				}
 				default:
 					break;
 			}
-			console.log({ arrReceiver, receiverCloud: [...arrReceiver, userID], userID })
+			console.log({ LENGTH: arrReceiver.length })
 
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
@@ -175,6 +175,7 @@ exports.REACTION_SOCKET = {
 			});
 
 			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+			console.log({ receiverCloud: [...arrReceiver, userID], userID })
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

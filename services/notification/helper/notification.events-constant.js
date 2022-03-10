@@ -53,10 +53,9 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             const { 
                 users: listRecievers, title, description, web_url, amountNoti, conversationID, dataSend, env
             } = ctx.params;
-            console.log({ PARAMS: ctx.params })
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
-            const result = await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({ 
+            await NOTIFICATION__LOG_MODEL.sendNotiMobileAndWebPush({ 
                 users: listRecievers,
                 title: title,
                 description: description,
@@ -70,7 +69,6 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
                 env,
                 ctx
             })
-            console.log({ result })
          }
      },
      //  loại noti:SMS
