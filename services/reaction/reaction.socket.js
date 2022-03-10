@@ -116,6 +116,7 @@ exports.REACTION_SOCKET = {
 								departmentID: department?.toString(),
 								select: "members"
 							}, { meta });
+							console.log({ listReceivers })
 
 							if(!listReceivers.error) {
 								arrReceiver = listReceivers.data?.members;
