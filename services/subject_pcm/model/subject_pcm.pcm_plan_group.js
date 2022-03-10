@@ -43,7 +43,7 @@ class Model extends BaseModel {
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let infoAfterInsert = await this.insertData({ project: projectID, name, sign, userCreate: userID });
+                let infoAfterInsert = await this.insertData({ project: projectID, name, sign, userCreate: userID, admins: [userID], members: [userID] });
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
@@ -157,7 +157,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {
-                    members: { $in: [userID]}, 
+                    members: { $in: [userID] }, 
                 };
                 
                 let sortBy   = { createAt: -1, _id: -1 };
