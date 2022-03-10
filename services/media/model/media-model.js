@@ -350,7 +350,7 @@ class Model extends BaseModel {
                         break;
                 }
 
-				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {

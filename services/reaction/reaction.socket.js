@@ -117,7 +117,6 @@ exports.REACTION_SOCKET = {
 								departmentID: department?.toString(),
 								select: "members"
 							}, { meta });
-							console.log({ listReceivers })
 
 							if(!listReceivers.error) {
 								arrReceiver = listReceivers.data?.members;
@@ -175,7 +174,7 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+			arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
