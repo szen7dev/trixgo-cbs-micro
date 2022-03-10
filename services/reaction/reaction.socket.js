@@ -113,6 +113,7 @@ exports.REACTION_SOCKET = {
 						}
 						case 2: {
 							const listReceivers = await broker.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+								companyID: company?.toString(),
 								departmentID: department?.toString(),
 								select: "members"
 							}, { meta });
