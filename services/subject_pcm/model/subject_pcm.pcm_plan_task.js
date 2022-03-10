@@ -310,7 +310,6 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
-                    console.log({ receivers })
 
                     if(parentID) {
                         const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
@@ -322,13 +321,12 @@ class Model extends BaseModel {
                             receivers = [infoAssignee?.data?._id];
                         }
 
-                        titleMSS        = `THÔNG BÁO`;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
-                    } else {
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
+                    } else {
+                        titleMSS        = `THÔNG BÁO`;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                     }
-                    console.log({ receivers })
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: receivers,
