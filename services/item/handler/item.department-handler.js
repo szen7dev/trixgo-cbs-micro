@@ -260,6 +260,7 @@ module.exports = {
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getInfo({
                         departmentID, select, populates
                     });
+                    console.log({ resultAfterCallHandler })
                 }else{
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getList({
                         companyID, lastestID, userID, type, 

@@ -318,6 +318,7 @@ class Model extends BaseModel {
                             departmentID: department?.toString(),
                             select: "name members"
                         });
+						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
@@ -353,7 +354,7 @@ class Model extends BaseModel {
 				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 				console.log({ arrReceiver, mediaType, titleMSS, descriptionMSS })
 
-				if(arrReceiver.length) {
+				if(arrReceiver && arrReceiver.length) {
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
 						project: departmentID,

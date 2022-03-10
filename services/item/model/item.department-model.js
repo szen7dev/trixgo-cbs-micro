@@ -620,15 +620,18 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID)
-                .select(select)
-                .populate(populates)
+                let infoDepartment = await ITEM__DEPARTMENT_COLL
+                    .findById(departmentID)
+                    .select(select)
+                    .populate(populates)
+                    .lean()
 
                 if(!infoDepartment)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
                 return resolve({ error: false, data: infoDepartment, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
