@@ -361,7 +361,7 @@ class Model extends BaseModel {
 							app: APP_KEYS.MEDIA,
 							mainColl: {
 								kind: 'media',
-								item: mediaID,
+								item: { _id: mediaID }
 							}
 						},
 						web_url: `/media/post/${mediaID}`,

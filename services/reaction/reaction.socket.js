@@ -78,11 +78,11 @@ exports.REACTION_SOCKET = {
 					dataSend = {
 						mainColl: {
 							kind: 'pcm_plan_task',
-							item: objectID
+							item: { _id: objectID }
 						},
 						subColl: {
 							kind: 'pcm_comment',
-							item: infoComment._id
+							item: { _id: infoComment._id }
 						},
 					}
 
@@ -153,11 +153,11 @@ exports.REACTION_SOCKET = {
 					dataSend = {
 						mainColl: {
 							kind: 'media',
-							item: objectID
+							item: { _id: objectID }
 						},
 						subColl: {
 							kind: 'media_comment',
-							item: infoComment._id
+							item: { _id: infoComment._id }
 						},
 					}
 

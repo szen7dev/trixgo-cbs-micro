@@ -329,11 +329,11 @@ class Model extends BaseModel {
                             ...dataSend,
                             mainColl: {
                                 kind: 'pcm_plan_task',
-                                item: parentID
+                                item: { _id: parentID }
                             },
                             subColl: {
                                 kind: 'pcm_plan_task',
-                                item: infoAterInsert._id
+                                item: { _id: infoAterInsert._id }
                             }
                         };
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
@@ -343,7 +343,7 @@ class Model extends BaseModel {
                             ...dataSend,
                             mainColl: {
                                 kind: 'pcm_plan_task',
-                                item: taskID
+                                item: { _id: taskID }
                             }
                         };
                         titleMSS        = `THÔNG BÁO`;
