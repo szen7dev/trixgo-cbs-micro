@@ -9,10 +9,8 @@ const PromisePool									= require('@supercharge/promise-pool');
 /**
  * CONSTANTS
  */
-const { REACTION_TYPES }							= require('../helper/chatting.keys-constant');
 const { CF_DOMAIN_SERVICES } 						= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.actions-constant');
-const { CF_ACTIONS_REACTION } 						= require('../../reaction/helper/reaction.actions-constant');
 const { CF_ACTIONS_FILE } 							= require('../../file/helper/file.actions-constant');
 
 /**
@@ -1253,141 +1251,6 @@ class Model extends BaseModel {
 			}
 		})
 	}
-
-	/**
-	 * Dev: MinhVH
-	 * Func: Reaction tin nhắn trong cuộc hội thoại
-	 * Date: 26/10/2021
-	 */
-	reactionMessage({ userID, messageID, typeReaction, ctx }){
-		return new Promise(async resolve => {
-			try {
-				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
-                    return resolve({
-						error: true, 
-						message: 'Request params type reaction invalid', 
-						keyError: 'params_typeReaction_invalid',
-						status: 400
-					});
-				}
-
-				if(!checkObjectIDs([userID, messageID])) {
-                    return resolve({
-						error: true, 
-						message: 'Request params message ID or user ID invalid', 
-						keyError: 'params_messageID_or_userID_invalid',
-						status: 400
-					});
-				}
-
-				const infoMessage = await CHATTING__MESSAGE_COLL
-					.findById(messageID)
-					.populate('reactions')
-					.lean();
-
-				// Check Already reaction
-				const infoReaction = infoMessage?.reactions?.find(reaction => 
-					userID.toString() === reaction.userCreate.toString()
-				);
-
-				if(infoReaction && +infoReaction.type === typeReaction){
-					const infoAfterDeleteReaction = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-						$pull: {
-							reactions: infoReaction._id
-						}
-					}, { new: true });
-
-					return resolve({
-						error: false,
-						status: 200,
-						data: infoAfterDeleteReaction
-					});
-				}
-
-				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
-					type: typeReaction,
-					userID
-				});
-
-				if(infoAfterInsertReaction.error)
-					return resolve(infoAfterInsertReaction);
-
-				if(infoReaction) {
-					await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-						$pull: {
-							reactions: infoReaction._id
-						}
-					});
-				}
-
-				const infoAfterUpdateReaction = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-					$addToSet: {
-						reactions: infoAfterInsertReaction?.data?._id
-					}
-				}, { new: true });
-
-				if(!infoAfterUpdateReaction)
-                    return resolve({ error: true, message: "Can't reaction message", status: 422 });
-
-                return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-		})
-	}
-
-	/**
-	 * Dev: MinhVH
-	 * Func: Danh sách reaction của tin nhắn
-	 * Date: 02/09/2021
-	 */
-	getListReactionMessage({ messageID, userID }) {
-		return new Promise(async (resolve) => {
-			try {
-				if(!checkObjectIDs([userID, messageID])) {
-                    return resolve({
-						error: true, 
-						message: 'Tham số messageID hoặc userID không hợp lệ', 
-						keyError: 'params_messageID_or_userID_invalid',
-						status: 400
-					});
-				}
-
-				let infoMessage = await CHATTING__MESSAGE_COLL
-					.findById(messageID)
-					.populate({
-						path: 'reactions',
-						select: '_id type',
-						populate: {
-							path: 'userCreate',
-							select: '_id fullname iamge'
-						}
-					})
-					.lean();
-
-				if(!infoMessage) {
-					return resolve({
-						error: true,
-						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-						keyError: 'error_occurred',
-						status: 422
-					})
-				}
-
-				return resolve({
-					error: false,
-					status: 200,
-					data: {
-						listRecords: infoMessage.reactions,
-						totalRecord: infoMessage.reactions?.length,
-					}
-				});
-			} catch (error) {
-				return resolve({ error: true, message: error.message, status: 500 })
-			}
-		})
-	}
-
 }
 
 exports.MODEL = new Model;

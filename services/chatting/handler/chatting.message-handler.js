@@ -7,6 +7,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  * MODELS
  */
 const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
+const CHATTING__MESSAGE_REACTION_MODEL          = require('../model/chatting.message_reaction-model').MODEL;
 
 
 module.exports = {
@@ -249,7 +250,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { messageID, typeReaction } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.reactionMessage({
+                const resultAfterCallHandler = await CHATTING__MESSAGE_REACTION_MODEL.reactionMessage({
 					messageID, userID, typeReaction, ctx
 				});
 
@@ -275,7 +276,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { messageID } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListReactionMessage({
+                const resultAfterCallHandler = await CHATTING__MESSAGE_REACTION_MODEL.getListReactionMessage({
 					messageID, userID
 				});
 

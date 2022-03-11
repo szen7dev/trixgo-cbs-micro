@@ -8,7 +8,6 @@ const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/not
 const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
 const { APP_KEYS, LANGUAGE_KEYS }       = require('../../../tools/keys');
-const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**s
  * import inter-coll, exter-coll

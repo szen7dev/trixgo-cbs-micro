@@ -174,7 +174,7 @@ class Model extends BaseModel {
 					})
 				}
 
-				const { _id: mediaID, type: mediaType, company, department } = infoMediaAfterInserted;
+				const { _id: mediaID, type: mediaType, company } = infoMediaAfterInserted;
 
 				if (background) {
 					if(!checkObjectIDs([background])) {
@@ -371,6 +371,13 @@ class Model extends BaseModel {
 						users: arrReceiver,
 						title: titleMSS,
 						description: descriptionMSS,
+						dataSend: {
+							app: APP_KEYS.MEDIA,
+							mainColl: {
+								kind: 'media',
+								item: mediaID,
+							}
+						},
 						web_url: `/media/post/${mediaID}`,
 						env: ENV_DEVICE_WEB_CBS
 					});

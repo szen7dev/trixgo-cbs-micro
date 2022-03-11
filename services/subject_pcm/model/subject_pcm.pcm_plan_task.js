@@ -333,6 +333,9 @@ class Model extends BaseModel {
                         users: receivers,
                         title: titleMSS,
                         description: descriptionMSS,
+                        dataSend: {
+							infoTask: infoAterInsert
+						},
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
                     });
@@ -795,10 +798,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
-                    limit = 20
-                }else{
+                    limit = 20;
+                } else{
                     limit = +limit;
                 }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -1301,9 +1305,13 @@ class Model extends BaseModel {
     sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, ctx }) {
         return new Promise(async resolve => {
             try {
-                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate('author assignee related project');
+                let infoTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .populate('author assignee related project')
+                    .lean();
+
                 if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get_info_task' });
+                    return resolve({ error: true, message: 'cannot_get_info_task', status: 400 });
 
                 /**
                  * CẤU TRÚC EMAIL
@@ -1311,33 +1319,36 @@ class Model extends BaseModel {
                  * Tiêu đề
                  * Nội dung
                  */    
-                // let listMembers = await USER_COLL.find({_id: { $in: receivers }});
-
                 let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     arrayID: receivers, select: "_id email"
-                })
-                listMembers = listMembers?.data?.listRecords || []
-                console.log(listMembers)
-                let arrayMailSend ='';
+                });
+
+                listMembers = listMembers?.data?.listRecords || [];
+
+                let arrayMailSend = '';
                 let indexMember = 0;
                 for(const item of listMembers){
                     if(indexMember != listMembers.length){
                         arrayMailSend += `${item.email},`;
-                        
-                    }else{
+                    } else{
                         arrayMailSend += `${item.email}`;
                     }
                     indexMember++;
                 }
 
-                await sendNoticeToMember({ email: arrayMailSend, title, content: { sender, notice, infoTask } });
+                await sendNoticeToMember({ 
+                    email: arrayMailSend, 
+                    title, 
+                    content: { sender, notice, infoTask }
+                });
+
                 // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: arrayMailSend, title, content: { sender, notice, infoTask } } });
                 // pool
                 //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: arrayMailSend, title, content: { sender, notice, infoTask } })])
-            
-                return resolve({ error: false, data: listMembers });
+
+                return resolve({ error: false, data: listMembers, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         });
     }
