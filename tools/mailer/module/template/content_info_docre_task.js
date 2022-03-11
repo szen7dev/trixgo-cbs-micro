@@ -1,9 +1,7 @@
 "use strict";
 
-const { nl2p }   = require('../../utils/string_utils');
+const { nl2p }   = require('../../../utils/string_utils');
 let { socket_product }  = require('../../config/cf_mode');
-
-
 
 // Thông báo công việc
 exports.infoDocrePcm = ({ content }) => {
@@ -12,8 +10,6 @@ exports.infoDocrePcm = ({ content }) => {
     let taskAuthorImage = content.infoTask.author.image;
 
     let taskProjectImage = content.infoTask.project.name;
-    let taskExpired = '';
-
 
     let linkServerS3 = "https://trx-demo-003.s3-ap-southeast-1.amazonaws.com";
 

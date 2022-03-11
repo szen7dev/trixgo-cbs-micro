@@ -1,9 +1,7 @@
 "use strict";
 
-let mailer = require('../mailer');
-
-// Thông báo có công việc mới/nhắc nhở thời hạn
-let { infoTaskContent }    = require('./content_info_task');
+let mailer              = require('../mailer');
+let { infoTaskContent } = require('./template/content_info_task');
 
 /**
  * @param email
@@ -12,11 +10,11 @@ let { infoTaskContent }    = require('./content_info_task');
  */
 exports.sendNoticeToMember = function (stringify){
     try {
-        // let { email, title, content } = JSON.parse(stringify);  // convert for worker_threads
         let { email, title, content } = stringify;  // convert for worker_threads
 
         // Nội dung email
         let emailContent = infoTaskContent({ content });
+
         /**
          * Gửi email
          * - Người nhận
@@ -27,7 +25,6 @@ exports.sendNoticeToMember = function (stringify){
             console.log(cb);
         });
     } catch (error) {
-        console.log({ error });
+        console.error(error);
     }
-  
 }

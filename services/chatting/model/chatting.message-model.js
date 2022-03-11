@@ -384,32 +384,21 @@ class Model extends BaseModel {
 					.for(messagesID)
 					.withConcurrency(2)
 					.process(async messageID => {
-						let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID);
-
-						/**
-						 * Tin nhắn không nằm trong 2 trường hợp:
-						 * 0: đã gửi nhưng chưa xem/ chưa nhận))
-						 * 2: đã xem
-						 */
-						if(![0,2].includes(infoMessage.status)) {
-							let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-								$addToSet: {
-									usersSeen: userID
-								}
-							}, { new: true });
-
-							// Cập nhật trạng thái đã xem (khi tất cả thành viên đều đã xem)
-							if(infoConversation.members.length === infoMessageAfterUpdate.usersSeen.length) {
-								infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-									$set: { status: 2 }
-								}, { new: true });
+						let infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+							$addToSet: {
+								usersSeen: userID
 							}
+						}, { new: true });
 
-							amountUpdateMissMessage++;
-							return infoMessageAfterUpdate;
+						// Cập nhật trạng thái đã xem (khi tất cả thành viên đều đã xem)
+						if(infoConversation.members.length === infoMessageAfterUpdate.usersSeen.length) {
+							infoMessageAfterUpdate = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+								$set: { status: 2 }
+							}, { new: true });
 						}
 
-						return infoMessage;
+						amountUpdateMissMessage++;
+						return infoMessageAfterUpdate;
 					})
 
 				if(!results || !results.length) {
