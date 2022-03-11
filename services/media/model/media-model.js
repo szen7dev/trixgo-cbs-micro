@@ -350,7 +350,7 @@ class Model extends BaseModel {
                         break;
                 }
 
-				console.log({ arrReceiver, authorID })
+				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -368,8 +368,6 @@ class Model extends BaseModel {
 						web_url: `/media/post/${mediaID}`,
 						env: ENV_DEVICE_WEB_CBS
 					});
-
-					arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
