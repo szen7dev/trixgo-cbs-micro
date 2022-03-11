@@ -268,16 +268,21 @@ module.exports = {
 	 */
 	getListReactionByMessage: {
         params: {
-			messageID: { type: 'string' },
+			messageID	: { type: 'string' },
+			type		: { type: 'string', optional: true },
+			lastestID	: { type: 'string', optional: true },
+			limit		: { type: 'string', optional: true },
+			select		: { type: 'string', optional: true },
+			populates	: { type: 'string', optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { messageID } = ctx.params;
+                const { messageID, type, lastestID, limit, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_REACTION_MODEL.getListReactionMessage({
-					messageID, userID
+					messageID, type, lastestID, limit, select, populates, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
