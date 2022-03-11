@@ -83,7 +83,12 @@ exports.REACTION_SOCKET = {
 						languageKey,
 						mainColl: {
 							kind: 'pcm_plan_task',
-							item: { _id: objectID }
+							item: { 
+								_id: objectID,
+								name: infoObject?.data?.name,
+								project: infoObject?.data?.project,
+								author: infoObject?.data?.author,
+							}
 						},
 						subColl: {
 							kind: 'pcm_comment',
@@ -160,7 +165,10 @@ exports.REACTION_SOCKET = {
 						languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
 						mainColl: {
 							kind: 'media',
-							item: { _id: objectID }
+							item: { 
+								_id: objectID,
+								author: infoObject?.data?.author
+							}
 						},
 						subColl: {
 							kind: 'media_comment',
