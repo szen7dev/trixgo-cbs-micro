@@ -86,6 +86,8 @@ class Model extends BaseModel {
                 }
 
                 // arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+                console.info('MEDIA_COMMENT')
+                console.log({ arrReceiver })
 
                 if(arrReceiver && arrReceiver.length) {
                     const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
