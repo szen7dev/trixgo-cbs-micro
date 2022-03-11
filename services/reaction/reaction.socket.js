@@ -27,6 +27,7 @@ exports.REACTION_SOCKET = {
 			let io                         		= socket.$service.io;
 
 			let { objectID, infoComment, parentID, method, select, populates, app } = data;
+			console.log({ data })
 
 			if(!infoComment || !app){
 				return sendDataToMultilSocketsOfListUser({ 
@@ -56,7 +57,7 @@ exports.REACTION_SOCKET = {
 					if(infoObject.error) break;
 
 					let languageKey = '';
-					let { author, assignee, related } = infoObject.data;
+					let { author, assignee, related, project } = infoObject.data;
 					related = related.map(userID => userID.toString());
 
 					switch (infoComment.type) {
@@ -83,11 +84,10 @@ exports.REACTION_SOCKET = {
 						languageKey,
 						mainColl: {
 							kind: 'pcm_plan_task',
-							item: { 
+							item: {
 								_id: objectID,
-								name: infoObject?.data?.name,
-								project: infoObject?.data?.project,
-								author: infoObject?.data?.author,
+								project,
+								author
 							}
 						},
 						subColl: {
@@ -96,7 +96,7 @@ exports.REACTION_SOCKET = {
 						},
 					}
 
-					arrReceiver 		= [...new Set([author.toString(), assignee.toString(), ...related])];
+					arrReceiver 		= [...new Set([author?._id?.toString(), assignee.toString(), ...related])];
 					infoObject 			= infoObject.data;
 					titleMSS			= `CÔNG VIỆC: ${infoObject.name?.length > 100 ? infoObject.name?.substring(0, 100) : infoObject.name}`;
 					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
@@ -109,7 +109,7 @@ exports.REACTION_SOCKET = {
 
 					if(infoObject.error) break;
 
-					const { company, department, type } = infoObject.data;
+					const { company, department, type, author } = infoObject.data;
 					console.log({ company, department, type })
 
 					/**
@@ -167,7 +167,7 @@ exports.REACTION_SOCKET = {
 							kind: 'media',
 							item: { 
 								_id: objectID,
-								author: infoObject?.data?.author
+								author
 							}
 						},
 						subColl: {
@@ -185,7 +185,7 @@ exports.REACTION_SOCKET = {
 				default:
 					break;
 			}
-			console.log({ LENGTH: arrReceiver.length })
+			console.log({ infoObject, dataSend, LENGTH: arrReceiver.length });
 
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
