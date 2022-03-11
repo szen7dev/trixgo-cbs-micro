@@ -37,11 +37,12 @@ exports.REACTION_SOCKET = {
 				});
 			}
 
-			let titleMSS = 'THÔNG BÁO';
-			let descriptionMSS = '';
-			let webUrl = '';
-			let infoObject = null;
-			let arrReceiver = [];
+			let titleMSS 		= 'THÔNG BÁO';
+			let descriptionMSS 	= '';
+			let webUrl 			= '';
+			let infoObject 		= null;
+			let arrReceiver 	= [];
+			let dataSend 		= {};
 			let meta = {
 				infoUser: { _id: userID }
 			}
@@ -72,6 +73,17 @@ exports.REACTION_SOCKET = {
 							break
 						default:
 							break;
+					}
+
+					dataSend = {
+						mainColl: {
+							kind: 'pcm_plan_task',
+							item: objectID
+						},
+						subColl: {
+							kind: 'pcm_comment',
+							item: infoComment._id
+						},
 					}
 
 					arrReceiver 		= [...new Set([author.toString(), assignee.toString(), ...related])];
@@ -138,6 +150,17 @@ exports.REACTION_SOCKET = {
 							break;
 					}
 
+					dataSend = {
+						mainColl: {
+							kind: 'media',
+							item: objectID
+						},
+						subColl: {
+							kind: 'media_comment',
+							item: infoComment._id
+						},
+					}
+
 					infoObject 			= infoObject.data;
 					titleMSS 			= `BÀI VIẾT: ${infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title}`;
 					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận`;
@@ -183,10 +206,7 @@ exports.REACTION_SOCKET = {
 				users: [...arrReceiver, userID],
 				title: titleMSS,
 				description: descriptionMSS,
-				dataSend: {
-					infoObject,
-					infoComment
-				},
+				dataSend,
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS
 			});

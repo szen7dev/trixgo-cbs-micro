@@ -31,7 +31,7 @@ class Model extends BaseModel {
 	 * Func: Reaction tin nhắn trong cuộc hội thoại
 	 * Date: 26/10/2021
 	 */
-    reactionMessage({ userID, messageID, typeReaction, ctx }){
+    reactionMessage({ userID, messageID, typeReaction }){
 		return new Promise(async resolve => {
 			try {
 				if(!typeReaction || !REACTION_TYPES.includes(typeReaction)) {
@@ -46,62 +46,60 @@ class Model extends BaseModel {
 				if(!checkObjectIDs([userID, messageID])) {
                     return resolve({
 						error: true, 
-						message: 'Request params message ID or user ID invalid', 
+						message: 'Request params messageID or userID invalid', 
 						keyError: 'params_messageID_or_userID_invalid',
 						status: 400
 					});
 				}
 
-				const infoMessage = await CHATTING__MESSAGE_COLL
-					.findById(messageID)
-					.populate('reactions')
+				// Check reaction is exists
+				const infoReaction = await CHATTING__MESSAGE_REACTION_COLL
+					.findOne({
+						message: messageID,
+						author: userID
+					})
 					.lean();
-
-				// Check Already reaction
-				const infoReaction = infoMessage?.reactions?.find(reaction => 
-					userID.toString() === reaction.userCreate.toString()
-				);
-
-				if(infoReaction && +infoReaction.type === typeReaction){
-					const infoAfterDeleteReaction = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
-						$pullAll: {
-							reactions: infoReaction._id
-						}
-					}, { new: true });
-
-					return resolve({
-						error: false,
-						status: 200,
-						data: infoAfterDeleteReaction
-					});
-				}
-
-				let infoAfterInsertReaction = await ctx.call(`${CF_DOMAIN_SERVICES.REACTION}.${CF_ACTIONS_REACTION.REACTION_CORE_INSERT}`, {
-					type: typeReaction,
-					userID
-				});
-
-				if(infoAfterInsertReaction.error)
-					return resolve(infoAfterInsertReaction);
 
 				if(infoReaction) {
 					await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
 						$pull: {
 							reactions: infoReaction._id
 						}
+					}, { new: true });
+				}
+
+				if(infoReaction && infoReaction.type === typeReaction){
+					const infoAfterDelete = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndDelete(infoReaction._id);
+
+					return resolve({
+						error: false,
+						status: 200,
+						message: infoAfterDelete
 					});
 				}
 
-				const infoAfterUpdateReaction = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
+				const infoReactionAfterInsert = await this.insertData({
+					type: typeReaction,
+					message: messageID,
+					author: userID
+				});
+
+				if(!infoReactionAfterInsert) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					});
+				}
+
+				await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
 					$addToSet: {
-						reactions: infoAfterInsertReaction?.data?._id
+						reactions: infoReactionAfterInsert._id
 					}
 				}, { new: true });
 
-				if(!infoAfterUpdateReaction)
-                    return resolve({ error: true, message: "Can't reaction message", status: 422 });
-
-                return resolve({ error: false, data: infoAfterUpdateReaction, status: 200 });
+                return resolve({ error: false, data: infoReactionAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

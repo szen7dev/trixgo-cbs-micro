@@ -369,6 +369,7 @@ class Model extends BaseModel {
 					});
 
 					arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+
 					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
 						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
 						project: departmentID,

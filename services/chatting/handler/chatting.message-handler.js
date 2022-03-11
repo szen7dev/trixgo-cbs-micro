@@ -251,7 +251,7 @@ module.exports = {
                 const { messageID, typeReaction } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__MESSAGE_REACTION_MODEL.reactionMessage({
-					messageID, userID, typeReaction, ctx
+					messageID, userID, typeReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

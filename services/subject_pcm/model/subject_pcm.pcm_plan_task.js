@@ -269,12 +269,13 @@ class Model extends BaseModel {
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
                 if([1,2].includes(type)) {
-                    let webUrl = '';
-                    let titleMSS = '';
-                    let descriptionMSS = '';
-                    let languageKey = '';
-                    let taskID = parentID;
-                    let isChecklist = type === 2;
+                    let webUrl              = '';
+                    let titleMSS            = '';
+                    let descriptionMSS      = '';
+                    let languageKey         = '';
+                    let dataSend 		    = {};
+                    let taskID              = parentID;
+                    let isChecklist         = type === 2;
 
                     if(!parentID) {
                         taskID = infoAterInsert._id;
@@ -293,6 +294,7 @@ class Model extends BaseModel {
                     let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
+                    // INSERT NOTIFICATION
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: name,
                         receivers,
@@ -312,6 +314,7 @@ class Model extends BaseModel {
                         type: 1 // InApp (Socket)
                     })
 
+                    // CLOUD MSS
                     if(parentID) {
                         const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                             userID: assigneeID,
@@ -322,9 +325,25 @@ class Model extends BaseModel {
                             receivers = [infoAssignee?.data?._id];
                         }
 
+                        dataSend = {
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: parentID
+                            },
+                            subColl: {
+                                kind: 'pcm_plan_task',
+                                item: infoAterInsert._id
+                            }
+                        };
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
                     } else {
+                        dataSend = {
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: taskID
+                            }
+                        };
                         titleMSS        = `THÔNG BÁO`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                     }
@@ -333,9 +352,7 @@ class Model extends BaseModel {
                         users: receivers,
                         title: titleMSS,
                         description: descriptionMSS,
-                        dataSend: {
-							infoTask: infoAterInsert
-						},
+                        dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
                     });

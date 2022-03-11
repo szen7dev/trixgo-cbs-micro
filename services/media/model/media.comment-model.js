@@ -86,9 +86,11 @@ class Model extends BaseModel {
 
                 arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
-                if(arrReceiver.length) {
+                if(arrReceiver && arrReceiver.length) {
+                    const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
+
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content,
+                        content,
                         receivers: arrReceiver,
                         path: `/media/home/${infoMedia._id}#${infoComment._id}`,
                         languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
