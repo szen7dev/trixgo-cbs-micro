@@ -1,5 +1,6 @@
 let { config }                          = require('../file.keys-constant');
 let { checkObjectIDs, getExtension }    = require('../../../../tools/utils/utils');
+let { nonAccentVietnamese }             = require('../../../../tools/utils/string_utils');
 let { APP_KEYS }                        = require('../../../../tools/keys');
 let uuidv4                              = require('uuid').v4;
 let AWS                                 = require('aws-sdk');
@@ -96,8 +97,9 @@ const uploadFile = (pathFile, key) => {
  * @returns { error: boolean, data: string }
  */
 const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
-    // Trường hợp upload anh cho avatar hoặc signature
     switch (typeUpload) {
+        case 'contact':
+        case 'project':
         case 'user': {
             const extension = getExtension(fileName);
             const newFileName = `${uuidv4()}.${extension}`;
@@ -110,33 +112,6 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
                 }
             };
         }
-
-        case 'contact': {
-            const extension = getExtension(fileName);
-            const newFileName = `${uuidv4()}.${extension}`;
-
-            return { 
-                error: false, 
-                data: {
-                    newFileName,
-                    pathS3: ''
-                }
-            };
-        }
-
-        case 'project': {
-            const extension = getExtension(fileName);
-            const newFileName = `${uuidv4()}.${extension}`;
-
-            return { 
-                error: false, 
-                data: {
-                    newFileName,
-                    pathS3: ''
-                }
-            };
-        }
-
         default:
             break;
     }
@@ -214,7 +189,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     }
 
     let extension   = getExtension(fileName);
-    let newFileName = `${fileName}___${uuidv4()}___${appName}.${extension}`;
+    let newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${appName}.${extension}`;
 
     return { 
         error: false, 
