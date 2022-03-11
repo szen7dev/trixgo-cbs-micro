@@ -190,6 +190,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
 
     let extension   = getExtension(fileName);
     let newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${appName}.${extension}`;
+    console.log({ newFileName, formatName: nonAccentVietnamese(fileName) })
 
     return { 
         error: false, 
