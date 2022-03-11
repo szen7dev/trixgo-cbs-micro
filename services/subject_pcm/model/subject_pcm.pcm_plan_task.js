@@ -273,7 +273,7 @@ class Model extends BaseModel {
                     let titleMSS            = '';
                     let descriptionMSS      = '';
                     let languageKey         = '';
-                    let dataSend 		    = {};
+                    let dataSend 		    = { app: APP_KEYS.PCM_PLAN_TASK };
                     let taskID              = parentID;
                     let isChecklist         = type === 2;
 
@@ -326,6 +326,7 @@ class Model extends BaseModel {
                         }
 
                         dataSend = {
+                            ...dataSend,
                             mainColl: {
                                 kind: 'pcm_plan_task',
                                 item: parentID
@@ -339,6 +340,7 @@ class Model extends BaseModel {
                         descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
                     } else {
                         dataSend = {
+                            ...dataSend,
                             mainColl: {
                                 kind: 'pcm_plan_task',
                                 item: taskID
