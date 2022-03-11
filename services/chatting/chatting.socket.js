@@ -1227,7 +1227,11 @@ exports.CHATTING_SOCKET = {
         let io                   		= socket.$service.io;
 		let { messageID, typeReaction }	= data;
 
-		let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID).select('_id');
+		let infoMessage = await CHATTING__MESSAGE_COLL
+			.findById(messageID)
+			.populate('conversation', 'members')
+			.select('_id');
+		console.log({ infoMessage })
 
 		if(!infoMessage){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -1243,6 +1247,7 @@ exports.CHATTING_SOCKET = {
 			messageID,
 			typeReaction: +typeReaction
 		})
+		console.log({ infoAfterReaction })
 
 		// infoMessage = await CHATTING__MESSAGE_COLL
 		// 	.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
