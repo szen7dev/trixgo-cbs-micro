@@ -694,7 +694,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj = {
+                        ...conditionObj,
+                        $or: [
+                            { name  :  new RegExp(keyword, 'i') },
+                            { sign  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
                 }
 
                 let conditionObjOrg = { ...conditionObj }
@@ -808,7 +815,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj = {
+                        ...conditionObj,
+                        $or: [
+                            { name  :  new RegExp(keyword, 'i') },
+                            { sign  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
                 }
 
                 let conditionObjOrg = { ...conditionObj }

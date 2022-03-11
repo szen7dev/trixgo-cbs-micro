@@ -93,7 +93,6 @@ class Model extends BaseModel {
                 if(checkObjectIDs(adminsRemove)){
                     dataInUpdate.$pullAll = { admins: adminsRemove };
                 }
-                console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
@@ -192,7 +191,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates={} }) { 
+    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -241,8 +240,19 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
-                    // conditionObj.sign = new RegExp(keyword, 'i');
+
+                    conditionObj.$and = [
+                        {
+                            $or: conditionObj.$or
+                        },
+                        {
+                            $or: [
+                                { name  :  new RegExp(keyword, 'i') },
+                                { sign  :  new RegExp(keyword, 'i') },
+                            ]
+                        }
+                    ]
+                    delete conditionObj.$or;
                 }
 
                 let conditionObjOrg = { ...conditionObj };
