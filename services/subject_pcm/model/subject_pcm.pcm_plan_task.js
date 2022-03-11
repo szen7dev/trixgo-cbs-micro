@@ -269,12 +269,13 @@ class Model extends BaseModel {
                  * + Insert thông báo vào DB và bắn Cloud MSS
                  */
                 if([1,2].includes(type)) {
-                    let webUrl = '';
-                    let titleMSS = '';
-                    let descriptionMSS = '';
-                    let languageKey = '';
-                    let taskID = parentID;
-                    let isChecklist = type === 2;
+                    let webUrl              = '';
+                    let titleMSS            = '';
+                    let descriptionMSS      = '';
+                    let languageKey         = '';
+                    let dataSend 		    = { app: APP_KEYS.PCM_PLAN_TASK };
+                    let taskID              = parentID;
+                    let isChecklist         = type === 2;
 
                     if(!parentID) {
                         taskID = infoAterInsert._id;
@@ -293,6 +294,7 @@ class Model extends BaseModel {
                     let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
                     let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
+                    // INSERT NOTIFICATION
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: name,
                         receivers,
@@ -312,6 +314,7 @@ class Model extends BaseModel {
                         type: 1 // InApp (Socket)
                     })
 
+                    // CLOUD MSS
                     if(parentID) {
                         const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                             userID: assigneeID,
@@ -322,9 +325,29 @@ class Model extends BaseModel {
                             receivers = [infoAssignee?.data?._id];
                         }
 
+                        dataSend = {
+                            ...dataSend,
+                            languageKey,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: parentID }
+                            },
+                            subColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: infoAterInsert._id }
+                            }
+                        };
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
                     } else {
+                        dataSend = {
+                            ...dataSend,
+                            languageKey,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        };
                         titleMSS        = `THÔNG BÁO`;
                         descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                     }
@@ -333,6 +356,7 @@ class Model extends BaseModel {
                         users: receivers,
                         title: titleMSS,
                         description: descriptionMSS,
+                        dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
                     });
@@ -795,10 +819,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
-                    limit = 20
-                }else{
+                    limit = 20;
+                } else{
                     limit = +limit;
                 }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -1291,9 +1316,13 @@ class Model extends BaseModel {
     sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, ctx }) {
         return new Promise(async resolve => {
             try {
-                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).populate('author assignee related project');
+                let infoTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .populate('author assignee related project')
+                    .lean();
+
                 if (!infoTask) 
-                    return resolve({ error: true, message: 'cannot_get_info_task' });
+                    return resolve({ error: true, message: 'cannot_get_info_task', status: 400 });
 
                 /**
                  * CẤU TRÚC EMAIL
@@ -1301,33 +1330,36 @@ class Model extends BaseModel {
                  * Tiêu đề
                  * Nội dung
                  */    
-                // let listMembers = await USER_COLL.find({_id: { $in: receivers }});
-
                 let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     arrayID: receivers, select: "_id email"
-                })
-                listMembers = listMembers?.data?.listRecords || []
-                console.log(listMembers)
-                let arrayMailSend ='';
+                });
+
+                listMembers = listMembers?.data?.listRecords || [];
+
+                let arrayMailSend = '';
                 let indexMember = 0;
                 for(const item of listMembers){
                     if(indexMember != listMembers.length){
                         arrayMailSend += `${item.email},`;
-                        
-                    }else{
+                    } else{
                         arrayMailSend += `${item.email}`;
                     }
                     indexMember++;
                 }
 
-                await sendNoticeToMember({ email: arrayMailSend, title, content: { sender, notice, infoTask } });
+                await sendNoticeToMember({ 
+                    email: arrayMailSend, 
+                    title, 
+                    content: { sender, notice, infoTask }
+                });
+
                 // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: arrayMailSend, title, content: { sender, notice, infoTask } } });
                 // pool
                 //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: arrayMailSend, title, content: { sender, notice, infoTask } })])
-            
-                return resolve({ error: false, data: listMembers });
+
+                return resolve({ error: false, data: listMembers, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         });
     }

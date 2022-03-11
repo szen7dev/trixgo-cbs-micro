@@ -93,7 +93,6 @@ class Model extends BaseModel {
                 if(checkObjectIDs(adminsRemove)){
                     dataInUpdate.$pullAll = { admins: adminsRemove };
                 }
-                console.log({ dataInUpdate })
 
                 let infoAfterUpdate = await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(groupID, dataInUpdate, { new: true });
                 if (!infoAfterUpdate)
@@ -192,7 +191,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates={} }) { 
+    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -206,19 +205,17 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {
                     $or: [
-                        { members: { $in: [userID] }, },
-                        { admins: { $in: [userID] }, },
+                        { members: { $in: [userID] } },
+                        { admins: { $in: [userID] } },
                     ]
                 };
-                
-                let sortBy   = { createAt: -1, _id: -1 };
+                let sortBy = { createAt: -1, _id: -1 };
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-               
-                // populate
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -239,11 +236,23 @@ class Model extends BaseModel {
                 if(projectID){
                     conditionObj.project = projectID;
                 }
-                
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj.$and = [
+                        {
+                            $or: conditionObj.$or
+                        },
+                        {
+                            $or: [
+                                { name  :  new RegExp(keyword, 'i') },
+                                { sign  :  new RegExp(keyword, 'i') },
+                            ]
+                        }
+                    ]
+                    delete conditionObj.$or;
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -260,21 +269,22 @@ class Model extends BaseModel {
                     conditionObj  = dataPagingAndSort.data.find;
 					sortBy        = dataPagingAndSort.data.sort;
 				}
-                
-                let infoDataAfterGet = await PCM_PLAN_GROUP_COLL.find(conditionObj)
+
+                let infoDataAfterGet = await PCM_PLAN_GROUP_COLL
+                    .find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy) 
                     .select(select)
                     .populate(populates)
                     .lean(); 
-                
+
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
                 let totalRecord = await PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-                    
+
 				if(infoDataAfterGet && infoDataAfterGet.length){
 					if(infoDataAfterGet.length > limit){
 						nextCursor = infoDataAfterGet[limit - 1]._id;

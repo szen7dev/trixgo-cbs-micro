@@ -38,14 +38,14 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 	}
 
     if(Object.keys(error).length){
-        ctx.meta.$statusCode    = resultAfterCallHandler ? resultAfterCallHandler.status : 500;
+        ctx.meta.$statusCode    = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 500;
         ctx.meta.$statusMessage = 'server_error';
 
 		return { error: true, status: ctx.meta.$statusCode, ...error };
     }
     
     ctx.meta.$statusCode    = 200;
-    ctx.meta.$statusMessage = resultAfterCallHandler.message || 'success';
+    ctx.meta.$statusMessage = resultAfterCallHandler?.message ?? 'success';
 
 	return resultAfterCallHandler;
 };

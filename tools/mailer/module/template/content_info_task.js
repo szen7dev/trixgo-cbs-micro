@@ -1,13 +1,9 @@
 "use strict";
 
-const { nl2p }   = require('../../utils/string_utils');
-// let { socket_product }  = require('../../config/cf_mode');
-
-
+const { nl2p }   = require('../../../utils/string_utils');
 
 // Thông báo công việc
 exports.infoTaskContent = ({ content }) => {
-
     let taskName = content.infoTask.name;
     let taskAuthorName = content.infoTask.author.fullname;
     let taskAuthorImage = content.infoTask.author.image;
@@ -18,29 +14,21 @@ exports.infoTaskContent = ({ content }) => {
     let isproposalTask = content.infoTask.isproposal
     let txtAuthorTask = ``;
     let txtAssigneeTask = ``;
-    
+
     if([0,1,6,7,8,10,11].includes(Number(isproposalTask))){
         txtAuthorTask = `Author/Người tạo việc`;
         txtAssigneeTask = `Assignee/Người thực hiện`;
-    }else{
+    } else{
         if(Number(isproposalTask) === 4 && Number(content.infoTask.level) === 2){
             txtAuthorTask = `Đơn vị mời thầu`;
             txtAssigneeTask = `Đơn vị dự thầu`;
-        }else{
+        } else{
             txtAuthorTask = `Submitter/Người đệ trình`;
             txtAssigneeTask = `Approver/Người phê duyệt`;
         }
     }
 
-    // let linkServerS3 = "https://trx-demo-003.s3-ap-southeast-1.amazonaws.com";
-    let linkServerS3 = "https://dntdurzwr12tp.cloudfront.net";
-
-    // if(String(socket_product) == 'true') {
-    //     linkServerS3 = "https://dntdurzwr12tp.cloudfront.net";
-    // } else {
-    //     linkServerS3 = "https://trx-demo-003.s3-ap-southeast-1.amazonaws.com";
-    // }
-
+    const linkServerS3 = process.env.AWS_BUCKET_URL || "https://dntdurzwr12tp.cloudfront.net";
 
     if(content.infoTask.actualFinishTime){
         taskExpired = `${new Date(content.infoTask.actualFinishTime).getDate()}/${ new Date(content.infoTask.actualFinishTime).getMonth()+1}/${ new Date(content.infoTask.actualFinishTime).getFullYear()}`;
@@ -58,7 +46,7 @@ exports.infoTaskContent = ({ content }) => {
         <p>==============================================</p>
         <p>${txtAuthorTask}: <img src="${linkServerS3}/files/db/users/${taskAuthorImage}" style="width: 32px !important;height: 32px !important;border-radius: 50%;"> <b style="color: #385898;">${taskAuthorName}</b></p>
         <p>Application/Ứng dụng: <b>PCM/Quản lý dự án/công việc</b></p>
-        <p><i><a href="https://app.trixgo.com/pcm/detail/taskID=${content.infoTask._id}" style="text-decoration:underline;display: inline-block;background: #4267b2;color: #fff;padding: 5px 10px;">See it on Trixgo/Xem trên TrixGo</a></i></p>
+        <p><i><a href="https://app.trixgo.com/pcm/detail/${content.infoTask._id}" style="text-decoration:underline;display: inline-block;background: #4267b2;color: #fff;padding: 5px 10px;">See it on Trixgo/Xem trên TrixGo</a></i></p>
         <p><i><a href="trixgoapp://taskID=${content.infoTask._id}" style="text-decoration:underline;display: inline-block;background: #4267b2;color: #fff;padding: 5px 10px;">See it on app Trixgo/Xem trên app TrixGo</a></i></p>
         <hr>
         <p><i>This email is sent from TRIXGO. <span style="color: orange;">Please click Star (*)</span> to receive other important email relate to you</i></p>

@@ -7,6 +7,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  * MODELS
  */
 const CHATTING__MESSAGE_MODEL                   = require('../model/chatting.message-model').MODEL;
+const CHATTING__MESSAGE_REACTION_MODEL          = require('../model/chatting.message_reaction-model').MODEL;
 
 
 module.exports = {
@@ -249,8 +250,8 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { messageID, typeReaction } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.reactionMessage({
-					messageID, userID, typeReaction, ctx
+                const resultAfterCallHandler = await CHATTING__MESSAGE_REACTION_MODEL.reactionMessage({
+					messageID, userID, typeReaction
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -267,16 +268,21 @@ module.exports = {
 	 */
 	getListReactionByMessage: {
         params: {
-			messageID: { type: 'string' },
+			messageID	: { type: 'string' },
+			type		: { type: 'string', optional: true },
+			lastestID	: { type: 'string', optional: true },
+			limit		: { type: 'string', optional: true },
+			select		: { type: 'string', optional: true },
+			populates	: { type: 'string', optional: true },
 		},
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { messageID } = ctx.params;
+                const { messageID, type, lastestID, limit, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await CHATTING__MESSAGE_MODEL.getListReactionMessage({
-					messageID, userID
+                const resultAfterCallHandler = await CHATTING__MESSAGE_REACTION_MODEL.getListReactionMessage({
+					messageID, type, lastestID, limit, select, populates, userID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

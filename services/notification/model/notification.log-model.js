@@ -246,6 +246,7 @@ class Model extends BaseModel {
 
 				// GET TOTAL RECORD
 				let totalRecord = await NOTIFICATION__LOG_COLL.countDocuments(conditionObjOrg);
+				let totalRecordNotSeen = await NOTIFICATION__LOG_COLL.countDocuments({ status: { $ne: 3 } });
 				let nextCursor  = null;
 
 				if(listNotifications && listNotifications.length){
@@ -262,6 +263,7 @@ class Model extends BaseModel {
 						listRecords: listNotifications,
 						limit,
 						totalRecord,
+                        totalRecordNotSeen,
 						nextCursor
 					}
 				});

@@ -1,53 +1,9 @@
 "use strict";
 
-let mailer = require("nodemailer");
-let cfMailer = require('./cf_mailer');
-
-// exports.mailerWithFromAddress = function({ from, to, subject, content, callback }){
-//     console.log({
-//         from: from,
-//         to: to,
-//         subject: subject,
-//         html: content,
-//     })
-
-//     let smtpTransport = mailer.createTransport({
-//         service: cfMailer.service,
-//         auth: {
-//             user: cfMailer.email,
-//             pass: cfMailer.password,
-//         }
-//     });
-
-//     let mail = {
-//         from: from,
-//         to: to,
-//         subject: subject,
-//         html: content,
-//     };
-    
-
-//     smtpTransport.sendMail(mail, function (error, response) {
-//         console.log({ error })
-//         if (error) {
-//             if (callback == null || typeof callback == "undefined") {
-//             } else {
-//                 callback({error: true, message: "send mail error!"});
-//             }
-//         } else {
-//             if (callback == null || typeof callback == "undefined") {
-//             } else {
-//                 callback({error: false, message: "send mail success!"});
-//             }
-//         }
-
-//         smtpTransport.close();
-//     });
-// }
+const mailer = require("nodemailer");
+const cfMailer = require('./config/cf_mailer');
 
 module.exports = function (to, subject, content, callback, from) {
-    console.log({ user: cfMailer.email,
-        pass: cfMailer.password, })
     let smtpTransport = mailer.createTransport({
         service: cfMailer.service,
         auth: {
@@ -55,6 +11,7 @@ module.exports = function (to, subject, content, callback, from) {
             pass: cfMailer.password,
         }
     });
+
     let mail = {
         from: from || 'TRIXGO PLATFORM <no-reply@trixgo.com>',
         to: to,
@@ -77,7 +34,7 @@ module.exports = function (to, subject, content, callback, from) {
     };
 
     smtpTransport.sendMail(mail, function (error, response) {
-        console.log({ error })
+        console.log({ error, response })
         if (error) {
             if (callback == null || typeof callback == "undefined") {
             } else {

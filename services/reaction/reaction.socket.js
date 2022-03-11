@@ -7,7 +7,7 @@ const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant'
 const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
-const { APP_KEYS } 								= require('../../tools/keys');
+const { APP_KEYS, LANGUAGE_KEYS }				= require('../../tools/keys');
 const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant');
 
 /**
@@ -27,6 +27,7 @@ exports.REACTION_SOCKET = {
 			let io                         		= socket.$service.io;
 
 			let { objectID, infoComment, parentID, method, select, populates, app } = data;
+			console.log({ data })
 
 			if(!infoComment || !app){
 				return sendDataToMultilSocketsOfListUser({ 
@@ -37,11 +38,12 @@ exports.REACTION_SOCKET = {
 				});
 			}
 
-			let titleMSS = 'THÔNG BÁO';
-			let descriptionMSS = '';
-			let webUrl = '';
-			let infoObject = null;
-			let arrReceiver = [];
+			let titleMSS 		= 'THÔNG BÁO';
+			let descriptionMSS 	= '';
+			let webUrl 			= '';
+			let infoObject 		= null;
+			let arrReceiver 	= [];
+			let dataSend 		= { app };
 			let meta = {
 				infoUser: { _id: userID }
 			}
@@ -54,14 +56,17 @@ exports.REACTION_SOCKET = {
 
 					if(infoObject.error) break;
 
-					let { author, assignee, related } = infoObject.data;
+					let languageKey = '';
+					let { author, assignee, related, project } = infoObject.data;
 					related = related.map(userID => userID.toString());
 
 					switch (infoComment.type) {
 						case 1:
+							languageKey = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
 							descriptionMSS = `${bizfullname} đã tạo 1 bình luận`;
 							break;
 						case 2:
+							languageKey = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
 							descriptionMSS = `${bizfullname} đã tạo 1 phản hồi liên quan`;
 							break;
 						case 3:
@@ -74,7 +79,24 @@ exports.REACTION_SOCKET = {
 							break;
 					}
 
-					arrReceiver 		= [...new Set([author.toString(), assignee.toString(), ...related])];
+					dataSend = {
+						...dataSend,
+						languageKey,
+						mainColl: {
+							kind: 'pcm_plan_task',
+							item: {
+								_id: objectID,
+								project,
+								author
+							}
+						},
+						subColl: {
+							kind: 'pcm_comment',
+							item: { _id: infoComment._id }
+						},
+					}
+
+					arrReceiver 		= [...new Set([author?._id?.toString(), assignee.toString(), ...related])];
 					infoObject 			= infoObject.data;
 					titleMSS			= `CÔNG VIỆC: ${infoObject.name?.length > 100 ? infoObject.name?.substring(0, 100) : infoObject.name}`;
 					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
@@ -87,7 +109,7 @@ exports.REACTION_SOCKET = {
 
 					if(infoObject.error) break;
 
-					const { company, department, type } = infoObject.data;
+					const { company, department, type, author } = infoObject.data;
 					console.log({ company, department, type })
 
 					/**
@@ -138,6 +160,22 @@ exports.REACTION_SOCKET = {
 							break;
 					}
 
+					dataSend = {
+						...dataSend,
+						languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+						mainColl: {
+							kind: 'media',
+							item: { 
+								_id: objectID,
+								author
+							}
+						},
+						subColl: {
+							kind: 'media_comment',
+							item: { _id: infoComment._id }
+						},
+					}
+
 					infoObject 			= infoObject.data;
 					titleMSS 			= `BÀI VIẾT: ${infoObject.title?.length > 100 ? infoObject.title.substring(0, 100) : infoObject.title}`;
 					descriptionMSS 		= `${bizfullname} đã tạo 1 bình luận`;
@@ -147,7 +185,7 @@ exports.REACTION_SOCKET = {
 				default:
 					break;
 			}
-			console.log({ LENGTH: arrReceiver.length })
+			console.log({ infoObject, dataSend, LENGTH: arrReceiver.length });
 
 			if(!arrReceiver.length) {
 				return sendDataToMultilSocketsOfListUser({ 
@@ -183,10 +221,7 @@ exports.REACTION_SOCKET = {
 				users: [...arrReceiver, userID],
 				title: titleMSS,
 				description: descriptionMSS,
-				dataSend: {
-					infoObject,
-					infoComment
-				},
+				dataSend,
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS
 			});

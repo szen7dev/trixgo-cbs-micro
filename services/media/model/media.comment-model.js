@@ -8,7 +8,6 @@ const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/not
 const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
 const { APP_KEYS, LANGUAGE_KEYS }       = require('../../../tools/keys');
-const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**s
  * import inter-coll, exter-coll
@@ -87,9 +86,11 @@ class Model extends BaseModel {
 
                 arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
-                if(arrReceiver.length) {
+                if(arrReceiver && arrReceiver.length) {
+                    const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
+
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content,
+                        content,
                         receivers: arrReceiver,
                         path: `/media/home/${infoMedia._id}#${infoComment._id}`,
                         languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
