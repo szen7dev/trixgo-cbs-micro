@@ -811,7 +811,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ 
-        projectID, assigneeID, authorID, status, draft, type, level, typeStatus, collection, 
+        projectID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection, 
         isproposal, subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
@@ -828,9 +828,12 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {
-                    status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
                 };
+                
+                if(statusNe){
+                    conditionObj.status = { $ne: statusNe };
+                }
                 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
@@ -856,18 +859,7 @@ class Model extends BaseModel {
                  */
 
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-                let listGroups;
-                if(signGroupOfTask){
-                    let keyword = signGroupOfTask.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let signGroup = new RegExp(keyword, 'i');
- 
-                    let listGroupBySign = await  PCM_PLAN_GROUP_COLL.find({ sign: signGroup });
-                    let listGroupBySignID = listGroupBySign.map(item => item._id);
-                    listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, _id: { $in: listGroupBySignID } });
-                 }else{
-                    listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} });
-                }
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
                  
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
@@ -889,6 +881,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -948,10 +941,6 @@ class Model extends BaseModel {
                 }
 
                 //Phân loại công việc
-                // if(isproposal){
-                //     conditionObj.isproposal = isproposal;
-                // }
-                // Phân loại công việc trước dùng isproposal
                 if(subtype){
                     conditionObj.subtype = subtype;
                 }
@@ -1088,6 +1077,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = {...conditionObj};
+
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
