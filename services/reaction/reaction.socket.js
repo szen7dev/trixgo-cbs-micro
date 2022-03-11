@@ -7,7 +7,7 @@ const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant'
 const { CF_ACTIONS_SUBJECT_PCM }				= require('../subject_pcm/helper/subject_pcm.actions-constant');
 const { CF_ACTIONS_MEDIA }						= require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM }						= require('../item/helper/item.actions-constant');
-const { APP_KEYS } 								= require('../../tools/keys');
+const { APP_KEYS, LANGUAGE_KEYS }				= require('../../tools/keys');
 const { ENV_DEVICE_WEB_CBS } 					= require('../notification/helper/notification.keys-constant');
 
 /**
@@ -42,7 +42,7 @@ exports.REACTION_SOCKET = {
 			let webUrl 			= '';
 			let infoObject 		= null;
 			let arrReceiver 	= [];
-			let dataSend 		= {};
+			let dataSend 		= { app };
 			let meta = {
 				infoUser: { _id: userID }
 			}
@@ -55,14 +55,17 @@ exports.REACTION_SOCKET = {
 
 					if(infoObject.error) break;
 
+					let languageKey = '';
 					let { author, assignee, related } = infoObject.data;
 					related = related.map(userID => userID.toString());
 
 					switch (infoComment.type) {
 						case 1:
+							languageKey = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
 							descriptionMSS = `${bizfullname} đã tạo 1 bình luận`;
 							break;
 						case 2:
+							languageKey = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
 							descriptionMSS = `${bizfullname} đã tạo 1 phản hồi liên quan`;
 							break;
 						case 3:
@@ -76,6 +79,8 @@ exports.REACTION_SOCKET = {
 					}
 
 					dataSend = {
+						...dataSend,
+						languageKey,
 						mainColl: {
 							kind: 'pcm_plan_task',
 							item: { _id: objectID }
@@ -151,6 +156,8 @@ exports.REACTION_SOCKET = {
 					}
 
 					dataSend = {
+						...dataSend,
+						languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
 						mainColl: {
 							kind: 'media',
 							item: { _id: objectID }

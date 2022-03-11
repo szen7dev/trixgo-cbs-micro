@@ -120,6 +120,8 @@ exports.nonAccentVietnamese = (str) => {
 //     str = str.replace(/\u0111/g, "d");
 
     // Chữ in hoa
+    str = str.replace(/Ô/g, "O");
+    str = str.replace(/Ỗ/g, "O");
     str = str.replace(/(À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ)/g, 'A');
     str = str.replace(/(È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ)/g, 'E');
     str = str.replace(/(Ì|Í|Ị|Ỉ|Ĩ)/g, 'I');
@@ -129,6 +131,8 @@ exports.nonAccentVietnamese = (str) => {
     str = str.replace(/(Đ)/g, 'D');
 
     // Chữ thường
+    str = str.replace(/ô/g, "o");
+    str = str.replace(/ỗ/g, "o");
     str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
     str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
     str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");

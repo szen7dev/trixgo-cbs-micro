@@ -327,6 +327,7 @@ class Model extends BaseModel {
 
                         dataSend = {
                             ...dataSend,
+                            languageKey,
                             mainColl: {
                                 kind: 'pcm_plan_task',
                                 item: { _id: parentID }
@@ -341,6 +342,7 @@ class Model extends BaseModel {
                     } else {
                         dataSend = {
                             ...dataSend,
+                            languageKey,
                             mainColl: {
                                 kind: 'pcm_plan_task',
                                 item: { _id: taskID }

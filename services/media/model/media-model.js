@@ -359,6 +359,7 @@ class Model extends BaseModel {
 						description: descriptionMSS,
 						dataSend: {
 							app: APP_KEYS.MEDIA,
+							languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
 							mainColl: {
 								kind: 'media',
 								item: { _id: mediaID }
