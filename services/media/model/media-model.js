@@ -350,23 +350,9 @@ class Model extends BaseModel {
                         break;
                 }
 
-				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				console.log({ arrReceiver, authorID })
 
 				if(arrReceiver && arrReceiver.length) {
-					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
-						project: departmentID,
-						receivers: arrReceiver,
-						path: `/media/post/${mediaID}`,
-						languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
-						app: APP_KEYS.MEDIA,
-						mainColl: {
-							kind: "media",
-							item: mediaID.toString()
-						},
-						type: 1 // InApp (Socket)
-					});
-
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 						users: arrReceiver,
 						title: titleMSS,
@@ -380,6 +366,21 @@ class Model extends BaseModel {
 						},
 						web_url: `/media/post/${mediaID}`,
 						env: ENV_DEVICE_WEB_CBS
+					});
+
+					arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+					ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+						content: content.length > 200 ? `${content.substring(0, 200)}...` : content,
+						project: departmentID,
+						receivers: arrReceiver,
+						path: `/media/post/${mediaID}`,
+						languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
+						app: APP_KEYS.MEDIA,
+						mainColl: {
+							kind: "media",
+							item: mediaID.toString()
+						},
+						type: 1 // InApp (Socket)
 					});
 				}
 
