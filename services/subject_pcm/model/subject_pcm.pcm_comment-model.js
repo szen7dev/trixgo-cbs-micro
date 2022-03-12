@@ -9,6 +9,7 @@ const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 
 /**
  * import inter-coll, exter-coll
