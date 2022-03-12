@@ -194,7 +194,7 @@ exports.REACTION_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}
-			// arrReceiver = arrReceiver.map(receiverID => receiverID.toString());
+			arrReceiver = arrReceiver.map(receiverID => receiverID.toString());
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
@@ -212,14 +212,15 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
-			// console.log({ arrReceiver, userID })
+			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
+			console.info('MEDIA_COMMENT_(SOCKET)')
+			console.log({ arrReceiver, userID })
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: [...arrReceiver, userID],
-				title: titleMSS,
-				description: descriptionMSS,
+				users: arrReceiver,
+				title: 'THÔNG BÁO TỪ SOCKET',
+				description: 'MÔ TẢ TỪ SOCKET',
 				dataSend,
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS

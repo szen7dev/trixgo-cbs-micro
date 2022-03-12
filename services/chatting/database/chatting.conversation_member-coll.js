@@ -29,12 +29,15 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
     },
 
     /**
-     * Level thành viên
+     * Loại thành viên
+     * 1. Owner
+     * 2. Admin
+     * 3. Member
      */
-    level: {
+    type: {
         type: String,
-        enum: ['MEMBER', 'ADMIN'],
-        default: 'MEMBER'
+        enum: ['owner', 'admin', 'member'],
+        default: 'member'
     },
 
     /**
