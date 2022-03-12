@@ -129,6 +129,8 @@ module.exports = {
         params: {
             projectID   : { type: "string", optional: true },
             groupID     : { type: "string", optional: true },
+            isShowAll   : { type: "string", optional: true },
+
             //========================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -139,16 +141,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  projectID, groupID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let {  projectID, groupID, isShowAll, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                let resultAfterCallHandler; 
+
+                let resultAfterCallHandler;
                 if(groupID){
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getInfo({
                         groupID, select, populates, 
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getList({
-                        keyword, limit, userID, lastestID, projectID, select, populates, 
+                        keyword, isShowAll, limit, userID, lastestID, projectID, select, populates, 
                     });
                 }
                 
