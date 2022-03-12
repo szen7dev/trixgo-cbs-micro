@@ -218,9 +218,9 @@ exports.REACTION_SOCKET = {
 
 			// SEND CLOUD-MSG
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: [...arrReceiver, userID],
-				title: titleMSS,
-				description: descriptionMSS,
+				users: arrReceiver,
+				title: 'THÔNG BÁO TỪ SOCKET',
+				description: 'MÔ TẢ TỪ SOCKET',
 				dataSend,
 				web_url: webUrl,
 				env: ENV_DEVICE_WEB_CBS

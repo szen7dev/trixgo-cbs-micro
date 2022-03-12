@@ -111,8 +111,8 @@ class Model extends BaseModel {
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: arrReceiver,
-                        title: 'THÔNG BÁO COMMENT MEDIA',
-                        description: 'MÔ TẢ COMMENT',
+                        title: 'THÔNG BÁO TỪ API',
+                        description: 'MÔ TẢ TỪ API',
                         web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
