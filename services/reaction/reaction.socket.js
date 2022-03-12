@@ -97,8 +97,8 @@ exports.REACTION_SOCKET = {
 
 					arrReceiver 		= [...new Set([author?._id?.toString(), assignee.toString(), ...related])];
 					infoObject 			= infoObject.data;
-					titleMSS			= `CÔNG VIỆC: ${infoObject.name?.length > 100 ? infoObject.name?.substring(0, 100) : infoObject.name}`;
-					webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
+					// titleMSS			= `CÔNG VIỆC: ${infoObject.name?.length > 100 ? infoObject.name?.substring(0, 100) : infoObject.name}`;
+					// webUrl 				= `${process.env.DOMAIN || 'https://staging.cbs.trixgo.com'}/pcm/detail/${infoObject?.data?._id}`;
 					break;
 				}
 				case APP_KEYS.MEDIA: {
@@ -194,7 +194,8 @@ exports.REACTION_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}
-			arrReceiver = arrReceiver.map(receiverID => receiverID.toString());
+
+			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND SOCKET
 			sendDataToMultilSocketsOfListUser({ 
@@ -212,19 +213,15 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
-			console.info('MEDIA_COMMENT_(SOCKET)')
-			console.log({ arrReceiver, userID })
-
-			// SEND CLOUD-MSG
-			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-				users: arrReceiver,
-				title: 'THÔNG BÁO TỪ SOCKET',
-				description: 'MÔ TẢ TỪ SOCKET',
-				dataSend,
-				web_url: webUrl,
-				env: ENV_DEVICE_WEB_CBS
-			});
+			// SEND CLOUD-MSG (không send được bằng broker)
+			// broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			// 	users: arrReceiver,
+			// 	title: 'THÔNG BÁO TỪ SOCKET',
+			// 	description: 'MÔ TẢ TỪ SOCKET',
+			// 	dataSend,
+			// 	web_url: webUrl,
+			// 	env: ENV_DEVICE_WEB_CBS
+			// });
 		} catch (error) {
 			console.info('======EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_CSS_ADD_COMMENT=====');
 			console.error(error);

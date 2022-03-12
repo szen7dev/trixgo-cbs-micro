@@ -351,8 +351,6 @@ class Model extends BaseModel {
                 }
 
 				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-				console.info('CREATE NEW MEDIA')
-                console.log({ arrReceiver })
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

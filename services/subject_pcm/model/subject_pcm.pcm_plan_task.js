@@ -291,13 +291,13 @@ class Model extends BaseModel {
                     let { name: taskName, author, assignee, related, project, contract } = infoTask;
                     related = related.map(userID => userID.toString());
 
-                    let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    let arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
+                    // let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                     // INSERT NOTIFICATION
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: name,
-                        receivers,
+                        receivers: arrReceiver,
                         project: project?.toString(),
                         contract: contract?.toString(),
                         path: webUrl,
@@ -325,16 +325,18 @@ class Model extends BaseModel {
                             receivers = [infoAssignee?.data?._id];
                         }
 
+                        const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+
                         dataSend = {
                             ...dataSend,
                             languageKey,
                             mainColl: {
                                 kind: 'pcm_plan_task',
-                                item: { _id: parentID }
+                                item: infoParent
                             },
                             subColl: {
                                 kind: 'pcm_plan_task',
-                                item: { _id: infoAterInsert._id }
+                                item: infoAterInsert
                             }
                         };
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
@@ -345,7 +347,7 @@ class Model extends BaseModel {
                             languageKey,
                             mainColl: {
                                 kind: 'pcm_plan_task',
-                                item: { _id: taskID }
+                                item: infoAterInsert
                             }
                         };
                         titleMSS        = `THÔNG BÁO`;
@@ -353,7 +355,7 @@ class Model extends BaseModel {
                     }
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-                        users: receivers,
+                        users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
                         dataSend,

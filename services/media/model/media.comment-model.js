@@ -34,10 +34,13 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Insert noti to DB
      */
-    createNotification({ infoMedia, infoComment, authorID, ctx }) {
+    createNotification({ infoMedia, infoComment, authorID, bizfullname, ctx }) {
         return new Promise(async resolve => {
             try {
                 let arrReceiver = [];
+                let dataSend = {};
+                let titleMSS = '';
+                let descriptionMSS = '';
 
                 /**
                  * Loại bài viết
@@ -85,12 +88,34 @@ class Model extends BaseModel {
                         break;
                 }
 
-                // arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-			    console.info('MEDIA_COMMENT_(API)')
-                console.log({ arrReceiver })
+                dataSend = {
+                    app: APP_KEYS.MEDIA,
+                    languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                    mainColl: {
+                        kind: 'media',
+                        item: infoMedia
+                    },
+                    subColl: {
+                        kind: 'media_comment',
+                        item: infoComment
+                    },
+                }
+
+                titleMSS        = `BÀI VIẾT: ${infoMedia.title}`;
+                descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
+                // arrReceiver     = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
                 if(arrReceiver && arrReceiver.length) {
                     const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        users: arrReceiver,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        dataSend,
+                        web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
 
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content,
@@ -108,14 +133,6 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     });
-
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-                        users: arrReceiver,
-                        title: 'THÔNG BÁO TỪ API',
-                        description: 'MÔ TẢ TỪ API',
-                        web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
-                        env: ENV_DEVICE_WEB_CBS
-                    });
                 }
 
                 return resolve({ error: false, data: arrReceiver, status: 200 });
@@ -129,7 +146,7 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Create comment media
      */
-    insert({ mediaID, parentID, content, files, images, authorID, select, populates, ctx }) { 
+    insert({ mediaID, parentID, content, files, images, authorID, select, populates, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {  
@@ -190,7 +207,10 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                const infoMedia = await MEDIA_COLL.findById(mediaID).lean();
+                const infoMedia = await MEDIA_COLL
+                    .findById(mediaID)
+                    .populate('author', '_id bizfullname image')
+                    .lean();
 
                 if(!infoMedia) {
                     return resolve({
@@ -237,7 +257,8 @@ class Model extends BaseModel {
                 const infoAfterCreateNoti = await this.createNotification({ 
                     infoMedia, 
                     infoComment: infoAterInsert, 
-                    authorID, 
+                    bizfullname,
+                    authorID,
                     ctx 
                 });
                 if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
@@ -615,7 +636,7 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Create comment file
      */
-    insertCommentFile({ mediaID, fileID, parentID, content, files, images, select, populates, authorID, ctx }) { 
+    insertCommentFile({ mediaID, fileID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /** 
@@ -678,7 +699,10 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                const infoMedia = await MEDIA_COLL.findById(mediaID).lean();
+                const infoMedia = await MEDIA_COLL
+                    .findById(mediaID)
+                    .populate('author', '_id bizfullname image')
+                    .lean();
 
                 if(!infoMedia) {
                     return resolve({
@@ -725,6 +749,7 @@ class Model extends BaseModel {
                 const infoAfterCreateNoti = await this.createNotification({ 
                     infoMedia, 
                     infoComment: infoAterInsert, 
+                    bizfullname,
                     authorID, 
                     ctx 
                 });

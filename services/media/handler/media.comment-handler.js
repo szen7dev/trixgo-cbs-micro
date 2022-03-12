@@ -33,11 +33,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
+                const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { mediaID, parentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
-                    mediaID, parentID, content, files, images, select, populates, authorID, ctx
+                    mediaID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -169,11 +169,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
+                const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { mediaID, fileID, parentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insertCommentFile({
-                    mediaID, fileID, parentID, content, files, images, select, populates, authorID, ctx
+                    mediaID, fileID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

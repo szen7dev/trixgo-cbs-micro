@@ -30,11 +30,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, parentID, authorID, type, content, files, images, select, populates, ctx
+					taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
