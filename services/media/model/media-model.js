@@ -304,7 +304,6 @@ class Model extends BaseModel {
                             companyID: company?.toString(),
                             isLoadAll: true
                         });
-						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
@@ -318,7 +317,6 @@ class Model extends BaseModel {
                             departmentID
                             // select: "name members"
                         });
-						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
@@ -332,7 +330,6 @@ class Model extends BaseModel {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                             isLoadAll: true
                         });
-						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
@@ -352,9 +349,9 @@ class Model extends BaseModel {
                         break;
                 }
 
-				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-				console.info('CREATE_NEW_MEDIA')
-				console.log({ arrReceiver })
+				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				// console.info('CREATE_NEW_MEDIA')
+				// console.log({ arrReceiver })
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
