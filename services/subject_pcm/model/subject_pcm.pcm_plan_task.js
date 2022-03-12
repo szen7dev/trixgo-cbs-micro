@@ -115,7 +115,7 @@ class Model extends BaseModel {
                     assignee: assigneeID,
                     author  : authorID,
                     suid,
-                    expiredTime,
+                    expiredTime: new Date(expiredTime),
                     actualFinishTime: expiredTime,
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                     type,
