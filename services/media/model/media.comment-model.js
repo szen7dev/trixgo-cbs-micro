@@ -86,7 +86,7 @@ class Model extends BaseModel {
                 }
 
                 // arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-                console.info('MEDIA_COMMENT')
+			    console.info('MEDIA_COMMENT_(API)')
                 console.log({ arrReceiver })
 
                 if(arrReceiver && arrReceiver.length) {
