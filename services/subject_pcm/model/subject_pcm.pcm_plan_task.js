@@ -812,7 +812,7 @@ class Model extends BaseModel {
      */
     getList({ 
         projectID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection, 
-        isproposal, subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
+        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
     }) { 
@@ -944,7 +944,6 @@ class Model extends BaseModel {
                 if(subtype){
                     conditionObj.subtype = subtype;
                 }
-                
                 /**
                  * Type = 0 Việc của tôi + Giao + Liên quan(All)
                  * Type = 1 Việc của tôi

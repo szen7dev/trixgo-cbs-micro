@@ -198,7 +198,6 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit
                 }
-
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
