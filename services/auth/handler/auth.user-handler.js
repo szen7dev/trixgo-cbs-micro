@@ -661,7 +661,7 @@ module.exports = {
             userID      : { type: "string", optional: true },
             projectID   : { type: "string", optional: true },
             companyID   : { type: "string", optional: true },
-            arrayID     : { type: "array", optional: true },
+            arrayID     : { type: "string",  optional: true },
 
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },

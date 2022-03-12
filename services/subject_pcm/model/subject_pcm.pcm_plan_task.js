@@ -1323,19 +1323,18 @@ class Model extends BaseModel {
 
                 if (!infoTask) 
                     return resolve({ error: true, message: 'cannot_get_info_task', status: 400 });
-
                 /**
                  * CẤU TRÚC EMAIL
                  * Người nhận email
                  * Tiêu đề
                  * Nội dung
                  */    
-                let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    arrayID: receivers, select: "_id email"
-                });
+                let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, 
+                    JSON.stringify({ arrayID: receivers, select: "_id email"})
+                );
 
                 listMembers = listMembers?.data?.listRecords || [];
-
+                
                 let arrayMailSend = '';
                 let indexMember = 0;
                 for(const item of listMembers){

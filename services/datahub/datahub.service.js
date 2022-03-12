@@ -10,6 +10,8 @@ const DATAHUB_PACKAGE_COLL				= require('./database/datahub_package-coll');
 const DATAHUB_FINREPORT_COLL			= require('./database/datahub_finreport-coll');
 const DATAHUB_CONTRACTOR_COLL			= require('./database/datahub_contractor-coll');
 const DATAHUB_PROFILE_COLL				= require('./database/datahub_profile-coll');
+const DATAHUB_INSPECTION_DOC_COLL		= require('./database/datahub_inspection_doc-coll');
+const DATAHUB_INSPECTION_CHECKLIST_COLL	= require('./database/datahub_inspection_checklist-coll');
 
 const DATAHUB_TYPE_HANDLER   			= require('./handler/datahub.datahub_type-handler');
 const DATAHUB_PROJECT_HANDLER   		= require('./handler/datahub.datahub_project-handler');
@@ -17,6 +19,8 @@ const DATAHUB_PACKAGE_HANDLER   		= require('./handler/datahub.datahub_package-h
 const DATAHUB_FINREPORT_HANDLER   		= require('./handler/datahub.datahub_finreport-handler');
 const DATAHUB_CONTRACTOR_HANDLER   		= require('./handler/datahub.datahub_contractor-handler');
 const DATAHUB_PROFILE_HANDLER   		= require('./handler/datahub.datahub_profile-handler');
+const DATAHUB_INSPECTION_DOC_HANDLER   		= require('./handler/datahub.datahub_inspection_doc-handler');
+const DATAHUB_INSPECTION_CHECKLIST_HANDLER  = require('./handler/datahub.datahub_inspection_checklist-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DATAHUB,
@@ -26,7 +30,9 @@ module.exports = {
 		DbService(DATAHUB_PACKAGE_COLL),  
 		DbService(DATAHUB_FINREPORT_COLL), 
 		DbService(DATAHUB_CONTRACTOR_COLL), 
-		DbService(DATAHUB_PROFILE_HANDLER), 
+		DbService(DATAHUB_PROFILE_COLL), 
+		DbService(DATAHUB_INSPECTION_DOC_COLL), 
+		DbService(DATAHUB_INSPECTION_CHECKLIST_COLL), 
 		CacheCleaner([CF_DOMAIN_SERVICES.DATAHUB])
     ],
 
@@ -82,6 +88,18 @@ module.exports = {
 		[CF_ACTIONS_DATAHUB.DATAHUB_PROFILE_UPDATE]   			 	: DATAHUB_PROFILE_HANDLER.update,
 		[CF_ACTIONS_DATAHUB.DATAHUB_PROFILE_REMOVE]					: DATAHUB_PROFILE_HANDLER.remove,
 		[CF_ACTIONS_DATAHUB.DATAHUB_PROFILE_GET_INFO_AND_GET_LIST]	: DATAHUB_PROFILE_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB INSPECTION DOC   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_DOC_INSERT]   				: DATAHUB_INSPECTION_DOC_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_DOC_UPDATE]   			 	: DATAHUB_INSPECTION_DOC_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_DOC_REMOVE]					: DATAHUB_INSPECTION_DOC_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_DOC_GET_INFO_AND_GET_LIST]	: DATAHUB_INSPECTION_DOC_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB INSPECTION CHECKLIST   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_INSERT]   				: DATAHUB_INSPECTION_CHECKLIST_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_UPDATE]   			 	: DATAHUB_INSPECTION_CHECKLIST_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_REMOVE]				: DATAHUB_INSPECTION_CHECKLIST_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_GET_INFO_AND_GET_LIST]	: DATAHUB_INSPECTION_CHECKLIST_HANDLER.getInfoAndGetList,
 	},
 	
 	/**

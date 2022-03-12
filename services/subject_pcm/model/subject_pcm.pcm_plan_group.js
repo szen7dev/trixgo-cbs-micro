@@ -126,7 +126,7 @@ class Model extends BaseModel {
             }
         })
     };
-
+    
     /**
      * Name: remove many ✅
      * Author: Depv
