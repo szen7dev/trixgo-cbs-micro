@@ -325,16 +325,18 @@ class Model extends BaseModel {
                             receivers = [infoAssignee?.data?._id];
                         }
 
+                        const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+
                         dataSend = {
                             ...dataSend,
                             languageKey,
                             mainColl: {
                                 kind: 'pcm_plan_task',
-                                item: { _id: parentID }
+                                item: infoParent
                             },
                             subColl: {
                                 kind: 'pcm_plan_task',
-                                item: { _id: infoAterInsert._id }
+                                item: infoAterInsert
                             }
                         };
                         titleMSS        = `CÔNG VIỆC: ${taskName}`;
@@ -345,7 +347,7 @@ class Model extends BaseModel {
                             languageKey,
                             mainColl: {
                                 kind: 'pcm_plan_task',
-                                item: { _id: taskID }
+                                item: infoAterInsert
                             }
                         };
                         titleMSS        = `THÔNG BÁO`;

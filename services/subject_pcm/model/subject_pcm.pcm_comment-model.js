@@ -30,7 +30,7 @@ class Model extends BaseModel {
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, ctx }) { 
+    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
 
@@ -39,6 +39,11 @@ class Model extends BaseModel {
                  */
                 const dataInsert = { type, task: taskID, author: authorID };
                 const TYPE_COMMENT = [this.COMMENT_PCM, this.RESPONSE_PCM];
+                let dataSend        = {};
+                let webUrl          = '';
+                let titleMSS        = '';
+                let descriptionMSS  = '';
+                let languageKey     = '';
 
                 /** 
                  * VALIDATION STEP (2)
@@ -97,7 +102,10 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+                let infoTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .populate('project', '_id name sign')
+                    .lean();
 
                 if(!infoTask) {
                     return resolve({
@@ -150,20 +158,58 @@ class Model extends BaseModel {
                         break;
                 }
 
-                let { author, assignee, related, project, contract } = infoTask;
+                let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
 
-                let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                let listReceivers   = [...new Set([author.toString(), assignee.toString(), ...related])];
+                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+
+                switch (infoAterInsert.type) {
+                    case 1:
+                        languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
+                        webUrl          = `/pcm/detail/${taskID}#comment_${infoAterInsert._id}`;
+                        break;
+                    case 2:
+                        languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
+                        webUrl          = `/pcm/detail/${taskID}#response_${infoAterInsert._id}`;
+                        break;
+                    default:
+                        break;
+                }
+
+                dataSend = {
+                    app: APP_KEYS.PCM_PLAN_TASK,
+                    languageKey,
+                    mainColl: {
+                        kind: 'pcm_plan_task',
+                        item: infoTask
+                    },
+                    subColl: {
+                        kind: 'pcm_comment',
+                        item: infoAterInsert
+                    },
+                }
+                titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
 
                 if(receivers.length) {
-                    await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        users: arrReceiver,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        dataSend,
+                        web_url: webUrl,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content,
-                        receivers,
-                        project: project?.toString(),
+                        receivers: arrReceiver,
+                        project: project?._id?.toString(),
                         contract: contract?.toString(),
-                        path: `/pcm/detail/${taskID}#response_${infoAterInsert._id}`,
-                        languageKey: type === 1 ? LANGUAGE_KEYS.CREATE_COMMENT_PCM : LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
+                        path: webUrl,
+                        languageKey: dataSend.languageKey,
                         app: APP_KEYS.PCM_PLAN_TASK,
                         mainColl: {
                             kind: "pcm_plan_task",
