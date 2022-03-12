@@ -194,7 +194,7 @@ class Model extends BaseModel {
                 }
                 titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
 
-                if(arrReceiver.length) {
+                if(arrReceiver && arrReceiver.length) {
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: arrReceiver,
                         title: titleMSS,
@@ -230,7 +230,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                infoAterInsert.receivers = receivers;
+                infoAterInsert.receivers = arrReceiver;
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
