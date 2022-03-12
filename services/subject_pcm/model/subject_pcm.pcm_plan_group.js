@@ -23,7 +23,7 @@ const { template } = require('lodash');
  * import inter-model, exter-model
  */
 class Model extends BaseModel {               
-
+    
     constructor() {
         super(PCM_PLAN_GROUP_COLL);
     }
@@ -126,7 +126,7 @@ class Model extends BaseModel {
             }
         })
     };
-
+    
     /**
      * Name: remove many ✅
      * Author: Depv
@@ -191,7 +191,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates = {} }) { 
+    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -199,6 +199,9 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
+
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: "projectID_invalid", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -209,8 +212,14 @@ class Model extends BaseModel {
                         { admins: { $in: [userID] } },
                     ]
                 };
-                let sortBy = { createAt: -1, _id: -1 };
 
+                // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
+                if(isShowAll == 1){
+                   delete conditionObj.$or;
+                }
+
+                let sortBy;
+                let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -240,7 +249,6 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-
                     conditionObj.$and = [
                         {
                             $or: conditionObj.$or
@@ -252,7 +260,6 @@ class Model extends BaseModel {
                             ]
                         }
                     ]
-                    delete conditionObj.$or;
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -261,18 +268,20 @@ class Model extends BaseModel {
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
-					let keys	 = ['createAt__-1', '_id__-1'];
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
                     conditionObj  = dataPagingAndSort.data.find;
 					sortBy        = dataPagingAndSort.data.sort;
-				}
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
 
                 let infoDataAfterGet = await PCM_PLAN_GROUP_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select)
                     .populate(populates)
@@ -281,10 +290,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
 
-                let totalRecord = await PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
 				let nextCursor	= null;
-                let totalPage = Math.ceil(totalRecord/limit);
-
 				if(infoDataAfterGet && infoDataAfterGet.length){
 					if(infoDataAfterGet.length > limit){
 						nextCursor = infoDataAfterGet[limit - 1]._id;
@@ -292,9 +298,12 @@ class Model extends BaseModel {
 					}
 				}
 
+                let totalRecord = await PCM_PLAN_GROUP_COLL.count(conditionObjOrg);
+                let totalPage = Math.ceil(totalRecord/limit);
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,

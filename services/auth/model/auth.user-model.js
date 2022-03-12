@@ -1602,6 +1602,7 @@ class Model extends BaseModel {
 
                 // Lấy user theo mảng id
                 if(arrayID && arrayID.length){
+                    arrayID = JSON.parse(arrayID);
                     conditionObj._id = { $in: arrayID }
                 }
 

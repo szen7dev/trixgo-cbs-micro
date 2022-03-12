@@ -228,23 +228,26 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getListPackage({ departmentID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getListPackage({ departmentID, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
-                let conditionObj = { members: { $in: [userID] } };
+                if(!checkObjectIDs(departmentID))
+                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+                let conditionObj = { members: { $in: [userID] }, project: departmentID };
                 let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
+
+                // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
+                if(isShowAll == "1"){
+                    delete conditionObj.members;
+                }
 
                 if(limit > 20){
                     limit = 20;
                 }else{
                     limit = +limit;
                 }
-
-                if(!checkObjectIDs(departmentID))
-                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
-                    
-                conditionObj.project = departmentID
 
 				if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
