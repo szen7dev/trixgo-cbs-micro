@@ -342,7 +342,7 @@ class Model extends BaseModel {
                                     item: infoAterInsert
                                 }
                             };
-                            titleMSS        = `CÔNG VIỆC: ${taskName}`;
+                            titleMSS        = taskName;
                             descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
                         } else {
                             dataSend = {
@@ -680,6 +680,15 @@ class Model extends BaseModel {
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...relatedTask])];
                     const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
+                    const dataSend = {
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
+                        mainColl: {
+                            kind: 'pcm_plan_task',
+                            item: infoAterUpdate
+                        }
+                    };
+
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,
                         receivers,
@@ -694,11 +703,14 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
+                    console.log('ADD_RELATION_USER');
+                    console.log({ related })
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: related,
-                        title: `CÔNG VIỆC: ${taskName}`,
+                        title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
+                        dataSend,
                         web_url: webUrl,
                         env: ENV_DEVICE_WEB_CBS
                     });

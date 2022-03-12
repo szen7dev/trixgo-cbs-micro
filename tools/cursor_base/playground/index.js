@@ -238,7 +238,7 @@ let _ = require('lodash');
    */
 
   const RANGE_BASE_PAGINATION_V2 = ({ keys, latestRecord, objectQuery }) => {
-  console.log("🚀 ~ file: index.js ~ line 241 ~ latestRecord", latestRecord)
+  console.log("🚀 ~ file: index.js ~ line 241 ~ latestRecord")
     let resultForReturn = {
       find: {},
       sort: {}

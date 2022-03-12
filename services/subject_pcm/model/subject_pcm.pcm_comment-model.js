@@ -197,14 +197,6 @@ class Model extends BaseModel {
                 titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
 
                 if(arrReceiver && arrReceiver.length) {
-                    console.log({
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_WEB_CBS
-                    })
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: arrReceiver,
                         title: titleMSS,
