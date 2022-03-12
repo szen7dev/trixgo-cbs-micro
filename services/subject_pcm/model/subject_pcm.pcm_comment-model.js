@@ -161,7 +161,7 @@ class Model extends BaseModel {
                 let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
 
-                let listReceivers   = [...new Set([author.toString(), assignee.toString(), ...related])];
+                let arrReceiver   = [...new Set([author.toString(), assignee.toString(), ...related])];
                 // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 switch (infoAterInsert.type) {
@@ -193,7 +193,7 @@ class Model extends BaseModel {
                 }
                 titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
 
-                if(receivers.length) {
+                if(arrReceiver.length) {
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: arrReceiver,
                         title: titleMSS,
@@ -233,6 +233,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

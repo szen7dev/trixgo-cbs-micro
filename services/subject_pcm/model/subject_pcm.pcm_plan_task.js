@@ -291,13 +291,13 @@ class Model extends BaseModel {
                     let { name: taskName, author, assignee, related, project, contract } = infoTask;
                     related = related.map(userID => userID.toString());
 
-                    let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    // let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    let arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
+                    // let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                     // INSERT NOTIFICATION
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: name,
-                        receivers,
+                        receivers: arrReceiver,
                         project: project?.toString(),
                         contract: contract?.toString(),
                         path: webUrl,
@@ -355,7 +355,7 @@ class Model extends BaseModel {
                     }
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-                        users: receivers,
+                        users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
                         dataSend,
