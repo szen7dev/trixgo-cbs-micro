@@ -325,7 +325,7 @@ class Model extends BaseModel {
                             });
 
                             if(!infoAssignee.error) {
-                                receivers = [infoAssignee?.data?._id];
+                                arrReceiver = [infoAssignee?.data?._id];
                             }
 
                             const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
