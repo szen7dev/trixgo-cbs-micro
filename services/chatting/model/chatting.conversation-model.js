@@ -18,7 +18,7 @@ const { CF_ACTIONS_REMINDER } 						= require('../../reminder/helper/reminder.ac
  * TOOLS
  */
 const BaseModel                                 	= require('../../../tools/db/base_model');
-const { RANGE_BASE_PAGINATION }						= require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { checkObjectIDs, IsJsonString }				= require('../../../tools/utils/utils');
 
 /**
@@ -155,7 +155,7 @@ class Model extends BaseModel {
 							member: memberID,
 							conversation: infoConversationAfterInserted._id,
 							addedBy: authorID,
-							level: authorID === memberID ? 'ADMIN' : 'MEMBER'
+							type: authorID === memberID ? 'owner' : 'member'
 						})
 					});
 
@@ -439,7 +439,8 @@ class Model extends BaseModel {
 							await CHATTING__CONVERSATION_MEMBER_COLL.create({
 								member: memberID,
 								conversation: conversationID,
-								addedBy: authorID
+								addedBy: authorID,
+								type: 'member'
 							})
 						}
 					});
@@ -550,7 +551,8 @@ class Model extends BaseModel {
 				// DELETE MEMBER IN CONVERSATION
 				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({ 
 					member: memberID, 
-					conversation: conversationID 
+					conversation: conversationID,
+					type: { $ne: 'owner' }
 				});
 
                 return resolve({ 
@@ -601,7 +603,7 @@ class Model extends BaseModel {
 				}
 
 				let infoConversationAfterUpdated = null;
-				let level = '';
+				let typeMember 	= '';
 				let typeMessage = 0;
 
 				// Cập nhật member thành admin
@@ -622,7 +624,7 @@ class Model extends BaseModel {
 					}, { new: true });
 
 					typeMessage = 105; // Xét thêm admin cuộc hội thoại
-					level = 'ADMIN';
+					typeMember 	= 'admin';
 
 				} else{ // Cập nhật admin thành member
 					if(checkExistConversation.author.toString() === memberID.toString()) {
@@ -641,7 +643,7 @@ class Model extends BaseModel {
 					}, { new: true });
 
 					typeMessage = 106; // Xoá bỏ quyền admin của member trong cuộc hội thoại
-					level = 'MEMBER';
+					typeMember 	= 'member';
 				}
 
                 if(!infoConversationAfterUpdated) {
@@ -665,7 +667,7 @@ class Model extends BaseModel {
 					conversation: conversationID,
 					member: memberID
 				}, {
-					$set: { level }
+					$set: { type: typeMember }
 				})
 
                 return resolve({ 
@@ -927,7 +929,7 @@ class Model extends BaseModel {
 	 * Date: ...
 	 * Updated: 10/08/2021 - MinhVH
 	 */
-	getListMembersConversationByID({ conversationID, authorID, lastestID, level, limit = 15, select, populates }){
+	getListMembersConversationByID({ conversationID, authorID, lastestID, type, limit = 15, select, populates }){
         return new Promise(async resolve => {
 			try {
 				/**
@@ -979,7 +981,7 @@ class Model extends BaseModel {
 					}
 				}
 
-				level && (conditionObj.level = level);
+				type && (conditionObj.type = type);
 
 				let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -1031,6 +1033,7 @@ class Model extends BaseModel {
 					nextCursor,
 				}, status: 200 });
 			} catch (error) {
+				console.error(error);
 				return resolve({ error: true, error: error.message, status: 500 });
 			}
 		})

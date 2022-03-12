@@ -581,7 +581,7 @@ module.exports = {
         params: {
             conversationID  : { type: "string" },
             lastestID       : { type: "string", optional: true },
-            level           : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
@@ -590,10 +590,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: authorID } = ctx.meta.infoUser;
-                let { conversationID, lastestID, level, limit, select, populates } = ctx.params;
+                let { conversationID, lastestID, type, limit, select, populates } = ctx.params;
 
                 let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMembersConversationByID({ 
-					conversationID, authorID, lastestID, level, limit, select, populates
+					conversationID, authorID, lastestID, type, limit, select, populates
 				});
 
 				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
