@@ -1246,9 +1246,9 @@ exports.CHATTING_SOCKET = {
 				})
 				.populate({
 					path: 'reactions',
-					select: '_id type',
+					select: '_id type author',
 					populate: {
-						path: 'userCreate',
+						path: 'author',
 						select: '_id bizfullname fullname image'
 					}
 				})
