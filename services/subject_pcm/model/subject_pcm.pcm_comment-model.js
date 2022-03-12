@@ -162,7 +162,7 @@ class Model extends BaseModel {
                 related = related.map(userID => userID.toString());
 
                 let listReceivers   = [...new Set([author.toString(), assignee.toString(), ...related])];
-                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 switch (infoAterInsert.type) {
                     case 1:

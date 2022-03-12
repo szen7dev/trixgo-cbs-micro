@@ -103,7 +103,7 @@ class Model extends BaseModel {
 
                 titleMSS        = `BÀI VIẾT: ${infoMedia.title}`;
                 descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
-                arrReceiver     = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+                // arrReceiver     = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
 
                 if(arrReceiver && arrReceiver.length) {
                     const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;

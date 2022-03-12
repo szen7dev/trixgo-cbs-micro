@@ -292,7 +292,7 @@ class Model extends BaseModel {
                     related = related.map(userID => userID.toString());
 
                     let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    // let receivers = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                     // INSERT NOTIFICATION
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
