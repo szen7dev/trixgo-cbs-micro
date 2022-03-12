@@ -24,6 +24,7 @@ const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').M
 const CHATTING__MESSAGE_POLL_MODEL 				= require('./model/chatting.message_poll-model').MODEL;
 const CHATTING__MESSAGE_REMINDER_MODEL 			= require('./model/chatting.message_reminder-model').MODEL;
 const CHATTING__MESSAGE_NPS_MODEL 				= require('./model/chatting.message_nps-model').MODEL;
+const CHATTING__REACTION_MESSAGE_MODEL			= require('./model/chatting.message_reaction-model').MODEL;
 const { ENV_DEVICE_APP_TEASER } 				= require('../notification/helper/notification.keys-constant')
 
 exports.CHATTING_SOCKET = {
@@ -365,19 +366,15 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_CONVERSATION]: async function(data, ack) { 
         let socket               = this;
         let listUserActive       = socket.$service.listUserConnected;
-        let userID               = socket.client.user;
         let io                   = socket.$service.io;
         let { infoConversation } = data;
 
-		const { members } = infoConversation;
-		const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
-
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
+			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
-				data: { infoConversation }
+				data: infoConversation
 			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_CONVERSATION], io
 		});
     },
@@ -1224,82 +1221,83 @@ exports.CHATTING_SOCKET = {
 	 * Date: 26/10/2021
 	 */
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data) { 
-        let socket               		= this;
-		let userID              		= socket.client.user;
-		let broker                      = socket.$service.broker;
-        let listUserActive       		= socket.$service.listUserConnected;
-        let io                   		= socket.$service.io;
-		let { messageID, typeReaction }	= data;
+        try {
+			let socket               		= this;
+			let userID              		= socket.client.user;
+			let listUserActive       		= socket.$service.listUserConnected;
+			let io                   		= socket.$service.io;
+			let { messageID, typeReaction }	= data;
 
-		let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID).select('_id');
+			await CHATTING__REACTION_MESSAGE_MODEL.reactionMessage({
+				userID,
+				messageID,
+				typeReaction: +typeReaction
+			})
 
-		if(!infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
+			const infoMessage = await CHATTING__MESSAGE_COLL
+				.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
+				.populate({
+					path: 'sender receivers usersAssigned',
+					select: '_id bizfullname fullname image'
+				})
+				.populate({
+					path: 'conversation',
+					select: 'members'
+				})
+				.populate({
+					path: 'reactions',
+					select: '_id type',
+					populate: {
+						path: 'userCreate',
+						select: '_id bizfullname fullname image'
+					}
+				})
+				.populate({
+					path: 'parent',
+					populate: {
+						path: 'sender',
+						select: '_id bizfullname fullname image'
+					}
+				})
+				.populate('reminder')
+				.populate({
+					path: 'poll',
+					populate: {
+						path: 'options.usersVote',
+						select: '_id bizfullname fullname image'
+					}
+				})
+				.populate({
+					path: 'files.file',
+					populate: {
+						path: 'file',
+						select: 'name nameOrg path size'
+					},
+				})
+				.lean();
+
+			if(!infoMessage){
+				return sendDataToMultilSocketsOfListUser({ 
+					listUserConnected: listUserActive, 
+					arrReceiver: [userID],
+					data: { error: true, message: "Can't get info message" }, 
+					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+				});
+			}
+
+			sendDataToMultilSocketsOfListUser({ 
+				arrReceiver: infoMessage?.conversation?.members, 
 				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info message" }, 
+				data: {
+					error: false,
+					data: infoMessage
+				}, 
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
-			});
+			})
+		} catch (error) {
+			console.info("EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE");
+			console.error(error);
 		}
-
-		await CHATTING__MESSAGE_MODEL.reactionMessage({
-			userID,
-			messageID,
-			typeReaction: +typeReaction,
-			ctx: broker
-		})
-
-		infoMessage = await CHATTING__MESSAGE_COLL
-			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
-			.populate({
-				path: 'sender receivers usersAssigned',
-				select: '_id bizfullname fullname image'
-			})
-			.populate({
-				path: 'conversation',
-				select: 'members'
-			})
-			.populate({
-				path: 'reactions',
-				select: '_id type',
-				populate: {
-					path: 'userCreate',
-					select: '_id bizfullname fullname image'
-				}
-			})
-			.populate({
-				path: 'parent',
-				populate: {
-					path: 'sender',
-					select: '_id bizfullname fullname image'
-				}
-			})
-			.populate('reminder')
-			.populate({
-				path: 'poll',
-				populate: {
-					path: 'options.usersVote',
-					select: '_id bizfullname fullname image'
-				}
-			})
-			.populate({
-				path: 'files.file',
-				populate: {
-					path: 'file',
-					select: 'name nameOrg path size'
-				},
-			})
-			.lean();
-
-        sendDataToMultilSocketsOfListUser({ 
-			arrReceiver: infoMessage?.conversation?.members, 
-			listUserConnected: listUserActive, 
-			data: {
-				error: false, 
-				data: infoMessage
-			}, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
-		})
     },
 
 	/**

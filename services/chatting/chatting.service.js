@@ -31,7 +31,6 @@ module.exports = {
 		DbService('message_message_polls'),
 		DbService('message_message_reminders'),
 		DbService('message_message_reactions'),
-		DbService('users'),
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
 

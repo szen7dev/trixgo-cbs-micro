@@ -8,6 +8,7 @@ const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/not
 const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
 const { APP_KEYS, LANGUAGE_KEYS }       = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**s
  * import inter-coll, exter-coll
@@ -85,6 +86,8 @@ class Model extends BaseModel {
                 }
 
                 arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+                // console.info('MEDIA_COMMENT')
+                // console.log({ arrReceiver })
 
                 if(arrReceiver && arrReceiver.length) {
                     const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
@@ -104,7 +107,15 @@ class Model extends BaseModel {
                             item: infoComment._id
                         },
                         type: 1 // InApp (Socket)
-                    })
+                    });
+
+                    // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                    //     users: arrReceiver,
+                    //     title: 'THÔNG BÁO',
+                    //     description: 'MÔ TẢ',
+                    //     web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                    //     env: ENV_DEVICE_WEB_CBS
+                    // });
                 }
 
                 return resolve({ error: false, data: arrReceiver, status: 200 });

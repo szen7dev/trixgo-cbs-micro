@@ -59,22 +59,22 @@ class Model extends BaseModel {
 					})
 					.lean();
 
-				if(infoReaction) {
+				if(infoReaction){
 					await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
 						$pull: {
 							reactions: infoReaction._id
 						}
-					}, { new: true });
-				}
-
-				if(infoReaction && infoReaction.type === typeReaction){
-					const infoAfterDelete = await CHATTING__MESSAGE_REACTION_COLL.findByIdAndDelete(infoReaction._id);
-
-					return resolve({
-						error: false,
-						status: 200,
-						message: infoAfterDelete
 					});
+
+					await CHATTING__MESSAGE_REACTION_COLL.findByIdAndDelete(infoReaction._id);
+
+					if(infoReaction.type === typeReaction) {
+						return resolve({
+							error: false,
+							status: 200,
+							message: 'success'
+						});
+					}
 				}
 
 				const infoReactionAfterInsert = await this.insertData({
@@ -96,7 +96,7 @@ class Model extends BaseModel {
 					$addToSet: {
 						reactions: infoReactionAfterInsert._id
 					}
-				}, { new: true });
+				});
 
                 return resolve({ error: false, data: infoReactionAfterInsert, status: 200 });
             } catch (error) {
