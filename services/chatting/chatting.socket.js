@@ -1284,7 +1284,6 @@ exports.CHATTING_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
 				});
 			}
-			console.log({ reactions: infoMessage.reactions })
 
 			sendDataToMultilSocketsOfListUser({ 
 				arrReceiver: infoMessage?.conversation?.members, 

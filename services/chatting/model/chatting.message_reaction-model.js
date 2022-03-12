@@ -59,9 +59,6 @@ class Model extends BaseModel {
 					})
 					.lean();
 
-				console.info('================================================')
-				console.log({ checkExists: infoReaction, typeReaction })
-
 				if(infoReaction){
 					await CHATTING__MESSAGE_COLL.findByIdAndUpdate(messageID, {
 						$pull: {
@@ -85,7 +82,6 @@ class Model extends BaseModel {
 					message: messageID,
 					author: userID
 				});
-				console.log({ infoReactionAfterInsert })
 
 				if(!infoReactionAfterInsert) {
 					return resolve({
