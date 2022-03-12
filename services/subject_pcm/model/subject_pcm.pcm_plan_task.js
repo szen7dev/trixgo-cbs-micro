@@ -293,75 +293,79 @@ class Model extends BaseModel {
 
                     let arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
                     // let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                    console.log('CREATE_NEW_TASK')
+                    console.log({ arrReceiver })
 
-                    // INSERT NOTIFICATION
-                    await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content: name,
-                        receivers: arrReceiver,
-                        project: project?.toString(),
-                        contract: contract?.toString(),
-                        path: webUrl,
-                        languageKey,
-                        app: APP_KEYS.PCM_PLAN_TASK,
-                        mainColl: {
-                            kind: "pcm_plan_task",
-                            item: taskID
-                        },
-                        subColl: {
-                            kind: "pcm_plan_task",
-                            item: infoAterInsert._id
-                        },
-                        type: 1 // InApp (Socket)
-                    })
-
-                    // CLOUD MSS
-                    if(parentID) {
-                        const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-                            userID: assigneeID,
-                            select: '_id'
-                        });
-
-                        if(!infoAssignee.error) {
-                            receivers = [infoAssignee?.data?._id];
-                        }
-
-                        const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
-
-                        dataSend = {
-                            ...dataSend,
+                    if(arrReceiver && arrReceiver.length) {
+                        // INSERT NOTIFICATION
+                        await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                            content: name,
+                            receivers: arrReceiver,
+                            project: project?.toString(),
+                            contract: contract?.toString(),
+                            path: webUrl,
                             languageKey,
+                            app: APP_KEYS.PCM_PLAN_TASK,
                             mainColl: {
-                                kind: 'pcm_plan_task',
-                                item: infoParent
+                                kind: "pcm_plan_task",
+                                item: taskID
                             },
                             subColl: {
-                                kind: 'pcm_plan_task',
-                                item: infoAterInsert
-                            }
-                        };
-                        titleMSS        = `CÔNG VIỆC: ${taskName}`;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
-                    } else {
-                        dataSend = {
-                            ...dataSend,
-                            languageKey,
-                            mainColl: {
-                                kind: 'pcm_plan_task',
-                                item: infoAterInsert
-                            }
-                        };
-                        titleMSS        = `THÔNG BÁO`;
-                        descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
-                    }
+                                kind: "pcm_plan_task",
+                                item: infoAterInsert._id
+                            },
+                            type: 1 // InApp (Socket)
+                        })
 
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-                        users: arrReceiver,
-                        title: titleMSS,
-                        description: descriptionMSS,
-                        dataSend,
-                        web_url: webUrl,
-                        env: ENV_DEVICE_WEB_CBS
-                    });
+                        // CLOUD MSS
+                        if(parentID) {
+                            const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+                                userID: assigneeID,
+                                select: '_id'
+                            });
+
+                            if(!infoAssignee.error) {
+                                receivers = [infoAssignee?.data?._id];
+                            }
+
+                            const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
+
+                            dataSend = {
+                                ...dataSend,
+                                languageKey,
+                                mainColl: {
+                                    kind: 'pcm_plan_task',
+                                    item: infoParent
+                                },
+                                subColl: {
+                                    kind: 'pcm_plan_task',
+                                    item: infoAterInsert
+                                }
+                            };
+                            titleMSS        = `CÔNG VIỆC: ${taskName}`;
+                            descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
+                        } else {
+                            dataSend = {
+                                ...dataSend,
+                                languageKey,
+                                mainColl: {
+                                    kind: 'pcm_plan_task',
+                                    item: infoAterInsert
+                                }
+                            };
+                            titleMSS        = `THÔNG BÁO`;
+                            descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
+                        }
+
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                            users: arrReceiver,
+                            title: titleMSS,
+                            description: descriptionMSS,
+                            dataSend,
+                            web_url: webUrl,
+                            env: ENV_DEVICE_WEB_CBS
+                        });
+                    }
                 }
 
                 const infoTask = await PCM_PLAN_TASK_COLL

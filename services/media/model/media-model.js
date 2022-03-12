@@ -304,13 +304,13 @@ class Model extends BaseModel {
                             companyID: company?.toString(),
                             isLoadAll: true
                         });
+						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
+							titleMSS = 'NỘI BỘ CÔNG TY';
+							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
-
-						titleMSS = 'NỘI BỘ CÔNG TY';
-						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         break;
                     }
                     case 2: {
@@ -318,6 +318,7 @@ class Model extends BaseModel {
                             departmentID,
                             select: "name members"
                         });
+						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.members;
@@ -331,6 +332,7 @@ class Model extends BaseModel {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                             isLoadAll: true
                         });
+						console.log({ listReceivers })
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
@@ -351,6 +353,8 @@ class Model extends BaseModel {
                 }
 
 				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				console.info('CREATE_NEW_MEDIA')
+				console.log({ arrReceiver })
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -362,7 +366,7 @@ class Model extends BaseModel {
 							languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
 							mainColl: {
 								kind: 'media',
-								item: { _id: mediaID }
+								item: infoMediaAfterInserted
 							}
 						},
 						web_url: `/media/post/${mediaID}`,

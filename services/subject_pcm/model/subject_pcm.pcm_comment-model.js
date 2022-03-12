@@ -164,6 +164,8 @@ class Model extends BaseModel {
 
                 let arrReceiver   = [...new Set([author.toString(), assignee.toString(), ...related])];
                 // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                console.log('CREATE_NEW_COMMENT_TASK')
+                console.log({ arrReceiver })
 
                 switch (infoAterInsert.type) {
                     case 1:
