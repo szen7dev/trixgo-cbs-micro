@@ -116,7 +116,7 @@ class Model extends BaseModel {
                     author  : authorID,
                     suid,
                     expiredTime: new Date(expiredTime),
-                    actualFinishTime: expiredTime,
+                    actualFinishTime: new Date(expiredTime),
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                     type,
                 }
@@ -251,6 +251,7 @@ class Model extends BaseModel {
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
                 console.log({ infoAterInsert, dataInsert })
+                console.log({ expiredTime })
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
