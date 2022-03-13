@@ -446,6 +446,7 @@ class Model extends BaseModel {
         })
     } 
 
+    // Chi tiết một tài khoản
     getInfo({ journalID }) {
         return new Promise(async resolve => {
             try {
@@ -498,7 +499,7 @@ class Model extends BaseModel {
 
                 //_________Get nestedArray of account
                 // let arrObjectID = await that.getListNestedItem({accountID});
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
                
                 arrObjectID = arrObjectID.data || []
                 //ACCOUNT_GET_LIST_NESTED
@@ -641,17 +642,14 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                // {
-                                //     $lookup: {
-                                //         from: 'financial_vouchers',
-                                //         localField: 'voucher',
-                                //         foreignField: '_id',
-                                //         as:         'voucher'
-                                //     }
-                                // },
-                                // {
-                                //     $unwind : "$voucher"
-                                // },
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
+                                        amount: 1,
+                                    }
+                                },
                                 {
                                     $match: {
                                         "forward": 0,
@@ -684,6 +682,14 @@ class Model extends BaseModel {
                                         },
                                     }
                                 }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
+                                        amount: 1,
+                                    }
+                                },
                                 {
                                     $group: {
                                         _id: { },
@@ -718,7 +724,184 @@ class Model extends BaseModel {
             }
         });
     } 
+
+        //_________CHI TIẾT TÀI KHOẢN CHỮ T (OK)
+    // Tính năng sử dụng: Sổ chi tiết tài khoản chữ T
+    // Author: HiepNH
+    getListBalanceOfCompanyGroupByAccount({ ctx, companyID, fundaID, accountID, fromDate, toDate }) {
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
+                 * 2. Số liệu trong kỳ không gồm các Phiếu kết chuyển+Phiếu hủy
+                 * 3. Tổng hợp các số liệu phát sinh Nợ/Có theo các tài khoản phát sinh trực tiếp
+                 * 4. Lấy danh mục tài khoản của toàn bộ công ty
+                 * 5. Lần lượt qua từng tài khoản, sử dụng đệ quy để đưa dữ liệu vào theo tất cả các tài khoản
+                 */
+
+                // Get nestedArray of account
+                // let arrObjectID = await that.getListNestedItem({accountID});           
+                const arrObjectID  =  await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  accountID, isNestedOfCompany: true });//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+                let conditionObj1;
+                let conditionObj2;
+                let conditionObjDate;
+                
+                if(!fundaID){
+                    conditionObj1 = {
+                        company: ObjectID(companyID),
+                        debit: {
+                            $in: arrObjectID.data
+                        },
+                        credit: { $exists: true, $ne: null }
+                    }
+                    conditionObj2 = {
+                        company: ObjectID(companyID),
+                        credit: {
+                            $in: arrObjectID.data
+                        },
+                        debit: { $exists: true, $ne: null }
+                    }
+                }else{
+                    conditionObj1 = {
+                        funda: ObjectID(fundaID),
+                        debit: {
+                            $in: arrObjectID.data
+                        },
+                        credit: { $exists: true, $ne: null }
+                    }
+                    conditionObj2 = {
+                        funda: ObjectID(fundaID),
+                        credit: {
+                            $in: arrObjectID.data
+                        },
+                        debit: { $exists: true, $ne: null }
+                    }
+                }
+
+                if(!toDate){
+                    conditionObjDate = {
+                        forward: 0,
+                        cancel: 0,
+                        date: { $lt: moment(fromDate).toDate() }
+                    }
+                }else{
+                    conditionObjDate = {
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        },
+                    }
+                }
+
+                const listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            //_________Số liệu phát sinh Nợ
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $match: conditionObjDate
+                                }, 
+                                {
+                                    $project : { 
+                                        credit: '$credit',
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { credit: '$credit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                    
+                            ],
+                            
+                            //_________Số liệu phát sinh Có
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $match: conditionObjDate
+                                }, 
+                                {
+                                    $project : { 
+                                        debit:'$debit',
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { debit: '$debit' },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                        }
+                    } 
+                ])
+                if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
+
+                //_________Khai báo mảng có Key là các accountID của công ty
+                // Giá trị là các cặp debit, credit của các tài khoản
+                let arrDebit = [], arrCredit = [];
+
+                //_________Danh sách tài khoản của công ty
+                // let listAccounts = await ACCOUNT_COLL.find({ company: companyID });
+                let listAccounts  =  await  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`,
+                { limit: '20', companyID, isAccountingService: true });
+                //_________Lặp qua từng tài khoản (gồm cả mẹ, con) và tổng hợp số liệu theo tài khoản đang xét
+                for(let item of listAccounts.data.listRecords){
+                    //_________Lấy mảng arrObjectID gồm ID tài khoản và con cháu của tài khoản
+                    let _arrObjectID  =  await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  accountID: `${item._id}`, isNestedOfCompany: true });//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+                    if(_arrObjectID.error){
+                        console.log(`ERROR [ACCOUNTING_JOUNRAL][getListBalanceOfCompanyGroupByAccount] tbook: ${error} `);
+                        return resolve({ error: true, message: _arrObjectID.message});
+                    }
+                    _arrObjectID = _arrObjectID.data.map(item => item.toString())
+                    
+                    //_________Tạo phần tử của arr có Key là account
+                    let key = item._id;
+                    if (!Array.isArray(arrDebit[key])) {
+                        arrDebit[key] = [{ total: 0 }];
+                    }
+                    if (!Array.isArray(arrCredit[key])) {
+                        arrCredit[key] = [{ total: 0 }];
+                    }
+
+                    //_________Xử lý dữ liệu bên Nợ
+                    listData[0]._debit.forEach(element=>{
+                        //_________Kiểm tra xem nếu accountID thuộc về _arrObjectID thì cộng vào
+                        if(_arrObjectID.includes(element._id.credit.toString())){
+                            arrDebit[key][0].total = Number(arrDebit[key][0].total) + Number(element.amountPrice);
+                        }
+                    });
+
+                    //_________Xử lý dữ liệu bên Có
+                    listData[0]._credit.forEach(element=>{
+                        //_________Kiểm tra xem nếu accountID thuộc về _arrObjectID thì cộng vào
+                        if(_arrObjectID.includes(element._id.debit.toString())){
+                            arrCredit[key][0].total = Number(arrCredit[key][0].total) + Number(element.amountPrice);
+                        }
+                    });
+                }
+
+                
+                return resolve({ error: false, data: { arrDebit, arrCredit} });
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOUNRAL][getListBalanceOfCompanyGroupByAccount] tbook: ${error} `);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    } 
   
+    // Danh sách chi tiết phiếu của một account
     getListJournalOfAccount({ ctx, accountID, fromDate, toDate,fundaID }){
         return new Promise(async resolve => {
             try {
@@ -727,7 +910,7 @@ class Model extends BaseModel {
                
                 const [ infoAccount, listNestedAccount ] = await Promise.all([
                     ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID}`,{ accountID }),
-                    ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }),
+                    ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }),
                 ]);
                 [infoAccount, listNestedAccount ].forEach(item=>{
                     if(item.error){
@@ -763,7 +946,7 @@ class Model extends BaseModel {
         });  
     }
 
-    //core Lấy danh sách chi tiết phiếu 
+    // [core] Lấy danh sách chi tiết phiếu 
     getList({ companyID, voucherID, contractID, isGetForAccountDetails, fromDate, toDate, fundaID,
         keyword, limit = 10, lastestID, select, populates= {}, arrAccountObjectID }){
         return new Promise(async resolve => {
@@ -1193,10 +1376,11 @@ class Model extends BaseModel {
         });
     } 
 
+    // Bảng báo cáo tài chính 
     financialReport({ ctx, companyID, fundaID, fromDate, toDate }){
         return new Promise(async resolve => {
             try {
-                let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: true, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+                let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: false, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
                 let listDataSAsyn        = this.getDataGroupByAccountAndContactS({ companyID, fundaID, fromDate });
 
                 //  * - LẤY DỮ LIỆU TRONG KỲ
@@ -1991,7 +2175,7 @@ class Model extends BaseModel {
             * - LẤY DỮ LIỆU CUỐI KỲ
             * => Hiển thị dữ liệu theo dạng Cộng nợ: Mỗi Customer và Account sẽ chỉ tồn tại số dư cuối kỳ hoặc Bên NỢ hoặc bên CÓ
             */
-            let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: true, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+            let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: false, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
             let listDataSAsyn        = this.getDataGroupByAccountAndContactS({ companyID, fundaID, fromDate });
 
             //  * - LẤY DỮ LIỆU TRONG KỲ
@@ -2603,7 +2787,7 @@ class Model extends BaseModel {
         });
     }
 
-        //_________DANH SÁCH KHÁCH HÀNG THỰC HIỆN GIAO DỊCH TRONG KỲ 
+    //_________DANH SÁCH KHÁCH HÀNG THỰC HIỆN GIAO DỊCH TRONG KỲ 
     // Tính năng sử dụng: Theo dõi công nợ
     // Author: HiepNH
     getListContactOfCompanyGroupByAccount({companyID, fundaID, contractID, accountID, toDate}) {
@@ -2616,7 +2800,7 @@ class Model extends BaseModel {
                  * 2. Do có 1 số khách hàng chỉ phát sinh tới cuối kỳ trước
                  */
                 //____________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
                 
                 let conditionObj;
 
@@ -2702,6 +2886,7 @@ class Model extends BaseModel {
             }
         });
     } 
+
     //_________CÔNG NỢ ĐẦU KỲ PHÂN LOẠI THEO KHÁCH HÀNG (OK)
     // Tính năng sử dụng: Theo dõi công nợ
     // Author: HiepNH
@@ -2710,15 +2895,13 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 //____________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
-                console.log({fundaID})
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
                 let conditionObj1;
                 let conditionObj2;
 
                 //____________Lấy năm của ngày đầu kỳ
                 let year = moment(fromDate).toDate().getFullYear() //!!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm)
                 let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
-                console.log({year,firstDayOfYear })
                 if(!fundaID){
                     if(!contractID){
                         conditionObj1 = {
@@ -2780,7 +2963,6 @@ class Model extends BaseModel {
                         }
                     }
                 }
-                console.log({conditionObj1})
                 let listDataS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $facet: {
@@ -2819,7 +3001,7 @@ class Model extends BaseModel {
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
-                                        customerDebit:1,
+                                        customerCredit:1,
                                         amount:1,
                                         forward:1,
                                         cancel:1
@@ -2884,7 +3066,7 @@ class Model extends BaseModel {
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
-                                        customerDebit:1,
+                                        customerCredit:1,
                                         amount:1,
                                         forward:1,
                                         cancel:1
@@ -2945,6 +3127,9 @@ class Model extends BaseModel {
                     }
                     arrCredit[key].push(element);
                 });
+                console.log(JSON.stringify(Object.assign({}, arrDebitS)));
+                console.log(JSON.stringify(Object.assign({}, arrCreditS)));
+
 
                 return resolve({ error: false, data: { arrDebitS, arrCreditS, arrDebit, arrCredit } });
             } catch (error) {
@@ -2961,7 +3146,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 //__________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID }); 
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
 
                 let conditionObj1;
                 let conditionObj2;
@@ -3027,6 +3212,7 @@ class Model extends BaseModel {
                         }
                     }
                 }
+                console.log({ conditionObj1, conditionObj2,arrObjectID: arrObjectID.data })
 
                 let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
@@ -3068,7 +3254,7 @@ class Model extends BaseModel {
                                 }, 
                                 {
                                     $project : { 
-                                        customerDebit:1,
+                                        customerCredit:1,
                                         amount:1,
                                         forward:1,
                                         cancel:1,
@@ -3096,8 +3282,7 @@ class Model extends BaseModel {
                     }
                 ]);
                 if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
-                // console.log(listData[0])
-
+                // conditionObj1, conditionObj2,
                 // Convert dữ liệu sang mảng có Key là các itemID để tiện cho việc hiển thị ra view
                 let arrDebit = [], arrCredit = [];
                 listData[0]._debit.forEach(element=>{
@@ -3105,10 +3290,7 @@ class Model extends BaseModel {
                     if (!Array.isArray(arrDebit[key])) {
                         arrDebit[key] = [];
                     }
-                    const newElement = {
-                        _id : { contact: element._id.contact }, amountPrice: element.amountPrice
-                    }
-                    arrDebit[key].push(newElement);
+                    arrDebit[key].push(element);
                 });
 
                 listData[0]._credit.forEach(element=>{
@@ -3116,19 +3298,17 @@ class Model extends BaseModel {
                     if (!Array.isArray(arrCredit[key])) {
                         arrCredit[key] = [];
                     }
-                    const newElement = {
-                        _id : { contact: element._id.contact }, amountPrice: element.amountPrice
-                    }
-                    arrCredit[key].push(newElement);
+                    arrCredit[key].push(element);
                 });
-
-                return resolve({ error: false, data: { arrDebit, arrCredit} });
+                //example : arrDebit['customer'][{},{},{}];
+                return resolve({ error: false, data: {  arrCredit, arrDebit }});
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         });
     }  
 
+    // Danh sách công nợ của tài khoản lấy theo khách hàng
     debtTrackingAccountWithCusomerDetails({  ctx, companyID, fundaID, contractID, accountID, fromDate, toDate  }){
         return new Promise(async(resolve)=>{
             try {
@@ -3136,12 +3316,66 @@ class Model extends BaseModel {
                 //_________Công nợ trong kỳ các khách hàng
                 let listJournals =  this.getListCombineGroupByAccountAndContact({ ctx, fundaID, accountID, fromDate, toDate });
                 let [ _listJournalsOpening, _listJournals] =  await Promise.all([listJournalsOpening, listJournals ]);
-                return resolve({ error: false, data:{  _listJournalsOpening, _listJournals } })     
+                return resolve({ 
+                    error: false,
+                    data:{ 
+                        projectID: undefined,
+                        infoContract: undefined,
+                        infoFunda, fromDate, toDate,
+                        // infoAccount: infoAccount.data,
+                        accountID,
+                        // listContacts: listContacts.data, [bổ xung]
+                        arrDebitOpeningS:  Object.assign({}, _listJournalsOpening.data.arrDebitS),
+                        arrCreditOpeningS: Object.assign({}, _listJournalsOpening.data.arrCreditS),
+                        arrDebitOpening: Object.assign({}, _listJournalsOpening.data.arrDebit),
+                        arrCreditOpening: Object.assign({}, _listJournalsOpening.data.arrCredit),
+                        arrDebit: Object.assign({}, _listJournals.data.arrDebit),
+                        arrCredit: Object.assign({}, _listJournals.data.arrCredit),
+                    } 
+                })     
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         });
     }
+
+    // Danh sách tài khoản chữ T
+    listTbookByAccount({ ctx, companyID, fundaID, contractID, accountID, fromDate, toDate }) {
+        return new Promise(async(resolve)=>{
+            try {
+                const _infoAccount  =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`, { accountID });
+                const listAccountsAsync  =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`, {  isNestedOfCompany: false, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+
+                // let infoAccount = await ACCOUNT_MODEL.getInfoAccount({ accountID });
+                let _listJournalsOpening =  this.getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate });
+                let _listDataAccountCharacterT =  this.getListBalanceOfCompanyGroupByAccount({ ctx, companyID, fundaID, accountID, fromDate, toDate });
+                const [  infoAccount, listAccounts, listJournalsOpening, listDataAccountCharacterT ] =  await Promise.all([
+                    _infoAccount,listAccountsAsync,  _listJournalsOpening, _listDataAccountCharacterT 
+                ]);
+                return resolve({ 
+                    error: false, 
+                    message:"successfully_get_list_data_account_T", 
+                    data:{ 
+                        VOUCHER_TYPES,
+                        projectID: undefined,
+                        // infoFunda, 
+                        fromDate, 
+                        toDate,
+                        infoAccount: infoAccount.data,
+                        listAccounts: listAccounts,
+                        accountID,
+                        openingBalance: listJournalsOpening.data,
+                        arrDebit: Object.assign({}, listDataAccountCharacterT.data.arrDebit), // listDataAccountCharacterT.data.arrDebit,
+                        arrCredit: Object.assign({}, listDataAccountCharacterT.data.arrCredit),
+                    } 
+                })     
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING_JOURNAL][listTbookByAccount]: ${error}`);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    }
+    
 
 }
 exports.MODEL = new Model;

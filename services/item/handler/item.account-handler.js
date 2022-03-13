@@ -106,10 +106,10 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 const { accountID,status, showInReportMonth, isNestedOfCompany } = ctx.params;
                 let resultAfterCallHandler;
-                if(isNestedOfCompany){
+                if(!isNestedOfCompany){
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListByCompany({ companyID: company._id, status, showInReportMonth });
                 }
-                if(!isNestedOfCompany){
+                if(isNestedOfCompany){
                     resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListNestedItem({ accountID });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

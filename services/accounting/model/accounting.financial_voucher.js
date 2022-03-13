@@ -1547,7 +1547,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     //     $gte: moment('2021-01-01').toDate(),
                     //     $lte: moment('2021-12-01').toDate()
                     // }, 
-                    company: company,
+                    // company: company,
                 })
                 .populate("journals");
                 async function updateJounal(id,  
@@ -1571,11 +1571,12 @@ class AccountingFinancialVoucher extends BaseModel {
                             return { 
                                 error: true,
                                 data: { 
-                                    id, forward,
-                                    cancel,
-                                    returning,
-                                    advancePayment,
-                                    forwardIs,
+                                    id,
+                                    forward:Number(forward),
+                                    cancel:Number(cancel),
+                                    returning:Number(returning),
+                                    advancePayment:Number(advancePayment),
+                                    forwardIs:Number(forwardIs),
                                     date 
                                 },
                             }
@@ -1614,7 +1615,7 @@ class AccountingFinancialVoucher extends BaseModel {
                                 },
                             }
                         }   
-                        console.log({voucherUpdateSccess: id});
+                        console.log({voucherUpdateSccess: id, updateVoucher});
                             
                         return { error: false, message: 'update voucher success', data:updateVoucher }; 
                     } catch (error) {

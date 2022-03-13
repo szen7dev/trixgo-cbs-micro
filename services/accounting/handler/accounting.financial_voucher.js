@@ -237,7 +237,6 @@ module.exports = {
         async handler(ctx) {
             try {
                 // const voucherID = '61e43deaac5b40893b163750';
-                console.log('here')
                 const { companyID, watchFileError } = ctx.params;
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.updateDB(companyID, watchFileError);
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
