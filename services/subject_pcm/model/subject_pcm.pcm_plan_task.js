@@ -250,7 +250,6 @@ class Model extends BaseModel {
 
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
-                console.log({ dataInsert })
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
@@ -259,8 +258,7 @@ class Model extends BaseModel {
                     // Việc con
                     if(type == 1){
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountSubtask: 1}})
-                    }else{
-                        // checklist
+                    }else{ // checklist
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChecklist: 1}})
                     }
                 }
@@ -292,10 +290,8 @@ class Model extends BaseModel {
                     let { name: taskName, author, assignee, related, project, contract } = infoTask;
                     related = related.map(userID => userID.toString());
 
-                    let arrReceiver = [...new Set([author.toString(), assignee.toString(), ...related])];
-                    // let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-                    console.log('CREATE_NEW_TASK')
-                    console.log({ arrReceiver })
+                    let listReceivers = [...new Set([author.toString(), assignee.toString(), ...related])];
+                    let arrReceiver = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                     if(arrReceiver && arrReceiver.length) {
                         // INSERT NOTIFICATION

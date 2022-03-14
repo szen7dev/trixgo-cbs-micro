@@ -163,10 +163,8 @@ class Model extends BaseModel {
                 let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
 
-                let arrReceiver   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
-                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-                console.log('CREATE_NEW_COMMENT_TASK')
-                console.log({ arrReceiver })
+                let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
+                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 switch (infoAterInsert.type) {
                     case 1:
@@ -189,15 +187,15 @@ class Model extends BaseModel {
                     mainColl: {
                         kind: 'pcm_plan_task',
                         item: {
-                            _id: infoTask?._id,
-                            name: infoTask?.name,
+                            _id: taskID,
+                            name: taskName,
                             project: {
-                                sign: infoTask?.project?.sign
+                                sign: project?.sign
                             },
                             author: {
-                                _id: infoTask?.author?._id,
-                                bizfullname: infoTask?.author?.bizfullname,
-                                image: infoTask?.author?.image
+                                _id: author?._id,
+                                bizfullname: author?.bizfullname,
+                                image: author?.image
                             }
                         }
                     },

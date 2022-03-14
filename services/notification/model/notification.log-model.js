@@ -400,7 +400,7 @@ class Model extends BaseModel {
                                 dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
                             }
                             console.info('MOBILE PUSH (CBS)')
-                            console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids, objDataForSend })
+                            console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids })
 
                             sendNotificationviaOneSignal(dataForMobilePushCBS)
 

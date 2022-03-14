@@ -213,7 +213,7 @@ exports.REACTION_SOCKET = {
 				}, event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 			});
 
-			// SEND CLOUD-MSG (không send được bằng broker)
+			// SEND CLOUD-MSG
 			// broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 			// 	users: arrReceiver,
 			// 	title: 'THÔNG BÁO TỪ SOCKET',

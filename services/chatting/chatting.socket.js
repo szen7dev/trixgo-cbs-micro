@@ -321,7 +321,7 @@ exports.CHATTING_SOCKET = {
         let io                          	= socket.$service.io;
         let { conversationID, memberID } 	= data; 
 
-        const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+        let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
 		if(!infoConversation){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -337,7 +337,7 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizfullname fullname image'
 		});
 
-		const { members, usersMute } = infoConversation;
+		const { name, members, usersMute } = infoConversation;
 		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
@@ -345,9 +345,28 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
+		infoConversation = await CHATTING__CONVERSATION_COLL.populate(infoConversation, {
+			path: 'members',
+			select: '_id bizfullname image',
+			options: {
+				limit: 5
+			}
+		})
+
+		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			users: arrReceiver,
+			title: name,
+			description: `${infoMember?.data?.bizfullname} vừa rời khỏi cuộc trò chuyện`,
+			dataSend: {
+				conversationID: infoConversation._id
+			},
+			web_url: `https://app.trixgo.com/messages#${infoMessage._id}`,
+			env: ENV_DEVICE_APP_TEASER
+		});
+
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
+			arrReceiver: members,
 			data: {
 				error: false,
 				data: {
@@ -606,8 +625,7 @@ exports.CHATTING_SOCKET = {
 						dataSend: {
 							conversationID: infoConversation._id
 						},
-						conversationID: infoConversation._id,
-						web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`,
+						web_url: `https://app.trixgo.com/messages#${infoMessage._id}`,
 						env: ENV_DEVICE_APP_TEASER
 					});
 				}

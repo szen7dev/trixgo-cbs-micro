@@ -1743,7 +1743,7 @@ class Model extends BaseModel {
 				if(!checkExistConversation) {
 					return resolve({ 
 						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+						message: "Bạn không phải thành viên của cuộc hội thoại hoặc cuộc hội thoại là riêng tư", 
 						keyError: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -1758,7 +1758,7 @@ class Model extends BaseModel {
 					conversationID,
 					senderID: userID,
 					type: 107,
-					usersAssigned: [userID],
+					usersAssigned: [userID]
 				})
 
 				const infoAfterUpdated = await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
