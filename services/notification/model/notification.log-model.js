@@ -393,7 +393,6 @@ class Model extends BaseModel {
                                 android_sound: 'teaser',
                                 ios_badgeType: 'Increase',
                                 ios_badgeCount: 1,
-                                included_segments: ["Active Users"],
                                 // include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
                             }
                             if(objDataForSend.amountNoti) {
