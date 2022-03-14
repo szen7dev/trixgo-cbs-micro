@@ -363,7 +363,7 @@ class Model extends BaseModel {
 							languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
 							mainColl: {
 								kind: 'media',
-								item: infoMediaAfterInserted
+								item: { _id: infoMediaAfterInserted._id }
 							}
 						},
 						web_url: `/media/post/${mediaID}`,

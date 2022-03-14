@@ -93,11 +93,21 @@ class Model extends BaseModel {
                     languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
                     mainColl: {
                         kind: 'media',
-                        item: infoMedia
+                        item: {
+                            _id: infoMedia?._id,
+                            title: infoMedia?.title,
+                            author: {
+                                _id: infoMedia?.author?._id,
+                                bizfullname: infoMedia?.author?.bizfullname,
+                                image: infoMedia?.author?.image
+                            }
+                        }
                     },
                     subColl: {
                         kind: 'media_comment',
-                        item: infoComment
+                        item: {
+                            _id: infoComment._id
+                        }
                     },
                 }
 

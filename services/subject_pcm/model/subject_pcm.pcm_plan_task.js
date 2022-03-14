@@ -329,19 +329,13 @@ class Model extends BaseModel {
                                 arrReceiver = [infoAssignee?.data?._id];
                             }
 
-                            const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
-
                             dataSend = {
                                 ...dataSend,
                                 languageKey,
                                 mainColl: {
                                     kind: 'pcm_plan_task',
-                                    item: infoParent
+                                    item: { _id: taskID }
                                 },
-                                subColl: {
-                                    kind: 'pcm_plan_task',
-                                    item: infoAterInsert
-                                }
                             };
                             titleMSS        = taskName;
                             descriptionMSS  = `${bizfullname} đã tạo 1 ${isChecklist ? 'checklist' : 'việc con'} cho bạn`;
@@ -351,7 +345,7 @@ class Model extends BaseModel {
                                 languageKey,
                                 mainColl: {
                                     kind: 'pcm_plan_task',
-                                    item: infoAterInsert
+                                    item: { _id: taskID }
                                 }
                             };
                             titleMSS        = `THÔNG BÁO`;
@@ -686,7 +680,7 @@ class Model extends BaseModel {
                         languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
                         mainColl: {
                             kind: 'pcm_plan_task',
-                            item: infoAterUpdate
+                            item: { _id: taskID }
                         }
                     };
 

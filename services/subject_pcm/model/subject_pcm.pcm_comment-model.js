@@ -106,6 +106,7 @@ class Model extends BaseModel {
                 let infoTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
                     .populate('project', '_id name sign')
+                    .populate('author', '_id bizfullname image')
                     .lean();
 
                 if(!infoTask) {
@@ -187,14 +188,32 @@ class Model extends BaseModel {
                     languageKey,
                     mainColl: {
                         kind: 'pcm_plan_task',
-                        item: infoTask
+                        item: {
+                            _id: infoTask?._id,
+                            name: infoTask?.name,
+                            project: {
+                                sign: infoTask?.project?.sign
+                            },
+                            author: {
+                                _id: infoTask?.author?._id,
+                                bizfullname: infoTask?.author?.bizfullname,
+                                image: infoTask?.author?.image
+                            }
+                        }
                     },
                     subColl: {
                         kind: 'pcm_comment',
-                        item: infoAterInsert
+                        item: {
+                            _id: infoAterInsert._id
+                        }
                     },
                 }
-                titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+
+                if(taskSign) {
+                    titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+                } else{
+                    titleMSS = `CÔNG VIỆC: ${taskName}`;
+                }
 
                 if(arrReceiver && arrReceiver.length) {
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 

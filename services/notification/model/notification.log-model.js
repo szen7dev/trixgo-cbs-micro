@@ -387,7 +387,7 @@ class Model extends BaseModel {
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
                                 ...dataForSend,
-                                // data: objDataForSend,
+                                data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
@@ -403,18 +403,6 @@ class Model extends BaseModel {
                             console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids })
 
                             sendNotificationviaOneSignal(dataForMobilePushCBS)
-
-                            // listDeviceFromMobileWith_CBS.map(item => {
-                            //     console.log({
-                            //         ...dataForMobilePushCBS,
-                            //         include_player_ids: [item.oneSignalID]
-                            //     })
-                            //     sendNotificationviaOneSignal({
-                            //         ...dataForMobilePushCBS,
-                            //         include_player_ids: [item.oneSignalID]
-                            //     })
-                            // })
-                            
 
                             //  =================== MOBILE PUSH (TEASER) ===================
                             let dataForMobilePushTeaser = {
@@ -433,6 +421,7 @@ class Model extends BaseModel {
                             }
                             console.info('MOBILE PUSH (TEASER)')
                             console.log({ include_player_ids: dataForMobilePushTeaser.include_player_ids })
+
                             sendNotificationviaOneSignal(dataForMobilePushTeaser)
 
                             // console.log("🚀 ~ file: notification.log-model.js ~ line 347 ~ Model ~ returnnewPromise ~ dataFoMobilebPush", dataForMobilePush)
