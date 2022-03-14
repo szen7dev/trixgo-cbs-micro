@@ -39,7 +39,7 @@ module.exports  = DATABASE_MIDDLEWARE("file", {
     path: { type: String, require: true },
     //____Kích thước file
     size: { type: Number },
-    //_____image/jpeg(Hệ thống cũ không có)
+    //_____image/jpeg
     mimeType: { type: String },
     /**
      * 1. Hình ảnh

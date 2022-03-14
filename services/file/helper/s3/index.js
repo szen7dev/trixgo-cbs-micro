@@ -52,7 +52,7 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
 function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
     return new Promise(async resolve => {
         try {
-            if(!fileName || !type)
+            if(!fileName)
                 return resolve({ error: true, message: "params_invalid" });
 
             let result = await render_link_upload_file_s3({ fileName, type, typeUpload, pathS3 });

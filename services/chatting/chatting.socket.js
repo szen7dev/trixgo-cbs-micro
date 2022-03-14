@@ -461,7 +461,7 @@ exports.CHATTING_SOCKET = {
 					condition: { _id: { $in: usersTag } },
 					select: '_id bizfullname fullname image'
 				});
-				usersTag = usersTag.data;
+				usersTag = usersTag?.data;
 			}
 
 			let infoMessage = null;
