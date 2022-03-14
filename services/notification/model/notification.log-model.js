@@ -389,11 +389,11 @@ class Model extends BaseModel {
                                 ...dataForSend,
                                 // data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
-                                included_segments: ["Subscribed Users"] // Active Users
-                                // ios_sound: 'teaser.wav',
-                                // android_sound: 'teaser',
-                                // ios_badgeType: 'Increase',
-                                // ios_badgeCount: 1,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
+                                ios_badgeType: 'Increase',
+                                ios_badgeCount: 1,
+                                included_segments: ["Active Users"],
                                 // include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
                             }
                             if(objDataForSend.amountNoti) {
