@@ -183,8 +183,8 @@ class Model extends BaseModel {
                 }
 
                 if(startTime){
-                    dataInsert.startTime = startTime;
-                    dataInsert.actualStartTime = startTime;
+                    dataInsert.startTime = new Date(startTime);
+                    dataInsert.actualStartTime = new Date(startTime);
                 } else {
                     dataInsert.startTime = Date.now();
                     dataInsert.actualStartTime = Date.now();
@@ -250,6 +250,7 @@ class Model extends BaseModel {
 
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAterInsert = await this.insertData(dataInsert);
+                console.log({ dataInsert })
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
