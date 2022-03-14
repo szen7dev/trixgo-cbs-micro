@@ -353,6 +353,7 @@ exports.CHATTING_SOCKET = {
 					limit: 5
 				}
 			})
+			console.log({ infoConversation, members, arrReceiver })
 
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 				users: arrReceiver,
