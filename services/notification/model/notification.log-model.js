@@ -370,7 +370,7 @@ class Model extends BaseModel {
                       
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
-                            headings: { "en": title },
+                            // headings: { "en": title },
                             contents: { "en": description },
                         }
 
@@ -389,10 +389,10 @@ class Model extends BaseModel {
                                 ...dataForSend,
                                 data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
-                                ios_sound: 'teaser.wav',
-                                android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
-                                ios_badgeCount: 1,
+                                // ios_sound: 'teaser.wav',
+                                // android_sound: 'teaser',
+                                // ios_badgeType: 'Increase',
+                                // ios_badgeCount: 1,
                                 // include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
                             }
                             if(objDataForSend.amountNoti) {
