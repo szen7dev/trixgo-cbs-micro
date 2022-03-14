@@ -9,6 +9,7 @@ const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -163,6 +164,8 @@ class Model extends BaseModel {
 
                 let arrReceiver   = [...new Set([author.toString(), assignee.toString(), ...related])];
                 // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                console.log('CREATE_NEW_COMMENT_TASK')
+                console.log({ arrReceiver })
 
                 switch (infoAterInsert.type) {
                     case 1:
@@ -193,7 +196,7 @@ class Model extends BaseModel {
                 }
                 titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
 
-                if(arrReceiver.length) {
+                if(arrReceiver && arrReceiver.length) {
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: arrReceiver,
                         title: titleMSS,
@@ -229,7 +232,7 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                infoAterInsert.receivers = receivers;
+                infoAterInsert.receivers = arrReceiver;
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {

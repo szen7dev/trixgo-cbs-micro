@@ -307,16 +307,15 @@ class Model extends BaseModel {
 
                         if(!listReceivers.error) {
                             arrReceiver = listReceivers.data?.map(user => user._id);
+							titleMSS = 'NỘI BỘ CÔNG TY';
+							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         }
-
-						titleMSS = 'NỘI BỘ CÔNG TY';
-						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
                         break;
                     }
                     case 2: {
                         const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                            departmentID,
-                            select: "name members"
+                            departmentID
+                            // select: "name members"
                         });
 
                         if(!listReceivers.error) {
@@ -350,7 +349,9 @@ class Model extends BaseModel {
                         break;
                 }
 
-				// arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+				// console.info('CREATE_NEW_MEDIA')
+				// console.log({ arrReceiver })
 
 				if(arrReceiver && arrReceiver.length) {
 					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
@@ -362,7 +363,7 @@ class Model extends BaseModel {
 							languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
 							mainColl: {
 								kind: 'media',
-								item: { _id: mediaID }
+								item: infoMediaAfterInserted
 							}
 						},
 						web_url: `/media/post/${mediaID}`,
