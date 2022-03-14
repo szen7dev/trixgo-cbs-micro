@@ -1076,7 +1076,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-
+                console.log({ conditionObj })
                 let conditionObjOrg = {...conditionObj};
 
                 // Phân trang kiểu mới
@@ -1331,9 +1331,8 @@ class Model extends BaseModel {
                  * Nội dung
                  */    
                 let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, 
-                    JSON.stringify({ arrayID: receivers, select: "_id email"})
+                    { arrayID: JSON.stringify(receivers), select: "_id email" }
                 );
-
                 listMembers = listMembers?.data?.listRecords || [];
                 
                 let arrayMailSend = '';
