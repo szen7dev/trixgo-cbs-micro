@@ -314,67 +314,72 @@ exports.CHATTING_SOCKET = {
 	 * Date: 15/08/2021
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_MEMBER_LEAVE_CONVERSATION]: async function(data, ack) { 
-        let socket                      	= this;
-		let broker                      	= socket.$service.broker;
-        let listUserActive              	= socket.$service.listUserConnected;
-        let userID                      	= socket.client.user;
-        let io                          	= socket.$service.io;
-        let { conversationID, memberID } 	= data; 
+        try {
+			let socket                      	= this;
+			let broker                      	= socket.$service.broker;
+			let listUserActive              	= socket.$service.listUserConnected;
+			let userID                      	= socket.client.user;
+			let io                          	= socket.$service.io;
+			let { conversationID, memberID } 	= data; 
 
-        let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+			let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
-		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_MEMBER_LEAVE_CONVERSATION], io
-			});
-		}
-
-		const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-			userID: memberID,
-			select: '_id bizfullname fullname image'
-		});
-
-		const { name, members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
-
-		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
-
-		infoConversation = await CHATTING__CONVERSATION_COLL.populate(infoConversation, {
-			path: 'members',
-			select: '_id bizfullname image',
-			options: {
-				limit: 5
+			if(!infoConversation){
+				return sendDataToMultilSocketsOfListUser({ 
+					listUserConnected: listUserActive, 
+					arrReceiver: [userID],
+					data: { error: true, message: "Can't get info conversation" }, 
+					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_MEMBER_LEAVE_CONVERSATION], io
+				});
 			}
-		})
 
-		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-			users: arrReceiver,
-			title: name,
-			description: `${infoMember?.data?.bizfullname} vừa rời khỏi cuộc trò chuyện`,
-			dataSend: {
-				conversationID: infoConversation._id
-			},
-			web_url: `https://app.trixgo.com/messages#${infoMessage._id}`,
-			env: ENV_DEVICE_APP_TEASER
-		});
+			const infoMember = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+				userID: memberID,
+				select: '_id bizfullname fullname image'
+			});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
-			arrReceiver: members,
-			data: {
-				error: false,
-				data: {
-					infoConversation,
-					infoMember: infoMember.data
+			const { name, members, usersMute } = infoConversation;
+			const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+
+			// Không gửi đến user tắt thông báo cuộc hội thoại
+			const arrReceiver = members.filter(memberID => {
+				return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+			});
+
+			infoConversation = await CHATTING__CONVERSATION_COLL.populate(infoConversation, {
+				path: 'members',
+				select: '_id bizfullname image',
+				options: {
+					limit: 5
 				}
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_MEMBER_LEAVE_CONVERSATION], io
-		});
+			})
+
+			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+				users: arrReceiver,
+				title: name,
+				description: `${infoMember?.data?.bizfullname} vừa rời khỏi cuộc trò chuyện`,
+				dataSend: {
+					conversationID: infoConversation._id
+				},
+				web_url: `https://app.trixgo.com/messages#${infoConversation._id}`,
+				env: ENV_DEVICE_APP_TEASER
+			});
+
+			sendDataToMultilSocketsOfListUser({ 
+				listUserConnected: listUserActive, 
+				arrReceiver: members,
+				data: {
+					error: false,
+					data: {
+						infoConversation,
+						infoMember: infoMember.data
+					}
+				}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_MEMBER_LEAVE_CONVERSATION], io
+			});
+		} catch (error) {
+			console.info('CHATTING_CSS_MEMBER_LEAVE_CONVERSATION');
+			console.error(error)
+		}
     },
 
 	/**
