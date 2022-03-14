@@ -238,7 +238,7 @@ exports.CHATTING_SOCKET = {
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver: infoConversation.members,
+			arrReceiver: [...infoConversation.members, memberID],
 			data: {
 				error: false,
 				data: {
