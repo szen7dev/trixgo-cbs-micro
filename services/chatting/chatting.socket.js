@@ -322,7 +322,17 @@ exports.CHATTING_SOCKET = {
 			let io                          	= socket.$service.io;
 			let { conversationID, memberID } 	= data; 
 
-			let infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+			const infoConversation = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.select('_id name members usersMute')
+				.populate({
+					path: 'members',
+					select: '_id bizfullname image',
+					options: {
+						limit: 5
+					}
+				})
+				.lean();
 
 			if(!infoConversation){
 				return sendDataToMultilSocketsOfListUser({ 
@@ -342,37 +352,40 @@ exports.CHATTING_SOCKET = {
 			const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
 			// Không gửi đến user tắt thông báo cuộc hội thoại
-			const arrReceiver = members.filter(memberID => {
+			const membersID = members.map(member => member._id);
+			const arrReceiver = membersID.filter(memberID => {
 				return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 			});
 
-			infoConversation = await CHATTING__CONVERSATION_COLL.populate(infoConversation, {
-				path: 'members',
-				select: '_id bizfullname image',
-				options: {
-					limit: 5
-				}
-			})
-			console.log({ infoConversation, members, arrReceiver })
+			console.log({ membersID, arrReceiver })
+
+			const infoConversationResponse = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.populate({
+					path: 'members',
+					select: '_id bizfullname image',
+					options: { limit: 5 }
+				})
+				.lean();
 
 			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
 				users: arrReceiver,
 				title: name,
 				description: `${infoMember?.data?.bizfullname} vừa rời khỏi cuộc trò chuyện`,
 				dataSend: {
-					conversationID: infoConversation._id
+					conversationID
 				},
-				web_url: `https://app.trixgo.com/messages#${infoConversation._id}`,
+				web_url: `https://app.trixgo.com/messages#${conversationID}`,
 				env: ENV_DEVICE_APP_TEASER
 			});
 
 			sendDataToMultilSocketsOfListUser({ 
 				listUserConnected: listUserActive, 
-				arrReceiver: members,
+				arrReceiver: membersID,
 				data: {
 					error: false,
 					data: {
-						infoConversation,
+						infoConversation: infoConversationResponse,
 						infoMember: infoMember.data
 					}
 				}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_MEMBER_LEAVE_CONVERSATION], io
