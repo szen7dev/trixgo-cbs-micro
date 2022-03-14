@@ -387,8 +387,9 @@ class Model extends BaseModel {
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
                                 ...dataForSend,
-                                data: objDataForSend,
+                                // data: objDataForSend,
                                 app_id: ONESIGNAL_APP_CBS,
+                                included_segments: ["Subscribed Users"]
                                 // ios_sound: 'teaser.wav',
                                 // android_sound: 'teaser',
                                 // ios_badgeType: 'Increase',
