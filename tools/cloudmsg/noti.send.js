@@ -15,7 +15,10 @@ exports.sendNotificationviaOneSignal = function(data) {
     
     let https = require('https');
     let req = https.request(options, function(res) {  
-        res.on('data', function(data) {});
+        res.on('data', function(data) {
+          console.log('SEND ONESIGNAL');
+          console.log(data);
+        });
     });
     
     req.on('error', function(e) {

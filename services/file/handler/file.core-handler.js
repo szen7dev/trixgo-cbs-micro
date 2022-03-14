@@ -145,7 +145,7 @@ module.exports = {
                         nameOrg: name,
                         name: newFileName,
                         path: `/${process.env.AWS_BUCKET_PATH}${pathS3}/${newFileName}`,
-                        mimeType: mimeType || 'application/x-rar',
+                        mimeType: mimeType,
                         type,
                         size,
                         userID
