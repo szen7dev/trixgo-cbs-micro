@@ -163,7 +163,7 @@ class Model extends BaseModel {
                 let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
 
-                let arrReceiver   = [...new Set([author.toString(), assignee.toString(), ...related])];
+                let arrReceiver   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
                 // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
                 console.log('CREATE_NEW_COMMENT_TASK')
                 console.log({ arrReceiver })
