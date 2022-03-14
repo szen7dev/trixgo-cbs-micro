@@ -1599,7 +1599,6 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
-
                 // Lấy user theo mảng id
                 if(arrayID && arrayID.length){
                     arrayID = JSON.parse(arrayID);

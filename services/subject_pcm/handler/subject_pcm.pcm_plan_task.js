@@ -203,7 +203,7 @@ module.exports = {
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
-
+                
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler;
