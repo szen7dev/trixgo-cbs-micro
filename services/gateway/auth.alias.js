@@ -238,6 +238,12 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_AUTH.REGISTER_TRIAL_STATISTICS_BY_COMPANY}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_COMPANY}`],
+
+		/**
+		 * Check version app
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.CHECK_LASTEST_APP}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CHECK_VERSION_APP}`],
 		
 		//--------------------------aliases's CHATTING service--------------------------//
 		[`POST ${CF_ROUTINGS_CHATTING.INSERT_CONVERSATION}`] :
