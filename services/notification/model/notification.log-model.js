@@ -370,7 +370,7 @@ class Model extends BaseModel {
                       
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
-                            // headings: { "en": title },
+                            headings: { "en": title },
                             contents: { "en": description },
                         }
 
@@ -393,7 +393,7 @@ class Model extends BaseModel {
                                 android_sound: 'teaser',
                                 ios_badgeType: 'Increase',
                                 ios_badgeCount: 1,
-                                // include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
+                                include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
                             }
                             if(objDataForSend.amountNoti) {
                                 dataForMobilePushCBS.ios_badgeType = 'SetTo';
@@ -402,18 +402,18 @@ class Model extends BaseModel {
                             console.info('MOBILE PUSH (CBS)')
                             console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids })
 
-                            // sendNotificationviaOneSignal(dataForMobilePushCBS)
+                            sendNotificationviaOneSignal(dataForMobilePushCBS)
 
-                            listDeviceFromMobileWith_CBS.map(item => {
-                                console.log({
-                                    ...dataForMobilePushCBS,
-                                    include_player_ids: [item.oneSignalID]
-                                })
-                                sendNotificationviaOneSignal({
-                                    ...dataForMobilePushCBS,
-                                    include_player_ids: [item.oneSignalID]
-                                })
-                            })
+                            // listDeviceFromMobileWith_CBS.map(item => {
+                            //     console.log({
+                            //         ...dataForMobilePushCBS,
+                            //         include_player_ids: [item.oneSignalID]
+                            //     })
+                            //     sendNotificationviaOneSignal({
+                            //         ...dataForMobilePushCBS,
+                            //         include_player_ids: [item.oneSignalID]
+                            //     })
+                            // })
                             
 
                             //  =================== MOBILE PUSH (TEASER) ===================
