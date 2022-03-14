@@ -573,37 +573,6 @@ module.exports = {
     },
 
 	/**
-	 * Dev: MinhVH
-	 * Func: Lấy danh sách member cuộc hội thoại
-	 * Date: 10/08/2021
-	 */
-	getListMembersConversationByID: {
-        params: {
-            conversationID  : { type: "string" },
-            lastestID       : { type: "string", optional: true },
-            type            : { type: "string", optional: true },
-            limit           : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
-            populates       : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { _id: authorID } = ctx.meta.infoUser;
-                let { conversationID, lastestID, type, limit, select, populates } = ctx.params;
-
-                let resultAfterCallHandler = await CHATTING__CONVERSATION_MODEL.getListMembersConversationByID({ 
-					conversationID, authorID, lastestID, type, limit, select, populates
-				});
-
-				return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-				return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-    
-	/**
 	 * Dev: VinhHV
 	 * Func: Lấy danh sách cuộc hội thoại (hoặc tìm kiếm theo tên)
 	 * Date: ...

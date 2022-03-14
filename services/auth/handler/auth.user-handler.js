@@ -480,20 +480,20 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID,
                     companyID, departmentID, positionID, level
                 } = ctx.params;
-				let { _id: currentUserID } = ctx.meta.infoUser;
+				let { _id: currentUserID, company } = ctx.meta.infoUser;
 
                 if(!userID) {
                     userID = currentUserID;
                 }
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
-                    userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature,
+                    userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx,
-                    companyID, departmentID, positionID, level
+                    companyID, departmentID, positionID, level, company, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
