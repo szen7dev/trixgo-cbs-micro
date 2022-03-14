@@ -85,7 +85,7 @@ module.exports = {
 
     generateLinkS3: {
         params: {
-            mimeType        : { type: "string" },
+            // mimeType        : { type: "string" },
             name            : { type: "string" },
             type            : { type: "number" },
             size            : { type: "number" },
