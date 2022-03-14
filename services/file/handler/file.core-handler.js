@@ -106,6 +106,7 @@ module.exports = {
                     appID, mimeType, type, name, size, typeUpload, 
                     companyID, projectID, groupID, packageID, conversationID
                 } = ctx.params;
+                console.log({ PARAMS: ctx.params })
                 let { _id: userID } = ctx.meta.infoUser;
 
                 if(userID === "5e60f595f63b8a4e196a1943"){

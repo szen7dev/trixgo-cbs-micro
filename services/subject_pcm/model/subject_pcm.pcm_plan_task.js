@@ -678,7 +678,7 @@ class Model extends BaseModel {
                     relatedTask = relatedTask.map(userID => userID.toString());
 
                     const listReceivers = [...new Set([author.toString(), assignee.toString(), ...relatedTask])];
-                    const receivers = listReceivers.filter(receiverID => receiverID !== userID.toString());
+                    const arrReceiver = listReceivers.filter(receiverID => receiverID !== userID.toString());
 
                     const dataSend = {
                         app: APP_KEYS.PCM_PLAN_TASK,
@@ -691,7 +691,7 @@ class Model extends BaseModel {
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,
-                        receivers,
+                        receivers: arrReceiver,
                         project: project?.toString(),
                         contract: contract?.toString(),
                         path: webUrl,
@@ -703,8 +703,6 @@ class Model extends BaseModel {
                         },
                         type: 1 // InApp (Socket)
                     })
-                    console.log('ADD_RELATION_USER');
-                    console.log({ related })
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
                         users: related,
