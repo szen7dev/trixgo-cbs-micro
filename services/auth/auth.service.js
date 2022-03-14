@@ -12,6 +12,7 @@ const AUTH__APP_ROLE_HANDLER 		= require('./handler/auth.app_role-handler');
 const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handler');
 const AUTH__APP_USER_HANDLER 		= require('./handler/auth.app_user-handler');
 const AUTH__APP_COMPANY_HANDLER 	= require('./handler/auth.app_company-handler');
+const AUTH__VERSION_APP_HANDLER 	= require('./handler/auth.version_app-handler');
 
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
@@ -146,6 +147,10 @@ module.exports = {
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_TYPE]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByType,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_YEAR]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByYear,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_COMPANY]		: AUTH__REGISTER_TRIAL_HANDLER.statisticsByCompany,
+	
+		// Version app
+		[CF_ACTIONS_AUTH.CHECK_VERSION_APP]						    : AUTH__VERSION_APP_HANDLER.checkVersionApp,
+
 	},
 	
 	/**

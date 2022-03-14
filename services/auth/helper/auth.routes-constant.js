@@ -72,5 +72,10 @@ const CF_ROUTINGS_AUTH = {
     REGISTER_TRIAL_STATISTICS_BY_TYPE : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-type`,
     REGISTER_TRIAL_STATISTICS_BY_YEAR : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-year`,
     REGISTER_TRIAL_STATISTICS_BY_COMPANY : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-company`,
+
+    /**
+     * VERSION APP
+     */
+    CHECK_LASTEST_APP : `/check-lastest-app`,
 }
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;
