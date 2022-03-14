@@ -208,7 +208,7 @@ exports.CHATTING_SOCKET = {
         let userID                      	= socket.client.user;
 		let { conversationID, memberID } 	= data;
 
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
 
 		if(!infoConversation){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -228,17 +228,17 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizfullname fullname image'
 		});
 
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
+		// const { members, usersMute } = infoConversation;
+		// const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
 
 		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
+		// const arrReceiver = members.filter(memberID => {
+		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+		// });
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
+			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
 				data: {
@@ -356,8 +356,6 @@ exports.CHATTING_SOCKET = {
 			const arrReceiver = membersID.filter(memberID => {
 				return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 			});
-
-			console.log({ membersID, arrReceiver })
 
 			const infoConversationResponse = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
