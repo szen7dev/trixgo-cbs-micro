@@ -35,6 +35,13 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
             ACL: "public-read",
             ContentType: type || 'application/x-rar',
         });
+        console.log({
+            Bucket: bucket,
+            Key: fileName,
+            Expires: config.signedUrlExpireSeconds,
+            ACL: "public-read",
+            ContentType: type || 'application/x-rar',
+        })
 
         return signedUrl;
     } catch (error) {
