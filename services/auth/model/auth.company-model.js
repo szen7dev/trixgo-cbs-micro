@@ -25,7 +25,7 @@ class Model extends BaseModel {
         super(require('../database/auth.company-coll'));
     }
     
-    insert({ name, sign, taxid, address, area, userID }) {
+    insert({ name, sign, taxid, address, area, phone, email, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let info = await AUTH__COMPANY_COLL.findOne({
@@ -34,11 +34,12 @@ class Model extends BaseModel {
                         { sign: sign },
                     ]
                 }).select('_id name sign')
+
                 if(info)
                     return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` }); 
 
                 let dataInsert = {
-                    name, sign, taxid, address, area, userCreate: userID, userUpdate: userID, 
+                    name, sign, taxid, address, area, phone, email, userCreate: userID, userUpdate: userID, 
                 }
 
                 let infoCompanyAfterSave = await this.insertData(dataInsert);
@@ -52,7 +53,7 @@ class Model extends BaseModel {
         })
     }
 
-    update({ companyID, name, sign, taxid, address, area, userID }) {
+    update({ companyID, name, sign, taxid, address, area, phone, email, userID }) {
         return new Promise(async (resolve) => {
             try {
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
@@ -71,7 +72,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "company_existed" })
 
                 let dataUpdate = {
-                    name, sign, taxid,  address, userUpdate: userID, modifyAt: new Date()
+                    name, sign, taxid,  address, phone, email, userUpdate: userID, modifyAt: new Date()
                 }
                 if(area && _isValid(area)){
                     dataUpdate.area = area;

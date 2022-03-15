@@ -1128,6 +1128,7 @@ class Model extends BaseModel {
                         status: 422
                     })
                 }
+                delete infoUserAfterInsert.password;
 
                 // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
                 // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
@@ -1163,14 +1164,19 @@ class Model extends BaseModel {
         sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, company, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                if(!ObjectID.isValid(userID))
+                if(!ObjectID.isValid(userID)) {
                     return resolve({ error: true, message: "UserID không hợp lệ", keyError: "param_not_valid" });
+                }
+
+                let infoUser = await AUTH__USER_COLL.findById(userID);
+                if(!infoUser) {
+                    return resolve({ error: true, message: "Người dùng không tồn tại", keyError: "user_not_exists" });
+                }
 
                 let dataUpdate = { userUpdate: userID };
                 // Cập nhật mật khẩu
                 if(currentPass && newPass){
-                    let { password } = await AUTH__USER_COLL.findById(userID);
-                    let checkCurrentPass = await compare( currentPass, password);
+                    let checkCurrentPass = await compare(currentPass, infoUser.password);
                     if(!checkCurrentPass)
                         return resolve({ error: true, message: "Mật khẩu cũ không đúng", keyError: "current_password_faild" });
 
@@ -1179,7 +1185,7 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật thông tin tài khoản
-                if(email){
+                if(email && email !== infoUser.email){
                     dataUpdate.email = email;
                 }
 
@@ -1212,7 +1218,7 @@ class Model extends BaseModel {
                     dataUpdate.signature = signature;
                 }
 
-                if(level){
+                if([0,1].includes(level)){
                     dataUpdate.level = level;
                 }
 
@@ -1310,6 +1316,7 @@ class Model extends BaseModel {
                     });
                 }
 
+                delete infoUserAfterUpdate.password;
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
             } catch (error) { 
@@ -1684,7 +1691,7 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
-                    // .populate(populates)
+                    .populate(populates)
                     .lean(); 
 
                 if(!infoDataAfterGet)
