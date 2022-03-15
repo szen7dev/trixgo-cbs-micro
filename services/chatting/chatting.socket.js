@@ -110,7 +110,10 @@ exports.CHATTING_SOCKET = {
         let userID                 	= socket.client.user;
         let { conversationID } 		= data;
 
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.select('members')
+			.lean();
 
 		if(!infoConversation){
 			return sendDataToMultilSocketsOfListUser({ 
@@ -121,18 +124,15 @@ exports.CHATTING_SOCKET = {
 			});
 		}
 
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
-
-		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
+		const infoConversationResponse = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.populate('members', '_id bizfullname image')
+			.lean();
 
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
-			data: { error: false, data: infoConversation },
+			arrReceiver: infoConversation.members,
+			data: { error: false, data: infoConversationResponse },
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_INFO_CONVERSATION], io
 		});
 
