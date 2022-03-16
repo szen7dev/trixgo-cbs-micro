@@ -1077,7 +1077,6 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                console.log({ conditionObj })
                 let conditionObjOrg = {...conditionObj};
 
                 // Phân trang kiểu mới

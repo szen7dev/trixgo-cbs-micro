@@ -402,7 +402,12 @@ for(let user of listUser){
 }
 
 
-<!-- CONVERT MESSAGE CONVERSATION --> (MINH)
+/**
+* ============================ ********************************* ==============================
+* ============================ 	 CONVERT MESSAGE CONVERSATION  	 ==============================
+* ============================ ********************************* ==============================
+*/
+
 let listMessages = db.message_messages.find({}).toArray();
 
 for(const infoMessage of listMessages){
@@ -471,7 +476,11 @@ for(const infoMessage of listMessages){
 }
 
 
-<!-- CONVERT CONVERSATION --> (MINH)
+/**
+* ============================ **************************==============================
+* ============================ 	 CONVERT CONVERSATION  	 ==============================
+* ============================ **************************==============================
+*/
 
 let listConversations  = db.message_conversations.find({}).toArray();
 
@@ -539,3 +548,50 @@ listConversations.forEach(conversation => {
         }
     }, { returnNewDocument: true })
 })
+
+
+
+/**
+* ============================ *************************************** ===============================
+* ============================ 	 CONVERT MEMBERS OF CONVERSATION  	   ===============================
+* ============================ *************************************** ===============================
+*/
+
+
+const conversations = db.message_conversations.find({}).toArray()
+
+for(let conversation of conversations) {
+    let { _id: conversationID, members, authors, author } = conversation;
+    
+    if(authors && authors.length) {
+        members = [...members, ...authors]
+    }
+    
+    if(!author) {
+        author = authors[0];
+    }
+
+    members[members.length] = author;
+    
+    if(members && members.length) {
+        for(let memberID of members) {
+            const infoUser = db.users.findOne({ _id: memberID })
+            const infoMember = db.message_conversation_members.findOne({
+                member: memberID,
+                conversation: conversationID
+            })
+            
+            if(infoUser && !infoMember) {
+                db.message_conversation_members.insertOne({
+                    name: infoUser.bizfullname || infoUser.fullname,
+                    member: memberID,
+                    conversation: conversationID,
+                	addedBy: author,
+                	type: author.toString() == memberID.toString() ? 'owner' : 'member',
+                	timeLastSeen: Date.now(),
+                	createAt: new Date()
+                })
+            }
+        }
+    }
+}
