@@ -50,20 +50,20 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				if(!checkObjectIDs([authorID, ...membersID]) || !membersID || !membersID.length) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số authorID or membersID không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số authorID or membersID không hợp lệ',
 						keyError: 'params_authorID_or_membersID_invalid',
-						status: 400 
+						status: 400
 					});
 				}
 
 				// Tạo cuộc hội thoại 2 người
 				if(isPrivate){
 					if(membersID.length > 1) {
-						return resolve({ 
-							error: true, 
-							message: 'Cuộc hội thoại riêng tư không được lớn hơn 1 thành viên', 
+						return resolve({
+							error: true,
+							message: 'Cuộc hội thoại riêng tư không được lớn hơn 1 thành viên',
 							keyError: 'number_of_members_must_equal_1',
 							status: 400
 						});
@@ -94,9 +94,9 @@ class Model extends BaseModel {
 					});
 
 					if(infoMember.error) {
-						return resolve({ 
-							error: true, 
-							message: 'Không tìm thấy thành viên', 
+						return resolve({
+							error: true,
+							message: 'Không tìm thấy thành viên',
 							keyError: 'cannot_get_info_member',
 							status: 400
 						});
@@ -106,18 +106,18 @@ class Model extends BaseModel {
 
 				} else{ // Tạo cuộc hội thoại nhiều hơn hai người ( Nhóm chat )
 					if(membersID.length <= 1) {
-						return resolve({ 
-							error: true, 
-							message: 'Số lượngg thành viên của nhóm chat phải lớn hơn 1', 
+						return resolve({
+							error: true,
+							message: 'Số lượngg thành viên của nhóm chat phải lớn hơn 1',
 							keyError: 'number_of_members_must_greater_than_1',
 							status: 400
 						});
 					}
 
 					if(membersID.length >= 1000) {
-						return resolve({ 
-							error: true, 
-							message: 'Số lượng thành viên không được lớn hơn 1000', 
+						return resolve({
+							error: true,
+							message: 'Số lượng thành viên không được lớn hơn 1000',
 							keyError: 'number_of_members_over_1000',
 							status: 400
 						});
@@ -135,9 +135,9 @@ class Model extends BaseModel {
 				});
 
                 if(!infoConversationAfterInserted) {
-					return resolve({ 
-						error: true, 
-						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+					return resolve({
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
 						keyError: 'error_occurs',
 						status: 422
 					});
@@ -180,9 +180,9 @@ class Model extends BaseModel {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số conversation ID không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số conversation ID không hợp lệ",
 						keyError: 'params_conversationID_or_userID_invalid',
 						status: 403
 					});
@@ -194,9 +194,9 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên cuộc hội thoại",
 						keyError: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -207,9 +207,9 @@ class Model extends BaseModel {
 					const listAuthorsID = checkExistConversation.authors.map(author => author.toString());
 					// User is not author of conversation
 					if(!listAuthorsID.includes(userID)) {
-						return resolve({ 
-							error: true, 
-							message: "Bạn không có quyền chỉnh sửa cuộc hội thoại", 
+						return resolve({
+							error: true,
+							message: "Bạn không có quyền chỉnh sửa cuộc hội thoại",
 							keyError: 'you_do_not_permission_to_edit_conversation',
 							status: 403
 						});
@@ -231,9 +231,9 @@ class Model extends BaseModel {
 				}, { new: true });
 
 				if(!infoAfterUpdate) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyError: 'error_occurs',
 						status: 422
 					});
@@ -263,12 +263,12 @@ class Model extends BaseModel {
 					})
 				}
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					data: {
 						infoConversation: infoAfterUpdate,
 						infoMessage: infoMessageNotification
-					}, 
+					},
 					status: 200
 				});
 			} catch (error) {
@@ -347,9 +347,9 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([...membersID, conversationID, authorID]) || !Array.isArray(membersID) || !membersID.length) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số không hợp lệ',
 						keyError: 'params_invalid',
 						status: 400
 					});
@@ -362,9 +362,9 @@ class Model extends BaseModel {
 				}).populate('members');
 
                 if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải admin cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải admin cuộc hội thoại",
 						keyError: 'you_are_not_author',
 						status: 403
 					});
@@ -445,12 +445,12 @@ class Model extends BaseModel {
 						}
 					});
 
-                return resolve({ 
-					error: false, 
+                return resolve({
+					error: false,
 					data: {
 						infoConversation: infoConversationAfterUpdated,
 						infoMessage: infoMessageNotification
-					}, 
+					},
 					status: 200
 				});
             } catch (error) {
@@ -468,18 +468,18 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([conversationID, authorID, memberID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số conversationID hoặc memberID không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số conversationID hoặc memberID không hợp lệ',
 						keyError: 'params_conversationID_or_memberID_invalid',
 						status: 400
 					});
 				}
 
 				if(memberID === authorID) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không thể xóa bạn khỏi cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không thể xóa bạn khỏi cuộc hội thoại",
 						keyError: 'you_cannot_remove_you_from_conversation',
 						status: 400
 					});
@@ -493,9 +493,9 @@ class Model extends BaseModel {
 				});
 
                 if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại này (chỉ áp dụng trong nhóm chat)", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại này (chỉ áp dụng trong nhóm chat)",
 						keyError: 'you_cannot_member_of_conversation',
 						status: 403
 					});
@@ -510,9 +510,9 @@ class Model extends BaseModel {
 						pullMemberObj.authors = [memberID];
 						pullMemberObj.members = [memberID];
 					} else{
-						return resolve({ 
-							error: true, 
-							message: "Bạn không có quyền xóa admin", 
+						return resolve({
+							error: true,
+							message: "Bạn không có quyền xóa admin",
 							keyError: 'you_do_not_permission_remove_admin',
 							status: 403
 						});
@@ -531,9 +531,9 @@ class Model extends BaseModel {
                 }, { new: true });
 
                 if(!infoConversationAfterUpdated) {
-					return resolve({ 
-						error: true, 
-						message: "Không thể xóa thành viên khỏi cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Không thể xóa thành viên khỏi cuộc hội thoại",
 						keyError: 'remove_member_of_conversation_failed',
 						status: 422
 					});
@@ -549,18 +549,18 @@ class Model extends BaseModel {
 				})
 
 				// DELETE MEMBER IN CONVERSATION
-				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({ 
-					member: memberID, 
+				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({
+					member: memberID,
 					conversation: conversationID,
 					type: { $ne: 'owner' }
 				});
 
-                return resolve({ 
-					error: false, 
+                return resolve({
+					error: false,
 					data: {
 						infoConversation: infoConversationAfterUpdated,
 						infoMessage: infoMessageNotification
-					}, 
+					},
 					status: 200
 				});
             } catch (error) {
@@ -579,7 +579,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([conversationID, authorID, memberID])) {
-					return resolve({ 
+					return resolve({
 						error: true,
 						message: 'Tham số không hợp lệ',
 						keyError: 'params_conversationID_or_authorID_or_memberID_invalid',
@@ -594,9 +594,9 @@ class Model extends BaseModel {
 				});
 
                 if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: 'Bạn không có quyền set admin cho cuộc hội thoại', 
+					return resolve({
+						error: true,
+						message: 'Bạn không có quyền set admin cho cuộc hội thoại',
 						keyError: 'you_are_not_author_conversation',
 						status: 403
 					});
@@ -609,9 +609,9 @@ class Model extends BaseModel {
 				// Cập nhật member thành admin
 				if(isSetAdmin){
 					if(checkExistConversation.authors.includes(memberID)) {
-						return resolve({ 
-							error: true, 
-							message: 'Thành viên đã được set admin', 
+						return resolve({
+							error: true,
+							message: 'Thành viên đã được set admin',
 							keyError: 'member_is_already_an_author',
 							status: 400
 						});
@@ -628,9 +628,9 @@ class Model extends BaseModel {
 
 				} else{ // Cập nhật admin thành member
 					if(checkExistConversation.author.toString() === memberID.toString()) {
-						return resolve({ 
-							error: true, 
-							message: 'Không thể xóa người tạo cuộc hội thoại', 
+						return resolve({
+							error: true,
+							message: 'Không thể xóa người tạo cuộc hội thoại',
 							keyError: 'cannot_remove_author_root',
 							status: 403
 						});
@@ -647,9 +647,9 @@ class Model extends BaseModel {
 				}
 
                 if(!infoConversationAfterUpdated) {
-					return resolve({ 
-						error: true, 
-						message: 'Không thể cập nhật admin cho cuộc hội thoại', 
+					return resolve({
+						error: true,
+						message: 'Không thể cập nhật admin cho cuộc hội thoại',
 						keyError: 'cannot_update_admin_for_conversation',
 						status: 422
 					});
@@ -670,12 +670,12 @@ class Model extends BaseModel {
 					$set: { type: typeMember }
 				})
 
-                return resolve({ 
-					error: false, 
+                return resolve({
+					error: false,
 					data: {
 						infoConversation: infoConversationAfterUpdated,
 						infoMessage: infoMessageNotification
-					}, 
+					},
 					status: 200
 				});
             } catch (error) {
@@ -1030,9 +1030,10 @@ class Model extends BaseModel {
 					.populate('receivers', select.receivers)
 					.populate({
 						path: 'reactions',
-						select: '_id type',
+						select: '_id type author',
+						options: { limit: 3 },
 						populate: {
-							path: 'userCreate',
+							path: 'author',
 							select: '_id bizfullname fullname image'
 						}
 					})
@@ -1730,9 +1731,9 @@ class Model extends BaseModel {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số không hợp lệ",
 						keyError: 'params_conversationID_or_userID_invalid',
 						status: 400
 					});
@@ -1746,9 +1747,9 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại hoặc cuộc hội thoại là riêng tư", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại hoặc cuộc hội thoại là riêng tư",
 						keyError: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -1771,26 +1772,26 @@ class Model extends BaseModel {
 				}, { new: true })
 
 				if(!infoAfterUpdated) {
-					return resolve({ 
-						error: true, 
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục", 
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
 						keyError: 'error_occurred',
 						status: 422
 					});
 				}
 
-				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({ 
-					member: userID, 
-					conversation: conversationID 
+				await CHATTING__CONVERSATION_MEMBER_COLL.findOneAndDelete({
+					member: userID,
+					conversation: conversationID
 				});
 
-				return resolve({ 
-					error: false, 
+				return resolve({
+					error: false,
 					data: {
 						infoConversation: infoAfterUpdated,
 						infoMessage: infoMessageNotification
-					}, 
-					status: 200 
+					},
+					status: 200
 				})
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
@@ -1831,9 +1832,9 @@ class Model extends BaseModel {
 					})
 				}
 
-				await CHATTING__CONVERSATION_MEMBER_COLL.deleteMany({ 
-					member: { $in: checkExistConversation.members }, 
-					conversation: conversationID 
+				await CHATTING__CONVERSATION_MEMBER_COLL.deleteMany({
+					member: { $in: checkExistConversation.members },
+					conversation: conversationID
 				});
 
 				return resolve({
@@ -1856,9 +1857,9 @@ class Model extends BaseModel {
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([conversationID, userID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số không hợp lệ",
 						keyEror: 'params_conversationID_or_userID_invalid',
 						status: 400
 					});
@@ -1871,9 +1872,9 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -1907,9 +1908,9 @@ class Model extends BaseModel {
 				}, { new: true });
 
 				if(!infoAfterDelete) {
-					return resolve({ 
-						error: true, 
-						message: "Đã xảy ra lỗi", 
+					return resolve({
+						error: true,
+						message: "Đã xảy ra lỗi",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -1931,11 +1932,11 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs(userID)) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số userID không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số userID không hợp lệ',
 						keyError: 'params_userID_invalid',
-						status: 400 
+						status: 400
 					});
 				}
 
@@ -1947,11 +1948,11 @@ class Model extends BaseModel {
 
 				if(filter && typeof filter === 'string'){
 					if(!IsJsonString(filter)) {
-						return resolve({ 
-							error: true, 
-							message: 'Tham số filter không hợp lệ', 
+						return resolve({
+							error: true,
+							message: 'Tham số filter không hợp lệ',
 							keyError: 'params_filter_invalid',
-							status: 400 
+							status: 400
 						});
 					}
 
@@ -1960,11 +1961,11 @@ class Model extends BaseModel {
 
 				if(select && typeof select === 'string'){
 					if(!IsJsonString(select)) {
-						return resolve({ 
-							error: true, 
-							message: 'Tham số select không hợp lệ', 
+						return resolve({
+							error: true,
+							message: 'Tham số select không hợp lệ',
 							keyError: 'params_select_invalid',
-							status: 400 
+							status: 400
 						});
 					}
 
@@ -1972,7 +1973,7 @@ class Model extends BaseModel {
 				}
 
 				let listConversationFiltered = [];
-				let conditionObj 	= { 
+				let conditionObj 	= {
 					members: { $in: [userID] },
 					usersHide: { $nin: [userID] }
 				};
@@ -1986,8 +1987,8 @@ class Model extends BaseModel {
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoConversation = await CHATTING__CONVERSATION_COLL.findById(lastestID);
                     if(!infoConversation) {
-						return resolve({ 
-							error: true, 
+						return resolve({
+							error: true,
 							message: "Không thể lấy thông tin cuộc hội thoại theo lastestID",
 							keyError: 'cannot_get_info_by_lastestID',
 							status: 403
@@ -1999,9 +2000,9 @@ class Model extends BaseModel {
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
                     if(!dataPagingAndSort || dataPagingAndSort.error) {
-						return resolve({ 
-							error: true, 
-							message: "Không thể lấy phạm vi phân trang", 
+						return resolve({
+							error: true,
+							message: "Không thể lấy phạm vi phân trang",
 							keyError: 'cannot_get_range_pagination',
 							status: 403
 						});
@@ -2017,17 +2018,17 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(key, 'i');
                 }
 
-				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, { 
+				let listConversationPin = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_PIN_CONVERSATION}`, {
 					userID
 				});
 
 				if(listConversationPin.data && listConversationPin.data.length){
 					let listConversationIDPined = listConversationPin.data;
 
-					// Nếu là trang đầu thì lấy danh sách conversation đã pin 
+					// Nếu là trang đầu thì lấy danh sách conversation đã pin
 					if(!lastestID) {
 						listConversationPin = await CHATTING__CONVERSATION_COLL
-							.find({ 
+							.find({
 								_id: { $in: listConversationPin.data },
 								...conditionObj
 							}, filter)
@@ -2114,7 +2115,7 @@ class Model extends BaseModel {
 				}).select('usersMissMessage').lean();
 
 				listAllConversation.map(conversation => {
-					const user = conversation?.usersMissMessage?.find(user => 
+					const user = conversation?.usersMissMessage?.find(user =>
 						user.userID.toString() === userID.toString());
 
 					user && (amountMissMessage += user.amount);

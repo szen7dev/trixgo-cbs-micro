@@ -659,7 +659,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(related.length) {
+                if(related && related.length) {
                     /**
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
