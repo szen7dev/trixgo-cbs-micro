@@ -507,7 +507,7 @@ class Model extends BaseModel {
 										conversation: conversationID,
 										files: {
 											$elemMatch: {
-												file: { $in: filesID }
+												_id: { $in: filesID }
 											}
 										}
 									}, {
@@ -646,7 +646,7 @@ class Model extends BaseModel {
 							case 1: // Recall message images
 							case 2: // Recall message files
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(message._id, {
-									$pull: {
+									$pullAll: {
 										files: {
 											_id: { $in: filesID }
 										}
