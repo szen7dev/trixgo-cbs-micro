@@ -284,17 +284,9 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizfullname fullname image'
 		});
 
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
-
-		// Không gửi đến user tắt thông báo cuộc hội thoại
-		const arrReceiver = members.filter(memberID => {
-			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		});
-
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
+			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
 				data: {
