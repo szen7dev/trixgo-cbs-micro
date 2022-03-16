@@ -1019,7 +1019,7 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    conditionObj.content = new RegExp(keyword, 'i');
                 }
 
 				let listMessages = await CHATTING__MESSAGE_COLL
