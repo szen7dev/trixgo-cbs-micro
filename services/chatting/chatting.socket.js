@@ -264,7 +264,10 @@ exports.CHATTING_SOCKET = {
 		let io                             	= socket.$service.io;
 		let { conversationID, memberID, isSetAdmin } = data;
 
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+		const infoConversation = await CHATTING__CONVERSATION_COLL
+			.findById(conversationID)
+			.populate('members', '_id bizfullname image')
+			.lean();
 
 		if(!infoConversation){
 			return sendDataToMultilSocketsOfListUser({ 

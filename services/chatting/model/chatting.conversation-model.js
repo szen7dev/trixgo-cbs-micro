@@ -979,7 +979,6 @@ class Model extends BaseModel {
 				// Init condition object
 				let conditionObj 	= { conversation: conversationID };
 				let conditionFind 	= {};
-				let objSort 	 	= {};
 				let sortBy = {
 					createAt: -1,
 					modifyAt: -1
@@ -1011,14 +1010,20 @@ class Model extends BaseModel {
 				}
 
 				// SEARCH TEXT
+				// if(keyword){
+				// 	conditionObj.$text = { $search: keyword };
+				// 	objSort.score = { $meta: "textScore" };
+				// 	sortBy.score  = { $meta: "textScore" };
+				// }
+
 				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
 
 				let listMessages = await CHATTING__MESSAGE_COLL
-					.find({ ...conditionObj, ...conditionFind }, { ...objSort, ...filter })
+					.find({ ...conditionObj, ...conditionFind }, filter)
 					.populate('sender', select.sender)
 					.populate('usersSeen', select.usersSeen)
 					.populate('usersAssigned', select.usersAssigned)
@@ -1085,7 +1090,7 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listMessages,
-						limit: +limit,
+						limit,
 						totalRecord,
 						nextCursor
 					}
