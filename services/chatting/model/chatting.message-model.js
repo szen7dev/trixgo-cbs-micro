@@ -1029,6 +1029,14 @@ class Model extends BaseModel {
 						},
 						select: select.poll
 					})
+					.populate({
+						path: 'reactions',
+						select: '_id type author',
+						populate: {
+							path: 'author',
+							select: '_id bizfullname image'
+						}
+					})
 					.populate('reminder', select.reminder)
 					.populate('sender', select.sender)
 					.populate({
