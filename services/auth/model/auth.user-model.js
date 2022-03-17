@@ -191,13 +191,10 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
-                    return resolve({ error: true, message: 'platform_invalid' });
-                
+                    return resolve({ error: true, keyError: 'platform_invalid', message: 'Nền tảng không tồn tại', status: 400 });
+
                 let isExist = await AUTH__USER_COLL
-                    .findOne({ 
-                        email: emailValid,
-                        platform: +platform
-                    })
+                    .findOne({ email: emailValid })
                     .populate({
                         path: 'company department',
                         select: '_id name sign image'
@@ -215,7 +212,7 @@ class Model extends BaseModel {
                 if(isExist.platform !== +platform) {
                     return resolve({ 
                         error: true, 
-                        message: 'Flatform không hợp lệ',
+                        message: 'Nền tảng không tồn tại',
                         keyError: "platform_invalid",
                         status: 400
                     });
