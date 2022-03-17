@@ -75,7 +75,7 @@ class Model extends BaseModel {
 						return resolve({
 							error: false,
 							status: 200,
-							message: infoAfterDeleteReaction
+							data: infoAfterDeleteReaction
 						});
 					}
 				}
