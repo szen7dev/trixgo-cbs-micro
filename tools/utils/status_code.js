@@ -37,6 +37,7 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
         }
 	}
 
+    console.log({ resultAfterCallHandler })
     if(Object.keys(error).length){
         ctx.meta.$statusCode    = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 500;
         ctx.meta.$statusMessage = 'server_error';
