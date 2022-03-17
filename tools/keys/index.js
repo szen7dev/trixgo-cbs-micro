@@ -28,6 +28,8 @@ exports.KEY_ERROR  = {
     ITEM_EXISTED        : "item_existed",
 }
 
+exports.REACTION_TYPES = [1,2,3,4,5,6,7];
+
 /* 1 createdAt:12/14/2019, 6:57:10 PM*/
 // {
 //     "_id" : ObjectId("5df4ce16506d9b3c587948ca"),
