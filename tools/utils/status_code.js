@@ -45,8 +45,9 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 		return { error: true, status: ctx.meta.$statusCode, ...error };
     }
 
+    console.log({ message: resultAfterCallHandler?.message, statusMessage: resultAfterCallHandler?.message ?? 'success' })
     ctx.meta.$statusCode    = 200;
-    ctx.meta.$statusMessage = resultAfterCallHandler?.message ?? 'success';
+    // ctx.meta.$statusMessage = resultAfterCallHandler?.message ?? 'success';
 
 	return resultAfterCallHandler;
 };
