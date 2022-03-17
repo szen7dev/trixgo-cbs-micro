@@ -65,13 +65,13 @@ class Model extends BaseModel {
 				if(infoReaction){
 					const infoAfterDeleteReaction = await PCM_COMMENT_REACTION_COLL.findByIdAndDelete(infoReaction._id);
 
-					await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, {
-						$inc: {
-							amountReaction: -1
-						}
-					})
-
 					if(infoReaction.type === typeReaction) {
+						await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, {
+							$inc: {
+								amountReaction: -1
+							}
+						})
+
 						return resolve({
 							error: false,
 							status: 200,
@@ -105,7 +105,6 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterInsertReaction, status: 200 });
 			} catch (error) {
-				console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})

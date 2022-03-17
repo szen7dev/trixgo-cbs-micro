@@ -16,7 +16,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
  */
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
-const PCM_COMMENT_REACIONT_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
+const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 
 class Model extends BaseModel {
 
@@ -685,14 +685,39 @@ class Model extends BaseModel {
 
                 if(infoDataAfterGet && infoDataAfterGet.length) {
                     for (const comment of infoDataAfterGet) {
-                        const infoReaction = await PCM_COMMENT_REACIONT_COLL.findOne({
+                        const lastReactionComment = await PCM_COMMENT_REACTION_COLL
+                            .find({ comment: comment._id })
+                            .select('type')
+                            .sort({ _id: -1 })
+                            .limit(3)
+                            .lean();
+
+                        const infoReaction = await PCM_COMMENT_REACTION_COLL.findOne({
                             comment: comment._id,
                             author: authorID
                         }).select('type').lean();
 
+                        if(comment.lastestReplyID && typeof comment.lastestReplyID !== 'string') {
+                            const lastReactionCommentReply = await PCM_COMMENT_REACTION_COLL
+                                .find({ comment: comment.lastestReplyID?._id })
+                                .select('type')
+                                .sort({ _id: -1 })
+                                .limit(3)
+                                .lean();
+
+                            const infoReactionReply = await PCM_COMMENT_REACTION_COLL.findOne({
+                                comment: comment.lastestReplyID?._id,
+                                author: authorID
+                            }).select('type').lean();
+
+                            comment.lastestReplyID['reaction'] = infoReactionReply;
+                            comment.lastestReplyID['lastReactionComment'] = lastReactionCommentReply;
+                        }
+
                         dataResponse[dataResponse.length] = {
                             ...comment,
-                            reaction: infoReaction
+                            reaction: infoReaction,
+                            lastReactionComment
                         }
                     }
                 }
