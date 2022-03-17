@@ -728,7 +728,7 @@ class Model extends BaseModel {
                 if (!checkObjectIDs([userID, conversationID])) {
 					return resolve({
 						error: true,
-						message: 'Tham số không hợp lệ',
+						message: 'Tham số conversationID không hợp lệ',
 						keyError: 'params_userID_or_conversationID_invalid',
 						status: 400
 					})
