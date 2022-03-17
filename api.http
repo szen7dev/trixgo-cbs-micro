@@ -2,17 +2,19 @@ POST http://localhost:3003/api/auth/users/login
 Content-Type: application/json
 
 {
-    "email": "vuhuynhminh9221@gmail.com",
-    "password": "1",
-    "platform": "1"
+    "email": "nguyentuanit97@gmail.com",
+    "password": "12345TRX@#",
+    "platform": "1",
+    "domain": "https://staging.cbs.trixgo.com"
 }
 
-### 
+###
 
-GET http://localhost:3003/api/chatting/conversations/list-message-conversation-with-page?conversationID=6131f11414bdc292e1e8ab3e&limit=3
+POST http://localhost:3003/api/subject_pcm/pcm_comments/reactions
 Content-Type: application/json
-authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlbWFpbCI6InZ1aHV5bmhtaW5oOTIyMUBnbWFpbC5jb20iLCJwaG9uZSI6IjA4Mjg5MTI0OTEiLCJmdWxsbmFtZSI6IlbFqSBIdeG7s25oIE1pbmgtVFJYIiwiY29tcGFueSI6IjVlNjBkZmZiMmM0M2E0NDRjNWY4ZTIyNyIsInNpZ25hdHVyZSI6InNpZ25hdHVyZV9kZWZhdWx0LnBuZyIsInN0YXR1cyI6MSwibGV2ZWwiOjEsIl9pZCI6IjVmOTBlZDBkNWU4NDJiN2MxOGRmZjk3MiJ9LCJpYXQiOjE2MzAxNTUyODB9.bmjrpcCMoh_vmm7iR9OTbQ6QomTTRIXBvwhXaPZKzX8
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlbWFpbCI6Im5ndXllbnR1YW5pdDk3QGdtYWlsLmNvbSIsInBob25lIjoiMDM1NTIwMTI5NyIsImZ1bGxuYW1lIjoiTmd1eeG7hW4gVsSDbiBUdeG6pW4tVFJYIiwiYml6ZnVsbG5hbWUiOiJOZ3V54buFbiBWxINuIFR14bqlbi1UUlgiLCJjb21wYW55Ijp7Il9pZCI6IjVlNjBkZmZiMmM0M2E0NDRjNWY4ZTIyNyIsIm5hbWUiOiJDw7RuZyB0eSBD4buVIHBo4bqnbiBUcml4Z28iLCJzaWduIjoiVFJYIiwiaW1hZ2UiOiI2NzI5OGRiMmRiYzY3YmQ4MjZjMTdjNTMyNzFiMTI0Yy5wbmcifSwiZGVwYXJ0bWVudCI6eyJfaWQiOiI1ZTg0NzE4MGQ3ZTM0OTBiZTU5YWVmNzUiLCJuYW1lIjoiUEjDkk5HIFBIw4FUIFRSSeG7gk4gU-G6ok4gUEjhuqhNIiwic2lnbiI6IlRSWC5QUFRTUCIsImltYWdlIjoiYjkxOGQ4MjFkY2EwNTI4OTk3YWU4NDk2MDBkOWY2OGMuanBnIn0sImltYWdlIjoiNWVkN2I1NjQtYzY0Yy00ZDFmLWJjZGUtZjg1YzA3ZWUyNzNmLmpwZyIsInNpZ25hdHVyZSI6InNpZ25hdHVyZV9kZWZhdWx0LnBuZyIsInN0YXR1cyI6MSwibGV2ZWwiOjEsIl9pZCI6IjVmYjUwMGE4YTBmOTBmMDg2YjJiMjVmMSJ9LCJpYXQiOjE2NDc1MDIwMjB9.lbQTN9L30waUz6XOvUp_FsJ8ugKvll7c6HnaD6XmjcM
 
 {
-    "conversationID": "6131f11414bdc292e1e8ab3e"
+    "commentID": "6231c3605e7b73826556639f",
+    "typeReaction": 3
 }

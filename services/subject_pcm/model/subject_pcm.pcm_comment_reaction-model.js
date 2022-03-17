@@ -105,7 +105,6 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoAfterInsertReaction, status: 200 });
 			} catch (error) {
-				console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
