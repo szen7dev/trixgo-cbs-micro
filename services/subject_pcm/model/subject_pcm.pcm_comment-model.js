@@ -698,12 +698,20 @@ class Model extends BaseModel {
                         }).select('type').lean();
 
                         if(comment.lastestReplyID && typeof comment.lastestReplyID !== 'string') {
+                            const lastReactionCommentReply = await PCM_COMMENT_REACTION_COLL
+                                .find({ comment: comment.lastestReplyID?._id })
+                                .select('type')
+                                .sort({ _id: -1 })
+                                .limit(3)
+                                .lean();
+
                             const infoReactionReply = await PCM_COMMENT_REACTION_COLL.findOne({
                                 comment: comment.lastestReplyID?._id,
                                 author: authorID
                             }).select('type').lean();
 
                             comment.lastestReplyID['reaction'] = infoReactionReply;
+                            comment.lastestReplyID['lastReactionComment'] = lastReactionCommentReply;
                         }
 
                         dataResponse[dataResponse.length] = {
