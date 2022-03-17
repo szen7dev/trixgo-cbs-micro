@@ -8,9 +8,8 @@ const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
-const { CF_ACTIONS_SUBJECT_PCM } 		        = require('../helper/subject_pcm.actions-constant');
-const { PCM_COMMENT_TYPE }                      = require('../helper/subject_pcm.keys-constant');
-const { APP_KEYS, KEY_ERROR }					= require('../../../tools/keys');
+const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -22,26 +21,45 @@ class Model extends BaseModel {
 
     constructor() {
         super(PCM_COMMENT_COLL);
+
+        this.COMMENT_PCM = 1;
+        this.RESPONSE_PCM = 2;
     }
-    
+
     /**
 	 * Dev: MinhVH 
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, bizfullname, files, images, select, populates, ctx }) { 
+    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { type, task: taskID, author: authorID };
+                const dataInsert = { type, task: taskID, author: authorID };
+                const TYPE_COMMENT = [this.COMMENT_PCM, this.RESPONSE_PCM];
+                let dataSend        = {};
+                let webUrl          = '';
+                let titleMSS        = '';
+                let descriptionMSS  = '';
+                let languageKey     = '';
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(!TYPE_COMMENT.includes(type)) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số type không hợp lệ",
+                        keyError: "params_type_invalid",
+                        status: 400
+                    })
+                }
+
                 if(!checkObjectIDs([taskID])) {
                     return resolve({
                         error: true,
@@ -72,17 +90,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!type || !PCM_COMMENT_TYPE.includes(type)) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số type không hợp lệ",
-                        keyError: "params_type_invalid",
-                        status: 400
-                    })
-                }
-
                 if(parentID) {
-                    if(checkObjectIDs([parentID])) {
+                    if(!checkObjectIDs([parentID])) {
                         return resolve({
                             error: true,
                             message: "Tham số parentID không hợp lệ",
@@ -94,22 +103,31 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
-                let infoTask = await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_GET_INFO_AND_GET_LIST}`, {
-                    taskID
-                });
+                let infoTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .populate('project', '_id name sign')
+                    .lean();
 
-                if(infoTask.error) return resolve(infoTask);
+                if(!infoTask) {
+                    return resolve({
+                        error: true,
+                        message: "Công việc không tồn tại",
+                        keyError: "task_not_exists",
+                        status: 400
+                    })
+                }
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                content && (dataInsert.content = content);
-                files   && (dataInsert.files = files);
-                images  && (dataInsert.images = images);
+                content && (dataInsert.content  = content);
+                files   && (dataInsert.files    = files);
+                images  && (dataInsert.images   = images);
 
                 let infoAterInsert = await this.insertData(dataInsert); 
+
                 if(!infoAterInsert) {
                     return resolve({
                         error: true,
@@ -130,59 +148,83 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Cập nhật số lượng phản hồi liên quan
-                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                    $inc: {
-                        amountResponse: 1
-                    }
-                });
+                switch (type) {
+                    case 1: // Pre-calculate comment
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
+                        break;
+                    case 2: // Pre-calculate related response
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountResponse: 1 } });
+                        break;
+                    default:
+                        break;
+                }
 
-                let { author, assignee, related } = infoTask.data;
-                let listReceivers = [...new Set([author, assignee, ...related])];
-                // let contentLog = '';
+                let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
+                related = related.map(userID => userID.toString());
 
-                // content = content.length > 200 ? content.substring(0, 200) : content;
+                let arrReceiver   = [...new Set([author.toString(), assignee.toString(), ...related])];
+                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+                console.log('CREATE_NEW_COMMENT_TASK')
+                console.log({ arrReceiver })
 
-                // switch (type) {
-                //     case 1:
-                //         contentLog = `${bizfullname} Vừa thêm bình luận mới - ${content}`;
-                //         break;
-                //     case 2:
-                //         contentLog = `${bizfullname} Vừa thêm phản hồi mới - ${content}`;
-                //         break;
-                //     case 3:
-                //         contentLog = `${bizfullname} Vừa thêm hiện trạng mới - ${content}`;
-                //         break;
-                //     case 4:
-                //         contentLog = `${bizfullname} Vừa thêm giải pháp mới - ${content}`;
-                //         break;
-                //     default:
-                //         break;
-                // }
+                switch (infoAterInsert.type) {
+                    case 1:
+                        languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
+                        webUrl          = `/pcm/detail/${taskID}#comment_${infoAterInsert._id}`;
+                        break;
+                    case 2:
+                        languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
+                        descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
+                        webUrl          = `/pcm/detail/${taskID}#response_${infoAterInsert._id}`;
+                        break;
+                    default:
+                        break;
+                }
 
-                let receivers = listReceivers.filter(receiverID => receiverID.toString() !== authorID.toString());
-                console.log({
-                    receivers,
-                    listReceivers
-                });
-
-                // Gửi thông báo cho user
-                await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    content,
-                    receivers,
-                    path: `/pcm/detail/${taskID}#${infoAterInsert._id}`,
-                    languageKey: "CREATE_NEW_RESPONSE",
+                dataSend = {
                     app: APP_KEYS.PCM_PLAN_TASK,
+                    languageKey,
                     mainColl: {
-                        kind: "pcm_plan_task",
-                        item: taskID
+                        kind: 'pcm_plan_task',
+                        item: infoTask
                     },
                     subColl: {
-                        kind: "pcm_comment",
-                        item: infoAterInsert._id
+                        kind: 'pcm_comment',
+                        item: infoAterInsert
                     },
-                    type: 1 // InApp (Socket)
-                })
+                }
+                titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+
+                if(arrReceiver && arrReceiver.length) {
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        users: arrReceiver,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        dataSend,
+                        web_url: webUrl,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content,
+                        receivers: arrReceiver,
+                        project: project?._id?.toString(),
+                        contract: contract?.toString(),
+                        path: webUrl,
+                        languageKey: dataSend.languageKey,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "pcm_plan_task",
+                            item: taskID
+                        },
+                        subColl: {
+                            kind: "pcm_comment",
+                            item: infoAterInsert._id
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
 
                 infoAterInsert = await PCM_COMMENT_COLL
                     .findById(infoAterInsert._id)
@@ -190,11 +232,11 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                return resolve({ error: false, data: {
-                    result: infoAterInsert,
-                    receivers: listReceivers
-                }, status: 200 });
+                infoAterInsert.receivers = arrReceiver;
+
+                return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -205,7 +247,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
 	 */ 
-    update({ commentID, authorID, content, files, images, select, populates }) {
+    update({ taskID, commentID, authorID, content, files, images, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -248,14 +290,27 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoComment = await PCM_COMMENT_COLL.findById(commentID).lean();
+                let infoComment = await PCM_COMMENT_COLL
+                    .findOne({
+                        _id: commentID,
+                        task: taskID
+                    }).lean();
 
-                if(!infoComment || infoComment.type === 2) {
+                if(!infoComment) {
                     return resolve({
                         error: true,
-                        message: "Comment không tồn tại hoặc comment là phải hồi",
-                        keyError: "comment_not_exists_or_comment_is_response",
+                        message: "Comment không tồn tại hoặc comment không thuộc task hiện tại",
+                        keyError: "comment_not_exists_or_comment_not_belong_task",
                         status: 400
+                    })
+                }
+
+                if(infoComment.type === 2) {
+                    return resolve({
+                        error: true,
+                        message: "Phản hồi liên quan không thể cập nhật",
+                        keyError: "response_cannot_update",
+                        status: 403
                     })
                 }
 
@@ -313,7 +368,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật đánh dấu response
 	 * Date: 22/02/2022
 	 */
-    updateMarkResponse({ taskID, commentID, isMarked }) {
+    updateMarkResponse({ taskID, commentID, official }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs([taskID, commentID])) {
@@ -335,16 +390,16 @@ class Model extends BaseModel {
                     });
                 }
 
-                const dataUpdate = { isMarked };
-                const valueCalculate = -1;
+                const dataUpdate = { official };
+                let valueCalculate = -1;
 
-                if(isMarked) {
+                if(official) {
                     valueCalculate = 1;
                 }
 
                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                     $inc: {
-                        amountResponseMarked: valueCalculate
+                        amountMarkedResponse: valueCalculate
                     }
                 });
 
@@ -490,9 +545,14 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, type, isMarked, sortKey, select, populates }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -547,8 +607,8 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false };
                 }
 
-                if(isMarked === 'true') {
-                    conditionObj.isMarked = true;
+                if(official === 'true') {
+                    conditionObj.official = true;
                 }
 
                 if(type) {
@@ -600,9 +660,9 @@ class Model extends BaseModel {
                 let totalRecord = await PCM_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
 
-                if(!sortKey) {
-                    infoDataAfterGet = infoDataAfterGet.reverse();
-                }
+                // if(!sortKey) {
+                //     infoDataAfterGet = infoDataAfterGet.reverse();
+                // }
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,

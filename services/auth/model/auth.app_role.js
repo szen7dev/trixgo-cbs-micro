@@ -55,7 +55,7 @@ class Model extends BaseModel {
                 if(!checkPermission || checkPermission.level != 0)
                     return resolve({ error: true, message: "Bạn không đủ quyền", keyError: KEY_ERROR.PERMISSION_DENIED, status: 400 });
 
-                let dataInsert = { type, company, app, name, userCreate: userID, members: [userID] };
+                let dataInsert = { type, company, app, name, userCreate: userID, userUpdate: userID, members: [userID] };
 
                 if(description){
                     dataInsert.description = description;
@@ -88,7 +88,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { modifyAt: new Date(), userUpdate: userID };
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -159,6 +159,42 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Remove app role ✅
+     * Author: Depv
+     * Code: 
+     */
+    removeMany({ appRoleIDs }) { 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(appRoleIDs))
+                    return resolve({ error: true, message: 'Mã nhóm chức năng không hợp lệ', keyError: "appRoleIDs_invalid", status: 400 });
+                    
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                let infoAterRemove = await AUTH__APP_ROLE_COLL.deleteMany({ _id: { $in: appRoleIDs }});
+                if(!infoAterRemove)
+                    return resolve({ error: true, message: 'Xóa thất bại', keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
+                console.log({ appRoleIDs });
+                return resolve({ error: false, data: infoAterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: get app role ✅
      * Author: Depv
      * Code: 
@@ -181,7 +217,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -217,6 +252,11 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */

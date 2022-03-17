@@ -180,5 +180,13 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation", {
 			type: Number,
 			default: 1
 		},
-	}
+	},
+
+    /**
+     * Root Author
+     */
+    author: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'user'
+    },
 });

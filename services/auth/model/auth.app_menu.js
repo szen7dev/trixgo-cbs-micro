@@ -10,7 +10,6 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
-
 /**s
  * import inter-coll, exter-coll
  */
@@ -22,7 +21,7 @@ const { template }                          = require('lodash');
  * import inter-model, exter-model
  */
 class Model extends BaseModel {               
-
+    
     constructor() {
         super(AUTH__APP_MENU_COLL);
     }
@@ -156,6 +155,11 @@ class Model extends BaseModel {
         parent, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */

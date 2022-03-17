@@ -1,5 +1,6 @@
 let { config }                          = require('../file.keys-constant');
 let { checkObjectIDs, getExtension }    = require('../../../../tools/utils/utils');
+let { nonAccentVietnamese }             = require('../../../../tools/utils/string_utils');
 let { APP_KEYS }                        = require('../../../../tools/keys');
 let uuidv4                              = require('uuid').v4;
 let AWS                                 = require('aws-sdk');
@@ -17,6 +18,14 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
 
         if(typeUpload == "user"){
             bucket = `${config.bucket}/files/db/users`;
+        }
+
+        if(typeUpload == "contact"){
+            bucket = `${config.bucket}/files/db/contacts`;
+        }
+        
+        if(typeUpload == "project"){
+            bucket = `${config.bucket}/files/db/projects`;
         }
 
         let signedUrl = s3Object.getSignedUrl('putObject', {
@@ -88,8 +97,9 @@ const uploadFile = (pathFile, key) => {
  * @returns { error: boolean, data: string }
  */
 const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
-    // Trường hợp upload anh cho avatar hoặc signature
     switch (typeUpload) {
+        case 'contact':
+        case 'project':
         case 'user': {
             const extension = getExtension(fileName);
             const newFileName = `${uuidv4()}.${extension}`;
@@ -179,7 +189,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     }
 
     let extension   = getExtension(fileName);
-    let newFileName = `${fileName}___${uuidv4()}___${appName}.${extension}`;
+    let newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${appName}.${extension}`;
 
     return { 
         error: false, 

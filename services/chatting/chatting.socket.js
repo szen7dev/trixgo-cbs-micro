@@ -24,7 +24,8 @@ const CHATTING__MESSAGE_MODEL 					= require('./model/chatting.message-model').M
 const CHATTING__MESSAGE_POLL_MODEL 				= require('./model/chatting.message_poll-model').MODEL;
 const CHATTING__MESSAGE_REMINDER_MODEL 			= require('./model/chatting.message_reminder-model').MODEL;
 const CHATTING__MESSAGE_NPS_MODEL 				= require('./model/chatting.message_nps-model').MODEL;
-
+const CHATTING__REACTION_MESSAGE_MODEL			= require('./model/chatting.message_reaction-model').MODEL;
+const { ENV_DEVICE_APP_TEASER } 				= require('../notification/helper/notification.keys-constant')
 
 exports.CHATTING_SOCKET = {
 
@@ -365,23 +366,18 @@ exports.CHATTING_SOCKET = {
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_CONVERSATION]: async function(data, ack) { 
         let socket               = this;
         let listUserActive       = socket.$service.listUserConnected;
-        let userID               = socket.client.user;
         let io                   = socket.$service.io;
         let { infoConversation } = data;
 
-		const { members } = infoConversation;
-		const arrReceiver = members.filter(memberID => memberID.toString() !== userID.toString());
-
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
-			arrReceiver,
+			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
-				data: { infoConversation }
+				data: infoConversation
 			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_CONVERSATION], io
 		});
     },
-
 
 
     //========================= MESSAGE ===============================
@@ -392,225 +388,234 @@ exports.CHATTING_SOCKET = {
 	 * Date: 17/08/2021
 	 */
     [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE]: async function(data) {
-        let socket                      = this;
-		let broker                      = socket.$service.broker;
-        let listUserActive              = socket.$service.listUserConnected;
-        let io                          = socket.$service.io;
-        let userID                      = socket.client.user;
+        try {
+			let socket                      = this;
+			let broker                      = socket.$service.broker;
+			let listUserActive              = socket.$service.listUserConnected;
+			let io                          = socket.$service.io;
+			let userID                      = socket.client.user;
 
-        let {
-			tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
-			notifyFor, remindTime, repeat,
-			name, options,
-			serviceID, typeNps
-		} = data;
+			let {
+				tmpid, conversationID, content, parentID, usersAssigned, files, location, type, usersTag,
+				notifyFor, remindTime, repeat,
+				name, options,
+				serviceID, typeNps
+			} = data;
 
-		let infoMessageAfterInsert = {};
+			let infoMessageAfterInsert = {};
 
-		switch (+type) {
-			case 4:
-				infoMessageAfterInsert = await CHATTING__MESSAGE_REMINDER_MODEL.insert({
-					conversationID, content, notifyFor, remindTime, repeat, authorID: userID, ctx: broker
+			switch (+type) {
+				case 4:
+					infoMessageAfterInsert = await CHATTING__MESSAGE_REMINDER_MODEL.insert({
+						conversationID, content, notifyFor, remindTime, repeat, authorID: userID, ctx: broker
+					});
+					break;
+				case 5:
+					infoMessageAfterInsert = await CHATTING__MESSAGE_POLL_MODEL.insert({
+						conversationID, name, options, authorID: userID
+					});
+					break;
+				case 8:
+					infoMessageAfterInsert = await CHATTING__MESSAGE_NPS_MODEL.insert({
+						conversationID, serviceID, type: typeNps, authorID: userID
+					});
+					break;
+				default:
+					infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
+						conversationID, 
+						senderID: userID, 
+						content,
+						parentID, 
+						usersAssigned, 
+						files,
+						location,
+						type,
+						ctx: broker
+					})
+					break;
+			}
+
+			if(infoMessageAfterInsert.error){
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: {
+						tmpid,
+						infoMessage: infoMessageAfterInsert,
+					},
+					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
 				});
-				break;
-			case 5:
-				infoMessageAfterInsert = await CHATTING__MESSAGE_POLL_MODEL.insert({
-					conversationID, name, options, authorID: userID
+			}
+
+			const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
+			const { members, usersMute } = infoConversation;
+			const listMemberIDMuteConversation = usersMute?.map(userID => userID.toString()) || [];
+
+			// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
+			// const arrReceiver = members.filter(memberID => {
+			// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
+			// });
+
+			if(usersTag && usersTag.length){
+				usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
+					condition: { _id: { $in: usersTag } },
+					select: '_id bizfullname fullname image'
 				});
-				break;
-			case 8:
-				infoMessageAfterInsert = await CHATTING__MESSAGE_NPS_MODEL.insert({
-					conversationID, serviceID, type: typeNps, authorID: userID
-				});
-				break;
-			default:
-				infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
-					conversationID, 
-					senderID: userID, 
-					content,
-					parentID, 
-					usersAssigned, 
-					files,
-					location,
-					type,
-					ctx: broker
-				})
-				break;
-		}
+				usersTag = usersTag.data;
+			}
 
-		if(infoMessageAfterInsert.error){
-			return sendDataToMultilSocketsOfListUser({
-				listUserConnected: listUserActive,
-				arrReceiver: [userID],
-				data: {
-					tmpid,
-					infoMessage: infoMessageAfterInsert,
-				},
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
-			});
-		}
+			let infoMessage = null;
+			let listMemberWithAmountMissMessage = [];
 
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
-		const { members, usersMute } = infoConversation;
-		const listMemberIDMuteConversation = usersMute.map(userID => userID.toString());
-
-		// Không gửi thông báo đến user tắt thông báo cuộc hội thoại
-		// const arrReceiver = members.filter(memberID => {
-		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
-		// });
-
-		if(usersTag && usersTag.length){
-			usersTag = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USER_WITH_CONDITION}`, {
-				condition: { _id: { $in: usersTag } },
-				select: '_id bizfullname fullname image'
-			});
-			usersTag = usersTag.data;
-		}
-
-		let infoMessage = null;
-		let listMemberWithAmountMissMessage = [];
-
-		if(infoMessageAfterInsert.data){
-			infoMessage = await CHATTING__MESSAGE_COLL
-				.findById(infoMessageAfterInsert.data._id, { createdAt: 0, updatedAt: 0, __v: 0 })
-				.populate({
-					path: 'sender receivers usersAssigned',
-					select: '_id fullname bizfullname image email phone'
-				})
-				.populate({
-					path: 'reactions',
-					select: '_id type',
-					populate: {
-						path: 'userCreate',
-						select: '_id fullname image'
-					}
-				})
-				.populate({
-					path: 'parent',
-					populate: {
-						path: 'sender files.file',
+			if(infoMessageAfterInsert.data){
+				infoMessage = await CHATTING__MESSAGE_COLL
+					.findById(infoMessageAfterInsert.data?._id, { createdAt: 0, updatedAt: 0, __v: 0 })
+					.populate({
+						path: 'sender receivers usersAssigned',
+						select: '_id fullname bizfullname image email phone'
+					})
+					.populate({
+						path: 'reactions',
+						select: '_id type',
+						populate: {
+							path: 'userCreate',
+							select: '_id fullname image'
+						}
+					})
+					.populate({
+						path: 'parent',
+						populate: {
+							path: 'sender usersAssigned files.file',
+							populate: {
+								path: 'file',
+								select: 'name path size'
+							},
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.populate({
+						path: 'reminder',
+						populate: {
+							path: 'accepts rejects',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.populate({
+						path: 'poll',
+						populate: {
+							path: 'options.usersVote',
+							select: '_id bizfullname fullname image'
+						}
+					})
+					.populate({
+						path: 'files.file',
 						populate: {
 							path: 'file',
-							select: 'name path size'
+							select: 'name nameOrg path size'
 						},
-						select: '_id bizfullname fullname image'
-					}
-				})
-				.populate({
-					path: 'reminder',
-					populate: {
-						path: 'accepts rejects',
-						select: '_id bizfullname fullname image'
-					}
-				})
-				.populate({
-					path: 'poll',
-					populate: {
-						path: 'options.usersVote',
-						select: '_id bizfullname fullname image'
-					}
-				})
-				.populate({
-					path: 'files.file',
-					populate: {
-						path: 'file',
-						select: 'name nameOrg path size'
-					},
-				})
-				.lean();
-		}
-
-		// Get member and amount miss message of member
-		for (const memberID of members) {
-			let amountMissMessage = 0;
-
-			const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
-				members: { $in: [memberID] }
-			}).select('usersMissMessage').lean();
-
-			listAllConversation.map(conversation => {
-				const user = conversation.usersMissMessage.find(user => 
-					user.userID.toString() === memberID.toString());
-
-				user && (amountMissMessage += user.amount);
-			})
-
-			listMemberWithAmountMissMessage[listMemberWithAmountMissMessage.length] = {
-				memberID,
-				amountMissMessage
-			}
-		}
-
-		let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
-			userID,
-			select: 'fullname bizfullname'
-		});
-
-		let senderFullname = infoSender?.data?.bizfullname;
-		let description = '';
-
-		switch (infoMessage.type) {
-			case 1:
-				description = `đã gửi 1 ảnh`;
-				break;
-			case 2:
-				description = `đã gửi 1 file`;
-				break;
-			case 4:
-				description = `đã tạo 1 nhắc hẹn`;
-				break;
-			case 5:
-				description = `đã tạo 1 cuộc bình chọn`;
-				break;
-			default:
-				description = infoMessage.content;
-				break;
-		}
-
-		if(!infoConversation.isPrivate) {
-			if(usersTag && usersTag.length) {
-				description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
-					const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
-					if (matchs) {
-						const fullName = matchs[1];
-
-						return `@${fullName}`;
-					} else {
-						return replacement;
-					}
-				})
+					})
+					.lean();
 			}
 
-			description = `${senderFullname}: ${description}`;
-			senderFullname = infoConversation.name;
-		}
+			// Get member and amount miss message of member
+			for (const memberID of members) {
+				let amountMissMessage = 0;
 
-		listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
-			// SEND SOCKET
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [memberID],
-				data: {
-					tmpid,
-					amountMissMessage: amountMissMessage,
-					usersTag,
-					infoMessage,
-				},
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+				const listAllConversation = await CHATTING__CONVERSATION_COLL.find({
+					members: { $in: [memberID] }
+				}).select('usersMissMessage').lean();
+
+				listAllConversation.map(conversation => {
+					const user = conversation.usersMissMessage?.find(user => 
+						user.userID.toString() === memberID.toString());
+
+					user && (amountMissMessage += user.amount);
+				})
+
+				listMemberWithAmountMissMessage[listMemberWithAmountMissMessage.length] = {
+					memberID,
+					amountMissMessage
+				}
+			}
+
+			let infoSender = await broker.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
+				userID,
+				select: 'fullname bizfullname'
 			});
 
-			if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())) {
-				// SEND CLOUD-MSG
-				broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
-					users: [memberID],
-					title: senderFullname,
-					description,
-					amountNoti: amountMissMessage,
-					conversationID: infoConversation._id,
-					web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`
-				});
+			let senderFullname = infoSender?.data?.bizfullname;
+			let description = '';
+
+			switch (infoMessage.type) {
+				case 1:
+					description = `đã gửi 1 ảnh`;
+					break;
+				case 2:
+					description = `đã gửi 1 file`;
+					break;
+				case 4:
+					description = `đã tạo 1 nhắc hẹn`;
+					break;
+				case 5:
+					description = `đã tạo 1 cuộc bình chọn`;
+					break;
+				default:
+					description = infoMessage.content;
+					break;
 			}
-		})
+
+			if(!infoConversation.isPrivate) {
+				if(usersTag && usersTag.length) {
+					description = description.replaceAll(/[@]\[(.*?)\]\((.*?)\)/g, replacement => {
+						const matchs = (/[@]\[(.*?)\]\((.*?)\)/g).exec(replacement);
+						if (matchs) {
+							const fullName = matchs[1];
+
+							return `@${fullName}`;
+						} else {
+							return replacement;
+						}
+					})
+				}
+
+				description = `${senderFullname}: ${description}`;
+				senderFullname = infoConversation.name;
+			}
+
+			listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
+				// SEND SOCKET
+				sendDataToMultilSocketsOfListUser({ 
+					listUserConnected: listUserActive, 
+					arrReceiver: [memberID],
+					data: {
+						tmpid,
+						amountMissMessage: amountMissMessage,
+						usersTag,
+						infoMessage,
+					},
+					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_RECEIVE_MESSAGE], io
+				});
+
+				if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation?.includes(memberID.toString())) {
+					// SEND CLOUD-MSG
+					broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+						users: [memberID],
+						title: senderFullname,
+						description,
+						amountNoti: amountMissMessage,
+						dataSend: {
+							conversationID: infoConversation._id
+						},
+						conversationID: infoConversation._id,
+						web_url: `https://staging.cbs.trixgo.com/messages#${infoMessage._id}`,
+						env: ENV_DEVICE_APP_TEASER
+					});
+				}
+			})
+		} catch (error) {
+			console.info('EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SEND_MESSAGE');
+			console.error(error);
+		}
     },
 
 	/**
@@ -768,10 +773,8 @@ exports.CHATTING_SOCKET = {
 		sendDataToMultilSocketsOfListUser({ 
 			listUserConnected: listUserActive, 
 			arrReceiver: infoConversation.members,
-			data: {
-				error: false,
-				data: infoAfterRevoke
-			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
+			data: infoAfterRevoke, 
+			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
 		});
 	},
 
@@ -1193,7 +1196,8 @@ exports.CHATTING_SOCKET = {
 				users: [userID],
 				title: 'Thông báo nhắc hẹn',
 				description: content,
-				web_url: `https://staging.cbs.trixgo.com`
+				web_url: `https://staging.cbs.trixgo.com`,
+				env: ENV_DEVICE_APP_TEASER
 			});
 		}
 
@@ -1206,7 +1210,8 @@ exports.CHATTING_SOCKET = {
 			users: arrReceiver,
 			title: 'Thông báo nhắc hẹn',
 			description: content,
-			web_url: `https://staging.cbs.trixgo.com`
+			web_url: `https://staging.cbs.trixgo.com`,
+			env: ENV_DEVICE_APP_TEASER
 		});
     },
 
@@ -1216,82 +1221,83 @@ exports.CHATTING_SOCKET = {
 	 * Date: 26/10/2021
 	 */
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data) { 
-        let socket               		= this;
-		let userID              		= socket.client.user;
-		let broker                      = socket.$service.broker;
-        let listUserActive       		= socket.$service.listUserConnected;
-        let io                   		= socket.$service.io;
-		let { messageID, typeReaction }	= data;
+        try {
+			let socket               		= this;
+			let userID              		= socket.client.user;
+			let listUserActive       		= socket.$service.listUserConnected;
+			let io                   		= socket.$service.io;
+			let { messageID, typeReaction }	= data;
 
-		let infoMessage = await CHATTING__MESSAGE_COLL.findById(messageID).select('_id');
+			await CHATTING__REACTION_MESSAGE_MODEL.reactionMessage({
+				userID,
+				messageID,
+				typeReaction: +typeReaction
+			})
 
-		if(!infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
+			const infoMessage = await CHATTING__MESSAGE_COLL
+				.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
+				.populate({
+					path: 'sender receivers usersAssigned',
+					select: '_id bizfullname fullname image'
+				})
+				.populate({
+					path: 'conversation',
+					select: 'members'
+				})
+				.populate({
+					path: 'reactions',
+					select: '_id type author',
+					populate: {
+						path: 'author',
+						select: '_id bizfullname fullname image'
+					}
+				})
+				.populate({
+					path: 'parent',
+					populate: {
+						path: 'sender',
+						select: '_id bizfullname fullname image'
+					}
+				})
+				.populate('reminder')
+				.populate({
+					path: 'poll',
+					populate: {
+						path: 'options.usersVote',
+						select: '_id bizfullname fullname image'
+					}
+				})
+				.populate({
+					path: 'files.file',
+					populate: {
+						path: 'file',
+						select: 'name nameOrg path size'
+					},
+				})
+				.lean();
+
+			if(!infoMessage){
+				return sendDataToMultilSocketsOfListUser({ 
+					listUserConnected: listUserActive, 
+					arrReceiver: [userID],
+					data: { error: true, message: "Can't get info message" }, 
+					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
+				});
+			}
+
+			sendDataToMultilSocketsOfListUser({ 
+				arrReceiver: infoMessage?.conversation?.members, 
 				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info message" }, 
+				data: {
+					error: false,
+					data: infoMessage
+				}, 
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
-			});
+			})
+		} catch (error) {
+			console.info("EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE");
+			console.error(error);
 		}
-
-		await CHATTING__MESSAGE_MODEL.reactionMessage({
-			userID,
-			messageID,
-			typeReaction: +typeReaction,
-			ctx: broker
-		})
-
-		infoMessage = await CHATTING__MESSAGE_COLL
-			.findById(messageID, { createdAt: 0, updatedAt: 0, __v: 0 })
-			.populate({
-				path: 'sender receivers usersAssigned',
-				select: '_id bizfullname fullname image'
-			})
-			.populate({
-				path: 'conversation',
-				select: 'members'
-			})
-			.populate({
-				path: 'reactions',
-				select: '_id type',
-				populate: {
-					path: 'userCreate',
-					select: '_id bizfullname fullname image'
-				}
-			})
-			.populate({
-				path: 'parent',
-				populate: {
-					path: 'sender',
-					select: '_id bizfullname fullname image'
-				}
-			})
-			.populate('reminder')
-			.populate({
-				path: 'poll',
-				populate: {
-					path: 'options.usersVote',
-					select: '_id bizfullname fullname image'
-				}
-			})
-			.populate({
-				path: 'files.file',
-				populate: {
-					path: 'file',
-					select: 'name nameOrg path size'
-				},
-			})
-			.lean();
-
-        sendDataToMultilSocketsOfListUser({ 
-			arrReceiver: infoMessage?.conversation?.members, 
-			listUserConnected: listUserActive, 
-			data: {
-				error: false, 
-				data: infoMessage
-			}, 
-			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
-		})
     },
 
 	/**

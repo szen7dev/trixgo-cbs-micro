@@ -44,6 +44,17 @@ module.exports  = DATABASE_MIDDLEWARE("document_file", {
         ref: "file"
     },
 
+    /**
+     * 1. Hình ảnh
+     * 2. Audio
+     * 3. file
+     * 4. Video
+     */
+    type: { 
+        type: Number,
+        default: 1
+    },
+
     //_________Tên gốc(Đưa qua bảng phụ để truy vấn)
     nameOrg     : { type: String, require: true }, 
 

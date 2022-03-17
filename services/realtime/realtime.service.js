@@ -29,6 +29,7 @@ const { NOTIFICATION_SOCKET } 					= require('../notification/notification.socke
 const { CHATTING_SOCKET } 						= require('../chatting/chatting.socket');
 const { MEDIA_SOCKET } 						    = require('../media/media.socket');
 const { REACTION_SOCKET }                       = require('../reaction/reaction.socket');
+const { SUBJECT_SOCKET }                        = require('../subject_pcm/subject_pcm.socket');
 
 let pub = redis.createClient({
     host: REDIS_SEPERATOR.HOST,
@@ -72,6 +73,7 @@ module.exports = {
                         // Xét user Online
                         const _infoUser =  await USER_MODEL.getDataById(userID);
                         this.setUserOnline({ _infoUser });
+                        // this.bizfullname = _infoUser.bizfullname;
                         // this.sendUserOnline({ _infoUser });
 
                         next();
@@ -102,6 +104,7 @@ module.exports = {
                         ...REACTION_SOCKET,
                         ...CHATTING_SOCKET,
                         ...MEDIA_SOCKET,
+                        ...SUBJECT_SOCKET,
 
                         'CLIENT_SEND_CHATTING_TEST': async function(data) { 
                             let socket                      = this;
@@ -166,8 +169,9 @@ module.exports = {
                 }
                 let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
 
-                this.logger.info("Authenticated via JWT: ", infoUser.username);
+                this.logger.info("Authenticated via JWT: ", infoUser.bizfullname);
                 this.userID = infoUser._id;
+                this.bizfullname = infoUser.bizfullname;
 
                 return Promise.resolve(this.userID);
             } catch (error) {
@@ -339,6 +343,7 @@ module.exports = {
         this.initSocketIO(server);
         this.listUserConnected = [];
         this.userID;
+        this.bizfullname;
     },
 
     /**

@@ -24,7 +24,7 @@ module.exports  = DATABASE_MIDDLEWARE("comment", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
-
+    
     //_________Số lượng comment con của comment cha
     amountCommentReply: {
         type    :  Number,
@@ -36,9 +36,4 @@ module.exports  = DATABASE_MIDDLEWARE("comment", {
         type    :  Number,
         default : 0
     },
-
-    //_________1 mảng loại cảm xúc để show trên view
-    typeReactions: [{
-        type :  Number,
-    }],
 })

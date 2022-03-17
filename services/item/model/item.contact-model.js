@@ -234,19 +234,20 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+    update({ 
+        contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire }){
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
+        amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+    }){
         return new Promise(async (resolve) => {
             try {
-                if(!name || !_isValid(company) || !_isValid(authorID))
-                    return resolve({ error: true, message: 'param_not_valid' });
-
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
                     company: company,
                     _id: { $ne: contactID } 
                 };
+
                 if((sign && sign != "") || (taxid && taxid != "")){
                     conditionObj.$or = []
                 }
@@ -262,23 +263,63 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
 
                 let dataUpdate = {
-                    company,
                     inCRM: 1,
                     inHuman: 0,
                     inTimesheet: 0,
                     inFinancial: 1,
                     inDocument: 1,
-                    type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
-                    province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
-                    name, 
-                    description,
-                    sign, 
-                    address, 
-                    taxid,
-                    birthday,
-                    phone,
-                    email,
-                    status: status ? Number(status) : Number(1)
+                }
+
+                if(type){
+                    dataUpdate.type = type;
+                }
+
+                if(province){
+                    dataUpdate.province = province;
+                }
+
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(company){
+                    dataUpdate.company = company;
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(address){
+                    dataUpdate.address = address;
+                }
+
+                if(taxid){
+                    dataUpdate.taxid = taxid;
+                }
+
+                if(birthday){
+                    dataUpdate.birthday = birthday;
+                }
+
+                if(phone){
+                    dataUpdate.phone = phone;
+                }
+
+                if(email){
+                    dataUpdate.email = email;
+                }
+
+                if(status){
+                    dataUpdate.status = status;
+                }
+
+                if(image){
+                    dataUpdate.image = image;
                 }
 
                 if(gender && !isNaN(gender)){
@@ -416,8 +457,36 @@ class Model extends BaseModel {
                 if(contractExpire){
                     dataUpdate.contractExpire = contractExpire;
                 }
+                // Tăng giảm số lượng contact_document khi xoá contact_document
+                let dataINC = {};
+                if(amountWorkHistory){
+                    dataINC.amountWorkHistory = amountWorkHistory
+                }
+
+                if(amountProjectHistory){
+                    dataINC.amountProjectHistory = amountProjectHistory
+                }
+
+                if(amountContractHistory){
+                    dataINC.amountContractHistory = amountContractHistory
+                }
+
+                if(amountEducationHistory){
+                    dataINC.amountEducationHistory = amountEducationHistory
+                }
+
+                if(amountCertificateHistory){
+                    dataINC.amountCertificateHistory = amountCertificateHistory
+                }
+                
+                if(dataINC){
+                    dataUpdate.$inc = dataINC
+                }
 
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Cập nhật thất bại" });
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -445,7 +514,6 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(contactID))
                     return resolve({ error: true, message: 'Request params contactID invalid', status: 400 });
                 
-                 // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -482,19 +550,20 @@ class Model extends BaseModel {
      */
     getList({
         companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { company: companyID };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
-
-                if(limit > 20){
-                    limit = 20
-                }
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input

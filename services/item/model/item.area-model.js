@@ -92,6 +92,11 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
 
                 let sortBy;
                 let conditionObj = { level: 3 };
@@ -131,9 +136,10 @@ class Model extends BaseModel {
                     sortBy       = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await ITEM__AREA_COLL.find(conditionObj)
+                let infoDataAfterGet = await ITEM__AREA_COLL
+                    .find(conditionObj)
                     .select(select)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean(); 
@@ -159,7 +165,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

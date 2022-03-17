@@ -452,6 +452,8 @@ class Model extends BaseModel {
                  */
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit;
                 }
 				
                 if(populates && typeof populates === 'string'){
@@ -488,7 +490,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 // User phải nằm trong member của gói thầu.
-                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
+                let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
                 if(listPackageAccess.length){
                     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
                 }
@@ -562,8 +564,6 @@ class Model extends BaseModel {
                         { sign: regSearch },
                     ]
                 }
-                console.log({ conditionObj });
-
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__DOC_COLL.findById(lastestID);
@@ -581,12 +581,12 @@ class Model extends BaseModel {
                 }
                 
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean(); 
-
+                
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -597,7 +597,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-
+                
                 let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
@@ -882,7 +882,7 @@ class Model extends BaseModel {
 
                 let conditionObj  = { document: documentID };
                 let sortBy;
-                let keys	 = ['modifyAt__-1', '_id__-1'];  
+                let keys	 = ['modifyAt__-1', '_id__-1'];
 
 
                 let conditionObjOrg = { ...conditionObj };

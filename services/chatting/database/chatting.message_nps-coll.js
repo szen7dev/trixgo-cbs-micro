@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports = DATABASE_MIDDLEWARE("message_nps", {
+module.exports = DATABASE_MIDDLEWARE("message_message_nps", {
     /**
      * Loại tin nhắn NPS
      * 1-Điểm số dịch vụ

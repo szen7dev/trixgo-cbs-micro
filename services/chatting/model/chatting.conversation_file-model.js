@@ -27,19 +27,26 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Lấy danh sách file trong cuộc hội thoại
+	 * Func: Thêm file trong cuộc hội thoại
 	 * Date: ...
 	 * Updated: 22/02/2022
 	 */
-    insert({ fileName, fileType, conversationID, fileID, authorID }){
+    insert({ companyID, appID, name, nameOrg, description, path, size, mimeType, type, conversationID, fileID, authorID }){
         return new Promise(async (resolve) => {
             try {
 				if(!checkObjectIDs([conversationID, fileID, authorID]))
 					return resolve({ error: true, message: "Request Params Invalid", status: 400 });
 
                 let infoMessageAfterInserted = await this.insertData({ 
-					fileName, 
-					fileType,
+					company: companyID, 
+					app: appID,
+					name,
+					nameOrg,
+					description,
+					path,
+					size,
+					mimeType,
+					type,
 					conversation: conversationID, 
 					file: fileID, 
 					author: authorID
@@ -124,11 +131,11 @@ class Model extends BaseModel {
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fileName = new RegExp(keyword, 'i');
+                    conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
 				if(type && FILE_TYPE.includes(+type)) {
-					conditionObj.fileType = type;
+					conditionObj.type = type;
 				}
 
 				if(authorID && checkObjectIDs([authorID])) {

@@ -4,6 +4,8 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
+
 const _isValid                          = require('mongoose').Types.ObjectId;
 
 /**
@@ -102,7 +104,34 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 // console.log(infoAfterInsert)
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "cannot_insert", keyError: KEY_ERROR.INSERT_FAILED });
+
+                // Cập nhật lại số lượng contact_document cho contact
+                let amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory;
+                if(type == 1) {
+                    amountWorkHistory =  "1"
+                }
+
+                if(type == 2) {
+                    amountProjectHistory =  "1"
+                }
+
+                if(type == 3) {
+                    amountContractHistory =  "1"
+                }
+
+                if(type == 4) { 
+                    amountEducationHistory =  "1"
+                }
+
+                if(type == 5) {
+                    amountCertificateHistory =  "1"
+                }
+                
+                // Cập nhật lại số lượng contact_document cho contact
+                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`, {
+                    contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+                })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -116,7 +145,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  fileID, fileRemoveID }){
+    update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID }){
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(authorID) || !_isValid(documentID))
@@ -195,7 +224,7 @@ class Model extends BaseModel {
                     dataUpdate.timeMobilize = timeMobilize;
                 }
 
-                if(!checkObjectIDs(field2)){
+                if(checkObjectIDs(field2)){
                     dataUpdate.field2 = field2;
                 }
                
@@ -223,17 +252,16 @@ class Model extends BaseModel {
                     dataUpdate.factor = factor;
                 }
 
-                if(fileID && _isValid(fileID)){
-                    dataUpdate.$addToSet = { files: fileID };
+                if(checkObjectIDs(filesID)){
+                    dataUpdate.$addToSet = { files: filesID };
                 }   
                 
                 if(fileRemoveID && _isValid(fileRemoveID)){
                     dataUpdate.$pull = { files: fileRemoveID };
                 }
-
                 let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update" });
+                    return resolve({ error: true, message: "cannot_update", keyError: KEY_ERROR.UPDATE_FAILED });
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -247,7 +275,7 @@ class Model extends BaseModel {
     * Author: Depv
     * Code: 
     */
-   remove({ contactDocumentID }) { 
+    remove({ contactDocumentID, ctx }) { 
        return new Promise(async (resolve) => {
            try {
                 /**
@@ -261,7 +289,7 @@ class Model extends BaseModel {
                 */
                 if(!checkObjectIDs(contactDocumentID))
                    return resolve({ error: true, message: 'Request params contactDocumentID invalid', status: 400 });
-             
+
                 /**
                 * LOGIC STEP (3)
                 * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -270,7 +298,34 @@ class Model extends BaseModel {
                 let infoAterRemove = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndDelete(contactDocumentID)
 
                 if(!infoAterRemove)
-                   return resolve({ error: true, message: "can't_remove", status: 403 });
+                   return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
+
+                let { contact, type } = infoAterRemove;
+                let amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory;
+                if(type == 1) {
+                    amountWorkHistory =  "-1"
+                }
+
+                if(type == 2) {
+                    amountProjectHistory =  "-1"
+                }
+
+                if(type == 3) {
+                    amountContractHistory =  "-1"
+                }
+
+                if(type == 4) { 
+                    amountEducationHistory =  "-1"
+                }
+
+                if(type == 5) {
+                    amountCertificateHistory =  "-1"
+                }
+
+                // Cập nhật lại số lượng contact_document cho contact
+                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`, {
+                    contactID: `${contact}`, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+                })
 
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
@@ -320,7 +375,7 @@ class Model extends BaseModel {
                                     .select(select)
                                     .populate(populates)
                 if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+                    return resolve({ error: true, message: "can't_get_info", keyError: KEY_ERROR.GET_INFO_FAILED, status: 403 });
  
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
@@ -420,7 +475,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

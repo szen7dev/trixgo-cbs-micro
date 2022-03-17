@@ -5,6 +5,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 const _isValid                          = require("mongoose").Types.ObjectId;
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 /**
  * import inter-coll, exter-coll
@@ -30,7 +31,7 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, description, company, parent, sign, owner, address, startDate, endDate, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, admins, members, ctx }) {
+    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
@@ -40,15 +41,10 @@ class Model extends BaseModel {
                 
                 if(!sign)
                     return resolve({ error: true, message: 'Request params sign(*) invalid', status: 400 });
-                
-                if(!area)
-                    return resolve({ error: true, message: 'Request params area(*) invalid', status: 400 });
-
-                if(!type)
-                    return resolve({ error: true, message: 'Request params type(*) invalid', status: 400 });
+               
 
                 // Lấy thông tin công ty để gán ký hiệu công ty vào tên dự án
-                let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_OR_GET_LIST_COMPANY}`, {
+                let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
                     companyID: company
                 });
 
@@ -75,8 +71,10 @@ class Model extends BaseModel {
                     sign: `${infoCompany.data.sign}.${sign}`,
                     owner, 
                     address, 
-                    startTime: startDate, 
-                    expiredTime: endDate, 
+                    startTime: startTime, 
+                    actualStartTime: startTime,
+                    expiredTime: expiredTime, 
+                    actualFinishTime: expiredTime,
                     status: !isNaN(status) ? Number(status) : 1, 
                     note, 
                     projectCapital: !isNaN(projectCapital) ? Number(projectCapital) : 1, 
@@ -84,6 +82,11 @@ class Model extends BaseModel {
                     buildingGrade: !isNaN(buildingGrade) ? Number(buildingGrade) : 1,
                     buildingType: !isNaN(buildingType) ? Number(buildingType) : 1,
                     investmentAmount: !isNaN(investmentAmount) ? Number(investmentAmount) : 0,
+                    admins: [authorID],
+                    members: [authorID], 
+                    milestones,
+                    completedMilestones,
+                    userCreate: authorID,
                 }
 
                 if(pm && _isValid(pm)){
@@ -103,18 +106,6 @@ class Model extends BaseModel {
                     dataInsert.parent = parent;
                     dataInsert.level = infoMenuParent.level + 1;
                 }
-                //________Xóa phần tử trùng nhau trong mảng
-                admins  = [...new Set([ ...admins, authorID])];;
-                members = [...new Set([ ...members, authorID])];;
-
-                if(checkObjectIDs(admins)){
-                    dataInsert.admins = admins;
-                }
-
-                if(checkObjectIDs(members)){
-                    dataInsert.members = members;
-                }
-                
 
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 return resolve({ error: false, data: infoAfterInsert });
@@ -129,7 +120,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ 
-        departmentID, name, admins, adminRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+        departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
         pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -145,6 +136,7 @@ class Model extends BaseModel {
                 let dataUpdate   = {};
                 let dataAddToSet = {};
                 let dataPull     = {};
+                let dataInc      = {};
                 
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: "Request params departmentID invalid" });
@@ -173,8 +165,8 @@ class Model extends BaseModel {
                     dataAddToSet.admins = admins;
                 }
 
-                if(checkObjectIDs(adminRemove)){
-                    dataPull.admins = adminRemove;
+                if(checkObjectIDs(adminsRemove)){
+                    dataPull.admins = adminsRemove;
                 }
 
                 if(checkObjectIDs(members)){
@@ -525,21 +517,21 @@ class Model extends BaseModel {
                     dataUpdate.numberOfInspections = numberOfInspections;
                 }
 
-                if(dataAddToSet){
-                    dataUpdate.$addToSet = dataAddToSet;
-                }
-
-                if(dataPull){
-                    dataUpdate.$pullAll = dataPull;
-                }
-
-                let dataInc = {};
                 if(numberOfDocs){
                     dataInc.numberOfDocs = numberOfDocs;
                 }
 
                 if(numberFinishOfDocs){
                     dataInc.numberFinishOfDocs = numberFinishOfDocs;
+                }
+
+                // Xử lý addToSet, pullAll, inc
+                if(dataAddToSet){
+                    dataUpdate.$addToSet = dataAddToSet;
+                }
+
+                if(dataPull){
+                    dataUpdate.$pullAll = dataPull;
                 }
 
                 if(dataInc){
@@ -556,6 +548,37 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Xoá dự án/phòng ban ✅
+     * Author: Depv
+     * Code: F00401
+     */
+    remove({ departmentID, userID }) {
+        return new Promise(async (resolve) => {
+            try {
+
+                if(!checkObjectIDs(departmentID))
+                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+
+                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
+                if(!infoDepartment)
+                    return resolve({ error: true, message: "không tìm thấy ID", keyError: KEY_ERROR.GET_INFO_FAILED,  status: 403 });
+
+                if(infoDepartment.userCreate != userID)
+                    return resolve({ error: true, message: "Bạn phải là người tạo ra dự án/phòng ban này mới được xoá", keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 });
+
+                let infoAfterRemove = await ITEM__DEPARTMENT_COLL.findByIdAndDelete(departmentID);
+                if(!infoAfterRemove)
+                return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
+
+                return resolve({ error: false, message: "Xoá thành công", status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 
     /**
      * Name: Lấy thông tin dự án/phòng ban ✅
@@ -576,7 +599,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                // populate
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -598,15 +620,18 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
 
-                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID)
-                .select(select)
-                .populate(populates)
+                let infoDepartment = await ITEM__DEPARTMENT_COLL
+                    .findById(departmentID)
+                    .select(select)
+                    .populate(populates)
+                    .lean()
 
                 if(!infoDepartment)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
                 return resolve({ error: false, data: infoDepartment, status: 200 });
             } catch (error) {
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -628,7 +653,9 @@ class Model extends BaseModel {
                 let keys	      = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
-                    limit = 20;
+                    limit = 20
+                }else{
+                    limit = +limit
                 }
 
                 if(isMember == 1){
@@ -667,7 +694,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj = {
+                        ...conditionObj,
+                        $or: [
+                            { name  :  new RegExp(keyword, 'i') },
+                            { sign  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
                 }
 
                 let conditionObjOrg = { ...conditionObj }
@@ -691,7 +725,7 @@ class Model extends BaseModel {
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select) 
                     .populate(populates)
@@ -744,6 +778,8 @@ class Model extends BaseModel {
 
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit
                 }
 
                 /** 
@@ -755,8 +791,8 @@ class Model extends BaseModel {
                     conditionObj.company = companyID
                 }
                 
-                if([1,2].includes(type)){
-                    conditionObj.type = +type;
+                if(type && [1,2].includes(type)){
+                    conditionObj.type = type;
                 }
 
                 if(!checkObjectIDs(userID))
@@ -768,6 +804,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
                     populates = JSON.parse(populates);
                 }else{
+                    // chưa fix được trường hợp không truyền populate thì lỗi
                     populates = {
                         path: "",
                         select: ""
@@ -778,7 +815,14 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj = {
+                        ...conditionObj,
+                        $or: [
+                            { name  :  new RegExp(keyword, 'i') },
+                            { sign  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
                 }
 
                 let conditionObjOrg = { ...conditionObj }
@@ -802,7 +846,7 @@ class Model extends BaseModel {
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy) 
                     .select(select) 
                     .populate(populates)

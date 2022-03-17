@@ -37,7 +37,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_PROJECT_MODEL.insert({
-                    client, address, area3, location, name, sign, note, projectType, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, userID
+                    client, address, area3, location, name, sign, note, projectType, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -76,7 +76,8 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_PROJECT_MODEL.update({
-                    datahubProjectID, client, address, area3, location, name, sign, note, projectType, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, userID 
+                    datahubProjectID, client, address, area3, location, name,
+                     sign, note, projectType, buildingType, buildingGrade, basementNumber, basementArea, floorNumber, floorArea, status, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

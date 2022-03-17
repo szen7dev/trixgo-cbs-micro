@@ -573,6 +573,7 @@ class Model extends BaseModel {
                 let year = moment(fromDate).toDate().getFullYear() //!!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm)
                 let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
                 //____________Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (31/12/2019-1/1/2020)
+
                 let listDataS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $facet: {
@@ -621,7 +622,8 @@ class Model extends BaseModel {
                                         "forward": 1,
                                         "cancel": 0
                                     }
-                                },  
+                                },
+ 
                                 {
                                     $group: {
                                         _id: { },
@@ -644,7 +646,7 @@ class Model extends BaseModel {
                                 }, 
                                 {
                                     $project : { 
-                                        year : {$year : "$date"},
+                                        date : '$date',
                                         forward: '$forward',
                                         cancel: '$cancel',
                                         amount: 1,
@@ -684,7 +686,7 @@ class Model extends BaseModel {
                                 }, 
                                 {
                                     $project : { 
-                                        year : {$year : "$date"},
+                                        date : '$date',
                                         forward: '$forward',
                                         cancel: '$cancel',
                                         amount: 1,
@@ -704,6 +706,7 @@ class Model extends BaseModel {
                 
                 let openingBalanceS = listDataS[0], openingBalance = listData[0]
                 let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0;
+
                 if(openingBalance._debit.length > 0){
                     totalOpeningDebit = openingBalance._debit[0].amountPrice;
                 }
@@ -716,8 +719,8 @@ class Model extends BaseModel {
                 if(openingBalanceS._credit.length > 0){
                     totalOpeningCreditS = openingBalanceS._credit[0].amountPrice;
                 }
-
                 return resolve({ error: false, data: (Number(totalOpeningDebit + totalOpeningDebitS - totalOpeningCreditS - totalOpeningCredit)) });
+
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOUNRAL][getOpeningBalanceOfCompany]: ${error} `);
                 return resolve({ error: true, message: error.message });
@@ -782,15 +785,15 @@ class Model extends BaseModel {
 
                 if(!toDate){
                     conditionObjDate = {
-                        forward: 0,
-                        cancel: 0,
-                        date: { $lt: moment(fromDate).toDate() }
+                        "forward": 0,
+                        "cancel": 0,
+                        "date": { $lt: moment(fromDate).toDate() }
                     }
                 }else{
                     conditionObjDate = {
-                        forward: 0,
-                        cancel: 0,
-                        date: { 
+                        "forward": 0,
+                        "cancel": 0,
+                        "date": { 
                             $gte: moment(fromDate).toDate(),
                             $lte: moment(toDate).toDate(),
                         },
@@ -811,7 +814,11 @@ class Model extends BaseModel {
                                 {
                                     $project : { 
                                         credit: '$credit',
+                                        debit:'$debit',
                                         amount: 1,
+                                        date : '$date',
+                                        forward: '$forward',
+                                        cancel: '$cancel',
                                     }
                                 },
                                 {
@@ -833,7 +840,11 @@ class Model extends BaseModel {
                                 {
                                     $project : { 
                                         debit:'$debit',
+                                        credit: '$credit',
                                         amount: 1,
+                                        date : '$date',
+                                        forward: '$forward',
+                                        cancel: '$cancel',
                                     }
                                 },
                                 {
@@ -847,7 +858,6 @@ class Model extends BaseModel {
                     } 
                 ])
                 if (!listData) return resolve({ error: true, message: 'cannot_get_list_data' });
-
                 //_________Khai báo mảng có Key là các accountID của công ty
                 // Giá trị là các cặp debit, credit của các tài khoản
                 let arrDebit = [], arrCredit = [];
@@ -856,6 +866,7 @@ class Model extends BaseModel {
                 // let listAccounts = await ACCOUNT_COLL.find({ company: companyID });
                 let listAccounts  =  await  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST}`,
                 { limit: '20', companyID, isAccountingService: true });
+
                 //_________Lặp qua từng tài khoản (gồm cả mẹ, con) và tổng hợp số liệu theo tài khoản đang xét
                 for(let item of listAccounts.data.listRecords){
                     //_________Lấy mảng arrObjectID gồm ID tài khoản và con cháu của tài khoản
@@ -891,9 +902,7 @@ class Model extends BaseModel {
                         }
                     });
                 }
-
-                
-                return resolve({ error: false, data: { arrDebit, arrCredit} });
+                return resolve({ error: false, data: { arrDebit, arrCredit } });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOUNRAL][getListBalanceOfCompanyGroupByAccount] tbook: ${error} `);
                 return resolve({ error: true, message: error.message });
@@ -2778,6 +2787,7 @@ class Model extends BaseModel {
                                 remainAmountDebitAllChilds: accountInfo.remainAmountDebitAllChilds,
                                 remainAmountCreditAllChilds: accountInfo.remainAmountCreditAllChilds
                             }
+                            
                             newListAccount.push(newInfoAccount);
                     }
                      
@@ -2973,17 +2983,20 @@ class Model extends BaseModel {
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
-                                        customerDebit:1,
+                                        customerDebit:'$customerDebit',
+                                        debit:'$debit',
+                                        contract:'$contract',
+                                        funda:'$funda',
                                         amount:1,
-                                        forward:1,
-                                        cancel:1
+                                        forward:'$forward',
+                                        cancel:'$cancel'
                                     }
                                 },
                                 {
                                     $match: {
-                                        year: Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
-                                        forward: 1,
-                                        cancel: 0
+                                        "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        "forward": 1,
+                                        "cancel": 0
                                     }
                                 }, 
                                 {
@@ -3001,17 +3014,21 @@ class Model extends BaseModel {
                                 {
                                     $project : { 
                                         year : {$year : "$date"},
-                                        customerCredit:1,
+                                        customerCredit:"$customerCredit",
                                         amount:1,
-                                        forward:1,
-                                        cancel:1
+                                        forward:'$forward',
+                                        cancel:'$cancel',
+                                        
+                                        credit:'$credit',
+                                        contract:'$contract',
+                                        funda:'$funda',
                                     }
                                 },
                                 {
                                     $match: {
-                                        year: Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
-                                        forward: 1,
-                                        cancel: 0
+                                        "year": Number(year), //Number(year-1) THEO CẤU HÌNH CŨ
+                                        "forward": 1,
+                                        "cancel": 0
                                     }
                                 }, 
                                 {
@@ -3032,15 +3049,15 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj1
                                 }, 
-                                {
-                                    $project : { 
-                                        year : {$year : "$date"},
-                                        customerDebit:1,
-                                        amount:1,
-                                        forward:1,
-                                        cancel:1
-                                    }
-                                },
+                                // {
+                                //     $project : { 
+                                //         year : {$year : "$date"},
+                                //         customerDebit:1,
+                                //         amount:1,
+                                //         forward:1,
+                                //         cancel:1
+                                //     }
+                                // },
                                 {
                                     $match: {
                                         forward: 0,
@@ -3063,15 +3080,15 @@ class Model extends BaseModel {
                                 {
                                     $match: conditionObj2
                                 }, 
-                                {
-                                    $project : { 
-                                        year : {$year : "$date"},
-                                        customerCredit:1,
-                                        amount:1,
-                                        forward:1,
-                                        cancel:1
-                                    }
-                                },
+                                // {
+                                //     $project : { 
+                                //         year : {$year : "$date"},
+                                //         customerCredit:1,
+                                //         amount:1,
+                                //         forward:1,
+                                //         cancel:1
+                                //     }
+                                // },
                                 {
                                     $match: {
                                         forward: 0,
@@ -3092,9 +3109,8 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
+                console.log({ ________6: JSON.stringify( listData[0])})                // Convert dữ liệu sang mảng có Key là các itemID để tiện cho việc hiển thị ra view
 
-
-                // Convert dữ liệu sang mảng có Key là các itemID để tiện cho việc hiển thị ra view
                 let arrDebitS = [], arrCreditS = [], arrDebit = [], arrCredit = [];
                 listDataS[0]._debit.forEach(element=>{
                     let key = element._id.contact;
@@ -3321,7 +3337,8 @@ class Model extends BaseModel {
                     data:{ 
                         projectID: undefined,
                         infoContract: undefined,
-                        infoFunda, fromDate, toDate,
+                        // infoFunda,
+                        fromDate, toDate,
                         // infoAccount: infoAccount.data,
                         accountID,
                         // listContacts: listContacts.data, [bổ xung]
@@ -3347,7 +3364,7 @@ class Model extends BaseModel {
                 const listAccountsAsync  =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`, {  isNestedOfCompany: false, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
 
                 // let infoAccount = await ACCOUNT_MODEL.getInfoAccount({ accountID });
-                let _listJournalsOpening =  this.getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate });
+                let _listJournalsOpening =  this.getOpeningBalanceOfCompany({  ctx, fundaID, accountID, fromDate });
                 let _listDataAccountCharacterT =  this.getListBalanceOfCompanyGroupByAccount({ ctx, companyID, fundaID, accountID, fromDate, toDate });
                 const [  infoAccount, listAccounts, listJournalsOpening, listDataAccountCharacterT ] =  await Promise.all([
                     _infoAccount,listAccountsAsync,  _listJournalsOpening, _listDataAccountCharacterT 
@@ -3362,7 +3379,7 @@ class Model extends BaseModel {
                         fromDate, 
                         toDate,
                         infoAccount: infoAccount.data,
-                        listAccounts: listAccounts,
+                        listAccounts: listAccounts.data,
                         accountID,
                         openingBalance: listJournalsOpening.data,
                         arrDebit: Object.assign({}, listDataAccountCharacterT.data.arrDebit), // listDataAccountCharacterT.data.arrDebit,

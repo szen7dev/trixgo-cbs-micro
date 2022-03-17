@@ -31,7 +31,6 @@ module.exports = {
 		DbService('message_message_polls'),
 		DbService('message_message_reminders'),
 		DbService('message_message_reactions'),
-		DbService('users'),
 		CacheCleaner([CF_DOMAIN_SERVICES.CHATTING])
     ],
 
@@ -160,9 +159,6 @@ module.exports = {
 		// Cập nhật cuộc hội thoại
 		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION] 		            			: CHATTING__CONVERSATION_HANDLER.updateConversation,
 
-		// Kiểm tra tồn tại cuộc hội thoại
-		[CF_ACTIONS_CHATTING.CHECK_EXISTS_CONVERSATION]							: CHATTING__CONVERSATION_HANDLER.checkExistsConversation,
-
 		// Cập nhật tên cuộc hội thoại riêng tư (service call service)
 		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION_NAME_PRIVATE]					: CHATTING__CONVERSATION_HANDLER.updateConversationNamePrivate,
 
@@ -226,6 +222,9 @@ module.exports = {
 		// Danh sách file trong cuộc hội thoại
 		[CF_ACTIONS_CHATTING.GET_LIST_FILE_CONVERSATION]						: CHATTING__CONVERSATION_HANDLER.getListFileConversation,
 
+		// Danh sách link trong cuộc hội thoại
+		[CF_ACTIONS_CHATTING.GET_LIST_LINK_CONVERSATION]						: CHATTING__CONVERSATION_HANDLER.getListLinkConversation,
+
 
 		// ======================  CONVERSATION FOLDER ===========================
 		// Thêm folder mới
@@ -233,6 +232,9 @@ module.exports = {
 
 		// Cập nhật folder
 		[CF_ACTIONS_CHATTING.UPDATE_FOLDER_CONVERSATION]						: CHATTING__CONVERSATION_FOLDER_HANDLER.update,
+
+		// Thêm cuộc hội thoại vào folders
+		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION_TO_FOLDER]						: CHATTING__CONVERSATION_FOLDER_HANDLER.updateConversationToFolder,
 
 		// Xóa folder
 		[CF_ACTIONS_CHATTING.DELETE_FOLDER_CONVERSATION]						: CHATTING__CONVERSATION_FOLDER_HANDLER.delete,

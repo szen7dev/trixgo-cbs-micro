@@ -18,6 +18,7 @@ const CF_ROUTINGS_DOCUMENT = {
     STATISTICAL_BY_TYPE                         : `${BASE_ROUTE}/statistical_by_type`,
     // PACKAGE
     DOCUMENT_PACKAGE                     		: `${BASE_ROUTE}/document_packages`,
+    DOCUMENT_PACKAGE_REMOVE_MANY                : `${BASE_ROUTE}/document_packages/remove-many`,
 
     // DOCUMENT_FILE
     DOCUMENT_FILE                               : `${BASE_ROUTE}/document_files`,

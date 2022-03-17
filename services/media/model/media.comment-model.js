@@ -3,6 +3,12 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }      = require('../../../tools/cursor_base/playground/index');
+const { CF_DOMAIN_SERVICES }            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
+const { APP_KEYS, LANGUAGE_KEYS }       = require('../../../tools/keys');
+const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
 
 /**s
  * import inter-coll, exter-coll
@@ -26,9 +32,121 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
+     * Func: Insert noti to DB
+     */
+    createNotification({ infoMedia, infoComment, authorID, bizfullname, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                let arrReceiver = [];
+                let dataSend = {};
+                let titleMSS = '';
+                let descriptionMSS = '';
+
+                /**
+                 * Loại bài viết
+                 * 1: Bài viết công ty (Thành viên trong công ty)
+                 * 2: Dự án, phòng ban
+                 * 3: Chuyển đổi số
+                 * 4: Hệ thống
+                 * 5: Bài viết cá nhân
+                 * ..... Sau bổ sung thêm vài loại bài viết
+                 */
+                 switch (infoMedia.type) {
+                    case 1: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            companyID: infoMedia?.company?.toString(),
+                            isLoadAll: true
+                        });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.map(user => user._id);
+                        }
+                        break;
+                    }
+                    case 2: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                            departmentID: infoMedia?.department?.toString(),
+                            // select: "members"
+                        });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.members;
+                        }
+                    }
+                    case 3:
+                    case 4: {
+                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+                            isLoadAll: true
+                        });
+
+                        if(!listReceivers.error) {
+                            arrReceiver = listReceivers.data?.map(user => user._id);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+
+                dataSend = {
+                    app: APP_KEYS.MEDIA,
+                    languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                    mainColl: {
+                        kind: 'media',
+                        item: infoMedia
+                    },
+                    subColl: {
+                        kind: 'media_comment',
+                        item: infoComment
+                    },
+                }
+
+                titleMSS        = `BÀI VIẾT: ${infoMedia.title}`;
+                descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
+                arrReceiver     = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+
+                if(arrReceiver && arrReceiver.length) {
+                    const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        users: arrReceiver,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        dataSend,
+                        web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content,
+                        receivers: arrReceiver,
+                        path: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
+                        app: APP_KEYS.MEDIA,
+                        mainColl: {
+                            kind: "media",
+                            item: infoMedia._id
+                        },
+                        subColl: {
+                            kind: "media_comment",
+                            item: infoComment._id
+                        },
+                        type: 1 // InApp (Socket)
+                    });
+                }
+
+                return resolve({ error: false, data: arrReceiver, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
      * Func: Create comment media
      */
-    insert({ mediaID, parentID, content, files, images, authorID, select, populates }) { 
+    insert({ mediaID, parentID, content, files, images, authorID, select, populates, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {  
@@ -89,6 +207,20 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
+                const infoMedia = await MEDIA_COLL
+                    .findById(mediaID)
+                    .populate('author', '_id bizfullname image')
+                    .lean();
+
+                if(!infoMedia) {
+                    return resolve({
+                        error: true,
+                        message: "Bài viết không tồn tại",
+                        keyError: "media_not_exists",
+                        status: 400
+                    })
+                }
+
                 content && (dataInsert.content  = content);
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
@@ -121,15 +253,26 @@ class Model extends BaseModel {
                     }
                 })
 
+                // Insert notification to DB
+                const infoAfterCreateNoti = await this.createNotification({ 
+                    infoMedia, 
+                    infoComment: infoAterInsert, 
+                    bizfullname,
+                    authorID,
+                    ctx 
+                });
+                if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
+
                 infoAterInsert = await MEDIA__COMMENT_COLL
                     .findById(infoAterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
 
+                infoAterInsert.receivers = infoAfterCreateNoti.data;
+
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
-                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -361,7 +504,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, parentID, limit = 5, lastestID, select, populates }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -412,6 +555,15 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(isLoadAll) {
+                    let listComments = await MEDIA__COMMENT_COLL
+                        .find({})
+                        .select('author')
+                        .lean(); 
+
+                    return resolve({ error: false, data: listComments, status: 200 });
+                }
+
 				let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await MEDIA__COMMENT_COLL.findById(lastestID);
@@ -454,8 +606,8 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
 
-                    infoDataAfterGet = infoDataAfterGet.reverse();
-                    nextCursor	     = infoDataAfterGet[0]._id;
+                    // infoDataAfterGet = infoDataAfterGet.reverse();
+                    // nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
                 let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
@@ -484,7 +636,7 @@ class Model extends BaseModel {
      * Dev: MinhVH
      * Func: Create comment file
      */
-    insertCommentFile({ mediaID, fileID, parentID, content, files, images, select, populates, authorID }) { 
+    insertCommentFile({ mediaID, fileID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 /** 
@@ -547,6 +699,20 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID;
                 }
 
+                const infoMedia = await MEDIA_COLL
+                    .findById(mediaID)
+                    .populate('author', '_id bizfullname image')
+                    .lean();
+
+                if(!infoMedia) {
+                    return resolve({
+                        error: true,
+                        message: "Bài viết không tồn tại",
+                        keyError: "media_not_exists",
+                        status: 400
+                    })
+                }
+
                 content && (dataInsert.content  = content);
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
@@ -579,11 +745,23 @@ class Model extends BaseModel {
                     }
                 })
 
+                // Insert notification to DB
+                const infoAfterCreateNoti = await this.createNotification({ 
+                    infoMedia, 
+                    infoComment: infoAterInsert, 
+                    bizfullname,
+                    authorID, 
+                    ctx 
+                });
+                if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
+
                 infoAterInsert = await MEDIA__COMMENT_FILE_COLL
                     .findById(infoAterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
+
+                infoAterInsert.receivers = infoAfterCreateNoti.data;
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -910,9 +1088,6 @@ class Model extends BaseModel {
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
-
-                    infoDataAfterGet = infoDataAfterGet.reverse();
-                    nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
                 let totalRecord = await MEDIA__COMMENT_FILE_COLL.countDocuments(conditionObjOrg);

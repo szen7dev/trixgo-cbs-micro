@@ -12,21 +12,21 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation_folder", {
         require: true
     },
 
-    /**
-     * Các cuộc hội thoại được thêm vào folder
-     */
-    includedConversations: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation'
-    }],
+    // /**
+    //  * Các cuộc hội thoại được thêm vào folder
+    //  */
+    // includedConversations: [{
+    //     type    : Schema.Types.ObjectId,
+    //     ref     : 'message_conversation'
+    // }],
 
-    /**
-     * Tất cả cuộc hội thoại (ngoài trừ những cuộc hội thoại này)
-     */
-    excludedConversations: [{
-        type    : Schema.Types.ObjectId,
-        ref     : 'message_conversation'
-    }],
+    // /**
+    //  * Tất cả cuộc hội thoại (ngoài trừ những cuộc hội thoại này)
+    //  */
+    // excludedConversations: [{
+    //     type    : Schema.Types.ObjectId,
+    //     ref     : 'message_conversation'
+    // }],
 
     /**
      * Số lượng tin nhắn bị miss (của tất cả cuộc hội thoại trong folder)

@@ -33,43 +33,6 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-
-
-// const ObjectID                      = require('mongoose').Types.ObjectId;
-
-// const BaseModel                     = require('../intalize/base_model');
-// const { isEmptyObject }             = require('../../utils/utils');
-
-// const cfJws                         = require('../../config/cf_jws');
-// const { checkObjectIDs }            = require('../../utils/utils');
-// const XLSX      = require('xlsx');
-
-// const AUTH__COMPANY_COLL                  = require('../../database/core/company-coll');
-// const CONTACT_COLL                  = require('../../database/core/contact-coll');
-// const DEPARTMENT_COLL               = require('../../database/core/department-coll');
-// const POSITION_COLL                 = require('../../database/core/position-coll');
-// const CONTRACT_COLL                 = require('../../database/core/contract-coll');
-// const REMOVE_FILE_COLL              = require('../../database/core/file_removed-coll');
-// const PCM_PLAN_GROUP_COLL           = require('../../database/apps/pcm/pcm_plan_group-coll');
-
-
-// const DB_APP_USER_MODEL             = require('../../models/core/app_user').MODEL;
-// const GROUP_OF_FRIEND_MODEL         = require('../../models/core/group_of_friend').MODEL;
-// const FILE_REMOVE_MODEL             = require('../../models/core/file_removed').MODEL;
-
-// const STRING_UTILS                  = require('../../utils/string_utils');
-// const { sendMailForgetPassword, sendMailNewAccount }    = require('../../mailer/module/mail_user');
-// let { socket_product }              = require('../../config/cf_mode');
-// let { cachingInfoUser } = require('../../utils/caching');
-
-/**
- * worker: (mail)
- * sử dụng WORKER_POOLS(WOKER_THREADS) thay_cho sendMailForgetPassword, sendMailNewAccount (MAIN_THREAD)
- */
-// let workerpool          = require('workerpool');
-// let pool                = workerpool.pool(`${__dirname}/../../workers/mail/mail.worker.js`);
-// let MAIL_CONSTANTS      = require('../../workers/constants/mail');
-
 class Model extends BaseModel {
 
     constructor() {
@@ -234,29 +197,55 @@ class Model extends BaseModel {
                         platform: +platform
                     })
                     .populate({
-                        path: 'company',
+                        path: 'company department',
                         select: '_id name sign image'
                     });
 
-                if (!isExist)
-                    return resolve({ error: true, message: 'email_not_exist' });
+                if (!isExist) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Email không tồn tại',
+                        keyError: "email_not_exists",
+                        status: 400
+                    });
+                }
+
+                if(isExist.platform !== +platform) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Flatform không hợp lệ',
+                        keyError: "platform_invalid",
+                        status: 400
+                    });
+                }
 
                 const isMatchPass = await compare(password, isExist.password);
-                if (!isMatchPass) return resolve({
-                    error: true,
-                    message: 'password_not_exist'
-                });
+                if (!isMatchPass) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Mật khẩu không trùng khớp',
+                        keyError: "password_not_match",
+                        status: 400
+                    });
+                }
+  
+                if (isExist.status == STATUS_BLOCK) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tài khoản của bạn đã bị khóa',
+                        keyError: "account_is_blocked",
+                        status: 403
+                    });
+                }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: convert type + update name (ví dụ: string -> number)
-                 *  3.2: operation database
-                 */    
-                if (isExist.status == STATUS_BLOCK) 
-                    return resolve({ error: true, message: 'user_blocked' });
-
-                if (isExist.status == STATUS_INACTIVE) 
-                    return resolve({ error: true, message: 'user_not_active' });
+                if (isExist.status == STATUS_INACTIVE) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Tài khoản của bạn chưa được kích hoạt',
+                        keyError: "account_is_not_active",
+                        status: 403
+                    });
+                }
                 
                 // delete isExist.password;
                 // delete isExist.bookmarks;
@@ -272,24 +261,17 @@ class Model extends BaseModel {
                     name: isExist.name,
                     fullname: isExist.fullname,
                     bizfullname: isExist.bizfullname,
-                    // birthDay: isExist.birthDay,
                     company: isExist.company,
-                    // department: isExist.department,
-                    // position: isExist.position,
+                    department: isExist.department,
                     image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
-                    // numLog: isExist.numLog,
-                    // lastLogs: isExist.lastLogs,
-                    // noticeConfig: isExist.noticeConfig,
-                    // deviceName: isExist.deviceName,
-                    // deviceID: isExist.deviceID,
-                    // registrationID: isExist.registrationID,
                     _id: isExist._id,
                 }
 
                 const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
+
                 // update lastLog of user
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
                     lastLog: new Date()
@@ -305,13 +287,15 @@ class Model extends BaseModel {
                 
                 return resolve({
                     error: false,
-                    data: { user: newExist, token }
+                    data: { user: newExist, token },
+                    status: 200
                 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
     // implement by: KHANHNEY✅ 
     updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {
@@ -380,6 +364,15 @@ class Model extends BaseModel {
                                 deviceName      : device.deviceName, 
                                 registrationID  : registrationID,
                                 oneSignalID     : oneSignalID,
+                               /**
+                                 * vì mobile có 2 loại app khác nhau
+                                 *  1/ CBS
+                                 *      - WEB CBS
+                                 *      - APP CBS
+                                 *      - WEB TEASER
+                                 *  2/ Teaser
+                                 *      - APP Teaser
+                                 */
                                 env
                             };
                         }
@@ -482,7 +475,7 @@ class Model extends BaseModel {
                     .find({ ...conditionObj, ...conditionFind })
                     .select(select)
                     .limit(limit + 1)
-                    .populate(populates)
+                    // .populate(populates)
                     .sort(sortBy)
 					.lean();
 
@@ -648,6 +641,8 @@ class Model extends BaseModel {
 					}
 				});
             } catch (error) {
+                console.info('getListUsersForPushMobile')
+                console.error(error)
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -701,7 +696,7 @@ class Model extends BaseModel {
         })
     }
 
-	// implement by: MINHVH ✅ 
+    // implement by: MINHVH ✅ 
 	getInfoById({ userID, select }) {
         return new Promise(async (resolve) => {
             try {
@@ -732,6 +727,7 @@ class Model extends BaseModel {
             }
         })
     }
+
 
 	// implement by: MINHVH ✅ 
 	getListUserWithCondition({ condition, select, filter = {} }) {
@@ -1044,12 +1040,125 @@ class Model extends BaseModel {
     }
 
     /**
+	 * Dev: MinhVH
+	 * Func: Hàm tạo mới user
+	 * Date: 03/03/2022
+	 */
+    insert({ email, fullname, level, departmentID, positionID, companyID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!email || !fullname) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số email và fullname không hợp lệ",
+                        keyError: "params_email_or_fullname_invalid",
+                        status: 400
+                    })
+                }
+
+                if(!companyID || !checkObjectIDs([companyID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số companyID không hợp lệ",
+                        keyError: "params_companyID_invalid",
+                        status: 400
+                    })
+                }
+
+                let emailValid = email.toLowerCase().trim();
+                let password = '12345TRX@#';
+
+                // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
+                let isExistUser = await AUTH__USER_COLL.findOne({ email: emailValid });
+
+                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
+                if (isExistUser) {
+                    return resolve({
+                        error: true,
+                        message: "Email đã tồn tại",
+                        keyError: "email_is_exists",
+                        status: 400
+                    })
+                }
+
+                let hashPassword = await hash(password, 8);
+                if (!hashPassword) {
+                    return resolve({
+                        error: true,
+                        message: "Không thể hash password",
+                        keyError: "can_not_hash_password",
+                        status: 400
+                    })
+                }
+
+                // Lấy thông tin công ty để gán ký hiệu công ty
+                let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);
+
+                let dataInsert = {
+                    email: emailValid,
+                    fullname,
+                    password: hashPassword,
+                    company: companyID
+                }
+
+                if(fullname){
+                    dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
+                }
+
+                if(departmentID && checkObjectIDs([departmentID])){
+                    dataInsert.department = departmentID;
+                }
+                
+                if(positionID && checkObjectIDs([positionID])){
+                    dataInsert.position = positionID;
+                }
+
+                if(Number(level) === 0 || Number(level) === 1){
+                    dataInsert.level = +level;
+                }
+
+                let infoUserAfterInsert = await this.insertData(dataInsert);
+                if (!infoUserAfterInsert) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                }
+
+                // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
+                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+                // let listUserInCompany = await USER_COLL.find({ company: companyID });
+                // let arrUserID = listUserInCompany.map(item => item._id);
+                // // Update bạn bè với các thành viên của công ty
+                // let infoUserAfterUpdate = await USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                //     friends: arrUserID,
+                // }, { new: true });
+
+                // // Update cho các thành viên công ty nhận bạn bè mới
+                // for(const item of listUserInCompany){
+                //     await USER_COLL.findByIdAndUpdate(item._id, {
+                //         $addToSet: {
+                //             friends: infoUserAfterInsert._id
+                //         }
+                //     }, { new: true });
+                // }
+                
+                return resolve({ error: false, data: infoUserAfterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            } 
+        });
+    }  
+
+    /**
 	 * Dev: Depv
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, 
-        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx }) {
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level,
+        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID))
@@ -1093,6 +1202,22 @@ class Model extends BaseModel {
 
                 if(signature){
                     dataUpdate.signature = signature;
+                }
+
+                if(level){
+                    dataUpdate.level = level;
+                }
+
+                if(companyID){
+                    dataUpdate.company = companyID;
+                }
+
+                if(departmentID){
+                    dataUpdate.department = departmentID;
+                }
+
+                if(positionID){
+                    dataUpdate.position = positionID;
                 }
 
                 // Gửi yêu cầu kết bạn tới người khác
@@ -1169,11 +1294,37 @@ class Model extends BaseModel {
                 let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, dataUpdate, { new: true });
                 if(!infoUserAfterUpdate)
                     return resolve({ error: false, message: "Cập nhật thất bại", keyError: "cannot_update" });
-                    
+
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
             } catch (error) { 
                 return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Hàm xóa user
+	 * Date: 03/03/2022
+	 */
+    delete({ usersID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!usersID.length || !checkObjectIDs(usersID)) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số usersID không hợp lệ",
+                        keyError: "params_usersID_invalid",
+                        status: 400
+                    })
+                }
+
+                const infoAfterDelete = await AUTH__USER_COLL.deleteMany({ _id: { $in: usersID } });
+
+                return resolve({ error: false, data: infoAfterDelete, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -1242,7 +1393,7 @@ class Model extends BaseModel {
                     .find(conditionObj)
                     .select(select)
                     .limit(limit + 1)
-                    .populate(populates)
+                    // .populate(populates)
                     .sort(sortBy)
 					.lean();
 
@@ -1414,47 +1565,75 @@ class Model extends BaseModel {
      * Code  : 
      */
     getListV2({
-        companyID, projectID, 
-        keyword, limit = 10, lastestID, select, populates= {}, ctx }) { 
+        companyID, projectID, arrayID,
+        keyword, limit = 10, lastestID, select, populates= {}, ctx, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                };
+                let conditionObj = {};
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
-               
+
+                // Cờ dùng để call service, không truyền qua api
+                if(isLoadAll) {
+                    let infoDataAfterGet = [];
+
+                    if(companyID && checkObjectIDs([companyID])) {
+                        infoDataAfterGet = await AUTH__USER_COLL
+                            .find({ company: companyID })
+                            .select('_id')
+                            .lean();
+                    } else{
+                        infoDataAfterGet = await AUTH__USER_COLL
+                            .find({})
+                            .select('_id')
+                            .lean()
+                    }
+
+                    return resolve({ error: false, data: infoDataAfterGet, status: 200 });
+                }
+
+                // Lấy user theo mảng id
+                if(arrayID && arrayID.length){
+                    arrayID = JSON.parse(arrayID);
+                    conditionObj._id = { $in: arrayID }
+                }
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(limit > 20){
-                    limit = 20
-                }
+               
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
 					populates = {
                         path  : "",
                         select: ""
                     }
                 }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-                if(companyID){
-                    conditionObj.company = companyID
+                 */
+                if(companyID && checkObjectIDs([companyID])){
+                    conditionObj.company = companyID;
                 }
-                
+
                 if(checkObjectIDs(projectID)){
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
@@ -1466,12 +1645,10 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    conditionObj.bizfullname = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-                
-                // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await AUTH__USER_COLL.findById(lastestID);
 					if(!infoData)
@@ -1487,15 +1664,15 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy = dataPagingAndSort.data.sort;
                 }
-                
-                let infoDataAfterGet = await AUTH__USER_COLL.find(conditionObj)
+
+                let infoDataAfterGet = await AUTH__USER_COLL
+                    .find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
-                    .populate(populates)
+                    // .populate(populates)
                     .lean(); 
 
-                // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -1507,7 +1684,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObj);
+                let totalRecord = await AUTH__USER_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
@@ -1517,7 +1694,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

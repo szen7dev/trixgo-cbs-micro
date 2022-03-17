@@ -18,16 +18,20 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            type            : { type: "number", optional: true },
-            name            : { type: "string", optional: true },
+            type            : { type: "number" },
+            name            : { type: "string" },
+            sign            : { type: "string" },
+            startTime       : { type: "string" },
+            expiredTime     : { type: "string" },
+            milestones      : { type: "number" },
+            completedMilestones: { type: "number" },
+            companyID       : { type: "string", optional: true },
+
             description     : { type: "string", optional: true },
             // company         : { type: "string", optional: true },
             parent          : { type: "string", optional: true },
-            sign            : { type: "string", optional: true },
             owner           : { type: "string", optional: true },
             address         : { type: "string", optional: true },
-            startDate       : { type: "string", optional: true },
-            endDate         : { type: "string", optional: true },
             pm              : { type: "string", optional: true },
             status          : { type: "string", optional: true },
             note            : { type: "string", optional: true },
@@ -40,19 +44,19 @@ module.exports = {
             area            : { type: "string", optional: true },
             members         : { type: "array", optional: true },
             admins          : { type: "array", optional: true },
+            admins          : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  type, name, description, parent, sign, owner, address, startDate, endDate, pm, status, note,
-                    assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, admins,
-                    members, numberOfDocs, numberFinishOfDocs } = ctx.params;
-
+                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones  } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                    type, name, description, company, parent, sign, owner, address, startDate, endDate, pm, status, 
-                    note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID: userID, admins,
-                    numberOfDocs, numberFinishOfDocs, members, ctx
+                   company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, authorID: userID, ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -71,7 +75,7 @@ module.exports = {
             departmentID            : { type: "string", optional: true },
             name                    : { type: "string", optional: true },
             admins                  : { type: "array", optional: true  },
-            adminsRemove            : { type: "string", optional: true },
+            adminsRemove            : { type: "array", optional: true },
             members                 : { type: "array", optional: true  },
             membersRemove           : { type: "array", optional: true },
             stage                   : { type: "number", optional: true },
@@ -166,7 +170,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let {  departmentID, name, admins, adminRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+                let {  departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
                     pm, assistant, budget, note, position, image, files, milestones, completedMilestones, tasks, completedTasks,
                     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -178,7 +182,7 @@ module.exports = {
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs } = ctx.params;
                     
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
-                    departmentID, name, admins, adminRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
+                    departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
                     pm, assistant, budget, note, position, image, files, userUpdate: userID, milestones, completedMilestones, tasks, completedTasks,
                     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
@@ -188,6 +192,33 @@ module.exports = {
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+      
+    /**
+	 * Dev: Depv ✅
+	 * Func: Xoá dự án phòng ban
+	 */
+    remove: {
+        auth: "required",
+        params: {
+            departmentID    : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let {  departmentID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+            
+                let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.remove({
+                    departmentID, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -267,8 +298,7 @@ module.exports = {
 				let { _id: userID } = ctx.meta.infoUser;
                
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
-                    companyID, lastestID, userID, type, 
-                    keyword, limit, select, populates
+                    companyID, lastestID, userID, type, keyword, limit, select, populates
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

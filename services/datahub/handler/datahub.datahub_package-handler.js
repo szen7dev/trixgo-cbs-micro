@@ -15,8 +15,8 @@ module.exports = {
 	 */
     insert: {
         params: {
+            contractor    : { type: "string" },
             project       : { type: "string" },
-            client        : { type: "string" },
             field         : { type: "string" },
             name          : { type: "string" },
             sign          : { type: "string" },
@@ -31,11 +31,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
+                let { contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.insert({
-                    project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
+                    contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -53,7 +53,6 @@ module.exports = {
         params: {
             datahubPackageID: { type: "string" },
             project         : { type: "string", optional: true },
-            client          : { type: "string", optional: true },
             field           : { type: "string", optional: true },
             name            : { type: "string", optional: true },
             sign            : { type: "string", optional: true },
@@ -68,11 +67,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
+                let { datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.update({
-                    datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
+                    datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -114,6 +113,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             datahubPackageID : { type: "string", optional: true },
+            contractorID     : { type: "string" },
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -124,7 +124,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubPackageID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { contractorID, datahubPackageID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -134,7 +134,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_PACKAGE_MODEL.getList({
-                        userID, lastestID, keyword, limit: +limit, select, populates
+                        contractorID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
                 

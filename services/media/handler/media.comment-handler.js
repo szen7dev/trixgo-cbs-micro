@@ -33,11 +33,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
+                const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { mediaID, parentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
-                    mediaID, parentID, content, files, images, select, populates, authorID
+                    mediaID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -123,7 +123,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    commentID, mediaID, parentID, limit, lastestID, select, populates
+                    commentID, mediaID, parentID, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
                 let resultAfterCallHandler;
 
@@ -133,7 +133,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, parentID, limit, lastestID, select, populates
+                        mediaID, parentID, limit, lastestID, select, populates, isLoadAll
                     });
                 }
 
@@ -169,11 +169,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID } = ctx.meta.infoUser;
+                const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const { mediaID, fileID, parentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insertCommentFile({
-                    mediaID, fileID, parentID, content, files, images, select, populates, authorID
+                    mediaID, fileID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

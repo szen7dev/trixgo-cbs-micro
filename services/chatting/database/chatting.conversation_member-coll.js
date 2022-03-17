@@ -4,7 +4,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
-
     /**
      * Cuộc hội thoại
      */
@@ -27,6 +26,18 @@ module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
     addedBy: {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
+    },
+
+    /**
+     * Loại thành viên
+     * 1. Owner
+     * 2. Admin
+     * 3. Member
+     */
+    type: {
+        type: String,
+        enum: ['owner', 'admin', 'member'],
+        default: 'member'
     },
 
     /**

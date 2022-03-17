@@ -187,7 +187,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      */
 	nps: {
         type    : Schema.Types.ObjectId,
-        ref     : 'message_nps'
+        ref     : 'message_message_nps'
     },
 
     /**
@@ -195,6 +195,6 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
      */
     reactions: [{
         type    : Schema.Types.ObjectId,
-        ref     : 'reaction'
+        ref     : 'message_message_reaction'
     }],
 })

@@ -1,3 +1,33 @@
+exports.LANGUAGE_KEYS = {
+    CREATE_NEW_MEDIA: "CREATE_NEW_MEDIA",
+    CREATE_COMMENT_MEDIA: "CREATE_COMMENT_MEDIA",
+    CREATE_RESPONSE_PCM: "CREATE_RESPONSE_PCM",
+    CREATE_NEW_TASK: "CREATE_NEW_TASK",
+    CREATE_COMMENT_PCM: "CREATE_COMMENT_PCM",
+    CREATE_CHECKLIST_PCM: "CREATE_CHECKLIST_PCM",
+    CREATE_CHILDTASK_PCM: "CREATE_CHILDTASK_PCM",
+    ADD_RELATION_USER: "ADD_RELATION_USER",
+}
+
+exports.APP_KEYS = {
+    MEDIA: "5df4ce16506d9b3c587948ca",
+    CHATTING: "5dfe4c1b51dc622100bb9d8f",
+    PCM_PLAN_TASK: "5dfe4b9051dc622100bb9d89",
+    DOCUMENT: "5e47867080019357cce04746",
+    HUMAN: "61e049c9fdebf77b072d1b13",
+}
+
+exports.KEY_ERROR  = {
+    PERMISSION_DENIED   : "permission_denied",
+    INSERT_FAILED       : "insert_failed",
+    UPDATE_FAILED       : "update_failed",
+    DELETE_FAILED       : "delete_failed",
+    GET_INFO_FAILED     : "get_info_failed",
+    GET_LIST_FAILED     : "get_list_failed",
+    PARAMS_INVALID      : "params_invalid",
+    ITEM_EXISTED        : "item_existed",
+}
+
 /* 1 createdAt:12/14/2019, 6:57:10 PM*/
 // {
 //     "_id" : ObjectId("5df4ce16506d9b3c587948ca"),
@@ -153,22 +183,3 @@
 //     "_id" : ObjectId("61e04a0dfdebf77b072d1b18"),
 //     "name" : "Operation"
 //   }
-
-exports.APP_KEYS = {
-    MEDIA: "5df4ce16506d9b3c587948ca",
-    CHATTING: "5dfe4c1b51dc622100bb9d8f",
-    PCM_PLAN_TASK: "5dfe4b9051dc622100bb9d89",
-    DOCUMENT: "5e47867080019357cce04746",
-    HUMAN: "61e049c9fdebf77b072d1b13",
-}
-
-exports.KEY_ERROR  = {
-    PERMISSION_DENIED   : "permission_denied",
-    INSERT_FAILED       : "insert_failed",
-    UPDATE_FAILED       : "update_failed",
-    DELETE_FAILED       : "delete_failed",
-    GET_INFO_FAILED     : "get_info_failed",
-    GET_LIST_FAILED     : "get_list_failed",
-    PARAMS_INVALID      : "params_invalid",
-}
-

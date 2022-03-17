@@ -24,6 +24,7 @@ const {
  * COLLECTIONS
  */
 const DATAHUB_PACKAGE_COLL           				= require('../database/datahub_package-coll');
+const DATAHUB_PROJECT_COLL           				= require('../database/datahub_project-coll');
 
 class Model extends BaseModel {
 
@@ -36,16 +37,24 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    insert({ project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID }) {
+    insert({ contractor, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID }) {
         return new Promise(async resolve => {
             try { 
                 if(!name)
                     return resolve({ error: true, message: "Tên datahub không hợp lệ", keyError: 'params_invalid' });
 
-                if(!checkObjectIDs(project, client, field))
-                    return resolve({ error: true, message: "project || client || field invalid", keyError: 'params_invalid' });
+                if(!checkObjectIDs(project, field, contractor))
+                    return resolve({ error: true, message: "contractor || project || field invalid", keyError: 'params_invalid' });
 
-                let dataInsert = { project, client, field, name, value, vatValue, userCreate: userID };
+                let { client, area1, area2, area3, projectType, buildingType, 
+                    buildingGrade, basementNumber, basementArea, floorNumber, floorArea } = await DATAHUB_PROJECT_COLL.findById(project)
+                    
+                let dataInsert = {
+                    contractor, project, field, name, value, vatValue, userCreate: userID,
+                    client, area1, area2, area3, projectType, buildingType,
+                    buildingGrade, basementNumber, basementArea, floorNumber, floorArea
+                };
+
                 if(sign){
                     dataInsert.sign = sign;
                 }
@@ -86,17 +95,18 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code: 
 	 */
-    update({ datahubPackageID, project, client, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
+    update({ datahubPackageID, project, field, name, sign, note, value, vatValue, date, startTime, endTime, status, userID  }) {
         return new Promise(async resolve => {
             try {
                 
                 let dataUpdate = { userUpdate: userID };
                 if(project){
-                    dataUpdate.project = project;
-                }
-
-                if(client){
-                    dataUpdate.client = client;
+                    let { client, area1, area2, area3, projectType, buildingType, 
+                        buildingGrade, basementNumber, basementArea, floorNumber, floorArea } = await DATAHUB_PROJECT_COLL.findById(project)
+                    dataUpdate = { 
+                        ...dataUpdate, project, client, area1, area2, area3, projectType, buildingType, 
+                        buildingGrade, basementNumber, basementArea, floorNumber, floorArea 
+                    }
                 }
 
                 if(field){
@@ -138,7 +148,7 @@ class Model extends BaseModel {
                 if(status){
                     dataUpdate.status = status;
                 }
-
+                console.log({ datahubPackageID, dataUpdate });
                 let infoAfterUpdate = await DATAHUB_PACKAGE_COLL.findByIdAndUpdate(datahubPackageID, dataUpdate, { new: true });
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
@@ -226,15 +236,17 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách datahub package
 	 * Date: 26/10/2021
 	 */
-    getList({ userID, lastestID, keyword, limit = 10, select, populates = {}}){
+    getList({ contractorID, userID, lastestID, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {};
+                let conditionObj = { contractor: contractorID };
                 let sortBy; 
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
+                }else{
+                    limit = +limit;
                 }
 
 				if(!checkObjectIDs(userID))

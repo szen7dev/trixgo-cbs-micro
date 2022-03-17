@@ -24,18 +24,16 @@ module.exports = {
 	 */
     insert: {
         params: {
-            name                        : { type: "string" },
-            includedConversationsID     : { type: "array", optional: true },
-            excludedConversationsID     : { type: "array", optional: true },
+            name: { type: "string" },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { name, includedConversationsID, excludedConversationsID } = ctx.params;
+                const { name } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.insert({
-					name, includedConversationsID, excludedConversationsID, authorID
+					name, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -52,19 +50,45 @@ module.exports = {
 	 */
 	update: {
         params: {
-            folderID                : { type: "string" },
-            name                    : { type: "string", optional: true },
-            includedConversationsID : { type: "array", optional: true },
-            excludedConversationsID : { type: "array", optional: true },
+            folderID    : { type: "string" },
+            name        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { folderID, name, includedConversationsID, excludedConversationsID } = ctx.params;
+                const { folderID, name } = ctx.params;
 
                 const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.update({
-					folderID, name, includedConversationsID, excludedConversationsID, authorID
+					folderID, name, authorID
+				});
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật folder
+	 * Date: 11/02/2022
+	 */
+    updateConversationToFolder: {
+        params: {
+            conversationID  : { type: "string" },
+            addFoldersID    : { type: "array", optional: true },
+            removeFoldersID : { type: "array", optional: true },
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: authorID } = ctx.meta.infoUser;
+                const { conversationID, addFoldersID, removeFoldersID } = ctx.params;
+
+                const resultAfterCallHandler = await CHATTING__CONVERSATION_FOLDER_MODEL.updateConversationToFolder({
+					conversationID, addFoldersID, removeFoldersID, authorID
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

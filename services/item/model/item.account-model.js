@@ -92,6 +92,11 @@ class Model extends BaseModel {
     }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit;
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -153,10 +158,9 @@ class Model extends BaseModel {
                 // nên không limit 
                 if(isAccountingService){
                     infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
-                    .select(select)
-                    .sort(sortBy)
-                    .populate(populates)
-                    .lean(); 
+                    return resolve({ error: false, data: {
+                        listRecords: infoDataAfterGet
+                    }, status: 200 });
                 }else{
                     infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
                     .select(select)

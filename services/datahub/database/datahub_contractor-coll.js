@@ -15,12 +15,12 @@ module.exports  = DATABASE_MIDDLEWARE("datahub_contractor", {
     //_________Nhà thầu thực hiện dịch vụ/lĩnh vực(*)
     contractor: {
         type: Schema.Types.ObjectId,
-        ref : "company"
+        ref : "company"  
     }, 
     //_________Xã/Phường (chỉ lưu area3)
     areas: [{
         type: Schema.Types.ObjectId,
-        ref : "area"
+        ref : "area" 
     }],
     //_________Xếp hạng (1-5)
     ranking: { type: Number, default: 1 },

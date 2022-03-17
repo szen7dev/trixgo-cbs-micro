@@ -70,7 +70,7 @@ class Model extends BaseModel {
             }
         })
     }
-
+    
     /**
      * Name: Danh sách app_role_menu của roleID phục vụ cho màn hình Admin phân quyền Nhóm chức năng
      * Màn hình: S2-1.2 (/pcm/admin/2)
@@ -80,6 +80,11 @@ class Model extends BaseModel {
     getList({ company, app, role, limit = 20, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -97,9 +102,7 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(limit > 20){
-                    limit = 20
-                }
+              
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -185,7 +188,7 @@ class Model extends BaseModel {
                     members:  { $in: [user] }
                 })
                 .select('_id name')
-
+                
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
                         $match: {
@@ -202,7 +205,7 @@ class Model extends BaseModel {
                             update:     { $sum: "$update"},
                             delete:     { $sum: "$delete"},
                         }
-                    }
+                    },
                 ]);
                 if (!listData) 
                     return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });

@@ -108,6 +108,14 @@ module.exports = {
                 } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
 
+                if(userID === "5e60f595f63b8a4e196a1943"){
+                    return { 
+                        error: true, 
+                        message: "Tài khoản của bạn bị cấm sử dụng chức năng này, vì quy phạm sử sụng hình ảnh cá nhân của người khác",
+                        status: 1000
+                    };
+                }
+
                 let generatePathS3  = GET_PATH_S3({
                     appID,
                     companyID,

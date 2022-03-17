@@ -40,7 +40,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     subType:{ type: Number, default: 0 },
 
     //_________Đánh dấu
-    isMarked: { type: Boolean, default: false },
+    official: { type: Boolean, default: false },
     
     //_________File đính kèm
     files: [{

@@ -67,19 +67,15 @@ module.exports  = DATABASE_MIDDLEWARE("company", {
         default: 0 
     },
     //_________Admin công ty
-    owners: [
-        {
-            type: Schema.Types.ObjectId,
-            ref : 'user'
-        }
-    ],
+    owners: [{
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    }],
     //_________Supporter của hệ thống phụ trách
-    supporters: [
-        {
-            type: Schema.Types.ObjectId,
-            ref : 'user'
-        }
-    ],
+    supporters: [{
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    }],
     //_________Thời gian bắt đầu tham gia Trixgo
     timeActive: {
         type: Date,

@@ -87,16 +87,16 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { 
-                    company: companyID
-                };
 
                 if(limit > 20){
                     limit = 20
+                }else{
+                    limit = +limit;
                 }
+              
+                let conditionObj = { 
+                    company: companyID
+                };
 
                 let sortBy   = { createAt: -1, _id: -1 };
 

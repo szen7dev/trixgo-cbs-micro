@@ -44,8 +44,14 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
             // console.log("Metadata:", ctx.meta);
             // console.log("The called event name:", ctx.eventName);
 
+            /**
+             *  =========== env(auth.user-coll) ================= 
+            *  1/ WEB_CBS          
+            *  2/ MOBILE_TEARSER   
+            *  3/ MOBILE_CBS       
+             */
             const { 
-                users: listRecievers, title, description, web_url, amountNoti, conversationID
+                users: listRecievers, title, description, web_url, amountNoti, conversationID, dataSend, env
             } = ctx.params;
 
              // ctx.emit("accounts.created", { user: ctx.params.user });
@@ -56,9 +62,11 @@ const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant
                 objDataForSend: {
                     screenkey: 'DETAIL_PAGE',
                     amountNoti,
+                    dataSend,
                     conversationID
                 }, 
                 web_url,
+                env,
                 ctx
             })
          }

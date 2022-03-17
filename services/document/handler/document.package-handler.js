@@ -8,7 +8,6 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const DOCUMENT__PACKAGE_MODEL                   = require('../model/document.package-model').MODEL;
 
-
 module.exports = {
     /**
 	 * ============================ ****************** ===============================
@@ -24,23 +23,17 @@ module.exports = {
     insert: {
         params: {
 			name            : { type: "string" },
-			sign            : { type: "string", optional: true },
-			contractID      : { type: "string", optional: true },
+			sign            : { type: "string" },
 			projectID       : { type: "string" },
-			companyID       : { type: "string", optional: true },
 			parentID        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				let { _id: userID, company } = ctx.meta.infoUser;
-                let { name, sign, contractID, projectID, companyID, parentID } = ctx.params;
-                if(!companyID){
-                    companyID = company._id;
-                }
-
-                let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.insert({
-                    name, sign, contractID, authorID: userID, projectID, companyID, parentID
+				const { _id: userID } = ctx.meta.infoUser;
+                const { name, sign, projectID, parentID } = ctx.params;
+                const resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.insert({
+                    name, sign, userID, projectID, parentID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -57,18 +50,21 @@ module.exports = {
 	 */
     update: {
         params: {
-            documentPackageID       : { type: "string" },
+            packageID               : { type: "string" },
             name                    : { type: "string", optional: true },
-            membersAddID            : { type: "array", optional: true },
-            membersRemoveID         : { type: "array", optional: true },
+            sign                    : { type: "string", optional: true },
+            members                 : { type: "array", optional: true },
+            membersRemove           : { type: "array", optional: true },
+            admins                  : { type: "array", optional: true },
+            adminsRemove            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID, company } = ctx.meta.infoUser;
-                let { documentPackageID, name, membersAddID, membersRemoveID } = ctx.params;
+                let { _id: userID } = ctx.meta.infoUser;
+                let { packageID, name, sign, members, membersRemove, admins, adminsRemove } = ctx.params;
                 let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.update({
-                    documentPackageID, name, membersAddID, membersRemoveID
+                    packageID, name, sign, members, membersRemove, admins, adminsRemove, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,20 +76,44 @@ module.exports = {
 
      /**
 	 * Dev: Depv
-	 * Func: Cập nhật gói thầu
+	 * Func: Xoa gói thầu
 	 * Date: 11/02/2022
 	 */
     remove: {
         params: {
-            documentPackageID : { type: "string" },
+            packageID : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { _id: userID, company } = ctx.meta.infoUser;
-                let { documentPackageID } = ctx.params;
+                let { packageID } = ctx.params;
                 let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.remove({
-                    documentPackageID
+                    packageID
+                });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv
+	 * Func: Xoá nhiều gói thầu
+	 * Date: 11/02/2022
+	 */
+    removeMany: {
+        params: {
+            packagesID : { type: "array" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { _id: userID, company } = ctx.meta.infoUser;
+                let { packagesID } = ctx.params;
+                let resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.removeMany({
+                    packagesID
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -110,7 +130,8 @@ module.exports = {
     getInfoAndGetList: {
         params: {
 			departmentID     : { type: "string", optional: true },
-			documentPackageID: { type: "string", optional: true },
+			packageID        : { type: "string", optional: true },
+			isShowAll        : { type: "string", optional: true },
             // =========================
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
@@ -122,16 +143,16 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { documentPackageID, lastestID, departmentID, keyword, select, populates, limit } = ctx.params;
+                const { isShowAll, packageID, lastestID, departmentID, keyword, select, populates, limit } = ctx.params;
                 let resultAfterCallHandler;
                 
-                if(documentPackageID){
+                if(packageID){
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getInfo({
-                        documentPackageID, select, populates
+                        packageID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
-                        departmentID, userID, lastestID, keyword, select, populates, limit
+                        isShowAll, departmentID, userID, lastestID, keyword, select, populates, limit
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
