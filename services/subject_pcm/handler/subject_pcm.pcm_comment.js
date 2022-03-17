@@ -154,6 +154,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
                 let { taskID, limit, parentID, lastestID, commentID, type, official, sortKey, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
                 
@@ -163,7 +164,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
-                        taskID, parentID, limit, lastestID, type, official, sortKey, select, populates
+                        taskID, parentID, limit, lastestID, type, official, sortKey, select, populates, authorID
                     });
                 }
 

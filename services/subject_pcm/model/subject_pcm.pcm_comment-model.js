@@ -16,6 +16,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
  */
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
+const PCM_COMMENT_REACIONT_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 
 class Model extends BaseModel {
 
@@ -562,7 +563,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -676,13 +677,28 @@ class Model extends BaseModel {
 
                 let totalRecord = await PCM_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
+                let dataResponse = [];
 
                 // if(!sortKey) {
                 //     infoDataAfterGet = infoDataAfterGet.reverse();
                 // }
 
+                if(infoDataAfterGet && infoDataAfterGet.length) {
+                    for (const comment of infoDataAfterGet) {
+                        const infoReaction = await PCM_COMMENT_REACIONT_COLL.findOne({
+                            comment: comment._id,
+                            author: authorID
+                        }).select('type').lean();
+
+                        dataResponse[dataResponse.length] = {
+                            ...comment,
+                            reaction: infoReaction
+                        }
+                    }
+                }
+
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: dataResponse,
                     limit,
                     totalRecord,
                     totalPage,

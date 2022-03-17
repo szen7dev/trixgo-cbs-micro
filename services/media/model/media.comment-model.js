@@ -515,7 +515,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, isLoadAll }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, authorID, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -621,8 +621,8 @@ class Model extends BaseModel {
                     // nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
-                let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord / limit);
+                let totalRecord  = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
+                let totalPage    = Math.ceil(totalRecord / limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,

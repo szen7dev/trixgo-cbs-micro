@@ -122,6 +122,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
                 let { 
                     commentID, mediaID, parentID, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
@@ -133,7 +134,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, parentID, limit, lastestID, select, populates, isLoadAll
+                        mediaID, parentID, limit, lastestID, select, populates, authorID, isLoadAll
                     });
                 }
 
@@ -259,6 +260,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+				let { _id: authorID } = ctx.meta.infoUser;
                 let { 
                     commentID, mediaID, fileID, parentID, limit, lastestID, select, populates
                 } = ctx.params;
@@ -270,7 +272,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getListCommentFile({
-                        mediaID, fileID, parentID, limit, lastestID, select, populates
+                        mediaID, fileID, parentID, limit, lastestID, select, populates, authorID
                     });
                 }
 
