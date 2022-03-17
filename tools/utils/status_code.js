@@ -4,6 +4,7 @@
  */ 
 exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, error_message }) {
     let error = {};
+    console.log({ resultAfterCallHandler })
 
     if(resultAfterCallHandler && resultAfterCallHandler.error){
         error = {
@@ -37,14 +38,13 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
         }
 	}
 
-    console.log({ resultAfterCallHandler })
     if(Object.keys(error).length){
         ctx.meta.$statusCode    = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 500;
         ctx.meta.$statusMessage = 'server_error';
 
 		return { error: true, status: ctx.meta.$statusCode, ...error };
     }
-    
+
     ctx.meta.$statusCode    = 200;
     ctx.meta.$statusMessage = resultAfterCallHandler?.message ?? 'success';
 
