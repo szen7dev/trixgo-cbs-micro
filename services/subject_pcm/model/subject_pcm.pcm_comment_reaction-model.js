@@ -61,7 +61,7 @@ class Model extends BaseModel {
 					})
 					.lean();
 
-				if(infoReaction && +infoReaction.type === typeReaction){
+				if(infoReaction){
 					const infoAfterDeleteReaction = await PCM_COMMENT_REACTION_COLL.findByIdAndDelete(infoReaction._id);
 
 					await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, {
@@ -70,15 +70,13 @@ class Model extends BaseModel {
 						}
 					})
 
-					return resolve({
-						error: false,
-						status: 200,
-						data: infoAfterDeleteReaction
-					});
-				}
-
-				if(infoReaction) {
-					await PCM_COMMENT_REACTION_COLL.findByIdAndDelete(infoReaction._id);
+					if(infoReaction.type === typeReaction) {
+						return resolve({
+							error: false,
+							status: 200,
+							message: infoAfterDeleteReaction
+						});
+					}
 				}
 
 				const infoAfterInsertReaction = await this.insertData({
@@ -89,8 +87,8 @@ class Model extends BaseModel {
 
 				if(!infoAfterInsertReaction) {
 					return resolve({
-						error: true, 
-						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
 						keyError: 'error_occurred',
 						status: 422
 					});
