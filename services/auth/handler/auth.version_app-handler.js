@@ -8,7 +8,6 @@
   */
 module.exports = {
     checkVersionApp: {
-        auth: "required",
         params: {
             version      : { type: "string" },
             deviceType   : { type: "string" },
@@ -19,8 +18,6 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID }          = ctx.meta.infoUser;
-
                 const { version, deviceType, env } = ctx.params;
                 const infoAppVersion = {
                     Teaser: {
