@@ -124,14 +124,14 @@ class Model extends BaseModel {
                         title: titleMSS,
                         description: descriptionMSS,
                         dataSend,
-                        web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        web_url: `/media/post/${infoMedia._id}#${infoComment._id}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
 
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content,
                         receivers: arrReceiver,
-                        path: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        path: `/media/post/${infoMedia._id}#${infoComment._id}`,
                         languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
                         app: APP_KEYS.MEDIA,
                         mainColl: {

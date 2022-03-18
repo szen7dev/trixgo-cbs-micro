@@ -40,6 +40,10 @@ const CF_ACTIONS_MEDIA = {
     REACTION_FILE               		        	     : `${BASE_ACTIONS}_REACTION_FILE`,
     GET_LIST_REACTION_FILE     		        	     : `${BASE_ACTIONS}_GET_LIST_REACTION_FILE`,
 
+    REACTION_COMMENT_MEDIA                             : `${BASE_ACTIONS}_${COMMENT}_REACTION_MEDIA`,
+    REACTION_COMMENT_FILE                              : `${BASE_ACTIONS}_${COMMENT}_REACTION_FILE`,
+    GET_LIST_REACTION_COMMENT                     	: `${BASE_ACTIONS}_${COMMENT}_GET_LIST_REACTION`,
+
     /**
      * COMMENT
      */

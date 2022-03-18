@@ -136,7 +136,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                if(!checkObjectIDs([notificationID])) {
+                if(notificationID && !checkObjectIDs([notificationID])) {
                     return resolve({
                         error: true,
                         message: 'Tham số notificationID không hợp lệ',

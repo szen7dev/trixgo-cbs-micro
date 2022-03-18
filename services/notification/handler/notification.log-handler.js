@@ -61,7 +61,7 @@ module.exports = {
       */
     update: {
         params: {
-            notificationID      : { type: "string" },
+            notificationID      : { type: "string", optional: true },
             status              : { type: "number", optional: true },
             isUpdateSendSuccess : { type: "boolean", optional: true },
         },
@@ -69,7 +69,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                const { notificationID, status } = ctx.params;
+                const { notificationID, status, isUpdateSendSuccess } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.update({
                     notificationID, status, isUpdateSendSuccess, userID
