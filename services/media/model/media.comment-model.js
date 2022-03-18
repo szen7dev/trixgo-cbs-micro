@@ -154,33 +154,33 @@ class Model extends BaseModel {
         })
     }
 
-    responseDataComment({ coll, comments, authorID }) {
+    responseDataComment({ comments, authorID }) {
         return new Promise(async resolve => {
             try {
                 let dataResponse = [];
 
                 for (const comment of comments) {
-                    const lastReactionComment = await coll
+                    const lastReactionComment = await MEDIA__COMMENT_REACTION_COLL
                         .find({ "comment.item": comment._id })
                         .select('type')
                         .sort({ _id: -1 })
                         .limit(3)
                         .lean();
 
-                    const infoReaction = await coll.findOne({
+                    const infoReaction = await MEDIA__COMMENT_REACTION_COLL.findOne({
                         "comment.item": comment._id,
                         author: authorID
                     }).select('type').lean();
 
                     if(comment.lastestReplyID && typeof comment.lastestReplyID !== 'string') {
-                        const lastReactionCommentReply = await coll
+                        const lastReactionCommentReply = await MEDIA__COMMENT_REACTION_COLL
                             .find({ "comment.item": comment.lastestReplyID?._id })
                             .select('type')
                             .sort({ _id: -1 })
                             .limit(3)
                             .lean();
 
-                        const infoReactionReply = await coll.findOne({
+                        const infoReactionReply = await MEDIA__COMMENT_REACTION_COLL.findOne({
                             "comment.item": comment.lastestReplyID?._id,
                             author: authorID
                         }).select('type').lean();
@@ -660,11 +660,11 @@ class Model extends BaseModel {
                 }
 
                 let totalRecord  = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
-                let dataResponse = await this.responseDataComment({ coll: MEDIA__COMMENT_REACTION_COLL, authorID, comments: infoDataAfterGet });
+                let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
                 let totalPage    = Math.ceil(totalRecord / limit);
                 let nextCursor	= null;
 
-                // if(dataResponse.error) return resolve(dataResponse);
+                if(dataResponse.error) return resolve(dataResponse);
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
@@ -1056,7 +1056,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment file
 	 */
-    getListCommentFile({ mediaID, fileID, parentID, limit = 5, lastestID, select, populates }) { 
+    getListCommentFile({ mediaID, fileID, parentID, limit = 5, lastestID, select, populates, authorID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1141,7 +1141,12 @@ class Model extends BaseModel {
                     })
                 }
 
+                let totalRecord = await MEDIA__COMMENT_FILE_COLL.countDocuments(conditionObjOrg);
+                let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
+                let totalPage   = Math.ceil(totalRecord / limit);
                 let nextCursor	= null;
+
+                if(dataResponse.error) return resolve(dataResponse);
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
@@ -1150,11 +1155,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await MEDIA__COMMENT_FILE_COLL.countDocuments(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord / limit);
-
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: dataResponse?.data || infoDataAfterGet,
                     limit,
                     totalRecord,
                     totalPage,
