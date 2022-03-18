@@ -8,25 +8,24 @@ const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constan
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
 const { sendNotificationviaOneSignal }          = require('../../../tools/cloudmsg/noti.send');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
-const { ENV_DEVICE_APP_CBS, ENV_DEVICE_APP_TEASER, ENV_DEVICE_WEB_CBS } = require('../helper/notification.keys-constant')
-const { 
+const { ENV_DEVICE_APP_CBS, ENV_DEVICE_APP_TEASER, ENV_DEVICE_WEB_CBS } = require('../helper/notification.keys-constant');
+const {
     NOTI_TYPE,
     ONESIGNAL_APP_CBS,
-    ONESIGNAL_APP_TEASER 
+    ONESIGNAL_APP_TEASER
 } = require('../helper/notification.keys-constant');
 
 class Model extends BaseModel {
     constructor() {
         super(NOTIFICATION__LOG_COLL);
 
-        this.NOT_SEND     =-1;
-        this.SEND_SUCCESS = 1;
-        this.SEND_FAILED  = 2;
-        this.SEEN         = 3;
+        this.SEND_SUCCESS       = 1;
+        this.NOT_SEEN           = 2;
+        this.SEEN               = 3;
 
-        this.WEB_CBS           = 1;
-        this.MOBILE_TEARSER    = 2;
-        this.MOBILE_CBS        = 3;
+        this.WEB_CBS            = 1;
+        this.MOBILE_TEARSER     = 2;
+        this.MOBILE_CBS         = 3;
     }
 
     /**
@@ -79,7 +78,7 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
-                
+
                 if(!checkObjectIDs(receivers)){
                     return resolve({
                         error: true,
@@ -122,10 +121,11 @@ class Model extends BaseModel {
 	 * Func: Cập nhật trạng thái thông báo
 	 * Date: 17/12/2021
 	 */
-    update({ notificationID, status }){
+    update({ notificationID, status, isUpdateSendSuccess, userID }){
         return new Promise(async resolve => {
             try {
-                const statusValid = [this.SEND_SUCCESS, this.SEND_FAILED, this.SEEN];
+                const statusValid = [this.SEND_SUCCESS, this.NOT_SEEN, this.SEEN];
+                let infoAfterUpdateStatus = null;
 
                 if(!statusValid.includes(status)) {
                     return resolve({
@@ -145,7 +145,15 @@ class Model extends BaseModel {
                     });
                 }
 
-                const infoAfterUpdateStatus = await NOTIFICATION__LOG_COLL.findByIdAndUpdate(notificationID, { status }, { new: true });
+                // Cập nhật tất cả thông báo "gửi thành công" thành "chưa xem"
+                if(isUpdateSendSuccess) {
+                    infoAfterUpdateStatus = await NOTIFICATION__LOG_COLL.updateMany({
+                        status: 1,
+                        receiver: userID
+                    }, { status: 2 }, { new: true });
+                } else{
+                    infoAfterUpdateStatus = await NOTIFICATION__LOG_COLL.findByIdAndUpdate(notificationID, { status }, { new: true });
+                }
 
                 if(!infoAfterUpdateStatus) {
                     return resolve({
@@ -181,7 +189,7 @@ class Model extends BaseModel {
                     });
                 }
 
-				if(isNaN(limit) || limit > 20) {
+				if(isNaN(limit) || +limit > 20) {
 					limit = 20;
 				} else{
 					limit = +limit;
@@ -194,17 +202,13 @@ class Model extends BaseModel {
 					populates = JSON.parse(populates);
 				} else{
 					populates = {
-                        path: "", 
+                        path: "",
                         select: ""
                     }
                 }
-				let conditionObj 	= { 
-                    // status: this.SEND_SUCCESS,
-                    receiver: authorID,
-                    status: { $ne: 3 }
-                };
+				let conditionObj    = {  receiver: authorID };
                 let keys	        = ['_id__-1', 'createAt__-1'];
-				let sortBy;
+				let sortBy          = {};
                 let conditionObjOrg = { ...conditionObj }
 
 				// GET CONDITION PAGINATION
@@ -244,9 +248,11 @@ class Model extends BaseModel {
 					.sort(sortBy)
 					.lean();
 
-				// GET TOTAL RECORD
 				let totalRecord = await NOTIFICATION__LOG_COLL.countDocuments(conditionObjOrg);
-				let totalRecordNotSeen = await NOTIFICATION__LOG_COLL.countDocuments({ status: { $ne: 3 } });
+				let totalRecordSendSuccess = await NOTIFICATION__LOG_COLL.countDocuments({
+                    ...conditionObjOrg,
+                    status: 1
+                });
 				let nextCursor  = null;
 
 				if(listNotifications && listNotifications.length){
@@ -263,7 +269,7 @@ class Model extends BaseModel {
 						listRecords: listNotifications,
 						limit,
 						totalRecord,
-                        totalRecordNotSeen,
+                        totalRecordSendSuccess,
 						nextCursor
 					}
 				});
@@ -287,9 +293,9 @@ class Model extends BaseModel {
              try {
                 /**
                  * từ env là giá trị
-                 *      1/ WEB_CBS          
-                        2/ MOBILE_TEARSER   
-                        3/ MOBILE_CBS      
+                 *      1/ WEB_CBS
+                        2/ MOBILE_TEARSER
+                        3/ MOBILE_CBS
 
                         -> CẦN TÌM ra
                             VD: env = 1 => listEnvReceiveNoti = [1, 3]. Vì 1 và 3 là 2 giá trị của CBS nên cần đẩy về cho app và web
@@ -301,7 +307,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - kiểm tra valid từ các input
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -313,7 +319,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
-                 */   
+                 */
                 let infoAfterCall = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_LIST_USERS_BY_ID_FOR_MOBILE_PUSH}`, {
 					users
 				});
@@ -347,7 +353,7 @@ class Model extends BaseModel {
                                      * item.oneSignalID: là điều kiện chắc chắn obj trong devices phải có key để onesignal push noti
                                      * listEnvReceiveNoti.includes(item.env): tùy vào ACTION mà sẽ push noti theo từng loại app
                                      * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
-                                     * 
+                                     *
                                      */
                                     ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS)).map(itemReturn => {
                                         return {
@@ -367,7 +373,7 @@ class Model extends BaseModel {
                                 ]
                             }
                         });
-                      
+
                         // định nghĩa obj onesignal dùng chung cho web và app
                         let dataForSend = {
                             headings: { "en": title },

@@ -18,10 +18,9 @@ module.exports  = DATABASE_MIDDLEWARE("notification", {
     },
     /**
      * QUẢN LÝ TRẠNG THÁI CỦA CÁC THÔNG BÁO
-     * -1: Đã tạo, chưa gửi 
-     *  1: Đã gửi THÀNH CÔNG
-     *  2: Đã gửi THẤT BẠI
-     *  3: Đã xem thông báo
+     *  1: Đã gửi thành công
+     *  2: Chưa xem
+     *  3: Đã xem
      */
     status: {
         type: Number
