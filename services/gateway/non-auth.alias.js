@@ -66,6 +66,13 @@ module.exports = {
 		 */
 		[`POST ${CF_ROUTINGS_AUTH.REGISTER_TRIAL}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.REGISTER_TRIAL_INSERT}`],
+
+
+		/**
+		 * Check version app
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.CHECK_LASTEST_APP}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.CHECK_VERSION_APP}`],
 	},
 	// Disable to call not-mapped actions
 	mappingPolicy: "all", // Available values: "all", "restrict"
