@@ -774,18 +774,21 @@ class Model extends BaseModel {
                 if(author.toString() == userID.toString()){
                     isAuthor = true;
                 }
+
                 if(assignee.toString() == userID.toString()){
                     isAssignee = true;
                 }
+
                 related = related.map(item => `${item}`);
                 if(related.includes(userID)){
                     isRelated = true;
                 }
-
-                if(group && group.members && group.members.includes(userID.toString())){
+     
+                let memberInGroup = group?.members?.map(item => `${item}`) || [];
+                if(memberInGroup.includes(userID.toString())){
                     isMemberGroup = true;
                 }
-                
+
                 if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
@@ -814,7 +817,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ 
-        projectID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection, 
+        projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection, 
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
@@ -1077,8 +1080,14 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
-                let conditionObjOrg = {...conditionObj};
 
+                if(groupID){
+                    conditionObj.group = groupID
+                    conditionObj.parent = { $exists: false }
+                    delete conditionObj.$or;
+                }
+                let conditionObjOrg = {...conditionObj};
+                console.log({ conditionObj })
                 // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
