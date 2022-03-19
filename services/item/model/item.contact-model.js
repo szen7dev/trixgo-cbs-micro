@@ -237,7 +237,7 @@ class Model extends BaseModel {
     update({ 
         contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
+        signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
     }){
         return new Promise(async (resolve) => {
@@ -481,6 +481,14 @@ class Model extends BaseModel {
                 
                 if(dataINC){
                     dataUpdate.$inc = dataINC
+                }
+
+                if(checkObjectIDs(documents)){
+                    dataUpdate.$addToSet = { documents }
+                }
+
+                if(checkObjectIDs(documentsRemove)){
+                    dataUpdate.$pull = { documents: documentsRemove }
                 }
 
                 let infoAfterInsert = await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true })

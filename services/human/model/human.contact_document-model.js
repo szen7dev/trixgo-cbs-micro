@@ -127,10 +127,11 @@ class Model extends BaseModel {
                 if(type == 5) {
                     amountCertificateHistory =  "1"
                 }
-                
+
                 // Cập nhật lại số lượng contact_document cho contact
                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`, {
-                    contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+                    contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, 
+                    documents: `${infoAfterInsert._id}`
                 })
 
                 return resolve({ error: false, data: infoAfterInsert });
@@ -324,7 +325,8 @@ class Model extends BaseModel {
 
                 // Cập nhật lại số lượng contact_document cho contact
                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTACT_UPDATE}`, {
-                    contactID: `${contact}`, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+                    contactID: `${contact}`, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory,
+                    documentsRemove: contactDocumentID
                 })
 
                 return resolve({ error: false, data: infoAterRemove, status: 200 });

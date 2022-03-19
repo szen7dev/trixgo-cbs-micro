@@ -147,6 +147,7 @@ module.exports = {
             amountContractHistory    : { type: "string", optional: true },
             amountEducationHistory   : { type: "string", optional: true },
             amountCertificateHistory : { type: "string", optional: true },
+            documents                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -155,17 +156,15 @@ module.exports = {
                     contactID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, 
                     linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, 
                     sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
-                    amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
+                    amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
-                console.log({ contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory});
                 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({
                     contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
                     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,   
-                    amountWorkHistory: +amountWorkHistory, amountProjectHistory: +amountProjectHistory,
+                    amountWorkHistory: +amountWorkHistory, amountProjectHistory: +amountProjectHistory, documents, documentsRemove,
                     amountContractHistory: +amountContractHistory , amountEducationHistory: +amountEducationHistory, amountCertificateHistory: +amountCertificateHistory, ctx
                 });
 
