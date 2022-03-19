@@ -16,6 +16,10 @@ const CF_ROUTINGS_MEDIA = {
     REACTION_MEDIA                              : `${BASE_ROUTE}${REACTIONS}`,
     REACTION_FILE               		        : `${BASE_ROUTE}${REACTIONS}/file`,
 
+    REACTION_COMMENT_MEDIA                      : `${BASE_ROUTE}${REACTIONS}${COMMENTS}/media`,
+    REACTION_COMMENT_FILE       		        : `${BASE_ROUTE}${REACTIONS}${COMMENTS}/file`,
+    REACTION_COMMENT       		                : `${BASE_ROUTE}${REACTIONS}${COMMENTS}`,
+
     COMMENT_MEDIA     		                    : `${BASE_ROUTE}${COMMENTS}`,
     COMMENT_FILE     		                    : `${BASE_ROUTE}${COMMENTS}/file`,
 }

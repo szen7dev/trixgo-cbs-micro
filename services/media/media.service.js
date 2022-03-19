@@ -16,6 +16,7 @@ const MEDIA_HANDLER    					= require('./handler/media-handler');
 const MEDIA__FILE_HANDLER    			= require('./handler/media.file-handler');
 const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
 const MEDIA__REACTION_HANDLER    		= require('./handler/media.reaction-handler');
+const MEDIA__REACTION_COMMENT_HANDLER	= require('./handler/media.reaction_comment-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
@@ -24,8 +25,9 @@ module.exports = {
 		DbService('media_file'),  
 		DbService('media_reaction'),  
 		DbService('media_reaction_file'),  
+		DbService('media_reaction_file'),  
+		DbService('media_reaction_comment'),
 		DbService('media_comment'),  
-		DbService('media_comment_file'),
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -106,6 +108,10 @@ module.exports = {
 
 		[CF_ACTIONS_MEDIA.REACTION_FILE]            					: MEDIA__REACTION_HANDLER.reactionFile,
 		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_FILE]   					: MEDIA__REACTION_HANDLER.getListReactionFile,
+
+		[CF_ACTIONS_MEDIA.REACTION_COMMENT_MEDIA] 		            	: MEDIA__REACTION_COMMENT_HANDLER.reactionCommentMedia,
+		[CF_ACTIONS_MEDIA.REACTION_COMMENT_FILE] 		            	: MEDIA__REACTION_COMMENT_HANDLER.reactionCommentFile,
+		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_COMMENT]					: MEDIA__REACTION_COMMENT_HANDLER.getListReactionComment,
 	},
 
 	/**
