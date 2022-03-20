@@ -2090,14 +2090,14 @@ class Model extends BaseModel {
 				listConversation = [...listConversationPin, ...listConversation];
 
 				if(keyword) {
-					keyword = keyword.toLowerCase();
+					keyword = keyword?.toLowerCase();
 					for (const conversation of listConversation) {
 						// Nếu là cuộc hội thoại riêng tư và chưa đổi tên
 						if(conversation.isPrivate && !conversation.isRename) {
 							let [memberName1st, memberName2st] = conversation.name?.split('_');
-							memberName1st = memberName1st.toLowerCase();
-							memberName2st = memberName2st.toLowerCase();
-							bizfullname   = bizfullname.toLowerCase();
+							memberName1st = memberName1st?.toLowerCase() || '';
+							memberName2st = memberName2st?.toLowerCase() || '';
+							bizfullname   = bizfullname?.toLowerCase() || '';
 
 							if(bizfullname === memberName1st && memberName2st.includes(keyword)) {
 								listConversationFiltered[listConversationFiltered.length] = conversation;
