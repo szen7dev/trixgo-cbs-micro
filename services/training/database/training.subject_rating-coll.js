@@ -18,9 +18,9 @@ module.exports  = DATABASE_MIDDLEWARE("training_subject_rating", {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     },
+
     userUpdate: {
         type    : Schema.Types.ObjectId,
         ref     : 'user'
     }
-    
 })   

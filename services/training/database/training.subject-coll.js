@@ -35,21 +35,24 @@ module.exports  = DATABASE_MIDDLEWARE("training_subject", {
         type: Number,
         default: 0
     },
-    //_________Số lượng comment của 1 bài viết
-    amountComments: {
+
+    //_________Tổng số user đã xem bài viết
+    amountUserViews: {
         type: Number,
         default: 0
+    },
+
+    //_________Số lượng comment của 1 bài viết
+    amountComments: {
+        type: Number, 
+        default: 0 
     },
     //_________Số lượng like bài viết
     amountReaction: {
         type: Number,
         default: 0
     },
-    //_________Số lượng lượt xem của media
-    amountView: {
-        type: Number,
-        default: 0
-    },
+  
     //_________Số sao đánh giá trung bình
     amountStars: {
         type: Number,

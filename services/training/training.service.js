@@ -16,7 +16,6 @@ module.exports = {
 		// gọi tất cả các function dùng ở đây
 		DbService(TRAINING__SUBJECT_COLL),  
 		DbService(TRAINING__SUBJECT_RATING_COLL),  
-		
 		CacheCleaner([CF_DOMAIN_SERVICES.TRAINING])
     ],
 

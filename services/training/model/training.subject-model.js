@@ -10,7 +10,11 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const TRAINING__SUBJECT_COLL           = require('../database/training.subject-coll');
 const TRAINING__SUBJECT_RATING_COLL    = require('../database/training.subject_rating-coll');
 
-const { RANGE_BASE_PAGINATION } 	   = require('../../../tools/cursor_base/playground/index');
+const TRAINING__SUBJECT_SEEN_MODEL     = require('../model/training.subject_seen-model').MODEL;
+
+
+const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
+const { KEY_ERROR }                    = require('../../../tools/keys');
 
 /**
  * import inter-model, exter-model
@@ -31,7 +35,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02501
      */
-    insert({ type, name, description, content, parent, userID }) { 
+    insert({ name, description, parent, userID }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -46,18 +50,15 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params userID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                dataInsert = { userCreate: userID, userUpdate: userID };
-
-                if(type){
-                    dataInsert.type = type;
-                }
+                dataInsert = { userCreate: userID };
+             
                 if(name){
                     dataInsert.name = name;
                 }
@@ -66,18 +67,18 @@ class Model extends BaseModel {
                     dataInsert.description = description;
                 }
 
-                if(content){
-                    dataInsert.content = content;
-                }
-
-                if(parent){
+                if(checkObjectIDs(parent)){
                     dataInsert.parent = parent;
                 }
 
                 let infoAterInsert = await this.insertData(dataInsert);
 
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Can't insert subject", status: 403 });
+                    return resolve({ error: true, message: "Can't insert subject",  keyError: KEY_ERROR.INSERT_FAILED });
+
+                if(checkObjectIDs(parent)){
+                    await TRAINING__SUBJECT_COLL.findByIdAndUpdate(parent, { $inc: { amountLessions: 1 }}, { new: true });
+                }
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -90,7 +91,7 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02502
      */
-    update({ subjectID, name, logo, description, content, userID }) { 
+    update({ subjectID, name, description, content, image, userID}) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -104,33 +105,26 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
                 if(!checkObjectIDs(subjectID))
-                    return resolve({ error: true, message: 'Request params subjectID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params subjectID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                dataUpdate = { userCreate: userID, userUpdate: userID };
+                dataUpdate = { userCreate: userID, userUpdate: userID, modifyAt: new Date() };
                 
                 if(name){
                     dataUpdate.name = name;
                 }
-                // Chờ hỏi Minh xem cách update ntn
-                // if(logo){
-                //     dataUpdate.logo = logo;
-                // }
 
                 if(description){
                     dataUpdate.description = description;
                 }
 
-                if(checkObjectIDs(logo)){
-                    dataUpdate.logo = logo;
+                if(checkObjectIDs(image)){
+                    dataUpdate.image = image;
                 }
 
                 if(content){
@@ -140,7 +134,7 @@ class Model extends BaseModel {
                 let infoAterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, dataUpdate, { new: true });
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't insert subject", status: 403 });
+                    return resolve({ error: true, message: "Can't insert subject", keyError: KEY_ERROR.UPDATE_FAILED });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -155,34 +149,35 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02503
      */
-    remove({ subjectID }) { 
+    remove({ subjectID, userID }) { 
         return new Promise(async (resolve) => {
             try {   
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { };
-                
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
                 if(!checkObjectIDs(subjectID))
-                    return resolve({ error: true, message: 'Request params subjectID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params subjectID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let infoData =  await TRAINING__SUBJECT_COLL.findById(subjectID);
+                if(infoData.userCreate.toString() != userID.toString())
+                    return resolve({ error: true, message: 'Bạn không có quyền xóa, người tạo mới được phép xóa', keyError: KEY_ERROR.DELETE_FAILED });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-              
-                let infoAterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, { state: 2 }, { new: true });
+                let infoAterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndDelete(subjectID);
 
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Can't remove subject", status: 403 });
+                    return resolve({ error: true, message: "Can't remove subject", keyError: KEY_ERROR.DELETE_FAILED  });
+
+                // Cập nhật lại amountLessions trong chủ đề nếu xóa Bài học
+                if(infoAterUpdate.parent){
+                    await TRAINING__SUBJECT_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountLessions: -1 }}, { new: true });
+                }
 
                 return resolve({ error: false, message: "Remove success", status: 200 });
             } catch (error) {
@@ -196,13 +191,20 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02504
      */
-    getInfo({ subjectID, userID, select }) { 
+    getInfo({ subjectID, userID, select, populates, ctx }) { 
         return new Promise(async (resolve) => {
             try {   
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
                 
                 /** 
                  * VALIDATION STEP (2)
@@ -210,29 +212,21 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(subjectID))
-                    return resolve({ error: true, message: 'Request params subjectID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params subjectID invalid', keyError: KEY_ERROR.PARAMS_INVALID  });
 
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-
-                let infoData = await TRAINING__SUBJECT_COLL.findById(subjectID).select(select).lean();
+                let infoData = await TRAINING__SUBJECT_COLL.findById(subjectID)
+                                .select(select)
+                                .populate(populates)
                 if(!infoData)
-                    return resolve({ error: true, message: "Can't get info subject", status: 403 });
-                
-                //Update amountViews cho subject
-                await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, {
-                    $inc: { amountViews: 1 }
-                })
+                    return resolve({ error: true, message: "Can't get info subject", keyError: KEY_ERROR.GET_INFO_FAILED  });
 
-                if(infoData.parent){
-                    //Update amountViews cho subject
-                    await TRAINING__SUBJECT_COLL.findByIdAndUpdate(infoData.parent, {
-                        $inc: { amountViews: 1 }
-                    })
-                }
+                // Tạo bảng training_subject_seen
+                await TRAINING__SUBJECT_SEEN_MODEL.insert({ subjectID, userID, ctx })
 
                 let checkUserRating = await TRAINING__SUBJECT_RATING_COLL.findOne({ lession: subjectID, userCreate: userID }).select("score");
                 infoData.useRated = checkUserRating
@@ -249,101 +243,88 @@ class Model extends BaseModel {
      * Author: Depv 
      * Code: F02505
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, filter = {}, select = {} }) { 
+    getList({ parentID, keyword, limit = 10, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {state:1};
-
-                if(checkObjectIDs(parentID)){
-                    conditionObj.parent = parentID;
-                }
-                
-                if(type){
-                    conditionObj.type = type;
-                }
-
-                let conditionFind = {};
-                let sortBy = { createAt: -1 };
-				let objSort 	 	= {};
-
-                if(filter && typeof filter === 'string'){
-					if(!IsJsonString(filter))
-						return resolve({ error: true, message: 'Request params filter invalid', status: 400 });
-
-					filter = JSON.parse(filter);
-				}
-
-				if(select && typeof select === 'string'){
-					if(!IsJsonString(select))
-						return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-					select = JSON.parse(select);
-				}
-
+                let conditionObj = {};
+                let sortBy;
+                let keys	     = ['createAt__-1', '_id__-1'];
+              
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-                // GET CONDITION PAGINATION
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
+                }else{
+                    conditionObj.parent = { $exists: false }
+                }
+               
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+                // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TRAINING__SUBJECT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+						return resolve({ error: true, message: "Can't get info lastest" });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
+						return resolve({ error: true, message: "Can't get range pagination" });
+                    conditionObj = dataPagingAndSort.data.find;
 					sortBy = dataPagingAndSort.data.sort;
-				}
-
-                // SEARCH TEXT
-				if(keyword){
-					conditionObj.$text = { $search: keyword };
-					objSort.score = { $meta: "textScore" };
-					sortBy.score  = { $meta: "textScore" };
-				}
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy = dataPagingAndSort.data.sort;
+                }
                 
-                let infoDataAfterGet = await TRAINING__SUBJECT_COLL.find({...conditionObj, ...conditionFind }, { ...filter, ...objSort })
-                    .populate({
-                        path: "parent",
-                        select: select.parent
-                    }).populate({
-                        path: "logo",
-                        select: "url name size"
-                    })
-                    .limit(+limit+1)
-                    .sort(sortBy) 
-                    .lean(); 
+                let infoDataAfterGet = await TRAINING__SUBJECT_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(limit+1)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get template docs", status: 403 });
-                
+                    return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED  });
+                    
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
 
-                let totalRecord = await TRAINING__SUBJECT_COLL.countDocuments(conditionObj);
-				let nextCursor	= null;
+                let totalRecord = await TRAINING__SUBJECT_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord/limit);
-
-				if(infoDataAfterGet && infoDataAfterGet.length){
-					if(infoDataAfterGet.length > limit){
-						nextCursor = infoDataAfterGet[limit - 1]._id;
-						infoDataAfterGet.length = limit;
-					}
-				}
-
+                
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
