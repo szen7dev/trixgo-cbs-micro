@@ -725,12 +725,12 @@ class Model extends BaseModel {
                 let amountTaskAndChecklist = taskIDs.length;
                 // Việc con
                 if (type == 1) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {  $set: { $inc : { amountFinishedSubtask: amountTaskAndChecklist }} })
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,  { $inc : { amountFinishedSubtask: amountTaskAndChecklist }}, { new: true })
                 }
                 
                 // Checklist
                 if (type == 2) {
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, {  $set: { $inc : { amountFinishedChecklist: amountTaskAndChecklist }} })
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc : { amountFinishedChecklist: amountTaskAndChecklist }}, { new: true })
                 }
                 
                 return resolve({ error: false, message: "update_success" });
