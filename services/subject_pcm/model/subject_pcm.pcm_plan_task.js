@@ -19,6 +19,7 @@ const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/not
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { forEach } = require('lodash');
 
 class Model extends BaseModel {               
 
@@ -120,7 +121,6 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                     type,
                 }
-                
                 //precalculated
                 // companyOfAuthor
                 // companyOfAssignee
@@ -713,11 +713,23 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    updateStatusMutiple({ taskIDs, parentID, type }){
+    updateStatusMutiple({ taskIDs, parentID, type, userID }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(taskIDs, parentID))
                     return resolve({ error: true, message: 'param_invalid' });
+
+                // Kiểm tra user update có phải là là người thực hiện checklist hoặc người thực hiện việc con ko
+                let listTasks = await PCM_PLAN_TASK_COLL.find({ _id: { $in: taskIDs }});
+                let isAssignee = true;
+                listTasks.forEach(task => {
+                    if(task.assignee.toString() != userID.toString()){
+                        isAssignee = false;
+                    }
+                });
+
+                if(!isAssignee)
+                    return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
 
                 let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
 				if (!infoTaskAfterUpdate) 
