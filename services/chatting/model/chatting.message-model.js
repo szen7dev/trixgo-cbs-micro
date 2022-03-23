@@ -210,6 +210,7 @@ class Model extends BaseModel {
 						.for(files)
 						.withConcurrency(2)
 						.process(async file => {
+							console.log({ file })
 							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
 								fileID: file._id
 							}, {
