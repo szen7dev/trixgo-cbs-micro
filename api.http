@@ -16,5 +16,14 @@ authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlb
 
 {
     "commentID": "6231c3605e7b73826556639f",
-    "typeReaction": 3
+    "typeReaction": 3,
+    "populates": {
+        "path": "members",
+        "option": {
+            "limit": 5
+        },
+        "select": "_id bizfullname image email"
+    }
 }
+
+# https://mongoosejs.com/docs/populate.html#query-conditions

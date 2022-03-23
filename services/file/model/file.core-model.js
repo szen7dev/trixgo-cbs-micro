@@ -247,6 +247,8 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoFile, status: 200 });
             } catch (error) {
+                console.info('getInfoFile');
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

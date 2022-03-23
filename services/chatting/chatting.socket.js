@@ -9,6 +9,7 @@ const { CF_ACTIONS_AUTH } 						= require('../auth/helper/auth.actions-constant'
  * TOOLS
  */
 const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
+const { IsJsonString } 							= require('../../tools/utils/utils');
 
 /**
  * COLLECTIONS
@@ -29,20 +30,20 @@ const { ENV_DEVICE_APP_TEASER } 				= require('../notification/helper/notificati
 
 exports.CHATTING_SOCKET = {
 
-    // 'CLIENT_SEND_CHATTING_TEST': async function(data, ack) { 
+    // 'CLIENT_SEND_CHATTING_TEST': async function(data, ack) {
     //     let socket                      = this;
     //     let userID                      = socket.client.user;
     //     let listUserActive              = socket.$service.listUserConnected;
     //     let io                          = socket.$service.io;
 
-    //     sendDataToMultilSocketsOfListUser({ 
-	// 		listUserConnected: listUserActive, 
-	// 		arrReceiver: [userID], 
+    //     sendDataToMultilSocketsOfListUser({
+	// 		listUserConnected: listUserActive,
+	// 		arrReceiver: [userID],
 	// 		data: {
 	// 			message: "Hi Client!! I'm server...",
 	// 			userID,
 	// 			listUserActive
-	// 		}, 
+	// 		},
 	// 		event: 'SERVER_SEND_CHATTING_TEST', io
 	// 	})
     // },
@@ -54,7 +55,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Tạo cuộc hội thoại mới
 	 * Date: ...
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NEW_CONVERSATION]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NEW_CONVERSATION]: async function(data, ack) {
         let socket                      = this;
         let listUserActive              = socket.$service.listUserConnected;
         let userID                      = socket.client.user;
@@ -70,10 +71,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io
 			});
 		}
@@ -81,18 +82,18 @@ exports.CHATTING_SOCKET = {
 		const { authors, members } 	= infoConversation;
 		const arrReceiver 			= members.filter(memberID => memberID.toString() !== userID.toString());
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
 				data: {
 					infoConversation,
-					infoAuthor: { 
+					infoAuthor: {
 						_id      : authors[0]._id,
 						fullname : authors[0].fullname,
 						image    : authors[0].image,
-					} 
+					}
 				}
 			}, event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_NEW_CONVERSATION], io
 		});
@@ -103,7 +104,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Cập nhật cuộc hội thoại
 	 * Date: ...
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_INFO_CONVERSATION]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_INFO_CONVERSATION]: async function(data, ack) {
         let socket                 	= this;
         let listUserActive         	= socket.$service.listUserConnected;
         let io                     	= socket.$service.io;
@@ -116,10 +117,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_INFO_CONVERSATION], io
 			});
 		}
@@ -129,8 +130,8 @@ exports.CHATTING_SOCKET = {
 			.populate('members', '_id bizfullname image')
 			.lean();
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver: infoConversation.members,
 			data: { error: false, data: infoConversationResponse },
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_INFO_CONVERSATION], io
@@ -143,7 +144,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Thêm thành viên vào cuộc hội thoại
 	 * Date: ...
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_ADD_MEMBER_CONVERSATION]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_ADD_MEMBER_CONVERSATION]: async function(data, ack) {
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
         let listUserActive              	= socket.$service.listUserConnected;
@@ -154,10 +155,10 @@ exports.CHATTING_SOCKET = {
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_ADD_MEMBER_CONVERSATION], io
 			});
 		}
@@ -179,8 +180,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -200,7 +201,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Xoá thành viên khỏi cuộc hội thoại
 	 * Date: ...
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MEMBER_CONVERSATION]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MEMBER_CONVERSATION]: async function(data, ack) {
         let socket                      	= this;
 		let broker                      	= socket.$service.broker;
         let listUserActive              	= socket.$service.listUserConnected;
@@ -211,10 +212,10 @@ exports.CHATTING_SOCKET = {
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID).lean();
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_MEMBER_CONVERSATION], io
 			});
 		}
@@ -236,8 +237,8 @@ exports.CHATTING_SOCKET = {
 		// 	return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		// });
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver: [...infoConversation.members, memberID],
 			data: {
 				error: false,
@@ -256,7 +257,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Cập nhật admin cho cuộc hội thoại
 	 * Date: 11/08/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_ADMIN_CONVERSATION]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_ADMIN_CONVERSATION]: async function(data, ack) {
 		let socket                         	= this;
 		let broker                      	= socket.$service.broker;
 		let listUserActive                 	= socket.$service.listUserConnected;
@@ -270,10 +271,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_ADMIN_CONVERSATION], io
 			});
 		}
@@ -287,8 +288,8 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizfullname fullname image'
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
@@ -308,14 +309,14 @@ exports.CHATTING_SOCKET = {
 	 * Func: Member rời khỏi cuộc hội thoại
 	 * Date: 15/08/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_MEMBER_LEAVE_CONVERSATION]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_MEMBER_LEAVE_CONVERSATION]: async function(data, ack) {
         try {
 			let socket                      	= this;
 			let broker                      	= socket.$service.broker;
 			let listUserActive              	= socket.$service.listUserConnected;
 			let userID                      	= socket.client.user;
 			let io                          	= socket.$service.io;
-			let { conversationID, memberID } 	= data; 
+			let { conversationID, memberID } 	= data;
 
 			const infoConversation = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
@@ -330,10 +331,10 @@ exports.CHATTING_SOCKET = {
 				.lean();
 
 			if(!infoConversation){
-				return sendDataToMultilSocketsOfListUser({ 
-					listUserConnected: listUserActive, 
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Can't get info conversation" }, 
+					data: { error: true, message: "Can't get info conversation" },
 					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_MEMBER_LEAVE_CONVERSATION], io
 				});
 			}
@@ -361,7 +362,7 @@ exports.CHATTING_SOCKET = {
 				})
 				.lean();
 
-			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: arrReceiver,
 				title: name,
 				description: `${infoMember?.data?.bizfullname} vừa rời khỏi cuộc trò chuyện`,
@@ -372,8 +373,8 @@ exports.CHATTING_SOCKET = {
 				env: ENV_DEVICE_APP_TEASER
 			});
 
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: membersID,
 				data: {
 					error: false,
@@ -394,14 +395,14 @@ exports.CHATTING_SOCKET = {
 	 * Func: Giải tán cuộc hội thoại (xóa nhóm)
 	 * Date: 15/08/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_CONVERSATION]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_CONVERSATION]: async function(data, ack) {
         let socket               = this;
         let listUserActive       = socket.$service.listUserConnected;
         let io                   = socket.$service.io;
         let { infoConversation } = data;
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
@@ -453,11 +454,11 @@ exports.CHATTING_SOCKET = {
 					break;
 				default:
 					infoMessageAfterInsert = await CHATTING__MESSAGE_MODEL.insertMessage({
-						conversationID, 
-						senderID: userID, 
+						conversationID,
+						senderID: userID,
 						content,
-						parentID, 
-						usersAssigned, 
+						parentID,
+						usersAssigned,
 						files,
 						location,
 						type,
@@ -557,7 +558,7 @@ exports.CHATTING_SOCKET = {
 				}).select('usersMissMessage').lean();
 
 				listAllConversation.map(conversation => {
-					const user = conversation.usersMissMessage?.find(user => 
+					const user = conversation.usersMissMessage?.find(user =>
 						user.userID.toString() === memberID.toString());
 
 					user && (amountMissMessage += user.amount);
@@ -615,8 +616,8 @@ exports.CHATTING_SOCKET = {
 
 			listMemberWithAmountMissMessage.map(({ memberID, amountMissMessage }) => {
 				// SEND SOCKET
-				sendDataToMultilSocketsOfListUser({ 
-					listUserConnected: listUserActive, 
+				sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
 					arrReceiver: [memberID],
 					data: {
 						tmpid,
@@ -629,7 +630,7 @@ exports.CHATTING_SOCKET = {
 
 				if(memberID.toString() !== userID.toString() && !listMemberIDMuteConversation?.includes(memberID.toString())) {
 					// SEND CLOUD-MSG
-					broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+					broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 						users: [memberID],
 						title: senderFullname,
 						description,
@@ -653,21 +654,21 @@ exports.CHATTING_SOCKET = {
 	 * Func: Cập nhật người seen tin nhắn
 	 * Date: 20/02/2022
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_SEEN_MESSAGE]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_SEEN_MESSAGE]: async function(data, ack) {
 		let socket                      	= this;
 		let broker                      	= socket.$service.broker;
 		let listUserActive              	= socket.$service.listUserConnected;
 		let userID                      	= socket.client.user;
 		let io                          	= socket.$service.io;
-		let { conversationID, messagesID } 	= data; 
+		let { conversationID, messagesID } 	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_SEEN_MESSAGE], io
 			});
 		}
@@ -677,8 +678,8 @@ exports.CHATTING_SOCKET = {
 			select: '_id bizfullname fullname image'
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver: infoConversation.members,
 			data: {
 				error: false,
@@ -693,7 +694,7 @@ exports.CHATTING_SOCKET = {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại 
+	 * Func: Chia sẻ tin nhắn đến các cuộc hội thoại
 	 * Date: 25/08/2021
 	 */
 	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_SHARE_MESSAGE]: async function(data, ack) {
@@ -705,8 +706,8 @@ exports.CHATTING_SOCKET = {
 		let listConversationShare = [];
 
 		if(!conversationsID || !conversationsID.length || !messagesID || !messagesID.length){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
 				data: { error: true, message: "Can't get info conversation or message" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_SHARE_MESSAGE], io
@@ -755,8 +756,8 @@ exports.CHATTING_SOCKET = {
 		listConversationShare.map(item => {
 			const { infoConversation, listMessagesShared } = item;
 
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: infoConversation.members,
 				data: {
 					error: false,
@@ -788,8 +789,8 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !messagesID || !messagesID.length){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
 				data: { error: true, message: "Can't get info conversation or message" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
@@ -800,10 +801,10 @@ exports.CHATTING_SOCKET = {
 			userID, conversationID, messagesID, filesID
 		})
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver: infoConversation.members,
-			data: infoAfterRevoke, 
+			data: infoAfterRevoke,
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REVOKE_MESSAGE], io
 		});
 	},
@@ -813,21 +814,21 @@ exports.CHATTING_SOCKET = {
 	 * Func: Cập nhật người tham gia nhắc hẹn
 	 * Date: 04/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_USER_JOIN_REMINDER]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_USER_JOIN_REMINDER]: async function(data, ack) {
 		let socket                      	= this;
 		let broker                      	= socket.$service.broker;
 		let listUserActive              	= socket.$service.listUserConnected;
 		let userID                      	= socket.client.user;
 		let io                          	= socket.$service.io;
-		let { conversationID, memberID, isJoin } = data; 
+		let { conversationID, memberID, isJoin } = data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_USER_JOIN_REMINDER], io
 			});
 		}
@@ -845,8 +846,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -864,13 +865,13 @@ exports.CHATTING_SOCKET = {
 	 * Func: Cập nhật tin nhắn nhắc hẹn
 	 * Date: 06/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_REMINDER]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_REMINDER]: async function(data, ack) {
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
 		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
-		let { conversationID, messageID }	= data; 
+		let { conversationID, messageID }	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 		const infoMessage	   = await CHATTING__MESSAGE_COLL
@@ -883,10 +884,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation or message" }, 
+				data: { error: true, message: "Can't get info conversation or message" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_MESSAGE_REMINDER], io
 			});
 		}
@@ -904,8 +905,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -923,13 +924,13 @@ exports.CHATTING_SOCKET = {
 	 * Func: Xoá tin nhắn nhắc hẹn
 	 * Date: 06/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_REMINDER]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_REMINDER]: async function(data, ack) {
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
 		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
-		let { conversationID, messageID } 	= data; 
+		let { conversationID, messageID } 	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 		const infoMessage	   = await CHATTING__MESSAGE_COLL
@@ -942,10 +943,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation or message" }, 
+				data: { error: true, message: "Can't get info conversation or message" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_MESSAGE_REMINDER], io
 			});
 		}
@@ -963,8 +964,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -982,13 +983,13 @@ exports.CHATTING_SOCKET = {
 	 * Func: Cập nhật tin nhắn bình chọn
 	 * Date: 06/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_POLL]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UPDATE_MESSAGE_POLL]: async function(data, ack) {
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
 		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
-		let { conversationID, messageID }	= data; 
+		let { conversationID, messageID }	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 		const infoMessage	   = await CHATTING__MESSAGE_COLL
@@ -1001,10 +1002,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation or message" }, 
+				data: { error: true, message: "Can't get info conversation or message" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UPDATE_MESSAGE_POLL], io
 			});
 		}
@@ -1022,8 +1023,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -1041,13 +1042,13 @@ exports.CHATTING_SOCKET = {
 	 * Func: Xoá tin nhắn bình chọn
 	 * Date: 06/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_POLL]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REMOVE_MESSAGE_POLL]: async function(data, ack) {
 		let socket              			= this;
 		let broker              			= socket.$service.broker;
 		let listUserActive      			= socket.$service.listUserConnected;
 		let userID              			= socket.client.user;
 		let io                  			= socket.$service.io;
-		let { conversationID, messageID } 	= data; 
+		let { conversationID, messageID } 	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 		const infoMessage	   = await CHATTING__MESSAGE_COLL
@@ -1060,10 +1061,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation || !infoMessage){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation or message" }, 
+				data: { error: true, message: "Can't get info conversation or message" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REMOVE_MESSAGE_POLL], io
 			});
 		}
@@ -1081,8 +1082,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -1100,21 +1101,21 @@ exports.CHATTING_SOCKET = {
 	 * Func: Pin 1 tin nhắn
 	 * Date: 06/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_PIN_MESSAGE]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_PIN_MESSAGE]: async function(data, ack) {
 		let socket              = this;
 		let broker              = socket.$service.broker;
 		let listUserActive      = socket.$service.listUserConnected;
 		let userID              = socket.client.user;
 		let io                  = socket.$service.io;
-		let { conversationID } 	= data; 
+		let { conversationID } 	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_PIN_MESSAGE], io
 			});
 		}
@@ -1132,8 +1133,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -1150,21 +1151,21 @@ exports.CHATTING_SOCKET = {
 	 * Func: Bỏ pin 1 tin nhắn
 	 * Date: 06/09/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UNPIN_MESSAGE]: async function(data, ack) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_UNPIN_MESSAGE]: async function(data, ack) {
 		let socket              = this;
 		let broker              = socket.$service.broker;
 		let listUserActive      = socket.$service.listUserConnected;
 		let userID              = socket.client.user;
 		let io                  = socket.$service.io;
-		let { conversationID } 	= data; 
+		let { conversationID } 	= data;
 
 		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_UNPIN_MESSAGE], io
 			});
 		}
@@ -1182,8 +1183,8 @@ exports.CHATTING_SOCKET = {
 			return memberID.toString() !== userID.toString() && !listMemberIDMuteConversation.includes(memberID.toString())
 		});
 
-		sendDataToMultilSocketsOfListUser({ 
-			listUserConnected: listUserActive, 
+		sendDataToMultilSocketsOfListUser({
+			listUserConnected: listUserActive,
 			arrReceiver,
 			data: {
 				error: false,
@@ -1200,7 +1201,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Thông báo nhắc hẹn
 	 * Date: 13/09/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER]: async function(data, ack) { 
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_NOTIFICATION_REMINDER]: async function(data, ack) {
         let socket               					= this;
 		let broker                      			= socket.$service.broker;
         // let listUserActive       					= socket.$service.listUserConnected;
@@ -1222,7 +1223,7 @@ exports.CHATTING_SOCKET = {
 		if(status === 2) return;
 
 		if(notifyFor === 'onlyme'){
-			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			return broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 				users: [userID],
 				title: 'Thông báo nhắc hẹn',
 				description: content,
@@ -1236,7 +1237,7 @@ exports.CHATTING_SOCKET = {
 		const arrReceiver = accepts.filter(memberID => listMembersIDConversation.includes(memberID.toString()));
 		console.log({ ['NOTIFICATION_FROM_REMINDER']: arrReceiver })
 
-		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+		broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 			users: arrReceiver,
 			title: 'Thông báo nhắc hẹn',
 			description: content,
@@ -1250,7 +1251,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Reaction 1 tin nhắn
 	 * Date: 26/10/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_REACTION_MESSAGE]: async function(data) {
         try {
 			let socket               		= this;
 			let userID              		= socket.client.user;
@@ -1307,21 +1308,21 @@ exports.CHATTING_SOCKET = {
 				.lean();
 
 			if(!infoMessage){
-				return sendDataToMultilSocketsOfListUser({ 
-					listUserConnected: listUserActive, 
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Can't get info message" }, 
+					data: { error: true, message: "Can't get info message" },
 					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
 				});
 			}
 
-			sendDataToMultilSocketsOfListUser({ 
-				arrReceiver: infoMessage?.conversation?.members, 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				arrReceiver: infoMessage?.conversation?.members,
+				listUserConnected: listUserActive,
 				data: {
 					error: false,
 					data: infoMessage
-				}, 
+				},
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
 			})
 		} catch (error) {
@@ -1335,47 +1336,73 @@ exports.CHATTING_SOCKET = {
 	 * Func: Danh sách cuộc hội thoại
 	 * Date: 04/01/2021
 	 */
-    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_LIST_CONVERSATION]: async function(data) { 
-        let socket           = this;
-        let listUserActive   = socket.$service.listUserConnected;
-		let broker			 = socket.$service.broker;
-        let io               = socket.$service.io;
-		let userID			 = socket.client.user;
-		let { filter, select, conversationID } = data;
+    [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_INFO_CONVERSATION]: async function(data) {
+        try {
+			let socket           = this;
+			let listUserActive   = socket.$service.listUserConnected;
+			let io               = socket.$service.io;
+			let userID			 = socket.client.user;
+			let { populates, select, conversationID } = data;
 
-		const infoConversation = await CHATTING__CONVERSATION_COLL.findById(conversationID);
+			if(populates && typeof populates === 'string'){
+				if(!IsJsonString(populates)) {
+					console.error('Request params populates invalid')
+					return sendDataToMultilSocketsOfListUser({
+						listUserConnected: listUserActive,
+						arrReceiver: [userID],
+						data: {
+							message: 'Request params populates invalid',
+							error: true
+						},
+						event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_INFO_CONVERSATION], io
+					});
+				}
 
-		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [userID],
-				data: infoConversation, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_REACTION_MESSAGE], io
-			});
-		}
-
-		let listConversationOfMembers = [];
-
-		for (const memberID of infoConversation.members) {
-			const listConversation = await CHATTING__CONVERSATION_MODEL.getListConversationWithPage({
-				userID: memberID.toString(), filter, select, ctx: broker
-			});
-
-			listConversationOfMembers[listConversationOfMembers.length] = {
-				memberID,
-				listConversation
+				populates = JSON.parse(populates);
+			} else{
+				populates = {
+					path: "",
+					select: ""
+				}
 			}
-		}
 
-		listConversationOfMembers.map(conversation => {
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
-				arrReceiver: [conversation.memberID],
-				data: conversation.listConversation, 
-				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_LIST_CONVERSATION], io
+			const membersConversation = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.select('members')
+				.lean();
+
+			const infoConversation = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.select(select || '')
+				.populate(populates)
+				.lean();
+
+			if(!infoConversation){
+				console.error('Không thể lấy thông tin conversation')
+				return sendDataToMultilSocketsOfListUser({
+					listUserConnected: listUserActive,
+					arrReceiver: [userID],
+					data: {
+						data: infoConversation,
+						error: true
+					},
+					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_INFO_CONVERSATION], io
+				});
+			}
+
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
+				arrReceiver: membersConversation.members,
+				data: {
+					data: infoConversation,
+					error: false
+				},
+				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_INFO_CONVERSATION], io
 			});
-		})
-
+		} catch (error) {
+			console.info('EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_GET_INFO_CONVERSATION');
+			console.error(error);
+		}
     },
 
 	/**
@@ -1383,7 +1410,7 @@ exports.CHATTING_SOCKET = {
 	 * Func: Bắn tin nhắn thông báo (thêm/xóa thành viên, ghim tin nhắn...)
 	 * Date: 16/01/2021
 	 */
-	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_FIRE_MESSAGE]: async function(data) { 
+	[EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_CSS_FIRE_MESSAGE]: async function(data) {
         let socket              = this;
 		let userID				= socket.client.user;
         let listUserActive      = socket.$service.listUserConnected;
@@ -1396,10 +1423,10 @@ exports.CHATTING_SOCKET = {
 			.lean();
 
 		if(!infoConversation){
-			return sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			return sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver: [userID],
-				data: { error: true, message: "Can't get info conversation" }, 
+				data: { error: true, message: "Can't get info conversation" },
 				event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
 			});
 		}
@@ -1437,13 +1464,13 @@ exports.CHATTING_SOCKET = {
 			})
 			.lean();
 
-        sendDataToMultilSocketsOfListUser({ 
-			arrReceiver: infoConversation.members, 
-			listUserConnected: listUserActive, 
+        sendDataToMultilSocketsOfListUser({
+			arrReceiver: infoConversation.members,
+			listUserConnected: listUserActive,
 			data: {
-				error: false, 
+				error: false,
 				data: infoMessage
-			}, 
+			},
 			event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_FIRE_MESSAGE], io
 		})
     },
