@@ -3,6 +3,10 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+function obfuscate (cc) {
+    return '****-****-****-' + cc.slice(cc.length-4, cc.length);
+}
+
 module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}
@@ -24,7 +28,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         unique : true
     },
     //_______Mật khẩu
-    password: String,
+    password: String
     //_______Điện thoại
     phone: String,
     //_______Tên (vd: Nam)
