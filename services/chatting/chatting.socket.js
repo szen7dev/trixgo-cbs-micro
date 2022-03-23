@@ -1370,7 +1370,7 @@ exports.CHATTING_SOCKET = {
 			}
 
 			console.log('AFTER')
-			console.log({ populates, select, conversationID })
+			console.log({ populates, select: select || '', conversationID })
 			const membersConversation = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
 				.select('members')
@@ -1378,7 +1378,7 @@ exports.CHATTING_SOCKET = {
 
 			const infoConversation = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
-				.select(select)
+				.select(select || '')
 				.populate(populates)
 				.lean();
 
