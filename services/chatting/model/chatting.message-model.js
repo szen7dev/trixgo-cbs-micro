@@ -217,7 +217,6 @@ class Model extends BaseModel {
 									infoUser: { _id: senderID }
 								}
 							});
-							console.log({ file, infoFileCore })
 
 							if(!infoFileCore.error) {
 								const {

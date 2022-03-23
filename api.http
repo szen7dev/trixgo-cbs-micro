@@ -25,3 +25,5 @@ authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlb
         "select": "_id bizfullname image email"
     }
 }
+
+# https://mongoosejs.com/docs/populate.html#query-conditions
