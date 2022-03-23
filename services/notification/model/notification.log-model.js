@@ -399,6 +399,7 @@ class Model extends BaseModel {
                                 android_sound: 'teaser',
                                 ios_badgeType: 'Increase',
                                 ios_badgeCount: 1,
+                                priority: 'high',
                                 include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
                             }
                             if(objDataForSend.amountNoti) {
@@ -419,6 +420,7 @@ class Model extends BaseModel {
                                 android_sound: 'teaser',
                                 ios_badgeType: 'Increase',
                                 ios_badgeCount: 1,
+                                priority: 'high',
                                 include_player_ids: listDeviceFromMobileWith_TEASER.map(item => item.oneSignalID)
                             }
                             if(objDataForSend.amountNoti) {
@@ -447,6 +449,7 @@ class Model extends BaseModel {
                                 app_id: ONESIGNAL_APP_CBS,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
+                                priority: 'high',
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowserWith_CBS.map(item => item.oneSignalID)
                             }
@@ -461,6 +464,7 @@ class Model extends BaseModel {
                                 app_id: ONESIGNAL_APP_TEASER,
                                 ios_sound: 'teaser.wav',
                                 android_sound: 'teaser',
+                                priority: 'high',
                                 web_url,
                                 include_player_ids: listDeviceFromWebBrowserWith_TEASER.map(item => item.oneSignalID)
                             }

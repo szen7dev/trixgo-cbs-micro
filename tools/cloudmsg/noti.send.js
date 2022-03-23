@@ -3,7 +3,6 @@ exports.sendNotificationviaOneSignal = function(data) {
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz",
-      // "Authorization": "Basic YTE2NTA0Y2ItNzEwZS00M2M3LTk2YzItMDVmZjhiZWFjNWQ5"
     };
 
     let options = {
@@ -21,7 +20,7 @@ exports.sendNotificationviaOneSignal = function(data) {
             console.log("Response:");
             console.log(JSON.parse(data));
           } catch (error) {
-            console.error(error);
+            // console.error(error);
           }
         });
     });
