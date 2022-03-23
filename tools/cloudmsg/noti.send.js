@@ -5,7 +5,7 @@ exports.sendNotificationviaOneSignal = function(data) {
       "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz",
       // "Authorization": "Basic YTE2NTA0Y2ItNzEwZS00M2M3LTk2YzItMDVmZjhiZWFjNWQ5"
     };
-    
+
     let options = {
       host: "onesignal.com",
       port: 443,
@@ -13,25 +13,29 @@ exports.sendNotificationviaOneSignal = function(data) {
       method: "POST",
       headers: headers
     };
-    
+
     let https = require('https');
-    let req = https.request(options, function(res) {  
+    let req = https.request(options, function(res) {
         res.on('data', function(data) {
-          console.log("Response:");
-          console.log(JSON.parse(data));
+          try {
+            console.log("Response:");
+            console.log(JSON.parse(data));
+          } catch (error) {
+            console.error(error);
+          }
         });
     });
-    
+
     req.on('error', function(e) {
       console.error("ERROR: (noti.send.js)");
       console.error(e);
     });
-    
+
     req.write(JSON.stringify(data));
     req.end();
 };
-  
-// let message = { 
+
+// let message = {
 //     app_id: "79acfc09-966a-48f5-a9ea-44d90410014f",
 //     contents: {"en": "English Message"},
 //     headings: {"en": "HEADING ENGLISH"},
