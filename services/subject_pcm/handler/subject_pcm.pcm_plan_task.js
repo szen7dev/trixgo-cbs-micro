@@ -132,7 +132,7 @@ module.exports = {
         params: {
             taskIDs         : { type: "array" },
             parentID        : { type: "string" },
-            type            : { type: "number" },
+            type            : { type: "number" }, // 1 việc con / 2 checklist
         },
         async handler(ctx) {
             try {
@@ -143,7 +143,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type
+                    parentID, taskIDs, type, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
