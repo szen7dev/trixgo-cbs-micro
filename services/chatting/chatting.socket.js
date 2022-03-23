@@ -1344,8 +1344,12 @@ exports.CHATTING_SOCKET = {
 			let userID			 = socket.client.user;
 			let { populates, select, conversationID } = data;
 
+			console.log('BEFORE')
+			console.log({ populates, select, conversationID })
+
 			if(populates && typeof populates === 'string'){
 				if(!IsJsonString(populates)) {
+					console.error('Request params populates invalid')
 					return sendDataToMultilSocketsOfListUser({
 						listUserConnected: listUserActive,
 						arrReceiver: [userID],
@@ -1365,6 +1369,8 @@ exports.CHATTING_SOCKET = {
 				}
 			}
 
+			console.log('AFTER')
+			console.log({ populates, select, conversationID })
 			const membersConversation = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
 				.select('members')
@@ -1377,6 +1383,7 @@ exports.CHATTING_SOCKET = {
 				.lean();
 
 			if(!infoConversation){
+				console.error('Không thể lấy thông tin conversation')
 				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
@@ -1387,6 +1394,7 @@ exports.CHATTING_SOCKET = {
 					event: [EVENT_SOCKET_CONSTANT_CHATTING.CHATTING_SSC_GET_INFO_CONVERSATION], io
 				});
 			}
+			console.error({ membersConversation, members: membersConversation.members })
 
 			sendDataToMultilSocketsOfListUser({
 				listUserConnected: listUserActive,
