@@ -1365,6 +1365,11 @@ exports.CHATTING_SOCKET = {
 				}
 			}
 
+			const membersConversation = await CHATTING__CONVERSATION_COLL
+				.findById(conversationID)
+				.select('members')
+				.lean();
+
 			const infoConversation = await CHATTING__CONVERSATION_COLL
 				.findById(conversationID)
 				.select(select)
@@ -1385,7 +1390,7 @@ exports.CHATTING_SOCKET = {
 
 			sendDataToMultilSocketsOfListUser({
 				listUserConnected: listUserActive,
-				arrReceiver: infoConversation.members,
+				arrReceiver: membersConversation.members,
 				data: {
 					data: infoConversation,
 					error: false
