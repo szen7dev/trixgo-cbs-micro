@@ -116,10 +116,13 @@ class Model extends BaseModel {
                     assignee: assigneeID,
                     author  : authorID,
                     suid,
-                    expiredTime: new Date(expiredTime),
-                    actualFinishTime: new Date(expiredTime),
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
                     type,
+                }
+
+                if(expiredTime) {
+                    dataInsert.expiredTime = new Date(expiredTime);
+                    dataInsert.actualFinishTime = new Date(expiredTime);
                 }
                 //precalculated
                 // companyOfAuthor
