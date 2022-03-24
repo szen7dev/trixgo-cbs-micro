@@ -95,12 +95,12 @@ class Model extends BaseModel {
                         })
                     });
 
-                    let { author, assignee, company, isproposal } = infoTaskParent.data;
+                    let { author, assignee, company, subtype } = infoTaskParent.data;
                     /**   
                      * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
                      * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
                      */
-                    if(Number(isproposal) != 1){
+                    if(Number(subtype) != 1){
                         if(author._id.toString() != authorID.toString() && assignee._id.toString() != authorID.toString())
                             return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 })
                     }
