@@ -1346,7 +1346,6 @@ exports.CHATTING_SOCKET = {
 
 			if(populates && typeof populates === 'string'){
 				if(!IsJsonString(populates)) {
-					console.error('Request params populates invalid')
 					return sendDataToMultilSocketsOfListUser({
 						listUserConnected: listUserActive,
 						arrReceiver: [userID],
@@ -1378,7 +1377,6 @@ exports.CHATTING_SOCKET = {
 				.lean();
 
 			if(!infoConversation){
-				console.error('Không thể lấy thông tin conversation')
 				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],

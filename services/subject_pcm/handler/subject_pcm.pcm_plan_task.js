@@ -20,7 +20,6 @@ module.exports = {
             projectID        : { type: "string" },
             groupID          : { type: "string" },
             assigneeID       : { type: "string" },
-            relatedIDs       : { type: "array", optional: true },
             authorAttachs    : { type: "array", optional: true },
             actualStartTime  : { type: "string", optional: true },
             type             : { type: "number", optional: true },
