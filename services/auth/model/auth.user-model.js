@@ -771,6 +771,10 @@ class Model extends BaseModel {
                  */    
               
                 let decoded = await verify(token, JWT_SECRET_KEY);
+                // if(decoded.exp < Date.now()) {
+                //     return resolve({ error: true, message: 'token_is_expired' });
+                // }
+
                 if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
 
                 const { infoUser: { _id: userIDAfterDecoded } } = decoded;
@@ -1566,12 +1570,13 @@ class Model extends BaseModel {
                 }
 
                 let infoTask = await AUTH__USER_COLL.findById(userID)
-                                .select(select)
-                                .populate(populates)
-                                .lean();
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
 				if (!infoTask) 
                     return resolve({ error: true, message: 'Cannot get info', keyError: "cannot_get_info" });
+
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

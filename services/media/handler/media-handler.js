@@ -23,6 +23,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     insertMedia: {
+        auth: "required",
         params: {
             title           : { type: "string" },
             content         : { type: "string" },
@@ -128,6 +129,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     getInfoMedia: {
+        auth: "required",
         params: {
             mediaID     : { type: "string" },
             select      : { type: "string", optional: true },
@@ -156,6 +158,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     getListMedia: {
+        auth: "required",
         params: {
             type            : { type: 'string', optional: true },
             mediaID         : { type: 'string', optional: true },
