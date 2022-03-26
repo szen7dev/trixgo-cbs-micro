@@ -225,6 +225,87 @@ module.exports = {
         }
     },
 
+    // Danh sách VAT đầu vào 
+    reportVATIn: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const {  accountID, fromDate, toDate   } = ctx.params;
+                let { fundaID  } = ctx.params;
+                let resultAfterCallHandler;
+                if(!fundaID){
+                    const infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
+                    if(infoFundaCompany.error){
+                        resultAfterCallHandler.error = true;
+                        resultAfterCallHandler.message = 'Not found funda comany ';
+                        return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                    }
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
+                }
+                // if (accountID) {
+                //     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTrackingAccountWithCusomerDetails({ ctx, fundaID, accountID, fromDate, toDate });
+                // }else{
+                //     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTracking({ ctx, accountID, fromDate, toDate,fundaID });
+                // }
+
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);
+                return { error: true, message: error.message }; 
+            }
+        }
+    },
+
+
+    // Danh sách VAT đầu ra
+    reportVATOut: {
+        params: {
+            // email           : { type: "string" },
+            // fullname        : { type: "string" },
+            // username        : { type: "string" },
+            // level           : { type: "string" },
+            // companyID       : { type: "string" },
+            // platform        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                const {  accountID, fromDate, toDate   } = ctx.params;
+                let { fundaID  } = ctx.params;
+                let resultAfterCallHandler;
+                
+                if(!fundaID){
+                    const infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
+                    if(infoFundaCompany.error){
+                        resultAfterCallHandler.error = true;
+                        resultAfterCallHandler.message = 'Not found funda comany ';
+                        return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                    }
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
+                }
+
+                // if (accountID) {
+                //     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTrackingAccountWithCusomerDetails({ ctx, fundaID, accountID, fromDate, toDate });
+                // }else{
+                //     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTracking({ ctx, accountID, fromDate, toDate,fundaID });
+                // }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);
+                return { error: true, message: error.message }; 
+            }
+        }
+    },
+
+
     updateOlDB:{
         params: {
             // email           : { type: "string" },
@@ -245,5 +326,5 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
-    }
+    },
 }

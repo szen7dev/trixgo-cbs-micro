@@ -281,6 +281,8 @@ module.exports = {
                     }
                     fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 }
+
+
                 if (accountID) {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.debtTrackingAccountWithCusomerDetails({ ctx, fundaID, accountID, fromDate, toDate });
                 }else{
@@ -293,4 +295,5 @@ module.exports = {
             }
         }
     },
+
 }

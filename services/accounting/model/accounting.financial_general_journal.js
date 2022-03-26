@@ -728,7 +728,7 @@ class Model extends BaseModel {
         });
     } 
 
-        //_________CHI TIẾT TÀI KHOẢN CHỮ T (OK)
+    //_________CHI TIẾT TÀI KHOẢN CHỮ T (OK)
     // Tính năng sử dụng: Sổ chi tiết tài khoản chữ T
     // Author: HiepNH
     getListBalanceOfCompanyGroupByAccount({ ctx, companyID, fundaID, accountID, fromDate, toDate }) {
@@ -871,7 +871,7 @@ class Model extends BaseModel {
                 for(let item of listAccounts.data.listRecords){
                     //_________Lấy mảng arrObjectID gồm ID tài khoản và con cháu của tài khoản
                     let _arrObjectID  =  await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  accountID: `${item._id}`, isNestedOfCompany: true });//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
-                    if(_arrObjectID.error){
+                    if(_arrObjectID.error) {
                         console.log(`ERROR [ACCOUNTING_JOUNRAL][getListBalanceOfCompanyGroupByAccount] tbook: ${error} `);
                         return resolve({ error: true, message: _arrObjectID.message});
                     }
@@ -2810,7 +2810,7 @@ class Model extends BaseModel {
                  * 2. Do có 1 số khách hàng chỉ phát sinh tới cuối kỳ trước
                  */
                 //____________Get nestedArray of account
-                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
+                // let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
                 
                 let conditionObj;
 
@@ -3109,7 +3109,6 @@ class Model extends BaseModel {
                         }
                     }
                 ]);
-                console.log({ ________6: JSON.stringify( listData[0])})                // Convert dữ liệu sang mảng có Key là các itemID để tiện cho việc hiển thị ra view
 
                 let arrDebitS = [], arrCreditS = [], arrDebit = [], arrCredit = [];
                 listDataS[0]._debit.forEach(element=>{
@@ -3143,10 +3142,6 @@ class Model extends BaseModel {
                     }
                     arrCredit[key].push(element);
                 });
-                console.log(JSON.stringify(Object.assign({}, arrDebitS)));
-                console.log(JSON.stringify(Object.assign({}, arrCreditS)));
-
-
                 return resolve({ error: false, data: { arrDebitS, arrCreditS, arrDebit, arrCredit } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -3356,7 +3351,7 @@ class Model extends BaseModel {
         });
     }
 
-    // Danh sách tài khoản chữ T
+    // Danh sách tài khoản chữ T [ok]
     listTbookByAccount({ ctx, companyID, fundaID, contractID, accountID, fromDate, toDate }) {
         return new Promise(async(resolve)=>{
             try {
@@ -3392,8 +3387,6 @@ class Model extends BaseModel {
             }
         });
     }
-    
-
 }
 exports.MODEL = new Model;
 var ACCOUNTING__FINANCIAL_VOUCHER     = require('../model/accounting.financial_voucher').MODEL;

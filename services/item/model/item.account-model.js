@@ -390,9 +390,8 @@ class Model extends BaseModel {
                 //__________Khai báo mảng chứa phần tử cha và các con
                 let arrObjectID = [];
                 let getListIDRecursiveForAny = (arr) => {
-                    for(const item of arr){
+                    for(const item of arr) {
                         arrObjectID.push(item._id)
-
                         if (Array.isArray(item.childs) && item.childs.length) {
                             getListIDRecursiveForAny(item.childs)
                         }

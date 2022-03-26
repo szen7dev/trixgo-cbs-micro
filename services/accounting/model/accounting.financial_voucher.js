@@ -1513,6 +1513,73 @@ class AccountingFinancialVoucher extends BaseModel {
             }
         })
     }
+
+    // Danh sách các phiếu VAT
+    // Author: HiepNH
+    getListVATVoucherOfCompany({ companyID, fundaID, fromDate, toDate, vat }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy các phiếu có VAT = 1 và debit, credit in arrObjectID[]
+                 * 2. Không lấy các Phiếu kết chuyển + Phiếu hủy
+                 */  
+
+                let conditionObj;
+
+                if(!fundaID){
+                    conditionObj = { 
+                        company: companyID,
+                        vat: Number(vat),
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+                }else{
+                    conditionObj = { 
+                        funda: fundaID,
+                        vat: Number(vat),
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+                }
+
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                .populate({
+                    path: 'company customer storage staff warehouse',
+                    select: '_id name sign taxid address',
+                })
+                .populate({
+                    path: 'contract',
+                    select: '_id name sign project',
+                    populate: {
+                        path: 'project',
+                        select: '_id name sign',
+                    }
+                })
+                .populate({
+                    path: 'journals',
+                    populate: {
+                        path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                    }
+                })
+                .sort({ date: 'asc' });
+                if(!listData)
+                    return resolve({ error: true, message: "cannot_get_list" });
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
     
     //
     updateDB(company, watchFileError){
