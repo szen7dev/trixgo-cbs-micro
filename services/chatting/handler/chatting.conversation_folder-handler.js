@@ -23,6 +23,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     insert: {
+        auth: "required",
         params: {
             name: { type: "string" },
         },
@@ -49,6 +50,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
 	update: {
+        auth: "required",
         params: {
             folderID    : { type: "string" },
             name        : { type: "string", optional: true },
@@ -76,6 +78,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     updateConversationToFolder: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             addFoldersID    : { type: "array", optional: true },
@@ -104,6 +107,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
     getInfo: {
+        auth: "required",
         params: {
             folderID    : { type: "string" },
             select      : { type: "string", optional: true },
@@ -132,6 +136,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
 	getList: {
+        auth: "required",
         params: {
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -162,6 +167,7 @@ module.exports = {
 	 * Date: 11/02/2022
 	 */
 	delete: {
+        auth: "required",
         params: {
             folderID: { type: "string" },
         },

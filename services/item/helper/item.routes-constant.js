@@ -13,6 +13,7 @@ const STORAGE    = '/storages';
 const ACCOUNT    = '/accounts';
 const GOODS      = '/goods';
 const FUNDA      = '/fundas';
+const SIGNATURE  = '/signatures';
 
 const CF_ROUTINGS_ITEM = {
     ORIGIN_APP: BASE_ROUTE,
@@ -53,6 +54,9 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================FUNDA===========================================//
     FUNDA                                      : `${BASE_ROUTE}${FUNDA}`,
+
+    // ================================SIGNATURE===========================================//
+    SIGNATURE                                  : `${BASE_ROUTE}${SIGNATURE}`,
 }
 
 exports.CF_ROUTINGS_ITEM = CF_ROUTINGS_ITEM;

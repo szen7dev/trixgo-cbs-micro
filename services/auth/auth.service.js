@@ -14,7 +14,6 @@ const AUTH__APP_USER_HANDLER 		= require('./handler/auth.app_user-handler');
 const AUTH__APP_COMPANY_HANDLER 	= require('./handler/auth.app_company-handler');
 const AUTH__VERSION_APP_HANDLER 	= require('./handler/auth.version_app-handler');
 
-
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
 const AUTH__COMPANY_COLL			= require('./database/auth.company-coll');

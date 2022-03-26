@@ -23,6 +23,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     insertMedia: {
+        auth: "required",
         params: {
             title           : { type: "string" },
             content         : { type: "string" },
@@ -62,6 +63,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
 	updateMedia: {
+        auth: "required",
         params: {
             mediaID         : { type: "string" },
             title           : { type: "string" },
@@ -102,6 +104,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     deleteMedia: {
+        auth: "required",
         params: {
             mediaID: { type: "string" },
         },
@@ -128,6 +131,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     getInfoMedia: {
+        auth: "required",
         params: {
             mediaID     : { type: "string" },
             select      : { type: "string", optional: true },
@@ -156,6 +160,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
     getListMedia: {
+        auth: "required",
         params: {
             type            : { type: 'string', optional: true },
             mediaID         : { type: 'string', optional: true },
@@ -195,6 +200,7 @@ module.exports = {
      * Updated: 24/02/2022
 	 */
 	updateView: {
+        auth: "required",
         params: {
             mediaID: { type: "string" },
         },
@@ -221,6 +227,7 @@ module.exports = {
 	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
 	 */
     getListUsersSeen: {
+        auth: "required",
         params: {
             mediaID     : { type: 'string' },
             limit       : { type: 'string', optional: true },
@@ -251,6 +258,7 @@ module.exports = {
      * Date: 24/02/2022
 	 */
     saveMedia: {
+        auth: "required",
         params: {
             mediaID : { type: "string" },
             isSave  : { type: "boolean" },
@@ -278,6 +286,7 @@ module.exports = {
      * Date: 24/02/2022
 	 */
     getListSaveMedia: {
+        auth: "required",
         params: {
             limit       : { type: 'string', optional: true },
             lastestID   : { type: 'string', optional: true },
@@ -307,6 +316,7 @@ module.exports = {
      * Date: 24/02/2022
 	 */
     getListPinMedia: {
+        auth: "required",
         params: {
             limit       : { type: 'string', optional: true },
             lastestID   : { type: 'string', optional: true },
@@ -336,6 +346,7 @@ module.exports = {
      * Date: 24/02/2022
 	 */
     pinMedia: {
+        auth: "required",
         params: {
             mediaID : { type: "string" },
             isPin   : { type: "boolean" },

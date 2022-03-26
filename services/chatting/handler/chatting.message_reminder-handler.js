@@ -23,6 +23,7 @@ module.exports = {
 	 * Date: 01/09/2021
 	 */
     insert: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			content			: { type: 'string' },
@@ -53,6 +54,7 @@ module.exports = {
 	 * Date: 01/09/2021
 	 */
 	update: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -83,6 +85,7 @@ module.exports = {
 	 * Date: 01/09/2021
 	 */
     updateUsersJoinReminder: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -111,6 +114,7 @@ module.exports = {
 	 * Date: 01/09/2021
 	 */
 	delete: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -138,6 +142,7 @@ module.exports = {
 	 * Date: 02/09/2021
 	 */
 	getList: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string', optional: true },
             lastestID 		: { type: 'string', optional: true },

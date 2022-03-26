@@ -84,6 +84,7 @@ module.exports = {
 	 * Func: Delete comment media
 	 */
     delete: {
+        auth: "required",
         params: {
             commentID: { type: "string" },
         },
@@ -221,6 +222,7 @@ module.exports = {
 	 * Func: Delete comment file
 	 */
     deleteCommentFile: {
+        auth: "required",
         params: {
             commentID: { type: "string" },
         },

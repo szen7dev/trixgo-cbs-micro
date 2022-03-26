@@ -467,6 +467,7 @@ module.exports = {
             image         : { type: "string", optional: true },
             signature     : { type: "string", optional: true },
             level         : { type: "number", optional: true },
+            status        : { type: "number", optional: true },
             userID        : { type: "string", optional: true },
             companyID     : { type: "string", optional: true },
             positionID    : { type: "string", optional: true },
@@ -482,7 +483,7 @@ module.exports = {
                 let { 
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID,
-                    companyID, departmentID, positionID, level
+                    companyID, departmentID, positionID, level, status
                 } = ctx.params;
 				let { _id: currentUserID, company } = ctx.meta.infoUser;
 
@@ -493,7 +494,7 @@ module.exports = {
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx,
-                    companyID, departmentID, positionID, level, company, ctx
+                    companyID, departmentID, positionID, level, status, company, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
