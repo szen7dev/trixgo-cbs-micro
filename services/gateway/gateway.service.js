@@ -117,7 +117,6 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		async authorize(ctx, _, req) {
-			console.log(`--------------TOKEN: ----------`);
 			let token;
 			if (req.headers.authorization) {
 				let type = req.headers.authorization.split(" ")[0];
@@ -148,7 +147,7 @@ module.exports = {
 				ctx.meta.infoUser = infoUser;
 				ctx.meta.token 	  = token;
 
-				let checkUser = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+				let userAuth = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
 					userID: infoUser._id.toString(),
 					select: "status",
 					populates: JSON.stringify({
@@ -157,10 +156,10 @@ module.exports = {
 					})
 				});
 
-				if(!checkUser.error) {
-					checkUser = checkUser.data;
+				if(!userAuth.error) {
+					userAuth = userAuth.data;
 
-					if(checkUser.status === 0) {
+					if(userAuth.status === 0) {
 						return Promise.reject('user_blocked');
 					}
 				}

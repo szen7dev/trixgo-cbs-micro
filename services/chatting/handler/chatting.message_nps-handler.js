@@ -23,6 +23,7 @@ module.exports = {
 	 * Date: 20/02/2022
 	 */
     insert: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
             serviceID       : { type: "string" },
@@ -51,6 +52,7 @@ module.exports = {
 	 * Date: 20/02/2022
 	 */
 	update: {
+        auth: "required",
         params: {
             conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -80,6 +82,7 @@ module.exports = {
 	 * Date: 20/02/2022
 	 */
     closeNps: {
+        auth: "required",
         params: {
             conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -107,6 +110,7 @@ module.exports = {
 	 * Date: 20/02/2022
 	 */
 	getList: {
+        auth: "required",
         params: {
             conversationID	: { type: 'string' },
             limit           : { type: "string", optional: true },

@@ -23,6 +23,7 @@ module.exports = {
 	 * Date: 25/08/2021
 	 */
     insert: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			name			: { type: 'string' },
@@ -50,6 +51,7 @@ module.exports = {
 	 * Date: 28/08/2021
 	 */
 	update: {
+        auth: "required",
         params: {
             conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -80,6 +82,7 @@ module.exports = {
 	 * Date: 29/08/2021
 	 */
     closePoll: {
+        auth: "required",
         params: {
             conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -107,6 +110,7 @@ module.exports = {
 	 * Date: 30/08/2021
 	 */
 	getList: {
+        auth: "required",
         params: {
             conversationID	: { type: 'string' },
             lastestID 		: { type: 'string', optional: true },

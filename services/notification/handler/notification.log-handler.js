@@ -27,6 +27,7 @@ module.exports = {
       * Date: 16/12/2021
       */
     insertNotification: {
+        auth: "required",
         params: {
             content     : { type: "string" },
             receivers   : { type: "array" },
@@ -60,6 +61,7 @@ module.exports = {
       * Date: 16/12/2021
       */
     update: {
+        auth: "required",
         params: {
             notificationID      : { type: "string", optional: true },
             status              : { type: "number", optional: true },
@@ -88,6 +90,7 @@ module.exports = {
       * Date: 16/12/2021
       */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             projectID 		: { type: "string", optional: true },
             lastestID 		: { type: "string", optional: true },
