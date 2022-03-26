@@ -1161,7 +1161,7 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname,
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status,
         sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, company, ctx }) {
         return new Promise(async (resolve) => {
             try {
@@ -1223,6 +1223,10 @@ class Model extends BaseModel {
                     dataUpdate.level = level;
                 }
 
+                if([0,1].includes(status)){
+                    dataUpdate.status = status;
+                }
+
                 if(companyID){
                     dataUpdate.company = companyID;
                 }
@@ -1248,7 +1252,7 @@ class Model extends BaseModel {
 
                 // Chấp nhận kết bạn
                 if(checkObjectIDs(acceptFriendRequestID)){
-                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                         $pull: {
                             receiveFromFriends: acceptFriendRequestID
                         },
@@ -1258,7 +1262,7 @@ class Model extends BaseModel {
                     }, { new: true });
                     // await cachingInfoUser(userID, session);
 
-                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(acceptFriendRequestID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(acceptFriendRequestID, {
                         $pull: {
                             sendToFriends: userID
                         },
@@ -1271,7 +1275,7 @@ class Model extends BaseModel {
 
                 //Hủy lời mời kết bạn
                 if(checkObjectIDs(removeFriendRequestID)){
-                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                         $pull: {
                             receiveFromFriends: removeFriendRequestID
                         },
@@ -1279,7 +1283,7 @@ class Model extends BaseModel {
     
                     // await cachingInfoUser(userID, session);
                    
-                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(removeFriendRequestID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(removeFriendRequestID, {
                         $pull: {
                             sendToFriends: userID
                         },
@@ -1288,7 +1292,7 @@ class Model extends BaseModel {
 
                 //Hủy kết bạn
                 if(checkObjectIDs(unFriendID)){
-                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                         $pull: {
                             friends: unFriendID
                         },
@@ -1296,7 +1300,7 @@ class Model extends BaseModel {
                     
                     // await cachingInfoUser(userID, session);
                    
-                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(unFriendID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(unFriendID, {
                         $pull: {
                             friends: userID
                         },
