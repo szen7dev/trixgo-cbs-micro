@@ -221,10 +221,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "contact"
-    }],
     level: {
         type: Number,
         default: 1 

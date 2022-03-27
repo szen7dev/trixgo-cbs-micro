@@ -17,6 +17,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref: "goods"
     },
+    level: {
+        type: Number,
+        default: 1 
+    },
     /**
      * HỆ THỐNG QUẢN LÝ
      */

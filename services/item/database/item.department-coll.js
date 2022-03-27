@@ -17,6 +17,10 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref: "department"
     },
+    level: {
+        type: Number,
+        default: 1 
+    },
     /**
      * PHÂN QUYỀN TRUY CẬP 
      */
