@@ -17,6 +17,10 @@ module.exports  = DATABASE_MIDDLEWARE("warehouse", {
         type: Schema.Types.ObjectId,
         ref: "warehouse"
     },
+    level: {
+        type: Number,
+        default: 1 
+    },
     //_________Tên
     name: String,
     //_________Mô tả

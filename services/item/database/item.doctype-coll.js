@@ -48,7 +48,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
-    //_________Phần tử con (áp dụng cho message nps)
+    level: {
+        type: Number,
+        default: 1 
+    },
+    //_________Phần tử con (Sử dụng dụng cho phân loại của Message NPS)
     childs: [{
         type: Schema.Types.ObjectId,
         ref: "doctype"
