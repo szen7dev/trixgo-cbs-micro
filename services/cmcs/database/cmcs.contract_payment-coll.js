@@ -33,6 +33,9 @@ module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
 
     //_________Nội dung(*)
     name: String,
+
+    //_________Mã hiệu
+    sign: String,
     
     //_________Mô tả
     description: String,
