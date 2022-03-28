@@ -58,7 +58,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     name        : { type: String, require: true }, 
 
     //_________Author(Đưa qua bảng phụ để truy vấn)
-    author: {
+    userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"
     },

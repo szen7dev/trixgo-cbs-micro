@@ -28,7 +28,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         unique : true
     },
     //_______Mật khẩu
-    password: String
+    password: String,
     //_______Điện thoại
     phone: String,
     //_______Tên (vd: Nam)
