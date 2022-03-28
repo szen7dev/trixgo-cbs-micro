@@ -12,4 +12,4 @@ mkdir $DEST
 mongodump --db cbs_official -u admin_cbs -p dAGT5ttW6CLrsTuw -h ip-172-31-24-73.ap-southeast-1.compute.internal -o $DEST
 
 #FILE_ZIP=$SOURCECODE node ./upload_drive.js
-FILE_ZIP=$DIR node ./scripts/upload_drive.js
+FILE_ZIP=$DIR node /opt/cbs_micro/provisioning/scripts/upload_drive.js

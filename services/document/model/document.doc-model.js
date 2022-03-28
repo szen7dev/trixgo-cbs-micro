@@ -579,12 +579,12 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-                
+		console.log({ select, populates })                
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
+                    .select(select || {})
+                    .populate(populates || {})
                     .lean(); 
                 
                 if(!infoDataAfterGet)
@@ -610,6 +610,7 @@ class Model extends BaseModel {
                 }, status: 200 });
                 
             } catch (error) {
+		console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
