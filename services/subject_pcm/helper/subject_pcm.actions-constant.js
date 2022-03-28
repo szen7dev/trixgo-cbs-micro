@@ -8,6 +8,7 @@ const PCM_PLAN_REPORT                     = 'PCM_PLAN_REPORT';
 const USER_PCM_PLAN_REPORT                = 'USER_PCM_PLAN_REPORT';
 const PCM_PLAN_GROUP                      = 'PCM_PLAN_GROUP';
 const PCM_PLAN_TASK_COMMENT               = 'PCM_PLAN_TASK_COMMENT';
+const PCM_FILE                            = 'PCM_FILE';
 
 const CF_ACTIONS_SUBJECT_PCM = {
    /**
@@ -61,6 +62,12 @@ const CF_ACTIONS_SUBJECT_PCM = {
     */
    PCM_PLAN_TASK_COMMENT_REACTION                 : `${BASE_ACTIONS}_${PCM_PLAN_TASK_COMMENT}_REACTION`,
    PCM_PLAN_TASK_COMMENT_REACTION_GET_LIST        : `${BASE_ACTIONS}_${PCM_PLAN_TASK_COMMENT}_REACTION_GET_LIST`,
+
+
+   /**
+    * PCM FILE
+    */
+   PCM_FILE_GET_INFO_AND_GET_LIST                 : `${BASE_ACTIONS}_${PCM_FILE}_GET_INFO_AND_GET_LIST`,
 
 }
 

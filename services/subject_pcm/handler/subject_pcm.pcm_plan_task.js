@@ -94,6 +94,8 @@ module.exports = {
             relatedRemoves : { type: "array", optional: true },
             lastLogID      : { type: "string", optional: true },
             isAddSignature : { type: "boolean", optional: true },
+            authorAttachs  : { type: "array", optional: true },
+            assigneeAttachs: { type: "array", optional: true },
         },
         async handler(ctx) {
             try {

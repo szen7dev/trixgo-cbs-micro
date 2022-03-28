@@ -80,9 +80,13 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, groupID, taskID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
+
+                if(!companyID && !projectID && !groupID && !taskID)
+					return resolve({ error: true, message: 'Request params require companyID || projectID || groupID || taskID' });
+
                 if(limit > 20){
                     limit = 20
                 }else{
@@ -90,7 +94,7 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let conditionObj = { level: 3 };
+                let conditionObj = {};
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
@@ -102,6 +106,22 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(checkObjectIDs(companyID)){
+                    conditionObj.company = companyID;
+                }
+
+                if(checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
+                }
+
+                if(checkObjectIDs(groupID)){
+                    conditionObj.group = groupID;
+                }
+
+                if(checkObjectIDs(taskID)){
+                    conditionObj.task = taskID;
                 }
                 
                 let conditionObjOrg = { ...conditionObj };
@@ -141,7 +161,7 @@ class Model extends BaseModel {
                 }
                 let totalRecord = await PCM_FILE_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
-                
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
