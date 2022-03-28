@@ -15,6 +15,7 @@ exports.APP_KEYS = {
     PCM_PLAN_TASK: "5dfe4b9051dc622100bb9d89",
     DOCUMENT: "5e47867080019357cce04746",
     HUMAN: "61e049c9fdebf77b072d1b13",
+    WORKSHOP:"61e049e7fdebf77b072d1b15"
 }
 
 exports.KEY_ERROR  = {

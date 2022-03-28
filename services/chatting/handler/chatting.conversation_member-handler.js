@@ -23,6 +23,7 @@ module.exports = {
 	 * Date: 14/03/2022
 	 */
     updateName: {
+        auth: "required",
         params: {
             userID        : { type: "string" },
             bizfullname   : { type: "string" },
@@ -49,6 +50,7 @@ module.exports = {
 	 * Date: 10/08/2021
 	 */
     getList: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             lastestID       : { type: "string", optional: true },

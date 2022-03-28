@@ -15,7 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
         type: Schema.Types.ObjectId,
         ref: 'department'
     },
-
+    
     //________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
@@ -58,7 +58,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     name        : { type: String, require: true }, 
 
     //_________Author(Đưa qua bảng phụ để truy vấn)
-    author: {
+    userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"
     },

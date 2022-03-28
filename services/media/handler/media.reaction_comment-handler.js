@@ -15,6 +15,7 @@ module.exports = {
      * Updated: 18/03/2022
 	 */
     reactionCommentMedia: {
+        auth: "required",
         params: {
             commentID       : { type: "string" },
             typeReaction    : { type: "number", optional: true },
@@ -42,6 +43,7 @@ module.exports = {
      * Updated: 18/03/2022
 	 */
     reactionCommentFile: {
+        auth: "required",
         params: {
             commentID       : { type: "string" },
             typeReaction    : { type: "number", optional: true },
@@ -69,6 +71,7 @@ module.exports = {
      * Updated: 18/03/2022
 	 */
     getListReactionComment: {
+        auth: "required",
         params: {
             commentID   : { type: "string" },
             type        : { type: "string", optional: true },

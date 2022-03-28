@@ -3,6 +3,10 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+function obfuscate (cc) {
+    return '****-****-****-' + cc.slice(cc.length-4, cc.length);
+}
+
 module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}

@@ -11,6 +11,7 @@ const PCM_PLAN_TASK_HANDLER  			 	= require('./handler/subject_pcm.pcm_plan_task
 const PCM_PLAN_GROUP_HANDLER  			 	= require('./handler/subject_pcm.pcm_plan_group');
 const PCM_COMMENT_HANDLER  				   	= require('./handler/subject_pcm.pcm_comment');
 const PCM_COMMENT_REACTION_HANDLER		   	= require('./handler/subject_pcm.pcm_comment_reaction');
+const PCM_FILE_HANDLER  				   	= require('./handler/subject_pcm.pcm_file');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.SUBJECT_PCM,
@@ -19,6 +20,7 @@ module.exports = {
 		DbService('pcm_plan_tasks'),
 		DbService('pcm_plan_groups'),
 		DbService('pcm_comments'),
+		DbService('pcm_files'),
 		DbService('pcm_comment_reactions'),
 		CacheCleaner([CF_DOMAIN_SERVICES.SUBJECT_PCM])
     ],
@@ -78,6 +80,9 @@ module.exports = {
 		//========================================== PCM_PLAN_TASK_COMMENT REACTION =======================================
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_REACTION]					: PCM_COMMENT_REACTION_HANDLER.reaction,
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_REACTION_GET_LIST]		: PCM_COMMENT_REACTION_HANDLER.getListReaction,
+
+		//========================================== PCM_FILE =======================================
+		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GET_INFO_AND_GET_LIST]		: PCM_FILE_HANDLER.getInfoAndGetList,
 	},
 
 	/**

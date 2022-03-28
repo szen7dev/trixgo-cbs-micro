@@ -23,6 +23,7 @@ const ITEM__STORAGE_HANDLER          	= require('./handler/item.storage-handler'
 const ITEM__ACCOUNT_HANDLER          	= require('./handler/item.account-handler');
 const ITEM__FUNDA_HANDLER          		= require('./handler/item.funda-handler');
 const ITEM__GOOD_HANDLER          		= require('./handler/item.good-handler');
+const ITEM__SIGNATURE_HANDLER          	= require('./handler/item.signature-handler');
 
 /**
  * COLLECTIONS
@@ -35,6 +36,7 @@ const ITEM__CONTACT_COLL				= require('./database/item.contact-coll');
 const ITEM__WAREHOUSE_COLL				= require('./database/item.warehouse-coll');
 const ITEM__POSITION_COLL				= require('./database/item.position-coll');
 const ITEM__STORAGE_COLL				= require('./database/item.storage-coll');
+const ITEM__SIGNATURE_COLL				= require('./database/item.signature-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
@@ -47,6 +49,7 @@ module.exports = {
 		DbService(ITEM__WAREHOUSE_COLL),
 		DbService(ITEM__POSITION_COLL),
 		DbService(ITEM__STORAGE_COLL),
+		DbService(ITEM__SIGNATURE_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ITEM])
     ],
 
@@ -122,6 +125,10 @@ module.exports = {
 
 		//==========================================  GOOD  ======================================
 		[CF_ACTIONS_ITEM.GOOD_GET_INFO_AND_GET_LIST] 			: ITEM__GOOD_HANDLER.getInfoAndGetList,
+
+		//==========================================  SIGNATURE  ======================================
+		[CF_ACTIONS_ITEM.SIGNATURE_INSERT] 						: ITEM__SIGNATURE_HANDLER.insert,
+		[CF_ACTIONS_ITEM.SIGNATURE_GET_INFO_AND_GET_LIST]		: ITEM__SIGNATURE_HANDLER.getInfoAndGetList,
 	},
 
 	/**

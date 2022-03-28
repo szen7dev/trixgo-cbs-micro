@@ -19,9 +19,8 @@ const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/not
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { forEach } = require('lodash');
 
-class Model extends BaseModel {               
+class Model extends BaseModel {
 
     constructor() {
         super(PCM_PLAN_TASK_COLL);
@@ -30,9 +29,9 @@ class Model extends BaseModel {
     /**
      * Name: insert task ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, select, populates, ctx }) { 
+    insert({ projectID, groupID, authorID, name, description, sign, type, note, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, reminderExpired, hoursReminderExpired, draftExpired, hoursDraftExpired, addRelatedExpired, hoursAddRelatedExpired, fieldID, taskCopy, authorAttachs, bizfullname, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -48,10 +47,10 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID_invalid', status: 400 });
-                
+
                 if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'groupID_invalid', status: 400 });
-                
+
                 if(!checkObjectIDs(assigneeID))
                     return resolve({ error: true, message: 'assignee_invalid', status: 400 });
 
@@ -80,14 +79,14 @@ class Model extends BaseModel {
                     /**
                      * Company lấy theo company của project
                      * Chứ không phải lấy theo company của user tạo task
-                     */ 
+                     */
                     companyID = infoProject?.data?.company;
                     if(!companyID)
-                        return resolve({ error: true, message: "company_invalid", status: 400 }); 
+                        return resolve({ error: true, message: "company_invalid", status: 400 });
                 } else{
                     // Lấy thông tin công ty theo công việc cha
-                    let infoTaskParent = await this.getInfo({ 
-                        taskID: parentID, 
+                    let infoTaskParent = await this.getInfo({
+                        taskID: parentID,
                         userID: authorID,
                         populates: JSON.stringify({
                             path: 'author assignee',
@@ -96,7 +95,7 @@ class Model extends BaseModel {
                     });
 
                     let { author, assignee, company, subtype } = infoTaskParent.data;
-                    /**   
+                    /**
                      * Check quyền nếu user là author hoặc assignee của công việc cha thì mới cho tạo
                      * Hiepnh: Cần bổ sung cả người liên quan cũng được tạo => đối với RFI
                      */
@@ -108,15 +107,15 @@ class Model extends BaseModel {
                 }
 
                 infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID).select('_id contract property type');
-                dataInsert = {  
-                    name, 
+                dataInsert = {
+                    name,
                     company : companyID,
-                    project : projectID, 
-                    group   : groupID, 
+                    project : projectID,
+                    group   : groupID,
                     assignee: assigneeID,
                     author  : authorID,
                     suid,
-                    amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0), 
+                    amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
 
@@ -155,12 +154,12 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
-                
+
                 //_______File của người tạo việc
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
                 }
-                
+
                 if(checkObjectIDs(relatedIDs)){
                     dataInsert.related = relatedIDs;
                 }
@@ -351,7 +350,7 @@ class Model extends BaseModel {
                             type: 1 // InApp (Socket)
                         })
 
-                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                        ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                             users: arrReceiver,
                             title: titleMSS,
                             description: descriptionMSS,
@@ -367,7 +366,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean();
- 
+
                 return resolve({ error: false, data: infoTask, status: 200 });
             } catch (error) {
                 console.error(error);
@@ -379,16 +378,16 @@ class Model extends BaseModel {
     /**
      * Name: update task ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
     update({ typeUpdate,
-        taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-        contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
-        links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
+        taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
+        contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+        links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID, bizfullname, ctx
-    }){ 
+    }){
         return new Promise(async (resolve) => {
-            try {   
+            try {
                 /**
                  * KHU VỰC CHECK QUYỀN CẬP NHẬT CÔNG VIỆC
                  */
@@ -400,15 +399,20 @@ class Model extends BaseModel {
                 let dataUpdate   = { };
                 let dataAddToset = {};
                 let dataPullAll  = {};
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'taskID_invalid', status: 400 });
-                
+
+                const infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+
+                if(!infoTask)
+                    return resolve({ error: true, message: 'task_not_exists', status: 400 });
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -464,7 +468,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(fieldID)){
                     dataUpdate.field = fieldID;
                 }
-                
+
                 //_________Hợp đồng
                 if(checkObjectIDs(contractID)){
                     dataUpdate.contract = contractID;
@@ -504,7 +508,7 @@ class Model extends BaseModel {
                 if(offtimeReason){
                     dataUpdate.offtimeReason = offtimeReason;
                 }
-                
+
                 //_________Giá trị vượt ngân sách
                 if(offbudgetReason){
                     dataUpdate.offbudgetReason = offbudgetReason;
@@ -542,7 +546,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(authorAttachs)){
                     dataAddToset = { ...dataAddToset, authorAttachs }
                 }
-                
+
                 //_________File của người thực hiện-cân nhắc bỏ do không linh hoạt phiên bản
                 if(checkObjectIDs(assigneeAttachs)){
                     dataAddToset = { ...dataAddToset, assigneeAttachs }
@@ -577,7 +581,7 @@ class Model extends BaseModel {
                 if(difficult){
                     dataUpdate.difficult = difficult;
                 }
-               
+
                 //_________Kết thúc thực tế
                 if(finishTime){
                     dataUpdate.finishTime = finishTime;
@@ -618,6 +622,10 @@ class Model extends BaseModel {
                     dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
                 }
 
+                if(checkObjectIDs(lastLogID)){
+                    dataUpdate.lastLog = lastLogID;
+                }
+
                 //_________User đồng ý mở thầu
                 if(checkObjectIDs(openedUsers)){
                     dataAddToset = { ...dataAddToset, openedUsers }
@@ -633,6 +641,21 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, flags }
                 }
 
+                if(isAddSignature) {
+                    const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
+                        companyID: infoTask.company?.toString(),
+                        projectID: infoTask.project?.toString(),
+                        coll: {
+                            kind: 'pcm_plan_task',
+                            item: taskID
+                        }
+					});
+                    if(infoSignature.error) return resolve(infoSignature);
+
+                    const { _id } = infoSignature.data;
+                    dataAddToset = { ...dataAddToset, signatures: _id }
+                }
+
                 //_________Trường hợp cập nhật nhiều dữ liệu addToSet cùng 1 lúc
                 if(dataAddToset){
                     dataUpdate.$addToSet = dataAddToset;
@@ -642,12 +665,8 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
-                if(checkObjectIDs(lastLogID)){
-                    dataUpdate.lastLog = lastLogID;
-                }
-                
-                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });   
-                
+                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
+
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
@@ -694,7 +713,7 @@ class Model extends BaseModel {
                         type: 1 // InApp (Socket)
                     })
 
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: related,
                         title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
@@ -705,7 +724,7 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
-            } catch (error) { 
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -714,7 +733,7 @@ class Model extends BaseModel {
     /**
      * Name: update status mutiple ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
     updateStatusMutiple({ taskIDs, parentID, type, userID }){
         return new Promise(async resolve => {
@@ -735,30 +754,30 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Bạn không phải là người thực hiện, nên không được phép cập nhật hoàn thành', keyError: "user_not_assignee" });
 
                 let infoTaskAfterUpdate = await PCM_PLAN_TASK_COLL.updateMany({ _id: { $in: taskIDs }}, { $set: { status: 3 } }, { new: true});
-				if (!infoTaskAfterUpdate) 
+				if (!infoTaskAfterUpdate)
                     return resolve({ error: true, message: 'cannot_update', keyError: KEY_ERROR.UPDATE_FAILED });
                 let amountTaskAndChecklist = taskIDs.length;
                 // Việc con
                 if (type == 1) {
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID,  { $inc : { amountFinishedSubtask: amountTaskAndChecklist }}, { new: true })
                 }
-                
+
                 // Checklist
                 if (type == 2) {
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc : { amountFinishedChecklist: amountTaskAndChecklist }}, { new: true })
                 }
-                
+
                 return resolve({ error: false, message: "update_success" });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
-    
+
     /**
      * Name: get info task ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
     getInfo({ taskID, userID, select, populates }){
         return new Promise(async resolve => {
@@ -780,7 +799,7 @@ class Model extends BaseModel {
                 // Bắt đầu kiểm tra quyền
                 let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
                 let { author, assignee, related, group } = infoTaskToCheckPermission;
-                
+
                 let isAuthor = false;
                 let isAssignee = false;
                 let isRelated = false;
@@ -798,7 +817,7 @@ class Model extends BaseModel {
                 if(related.includes(userID)){
                     isRelated = true;
                 }
-     
+
                 let memberInGroup = group?.members?.map(item => `${item}`) || [];
                 if(memberInGroup.includes(userID.toString())){
                     isMemberGroup = true;
@@ -816,7 +835,7 @@ class Model extends BaseModel {
                                 .select(select)
                                 .populate(populates).lean();
 
-				if (!infoTask) 
+				if (!infoTask)
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
                 return resolve({ error: false, data: infoTask });
@@ -825,18 +844,18 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
      * Name  : Danh sách pcm_plan_task ✅
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
-    getList({ 
-        projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection, 
+    getList({
+        projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
-    }) { 
+    }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -851,11 +870,11 @@ class Model extends BaseModel {
                 let conditionObj = {
                     usersDelete: { $nin: [userID] },
                 };
-                
+
                 if(statusNe){
                     conditionObj.status = { $ne: statusNe };
                 }
-                
+
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 if(isSortChecklist == 1 || isSortChildTask == 1){
@@ -873,7 +892,7 @@ class Model extends BaseModel {
                     date.setDate(date.getDate() + days);
                     return date;
                 }
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -881,7 +900,7 @@ class Model extends BaseModel {
 
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
-                 
+
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
@@ -902,12 +921,12 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
 
                 // Tìm kiếm nếu có trạng thái công việc
                 if(status){
@@ -917,37 +936,37 @@ class Model extends BaseModel {
                 // Tìm kiếm điều kiên công việc nhanh chậm
                 if(isExpired && isExpired == 1){
                     //Việc bình thường
-                    conditionObj.actualFinishTime = { 
+                    conditionObj.actualFinishTime = {
                         $gt: new Date(),
                         $exists: true,
-                        $ne: null  
+                        $ne: null
                     }
                 }
 
                 if(isExpired && isExpired == 2){
                     //Việc chậm
                     conditionObj.status = { $ne: 3 }
-                    conditionObj.actualFinishTime = { 
+                    conditionObj.actualFinishTime = {
                         $lt: new Date(),
                         $exists: true,
-                        $ne: null  
+                        $ne: null
                     }
 				}
 
                 // Lấy những công việc từ ngày đến ngày
                 if(fromDate && toDate){
-                    conditionObj.actualFinishTime = { 
+                    conditionObj.actualFinishTime = {
                         $gte: new Date(fromDate), $lte: new Date(toDate),
                         $exists: true,
-                        $ne: null  
+                        $ne: null
                     }
 				}
 
                 // lấy những việc nháp hoặc không phải việc nháp
                 if(draft && [0,1].includes(draft)){
                     conditionObj.draft = draft;
-                } 
-                
+                }
+
                 // Lấy việc trong dự án
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
@@ -1000,8 +1019,8 @@ class Model extends BaseModel {
                 if(type == 4){
                     // conditionObj.author = userID;
                     conditionObj.$or = [
-                        { author: userID }, 
-                        { related: { $in: [userID] } }, 
+                        { author: userID },
+                        { related: { $in: [userID] } },
                     ],
                     conditionObj.draft = 1;
                     delete conditionObj.status
@@ -1010,11 +1029,11 @@ class Model extends BaseModel {
                 if(type == 5){
                     conditionObj.related = { $in: [userID] };
                 }
-                
+
                 if(level){
                     conditionObj.level = level;
                 }
-                
+
                 // typeStatus
                 // 1 Quá hạn
                 // 2 Tới hạn tuần tới
@@ -1024,7 +1043,7 @@ class Model extends BaseModel {
                     conditionObj.actualFinishTime = {
                         $lt: start,
                         $exists: true,
-                        $ne: null 
+                        $ne: null
                     }
                 }
 
@@ -1034,16 +1053,16 @@ class Model extends BaseModel {
                         $gte: start,
                         $lt: addDate(7),
                         $exists: true,
-                        $ne: null 
+                        $ne: null
                     }
                 }
-                
+
                 // Tới hạn + 7 ngày tới
                 if(typeStatus && typeStatus == 3){
                     conditionObj.actualFinishTime = {
                         $gte: addDate(7),
                         $exists: true,
-                        $ne: null 
+                        $ne: null
                     }
                 }
 
@@ -1056,7 +1075,7 @@ class Model extends BaseModel {
                 if(authorID && checkObjectIDs(authorID)){
                     conditionObj.author = authorID;
                 }
-                
+
                 // ID công việc cha, công việc chứa checklist
                 if(parentID && checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
@@ -1079,7 +1098,7 @@ class Model extends BaseModel {
                 if(companyOfAuthor && checkObjectIDs(companyOfAuthor)){
                     conditionObj.companyOfAuthor = companyOfAuthor;
                 }
-                
+
                 // Công ty của người thực hiện
                 if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
                     conditionObj.companyOfAssignee = companyOfAssignee;
@@ -1142,7 +1161,7 @@ class Model extends BaseModel {
                 }
                 // Tổng số việc tìm thấy
                 let totalRecord = await PCM_PLAN_TASK_COLL.count(conditionObjOrg);
-                
+
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
                 return resolve({ error: false, data: {
@@ -1184,7 +1203,7 @@ class Model extends BaseModel {
                  */
                 let amountTask = await PCM_PLAN_TASK_COLL.count({
                     actualFinishTime: { $exists: true, $ne: null  },
-                    assignee: userID, 
+                    assignee: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
                 })
@@ -1238,8 +1257,8 @@ class Model extends BaseModel {
                 let amountTaskIsDraft = await PCM_PLAN_TASK_COLL.count({
                     actualFinishTime: { $exists: true, $ne: null  },
                     $or: [
-                        { author: userID }, 
-                        { related: { $in: [userID] } }, 
+                        { author: userID },
+                        { related: { $in: [userID] } },
                     ],
                     draft: 1,
                     usersDelete: { $nin: [userID] },
@@ -1266,7 +1285,7 @@ class Model extends BaseModel {
                  */
                 let amountBiddingInProgress = await PCM_PLAN_TASK_COLL.count({
                     actualFinishTime: { $exists: true, $ne: null  },
-                    assignee: userID, 
+                    assignee: userID,
                     status: { $ne: 3 },
                     usersDelete: { $nin: [userID] },
                     subtype: 4,
@@ -1278,7 +1297,7 @@ class Model extends BaseModel {
                  */
                 let amountBiddingInComplete = await PCM_PLAN_TASK_COLL.count({
                     actualFinishTime: { $exists: true, $ne: null  },
-                    assignee: userID, 
+                    assignee: userID,
                     status: 3,
                     usersDelete: { $nin: [userID] },
                     subtype: 4,
@@ -1346,19 +1365,19 @@ class Model extends BaseModel {
                     .populate('author assignee related project')
                     .lean();
 
-                if (!infoTask) 
+                if (!infoTask)
                     return resolve({ error: true, message: 'cannot_get_info_task', status: 400 });
                 /**
                  * CẤU TRÚC EMAIL
                  * Người nhận email
                  * Tiêu đề
                  * Nội dung
-                 */    
-                let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, 
+                 */
+                let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
                     { arrayID: JSON.stringify(receivers), select: "_id email" }
                 );
                 listMembers = listMembers?.data?.listRecords || [];
-                
+
                 let arrayMailSend = '';
                 let indexMember = 0;
                 for(const item of listMembers){
@@ -1370,9 +1389,9 @@ class Model extends BaseModel {
                     indexMember++;
                 }
 
-                await sendNoticeToMember({ 
-                    email: arrayMailSend, 
-                    title, 
+                await sendNoticeToMember({
+                    email: arrayMailSend,
+                    title,
                     content: { sender, notice, infoTask }
                 });
 

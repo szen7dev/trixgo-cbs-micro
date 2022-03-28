@@ -117,7 +117,6 @@ module.exports = {
 		 * @returns {Promise}
 		 */
 		async authorize(ctx, _, req) {
-			console.log(`--------------TOKEN: ----------`);
 			let token;
 			if (req.headers.authorization) {
 				let type = req.headers.authorization.split(" ")[0];
@@ -131,13 +130,39 @@ module.exports = {
 				if(checkAuthorization.error){
 					return Promise.reject(checkAuthorization.message);
 				}
-				let infoUser = checkAuthorization.data && checkAuthorization.data.infoUser;
-				// exm: checkAuthorization: { error: false, data: { infoUser: [Object], iat: 1626307260 }
-				this.logger.info("Authenticated via JWT: ", infoUser.username);
+
+				if(!checkAuthorization.data) {
+					return Promise.reject('Unauthorized');
+				}
+
+				const { infoUser, exp } = checkAuthorization.data;
+
+				// if(exp < Date.now()) {
+				// 	return Promise.reject('Token is expired');
+				// }
+
+				this.logger.info("Authenticated via JWT: ", infoUser.username, exp);
 
 				// Reduce user fields (it will be transferred to other nodes)
 				ctx.meta.infoUser = infoUser;
 				ctx.meta.token 	  = token;
+
+				let userAuth = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+					userID: infoUser._id.toString(),
+					select: "status",
+					populates: JSON.stringify({
+						path: "company",
+						select: "_id"
+					})
+				});
+
+				if(!userAuth.error) {
+					userAuth = userAuth.data;
+
+					if(userAuth.status === 0) {
+						return Promise.reject('user_blocked');
+					}
+				}
 
 				return infoUser;
 			} catch (error) {

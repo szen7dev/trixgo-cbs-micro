@@ -23,6 +23,7 @@ module.exports = {
 	 * Date: 17/08/2021
 	 */
 	insertMessage: {
+        auth: "required",
         params: {
 			conversationID  : { type: 'string' },
             parentID		: { type: 'string', optional: true },
@@ -52,6 +53,7 @@ module.exports = {
 	 * Date: 30/08/2021
 	 */
 	updateSeenMessage: {
+        auth: "required",
         params: {
 			conversationID  : { type: 'string' },
             messagesID		: { type: 'array' }
@@ -80,6 +82,7 @@ module.exports = {
 	 * Updated: 28/08/2021 - MinhVH
 	 */
 	deleteMessage: {
+        auth: "required",
         params: {
 			conversationID: { type: 'string' },
         },
@@ -106,6 +109,7 @@ module.exports = {
 	 * Date: 28/08/2021
 	 */
 	revokeMessage: {
+        auth: "required",
         params: {
 			conversationID: { type: 'string' },
         },
@@ -132,6 +136,7 @@ module.exports = {
 	 * Date: 28/09/2021
 	 */
 	autoDeleteMessagesConversation: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string', optional: true },
@@ -161,6 +166,7 @@ module.exports = {
 	 * Date: 23/08/2021
 	 */
 	shareMessageConversation: {
+        auth: "required",
         params: {},
         async handler(ctx) {
             try {
@@ -184,6 +190,7 @@ module.exports = {
 	 * Date: 25/08/2021
 	 */
 	updatePinMessageConversation: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			messageID		: { type: 'string' },
@@ -212,6 +219,7 @@ module.exports = {
 	 * Date: 28/08/2021
 	 */
 	getListMessagePinConversation: {
+        auth: "required",
         params: {
 			conversationID	: { type: 'string' },
 			page			: { type: 'string', optional: true },
@@ -240,6 +248,7 @@ module.exports = {
 	 * Date: 26/10/2021
 	 */
 	reactionMessage: {
+        auth: "required",
         params: {
 			messageID		: { type: 'string' },
 			typeReaction	: { type: 'number' },
@@ -267,6 +276,7 @@ module.exports = {
 	 * Date: 26/10/2021
 	 */
 	getListReactionByMessage: {
+        auth: "required",
         params: {
 			messageID	: { type: 'string' },
 			type		: { type: 'string', optional: true },

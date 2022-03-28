@@ -69,7 +69,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 			ref: 'message_conversation_file'
 		},
 		/**
-		 * Trạng thái file
+		 * Trạng thái file (hiện chưa dùng tới)
 		 * 1: Hiển thị
 		 * 2: Đã thu hồi (tất cả mọi người đều không thấy)
 		*/
@@ -85,7 +85,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
     }],
 
     /**
-     * Trạng thái của tin nhắn
+     * Trạng thái của tin nhắn (hiện chưa dùng tới)
      * 0: đã gửi nhưng chưa xem/ chưa nhận))
      * 1: đã nhận
      * 2: đã xem

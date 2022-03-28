@@ -42,6 +42,10 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref: "funda"
     },
+    level: {
+        type: Number,
+        default: 1 
+    },
     /**
      * PHÂN QUYỀN TRUY CẬP
      */

@@ -34,6 +34,7 @@ module.exports = {
      * ]
 	 */
     insertConversation: {
+        auth: "required",
         params: {
             name        : { type: "string", optional: true },
             description : { type: "string", optional: true },
@@ -62,6 +63,7 @@ module.exports = {
 	 * Date: 04/08/2021
 	 */
 	updateConversation: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             name        	: { type: "string", optional: true },
@@ -90,6 +92,7 @@ module.exports = {
 	 * Date: 11/01/2022
 	 */
     updateConversationNamePrivate: {
+        auth: "required",
         params: {},
         async handler(ctx) {
             try {
@@ -114,6 +117,7 @@ module.exports = {
 	 * Date: 06/08/2021
 	 */
 	addMembersToConversation: {
+        auth: "required",
         params: {
             conversationID: { type: "string" }
         },
@@ -140,6 +144,7 @@ module.exports = {
 	 * Date: 06/08/2021
 	 */
 	removeMemberInConversation: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             memberID        : { type: "string" }
@@ -167,6 +172,7 @@ module.exports = {
 	 * Date: 07/08/2021
 	 */
 	updateAdminConversation: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             memberID        : { type: "string" },
@@ -195,6 +201,7 @@ module.exports = {
 	 * Date: 09/08/2021
 	 */
 	updateConfigConversation: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             typeConfig      : { type: "number" },
@@ -223,6 +230,7 @@ module.exports = {
 	 * Date: 09/08/2021
 	 */
 	updatePinConversation: {
+        auth: "required",
         params: {
             conversationID  : { type: "string" },
             isPin        	: { type: "boolean" }
@@ -251,6 +259,7 @@ module.exports = {
 	 * Updated: MinhVH - 04/08/2021
 	 */
     getInfoConversationByID: {
+        auth: "required",
         params: {
             conversationID: { type: "string" },
         },
@@ -277,6 +286,7 @@ module.exports = {
 	 * Date: 11/08/2021
 	 */
 	getInfoGeneralGroupsByMember: {
+        auth: "required",
         params: {
             memberID: { type: "string" }
         },
@@ -303,6 +313,7 @@ module.exports = {
 	 * Date: 11/08/2021
 	 */
 	getListMessagesConversationWithPage: {
+        auth: "required",
         params: {
             conversationID	: { type: "string" },
 			lastestID 		: { type: "string", optional: true },
@@ -332,6 +343,7 @@ module.exports = {
 	 * Date: 23/08/2021
 	 */
 	searchMessageConversationById: {
+        auth: "required",
         params: {
             conversationID	: { type: "string" },
             messageID		: { type: "string" },
@@ -359,6 +371,7 @@ module.exports = {
 	 * Date: 12/08/2021
 	 */
 	getListMessagesMediaConversation: {
+        auth: "required",
         params: {
             conversationID	 : { type: "string" },
             typeMessage		 : { type: "string" },
@@ -393,6 +406,7 @@ module.exports = {
 	 * Date: 13/08/2021
 	 */
 	getListMemberSendMessagesMediaConversation: {
+        auth: "required",
         params: {
             conversationID: { type: "string" },
         },
@@ -419,6 +433,7 @@ module.exports = {
 	 * Date: 14/08/2021
 	 */
 	updateHideConversation: {
+        auth: "required",
         params: {
             conversationID	: { type: "string" },
             isHide			: { type: "boolean" },
@@ -446,6 +461,7 @@ module.exports = {
 	 * Date: 14/08/2021
 	 */
 	updateMuteConversation: {
+        auth: "required",
         params: {
             conversationID	: { type: "string" },
             isMute			: { type: "boolean" },
@@ -474,6 +490,7 @@ module.exports = {
 	 * Date: 14/08/2021
 	 */
 	markReadConversation: {
+        auth: "required",
         params: {
             conversationID: { type: "string" },
         },
@@ -500,6 +517,7 @@ module.exports = {
 	 * Date: 14/08/2021
 	 */
 	memberLeaveConversation: {
+        auth: "required",
         params: {
             conversationID: { type: "string" },
         },
@@ -526,6 +544,7 @@ module.exports = {
 	 * Date: 14/08/2021
 	 */
 	deleteConversation: {
+        auth: "required",
         params: {
             conversationID: { type: "string" },
         },
@@ -552,6 +571,7 @@ module.exports = {
 	 * Date: 15/08/2021
 	 */
 	deleteHistoryConversation: {
+        auth: "required",
         params: {
             conversationID: { type: "string" },
         },
@@ -579,6 +599,7 @@ module.exports = {
 	 * Updated: MinhVH - 23/08/2021
 	 */
 	getListConversationWithPage: {
+        auth: "required",
         params: {
             lastestID : { type: "string", optional: true },
             keyword	  : { type: "string", optional: true },
@@ -607,6 +628,7 @@ module.exports = {
 	 * Date: 06/09/2021
 	 */
 	getListPinConversation: {
+        auth: "required",
         params: {},
         async handler(ctx) {
             try {
@@ -630,6 +652,7 @@ module.exports = {
 	 * Date: 09/09/2021
 	 */
 	getListConversationMissMessage: {
+        auth: "required",
         params: {
 			lastestID   : { type: "string", optional: true },
 			limit       : { type: "string", optional: true },
@@ -659,6 +682,7 @@ module.exports = {
 	 * Date: 04/01/2022
 	 */
 	getListFileConversation: {
+        auth: "required",
         params: {
 			conversationID 	: { type: "string" },
 			lastestID 	    : { type: "string", optional: true },
@@ -694,6 +718,7 @@ module.exports = {
 	 * Date: 10/01/2022
 	 */
 	getListLinkConversation: {
+        auth: "required",
         params: {
 			conversationID 	: { type: "string" },
 			messageID 	    : { type: "string", optional: true },

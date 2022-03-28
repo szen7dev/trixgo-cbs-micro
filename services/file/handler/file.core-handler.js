@@ -133,6 +133,7 @@ module.exports = {
                         appID,
                         companyID,
                         projectID,
+                        groupID,
                         nameOrg: name,
                         name: newFileName,
                         path: `/${process.env.AWS_BUCKET_PATH}${pathS3}/${newFileName}`,
