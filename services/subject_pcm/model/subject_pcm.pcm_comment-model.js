@@ -332,6 +332,18 @@ class Model extends BaseModel {
                     })
                 }
 
+                const expireTime = new Date(infoComment.createAt).addHours(1);
+                const now 		 = new Date(Date.now());
+
+                if(expireTime < now){
+                    return resolve({
+                        error: true,
+                        message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
+                        keyError: "time_to_delete_comment_has_expired",
+                        status: 403
+                    })
+                }
+
                /**
                 * LOGIC STEP (3)
                 *  3.1: convert type + update name (ví dụ: string -> number)
@@ -474,15 +486,36 @@ class Model extends BaseModel {
                 }
 
                 const infoComment = await PCM_COMMENT_COLL
-                    .findOne({ _id: commentID, type: 2 })
+                    .findById(commentID)
                     .lean();
 
                 if(infoComment) {
                     return resolve({
                         error: true,
-                        message: "Comment không tồn tại hoặc comment là phải hồi",
+                        message: "Bình luận không tồn tại",
                         keyError: "comment_not_exists_or_comment_is_response",
                         status: 400
+                    })
+                }
+
+                if(infoComment.type === 2) {
+                    return resolve({
+                        error: true,
+                        message: "Phản hồi liên quan không thể xóa",
+                        keyError: "response_cannot_delete",
+                        status: 403
+                    })
+                }
+
+                const expireTime = new Date(infoComment.createAt).addHours(1);
+                const now 		 = new Date(Date.now());
+
+                if(expireTime < now){
+                    return resolve({
+                        error: true,
+                        message: "Bình luận đã hết hạn xóa (1 tiếng)",
+                        keyError: "time_to_delete_comment_has_expired",
+                        status: 403
                     })
                 }
 
