@@ -105,7 +105,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ appMenuID, select, populates = {} }) { 
+    getInfo({ appMenuID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 // LẤY NHỮNG TRƯỜNG CẦN THIẾT
@@ -134,8 +134,10 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 let infoAterGet = await AUTH__APP_MENU_COLL.findById(appMenuID)
-                                        .select(select)
-                                        .populate(populates);
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
                 if(!infoAterGet)
                     return resolve({ error: true, message: KEY_ERROR.GET_INFO_FAILED, status: 403 });
  
