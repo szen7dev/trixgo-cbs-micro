@@ -18,16 +18,17 @@ module.exports = {
         params: {
             type              : { type: "string", optional: true },
             name              : { type: "string", optional: true },
+            description       : { type: "string", optional: true },
             parentID          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, name, parentID } = ctx.params;
+                let { type, name, description, parentID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.insert({
-                    companyID: company._id, type, name, parentID, userID
+                    companyID: company._id, type, name, description, parentID, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
