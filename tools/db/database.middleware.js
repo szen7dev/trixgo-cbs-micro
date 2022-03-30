@@ -6,7 +6,6 @@ let random              = require('mongoose-simple-random');
 
 module.exports = function (dbName, dbOb) {
     dbOb.createAt = Date;
-    dbOb.updateAt = Date;
     dbOb.modifyAt = Date;
     /**
      * 1-Đang tồn tại

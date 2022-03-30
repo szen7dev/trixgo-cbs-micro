@@ -116,7 +116,7 @@ class Model extends BaseModel {
     update({ doctypeID, name, description, userID }) { 
         return new Promise(async resolve => {
             try {
-                const dataUpdate = { userUpdate: userID, updateAt: new Date() };
+                const dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 /** 
                  * VALIDATION STEP (2)

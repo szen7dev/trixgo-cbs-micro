@@ -123,7 +123,6 @@ class Model extends BaseModel {
                 dataUpdate.sign = sign;
                 dataUpdate.description = description;
                 dataUpdate.modifyAt = new Date();
-                dataUpdate.updateAt = new Date();
                 let infoDataAfterUpdate = await INSPECTION__TEMPLATE_DOC_COLL.findByIdAndUpdate(templateID, dataUpdate, { new: true });
 
                 if(!infoDataAfterUpdate)
