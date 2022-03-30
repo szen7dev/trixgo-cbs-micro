@@ -10,7 +10,7 @@ const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
@@ -140,8 +140,8 @@ class Model extends BaseModel {
      * Code  : 20/12/2021
      */
     getList({ 
-        userID, 
-        keyword, limit = 10, lastestID, select, populates={} }) { 
+        userID, arrayID,
+        keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
 
@@ -153,14 +153,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {
-                };
-                let conditionObjOrg = {
-                };
-                
-                let conditionFind = {};
-                let sortBy   = { createAt: -1 };
-                let objSort  = {};
+                 let sortBy;
+                 let conditionObj = {};
+                 let keys	 = ['createAt__-1', '_id__-1'];
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -190,66 +185,56 @@ class Model extends BaseModel {
                     ]
                 }
 
-                conditionObjOrg = { ...conditionObj };
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                // GET CONDITION PAGINATION
+                // Lấy user theo mảng id
+                if(arrayID && arrayID.length){
+                    arrayID = JSON.parse(arrayID);
+                    conditionObj._id = { $in: arrayID }
+                }
+
+                let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await AUTH__COMPANY_COLL.findById(lastestID);
-                    if(!infoData)
-                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+					let infoData = await AUTH__COMPANY_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-                    let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-                    let keys	 = ['createAt__-1', '_id__-1'];
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-                    
-                    conditionFind = dataPagingAndSort.data.find;
-                    sortBy = dataPagingAndSort.data.sort;
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+                
+                let infoDataAfterGet = await AUTH__COMPANY_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+                
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                    if(conditionObj.$or){
-                        conditionObj.$and = [
-                            { $or: conditionObj.$or },
-                            { $or: conditionFind.$or },
-                        ]
-                        delete conditionObj.$or;
-                        delete conditionFind.$or;
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
                     }
                 }
 
-                let infoDataAfterGet = await AUTH__COMPANY_COLL.find({ ...conditionObj, ...conditionFind })
-                    .select(select)
-                    .limit(+limit+1)
-                    .populate(populates)
-                    .sort(sortBy) 
-                    .lean(); 
-                
-                    if(!infoDataAfterGet)
-                      return resolve({ error: true, message: "Can't get data", status: 403 });
-
-                    let nextCursor	= null;
-                    if(infoDataAfterGet && infoDataAfterGet.length){
-                        if(infoDataAfterGet.length > limit){
-                            nextCursor = infoDataAfterGet[limit - 1]._id;
-                            infoDataAfterGet.length = limit;
-                        }
-                    }
-    
-                    let totalRecord = await AUTH__COMPANY_COLL.count(conditionObjOrg);
-                    let totalPage   = Math.ceil(totalRecord/limit);
-                    return resolve({ error: false, data: {
-                        listRecords: infoDataAfterGet,
-                        limit: +limit,
-                        totalRecord,
-                        totalPage,
-                        nextCursor,
-                    }, status: 200 });
+                let totalRecord = await AUTH__COMPANY_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });

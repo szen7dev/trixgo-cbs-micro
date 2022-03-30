@@ -18,6 +18,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     PCM__PCM_PLAN_TASK_GET_BADGE                        : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge`,
     PCM__PCM_PLAN_TASK_GET_BADGE_BIDDING                : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge-bidding`,
     PCM__PCM_PLAN_TASK_SEND_EMAIL_TO_MEMBER_IN_TASK     : `${BASE_ROUTE}${PCM_PLAN_TASK}/send-email-to-member-in-task`,
+    PCM__PCM_PLAN_TASK_GET_AMOUNT_TASK_OF_COMPANY_OF_ASSIGNEE : `${BASE_ROUTE}${PCM_PLAN_TASK}/amount-task-of-company_of_assignee`,
     // Report
     SUBJECT__PCM_PLAN_REPORT                            : `${BASE_ROUTE}${PCM_PLAN_REPORT}`,
     SUBJECT__USER_PCM_PLAN_REPORT                       : `${BASE_ROUTE}${USER_PCM_PLAN_REPORT}`,
