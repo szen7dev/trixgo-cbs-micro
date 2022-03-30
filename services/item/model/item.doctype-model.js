@@ -116,7 +116,7 @@ class Model extends BaseModel {
     update({ doctypeID, name, description, userID }) { 
         return new Promise(async resolve => {
             try {
-                const dataUpdate = { userUpdate: userID };
+                const dataUpdate = { userUpdate: userID, updateAt: new Date() };
 
                 /** 
                  * VALIDATION STEP (2)
@@ -158,7 +158,7 @@ class Model extends BaseModel {
      * Func: Remove doctype
      * Date: 22/02/2022
      */
-    remove({ doctypeID, userID }) { 
+    remove({ doctypesID, userID }) { 
         return new Promise(async resolve => {
             try {
                 /** 
@@ -166,17 +166,34 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(!checkObjectIDs([doctypeID, userID])) {
+                if(!checkObjectIDs([...doctypesID, userID])) {
                     return resolve({
 						error: true,
-						message: "Tham số doctypeID hoặc userID không hợp lệ",
-						keyError: "params_doctypeID_or_userID_invalid",
+						message: "Tham số doctypesID hoặc userID không hợp lệ",
+						keyError: "params_doctypesID_or_userID_invalid",
 						status: 400
 					})
                 }
 
-                let infoAterRemove = await ITEM__DOCTYPE_COLL.findOneAndDelete({
-                    _id: doctypeID,
+                const listDoctypes = await ITEM__DOCTYPE_COLL.find({
+                    _id: {
+                        $in: doctypesID
+                    }
+                }).select('_id').lean();
+
+                if(!listDoctypes || !listDoctypes.length) {
+                    return resolve({
+						error: true,
+						message: "Doctype không tồn tại",
+						keyError: "doctype_not_exists",
+						status: 400
+					})
+                }
+
+                let infoAterRemove = await ITEM__DOCTYPE_COLL.deleteMany({
+                    _id: {
+                        $in: doctypesID
+                    },
                     userCreate: userID
                 });
 
@@ -189,12 +206,14 @@ class Model extends BaseModel {
 					})
                 }
 
-                if(infoAterRemove.parent) {
-                    await ITEM__DOCTYPE_COLL.findByIdAndUpdate(infoAterRemove.parent, {
-                        $pull: {
-                            childs: infoAterRemove._id
-                        }
-                    });
+                for (const doctype of listDoctypes) {
+                    if(doctype.parent) {
+                        await ITEM__DOCTYPE_COLL.findByIdAndUpdate(doctype.parent, {
+                            $pull: {
+                                childs: doctype._id
+                            }
+                        });
+                    }
                 }
 
                 return resolve({ error: false, data: infoAterRemove, status: 200 });

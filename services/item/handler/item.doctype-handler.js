@@ -79,16 +79,16 @@ module.exports = {
 	 */
     remove: {
         params: {
-            doctypeID: { type: "string" }
+            doctypesID: { type: "array" }
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { doctypeID } = ctx.params;
+                const { doctypesID } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.remove({
-                    doctypeID, userID
+                    doctypesID, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
