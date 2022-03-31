@@ -144,7 +144,7 @@ class Model extends BaseModel {
                 if(!infoAuthor.error){
                     dataInsert.companyOfAuthor = infoAuthor.data.company;
                 }
-
+                
                 // companyOfAssignee
                 if(!infoAssignee.error){
                     dataInsert.companyOfAssignee = infoAuthor.data.company;
@@ -660,7 +660,7 @@ class Model extends BaseModel {
                 if(dataAddToset){
                     dataUpdate.$addToSet = dataAddToset;
                 }
-
+                
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
@@ -688,7 +688,7 @@ class Model extends BaseModel {
                      */
                     const webUrl = `/pcm/detail/${taskID}`;
                     let { name: taskName, project, contract } = infoAterUpdate;
-
+                    
                     const dataSend = {
                         app: APP_KEYS.PCM_PLAN_TASK,
                         languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
@@ -1355,7 +1355,7 @@ class Model extends BaseModel {
 
     /**
      * Gửi thông báo email tới các thành viên trong task
-     * Hiepnh
+     * Depv
      */
     sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, ctx }) {
         return new Promise(async resolve => {
@@ -1404,6 +1404,89 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         });
+    }
+
+    /**
+     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án ✅
+     * Author: Depv
+     * Code:
+     */
+    getAmountTaskOfCompanyOfAssignee({ projectID, ctx }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'projectID_invalid' });
+
+                let listCompanyOfAssignee = await PCM_PLAN_TASK_COLL.aggregate([
+                    { $match: { project: ObjectID(projectID), companyOfAssignee: { $exists: true } }},
+                    { $group: { _id: "$companyOfAssignee" } },
+                    { $sort: { _id: -1} }
+                ]);
+
+                listCompanyOfAssignee = listCompanyOfAssignee.map(item => item?._id );
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                let end = new Date();
+                end.setHours(23,59,59,999);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+
+                let conditionObj  = { 
+                    project: projectID, 
+                }
+
+                let listCompanyAndTask = [];
+                for (const companyID of listCompanyOfAssignee) {
+                    conditionObj.companyOfAssignee = companyID;
+                    let conditionOverdueWork    = { 
+                        ...conditionObj, 
+                        actualFinishTime: {
+                            $lt: start,
+                            $exists: true,
+                            $ne: null
+                        }
+                    }; 
+
+                    let conditionNextWeekWork   = { 
+                        ...conditionObj,
+                        actualFinishTime: {
+                            $gte: start,
+                            $lt: addDate(7),
+                            $exists: true,
+                            $ne: null
+                        }
+                    };
+
+                    let conditionMoreThan7Days  = { 
+                        ...conditionObj,
+                        actualFinishTime: {
+                            $gte: addDate(7),
+                            $exists: true,
+                            $ne: null
+                        }
+                    };
+
+                    let amountTaskOverdueWork = await PCM_PLAN_TASK_COLL.count(conditionOverdueWork);
+                    let amountTaskNextWeekWork = await PCM_PLAN_TASK_COLL.count(conditionNextWeekWork);
+                    let amountTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.count(conditionMoreThan7Days);
+                    let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
+                        companyID: `${companyID}`, select: "name sign"
+                    });
+                    listCompanyAndTask.push({ 
+                        infoCompany: infoCompany?.data , amountTaskOverdueWork, amountTaskNextWeekWork, amountTaskMoreThan7Days
+                    })
+                }
+                return resolve({ error: false, data: listCompanyAndTask });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
     }
 }
 
