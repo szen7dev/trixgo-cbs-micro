@@ -28,11 +28,11 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) { 
+    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -47,7 +47,7 @@ class Model extends BaseModel {
                 let descriptionMSS  = '';
                 let languageKey     = '';
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -128,7 +128,7 @@ class Model extends BaseModel {
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
 
-                let infoAterInsert = await this.insertData(dataInsert); 
+                let infoAterInsert = await this.insertData(dataInsert);
 
                 if(!infoAterInsert) {
                     return resolve({
@@ -140,7 +140,7 @@ class Model extends BaseModel {
                 }
 
                 if(parentID){
-                    await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, { 
+                    await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, {
                         $set: {
                             lastestReplyID: infoAterInsert._id
                         },
@@ -215,7 +215,7 @@ class Model extends BaseModel {
                 }
 
                 if(arrReceiver && arrReceiver.length) {
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
@@ -264,7 +264,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
-	 */ 
+	 */
     update({ taskID, commentID, authorID, content, files, images, select, populates }) {
         return new Promise(async (resolve) => {
             try {
@@ -273,7 +273,7 @@ class Model extends BaseModel {
                 */
                let dataUpdate = {};
 
-               /** 
+               /**
                 * VALIDATION STEP (2)
                 *  - kiểm tra valid từ các input
                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -323,46 +323,52 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(infoComment.type === 2) {
-                    return resolve({
-                        error: true,
-                        message: "Phản hồi liên quan không thể cập nhật",
-                        keyError: "response_cannot_update",
-                        status: 403
-                    })
-                }
-
-                const expireTime = new Date(infoComment.createAt).addHours(1);
-                const now 		 = new Date(Date.now());
-
-                if(expireTime < now){
-                    return resolve({
-                        error: true,
-                        message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
-                        keyError: "time_to_delete_comment_has_expired",
-                        status: 403
-                    })
-                }
-
-               /**
+                /**
                 * LOGIC STEP (3)
                 *  3.1: convert type + update name (ví dụ: string -> number)
                 *  3.2: operation database
-                */    
-                content && (dataUpdate.content = content);
+                */
 
-                // CẬP NHẬT FILE MỚI
-                if(files.length && checkObjectIDs(files)){
-                    dataUpdate.files = files;
-                } else{
-                    dataUpdate.files = [];
-                }
+                if(infoComment.type === 2) {
+                    dataUpdate = {
+                        $addToSet: {}
+                    };
 
-                // CẬP NHẬT HÌNH ẢNH MỚI
-                if(images.length && checkObjectIDs(images)){
-                    dataUpdate.images = images;
+                    if(checkObjectIDs(files)){
+                        dataUpdate.$addToSet['files'] = files;
+                    }
+
+                    if(checkObjectIDs(images)){
+                        dataUpdate.$addToSet['images'] = images;
+                    }
                 } else{
-                    dataUpdate.images = [];
+                    content && (dataUpdate.content = content);
+
+                    const expireTime = new Date(infoComment.createAt).addHours(1);
+                    const now 		 = new Date(Date.now());
+
+                    if(expireTime < now){
+                        return resolve({
+                            error: true,
+                            message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
+                            keyError: "time_to_delete_comment_has_expired",
+                            status: 403
+                        })
+                    }
+
+                    // CẬP NHẬT FILE MỚI
+                    if(checkObjectIDs(files)){
+                        dataUpdate.files = files;
+                    } else{
+                        dataUpdate.files = [];
+                    }
+
+                    // CẬP NHẬT HÌNH ẢNH MỚI
+                    if(checkObjectIDs(images)){
+                        dataUpdate.images = images;
+                    } else{
+                        dataUpdate.images = [];
+                    }
                 }
 
                 let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
@@ -394,7 +400,7 @@ class Model extends BaseModel {
     }
 
      /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Cập nhật đánh dấu response
 	 * Date: 22/02/2022
 	 */
@@ -402,20 +408,20 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs([taskID, commentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số commentID hoặc taskID không hợp lệ', 
-                        keyError: 'params_commentID_or_taskID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số commentID hoặc taskID không hợp lệ',
+                        keyError: 'params_commentID_or_taskID_invalid',
                         status: 400
                     });
                 }
 
                 const infoResponse = await PCM_COMMENT_COLL.findById(commentID).lean();
                 if(!infoResponse) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Phản hồi không tồn tại', 
-                        keyError: 'response_not_exists', 
+                    return resolve({
+                        error: true,
+                        message: 'Phản hồi không tồn tại',
+                        keyError: 'response_not_exists',
                         status: 400
                     });
                 }
@@ -435,10 +441,10 @@ class Model extends BaseModel {
 
                 const infoAfterUpdated = await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
                 if(!infoAfterUpdated) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
-                        keyError: 'error_occurred', 
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
                         status: 422
                     });
                 }
@@ -451,36 +457,36 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Xóa comment
 	 * Date: 22/02/2022
 	 */
-    delete({ commentID, authorID }) { 
+    delete({ commentID, authorID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs([commentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số commentID không hợp lệ', 
-                        keyError: 'params_commentID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số commentID không hợp lệ',
+                        keyError: 'params_commentID_invalid',
                         status: 400
                     });
                 }
 
                 if(!checkObjectIDs([authorID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số authorID không hợp lệ', 
-                        keyError: 'params_authorID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số authorID không hợp lệ',
+                        keyError: 'params_authorID_invalid',
                         status: 400
                     });
                 }
@@ -525,10 +531,10 @@ class Model extends BaseModel {
                 });
 
                 if(!infoDataAfterDelete) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
-                        keyError: 'error_occurred', 
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
                         status: 422
                     });
                 }
@@ -541,7 +547,7 @@ class Model extends BaseModel {
     }
 
      /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Thông tin comment
 	 * Date: 22/02/2022
 	 */
@@ -549,10 +555,10 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs([commentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số commentID không hợp lệ', 
-                        keyError: 'params_commentID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số commentID không hợp lệ',
+                        keyError: 'params_commentID_invalid',
                         status: 400
                     });
                 }
@@ -576,14 +582,14 @@ class Model extends BaseModel {
                     .lean();
 
 				if (!infoComment) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Comment không tồn tại', 
-                        keyError: KEY_ERROR.GET_INFO_FAILED, 
+                    return resolve({
+                        error: true,
+                        message: 'Comment không tồn tại',
+                        keyError: KEY_ERROR.GET_INFO_FAILED,
                         status: 400
                     });
                 }
-   
+
                 return resolve({ error: false, data: infoComment, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -592,11 +598,11 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) { 
+    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -611,7 +617,7 @@ class Model extends BaseModel {
                 let keys = ['createAt__-1', '_id__-1'];
                 let sortBy = {};
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -647,7 +653,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if(taskID && checkObjectIDs([taskID])){
                     conditionObj.task = taskID;
                 }
@@ -768,9 +774,9 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Danh sách comment tìm kiếm theo id
 	 * Date: 22/02/2022
 	 */

@@ -70,6 +70,9 @@ const CF_ACTIONS_ITEM = {
     /**
      * POSITION
      */
+    POSITION_INSERT                             : `${BASE_ACTIONS}_${POSITION}_INSERT`,
+    POSITION_UPDATE                             : `${BASE_ACTIONS}_${POSITION}_UPDATE`,
+    POSITION_REMOVE                             : `${BASE_ACTIONS}_${POSITION}_REMOVE`,
     POSITION_GET_INFO_AND_GET_LIST              : `${BASE_ACTIONS}_${POSITION}_GET_INFO_AND_GET_LIST`,
 
     /**

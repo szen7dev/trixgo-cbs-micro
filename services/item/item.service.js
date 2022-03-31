@@ -64,7 +64,7 @@ module.exports = {
 	* Service dependencies
 	*/
 	dependencies: [],
-	
+
 	/**
 	* Actions
 	*/
@@ -83,7 +83,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS] 		: ITEM__DEPARTMENT_HANDLER.getListByMembers,
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
-	
+
 		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,
@@ -96,7 +96,6 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTACT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM] 			: ITEM__CONTACT_HANDLER.getListOfSystem,
 
-		
 		//==========================================  WAREHOUSE  =================================
 		[CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST] 		: ITEM__WAREHOUSE_HANDLER.getInfoAndGetList,
 
@@ -104,6 +103,9 @@ module.exports = {
 		[CF_ACTIONS_ITEM.AREA_GET_INFO_AND_GET_LIST] 		    : ITEM__AREA_HANDLER.getInfoAndGetList,
 
 		//==========================================  POSITION  ==================================
+		[CF_ACTIONS_ITEM.POSITION_INSERT] 						: ITEM__POSITION_HANDLER.insert,
+		[CF_ACTIONS_ITEM.POSITION_UPDATE] 						: ITEM__POSITION_HANDLER.update,
+		[CF_ACTIONS_ITEM.POSITION_REMOVE] 						: ITEM__POSITION_HANDLER.remove,
 		[CF_ACTIONS_ITEM.POSITION_GET_INFO_AND_GET_LIST] 		: ITEM__POSITION_HANDLER.getInfoAndGetList,
 
 		//==========================================  STORAGE  ===================================
@@ -111,7 +113,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.STORAGE_UPDATE] 						: ITEM__STORAGE_HANDLER.update,
 		[CF_ACTIONS_ITEM.STORAGE_REMOVE] 						: ITEM__STORAGE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
-		
+
 		//==========================================  ACCOUNT  ===================================
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST] 		: ITEM__ACCOUNT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME] 			: ITEM__ACCOUNT_HANDLER.getInfoAccountWithName,
