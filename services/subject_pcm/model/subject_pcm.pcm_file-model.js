@@ -79,7 +79,7 @@ class Model extends BaseModel {
      * Danh sách file pcm: Depv ✅
      */
     getList({
-        companyID, projectID, groupID, taskID,
+        companyID, projectID, groupID, taskID, type,
         limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -122,6 +122,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(taskID)){
                     conditionObj.task = taskID;
+                }
+
+                if(type){
+                    conditionObj.type = type;
                 }
                 
                 let conditionObjOrg = { ...conditionObj };

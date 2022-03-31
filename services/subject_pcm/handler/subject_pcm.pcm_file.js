@@ -21,6 +21,7 @@ module.exports = {
             projectID    : { type: "string", optional: true },
             groupID      : { type: "string", optional: true },
             taskID       : { type: "string", optional: true },
+            type         : { type: "string", optional: true },
             
             keyword      : { type: "string", optional: true },
             limit        : { type: "string", optional: true },
@@ -31,14 +32,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { pcmFileID, companyID, projectID, groupID, taskID, limit, lastestID, select, populates } = ctx.params;
+                let { pcmFileID, companyID, projectID, groupID, taskID, type, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
                 if(pcmFileID){
                     // Get info xử lý sau nếu cần
                 }else{
                     resultAfterCallHandler = await PCM_FILE_MODEL.getList({
-                        companyID, projectID, groupID, taskID, limit, lastestID, select, populates
+                        companyID, projectID, groupID, taskID, type, limit, lastestID, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
