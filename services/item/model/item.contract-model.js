@@ -745,12 +745,10 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */  
                 
-                if(companyID){
-                    conditionObj.company = companyID
-                }
-
                 if(projectID){
                     conditionObj.project = projectID
+                }else{
+                    conditionObj.company = companyID
                 }
 
                 if(parentID){
