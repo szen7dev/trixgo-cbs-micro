@@ -131,73 +131,9 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Remove position
+     * Func: Remove position => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Date: 30/02/2022
      */
-    remove({ positionsID, userID }) { 
-        return new Promise(async resolve => {
-            try {
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([...positionsID, userID])) {
-                    return resolve({
-						error: true,
-						message: "Tham số positionsID hoặc userID không hợp lệ",
-						keyError: "params_positionsID_or_userID_invalid",
-						status: 400
-					})
-                }
-
-                const listPositions = await ITEM__POSITION_COLL.find({
-                    _id: {
-                        $in: positionsID
-                    }
-                }).select('_id').lean();
-
-                if(!listPositions || !listPositions.length) {
-                    return resolve({
-						error: true,
-						message: "Position không tồn tại",
-						keyError: "position_not_exists",
-						status: 400
-					})
-                }
-
-                let infoAterRemove = await ITEM__POSITION_COLL.deleteMany({
-                    _id: {
-                        $in: positionsID
-                    },
-                    userCreate: userID
-                });
-
-                if(!infoAterRemove) {
-                    return resolve({
-						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurred",
-						status: 422
-					})
-                }
-
-                for (const position of listPositions) {
-                    if(position.parent) {
-                        await ITEM__POSITION_COLL.findByIdAndUpdate(position.parent, {
-                            $pull: {
-                                childs: position._id
-                            }
-                        });
-                    }
-                }
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get info position ✅

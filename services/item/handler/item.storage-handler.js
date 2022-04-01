@@ -63,27 +63,8 @@ module.exports = {
     
     /**
      * Dev: Depv ✅
-     * Func: remove storage
+     * Func: remove storage => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      */
-    remove: {
-        params: {
-            storageID  : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { storageID } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
-               
-                let resultAfterCallHandler = await ITEM__STORAGE_MODEL.remove({
-                    storageID 
-                });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
     
     /**
 	 * Dev: Depv ✅
