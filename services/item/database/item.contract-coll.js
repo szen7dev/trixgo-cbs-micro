@@ -35,7 +35,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Dự án/phòng ban (Thuộc dự án)
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"
+        ref : "department",
+        require: true,
     },
     //_________Phần tử cha
     parent: {
