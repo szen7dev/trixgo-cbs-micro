@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -37,10 +37,10 @@ class Model extends BaseModel {
 	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
+        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
         cgValue, expiredCg, agValue, expiredAg, userID, ctx
          }){
-        return new Promise(async resolve => { 
+        return new Promise(async resolve => {
             try {
                 let dataInsert = {
                     project: projectID, name, sign, date, userCreate: userID, members: [userID], admins: [userID]
@@ -49,10 +49,10 @@ class Model extends BaseModel {
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: projectID
                 })
-                
+
                 if(infoProject.error)
                     return resolve({ error: true, message: "Request params project invalid" });
-                
+
                 dataInsert.company = infoProject.data.company;
 
                 // company lấy theo product
@@ -163,7 +163,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(sellerInfo)){
                     dataInsert.sellerInfo = sellerInfo;
                 }
-                
+
                 if(buyerBank){
                     dataInsert.buyerBank = buyerBank;
                 }
@@ -320,14 +320,14 @@ class Model extends BaseModel {
 	update({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
-        cgValue, expiredCg, agValue, expiredAg, dataInc, ctx
+        budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
+        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx
         }){
-        return new Promise(async resolve => { 
+        return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
-               
+
                 let dataUpdate    = {}
                 let dataAddToSet = {};
                 let dataPull     = {};
@@ -341,7 +341,18 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Request params project invalid" });
                     //________company được lấy theo dự án
                     dataUpdate.company = infoProject.data.company;
-                }   
+                }
+
+                const infoContract = await ITEM__CONTRACT_COLL.findById(contractID).lean();
+
+                if(!infoContract) {
+                    return resolve({
+                        error: true,
+                        message: "Hợp đồng không tồn tại",
+                        keyError: "contract_not_exists",
+                        status: 400
+                    });
+                }
 
                 if(checkObjectIDs(projectID)){
                     dataUpdate.project = projectID;
@@ -373,7 +384,7 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(members)){
                     dataAddToSet.members = members;
-                }   
+                }
 
                 if(checkObjectIDs(adminsRemove)){
                     dataPull.admins = adminsRemove;
@@ -474,7 +485,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(sellerInfo)){
                     dataUpdate.sellerInfo = sellerInfo;
                 }
-                
+
                 if(buyerBank){
                     dataUpdate.buyerBank = buyerBank;
                 }
@@ -622,15 +633,39 @@ class Model extends BaseModel {
                 if(dataPull){
                     dataUpdate.$pullAll = dataPull;
                 }
-                
+
                 if(dataInc){
                     dataUpdate.$inc = dataInc;
                 }
 
+                if(photos && photos.length) {
+                    if(infoContract.photos.length >= 10){
+						await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, {
+							$push: {
+								photos: {
+									$each: photos,
+									$position: 0,
+									$slice: 10
+								}
+							}
+						});
+					} else{
+						await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, {
+							$push: {
+								photos: {
+									$each: photos,
+									$position: 0
+								}
+							}
+						});
+					}
+                }
+
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Cannot update contract" });
-                return resolve({ error: false, data: infoAfterInsert });
+                    return resolve({ error: true, message: "Cannot update contract", status: 422 });
+
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -640,29 +675,29 @@ class Model extends BaseModel {
     /**
      * Name: Remove Hợp đồng ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
-     * Code: 
+     * Code:
      */
 
     /**
      * Name: get Hợp đồng ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ contractID, select, populates }) { 
+    getInfo({ contractID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -686,7 +721,7 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -697,12 +732,12 @@ class Model extends BaseModel {
     /**
      * Name  : Danh sách hợp đồng ✅
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -711,18 +746,18 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
-                
+
                 if(limit > 20){
                     limit = 20
                 }else{
                     limit = +limit
                 }
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -735,10 +770,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
+
                 if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
-                
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -753,7 +788,7 @@ class Model extends BaseModel {
 
                 if(parentID){
                     conditionObj.parent = parentID
-                }   
+                }
 
                 if(draft){
                     conditionObj.draft = draft
@@ -833,13 +868,13 @@ class Model extends BaseModel {
 
                 // Theo giỏi bảo lảnh
                 if(isExpiredAg == 1){
-                    conditionObj.expiredAg = { $exists: true, $ne: null } 
+                    conditionObj.expiredAg = { $exists: true, $ne: null }
                 }
 
                 if(isMember == 1){
                     conditionObj.members = { $in: [userID] }
                 }
-                
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -871,7 +906,7 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -883,9 +918,9 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                
+
                 let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit); 
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -894,7 +929,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -904,12 +939,12 @@ class Model extends BaseModel {
     /**
      * Name  : Danh sách hợp đồng mà user là members ✅
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getListIsMembers({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -918,16 +953,16 @@ class Model extends BaseModel {
                 let conditionObj = { members: { $in: [userID] } };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
-                
+
                 if(limit > 20){
                     limit = 20
                 }
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -940,13 +975,13 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-                
+                 */
+
                 if(companyID){
                     conditionObj.company = companyID
                 }
@@ -1037,9 +1072,9 @@ class Model extends BaseModel {
 
                 // Theo giỏi bảo lảnh
                 if(isExpiredAg == 1){
-                    conditionObj.expiredAg = { $exists: true, $ne: null } 
+                    conditionObj.expiredAg = { $exists: true, $ne: null }
                 }
-                
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -1071,7 +1106,7 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -1083,9 +1118,9 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                
+
                 let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit); 
+                let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
@@ -1094,7 +1129,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

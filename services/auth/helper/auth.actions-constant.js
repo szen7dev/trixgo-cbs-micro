@@ -6,6 +6,7 @@ const BASE_ACTIONS = 'ACT_AUTH';
  */
 const COMPANY       = 'COMPANY',
     USER            = 'USER',
+    APP             = 'APP',
     APP_MENU        = 'APP_MENU',
     APP_ROLE        = 'APP_ROLE',
     APP_USER        = 'APP_USER',
@@ -67,6 +68,12 @@ const CF_ACTIONS_AUTH = {
     GET_INFO_AND_GET_LIST_COMPANY        : `${BASE_ACTIONS}_${COMPANY}_GET_INFO_AND_GET_LIST`,
     COMPANY_INSERT                       : `${BASE_ACTIONS}_${COMPANY}_INSERT`,
     COMPANY_UPDATE                       : `${BASE_ACTIONS}_${COMPANY}_UPDATE`,
+
+    /**
+     * APP
+     */
+    APP_GET_INFO_GET_LIST                : `${BASE_ACTIONS}_${APP}_GET_INFO_GET_LIST`,
+
     /**
 	 * APP_MENU
 	 */
