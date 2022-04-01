@@ -134,7 +134,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-    //_________Tổng mức đầu tư
+    //_________Ngân sách/Tổng mức đầu tư
     budget: {
         type   : Number,
         default: 0
