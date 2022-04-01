@@ -228,6 +228,11 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Thời hạn bảo lãnh tạm ứng
     expiredAg: { type: Date, default: null },
 
+    //_________Ảnh đại diện
+    image: {
+        type: String,
+        defautl: 'contract_default.png'
+    },
     //_________Hình ảnh gần đây
     photos: [{
         type: Schema.Types.ObjectId,

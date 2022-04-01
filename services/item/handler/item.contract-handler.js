@@ -217,26 +217,9 @@ module.exports = {
 
     /**
 	 * Dev: Depv ✅
-	 * Func: XÓA HỢP ĐỒNG
+	 * Func: XÓA HỢP ĐỒNG => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 * Date: 19/08/2021
 	 */
-    remove: {
-        auth: "required",
-        params: {
-            contractID      : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID }  = ctx.params;
-                const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.remove({ contractID });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
 
      /**
 	 * Dev: Depv ✅
@@ -283,6 +266,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id;
                 }
+
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
@@ -342,11 +326,7 @@ module.exports = {
                 } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-
-                if(!companyID){
-                    companyID = company._id;
-                }
-
+                
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
                     companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,

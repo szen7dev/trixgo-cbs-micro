@@ -778,14 +778,12 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */
-
-                if(companyID){
-                    conditionObj.company = companyID
-                }
-
+                 */  
+                
                 if(projectID){
                     conditionObj.project = projectID
+                }else{
+                    conditionObj.company = companyID
                 }
 
                 if(parentID){
