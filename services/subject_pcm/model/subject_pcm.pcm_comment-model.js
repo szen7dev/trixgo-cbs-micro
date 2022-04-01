@@ -26,6 +26,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
+const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
 
 class Model extends BaseModel {
@@ -164,7 +165,7 @@ class Model extends BaseModel {
 
 							if(!infoFileCore.error) {
 								const {
-									company, name, nameOrg, description, path, size, mimeType, type, author
+									name, nameOrg, description, path, size, mimeType, type, author
 								} = infoFileCore.data;
 
 								const infoAfterInserted = await PCM_FILE_MODEL.insert({
@@ -184,7 +185,7 @@ class Model extends BaseModel {
                         });
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                        contractID: infoTask.contract,
+                        contractID: infoTask.contract?.toString(),
                         photos: images
                     })
                 }
@@ -436,6 +437,22 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(infoComment.type !== 2) {
+                    if(!checkObjectIDs(files)) {
+                        await PCM_FILE_COLL.deleteMany({
+                            comment: infoComment._id,
+                            type: 2
+                        })
+                    }
+
+                    if(!checkObjectIDs(images)) {
+                        await PCM_FILE_COLL.deleteMany({
+                            comment: infoComment._id,
+                            type: 1
+                        })
+                    }
+                }
+
                 infoAfterUpdate = await PCM_COMMENT_COLL
                     .findById(commentID)
                     .select(select)
@@ -450,7 +467,7 @@ class Model extends BaseModel {
        })
     }
 
-     /**
+    /**
 	 * Dev: MinhVH
 	 * Func: Cập nhật đánh dấu response
 	 * Date: 22/02/2022
@@ -546,7 +563,7 @@ class Model extends BaseModel {
                     .findById(commentID)
                     .lean();
 
-                if(infoComment) {
+                if(!infoComment) {
                     return resolve({
                         error: true,
                         message: "Bình luận không tồn tại",
@@ -590,6 +607,10 @@ class Model extends BaseModel {
                     });
                 }
 
+                await PCM_FILE_COLL.deleteMany({
+                    comment: commentID
+                });
+
                 return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -597,7 +618,7 @@ class Model extends BaseModel {
         })
     }
 
-     /**
+    /**
 	 * Dev: MinhVH
 	 * Func: Thông tin comment
 	 * Date: 22/02/2022

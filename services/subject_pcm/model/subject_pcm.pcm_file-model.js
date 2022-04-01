@@ -83,16 +83,20 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, groupID, taskID, type,
-        limit = 10, lastestID, select, populates= {} }) {
+        limit = 10, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-
-                if(!companyID && !projectID && !groupID && !taskID)
-					return resolve({ error: true, message: 'Request params require companyID || projectID || groupID || taskID' });
+                if(!companyID && !projectID && !groupID && !taskID) {
+					return resolve({
+                        error: true,
+                        message: 'Request params require companyID || projectID || groupID || taskID',
+                        status: 400
+                    });
+                }
 
                 if(limit > 20){
                     limit = 20
-                }else{
+                } else{
                     limit = +limit;
                 }
 
@@ -104,7 +108,7 @@ class Model extends BaseModel {
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
@@ -157,7 +161,7 @@ class Model extends BaseModel {
                     .lean();
 
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data", status: 422 });
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

@@ -18,7 +18,7 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-			content    : { type: "string" },
+			content    : { type: "string", optional: true },
             taskID     : { type: "string" },
             type       : { type: "number" },
             parentID   : { type: "string", optional: true },

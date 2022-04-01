@@ -22,7 +22,7 @@ module.exports = {
             groupID      : { type: "string", optional: true },
             taskID       : { type: "string", optional: true },
             type         : { type: "string", optional: true },
-            
+
             keyword      : { type: "string", optional: true },
             limit        : { type: "string", optional: true },
             lastestID    : { type: "string", optional: true },
