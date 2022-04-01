@@ -263,7 +263,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id;
                 }
-                
+
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({
@@ -324,9 +324,9 @@ module.exports = {
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id;
-                }
+                // if(!companyID){
+                //     companyID = company._id;
+                // }
 
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
                     companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
