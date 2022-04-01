@@ -756,7 +756,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
+                
                 if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
                 

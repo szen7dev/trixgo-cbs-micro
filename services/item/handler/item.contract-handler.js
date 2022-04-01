@@ -258,7 +258,6 @@ module.exports = {
             companyID           : { type: "string", optional: true },
             isExpiredAg         : { type: "string", optional: true },
             
-
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
