@@ -31,7 +31,7 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, ctx }) {
+    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
@@ -86,6 +86,7 @@ class Model extends BaseModel {
                     members: [authorID], 
                     milestones,
                     completedMilestones,
+                    budget,
                     userCreate: authorID,
                 }
 
@@ -257,7 +258,7 @@ class Model extends BaseModel {
                     dataUpdate.assistant = assistant;
                 }
 
-                if(checkObjectIDs(budget)){
+                if(budget){
                     dataUpdate.budget = budget;
                 }
 

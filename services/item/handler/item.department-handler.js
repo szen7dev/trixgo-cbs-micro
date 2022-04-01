@@ -25,6 +25,7 @@ module.exports = {
             expiredTime     : { type: "string" },
             milestones      : { type: "number" },
             completedMilestones: { type: "number" },
+            budget: { type: "number" },
             companyID       : { type: "string", optional: true },
 
             description     : { type: "string", optional: true },
@@ -49,14 +50,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones  } = ctx.params;
+                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, budget  } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                   company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, authorID: userID, ctx
+                   company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, budget, authorID: userID, ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
