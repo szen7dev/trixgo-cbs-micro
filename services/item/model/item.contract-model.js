@@ -342,7 +342,7 @@ class Model extends BaseModel {
                     //________company được lấy theo dự án
                     dataUpdate.company = infoProject.data.company;
                 }   
-                
+
                 if(checkObjectIDs(projectID)){
                     dataUpdate.project = projectID;
                 }
@@ -356,15 +356,15 @@ class Model extends BaseModel {
                 }
 
                 if(name){
-                    dataAddToSet.name = name;
+                    dataUpdate.name = name;
                 }
 
                 if(sign){
-                    dataAddToSet.sign = sign;
+                    dataUpdate.sign = sign;
                 }
 
                 if(date){
-                    dataAddToSet.date = date;
+                    dataUpdate.date = date;
                 }
 
                 if(checkObjectIDs(admins)){
