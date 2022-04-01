@@ -8,7 +8,7 @@ const { KEY_ERROR }			            = require('../../../tools/keys');
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
- 
+
 /**
  * import inter-coll, exter-coll
  */
@@ -23,50 +23,53 @@ class Model extends BaseModel {
     /**
      * Thêm pcm_file: DePV ✅
      */
-    insert({ company, project, group, task, comment, file, type, nameOrg, name, authorID }) { 
+    insert({
+        companyID, projectID, groupID, contractID, taskID, commentID, fileID,
+        type, nameOrg, name, description, path, size, mimeType, authorID
+    }) {
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: authorID };
+                let dataInsert = { author: authorID };
 
-                if(checkObjectIDs(company)){
-                    dataInsert.company = company;
+                if(checkObjectIDs(companyID)){
+                    dataInsert.company = companyID;
                 }
 
-                if(checkObjectIDs(project)){
-                    dataInsert.project = project;
+                if(checkObjectIDs(projectID)){
+                    dataInsert.project = projectID;
                 }
 
-                if(checkObjectIDs(group)){
-                    dataInsert.group = group;
+                if(checkObjectIDs(groupID)){
+                    dataInsert.group = groupID;
                 }
 
-                if(checkObjectIDs(task)){
-                    dataInsert.task = task;
+                if(checkObjectIDs(contractID)){
+                    dataInsert.contract = contractID;
                 }
 
-                if(checkObjectIDs(comment)){
-                    dataInsert.comment = comment;
+                if(checkObjectIDs(taskID)){
+                    dataInsert.task = taskID;
                 }
 
-                if(checkObjectIDs(file)){
-                    dataInsert.file = file;
+                if(checkObjectIDs(commentID)){
+                    dataInsert.comment = commentID;
                 }
 
-                if(type){
-                    dataInsert.type = type;
+                if(checkObjectIDs(fileID)){
+                    dataInsert.file = fileID;
                 }
 
-                if(nameOrg){
-                    dataInsert.nameOrg = nameOrg;
-                }
+                type        && (dataInsert.type         = type);
+                nameOrg     && (dataInsert.nameOrg      = nameOrg);
+                name        && (dataInsert.name         = name);
+                path        && (dataInsert.path         = path);
+                size        && (dataInsert.size         = size);
+                mimeType    && (dataInsert.mimeType     = mimeType);
+                description && (dataInsert.description  = description);
 
-                if(name){
-                    dataInsert.name = name;
-                }
-
-                let infoDataAfterInserted = await this.insertData(dataInsert); 
+                let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
-                    return resolve({ error: true, message: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
@@ -80,7 +83,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, groupID, taskID, type,
-        limit = 10, lastestID, select, populates= {} }) { 
+        limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -127,7 +130,7 @@ class Model extends BaseModel {
                 if(type){
                     conditionObj.type = type;
                 }
-                
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_FILE_COLL.findById(lastestID);
@@ -144,14 +147,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await PCM_FILE_COLL
                     .find(conditionObj)
                     .select(select)
                     .limit(limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });

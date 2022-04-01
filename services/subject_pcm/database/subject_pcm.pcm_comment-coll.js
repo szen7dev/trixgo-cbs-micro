@@ -66,11 +66,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         default : 0
     },
 
-    // lastestReactionID: [{
-    //     type    :  Schema.Types.ObjectId,
-    //     ref     : 'pcm_comment_reaction'
-    // }],
-
     //_________Người tạo comment
     author: {
         type    :  Schema.Types.ObjectId,

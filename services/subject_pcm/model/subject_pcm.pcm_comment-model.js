@@ -1,13 +1,22 @@
 "use strict";
 
 /**
+ * import external
+ */
+const PromisePool							    = require('@supercharge/promise-pool');
+
+/**
  * import internal
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
+
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
+
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 
@@ -17,6 +26,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
+const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -139,6 +149,47 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(images && images.length) {
+                    await PromisePool
+                        .for(images)
+                        .withConcurrency(2)
+                        .process(async imageID => {
+                            const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID: imageID
+							}, {
+								meta: {
+									infoUser: { _id: authorID }
+								}
+							});
+
+							if(!infoFileCore.error) {
+								const {
+									company, name, nameOrg, description, path, size, mimeType, type, author
+								} = infoFileCore.data;
+
+								const infoAfterInserted = await PCM_FILE_MODEL.insert({
+									fileID: imageID,
+                                    taskID,
+                                    commentID: infoAterInsert._id,
+                                    contractID: infoTask.contract,
+                                    projectID: infoTask.project?._id,
+                                    groupID: infoTask.group,
+                                    companyID: infoTask.company,
+                                    authorID: author,
+									name, nameOrg, path, size, mimeType, description, type
+								});
+
+								return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+							}
+                        });
+
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                        contractID: infoTask.contract,
+                        dataInc: updateContract
+                    })
+                }
+
+                // Cập nhật lastestReplyID và amountCommentReply cho comment cha
                 if(parentID){
                     await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, {
                         $set: {

@@ -186,6 +186,7 @@ module.exports = {
             agValue                : { type: "number", optional: true },
             expiredAg              : { type: "string", optional: true },
             dataInc                : { type: "object", optional: true },
+            photos                 : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {

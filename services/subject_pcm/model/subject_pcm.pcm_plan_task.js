@@ -384,7 +384,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
         contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID, bizfullname, ctx
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, ctx
     }){
         return new Promise(async (resolve) => {
             try {
@@ -497,6 +497,10 @@ class Model extends BaseModel {
                 //_________Xoá người liên quan
                 if(checkObjectIDs(relatedRemoves)){
                     dataPullAll = { ...dataPullAll, related: relatedRemoves }
+                }
+
+                if(checkObjectIDs(flagsRemoves)) {
+                    dataPullAll = { ...dataPullAll, flags: flagsRemoves }
                 }
 
                 //_________Trạng thái công việc
