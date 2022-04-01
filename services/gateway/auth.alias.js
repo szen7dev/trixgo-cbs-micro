@@ -134,7 +134,13 @@ module.exports = {
 
 		[`PUT ${CF_ROUTINGS_AUTH.COMPANY}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.COMPANY_UPDATE}`],
-		
+
+		/**
+		 * App
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.APP}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_GET_INFO_GET_LIST}`],
+
 		/**
 		 * app menu
 		 */

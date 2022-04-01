@@ -1,12 +1,34 @@
 /**
  * TOOLS
  */
- const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }       = require('../../../tools/utils/status_code');
 
- /**
-  * MODELS
-  */
+const AUTH__APP_COLL                        = require('../database/permission/auth.app-coll');
+
 module.exports = {
+    getInfoAndGetList: {
+        params: {},
+        async handler(ctx) {
+            try {
+                const listApps = await AUTH__APP_COLL.find({}).lean();
+                const totalRecord = await AUTH__APP_COLL.countDocuments();
+
+                const resultAfterCallHandler = {
+                    data: {
+                        listRecords: listApps,
+                        totalRecord
+                    },
+                    error: false,
+                    status: 200
+                }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
     checkVersionApp: {
         params: {
             version      : { type: "string" },
