@@ -629,40 +629,10 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove Hợp đồng ✅
+     * Name: Remove Hợp đồng ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: 
      */
-    remove({ contractID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
-                    
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAterRemove = await ITEM__CONTRACT_COLL.findByIdAndDelete(contractID);
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
- 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get Hợp đồng ✅
