@@ -31,7 +31,7 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, ctx }) {
+    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, vatBudget, forecastBudget, vatForecastBudget, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePaymentPaid, contractAmountPaid, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
@@ -64,6 +64,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${infoDepartment.name}` }); 
                 
                 let dataInsert = {
+                    userCreate: authorID,
                     company,
                     type: type ? Number(type) : Number(1),
                     name,
@@ -87,7 +88,15 @@ class Model extends BaseModel {
                     milestones,
                     completedMilestones,
                     budget,
-                    userCreate: authorID,
+                    vatBudget,
+                    forecastBudget,
+                    vatForecastBudget,
+                    contractValue,
+                    contractVatValue,
+                    contractPlus,
+                    contractVatPlus,
+                    contractAdvancePaymentPaid,
+                    contractAmountPaid
                 }
 
                 if(pm && _isValid(pm)){
@@ -123,11 +132,11 @@ class Model extends BaseModel {
     update({ 
         departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
-        pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
-        images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractPlusValue, contractVatValue, contractAdvancePayment,
+        pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
+        images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
         contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-        contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+        contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
         closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
         numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
@@ -262,13 +271,14 @@ class Model extends BaseModel {
                     dataUpdate.budget = budget;
                 }
 
+                if(vatBudget){
+                    dataUpdate.vatBudget = vatBudget;
+                }
+
                 if(note){
                     dataUpdate.note = note;
                 }
 
-                // if(checkObjectIDs(position)){ // Check lại
-                //     dataUpdate.position = position;
-                // }
 
                 if(image){
                     dataUpdate.image = image;
@@ -321,6 +331,10 @@ class Model extends BaseModel {
                 if(!isNaN(forecastBudget)){
                     dataUpdate.forecastBudget = forecastBudget;
                 }
+
+                if(!isNaN(vatForecastBudget)){
+                    dataUpdate.vatForecastBudget = vatForecastBudget;
+                }
                 
                 if(!isNaN(realBudget)){
                     dataUpdate.realBudget = realBudget;
@@ -366,12 +380,16 @@ class Model extends BaseModel {
                     dataUpdate.contractValue = contractValue;
                 }
 
-                if(!isNaN(contractPlusValue)){
-                    dataUpdate.contractPlusValue = contractPlusValue;
-                }
-
                 if(!isNaN(contractVatValue)){
                     dataUpdate.contractVatValue = contractVatValue;
+                }
+
+                if(!isNaN(contractPlus)){
+                    dataUpdate.contractPlus = contractPlus;
+                }
+
+                if(!isNaN(contractVatPlus)){
+                    dataUpdate.contractVatPlus = contractVatPlus;
                 }
 
                 if(!isNaN(contractAdvancePayment)){
@@ -404,6 +422,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(contractRecommendedPayment)){
                     dataUpdate.contractRecommendedPayment = contractRecommendedPayment;
+                }
+
+                if(!isNaN(contractAdvancePaymentPaid)){
+                    dataUpdate.contractAdvancePaymentPaid = contractAdvancePaymentPaid;
                 }
 
                 if(!isNaN(contractAmountPaid)){
@@ -551,34 +573,10 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Xoá dự án/phòng ban ✅
+     * Name: Xoá dự án/phòng ban ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: F00401
      */
-    remove({ departmentID, userID }) {
-        return new Promise(async (resolve) => {
-            try {
-
-                if(!checkObjectIDs(departmentID))
-                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
-
-                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
-                if(!infoDepartment)
-                    return resolve({ error: true, message: "không tìm thấy ID", keyError: KEY_ERROR.GET_INFO_FAILED,  status: 403 });
-
-                if(infoDepartment.userCreate != userID)
-                    return resolve({ error: true, message: "Bạn phải là người tạo ra dự án/phòng ban này mới được xoá", keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 });
-
-                let infoAfterRemove = await ITEM__DEPARTMENT_COLL.findByIdAndDelete(departmentID);
-                if(!infoAfterRemove)
-                return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
-
-                return resolve({ error: false, message: "Xoá thành công", status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
 
     /**

@@ -1091,7 +1091,7 @@ class Model extends BaseModel {
                     } else{
                         conditionObj.type = 1;
                     }
-
+                    
                     if(isChildTask == 1){
                         conditionObj.type = 1;
                         delete conditionObj.status;

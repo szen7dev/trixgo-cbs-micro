@@ -155,73 +155,9 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Remove doctype
+     * Func: Remove doctype => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Date: 22/02/2022
      */
-    remove({ doctypesID, userID }) { 
-        return new Promise(async resolve => {
-            try {
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([...doctypesID, userID])) {
-                    return resolve({
-						error: true,
-						message: "Tham số doctypesID hoặc userID không hợp lệ",
-						keyError: "params_doctypesID_or_userID_invalid",
-						status: 400
-					})
-                }
-
-                const listDoctypes = await ITEM__DOCTYPE_COLL.find({
-                    _id: {
-                        $in: doctypesID
-                    }
-                }).select('_id').lean();
-
-                if(!listDoctypes || !listDoctypes.length) {
-                    return resolve({
-						error: true,
-						message: "Doctype không tồn tại",
-						keyError: "doctype_not_exists",
-						status: 400
-					})
-                }
-
-                let infoAterRemove = await ITEM__DOCTYPE_COLL.deleteMany({
-                    _id: {
-                        $in: doctypesID
-                    },
-                    userCreate: userID
-                });
-
-                if(!infoAterRemove) {
-                    return resolve({
-						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurred",
-						status: 422
-					})
-                }
-
-                for (const doctype of listDoctypes) {
-                    if(doctype.parent) {
-                        await ITEM__DOCTYPE_COLL.findByIdAndUpdate(doctype.parent, {
-                            $pull: {
-                                childs: doctype._id
-                            }
-                        });
-                    }
-                }
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get Hợp đồng ✅

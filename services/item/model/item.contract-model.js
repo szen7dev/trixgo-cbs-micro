@@ -317,7 +317,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật hợp đồng
 	 * Date: 13/12/2021
 	 */
-	update({ contractID, projectID, parentID, admins, adminIDRemove, members, memberIDRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+	update({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, 
@@ -328,10 +328,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
                
-                let dataUpdate = {
-                    name, sign, date
-                }
-
+                let dataUpdate    = {}
                 let dataAddToSet = {};
                 let dataPull     = {};
 
@@ -344,12 +341,12 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Request params project invalid" });
                     //________company được lấy theo dự án
                     dataUpdate.company = infoProject.data.company;
-                }
+                }   
 
                 if(checkObjectIDs(projectID)){
                     dataUpdate.project = projectID;
                 }
-                
+
                 if(checkObjectIDs(parentID)){
                     dataUpdate.parent = parentID;
                     let infoContractParent = await ITEM__CONTRACT_COLL.findById(parentID);
@@ -358,20 +355,32 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(name){
+                    dataUpdate.name = name;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(date){
+                    dataUpdate.date = date;
+                }
+
                 if(checkObjectIDs(admins)){
                     dataAddToSet.admins = admins;
                 }
 
                 if(checkObjectIDs(members)){
                     dataAddToSet.members = members;
+                }   
+
+                if(checkObjectIDs(adminsRemove)){
+                    dataPull.admins = adminsRemove;
                 }
 
-                if(checkObjectIDs(adminIDRemove)){
-                    dataPull.admins = adminIDRemove;
-                }
-
-                if(checkObjectIDs(memberIDRemove)){
-                    dataPull.members = memberIDRemove;
+                if(checkObjectIDs(membersRemove)){
+                    dataPull.members = membersRemove;
                 }
 
                 if(draft){
@@ -611,7 +620,7 @@ class Model extends BaseModel {
                 }
 
                 if(dataPull){
-                    dataUpdate.$pull = dataPull;
+                    dataUpdate.$pullAll = dataPull;
                 }
                 
                 if(dataInc){
@@ -629,40 +638,10 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove Hợp đồng ✅
+     * Name: Remove Hợp đồng ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: 
      */
-    remove({ contractID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: 'Request params contractID invalid', status: 400 });
-                    
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAterRemove = await ITEM__CONTRACT_COLL.findByIdAndDelete(contractID);
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
- 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get Hợp đồng ✅
@@ -756,7 +735,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
+                
                 if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
                 

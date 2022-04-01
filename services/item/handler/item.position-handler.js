@@ -73,29 +73,9 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Remove position
+	 * Func: Remove position => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Date: 30/02/2022
 	 */
-    remove: {
-        params: {
-            positionsID: { type: "array" }
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { positionsID } = ctx.params;
-
-                const resultAfterCallHandler = await ITEM__POSITION_MODEL.remove({
-                    positionsID, userID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
 
     /**
 	 * Dev: Depv ✅
