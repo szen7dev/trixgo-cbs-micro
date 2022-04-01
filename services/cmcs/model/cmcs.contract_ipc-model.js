@@ -5,26 +5,23 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
-/**s
+/**
  * import inter-coll, exter-coll
  */
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');
-const { ResumeToken } = require('mongodb');
+const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
  */
 class Model extends BaseModel {               
-
     constructor() {
         super(CMCS__CONTRACT_IPC_COLL);
     }
