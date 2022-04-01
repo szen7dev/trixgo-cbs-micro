@@ -277,9 +277,9 @@ module.exports = {
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // if(!companyID){
-                //     companyID = company._id;
-                // }
+                if(!companyID){
+                    companyID = company._id;
+                }
                 let resultAfterCallHandler;
                 if(contractID){
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getInfo({

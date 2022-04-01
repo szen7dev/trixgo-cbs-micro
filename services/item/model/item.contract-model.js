@@ -328,10 +328,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
                
-                let dataUpdate = {
-                    name, sign, date
-                }
-
+                let dataUpdate    = {}
                 let dataAddToSet = {};
                 let dataPull     = {};
 
@@ -344,8 +341,8 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "Request params project invalid" });
                     //________company được lấy theo dự án
                     dataUpdate.company = infoProject.data.company;
-                }
-
+                }   
+                
                 if(checkObjectIDs(projectID)){
                     dataUpdate.project = projectID;
                 }
@@ -358,10 +355,22 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(name){
+                    dataAddToSet.name = name;
+                }
+
+                if(sign){
+                    dataAddToSet.sign = sign;
+                }
+
+                if(date){
+                    dataAddToSet.date = date;
+                }
+
                 if(checkObjectIDs(admins)){
                     dataAddToSet.admins = admins;
                 }
-                
+
                 if(checkObjectIDs(members)){
                     dataAddToSet.members = members;
                 }   
