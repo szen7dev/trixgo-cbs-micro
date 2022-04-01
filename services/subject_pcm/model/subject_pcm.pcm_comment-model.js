@@ -185,7 +185,7 @@ class Model extends BaseModel {
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
                         contractID: infoTask.contract,
-                        dataInc: updateContract
+                        photos: images
                     })
                 }
 
