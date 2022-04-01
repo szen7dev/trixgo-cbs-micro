@@ -124,12 +124,16 @@ class Model extends BaseModel {
      * Name: Remove contract payment ✅
      * Author: Depv
      */
-    remove({ contractPaymentID }) { 
+    remove({ contractPaymentID, userID }) { 
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(contractPaymentID))
                     return resolve({ error: true, message: 'Request params contractPaymentID invalid' });
-              
+
+                let checkAuthor = await CMCS__CONTRACT_PAYMENT_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
+                if(!checkAuthor)
+                    return resolve({ error: true, message: 'Bạn không có quyền xóa', keyError: KEY_ERROR.DELETE_FAILED }); 
+                
                 let infoAterRemove = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndDelete(contractPaymentID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
@@ -140,7 +144,7 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
      * Name: get info contract payment ✅
      * Author: Depv
