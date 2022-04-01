@@ -134,21 +134,8 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-    //_________Ngân sách/Tổng mức đầu tư
-    budget: {
-        type   : Number,
-        default: 0
-    },
     //_________Ghi chú
     note: String,
-    //_________Chức vụ của thành viên trong Dự án/phòng ban (BỎ)
-    position: [{
-        user :  {
-            type: Schema.Types.ObjectId,
-            ref: 'user',
-        },
-        name: String,
-    }],
     //_________Ảnh đại diện
     image: {
         type: String,
@@ -214,7 +201,6 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
-    
     //______Dự báo doanh thu tới khi kết thúc
     forecastRevenue: {
         type: Number,
@@ -225,49 +211,61 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
-
+    //_________Ngân sách/Tổng mức đầu tư/Chi phí
+    budget: {
+        type   : Number,
+        default: 0
+    },
+    //_________Ngân sách/Tổng mức đầu tư phần VAT
+    vatBudget: {
+        type   : Number,
+        default: 0
+    },
     //______Dự báo ngân sách
     forecastBudget: {
         type: Number,
         default : 0
     },
-
+    //______VAT
+    vatForecastBudget: {
+        type: Number,
+        default : 0
+    },    
     //______Ngân sách thực tế
     realBudget: {
         type: Number,
         default : 0
     },
-
+    //______VAT
+    vatRealBudget: {
+        type: Number,
+        default : 0
+    },    
     //______Lợi nhuận NPV
     npv: {
         type: Number,
         default : 0
     }, 
-
     //______Dự báo Lợi nhuận NPV
     forecastNpv: { 
         type: Number,
         default : 0
     }, 
-
     //______Thực tế lợi nhuận
     realNpv: { 
         type: Number,
         default : 0
     }, 
-
     //______Lợi nhuận IRR
     irr: { 
         type: Number,
         default : 0
     }, 
-
     //______Dự báo lợi nhuận IRR
     forecastIrr: { 
         type: Number,
         default : 0
     }, 
-
     //______Thực tế IRR
     realIrr: { 
         type: Number,
@@ -287,93 +285,108 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
-
     //______Số lượng hợp đồng mua vào
     numberOfContractIn: {
         type: Number,
         default : 0
     },
-
     //______Giá trị ký hợp đồng trước VAT
     contractValue: {
         type: Number,
         default : 0
     },
-
-    //______Giá trị phát sinh trước VAT
-    contractPlusValue: {
-        type: Number,
-        default : 0
-    },
-
-    //______VAT hợp đồng
+    //______VAT
     contractVatValue: {
         type: Number,
         default : 0
     },
-    
+    //______Giá trị phát sinh trước VAT
+    contractPlus: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    contractVatPlus: {
+        type: Number,
+        default : 0
+    },
     //______Tạm ứng theo hợp đồng
     contractAdvancePayment: {
         type: Number,
         default : 0
     },
-
     //______Sản lượng trước VAT
     contractProduce: {
         type: Number,
         default : 0
     },
-
-    //______Nghiệm thu phát sinh trước VAT
-    contractPlusAcceptance: {
+    //______VAT
+    contractVatProduce: {
         type: Number,
         default : 0
     },
-
+    //______Giá trị nghiệm thu trước VAT
+    contractAcceptance: {
+        type: Number,
+        default : 0
+    },
     //______VAT
     contractVatAcceptance: {
         type: Number,
         default : 0
     },
-
+    //______Nghiệm thu phát sinh trước VAT
+    contractPlusAcceptance: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    contractVatPlusAcceptance: {
+        type: Number,
+        default : 0
+    },
     //______Giá trị giữ lại
     contractRetainedValue: {
         type: Number,
         default : 0
     },
-
     //______Thu hồi tạm ứng
     contractAdvancePaymentDeduction: {
         type: Number,
         default : 0
     },
-
     //______Khấu trừ khác
     contractOtherDeduction: {
         type: Number,
         default : 0
     },
-
     //______Đề nghị tạm ứng/thanh toán
     contractRecommendedPayment: {
         type: Number,
         default : 0
     },
-
-    //______Đã giải ngân
+    //______Đã giải ngân tạm ứng
+    contractAdvancePaymentPaid: {
+        type: Number,
+        default : 0
+    },
+    //______Đã giải ngân thanh toán
     contractAmountPaid: {
         type: Number,
         default : 0
     },
-
     //______Còn lại chưa giải ngân
     contractRemainingPayment: {
         type: Number,
         default : 0
     },
-
     //______Dư ứng
     contractAdvancePaymentOverage: {
+        type: Number,
+        default : 0
+    },
+    //______Giá trị quyết toán (ngân sách thực tế)
+    contractFinalValue: {
         type: Number,
         default : 0
     },
