@@ -323,11 +323,7 @@ module.exports = {
                 } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-
-                // if(!companyID){
-                //     companyID = company._id;
-                // }
-
+                
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
                     companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
