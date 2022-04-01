@@ -134,7 +134,7 @@ class Model extends BaseModel {
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
         pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractPlusValue, contractVatPlus, contractAdvancePayment,
+        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
         contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
         contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
         closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
