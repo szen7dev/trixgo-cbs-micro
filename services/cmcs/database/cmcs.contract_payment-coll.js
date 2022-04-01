@@ -4,8 +4,47 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
+    /**
+     * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
+     */
     //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
     type: { type: Number, default: 1 },
+
+    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
+    outin: { type: Number, default: 1 },
+
+    //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
+    real: { type: Number, default: 1 },
+
+    //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
+    field: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },  
+    
+    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    chair: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },
+    
+    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
+    personInCharge: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },    
+
+    //_________Bên mua (POSTMAN ITEM > CONTACT)
+    buyerInfo: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+
+    //_________Bên bán (POSTMAN ITEM > CONTACT)
+    sellerInfo: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
 
     //_________Công ty-Được xác định theo IPC(*)
     company: {
@@ -24,6 +63,10 @@ module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
+
+    /**
+     * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
+     */
 
     //_________IPC(*)
     ipc: {

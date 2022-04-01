@@ -17,13 +17,11 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-
     //_________Thành viên của hợp đồng
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-
     /**
      * THÔNG TIN QUẢN TRỊ VÀ PHÂN LOẠI
      */
@@ -35,7 +33,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Dự án/phòng ban (Thuộc dự án)
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"
+        ref : "department",
+        require: true,
     },
     //_________Phần tử cha
     parent: {
@@ -228,6 +227,12 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     agValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh tạm ứng
     expiredAg: { type: Date, default: null },
+
+    //_________Hình ảnh gần đây
+    photos: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file',
+    }],
     
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
