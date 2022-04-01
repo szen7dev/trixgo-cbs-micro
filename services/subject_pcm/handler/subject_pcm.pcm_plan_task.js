@@ -313,7 +313,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
                 let { projectID } = ctx.params;
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssignee({ projectID, ctx });
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

@@ -726,7 +726,10 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
+
+                if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
+                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -743,7 +746,7 @@ class Model extends BaseModel {
 
                 if(parentID){
                     conditionObj.parent = parentID
-                }
+                }   
 
                 if(draft){
                     conditionObj.draft = draft

@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
-/**
+    /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
     //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
