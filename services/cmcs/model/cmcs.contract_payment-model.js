@@ -34,7 +34,7 @@ class Model extends BaseModel {
 
                 const { type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
-                let dataInsert = { userCreate: userID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project };
+                let dataInsert = { userCreate: userID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
 
                 if(ipc){
                     dataInsert.ipc = ipc;
@@ -108,6 +108,8 @@ class Model extends BaseModel {
                 if(value){
                     dataUpdate.value =value;
                 }
+
+                console.log({ contractPaymentID, dataUpdate })
              
                 let infoAterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
@@ -132,13 +134,13 @@ class Model extends BaseModel {
 
                 let checkAuthor = await CMCS__CONTRACT_PAYMENT_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
                 if(!checkAuthor)
-                    return resolve({ error: true, message: 'Bạn không có quyền xóa', keyError: KEY_ERROR.DELETE_FAILED }); 
+                    return resolve({ error: true, message: 'Bạn không có quyền xóa hoặc ID không tồn tại', keyError: KEY_ERROR.DELETE_FAILED }); 
                 
                 let infoAterRemove = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndDelete(contractPaymentID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
  
-                return resolve({ error: false, data: infoAterRemove });
+                return resolve({ error: false, message: "Xóa thành công" });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

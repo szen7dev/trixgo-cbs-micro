@@ -5,6 +5,7 @@ const BASE_ROUTE = '/cmcs';
 const CONTRACT_BILL_JOB     = '/contract_bill_jobs';
 const CONTRACT_IPC          = '/contract_ipcs';
 const CONTRACT_PRODUCTION   = '/contract_productions';
+const CONTRACT_PAYMENT      = '/contract_payments';
 
 const CF_ROUTINGS_CMCS = {
     ORIGIN_APP: BASE_ROUTE,
@@ -17,6 +18,9 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT PRODUCTION=====================================//
     CONTRACT_PRODUCTION                : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`, 
+
+    // ================================CONTRACT PAYMENT=====================================//
+    CONTRACT_PAYMENT                   : `${BASE_ROUTE}${CONTRACT_PAYMENT}`, 
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;
