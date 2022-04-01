@@ -12,7 +12,7 @@ module.exports = {
             try {
                 const listApps = await AUTH__APP_COLL.find({}).lean();
                 const totalRecord = await AUTH__APP_COLL.countDocuments();
-
+                
                 const resultAfterCallHandler = {
                     data: {
                         listRecords: listApps,

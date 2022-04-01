@@ -888,6 +888,7 @@ class Model extends BaseModel {
             let dataBlock1 = await ITEM__DEPARTMENT_COLL.aggregate([
                 {
                     $match: {
+                        type: 2,
                         members : { $in: [_isValid(userID)] },
                         ontime  : { $exists: true },
                         onbudget: { $exists: true },
@@ -913,6 +914,7 @@ class Model extends BaseModel {
             let dataBlock2 = await ITEM__DEPARTMENT_COLL.aggregate([
                 {
                     $match: {
+                        type: 2,
                         members : { $in: [_isValid(userID)] },
                     },
                 },
@@ -920,20 +922,27 @@ class Model extends BaseModel {
                     $group: {
                         _id: null,
                         budget: { $sum: "$budget" },
+                        vatBudget: { $sum: "$vatBudget" },
                         forecastBudget: { $sum: "$forecastBudget" },
-                        contractValueContractPlusValueContractVatValue: { $sum: { $multiply: [ "$contractValue", "$contractPlusValue", "contractVatValue" ]} },
+                        vatForecastBudget: { $sum: "$vatForecastBudget" },
+                        contractValue: { $sum: "$contractValue"},
+                        contractVatValue: { $sum: "$contractVatValue"},
+                        contractPlus: { $sum: "$contractPlus"},
+                        contractVatPlus: { $sum: "$contractVatPlus"},
+                        contractAdvancePaymentPaid: { $sum: "$contractAdvancePaymentPaid" },
                         contractAmountPaid: { $sum: "$contractAmountPaid" },
                     } 
                 }
             ])
 
             let dataBlock3 = await ITEM__DEPARTMENT_COLL.aggregate([
-                {
+                {   
                     $match: {
                         members : { $in: [_isValid(userID)] },
-                        stage: { $ne: null}
+                        stage: { $ne: null},
+                        type: 2,
                     },
-                },
+                },  
                 { 
                     $group: {
                         _id: {
