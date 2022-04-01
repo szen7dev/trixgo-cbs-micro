@@ -101,9 +101,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            contractIpcID : { type: "string", optional: true },
-            type          : { type: "number", optional: true },
-            contractID    : { type: "string", optional: true },
+            contractPaymentID : { type: "string", optional: true },
+            contractID        : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -115,17 +114,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractIpcID, type, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(contractIpcID){
+                if(contractPaymentID){
                     resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getInfo({
-                        contractIpcID, userID, select, populates
+                        contractPaymentID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getList({
-                        type, contractID, userID, keyword, limit, lastestID, select, populates
+                        contractID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 

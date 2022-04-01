@@ -14,7 +14,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');
 const { ResumeToken }                   = require('mongodb');
 
@@ -413,7 +413,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ contractIpcID, userID, 
+    getInfo({ contractIpcID, 
         select, populates }){
         return new Promise(async resolve => {
             try {
@@ -458,17 +458,15 @@ class Model extends BaseModel {
 
                 if(limit > 20){
                     limit = 20
+                }else{
+                    limit = +limit;
                 }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
-                    // state: 1,
-                };
-
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
+                 let sortBy;
+                 let conditionObj = {};
+                 let keys	     = ['createAt__-1', '_id__-1'];
              
                 /** 
                  * VALIDATION STEP (2)
@@ -509,30 +507,28 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
-                    // conditionObj.$or = [
-                    //     { name: regExpSearch },
-                    //     { sign: regExpSearch }
-                    // ]
                 }
+                let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await CMCS__CONTRACT_IPC_COLL.findById(lastestID);
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await CMCS__CONTRACT_PAYMENT_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
                 
-                let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find({...conditionObj, ...conditionFind })
-                    .limit(+limit+1)
+                let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find(conditionObj)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
@@ -550,7 +546,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await CMCS__CONTRACT_IPC_COLL.count(conditionObj);
+                let totalRecord = await CMCS__CONTRACT_IPC_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
