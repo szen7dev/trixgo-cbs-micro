@@ -15,7 +15,7 @@ module.exports = {
 	 */
     insert: {
         params: {
-            companyID  : { type: "string", option: true },
+            companyID  : { type: "string", optional: true },
             projectID  : { type: "string", optional: true },
             name       : { type: "string" },
         },
