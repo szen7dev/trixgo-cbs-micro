@@ -85,16 +85,17 @@ module.exports = {
     getListFilesGroupByContract: {
         auth: "required",
         params: {
-            keyword: { type: "string", optional: true },
+            projectID   : { type: "string" },
+            keyword     : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { keyword } = ctx.params;
+                const { keyword, projectID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getListFilesGroupByContract({
-                    keyword, userID, ctx
+                    keyword, projectID, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

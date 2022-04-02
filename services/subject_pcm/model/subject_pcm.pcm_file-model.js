@@ -287,7 +287,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách file, group theo hợp đồng
 	 * Date: 12/08/2021
 	 */
-	getListFilesGroupByContract({ keyword, userID }){
+	getListFilesGroupByContract({ keyword, projectID, userID }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -302,6 +302,7 @@ class Model extends BaseModel {
                 // Hình ảnh (type = 1)
 				let conditionObj = {
                     type: 1,
+                    project: ObjectID(projectID),
                     contract: { $exists: true }
                 };
                 let conditionKeyword = {};
