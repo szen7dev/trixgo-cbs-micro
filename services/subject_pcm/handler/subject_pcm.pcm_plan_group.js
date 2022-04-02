@@ -131,7 +131,7 @@ module.exports = {
             groupID     : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
             isShowAll   : { type: "string", optional: true },
-
+            
             //==============================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },

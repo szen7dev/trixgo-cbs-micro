@@ -1527,12 +1527,11 @@ class Model extends BaseModel {
                 });
                 listProject       = listProject?.data?.listRecords || [];
                 let listProjectID = listProject.map(project => ObjectID(project._id));
-
                 let conditionObj = { project: { $in: listProjectID } };
                 if(fromDate && toDate){
                     conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
-
+                // Số lượng công việc trong mỗi dự án
                 let listAmountTask = await PCM_PLAN_TASK_COLL.aggregate([
                     { $match: conditionObj },
                     { $group: { 
@@ -1542,7 +1541,100 @@ class Model extends BaseModel {
                     { $sort: { _id: -1} }
                 ]);
 
-                return resolve({ error: false, data: { listProject, listAmountTask } });
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+
+                // Số lượng công việc quá hạn
+                let listAmountTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: { $ne: 3 }, 
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            } 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                // Số lượng công việc Tuần tới
+                let listAmountTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: { $ne: 3 }, 
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            } 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                // Số lượng công việc > 7 ngày tới
+                let listAmountTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: { $ne: 3 }, 
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            } 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                // Số lượng công việc > 7 ngày tới
+                let listAmountTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: 3, 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                return resolve({ error: false, data: { listProject, listAmountTask, listAmountTaskOverdueWork, listAmountTaskNextWeekWork, listAmountTaskMoreThan7Days, listAmountTaskFinish } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

@@ -16,6 +16,7 @@ const CF_ROUTINGS_DOCUMENT = {
     ADD_FILE_ATTACHMENT                         : `${BASE_ROUTE}/add-file-attachment`,
     GET_LIST_USER_SHARED                        : `${BASE_ROUTE}/list-user-shared`,
     STATISTICAL_BY_TYPE                         : `${BASE_ROUTE}/statistical_by_type`,
+    GET_AMOUNT_DOCUMENT_BY_PROJECT              : `${BASE_ROUTE}/amount-document-by-projects`,
     // PACKAGE
     DOCUMENT_PACKAGE                     		: `${BASE_ROUTE}/document_packages`,
     DOCUMENT_PACKAGE_REMOVE_MANY                : `${BASE_ROUTE}/document_packages/remove-many`,

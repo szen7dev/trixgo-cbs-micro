@@ -1058,6 +1058,44 @@ class Model extends BaseModel {
         })
     }
 
+
+    /**
+     * Name: Lấy số lượng công việc của tất cả project mà user là members✅
+     * Author: Depv
+     */
+     getAmountDocumentByProjects({ userID, fromDate, toDate, ctx }){
+        return new Promise(async resolve => {
+            try {
+                // Call service list project
+                let listProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    unLimit: "100", select: "sign name"
+                });
+                listProject       = listProject?.data?.listRecords || [];
+
+                let listProjectID = listProject.map(project => ObjectID(project._id));
+                let conditionObj = { project: { $in: listProjectID } };
+
+                if(fromDate && toDate){
+                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+                
+                // Số lượng công việc trong mỗi dự án
+                let listAmountDocument = await DOCUMENT__DOC_COLL.aggregate([
+                    { $match: conditionObj },
+                    { $group: { 
+                        _id: "$project",
+                        amount: { $sum: 1 }
+                    }},
+                    { $sort: { _id: -1} }
+                ]);
+
+                return resolve({ error: false, data: { listProject, listAmountDocument } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
