@@ -116,7 +116,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-
                 let resultAfterCallHandler;
                 if(contractPaymentID){
                     resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getInfo({
@@ -127,7 +126,6 @@ module.exports = {
                         contractID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
-                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
