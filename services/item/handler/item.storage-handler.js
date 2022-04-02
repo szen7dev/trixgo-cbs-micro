@@ -15,8 +15,8 @@ module.exports = {
 	 */
     insert: {
         params: {
-            companyID  : { type: "string" },
-            projectID  : { type: "string" },
+            companyID  : { type: "string", option: true },
+            projectID  : { type: "string", optional: true },
             name       : { type: "string" },
         },
         async handler(ctx) {
