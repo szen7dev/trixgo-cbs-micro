@@ -754,7 +754,17 @@ class Model extends BaseModel {
                     }
 
 					conditionObj.contract = contractID;
-                    conditionObj['images.1'] = { $exists: true };
+                    conditionObj.$expr = {
+                        $gt: [
+                            { $size: "$images" }, 0
+                        ]
+                    }
+                    // conditionObj['images.1'] = { $exists: true };
+                    // $nor: [
+                    //     {name: {$exists: false}},
+                    //     {name: {$size: 0}},
+                    //     {name: {$size: 1}}
+                    // ]
 				} else {
                     if(parentID && checkObjectIDs([parentID])){
                         conditionObj.parent = parentID;
