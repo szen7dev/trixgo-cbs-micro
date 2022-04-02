@@ -1523,7 +1523,10 @@ class Model extends BaseModel {
             try {
                 // Call service list project
                 let listProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                    unLimit: "100", select: "sign name"
+                    unLimit: "100", select: "sign name", populates: JSON.stringify({
+                        path: "company",
+                        select: "name sign"
+                    })
                 });
                 listProject       = listProject?.data?.listRecords || [];
                 let listProjectID = listProject.map(project => ObjectID(project._id));
