@@ -33,7 +33,7 @@ class Model extends BaseModel {
 	 * Func: Tạo storage
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, name, userID, ctx }){
+	insert({ companyID, projectID, name, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -47,9 +47,12 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Request params project invalid" });
 
                 let dataInsert = {
-                    project: projectID, name, userCreate: userID
-                }
-                dataInsert.company = infoProject.data.company;                  
+                    userCreate: userID,
+                    company: companyID,
+                    project: projectID, 
+                    name, 
+                }             
+                // dataInsert.company = infoProject.data.company;                  
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 return resolve({ error: false, data: infoAfterInsert });
