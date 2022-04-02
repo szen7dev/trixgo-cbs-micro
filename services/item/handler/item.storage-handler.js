@@ -15,22 +15,17 @@ module.exports = {
 	 */
     insert: {
         params: {
-            companyID  : { type: "string", optional: true },
             projectID  : { type: "string", optional: true },
             name       : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, projectID, name } = ctx.params;
+                let { projectID, name } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
-                if(!companyID){
-                    companyID = company._id
-                }
                
                 let resultAfterCallHandler = await ITEM__STORAGE_MODEL.insert({
-                    companyID, projectID, name, userID, ctx
+                    companyID: company._id, projectID, name, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
