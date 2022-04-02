@@ -345,7 +345,7 @@ class Model extends BaseModel {
                     match: conditionKeyword,
                     populate: {
                         path: "photos",
-                        select: "nameOrg path"
+                        select: "nameOrg path description"
                     }
                 })
 

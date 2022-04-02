@@ -780,7 +780,6 @@ class Model extends BaseModel {
                 if(type) {
                     conditionObj.type = type;
                 }
-                console.log({ BEFORE: conditionObj })
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -798,7 +797,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
-                console.log({ AFTER: conditionObj })
 
                 let infoDataAfterGet = await PCM_COMMENT_COLL
                     .find(conditionObj)
