@@ -33,26 +33,29 @@ class Model extends BaseModel {
 	 * Func: Tạo storage
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, name, userID, ctx }){
+	insert({ companyID, projectID, name, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 if(!name)
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
 
-                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                    departmentID: projectID
-                })
-
-                if(infoProject.error)
-                    return resolve({ error: true, message: "Request params project invalid" });
-
                 let dataInsert = {
-                    project: projectID, name, userCreate: userID
+                    userCreate: userID,
+                    company: companyID,
+                    // project: projectID, 
+                    name, 
+                }             
+                // dataInsert.company = infoProject.data.company;     
+                if(checkObjectIDs(projectID)){
+                    dataInsert.project = projectID
+
+                    // let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    //     departmentID: projectID
+                    // })
                 }
-                dataInsert.company = infoProject.data.company;                  
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                return resolve({ error: false, data: infoAfterInsert });
+                    return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
