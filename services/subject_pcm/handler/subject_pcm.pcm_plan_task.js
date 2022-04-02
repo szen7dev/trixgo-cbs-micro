@@ -308,7 +308,9 @@ module.exports = {
 	 */
     getAmountTaskOfCompanyOfAssignee: {
         auth: "required",
-        params: {},
+        params: {
+            projectID: { type: "string" },
+        },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
@@ -320,6 +322,28 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }
+    },
 
+    /**
+	 * Dev: Depv ✅
+	 * Func: Lấy số lượng công việc của tất cả project mà user là members✅
+	 */
+    getAmountTaskByProjects: {
+        auth: "required",
+        params: {
+            fromDate: { type: "string", optional: true },
+            toDate:   { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                let { fromDate, toDate } = ctx.params;
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskByProjects({ userID, fromDate, toDate, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }
 }

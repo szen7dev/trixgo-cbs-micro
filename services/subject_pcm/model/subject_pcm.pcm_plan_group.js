@@ -33,7 +33,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, name, sign, userID }) {
+    insert({ projectID, parentID, name, sign, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(projectID))
@@ -42,8 +42,12 @@ class Model extends BaseModel {
                 let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ project: projectID, name, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
-                let infoAfterInsert = await this.insertData({ project: projectID, name, sign, userCreate: userID, admins: [userID], members: [userID] });
+                
+                let dataInsert = { project: projectID, name, sign, userCreate: userID, admins: [userID], members: [userID] };
+                if(checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                }
+                let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
@@ -191,7 +195,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll }) { 
+    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -244,6 +248,12 @@ class Model extends BaseModel {
                  */
                 if(projectID){
                     conditionObj.project = projectID;
+                }
+
+                if(parentID){
+                    conditionObj.parent = parentID;
+                }else{
+                    conditionObj.parent = { $exists: false };
                 }
 
                 if(keyword){

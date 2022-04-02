@@ -109,6 +109,21 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Date,
         default: null
     },
+    //_________File cuối cùng
+    lastFile: {
+        type: Schema.Types.ObjectId,
+        ref : "file"
+    },
+    //_________Phiên bản cuối cùng
+    lastVersion: {
+        type    :  Number,
+        default : 0
+    }, 
+    //_________Số lượng document con
+    amountDocumentChild: {
+        type    :  Number,
+        default : 0
+    },
     //_________Ký xác nhận
     signatures: [{
         type: Schema.Types.ObjectId,

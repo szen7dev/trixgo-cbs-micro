@@ -762,7 +762,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00403
      */
-    getListByMembers({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
+    getListByMembers({ companyID, keyword, type, userID, limit = 10, unLimit, lastestID, select, populates={} }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -779,6 +779,10 @@ class Model extends BaseModel {
                     limit = 20;
                 }else{
                     limit = +limit
+                }
+
+                if(unLimit){
+                    limit = 100;
                 }
 
                 /** 
