@@ -257,6 +257,7 @@ class Model extends BaseModel {
                 ]
 
                 const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
+                console.log({ dataFilesGroupByDate, conditionObj });
 
                 if(!dataFilesGroupByDate || !dataFilesGroupByDate.length) {
                     return resolve({
@@ -275,6 +276,7 @@ class Model extends BaseModel {
 					status: 200,
 				})
 			} catch (error) {
+                console.error(error);
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
