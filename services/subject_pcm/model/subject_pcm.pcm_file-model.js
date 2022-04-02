@@ -1,13 +1,21 @@
 "use strict";
 
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }                = require('../../../tools/utils/utils');
-const { KEY_ERROR }			            = require('../../../tools/keys');
+/**
+ * External
+ */
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment');
 
 /**
- * TOOLS
+ * Tools
  */
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { KEY_ERROR }			            = require('../../../tools/keys');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -185,6 +193,172 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách file, group theo tháng năm
+	 * Date: 12/08/2021
+	 */
+	getListFilesGroupByDate({ companyID, projectID, userID, ctx }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([userID])) {
+					return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    });
+                }
+
+				let conditionObj = { type: 1 }; // Hình ảnh (type = 1)
+
+				if(projectID){
+                    if(!checkObjectIDs([projectID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số projectID không hợp lệ",
+                            keyError: "params_projectID_invalid",
+                            status: 400
+                        });
+                    }
+
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                        departmentID: projectID,
+                        companyID,
+                        // select: 'startTime'
+                    })
+
+                    if(infoProject.error) return resolve(infoProject);
+
+					conditionObj.project = ObjectID(projectID);
+                    conditionObj.createAt = {
+						$gte: new Date(moment(infoProject.data?.startTime).startOf('day').format()),
+					};
+				}
+
+				const groupObj = {
+					_id: { $dateToString: { format: "%Y-%m", date: "$createAt" } },
+					dataFormat: {
+						$first: {
+							$dateToString: { format: "%m/%Y", date: "$createAt" }
+						}
+					},
+                    count: { $sum: 1 }
+				}
+
+                const pipeline = [
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: groupObj
+                    },
+                ]
+
+                const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
+
+                if(!dataFilesGroupByDate || !dataFilesGroupByDate.length) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    });
+                }
+
+				return resolve({
+					error: false,
+					data: {
+						listRecords: dataFilesGroupByDate,
+					},
+					status: 200,
+				})
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách file, group theo hợp đồng
+	 * Date: 12/08/2021
+	 */
+	getListFilesGroupByContract({ keyword, userID }){
+		return new Promise(async resolve => {
+			try {
+				if(!checkObjectIDs([userID])) {
+					return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    });
+                }
+
+                // Hình ảnh (type = 1)
+				let conditionObj = {
+                    type: 1,
+                    contract: { $exists: true }
+                };
+                let conditionKeyword = {};
+
+				const groupObj = {
+					_id: "$contract",
+                    contract: { $first: '$contract' },
+                    count: { $sum: 1 }
+				}
+
+                const pipeline = [
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: groupObj
+                    },
+                ]
+
+                const dataFilesGroupByContract = await PCM_FILE_COLL.aggregate(pipeline);
+
+                if(!dataFilesGroupByContract || !dataFilesGroupByContract.length) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    });
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionKeyword['contract.name'] = new RegExp(keyword, 'i');
+                }
+
+                await PCM_FILE_COLL.populate(dataFilesGroupByContract, {
+                    path: "contract",
+                    select: "_id name photos",
+                    match: conditionKeyword,
+                    populate: {
+                        path: "photos",
+                        select: "nameOrg path"
+                    }
+                })
+
+				return resolve({
+					error: false,
+					data: {
+						listRecords: dataFilesGroupByContract,
+					},
+					status: 200,
+				})
+			} catch (error) {
+				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
 }
 
 exports.MODEL = new Model;

@@ -13,6 +13,12 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         ref     : 'pcm_plan_task'
     },
 
+    //_________contractID
+    contract: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'contract'
+    },
+
     //_________ID comment cha
     parent: {
         type    :  Schema.Types.ObjectId,

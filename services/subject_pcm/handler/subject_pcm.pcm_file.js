@@ -10,7 +10,7 @@ const PCM_FILE_MODEL                            = require('../model/subject_pcm.
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: MinhVH
 	 * Func: Get info and list
 	 */
     getInfoAndGetList: {
@@ -45,6 +45,61 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Lấy danh sách file, group theo tháng năm
+     * Date: 02/04/2022
+     */
+    getListFilesGroupByDate: {
+        auth: "required",
+        params: {
+            companyID    : { type: "string", optional: true },
+            projectID    : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { companyID, projectID } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_FILE_MODEL.getListFilesGroupByDate({
+                    companyID, projectID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Lấy danh sách file, group theo hợp đồng
+     * Date: 02/04/2022
+     */
+    getListFilesGroupByContract: {
+        auth: "required",
+        params: {
+            keyword: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { keyword } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await PCM_FILE_MODEL.getListFilesGroupByContract({
+                    keyword, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },

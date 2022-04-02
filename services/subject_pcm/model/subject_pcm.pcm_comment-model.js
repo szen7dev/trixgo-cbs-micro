@@ -130,6 +130,10 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(infoTask.contract) {
+                    dataInsert.contract = infoTask.contract;
+                }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -674,7 +678,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
+    getList({ taskID, contractID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -726,14 +730,37 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if(taskID && checkObjectIDs([taskID])){
-                    conditionObj.task = taskID;
-                }
+                if(taskID){
+                    if(!checkObjectIDs([taskID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số taskID không hợp lệ",
+                            keyError: "params_taskID_invalid",
+                            status: 400
+                        });
+                    }
 
-                if(parentID && checkObjectIDs([parentID])){
-                    conditionObj.parent = parentID;
-                } else{
-                    conditionObj.parent = { $exists: false };
+					conditionObj.task = taskID;
+				}
+
+                if(contractID){
+                    if(!checkObjectIDs([contractID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số contractID không hợp lệ",
+                            keyError: "params_contractID_invalid",
+                            status: 400
+                        });
+                    }
+
+					conditionObj.contract = contractID;
+                    conditionObj['images.1'] = { $exists: true };
+				} else {
+                    if(parentID && checkObjectIDs([parentID])){
+                        conditionObj.parent = parentID;
+                    } else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
 
                 if(official === 'true') {
@@ -794,7 +821,7 @@ class Model extends BaseModel {
                 //     infoDataAfterGet = infoDataAfterGet.reverse();
                 // }
 
-                if(infoDataAfterGet && infoDataAfterGet.length) {
+                if(infoDataAfterGet && infoDataAfterGet.length && !contractID) {
                     for (const comment of infoDataAfterGet) {
                         const lastReactionComment = await PCM_COMMENT_REACTION_COLL
                             .find({ comment: comment._id })
@@ -834,7 +861,7 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: {
-                    listRecords: dataResponse,
+                    listRecords: dataResponse.length ? dataResponse : infoDataAfterGet,
                     limit,
                     totalRecord,
                     totalPage,

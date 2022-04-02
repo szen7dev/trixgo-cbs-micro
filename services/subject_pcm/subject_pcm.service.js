@@ -83,7 +83,9 @@ module.exports = {
 		[CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_REACTION_GET_LIST]		: PCM_COMMENT_REACTION_HANDLER.getListReaction,
 
 		//========================================== PCM_FILE =======================================
-		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GET_INFO_AND_GET_LIST]		: PCM_FILE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GET_INFO_AND_GET_LIST]					: PCM_FILE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GROUP_BY_DATE]							: PCM_FILE_HANDLER.getListFilesGroupByDate,
+		[CF_ACTIONS_SUBJECT_PCM.PCM_FILE_GROUP_BY_CONTRACT]						: PCM_FILE_HANDLER.getListFilesGroupByContract,
 	},
 
 	/**
