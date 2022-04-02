@@ -8,6 +8,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
+const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
@@ -32,9 +33,12 @@ class Model extends BaseModel {
                 if(infoContract.error)
                     return resolve({ error: true, message: "Hợp đồng không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                const { type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+                const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+                let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
+                if(!infoIPC)
+                    return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { userCreate: userID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
+                let dataInsert = { userCreate: userID, type: infoIPC.type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
 
                 if(ipc){
                     dataInsert.ipc = ipc;
@@ -87,6 +91,10 @@ class Model extends BaseModel {
 
                 if(ipc){
                     dataUpdate.ipc =ipc;
+                    let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
+                    if(!infoIPC)
+                        return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+                    dataUpdate.type =infoIPC.type;
                 }
 
                 if(date){

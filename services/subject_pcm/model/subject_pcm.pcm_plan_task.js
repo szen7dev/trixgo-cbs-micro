@@ -4,6 +4,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment')
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
@@ -1411,92 +1412,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án ✅
-     * Author: Depv
-     * Code:
-     */
-    getAmountTaskOfCompanyOfAssignee({ projectID, ctx }){
-        return new Promise(async resolve => {
-            try {
-                if (!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'projectID_invalid' });
-
-                let listCompanyOfAssignee = await PCM_PLAN_TASK_COLL.aggregate([
-                    { $match: { project: ObjectID(projectID), companyOfAssignee: { $exists: true } }},
-                    { $group: { _id: "$companyOfAssignee" } },
-                    { $sort: { _id: -1} }
-                ]);
-
-                listCompanyOfAssignee = listCompanyOfAssignee.map(item => item?._id );
-
-                let start = new Date();
-                start.setHours(0,0,0,0);
-
-                let end = new Date();
-                end.setHours(23,59,59,999);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
-
-                let conditionObj  = { 
-                    project: projectID, 
-                }
-
-                let listCompanyAndTask = [];
-                for (const companyID of listCompanyOfAssignee) {
-                    conditionObj.companyOfAssignee = companyID;
-
-                    let conditionOverdueWork    = { 
-                        ...conditionObj, 
-                        actualFinishTime: {
-                            $lt: start,
-                            $exists: true,
-                            $ne: null
-                        }
-                    }; 
-
-                    let conditionNextWeekWork   = { 
-                        ...conditionObj,
-                        actualFinishTime: {
-                            $gte: start,
-                            $lt: addDate(7),
-                            $exists: true,
-                            $ne: null
-                        }
-                    };
-
-                    let conditionMoreThan7Days  = { 
-                        ...conditionObj,
-                        actualFinishTime: {
-                            $gte: addDate(7),
-                            $exists: true,
-                            $ne: null
-                        }
-                    };
-
-                    let amountTaskOverdueWork = await PCM_PLAN_TASK_COLL.count(conditionOverdueWork);
-                    let amountTaskNextWeekWork = await PCM_PLAN_TASK_COLL.count(conditionNextWeekWork);
-                    let amountTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.count(conditionMoreThan7Days);
-
-                    let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
-                        companyID: `${companyID}`, select: "name sign"
-                    });
-
-                    listCompanyAndTask.push({ 
-                        infoCompany: infoCompany?.data , amountTaskOverdueWork, amountTaskNextWeekWork, amountTaskMoreThan7Days
-                    })
-                }
-                return resolve({ error: false, data: listCompanyAndTask });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
      * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2 ✅
      * Author: Depv
      * Code:
@@ -1547,16 +1462,7 @@ class Model extends BaseModel {
                     },
                     { $sort: { _id: -1 }},
                 ]);
-                
-                let arr = [];
-                listCompanyAndTaskOverdueWork.forEach(element=>{
-                    let key = element._id
-                    if (!Array.isArray(arr[key])) {
-                        arr[key] = [];
-                    }
-                    arr[key] = element?.count
-                });
-                console.log({ arr })
+
 
                 let listCompanyAndTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
@@ -1602,6 +1508,133 @@ class Model extends BaseModel {
                 ]);
 
                 return resolve({ error: false, data: { listCompany: listCompany?.data?.listRecords, listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Lấy số lượng công việc của tất cả project mà user là members✅
+     * Author: Depv
+     */
+    getAmountTaskByProjects({ userID, fromDate, toDate, ctx }){
+        return new Promise(async resolve => {
+            try {
+                // Call service list project
+                let listProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    unLimit: "100", select: "sign name"
+                });
+                listProject       = listProject?.data?.listRecords || [];
+                let listProjectID = listProject.map(project => ObjectID(project._id));
+                let conditionObj = { project: { $in: listProjectID } };
+                if(fromDate && toDate){
+                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+                // Số lượng công việc trong mỗi dự án
+                let listAmountTask = await PCM_PLAN_TASK_COLL.aggregate([
+                    { $match: conditionObj },
+                    { $group: { 
+                        _id: "$project",
+                        amount: { $sum: 1 }
+                    }},
+                    { $sort: { _id: -1} }
+                ]);
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+
+                // Số lượng công việc quá hạn
+                let listAmountTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: { $ne: 3 }, 
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            } 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                // Số lượng công việc Tuần tới
+                let listAmountTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: { $ne: 3 }, 
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            } 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                // Số lượng công việc > 7 ngày tới
+                let listAmountTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: { $ne: 3 }, 
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            } 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                // Số lượng công việc > 7 ngày tới
+                let listAmountTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    { 
+                        $match: { 
+                            project: { $in: listProjectID } , 
+                            status: 3, 
+                        }
+                    },
+                    {
+                        $group: { 
+                            _id: "$project",
+                            count: { $sum: 1 }
+                        } 
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                return resolve({ error: false, data: { listProject, listAmountTask, listAmountTaskOverdueWork, listAmountTaskNextWeekWork, listAmountTaskMoreThan7Days, listAmountTaskFinish } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

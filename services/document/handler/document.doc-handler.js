@@ -462,4 +462,32 @@ module.exports = {
         }
     },
 
+
+    /**
+	 * Dev: Depv
+	 * Func: Lấy số lượng công việc của tất cả project mà user là members✅
+	 * Date: 13/11/2021
+	 */  
+     getAmountDocumentByProjects: {
+        params: {
+			fromDate : { type: "string", optional: true },
+			toDate   : { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company    } = ctx.meta.infoUser;
+                const { fromDate, toDate } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getAmountDocumentByProjects({
+                    userID, fromDate, toDate, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
 }

@@ -296,6 +296,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
+            unLimit         : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
@@ -304,11 +305,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, type, keyword, limit, unLimit, lastestID, select, populates } = ctx.params;
 				let { _id: userID } = ctx.meta.infoUser;
                
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
-                    companyID, lastestID, userID, type, keyword, limit, select, populates
+                    companyID, lastestID, userID, type, keyword, limit, unLimit, select, populates
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
