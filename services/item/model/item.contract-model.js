@@ -879,7 +879,11 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.name = regSearch
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                        { storeSign: regSearch },
+                    ]
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -1079,7 +1083,11 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.name = regSearch
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                        { storeSign: regSearch },
+                    ]
                 }
 
                 let conditionObjOrg = { ...conditionObj };
