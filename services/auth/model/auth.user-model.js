@@ -79,38 +79,13 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
+                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
                 objectExitsUser.$or = []
-
-                // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
-                // if(usernameValid && usernameValid!=''){
-                //     objectExitsUser.$or.push({ username : usernameValid } );
-                // }
-
                 if(email && email!=''){
                     objectExitsUser.$or.push({ email : emailValid });
                 }
                 
                 let isExistUser = await AUTH__USER_COLL.findOne(objectExitsUser);
-                // //________KIỂM TRA XEM  department, position, companyID CÓ HỢP LỆ HAY KHÔNG
-                // let checkIllegal = 0;
-                // if(department){
-                //     let departmentInfo = await DEPARTMENT_COLL.findOne({_id: department, company: companyID});
-                //     if(!departmentInfo){
-                //         checkIllegal++;
-                //     }
-                // }
-                
-                // if(position){
-                //     let positionInfo = await POSITION_COLL.findOne({_id: position, company: companyID});
-                //     if(!positionInfo){
-                //         checkIllegal++;
-                //     }
-                // }
-
-                // if (Number(checkIllegal) > 0)
-                //     return resolve({ error: true, message: 'Illegal data' });
-
-                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
                 if (isExistUser)
                     return resolve({ error: true, message: 'email_exists_or_username_exits' });
 
@@ -129,17 +104,9 @@ class Model extends BaseModel {
                 }
                 if(fullname) {
                     dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
-                    // dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
+                    dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
                 }
-                // if(usernameValid) {
-                //     dataInsert.username = `${usernameValid}.${infoCompany.sign}`;
-                // }
-                // if(department && ObjectID.isValid(department)){
-                //     dataInsert.department = department;
-                // }
-                // if(position && ObjectID.isValid(position)){
-                //     dataInsert.position = position;
-                // }
+
                 if(Number(level) == 0 || Number(level) == 1){
                     dataInsert.level = Number(level);
                 }
@@ -148,33 +115,35 @@ class Model extends BaseModel {
                 if (!infoUserAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert_data' });
 
-                // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
-                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
-                // let listUserInCompany = await AUTH__USER_COLL.find({ company: companyID });
-                // let arrUserID = listUserInCompany.map(item => item._id);
-                // // Update bạn bè với các thành viên của công ty
-                // let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                //     friends: arrUserID,
-                // }, { new: true });
+                /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
+                // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+                let listUserInCompany = await AUTH__USER_COLL.find({ company: companyID });
+                let arrUserID = listUserInCompany.map(item => item._id);
 
-                // // Update cho các thành viên công ty nhận bạn bè mới
-                // for(const item of listUserInCompany){
-                //     await AUTH__USER_COLL.findByIdAndUpdate(item._id, {
-                //         $addToSet: {
-                //             friends: infoUserAfterInsert._id
-                //         }
-                //     }, { new: true });
-                // }
+                // Update bạn bè với các thành viên của công ty
+                await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                    friends: arrUserID,
+                }, { new: true });
 
-                //TODO add event gửi mail (tích hợp phần event sang service khác)
-                
+                // Update cho các thành viên công ty nhận bạn bè mới
+                for(const item of listUserInCompany){
+                    await AUTH__USER_COLL.findByIdAndUpdate(item._id, {
+                        $addToSet: {
+                            friends: infoUserAfterInsert._id
+                        }
+                    }, { new: true });
+                }
+
+                // Thông báo gửi mail (tích hợp phần event sang service khác)
                 // sendMailNewAccount(email, fullname, password);
+
                 return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true });
             } catch (error) {
                 resolve({ error: true, message: error.message });
             } 
         });
     }
+    
     // implement by: KHANHNEY✅ 
     login({ email, password, platform }) {
         return new Promise(async resolve => {
