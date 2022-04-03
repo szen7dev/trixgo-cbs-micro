@@ -648,6 +648,8 @@ class Model extends BaseModel {
                     conditionObj.$or = [
                         { name: regSearch },
                         { sign: regSearch },
+                        { taxid: regSearch },
+                        { phone: regSearch },
                     ]
                 }
 
