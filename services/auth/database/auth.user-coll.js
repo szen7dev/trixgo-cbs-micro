@@ -14,6 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_________Thuộc nền tảng
     platform:{
         type: Number,
+        default: 1,
         enum: [1, 2]
     },
     //_______Công ty
