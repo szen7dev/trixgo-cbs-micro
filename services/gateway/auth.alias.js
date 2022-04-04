@@ -627,6 +627,12 @@ module.exports = {
 
 		[`DELETE ${CF_ROUTINGS_ITEM.CONTRACTS}`] :
 		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_ITEM.CONTRACT_GET_AMOUNT_BY_MONTH}`]: 
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_AMOUNT_BY_MONTH}`],
+
+		[`GET ${CF_ROUTINGS_ITEM.CONTRACT_GET_LIST_BY_MONTH}`]: 
+		[`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_LIST_BY_MONTH}`],
 		
 		/**
 		 * Contact
@@ -1250,8 +1256,6 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.FINANCIAL_REPORT}`],
 
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
-
-
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
 

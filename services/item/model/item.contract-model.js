@@ -1143,6 +1143,93 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Gom nhóm theo tháng trong năm✅
+     * Author: Hiepnh
+     */
+    getAmountByMonth({ userID, companyID, outin, year, ctx }){
+        // console.log({ userID, companyID, outin, year })
+        return new Promise(async resolve => {
+            try {
+                let listData = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            outin: Number(outin),
+                        }
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                        }
+                    },
+                    {
+                        $match: {
+                            "year": Number(year),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { month: "$month" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                    {$sort: {"_id.month": 1}}    
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Danh sách theo tháng trong năm✅
+     * Author: Hiepnh
+     */
+     getListByMonth({ userID, companyID, outin, month, year, ctx }){
+        // console.log({ userID, companyID, outin, month, year })
+        return new Promise(async resolve => {
+            try {
+                let listData = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            outin: Number(outin),
+                        }
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            value : 1,
+                            vatValue : 1,
+                            plus : 1,
+                            vatPlus : 1,
+                            date : 1,
+                            name: 1,
+                            sign: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            "year": Number(year),
+                            "month": Number(month),
+                        }
+                    }, 
+                    {$sort: {"date": 1}}    
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

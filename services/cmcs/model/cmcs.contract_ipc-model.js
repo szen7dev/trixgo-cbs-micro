@@ -582,7 +582,7 @@ class Model extends BaseModel {
                         $project : { 
                             year : {$year : "$date"},
                             month : {$month : "$date"},
-                            value: 1
+                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
                         }
                     },
                     {
@@ -593,7 +593,7 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { month: "$month" },
-                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] }
+                            amount: { $sum: "$amount" },
                         }
                     },
                     {$sort: {"_id.month": 1}}    

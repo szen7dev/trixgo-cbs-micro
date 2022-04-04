@@ -26,6 +26,8 @@ const CF_ROUTINGS_ITEM = {
     // ================================CONTRACT=========================================//
     CONTRACTS                                  : `${BASE_ROUTE}${CONTRACT}`,
     LIST_CONTRACT_IS_MEMBERS                   : `${BASE_ROUTE}/list-contract-is-members`,
+    CONTRACT_GET_AMOUNT_BY_MONTH               : `${BASE_ROUTE}${CONTRACT}/get-amount-by-month`,
+    CONTRACT_GET_LIST_BY_MONTH                 : `${BASE_ROUTE}${CONTRACT}/get-list-by-month`,
 
     // ================================DOCTYPE==========================================//
     DOCTYPES                                   : `${BASE_ROUTE}${DOCTYPE}`,

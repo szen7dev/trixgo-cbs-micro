@@ -69,18 +69,20 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
-		//==========================================  CONTRACT  ==================================
-		[CF_ACTIONS_ITEM.CONTRACT_INSERT] 						: ITEM__CONTRACT_HANDLER.insert,
-		[CF_ACTIONS_ITEM.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
-		[CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS]	: ITEM__CONTRACT_HANDLER.getListIsMembers,
-
 		//==========================================  DEPARTMENT  ================================
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DEPARTMENT_UPDATE] 					: ITEM__DEPARTMENT_HANDLER.update,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS] 		: ITEM__DEPARTMENT_HANDLER.getListByMembers,
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
+
+		//==========================================  CONTRACT  ==================================
+		[CF_ACTIONS_ITEM.CONTRACT_INSERT] 						: ITEM__CONTRACT_HANDLER.insert,
+		[CF_ACTIONS_ITEM.CONTRACT_UPDATE] 						: ITEM__CONTRACT_HANDLER.update,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST] 		: ITEM__CONTRACT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_CONTRACT_IS_MEMBERS]	: ITEM__CONTRACT_HANDLER.getListIsMembers,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_AMOUNT_BY_MONTH]			: ITEM__CONTRACT_HANDLER.getAmountByMonth,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_BY_MONTH]			: ITEM__CONTRACT_HANDLER.getListByMonth,
 
 		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,

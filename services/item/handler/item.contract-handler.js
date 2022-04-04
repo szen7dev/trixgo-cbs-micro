@@ -340,4 +340,62 @@ module.exports = {
         }
     },
 
+    /**
+     * Dev: Hiepnh ✅
+     * Func: get amount by month
+     */
+     getAmountByMonth: {
+        auth: "required",
+        params: {
+            year : { type: "string", optional: true },
+            outin : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { year, outin } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log({company})
+
+                let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getAmountByMonth({
+                    userID, companyID: company._id, outin: Number(outin), year, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: Hiepnh ✅
+     * Func: get list by month
+     */
+     getListByMonth: {
+        auth: "required",
+        params: {
+            year : { type: "string", optional: true },
+            month : { type: "string", optional: true },
+            outin : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { year, month, outin } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log({company})
+
+                let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListByMonth({
+                    userID, companyID: company._id, outin: Number(outin), year, month, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }
