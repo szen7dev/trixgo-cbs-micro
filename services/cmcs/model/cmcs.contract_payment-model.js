@@ -283,7 +283,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm tiền về theo tháng trong năm✅
+     * Name: Gom nhóm theo tháng trong năm✅
      * Author: Hiepnh
      */
     getAmountByMonth({ userID, companyID, outin, year, ctx }){
