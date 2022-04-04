@@ -58,21 +58,20 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            contractPaymentID   : { type: "string" },
-            ipc                 : { type: "string", optional: true  },
-            date                : { type: "string", optional: true  },
-            name                : { type: "string", optional: true  },
-            sign                : { type: "string", optional: true  },
-            description         : { type: "string", optional: true  },
-            value               : { type: "number", optional: true  },
+            cashFlowPlanID   : { type: "string" },
+            name                : { type: "string" },
+            sign                : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
+            date                : { type: "string" },
+            planValue           : { type: "number" },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                const { contractPaymentID, ipc, date, name, sign, description, value } = ctx.params;
+                const { cashFlowPlanID, ipc, date, name, sign, description, value } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
-                const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.update({
-                    contractPaymentID, ipc, date, name, sign, description, value, userID
+                const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
+                    cashFlowPlanID, ipc, date, name, sign, description, value, userID
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -95,7 +94,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { contractPaymentID  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.remove({
+                let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.remove({
                     contractPaymentID, userID
                 });
                 
@@ -113,8 +112,14 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            contractPaymentID : { type: "string", optional: true },
-            contractID        : { type: "string", optional: true },
+            cashFlowPlanID : { type: "string", optional: true },
+            companyID     : { type: "string", optional: true },
+            projectID     : { type: "string", optional: true },
+            contractID     : { type: "string", optional: true },
+            outin     : { type: "number", optional: true },
+            type     : { type: "number", optional: true },
+            property     : { type: "number", optional: true },
+            priority     : { type: "number", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -126,16 +131,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { cashFlowPlanID, companyID, projectID, contractID, outin, type, property, priority, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler;
-                if(contractPaymentID){
-                    resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getInfo({
-                        contractPaymentID, userID, select, populates
+                if(cashFlowPlanID){
+                    resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getInfo({
+                        cashFlowPlanID, userID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getList({
-                        contractID, userID, keyword, limit, lastestID, select, populates
+                    resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getList({
+                        companyID, projectID, contractID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

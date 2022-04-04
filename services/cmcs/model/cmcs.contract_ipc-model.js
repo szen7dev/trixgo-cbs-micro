@@ -562,6 +562,49 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Gom nhóm theo tháng trong năm✅
+     * Author: Hiepnh
+     */
+    getAmountByMonth({ userID, companyID, outin, year, ctx }){
+        // console.log({ userID, companyID, outin, year })
+        return new Promise(async resolve => {
+            try {
+                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            outin: Number(outin),
+                        }
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            value: 1
+                        }
+                    },
+                    {
+                        $match: {
+                            "year": Number(year),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { month: "$month" },
+                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] }
+                        }
+                    },
+                    {$sort: {"_id.month": 1}}    
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

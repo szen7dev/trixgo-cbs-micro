@@ -11,16 +11,18 @@ const CF_ROUTINGS_CMCS = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================CONTRACT BILL JOB=======================================//
-    CONTRACT_BILL_JOB_GET_LIST         : `${BASE_ROUTE}${CONTRACT_BILL_JOB}`, 
-
-    // ================================CONTRACT IPC============================================//
-    CONTRACT_IPC                       : `${BASE_ROUTE}${CONTRACT_IPC}`, 
+    CONTRACT_BILL_JOB_GET_LIST              : `${BASE_ROUTE}${CONTRACT_BILL_JOB}`, 
 
     // ================================CONTRACT PRODUCTION=====================================//
-    CONTRACT_PRODUCTION                : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`, 
+    CONTRACT_PRODUCTION                     : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`, 
+
+    // ================================CONTRACT IPC============================================//
+    CONTRACT_IPC                            : `${BASE_ROUTE}${CONTRACT_IPC}`, 
+    CONTRACT_IPC_GET_AMOUNT_BY_MONTH        : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-month`,
 
     // ================================CONTRACT PAYMENT=====================================//
-    CONTRACT_PAYMENT                   : `${BASE_ROUTE}${CONTRACT_PAYMENT}`, 
+    CONTRACT_PAYMENT                        : `${BASE_ROUTE}${CONTRACT_PAYMENT}`, 
+    CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH    : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-month`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;
