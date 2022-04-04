@@ -195,7 +195,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll }) { 
+    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -250,10 +250,13 @@ class Model extends BaseModel {
                     conditionObj.project = projectID;
                 }
 
-                if(parentID){
-                    conditionObj.parent = parentID;
-                }else{
-                    conditionObj.parent = { $exists: false };
+                // Trường hợp show ở modal tạo task mới (show hết cha và con)
+                if(!isShowParentAndChild) {
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    } else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
 
                 if(keyword){
