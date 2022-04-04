@@ -37,7 +37,8 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     //_________Số cấp
     level: {
         type: Number,
-        default: 1
+        default: 1,
+        enum: [1, 2]
     },
     /**
      * Phân loại:
