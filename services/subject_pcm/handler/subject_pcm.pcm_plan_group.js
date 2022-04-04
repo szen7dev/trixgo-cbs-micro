@@ -127,10 +127,11 @@ module.exports = {
     getInfoAndGetList: { 
         auth: "required",
         params: {
-            projectID   : { type: "string", optional: true },
-            groupID     : { type: "string", optional: true },
-            parentID    : { type: "string", optional: true },
-            isShowAll   : { type: "string", optional: true },
+            projectID               : { type: "string", optional: true },
+            groupID                 : { type: "string", optional: true },
+            parentID                : { type: "string", optional: true },
+            isShowAll               : { type: "string", optional: true },
+            isShowParentAndChild    : { type: "string", optional: true },
             
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -142,7 +143,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  parentID, projectID, groupID, isShowAll, keyword, limit, lastestID, select, populates } = ctx.params;
+                let {  parentID, projectID, groupID, isShowAll, isShowParentAndChild, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -152,7 +153,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getList({
-                        parentID, keyword, isShowAll, limit, userID, lastestID, projectID, select, populates, 
+                        parentID, keyword, isShowAll, isShowParentAndChild, limit, userID, lastestID, projectID, select, populates, 
                     });
                 }
                 
