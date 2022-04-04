@@ -146,14 +146,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                // let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
-
-                console.log('ogfdgfdgfdgfdgdfgfd')
+                let { year, outin } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
+                // console.log({company})
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
-                    userID, companyID: company._id, outin, year, ctx
+                    userID, companyID: company._id, outin: Number(outin), year, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

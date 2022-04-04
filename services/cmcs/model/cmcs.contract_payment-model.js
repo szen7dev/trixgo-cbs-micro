@@ -294,7 +294,7 @@ class Model extends BaseModel {
                     {
                         $match: {
                             company: ObjectID(companyID),
-                            outin: outin,
+                            outin: Number(outin),
                         }
                     }, 
                     {
