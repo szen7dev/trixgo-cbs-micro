@@ -9,7 +9,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     /**
      * THÔNG TIN CHUNG
      */
-    //_________ Công ty(*)
+    //_________Công ty(*)
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -39,20 +39,53 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         type: Number,
         default: 1
     },
-
-    //_________Phân loại theo tính chất(1-Kế hoạch năm/2-Kế hoạch bán hàng/3-Kế hoạch nhập hàng/4-Kế hoạch ngắn hạn)(*)
+    /**
+     * Phân loại:
+     * 1-Kế hoạch năm
+     * 2-Kế hoạch bán hàng
+     * 3-Kế hoạch nhập hàng
+     * 4-Kế hoạch theo vòng đời dự án
+     * 5-Kế hoạch theo hợp đồng/dự án
+     * 6-Kế hoạch khác
+     */
     type: {
         type: Number,
-        default: 1
+        default: 5
+    },
+    /**
+     * Tính chất
+     * 1-Sản lượng
+     * 2-Doanh thu
+     * 3-Tiền về
+     */
+    property: {
+        type: Number,
+        default: 3
+    },
+    /**
+     * Dòng tiền vào ra
+     * 1-Mua vào
+     * 2-Bán ra
+     */
+    outin: {
+        type: Number,
+        default: 3
     },
     //_________Tên(*)
     name: String,
-
-    //_________Mã hiệu(*)
+    //_________Mã hiệu
     sign: String,
-
-    //_________Ghi chú(*)
+    //_________Ghi chú
     note: String,
+    /**
+     * Ưu tiên
+     * 1-Bình thường
+     * 2-Ưu tiên
+     */
+    priority: {
+        type: Number,
+        default: 3
+    },    
     //_________Trạng thái phê duyệt(1-Chưa phê duyệt/2-Đã phê duyệt)
     status: {
         type: Number,
@@ -63,13 +96,10 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
-
     //_________Thời gian phê duyệt
     timeApproved: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
+        type: Date
     },
-
     //_________Thành viên truy cập
     members: [{
         type: Schema.Types.ObjectId,
@@ -77,38 +107,22 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     }],
     //_________Ngày dự kiến/kế hoạch
     date: Date,
-
     //_________Ngày thực tế
     realDate: Date,
-
     /**
      * CHI TIẾT BÚT TOÁN THU
      * Nhập liệu chi tiết ở cấp 3
      */
     //__________Dự kiến thu
-    income: {
+    planValue: {
         type: Number,
         default: 0
     },
-
     //__________Thực tế thu
-    realIncome: {
+    realValue: {
         type: Number,
         default: 0
     },
-
-    //__________Dự kiến chi
-    expense: {
-        type: Number,
-        default: 0
-    },
-
-    //__________Thực tế chi
-    realExpense: {
-        type: Number,
-        default: 0
-    },
-
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
@@ -120,5 +134,4 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     }
-    
 })

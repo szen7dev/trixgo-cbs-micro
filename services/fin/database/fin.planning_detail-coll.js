@@ -3,9 +3,9 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * KẾ HOẠCH DÒNG TIỀN (CHƯA UPATE THEO CẤU TRÚC MỚI)
+ * KẾ HOẠCH DÒNG TIỀN (DỮ LIỆU CŨ ĐỂ THAM KHOẢ)
  */
-module.exports  = DATABASE_MIDDLEWARE("financial_planning_detail", {
+module.exports  = DATABASE_MIDDLEWARE("planning_detail", {
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
