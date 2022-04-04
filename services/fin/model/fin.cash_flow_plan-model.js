@@ -9,7 +9,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const FIN__CASH_FLOW_PLAN_COLL          = require('../database/fin.cash_flow_plan-coll');
-// const ITEM__CONTRACT_COLL               = require('../database/item.contract-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
@@ -21,7 +21,7 @@ class Model extends BaseModel {
         super(FIN__CASH_FLOW_PLAN_COLL);
     }
     /**
-     * Name: insert contract payment ✅
+     * Name: insert cash flow ✅
      * Author: Depv
      */
     insert({ companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, planValue, userID, ctx }) { 
@@ -89,7 +89,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract payment ✅
+     * Name: update cash flow ✅
      * Author: Depv
      */
     // update({ contractPaymentID, ipc, date, name, sign, description, value, userID  }){
@@ -132,7 +132,7 @@ class Model extends BaseModel {
 
     //             console.log({ contractPaymentID, dataUpdate })
              
-    //             let infoAterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
+    //             let infoAterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
     //             if(!infoAterUpdate)
     //                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
               
@@ -144,7 +144,7 @@ class Model extends BaseModel {
     // }
 
     /**
-     * Name: Remove contract payment ✅
+     * Name: Remove cash flow ✅
      * Author: Depv
      */
     // remove({ contractPaymentID, userID }) { 
@@ -153,11 +153,11 @@ class Model extends BaseModel {
     //             if(!checkObjectIDs(contractPaymentID))
     //                 return resolve({ error: true, message: 'Request params contractPaymentID invalid' });
 
-    //             let checkAuthor = await CMCS__CONTRACT_PAYMENT_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
+    //             let checkAuthor = await FIN__CASH_FLOW_PLAN_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
     //             if(!checkAuthor)
     //                 return resolve({ error: true, message: 'Bạn không có quyền xóa hoặc ID không tồn tại', keyError: KEY_ERROR.DELETE_FAILED }); 
                 
-    //             let infoAterRemove = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndDelete(contractPaymentID);
+    //             let infoAterRemove = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndDelete(contractPaymentID);
     //             if(!infoAterRemove)
     //                 return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
  
@@ -169,7 +169,7 @@ class Model extends BaseModel {
     // }
 
     /**
-     * Name: get info contract payment ✅
+     * Name: get info cash flow ✅
      * Author: Depv
      */
     // getInfo({ contractPaymentID, select, populates }){
@@ -189,7 +189,7 @@ class Model extends BaseModel {
     //                 }
     //             }
 
-    //             let infoContractIPC = await CMCS__CONTRACT_PAYMENT_COLL.findById(contractPaymentID)
+    //             let infoContractIPC = await FIN__CASH_FLOW_PLAN_COLL.findById(contractPaymentID)
     //                             .select(select)
     //                             .populate(populates)
 
@@ -203,97 +203,121 @@ class Model extends BaseModel {
     // }
 
     /**
-     * Name  : Danh sách contract payment ✅
+     * Name  : Danh sách cash flow ✅
      * Author: Depv
      */
-    // getList({ contractID,
-    //     keyword, limit = 10, lastestID, select, populates= {} }) { 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(limit > 20){
-    //                 limit = 20;
-    //             } else{
-    //                 limit = +limit;
-    //             }
+    getList({ companyID, projectID, contractID, outin, type, property, priority,
+        keyword, limit = 20, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
+            try {
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
 
-    //             let sortBy;
-    //             let conditionObj = {};
-    //             let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
               
-    //             if(populates && typeof populates === 'string'){
-	// 				if(!IsJsonString(populates))
-	// 					return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-	// 				populates = JSON.parse(populates);
-	// 			}else{
-	// 				populates = {
-    //                     path: "",
-    //                     select: ""
-    //                 }
-    //             }
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
 
-    //             if(contractID && checkObjectIDs(contractID)){
-    //                 conditionObj.contract = contractID;
-    //             }
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = companyID;
+                }
 
-    //             if(keyword){
-    //                 keyword = keyword.split(" ");
-    //                 keyword = '.*' + keyword.join(".*") + '.*';
-    //                 let regExpSearch = RegExp(keyword, 'i');
-    //                 conditionObj.name = regExpSearch;
-    //             }
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
+                }
 
-    //             let conditionObjOrg = { ...conditionObj };
-    //             if(lastestID && checkObjectIDs(lastestID)){
-	// 				let infoData = await CMCS__CONTRACT_PAYMENT_COLL.findById(lastestID);
-	// 				if(!infoData)
-	// 					return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = contractID;
+                }
 
-    //                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-	// 				if(!dataPagingAndSort || dataPagingAndSort.error)
-	// 					return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                if(!isNaN(outin)){
+                    conditionObj.outin = Number(outin);
+                }
 
-    //                 conditionObj = dataPagingAndSort.data.find;
-	// 				sortBy       = dataPagingAndSort.data.sort;
-	// 			}else{
-    //                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-    //                 sortBy       = dataPagingAndSort.data.sort;
-    //             }
+                if(!isNaN(type)){
+                    conditionObj.type = Number(type);
+                }
+
+                if(!isNaN(property)){
+                    conditionObj.property = Number(property);
+                }
+
+                if(!isNaN(priority)){
+                    conditionObj.priority = Number(priority);
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await FIN__CASH_FLOW_PLAN_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
                 
-    //             let infoDataAfterGet = await CMCS__CONTRACT_PAYMENT_COLL.find(conditionObj)
-    //                 .limit(limit+1)
-    //                 .sort(sortBy)
-    //                 .select(select)
-    //                 .populate(populates)
-    //                 .lean(); 
+                let infoDataAfterGet = await FIN__CASH_FLOW_PLAN_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean(); 
 
-    //             if(!infoDataAfterGet)
-    //                 return resolve({ error: true, message: "Can't get data" });
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data" });
 
-    //             let nextCursor	= null;
-    //             if(infoDataAfterGet && infoDataAfterGet.length){
-    //                 if(infoDataAfterGet.length > limit){
-    //                     nextCursor = infoDataAfterGet[limit - 1]._id;
-    //                     infoDataAfterGet.length = limit;
-    //                 }
-    //             }
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
 
-    //             let totalRecord = await CMCS__CONTRACT_PAYMENT_COLL.count(conditionObjOrg);
-    //             let totalPage   = Math.ceil(totalRecord/limit);
+                let totalRecord = await FIN__CASH_FLOW_PLAN_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
 
-    //             return resolve({ error: false, data: {
-    //                 listRecords: infoDataAfterGet,
-    //                 limit: +limit,
-    //                 totalRecord,
-    //                 totalPage,
-    //                 nextCursor,
-    //             }, status: 200 });
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
                 
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

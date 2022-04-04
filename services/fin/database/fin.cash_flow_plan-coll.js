@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
      * 1-Bán ra
      * 2-Mua vào
      */
-     outin: {
+    outin: {
         type: Number,
         default: 1,
         enum: [1,2]
