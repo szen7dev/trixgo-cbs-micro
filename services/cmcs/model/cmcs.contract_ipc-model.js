@@ -512,7 +512,7 @@ class Model extends BaseModel {
 
                 // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await CMCS__CONTRACT_PAYMENT_COLL.findById(lastestID);
+					let infoData = await CMCS__CONTRACT_IPC_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 

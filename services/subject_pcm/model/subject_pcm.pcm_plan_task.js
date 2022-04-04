@@ -1107,7 +1107,7 @@ class Model extends BaseModel {
                 // Công ty của người thực hiện
                 if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
                     conditionObj.companyOfAssignee = companyOfAssignee;
-
+                    
                     // isPassPermision dùng để bỏ qua 1 trong 4 quyền
                     if(isPassPermision == 1){
                         delete conditionObj.$or;
