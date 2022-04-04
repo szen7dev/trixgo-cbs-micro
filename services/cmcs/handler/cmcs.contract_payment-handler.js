@@ -140,20 +140,20 @@ module.exports = {
      getAmountByMonth: {
         auth: "required",
         params: {
-            year : { type: "number", optional: true },
-            outin : { type: "number", optional: true },
+            year : { type: "string", optional: true },
+            outin : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 // let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
 
-                // console.log('ogfdgfdgfdgfdgdfgfd')
+                console.log('ogfdgfdgfdgfdgdfgfd')
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
-                    userID, companyID: company._id, outin, year
+                    userID, companyID: company._id, outin, year, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

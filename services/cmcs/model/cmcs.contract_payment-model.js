@@ -287,6 +287,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      */
     getAmountByMonth({ userID, companyID, outin, year, ctx }){
+        console.log({ userID, companyID, outin, year })
         return new Promise(async resolve => {
             try {
                 let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
