@@ -857,7 +857,7 @@ class Model extends BaseModel {
      */
     getList({
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask,
+        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
         keyword, limit = 10, lastestID, select, populates = {}
     }) {
@@ -1107,6 +1107,11 @@ class Model extends BaseModel {
                 // Công ty của người thực hiện
                 if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
                     conditionObj.companyOfAssignee = companyOfAssignee;
+
+                    // isPassPermision dùng để bỏ qua 1 trong 4 quyền
+                    if(isPassPermision == 1){
+                        delete conditionObj.$or;
+                    }
                 }
 
                 if(fieldID && checkObjectIDs(fieldID)){
@@ -1125,6 +1130,7 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false }
                     delete conditionObj.$or;
                 }
+
                 let conditionObjOrg = {...conditionObj};
                 console.log({ conditionObj })
                 // Phân trang kiểu mới
