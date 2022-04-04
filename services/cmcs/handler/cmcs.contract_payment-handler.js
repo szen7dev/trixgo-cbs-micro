@@ -140,12 +140,15 @@ module.exports = {
      getAmountByMonth: {
         auth: "required",
         params: {
+            year : { type: "number", optional: true },
             outin : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                // let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+
+                // console.log('ogfdgfdgfdgfdgdfgfd')
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 

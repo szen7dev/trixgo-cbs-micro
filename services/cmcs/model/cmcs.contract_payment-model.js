@@ -289,7 +289,7 @@ class Model extends BaseModel {
     getAmountByMonth({ userID, companyID, outin, year, ctx }){
         return new Promise(async resolve => {
             try {
-                let listData = await GENERAL_JOURNAL_COLL.aggregate([
+                let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
