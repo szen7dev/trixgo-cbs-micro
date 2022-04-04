@@ -79,9 +79,12 @@ module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
 
     //_________Mã hiệu
     sign: String,
-    
+
     //_________Mô tả
     description: String,
+    
+    //_________Ghi chú
+    note: String,
 
     //_________Ngày chuyển tiền (*)
     date: { type: Date, default: Date.now },

@@ -324,6 +324,48 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Danh sách theo tháng trong năm✅
+     * Author: Hiepnh
+     */
+    getListByMonth({ userID, companyID, outin, month, year, ctx }){
+        // console.log({ userID, companyID, outin, month, year, year })
+        return new Promise(async resolve => {
+            try {
+                let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            outin: Number(outin),
+                        }
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            amount: "value",
+                            value : 1,
+                            date : 1,
+                            name: 1,
+                            sign: 1,
+                            note: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            "year": Number(year),
+                        }
+                    }, 
+                    {$sort: {"date": 1}}    
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;
