@@ -21,6 +21,7 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT PAYMENT=====================================//
     CONTRACT_PAYMENT                   : `${BASE_ROUTE}${CONTRACT_PAYMENT}`, 
+    CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH     : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-month`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;

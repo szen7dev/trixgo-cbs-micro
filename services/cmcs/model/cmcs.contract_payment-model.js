@@ -281,6 +281,48 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Gom nhóm tiền về theo tháng trong năm✅
+     * Author: Hiepnh
+     */
+    getAmountByMonth({ userID, companyID, outin, year, ctx }){
+        return new Promise(async resolve => {
+            try {
+                let listData = await GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            outin: outin,
+                        }
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            value: 1
+                        }
+                    },
+                    {
+                        $match: {
+                            "year": Number(year),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { month: "$month"},
+                            amount: { $sum: "$value" }
+                        }
+                    },
+                    {$sort: {"_id.month": 1}}    
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

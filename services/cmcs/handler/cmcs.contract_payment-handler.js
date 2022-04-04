@@ -132,4 +132,32 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: Hiepnh ✅
+     * Func: get amount by month
+     */
+     getAmountByMonth: {
+        auth: "required",
+        params: {
+            outin : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
+                    userID, companyID: company._id, outin, year
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
 }
