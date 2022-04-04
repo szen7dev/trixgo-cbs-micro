@@ -15,6 +15,7 @@
 - Quản lý các constant theo từng service
 5. Đăng ký các service cho hệ thống hiểu => action (item.service)
 6. Đăng ký tại auth.alias.js để hệ thống hiểu
+7. Đăng ký tại domain.constant.js
 
 ## **Import Convention**
 ```javascript

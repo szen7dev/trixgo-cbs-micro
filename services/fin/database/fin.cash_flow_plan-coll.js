@@ -7,27 +7,76 @@ const Schema                = require('mongoose').Schema;
  */
 module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     /**
-     * THÔNG TIN CHUNG
+     * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
-    //_________Công ty(*)
+    /**
+     * Dòng tiền vào ra
+     * 1-Bán ra
+     * 2-Mua vào
+     */
+     outin: {
+        type: Number,
+        default: 1,
+        enum: [1,2]
+    },
+
+    //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
+    real: { type: Number, default: 1 },
+
+    //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
+    field: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },  
+    
+    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    chair: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },
+    
+    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
+    personInCharge: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },    
+
+    //_________Bên mua (POSTMAN ITEM > CONTACT)
+    buyerInfo: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+
+    //_________Bên bán (POSTMAN ITEM > CONTACT)
+    sellerInfo: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+
+    //_________Công ty-Được xác định theo CONTACT(*)
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Đơn vị cơ sở(*)
-    funda : {
-        type: Schema.Types.ObjectId,
-        ref : "funda"
-    },
-    //_________Dự án (option)
+
+    //_________Dự án-Được xác định theo CONTACT(*) 
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-    //_________Hợp đồng (option)
+
+    //_________Hợp đồng-Được xác định theo CONTACT(*)
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
+    },
+    /**
+     * THÔNG TIN CHUNG
+     */
+    //_________Đơn vị cơ sở(*)
+    funda : {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
     },
     //_________ID cash_flow_plan cha
     parent: {
@@ -51,7 +100,8 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
      */
     type: {
         type: Number,
-        default: 5
+        default: 5,
+        enum: [1,2,3,4,5,6]
     },
     /**
      * Tính chất
@@ -61,16 +111,8 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
      */
     property: {
         type: Number,
-        default: 3
-    },
-    /**
-     * Dòng tiền vào ra
-     * 1-Mua vào
-     * 2-Bán ra
-     */
-    outin: {
-        type: Number,
-        default: 3
+        default: 3,
+        enum: [1, 2, 3]
     },
     //_________Tên(*)
     name: String,
@@ -85,7 +127,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
      */
     priority: {
         type: Number,
-        default: 3
+        default: 1
     },    
     //_________Trạng thái phê duyệt(1-Chưa phê duyệt/2-Đã phê duyệt)
     status: {
