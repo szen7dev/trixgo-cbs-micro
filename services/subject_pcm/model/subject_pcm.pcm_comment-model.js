@@ -678,7 +678,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, contractID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
+    getList({ taskID, contractID, projectID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -743,28 +743,21 @@ class Model extends BaseModel {
 					conditionObj.task = taskID;
 				}
 
-                if(contractID){
-                    if(!checkObjectIDs([contractID])) {
-                        return resolve({
-                            error: true,
-                            message: "Tham số contractID không hợp lệ",
-                            keyError: "params_contractID_invalid",
-                            status: 400
-                        });
+                if(contractID || projectID){
+                    if(checkObjectIDs([contractID])) {
+                        conditionObj.contract = contractID;
                     }
 
-					conditionObj.contract = contractID;
+                    if(checkObjectIDs([projectID])) {
+                        conditionObj.project = projectID;
+                    }
+
                     conditionObj.$expr = {
                         $gt: [
                             { $size: "$images" }, 0
                         ]
                     }
                     // conditionObj['images.1'] = { $exists: true };
-                    // $nor: [
-                    //     {name: {$exists: false}},
-                    //     {name: {$size: 0}},
-                    //     {name: {$size: 1}}
-                    // ]
 				} else {
                     if(parentID && checkObjectIDs([parentID])){
                         conditionObj.parent = parentID;
@@ -827,11 +820,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord / limit);
                 let dataResponse = [];
 
-                // if(!sortKey) {
-                //     infoDataAfterGet = infoDataAfterGet.reverse();
-                // }
-
-                if(infoDataAfterGet && infoDataAfterGet.length && !contractID) {
+                if(infoDataAfterGet && infoDataAfterGet.length && !contractID && !projectID) {
                     for (const comment of infoDataAfterGet) {
                         const lastReactionComment = await PCM_COMMENT_REACTION_COLL
                             .find({ comment: comment._id })
