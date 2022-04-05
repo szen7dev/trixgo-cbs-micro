@@ -307,7 +307,7 @@ class Model extends BaseModel {
 				let conditionObj = {
                     type: 1,
                     project: ObjectID(projectID),
-                    contract: { $exists: true }
+                    contract: { $exists: true, $ne: null }
                 };
                 let conditionKeyword = {};
 
