@@ -15,7 +15,7 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index');
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
+class Model extends BaseModel {
     constructor() {
         super(CMCS__CONTRACT_PAYMENT_COLL);
     }
@@ -23,7 +23,7 @@ class Model extends BaseModel {
      * Name: insert contract payment ✅
      * Author: Depv
      */
-    insert({ contractID, ipc, date, name, sign, description, value, userID, ctx  }) { 
+    insert({ contractID, ipc, date, name, sign, description, value, userID, ctx  }) {
         return new Promise(async (resolve) => {
             try {
                 const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
@@ -112,17 +112,17 @@ class Model extends BaseModel {
                 if(description){
                     dataUpdate.description = description;
                 }
-                
+
                 if(value){
                     dataUpdate.value =value;
                 }
 
                 console.log({ contractPaymentID, dataUpdate })
-             
+
                 let infoAterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
-              
+
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -134,7 +134,7 @@ class Model extends BaseModel {
      * Name: Remove contract payment ✅
      * Author: Depv
      */
-    remove({ contractPaymentID, userID }) { 
+    remove({ contractPaymentID, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(contractPaymentID))
@@ -142,12 +142,12 @@ class Model extends BaseModel {
 
                 let checkAuthor = await CMCS__CONTRACT_PAYMENT_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
                 if(!checkAuthor)
-                    return resolve({ error: true, message: 'Bạn không có quyền xóa hoặc ID không tồn tại', keyError: KEY_ERROR.DELETE_FAILED }); 
-                
+                    return resolve({ error: true, message: 'Bạn không có quyền xóa hoặc ID không tồn tại', keyError: KEY_ERROR.DELETE_FAILED });
+
                 let infoAterRemove = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndDelete(contractPaymentID);
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
- 
+
                 return resolve({ error: false, message: "Xóa thành công" });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -194,7 +194,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     getList({ contractID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -206,7 +206,7 @@ class Model extends BaseModel {
                 let sortBy;
                 let conditionObj = {};
                 let keys	     = ['createAt__-1', '_id__-1'];
-              
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -246,13 +246,13 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await CMCS__CONTRACT_PAYMENT_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data" });
@@ -275,7 +275,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -296,9 +296,9 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             outin: Number(outin),
                         }
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             value: 1
@@ -308,14 +308,56 @@ class Model extends BaseModel {
                         $match: {
                             "year": Number(year),
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { month: "$month"},
                             amount: { $sum: "$value" }
                         }
                     },
-                    {$sort: {"_id.month": 1}}    
+                    {$sort: {"_id.month": 1}}
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Danh sách theo tháng trong năm✅
+     * Author: Hiepnh
+     */
+    getListByMonth({ userID, companyID, outin, month, year, ctx }){
+        // console.log({ userID, companyID, outin, month, year, year })
+        return new Promise(async resolve => {
+            try {
+                let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            outin: Number(outin),
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            amount: "value",
+                            value : 1,
+                            date : 1,
+                            name: 1,
+                            sign: 1,
+                            note: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            "year": Number(year),
+                        }
+                    },
+                    {$sort: {"date": 1}}
                 ])
 
                 return resolve({ error: false, data: listData });

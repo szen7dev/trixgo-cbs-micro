@@ -1206,13 +1206,15 @@ class Model extends BaseModel {
                         $project : { 
                             year : {$year : "$date"},
                             month : {$month : "$date"},
-                            value : 1,
-                            vatValue : 1,
-                            plus : 1,
-                            vatPlus : 1,
+                            amount: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                            // value : 1,
+                            // vatValue : 1,
+                            // plus : 1,
+                            // vatPlus : 1,
                             date : 1,
                             name: 1,
                             sign: 1,
+                            note: 1,
                         }
                     },
                     {

@@ -73,13 +73,13 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     
     //_________Mã hiệu
     sign: String,
-
-    //_________Mô tả
-    description: String,
-
+    
     //_________Ngày hoạch toán(*)
     date: { type: Date, default: Date.now },
 
+    //_________Mô tả
+    description: String,
+    
     //_________Ghi chú
     note: String,
 

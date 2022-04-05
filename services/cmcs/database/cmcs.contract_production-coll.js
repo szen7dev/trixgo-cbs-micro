@@ -68,6 +68,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
     /**
      * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
+    //_________Ngày hoạch toán(*)
+    date: { type: Date, default: Date.now },
     
     //_________Tên(*)
     name: String,
@@ -77,9 +79,9 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
 
     //_________Mô tả
     description: String,
-
-    //_________Ngày hoạch toán(*)
-    date: { type: Date, default: Date.now },
+    
+    //_________Ghi chú
+    note: String,
 
     /**
      * Sản lượng thực hiện
