@@ -333,7 +333,6 @@ class Model extends BaseModel {
      */
     getListByMonth({ userID, companyID, outin, month, year, 
         keyword, limit = 20, lastestID, select, populates= {} }){
-        // console.log({ userID, companyID, outin, month, year, year })
         return new Promise(async resolve => {
             try {
                 if(limit > 20){
@@ -377,12 +376,6 @@ class Model extends BaseModel {
                         $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
-                            amount: "value",
-                            value : 1,
-                            date : 1,
-                            name: 1,
-                            sign: 1,
-                            note: 1,
                         }
                     },
                     {
@@ -393,11 +386,7 @@ class Model extends BaseModel {
                     },
                     {$sort: {"date": 1}}
                 ])
-
-                console.log(listData)
-                if(listData.length){
-                    conditionObjOrg._id = {$in: listData.map(item=>item._id)}
-                }
+                conditionObj._id = {$in: listData.map(item=>item._id)}
 
                 // Trả về danh sách mẩu tin
                 let conditionObjOrg = { ...conditionObj };
@@ -457,7 +446,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách contract value, group theo tháng năm
 	 * Date: 05/04/2022
 	 */
-	getAmountContractValueGroupByDate({ companyID, projectID, userID, ctx }){
+	getAmountContractValueGroupByDate({ projectID, userID, ctx }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -483,7 +472,6 @@ class Model extends BaseModel {
 
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID,
-                        // companyID,
                         // select: 'startTime'
                     })
 
