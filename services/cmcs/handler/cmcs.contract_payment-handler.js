@@ -137,7 +137,7 @@ module.exports = {
      * Dev: Hiepnh ✅
      * Func: get amount by month
      */
-     getAmountByMonth: {
+    getAmountByMonth: {
         auth: "required",
         params: {
             year : { type: "string", optional: true },
@@ -161,6 +161,43 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Danh sách theo tháng trong năm✅
+     * Author: Hiepnh
+     *  Date: 04/04/2022
+     */
+     getListByMonth: {
+        auth: "required",
+        params: {
+            month : { type: "string", optional: true },
+            year : { type: "string", optional: true },
+            outin : { type: "string", optional: true },
+
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { contractPaymentID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+				const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler=await CMCS__CONTRACT_PAYMENT_MODEL.getListByMonth({
+                    userID, companyID, outin, month, year, keyword, limit, lastestID, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
 
     /**
 	 * Dev: MinhVH
