@@ -1,7 +1,9 @@
 "use strict";
+
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment');
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
-const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 /**
@@ -511,6 +513,11 @@ class Model extends BaseModel {
                     {
                         $group: groupObj
                     },
+                    {
+                        $sort: {
+                            _id: -1
+                        }
+                    }
                 ]
 
                 const dataContractValueGroupByDate = await CMCS__CONTRACT_PAYMENT_COLL.aggregate(pipeline);

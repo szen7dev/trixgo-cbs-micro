@@ -254,6 +254,11 @@ class Model extends BaseModel {
                     {
                         $group: groupObj
                     },
+                    {
+                        $sort: {
+                            _id: -1
+                        }
+                    }
                 ]
 
                 const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
@@ -319,6 +324,11 @@ class Model extends BaseModel {
                     {
                         $group: groupObj
                     },
+                    {
+                        $sort: {
+                            _id: -1
+                        }
+                    }
                 ]
 
                 const dataFilesGroupByContract = await PCM_FILE_COLL.aggregate(pipeline);
