@@ -226,7 +226,7 @@ class Model extends BaseModel {
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID,
                         companyID,
-                        // select: 'startTime'
+                        select: 'startTime'
                     })
 
                     if(infoProject.error) return resolve(infoProject);
@@ -333,7 +333,7 @@ class Model extends BaseModel {
 
                 const dataFilesGroupByContract = await PCM_FILE_COLL.aggregate(pipeline);
 
-                if(!dataFilesGroupByContract || !dataFilesGroupByContract.length) {
+                if(!dataFilesGroupByContract) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
