@@ -372,7 +372,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách contract value, group theo tháng năm
 	 * Date: 05/04/2022
 	 */
-	getAmountContractValueGroupByDate({ companyID, projectID, userID, ctx }){
+	getAmountContractValueGroupByDate({ projectID, userID, ctx }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
@@ -398,7 +398,6 @@ class Model extends BaseModel {
 
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID,
-                        companyID,
                         // select: 'startTime'
                     })
 
