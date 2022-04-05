@@ -1125,7 +1125,7 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
 
-                if(groupID){
+                if(groupID && checkObjectIDs(groupID)){
                     conditionObj.group = groupID
                     conditionObj.parent = { $exists: false }
                     delete conditionObj.$or;

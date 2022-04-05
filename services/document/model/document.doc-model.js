@@ -493,6 +493,8 @@ class Model extends BaseModel {
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
                 if(listPackageAccess.length){
                     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                }else{
+                    return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
                 }
 
                 if(companyID){

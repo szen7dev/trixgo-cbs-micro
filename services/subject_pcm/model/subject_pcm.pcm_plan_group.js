@@ -252,7 +252,7 @@ class Model extends BaseModel {
 
                 // Trường hợp show ở modal tạo task mới (show hết cha và con)
                 if(!isShowParentAndChild) {
-                    if(parentID){
+                    if(parentID && checkObjectIDs(parentID)){
                         conditionObj.parent = parentID;
                     } else{
                         conditionObj.parent = { $exists: false };
@@ -274,6 +274,7 @@ class Model extends BaseModel {
                         }
                     ]
                 }
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
