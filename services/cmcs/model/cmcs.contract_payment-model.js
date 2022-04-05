@@ -333,7 +333,6 @@ class Model extends BaseModel {
      */
     getListByMonth({ userID, companyID, outin, month, year, 
         keyword, limit = 20, lastestID, select, populates= {} }){
-        // console.log({ userID, companyID, outin, month, year, year })
         return new Promise(async resolve => {
             try {
                 if(limit > 20){
@@ -377,12 +376,6 @@ class Model extends BaseModel {
                         $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
-                            amount: "value",
-                            value : 1,
-                            date : 1,
-                            name: 1,
-                            sign: 1,
-                            note: 1,
                         }
                     },
                     {
@@ -393,11 +386,7 @@ class Model extends BaseModel {
                     },
                     {$sort: {"date": 1}}
                 ])
-
-                console.log(listData)
-                if(listData.length){
-                    conditionObjOrg._id = {$in: listData.map(item=>item._id)}
-                }
+                conditionObj._id = {$in: listData.map(item=>item._id)}
 
                 // Trả về danh sách mẩu tin
                 let conditionObjOrg = { ...conditionObj };

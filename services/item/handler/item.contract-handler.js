@@ -370,26 +370,33 @@ module.exports = {
     },
 
     /**
-     * Dev: Hiepnh ✅
-     * Func: get list by month
+     * Name: Danh sách theo tháng trong năm✅
+     * Author: Hiepnh
+     * Date: 05/04/2022
      */
-     getListByMonth: {
+    getListByMonth: {
         auth: "required",
         params: {
-            year : { type: "string", optional: true },
             month : { type: "string", optional: true },
+            year : { type: "string", optional: true },
             outin : { type: "string", optional: true },
+
+            // Field mặc định
+            keyword     : { type: "string", optional: true },
+            limit       : { type: "string", optional: true },
+            lastestID   : { type: "string", optional: true },
+            select      : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { year, month, outin } = ctx.params;
 
+                let { outin, month, year, keyword, limit, lastestID, populates, select } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log({company})
 
-                let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListByMonth({
-                    userID, companyID: company._id, outin: Number(outin), year, month, ctx
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getListByMonth({
+                    userID, companyID: company._id, outin, month, year, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -397,5 +404,5 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    },
+    }, 
 }
