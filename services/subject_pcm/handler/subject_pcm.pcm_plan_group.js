@@ -17,17 +17,18 @@ module.exports = {
         auth: "required",
         params: {
             projectID : { type: "string" },
+            parentID  : { type: "string", optional: true },
             name      : { type: "string" },
             sign      : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  projectID, name, sign } = ctx.params;
+                let {  projectID, parentID, name, sign } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.insert({
-                    projectID, name, sign, userID
+                    projectID, parentID, name, sign, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
