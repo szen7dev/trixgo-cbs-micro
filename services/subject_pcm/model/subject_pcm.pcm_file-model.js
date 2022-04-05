@@ -263,7 +263,7 @@ class Model extends BaseModel {
 
                 const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
 
-                if(!dataFilesGroupByDate || !dataFilesGroupByDate.length) {
+                if(!dataFilesGroupByDate) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -351,7 +351,7 @@ class Model extends BaseModel {
                 await PCM_FILE_COLL.populate(dataFilesGroupByContract, {
                     path: "contract",
                     select: "_id name photos",
-                    match: conditionKeyword,
+                    // match: conditionKeyword,
                     populate: {
                         path: "photos",
                         select: "nameOrg path description"
