@@ -7,16 +7,28 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     //_________Nội dung
     content: String,
 
-    //_________taskID
-    task: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'pcm_plan_task'
+    //________Dự án/phòng ban (lấy từ thông tin Task)
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
+    },
+
+    //________Nhóm dữ liệu (lấy từ thông tin Task)
+    group: {
+        type: Schema.Types.ObjectId,
+        ref: 'pcm_plan_group'
     },
 
     //_________contractID
     contract: {
         type    :  Schema.Types.ObjectId,
         ref     : 'contract'
+    },
+
+    //_________taskID
+    task: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'pcm_plan_task'
     },
 
     //_________ID comment cha

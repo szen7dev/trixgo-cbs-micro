@@ -233,7 +233,7 @@ class Model extends BaseModel {
 
 					conditionObj.project = ObjectID(projectID);
                     conditionObj.createAt = {
-						$gte: new Date(moment(infoProject.data?.startTime).startOf('day').format()),
+						$gte: new Date(moment(infoProject.data?.startTime || Date.now()).startOf('day').format()),
 					};
 				}
 

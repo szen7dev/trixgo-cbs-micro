@@ -34,7 +34,7 @@ module.exports = {
             }
         }
     },
-    
+
     /**
      * Code: F0012
      * Author: Depv
@@ -153,7 +153,7 @@ module.exports = {
             }
         }
     },
-    
+
     /**
      * Func: Lấy danh user mà gửi lời mời kết bạn cho mình
      * Author: Depv
@@ -231,7 +231,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID } = ctx.meta.infoUser; 
+                let { _id: userID } = ctx.meta.infoUser;
 				let { lastestID, limit, keyword, filter, select, departmentID } = ctx.params;
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.getListUser({
@@ -303,7 +303,7 @@ module.exports = {
      * Author: Depv
      * Name: Lấy thông tin người dùng
      */
-    getInfo: { //(lấy thông tin chính user - owner) 
+    getInfo: { //(lấy thông tin chính user - owner)
         auth: "required",
         params: {
             select      : { type: "string", optional: true },
@@ -323,7 +323,7 @@ module.exports = {
             }
         }
     },
-    
+
 	getInfoById: {
         auth: "required",
 		params: {
@@ -355,7 +355,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
                 let { condition, select, filter } = ctx.params;
 
-                let infoUserAfterFind = await AUTH__USER_MODEL.getListUserWithCondition({ 
+                let infoUserAfterFind = await AUTH__USER_MODEL.getListUserWithCondition({
                     condition, select, filter
                 });
 
@@ -370,17 +370,17 @@ module.exports = {
      * Code: F0015
      * Author: Depv
      * Name: Get user by JWT token (for API GW authentication)
-     * 
+     *
      * @actions
      * @param {String} token - JWT token
-     * 
+     *
      * @returns {Object} Resolved user
      */
      resolveToken: {
         cache: {
             keys: ["token"],
             ttl: 60 * 60 //1 hour
-        },			
+        },
         params: {
             token: "string"
         },
@@ -402,7 +402,7 @@ module.exports = {
         // cache: {
         //     keys: ["key"],
         //     ttl: 60 * 60 //1 hour
-        // },			
+        // },
         params: {
             key: { type: "string", optional: true }
         },
@@ -480,7 +480,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { 
+                let {
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID,
                     companyID, departmentID, positionID, level, status
@@ -496,7 +496,7 @@ module.exports = {
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx,
                     companyID, departmentID, positionID, level, status, company, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -527,12 +527,12 @@ module.exports = {
             }
         }
     },
-    
+
     /**
      * Perform a textual search with 'find' method
      *  phương án này chỉ dùng cho các trường hợp đơn giản (ko có tìm kiếm+phân trang)
      *  -> tối ưu: cần dùng text search riêng
-     * 
+     *
      *  db.message_messages.find(
             { $text: { $search: "TRX Khánh Duy" } },
             { score: { $meta: "textScore" } }
@@ -546,14 +546,14 @@ module.exports = {
         cache: {
             keys: ["key"],
             ttl: 60 * 60 //1 hour
-        },			
+        },
         params: {
             key: { type: "string", optional: true }
         },
         async handler(ctx) {
             await this.validateEntity(ctx.params);
             let { key }        = ctx.params;
-			
+
             return ctx.call("auth.list", {
                 search: key,
                 searchFields: ["fullname"],
@@ -564,7 +564,7 @@ module.exports = {
         }
     },
 
-	updatePinConversation: {			
+	updatePinConversation: {
         params: {
             conversationID	: { type: "string" },
             userID			: { type: "string" },
@@ -575,7 +575,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { conversationID, userID, isPin } = ctx.params;
 
-                let resultAfterCallHandler = await AUTH__USER_MODEL.updatePinConversation({ 
+                let resultAfterCallHandler = await AUTH__USER_MODEL.updatePinConversation({
 					conversationID, userID, isPin
 				});
 
@@ -586,19 +586,19 @@ module.exports = {
         }
     },
 
-	getListPinConversation: {			
+	getListPinConversation: {
         params: {
             userID: { type: "string", optional: true },
         },
         async handler(ctx) {
 			try {
 				let userID = ctx.meta?.infoUser?._id;
-                
+
                 if(!ctx.meta?.infoUser) {
                     userID = ctx.params.userID;
                 }
 
-                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({ 
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinConversation({
 					userID
 				});
 
@@ -609,7 +609,7 @@ module.exports = {
         }
     },
 
-    updatePinMedia: {			
+    updatePinMedia: {
         params: {
             mediaID	: { type: "string" },
             isPin   : { type: "boolean" }
@@ -620,7 +620,7 @@ module.exports = {
 				let { _id: userID } = ctx.meta.infoUser;
                 let { mediaID, isPin } = ctx.params;
 
-                let resultAfterCallHandler = await AUTH__USER_MODEL.updatePinMedia({ 
+                let resultAfterCallHandler = await AUTH__USER_MODEL.updatePinMedia({
 					mediaID, userID, isPin
 				});
 
@@ -631,13 +631,13 @@ module.exports = {
         }
     },
 
-    getListPinMedia: {			
+    getListPinMedia: {
         params: {},
         async handler(ctx) {
 			try {
 				let { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinMedia({ 
+                let resultAfterCallHandler = await AUTH__USER_MODEL.getListPinMedia({
 					userID
 				});
 
@@ -651,7 +651,7 @@ module.exports = {
     /**
      * KHU VỰC ĐỆ VIẾT THEO CÁCH MỚI
      */
-    
+
     /**
 	 * Dev: Depv ✅
 	 * Func: getList and getInfo user
@@ -673,7 +673,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { 
+                let {
                     userID, projectID, companyID, arrayID,
                     keyword, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
@@ -688,7 +688,7 @@ module.exports = {
                         arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log({ error })

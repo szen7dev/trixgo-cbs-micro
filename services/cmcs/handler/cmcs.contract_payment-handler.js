@@ -162,4 +162,36 @@ module.exports = {
         }
     },
 
+    /**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách contract value, group theo tháng năm
+	 * Date: 05/04/2022
+	 */
+    getAmountContractValueGroupByDate: {
+        auth: "required",
+        params: {
+            companyID : { type: "string", optional: true },
+            projectID : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, projectID } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountContractValueGroupByDate({
+                    companyID, projectID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
 }
