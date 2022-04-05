@@ -207,18 +207,13 @@ module.exports = {
     getAmountContractValueGroupByDate: {
         auth: "required",
         params: {
-            // companyID : { type: "string", optional: true },
             projectID : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { projectID } = ctx.params;
-                const { _id: userID, company } = ctx.meta.infoUser;
-
-                // if(!companyID) {
-                //     companyID = company._id;
-                // }
+                const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountContractValueGroupByDate({
                     projectID, userID, ctx
