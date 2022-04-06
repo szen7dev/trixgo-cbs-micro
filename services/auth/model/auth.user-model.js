@@ -1666,7 +1666,7 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
-                    .populate(populates)
+                    // .populate(populates)
                     .lean(); 
 
                 if(!infoDataAfterGet)

@@ -1513,6 +1513,73 @@ class AccountingFinancialVoucher extends BaseModel {
             }
         })
     }
+
+    // Danh sách các phiếu VAT
+    // Author: HiepNH
+    getListVATVoucherOfCompany({ companyID, fundaID, fromDate, toDate, vat }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy các phiếu có VAT = 1 và debit, credit in arrObjectID[]
+                 * 2. Không lấy các Phiếu kết chuyển + Phiếu hủy
+                 */  
+
+                let conditionObj;
+
+                if(!fundaID){
+                    conditionObj = { 
+                        company: companyID,
+                        vat: Number(vat),
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+                }else{
+                    conditionObj = { 
+                        funda: fundaID,
+                        vat: Number(vat),
+                        forward: 0,
+                        cancel: 0,
+                        date: { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+                }
+
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find(conditionObj)
+                .populate({
+                    path: 'company customer storage staff warehouse',
+                    select: '_id name sign taxid address',
+                })
+                .populate({
+                    path: 'contract',
+                    select: '_id name sign project',
+                    populate: {
+                        path: 'project',
+                        select: '_id name sign',
+                    }
+                })
+                .populate({
+                    path: 'journals',
+                    populate: {
+                        path: 'debit credit customerDebit customerCredit goods warehouse contract'
+                    }
+                })
+                .sort({ date: 'asc' });
+                if(!listData)
+                    return resolve({ error: true, message: "cannot_get_list" });
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
     
     //
     updateDB(company, watchFileError){
@@ -1547,7 +1614,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     //     $gte: moment('2021-01-01').toDate(),
                     //     $lte: moment('2021-12-01').toDate()
                     // }, 
-                    company: company,
+                    // company: company,
                 })
                 .populate("journals");
                 async function updateJounal(id,  
@@ -1571,11 +1638,12 @@ class AccountingFinancialVoucher extends BaseModel {
                             return { 
                                 error: true,
                                 data: { 
-                                    id, forward,
-                                    cancel,
-                                    returning,
-                                    advancePayment,
-                                    forwardIs,
+                                    id,
+                                    forward:Number(forward),
+                                    cancel:Number(cancel),
+                                    returning:Number(returning),
+                                    advancePayment:Number(advancePayment),
+                                    forwardIs:Number(forwardIs),
                                     date 
                                 },
                             }
@@ -1614,7 +1682,7 @@ class AccountingFinancialVoucher extends BaseModel {
                                 },
                             }
                         }   
-                        console.log({voucherUpdateSccess: id});
+                        console.log({voucherUpdateSccess: id, updateVoucher});
                             
                         return { error: false, message: 'update voucher success', data:updateVoucher }; 
                     } catch (error) {

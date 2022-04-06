@@ -42,7 +42,6 @@ class Model extends BaseModel {
                 if(!sign)
                     return resolve({ error: true, message: 'Request params sign(*) invalid', status: 400 });
 
-
                 // Lấy thông tin công ty để gán ký hiệu công ty vào tên dự án
                 let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
                     companyID: company
@@ -147,7 +146,6 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPull     = {};
                 let dataInc      = {};
-
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: "Request params departmentID invalid" });
 
@@ -817,7 +815,6 @@ class Model extends BaseModel {
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
-
                 if(type && [1,2].includes(type)){
                     conditionObj.type = type;
                 }

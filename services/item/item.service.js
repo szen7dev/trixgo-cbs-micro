@@ -64,7 +64,7 @@ module.exports = {
 	* Service dependencies
 	*/
 	dependencies: [],
-
+	
 	/**
 	* Actions
 	*/
@@ -72,6 +72,7 @@ module.exports = {
 		//==========================================  DEPARTMENT  ================================
 		[CF_ACTIONS_ITEM.DEPARTMENT_INSERT] 					: ITEM__DEPARTMENT_HANDLER.insert,
 		[CF_ACTIONS_ITEM.DEPARTMENT_UPDATE] 					: ITEM__DEPARTMENT_HANDLER.update,
+		[CF_ACTIONS_ITEM.DEPARTMENT_REMOVE] 					: ITEM__DEPARTMENT_HANDLER.remove,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST] 					: ITEM__DEPARTMENT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS] 		: ITEM__DEPARTMENT_HANDLER.getListByMembers,
 		[CF_ACTIONS_ITEM.DEPARTMENT_ANALYSIS_ONTIME_ON_BUDGET] 	: ITEM__DEPARTMENT_HANDLER.analysisOntimeOnbudget,
@@ -119,7 +120,6 @@ module.exports = {
 		[CF_ACTIONS_ITEM.ACCOUNT_SEARCH_WITH_KEY] 				: ITEM__ACCOUNT_HANDLER.getListWithKey,
 
 		//==========================================  FUNDA  ================================
-		[CF_ACTIONS_ITEM.FUNDA_GET_LIST_BY_COMPANY_USER] 		: ITEM__FUNDA_HANDLER.getListByUserCompany,
 		[CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST] 			: ITEM__FUNDA_HANDLER.getInfoAndGetList,
 
 		//==========================================  GOOD  ======================================
