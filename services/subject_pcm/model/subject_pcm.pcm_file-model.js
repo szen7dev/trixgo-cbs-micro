@@ -226,7 +226,7 @@ class Model extends BaseModel {
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID,
                         companyID,
-                        // select: 'startTime'
+                        select: 'startTime'
                     })
 
                     if(infoProject.error) return resolve(infoProject);
@@ -254,11 +254,16 @@ class Model extends BaseModel {
                     {
                         $group: groupObj
                     },
+                    {
+                        $sort: {
+                            _id: -1
+                        }
+                    }
                 ]
 
                 const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
 
-                if(!dataFilesGroupByDate || !dataFilesGroupByDate.length) {
+                if(!dataFilesGroupByDate) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -302,7 +307,7 @@ class Model extends BaseModel {
 				let conditionObj = {
                     type: 1,
                     project: ObjectID(projectID),
-                    contract: { $exists: true }
+                    contract: { $exists: true, $ne: null }
                 };
                 let conditionKeyword = {};
 
@@ -319,11 +324,16 @@ class Model extends BaseModel {
                     {
                         $group: groupObj
                     },
+                    {
+                        $sort: {
+                            _id: -1
+                        }
+                    }
                 ]
 
                 const dataFilesGroupByContract = await PCM_FILE_COLL.aggregate(pipeline);
 
-                if(!dataFilesGroupByContract || !dataFilesGroupByContract.length) {
+                if(!dataFilesGroupByContract) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -341,7 +351,7 @@ class Model extends BaseModel {
                 await PCM_FILE_COLL.populate(dataFilesGroupByContract, {
                     path: "contract",
                     select: "_id name photos",
-                    match: conditionKeyword,
+                    // match: conditionKeyword,
                     populate: {
                         path: "photos",
                         select: "nameOrg path description"
