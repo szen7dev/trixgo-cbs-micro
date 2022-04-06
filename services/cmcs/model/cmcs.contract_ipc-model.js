@@ -261,6 +261,7 @@ class Model extends BaseModel {
                 // console.log(contractID)
 
                 // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
+                //===========CẦN DỰA VÀO TYPE ĐỂ PHÂN TÍNH TOÁN UPDATE CHO CONTRACT
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
                         $match: {
@@ -279,7 +280,7 @@ class Model extends BaseModel {
                             advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
                             otherDeduction: { $sum: "$otherDeduction" },
                             recommendedPayment: { $sum: "$recommendedPayment" },
-                            amountPaid: { $sum: "$amountPaid" },
+                            // amountPaid: { $sum: "$amountPaid" },
                             remainingPayment: { $sum: "$remainingPayment" },
                         }
                     }, 
@@ -293,7 +294,7 @@ class Model extends BaseModel {
                     updateContract.advancePaymentDeduction = Number(listData[0].advancePaymentDeduction)
                     updateContract.otherDeduction = Number(listData[0].otherDeduction)
                     updateContract.recommendedPayment = Number(listData[0].recommendedPayment)
-                    updateContract.amountPaid = Number(listData[0].amountPaid)
+                    // updateContract.amountPaid = Number(listData[0].amountPaid)
                     updateContract.remainingPayment = Number(listData[0].remainingPayment)
                 }else{
                     updateContract.acceptance = Number(0)
@@ -304,9 +305,54 @@ class Model extends BaseModel {
                     updateContract.advancePaymentDeduction = Number(0)
                     updateContract.otherDeduction = Number(0)
                     updateContract.recommendedPayment = Number(0)
-                    updateContract.amountPaid = Number(0)
+                    // updateContract.amountPaid = Number(0)
                     updateContract.remainingPayment = Number(0)
                 }
+
+                // Đã tạm ứng
+                let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: {
+                            contract: ObjectID(contractID),
+                            type: 1,
+                            _id: { $nin: [ ObjectID(contractIpcID) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            amountPaid: { $sum: "$amountPaid" },
+                        }
+                    }, 
+                ])
+                if(listData1.length && Number(type) === 1){
+                    updateContract.advancePaymentPaid = Number(listData1[0].amountPaid)
+                }else{
+                    updateContract.advancePaymentPaid = Number(0)
+                }
+
+                // Đã thanh toán
+                let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: {
+                            contract: ObjectID(contractID),
+                            type: 2,
+                            _id: { $nin: [ ObjectID(contractIpcID) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            amountPaid: { $sum: "$amountPaid" },
+                        }
+                    }, 
+                ])
+                if(listData2.length && Number(type) === 2){
+                    updateContract.amountPaid = Number(listData2[0].amountPaid)
+                }else{
+                    updateContract.amountPaid = Number(0)
+                }
+
                 console.log(listData)
                 console.log(updateContract)
 
@@ -398,6 +444,7 @@ class Model extends BaseModel {
                     dataUpdate.remainingPayment = remainingPayment;
                     updateContract.remainingPayment = Number(updateContract.remainingPayment)+Number(remainingPayment)
                 }
+                // console.log(updateContract)
 
                 let infoAterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(contractIpcID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
@@ -414,9 +461,11 @@ class Model extends BaseModel {
                     advancePaymentDeduction: Number(updateContract.advancePaymentDeduction),
                     otherDeduction: Number(updateContract.otherDeduction),
                     recommendedPayment: Number(updateContract.recommendedPayment),
+                    advancePaymentPaid: Number(updateContract.advancePaymentPaid),
                     amountPaid: Number(updateContract.amountPaid),
                     remainingPayment: Number(updateContract.remainingPayment),
                 })
+                console.log(infoContractAfterUpdate)
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
