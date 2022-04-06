@@ -34,11 +34,64 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Hợp đồng không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+
                 let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
                 if(!infoIPC)
                     return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataInsert = { userCreate: userID, type: infoIPC.type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
+                
+                // Precalculate-Trường để update các giá trị vào Dự án
+
+                // Precalculate-Trường để update các giá trị vào Hợp đồng
+                let updateContract = {};
+
+                // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
+                // Tạm ứng
+                let listData1 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            contract: ObjectID(contractID),
+                            type: 1,
+                            // _id: { $nin: [ ObjectID(infoContractIPC._id) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                        }
+                    }, 
+                ])
+                // Thanh toán
+                let listData2 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            contract: ObjectID(contractID),
+                            type: 2,
+                            // _id: { $nin: [ ObjectID(infoContractIPC._id) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                        }
+                    }, 
+                ])
+                // console.log(listData1)
+                // console.log(listData2)
+                if(listData1.length){
+                    updateContract.advancePaymentPaid = Number(listData1[0].value)
+                }else{
+                    updateContract.advancePaymentPaid = Number(0)
+                }
+                if(listData2.length){
+                    updateContract.amountPaid = Number(listData2[0].value)
+                }else{
+                    updateContract.amountPaid = Number(0)
+                }
+                // console.log(updateContract)
 
                 if(ipc){
                     dataInsert.ipc = ipc;
@@ -62,11 +115,24 @@ class Model extends BaseModel {
 
                 if(value){
                     dataInsert.value = value;
+                    // Tạm ứng
+                    if(Number(infoIPC.type) === 1){
+                        updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(value)
+                    }else{
+                        updateContract.amountPaid = Number(updateContract.amountPaid)+Number(value)
+                    }
                 }
 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
+
+                // Cập nhật các trường thông tin cho hợp đồng
+                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                    contractID,
+                    advancePaymentPaid: Number(updateContract.advancePaymentPaid),
+                    amountPaid: Number(updateContract.amountPaid),
+                })
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -79,7 +145,7 @@ class Model extends BaseModel {
      * Name: update contract payment ✅
      * Author: Depv
      */
-    update({ contractPaymentID, ipc, date, name, sign, description, value, userID  }){
+    update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -88,6 +154,64 @@ class Model extends BaseModel {
                 let dataUpdate = { userUpdate: userID };
                 if(!checkObjectIDs(contractPaymentID))
                     return resolve({ error: true, message: "contractPaymentID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                let infoPayment = await CMCS__CONTRACT_PAYMENT_COLL.findById(contractPaymentID);
+                if(!infoPayment)
+                    return resolve({ error: true, message: "Payment không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let contractID = infoPayment.contract;       
+
+                // Precalculate-Trường để update các giá trị vào Dự án
+
+                // Precalculate-Trường để update các giá trị vào Hợp đồng
+                let updateContract = {};
+
+                // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
+                // Tạm ứng
+                let listData1 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            contract: ObjectID(contractID),
+                            type: 1,
+                            _id: { $nin: [ ObjectID(contractPaymentID) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                        }
+                    }, 
+                ])
+                // Thanh toán
+                let listData2 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            contract: ObjectID(contractID),
+                            type: 2,
+                            _id: { $nin: [ ObjectID(contractPaymentID) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                        }
+                    }, 
+                ])
+                // console.log(listData1)
+                // console.log(listData2)
+                if(listData1.length){
+                    updateContract.advancePaymentPaid = Number(listData1[0].value)
+                }else{
+                    updateContract.advancePaymentPaid = Number(0)
+                }
+                if(listData2.length){
+                    updateContract.amountPaid = Number(listData2[0].value)
+                }else{
+                    updateContract.amountPaid = Number(0)
+                }
+                // console.log(updateContract)
 
                 if(ipc){
                     dataUpdate.ipc =ipc;
@@ -115,13 +239,24 @@ class Model extends BaseModel {
 
                 if(value){
                     dataUpdate.value =value;
+                    // Tạm ứng
+                    if(Number(infoPayment.type) === 1){
+                        updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(value)
+                    }else{
+                        updateContract.amountPaid = Number(updateContract.amountPaid)+Number(value)
+                    }
                 }
-
-                console.log({ contractPaymentID, dataUpdate })
 
                 let infoAterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
+
+                // Cập nhật các trường thông tin cho hợp đồng
+                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                    contractID: `${contractID}`, // Convert để nhận đầu vào dạng String do Model contract yêu cầu
+                    advancePaymentPaid: Number(updateContract.advancePaymentPaid),
+                    amountPaid: Number(updateContract.amountPaid),
+                })    
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -134,26 +269,6 @@ class Model extends BaseModel {
      * Name: Remove contract payment ✅
      * Author: Depv
      */
-    remove({ contractPaymentID, userID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(contractPaymentID))
-                    return resolve({ error: true, message: 'Request params contractPaymentID invalid' });
-
-                let checkAuthor = await CMCS__CONTRACT_PAYMENT_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
-                if(!checkAuthor)
-                    return resolve({ error: true, message: 'Bạn không có quyền xóa hoặc ID không tồn tại', keyError: KEY_ERROR.DELETE_FAILED });
-
-                let infoAterRemove = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndDelete(contractPaymentID);
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
-
-                return resolve({ error: false, message: "Xóa thành công" });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get info contract payment ✅

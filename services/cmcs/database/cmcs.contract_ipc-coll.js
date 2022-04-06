@@ -8,10 +8,10 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
     //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
-    type: { type: Number, default: 1 },
+    type: { type: Number, default: 1, enum: [1,2,3] },
 
     //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
-    outin: { type: Number, default: 1 },
+    outin: { type: Number, default: 1, enum: [1,2] },
 
     //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
     real: { type: Number, default: 1 },
@@ -121,16 +121,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
      */
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
-    //_________Giá trị thực hiện
-    fcuProduction: { type: Number, default: 0},
-    //_________Thuế giá trị gia tăng
-    fcuVatValue: { type: Number, default: 0 }, 
-    //_________Giá trị giữ lại
-    fcuRetainedValue: { type: Number, default: 0 },
-    //_________Khấu trừ tạm ứng
-    fcuAdvancePaymentDeduction: { type: Number, default: 0 },
-    //_________Khấu trừ khác
-    fcuOtherDeduction: { type: Number, default: 0 },
 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

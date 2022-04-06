@@ -60,7 +60,7 @@ module.exports = {
                 const { contractPaymentID, ipc, date, name, sign, description, value } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.update({
-                    contractPaymentID, ipc, date, name, sign, description, value, userID
+                    contractPaymentID, ipc, date, name, sign, description, value, userID, ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

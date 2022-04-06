@@ -325,6 +325,7 @@ class Model extends BaseModel {
         }){
         return new Promise(async resolve => {
             try {
+                console.log(contractID)
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
 
@@ -332,16 +333,18 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPull     = {};
 
-                if(projectID){
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
+                // Tạm thời không cho update projectID sau khi đã tạo mới xong
+                // if(projectID){
+                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                //         departmentID: projectID
+                //     })
 
-                    if(infoProject.error)
-                        return resolve({ error: true, message: "Request params project invalid" });
-                    //________company được lấy theo dự án
-                    dataUpdate.company = infoProject.data.company;
-                }
+                //     if(infoProject.error)
+                //         return resolve({ error: true, message: "Request params project invalid" });
+
+                //     //________company được lấy theo dự án
+                //     dataUpdate.company = infoProject.data.company;
+                // }
 
                 const infoContract = await ITEM__CONTRACT_COLL.findById(contractID).lean();
 

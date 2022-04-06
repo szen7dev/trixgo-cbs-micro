@@ -187,6 +187,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     /**
      * USD-NGOẠI TỆ
      */ 
+    //_________Tỷ giá hối đoái
+    fcuExRate: { type: Number, default: 0 },
 
     /**
      * THÔNG TIN NGÂN SÁCH
