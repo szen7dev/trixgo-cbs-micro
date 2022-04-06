@@ -168,7 +168,11 @@ class Model extends BaseModel {
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
                 // Giá trị còn lại phải thanh toán của IPC
-                updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
+                if(Number( Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) >= 0)){
+                    updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
+                }else{
+                    updateIpc.remainingPayment = Number(0)
+                }
                 await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipc, updateIpc, { new: true });
 
                 /**
@@ -344,7 +348,12 @@ class Model extends BaseModel {
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
                 // Giá trị còn lại phải thanh toán của IPC
-                updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
+                if(Number( Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) >= 0)){
+                    updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
+                }else{
+                    updateIpc.remainingPayment = Number(0)
+                }
+               
                 await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(infoPayment.ipc, updateIpc, { new: true });
 
                 /**
