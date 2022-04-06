@@ -28,6 +28,12 @@ class Model extends BaseModel {
     insert({ contractID, ipc, date, name, sign, description, value, userID, ctx  }) {
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * Bước 1: Cập nhật thông tin vào IPC
+                 * Bước 2: Cập nhật thông tin vào Hợp đồng
+                 * Bước 3: Cập nhật thông tin vào dự án => Nếu là dòng tiền của hợp đồng mua vào
+                 */
                 const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                     contractID
                 })
@@ -42,11 +48,31 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataInsert = { userCreate: userID, type: infoIPC.type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
-                
-                // Precalculate-Trường để update các giá trị vào Dự án
 
-                // Precalculate-Trường để update các giá trị vào Hợp đồng
-                let updateContract = {};
+                // Precalculate-Trường để update các giá trị vào IPC, Hợp đồng, Dự án
+                let updateIpc = {}, updateContract = {}
+
+                // Dữ liệu giải ngân của cùng IPC
+                let listDataIpc = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            ipc: ObjectID(ipc),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                        }
+                    }, 
+                ])
+                if(listDataIpc.length){
+                    updateIpc.amountPaid = Number(listDataIpc[0].value)
+                }else{
+                    updateIpc.amountPaid = Number(0)
+                }
+
+                // Precalculate-Trường để update các giá trị vào Dự án
 
                 // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
                 // Tạm ứng
@@ -81,8 +107,11 @@ class Model extends BaseModel {
                         }
                     }, 
                 ])
+                // console.log('listData1=================>>>>')
                 // console.log(listData1)
+                // console.log('listData2=================>>>>')
                 // console.log(listData2)
+
                 if(listData1.length){
                     updateContract.advancePaymentPaid = Number(listData1[0].value)
                 }else{
@@ -115,10 +144,16 @@ class Model extends BaseModel {
                     dataInsert.description = description;
                 }
 
+                // Cập nhật giá trị cho IPC, Hợp đồng và Dự án
                 if(value){
                     dataInsert.value = value;
-                    // Tạm ứng
+
                     if(Number(infoIPC.type) === 1){
+
+                        // Cập nhật cho IPC
+                        updateIpc.amountPaid = Number(updateIpc.amountPaid)+Number(value)
+
+                        // Cập nhật cho Hợp đồng
                         updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(value)
                     }else{
                         updateContract.amountPaid = Number(updateContract.amountPaid)+Number(value)
@@ -129,12 +164,31 @@ class Model extends BaseModel {
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
 
+                /**
+                 * CẬP NHẬT CHO PHẦN IPC
+                 */    
+                // Giá trị còn lại phải thanh toán của IPC
+                if(Number( Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) >= 0)){
+                    updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
+                }else{
+                    updateIpc.remainingPayment = Number(0)
+                }
+                await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipc, updateIpc, { new: true });
+
+                /**
+                 * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
+                 */    
                 // Cập nhật các trường thông tin cho hợp đồng
+                
+                // Giá trị còn lại phải thanh toán của hợp đồng
+                let remainingPayment = Number(infoContract.data.recommendedPayment)-Number(updateContract.advancePaymentPaid)-Number(updateContract.amountPaid)
+
                 let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID,
+                    contractID: `${contractID}`, // Convert để nhận đầu vào dạng String do Model contract yêu cầu
                     advancePaymentPaid: Number(updateContract.advancePaymentPaid),
                     amountPaid: Number(updateContract.amountPaid),
-                })
+                    remainingPayment: Number(remainingPayment)
+                })  
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -151,6 +205,13 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 /**
+                 * BA
+                 * Bước 1: Cập nhật thông tin vào IPC
+                 * Bước 2: Cập nhật thông tin vào Hợp đồng
+                 * Bước 3: Cập nhật thông tin vào dự án => Nếu là dòng tiền của hợp đồng mua vào
+                 */
+                
+                /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
@@ -161,12 +222,38 @@ class Model extends BaseModel {
                 if(!infoPayment)
                     return resolve({ error: true, message: "Payment không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
+                let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(infoPayment.ipc);    
+
                 let contractID = infoPayment.contract;       
 
                 // Precalculate-Trường để update các giá trị vào Dự án
 
                 // Precalculate-Trường để update các giá trị vào Hợp đồng
-                let updateContract = {};
+                let updateIpc = {}, updateContract = {}
+
+                // Dữ liệu giải ngân của cùng IPC
+                let listDataIpc = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            ipc: ObjectID(infoPayment.ipc),
+                            _id: { $nin: [ ObjectID(contractPaymentID) ] },
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                        }
+                    }, 
+                ])
+                
+                if(listDataIpc.length){
+                    updateIpc.amountPaid = Number(listDataIpc[0].value)
+                }else{
+                    updateIpc.amountPaid = Number(0)
+                }
+                // console.log('(listDataIp==================>>>>>>')
+                // console.log(listDataIpc)
 
                 // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
                 // Tạm ứng
@@ -201,8 +288,11 @@ class Model extends BaseModel {
                         }
                     }, 
                 ])
+                // console.log('listData1=================>>>>')
                 // console.log(listData1)
+                // console.log('listData2=================>>>>')
                 // console.log(listData2)
+
                 if(listData1.length){
                     updateContract.advancePaymentPaid = Number(listData1[0].value)
                 }else{
@@ -213,15 +303,8 @@ class Model extends BaseModel {
                 }else{
                     updateContract.amountPaid = Number(0)
                 }
-                // console.log(updateContract)
 
-                if(ipc){
-                    dataUpdate.ipc =ipc;
-                    let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
-                    if(!infoIPC)
-                        return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
-                    dataUpdate.type =infoIPC.type;
-                }
+                dataUpdate.type = Number(infoIPC.type);
 
                 if(date){
                     dataUpdate.date =date;
@@ -239,25 +322,56 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
+                // Cập nhật giá trị cho IPC, Hợp đồng và Dự án
                 if(value){
-                    dataUpdate.value =value;
-                    // Tạm ứng
+                    dataUpdate.value = value;
+                    
                     if(Number(infoPayment.type) === 1){
+
+                        // Cập nhật cho IPC
+                        updateIpc.amountPaid = Number(updateIpc.amountPaid)+Number(value)
+
+                        // Cập nhật cho Hợp đồng
                         updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(value)
                     }else{
                         updateContract.amountPaid = Number(updateContract.amountPaid)+Number(value)
                     }
                 }
+                // console.log('updateContract===========>>>>>>')
+                // console.log(updateContract)
 
                 let infoAterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
 
+                /**
+                 * CẬP NHẬT CHO PHẦN IPC
+                 */    
+                // Giá trị còn lại phải thanh toán của IPC
+                if(Number( Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) >= 0)){
+                    updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
+                }else{
+                    updateIpc.remainingPayment = Number(0)
+                }
+               
+                await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(infoPayment.ipc, updateIpc, { new: true });
+
+                /**
+                 * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
+                 */    
                 // Cập nhật các trường thông tin cho hợp đồng
+                let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                    contractID: `${contractID}`,
+                })    
+                
+                // Giá trị còn lại phải thanh toán của hợp đồng
+                let remainingPayment = Number(infoContract.data.recommendedPayment)-Number(updateContract.advancePaymentPaid)-Number(updateContract.amountPaid)
+
                 let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
                     contractID: `${contractID}`, // Convert để nhận đầu vào dạng String do Model contract yêu cầu
                     advancePaymentPaid: Number(updateContract.advancePaymentPaid),
                     amountPaid: Number(updateContract.amountPaid),
+                    remainingPayment: Number(remainingPayment)
                 })    
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });

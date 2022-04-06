@@ -505,127 +505,131 @@ class Model extends BaseModel {
                     dataUpdate.lock = lock;
                 }
 
-                if(value){
+                if(!isNaN(value) && Number(value) >= 0){  
                     dataUpdate.value = value;
                 }
 
-                if(plus){
+                if(!isNaN(plus) && Number(plus) >= 0){      
                     dataUpdate.plus = plus;
                 }
 
-                if(vatValue){
+                if(!isNaN(vatValue) && Number(vatValue) >= 0){      
                     dataUpdate.vatValue = vatValue;
                 }
 
-                if(advancePayment){
+                if(!isNaN(advancePayment) && Number(advancePayment) >= 0){      
                     dataUpdate.advancePayment = advancePayment;
                 }
 
-                if(produce){
+                if(!isNaN(produce) && Number(produce) >= 0){      
                     dataUpdate.produce = produce;
                 }
 
-                if(plusProduce){
+                if(!isNaN(plusProduce) && Number(plusProduce) >= 0){      
                     dataUpdate.plusProduce = plusProduce;
                 }
 
-                if(vatProduce){
+                if(!isNaN(vatProduce) && Number(vatProduce) >= 0){      
                     dataUpdate.vatProduce = vatProduce;
                 }
 
-                if(acceptance){
+                if(!isNaN(acceptance) && Number(acceptance) >= 0){      
                     dataUpdate.acceptance = acceptance;
                 }
 
-                if(plusAcceptance){
-                    dataUpdate.plusAcceptance = plusAcceptance;
-                }
-
-                if(vatAcceptance){
+                if(!isNaN(vatAcceptance) && Number(vatAcceptance) >= 0){      
                     dataUpdate.vatAcceptance = vatAcceptance;
                 }
 
-                if(retainedValue){
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){    
+                    dataUpdate.plusAcceptance = plusAcceptance;
+                }
+
+                // if(!isNaN(vatPlusAcceptance) && Number(vatPlusAcceptance) >= 0){    
+                //     dataUpdate.vatPlusAcceptance = vatPlusAcceptance;
+                // }
+
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){      
                     dataUpdate.retainedValue = retainedValue;
                 }
 
-                if(advancePaymentDeduction){
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){      
                     dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
                 }
 
-                if(otherDeduction){
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){      
                     dataUpdate.otherDeduction = otherDeduction;
                 }
 
-                if(recommendedPayment){
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){      
                     dataUpdate.recommendedPayment = recommendedPayment;
                 }
 
-                if(advancePaymentPaid){
+                if(!isNaN(advancePaymentPaid) && Number(advancePaymentPaid) >= 0){      
                     dataUpdate.advancePaymentPaid = advancePaymentPaid;
                 }
 
-                if(amountPaid){
+                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){      
                     dataUpdate.amountPaid = amountPaid;
                 }
 
-                if(remainingPayment){
+                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){      
                     dataUpdate.remainingPayment = remainingPayment;
                 }
 
-                if(advancePaymentOverage){
+                if(!isNaN(advancePaymentOverage) && Number(advancePaymentOverage) >= 0){      
                     dataUpdate.advancePaymentOverage = advancePaymentOverage;
                 }
 
-                if(finalValue){
+                if(!isNaN(finalValue) && Number(finalValue) >= 0){      
                     dataUpdate.finalValue = finalValue;
                 }
 
-                if(budget){
+                if(!isNaN(budget) && Number(budget) >= 0){      
                     dataUpdate.budget = budget;
                 }
 
-                if(budgetVAT){
+                if(!isNaN(budgetVAT) && Number(budgetVAT) >= 0){      
                     dataUpdate.budgetVAT = budgetVAT;
                 }
 
-                if(forecastBudget){
+                if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){      
                     dataUpdate.forecastBudget = forecastBudget;
                 }
 
-                if(forecastBudgetVAT){
+                if(!isNaN(forecastBudgetVAT) && Number(forecastBudgetVAT) >= 0){      
                     dataUpdate.forecastBudgetVAT = forecastBudgetVAT;
                 }
 
-                if(managementFee){
+                if(!isNaN(managementFee) && Number(managementFee) >= 0){      
                     dataUpdate.managementFee = managementFee;
                 }
 
-                if(subcontractFee){
+                if(!isNaN(subcontractFee) && Number(subcontractFee) >= 0){      
                     dataUpdate.subcontractFee = subcontractFee;
                 }
 
-                if(expenses){
+                if(!isNaN(expenses) && Number(expenses) >= 0){      
                     dataUpdate.expenses = expenses;
                 }
 
-                if(profit){
+                if(!isNaN(profit) && Number(profit) >= 0){      
                     dataUpdate.profit = profit;
                 }
 
-                if(cgValue){
+                if(!isNaN(cgValue) && Number(cgValue) >= 0){      
                     dataUpdate.cgValue = cgValue;
                 }
 
-                if(expiredCg){
+                if(!isNaN(expiredCg) && Number(expiredCg) >= 0){      
                     dataUpdate.expiredCg = expiredCg;
                 }
 
-                if(agValue){
+                if(!isNaN(agValue) && Number(agValue) >= 0){      
                     dataUpdate.agValue = agValue;
                 }
 
-                if(expiredAg){
+                if(!isNaN(expiredAg) && Number(expiredAg) >= 0){      
                     dataUpdate.expiredAg = expiredAg;
                 }
 

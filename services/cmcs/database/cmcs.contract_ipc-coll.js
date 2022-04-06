@@ -7,8 +7,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     /**
      * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
-    //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
-    type: { type: Number, default: 1, enum: [1,2,3] },
+    //_________Phân loại (1-Tạm ứng/2-Thanh toán)(*)
+    type: { type: Number, default: 1, enum: [1,2] },
 
     //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
     outin: { type: Number, default: 1, enum: [1,2] },
