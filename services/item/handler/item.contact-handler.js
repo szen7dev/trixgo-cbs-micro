@@ -159,6 +159,8 @@ module.exports = {
                     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                console.log({ contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory});
                 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({
                     contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 

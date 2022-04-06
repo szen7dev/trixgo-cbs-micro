@@ -88,7 +88,7 @@ class Model extends BaseModel {
     getList({
         companyID,
         keyword, limit = 10, lastestID, select, populates= {},
-        status, type, level,
+        status, type, level, isAccountingService
     }) { 
         return new Promise(async (resolve) => {
             try {
@@ -153,13 +153,24 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
-                let infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
+                let infoDataAfterGet;
+                // Accounting service : 1 số báo cáo cần  lấy hết account ra để tính toán
+                // nên không limit 
+                if(isAccountingService){
+                    infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
+                    return resolve({ error: false, data: {
+                        listRecords: infoDataAfterGet
+                    }, status: 200 });
+                }else{
+                    infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean(); 
+                }
+                
+                
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -379,9 +390,8 @@ class Model extends BaseModel {
                 //__________Khai báo mảng chứa phần tử cha và các con
                 let arrObjectID = [];
                 let getListIDRecursiveForAny = (arr) => {
-                    for(const item of arr){
+                    for(const item of arr) {
                         arrObjectID.push(item._id)
-
                         if (Array.isArray(item.childs) && item.childs.length) {
                             getListIDRecursiveForAny(item.childs)
                         }
