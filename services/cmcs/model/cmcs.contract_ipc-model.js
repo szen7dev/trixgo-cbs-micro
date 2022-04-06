@@ -135,7 +135,6 @@ class Model extends BaseModel {
                         $match: {
                             contract: ObjectID(contractID),
                             type: 1,
-                            _id: { $nin: [ ObjectID(contractIpcID) ] },
                         }
                     }, 
                     {
@@ -152,7 +151,6 @@ class Model extends BaseModel {
                         $match: {
                             contract: ObjectID(contractID),
                             type: 2,
-                            _id: { $nin: [ ObjectID(contractIpcID) ] },
                         }
                     }, 
                     {
