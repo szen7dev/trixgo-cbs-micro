@@ -67,7 +67,7 @@ module.exports = {
                 const { taskID, commentID, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
-					taskID, commentID, authorID, content, files, images, select, populates
+					taskID, commentID, authorID, content, files, images, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

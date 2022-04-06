@@ -39,6 +39,72 @@ class Model extends BaseModel {
     }
 
     /**
+     * Dev: MinhVH
+     * Func: Thêm file vào pcm_file-coll + thêm vào field photos trong project/contract nếu là ảnh
+     * Date: 06/04/2022
+     */
+    handleAddPhoto({ infoTask, commentID, files, fileType, authorID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                await PromisePool
+                    .for(files)
+                    .withConcurrency(2)
+                    .process(async fileID => {
+                        const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+                            fileID: fileID
+                        }, {
+                            meta: {
+                                infoUser: { _id: authorID }
+                            }
+                        });
+
+                        if(!infoFileCore.error) {
+                            const {
+                                name, nameOrg, description, path, size, mimeType, type, author
+                            } = infoFileCore.data;
+
+                            const infoPcmFile = await PCM_FILE_COLL.findOne({
+                                comment: commentID,
+                                file: fileID
+                            }).select('_id')
+
+                            if(infoPcmFile) return;
+
+                            const infoAfterInserted = await PCM_FILE_MODEL.insert({
+                                fileID: fileID,
+                                commentID,
+                                taskID: infoTask._id,
+                                contractID: infoTask.contract,
+                                projectID: infoTask.project?._id,
+                                groupID: infoTask.group,
+                                companyID: infoTask.company,
+                                authorID: author,
+                                name, nameOrg, path, size, mimeType, description, type
+                            });
+
+                            return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+                        }
+                    });
+
+                if(fileType === 'image') {
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                        contractID: infoTask.contract?.toString(),
+                        photos: files
+                    })
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: infoTask.project?._id?.toString(),
+                        photos: files
+                    })
+                }
+
+                return resolve({ error: false, message: 'success' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
 	 * Dev: MinhVH
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
@@ -130,8 +196,16 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(infoTask.project) {
+                    dataInsert.project = infoTask.project?._id;
+                }
+
                 if(infoTask.contract) {
                     dataInsert.contract = infoTask.contract;
+                }
+
+                if(infoTask.group) {
+                    dataInsert.group = infoTask.group;
                 }
 
                 /**
@@ -325,7 +399,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
 	 */
-    update({ taskID, commentID, authorID, content, files, images, select, populates }) {
+    update({ taskID, commentID, authorID, content, files, images, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -379,6 +453,21 @@ class Model extends BaseModel {
                         error: true,
                         message: "Comment không tồn tại hoặc comment không thuộc task hiện tại",
                         keyError: "comment_not_exists_or_comment_not_belong_task",
+                        status: 400
+                    })
+                }
+
+                let infoTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .populate('project', '_id name sign')
+                    .populate('author', '_id bizfullname image')
+                    .lean();
+
+                if(!infoTask) {
+                    return resolve({
+                        error: true,
+                        message: "Công việc không tồn tại",
+                        keyError: "task_not_exists",
                         status: 400
                     })
                 }
@@ -457,6 +546,18 @@ class Model extends BaseModel {
                         await PCM_FILE_COLL.deleteMany({
                             comment: infoComment._id,
                             type: 1
+                        })
+                    }
+                } else{
+                    if(checkObjectIDs(files)) {
+                        await this.handleAddPhoto({
+                            infoTask, commentID, files, fileType: 'file', authorID, ctx
+                        })
+                    }
+
+                    if(checkObjectIDs(images)) {
+                        await this.handleAddPhoto({
+                            infoTask, commentID, files: images, fileType: 'image', authorID, ctx
                         })
                     }
                 }
