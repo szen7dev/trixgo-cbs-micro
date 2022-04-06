@@ -31,17 +31,16 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, ctx }) {
+    insert({ type, name, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, vatBudget, forecastBudget, vatForecastBudget, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePaymentPaid, contractAmountPaid, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
                     return resolve({ error: true, message: 'Request params company|author(*) invalid', status: 400 });
                 if(!name)
                     return resolve({ error: true, message: 'Request params name(*) invalid', status: 400 });
-                
+
                 if(!sign)
                     return resolve({ error: true, message: 'Request params sign(*) invalid', status: 400 });
-               
 
                 // Lấy thông tin công ty để gán ký hiệu công ty vào tên dự án
                 let infoCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
@@ -57,36 +56,46 @@ class Model extends BaseModel {
                     $or: [
                         { name: name },
                         { sign: sign },
-                    ] 
+                    ]
                 }).select('_id name sign');
 
                 if(infoDepartment)
-                    return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${infoDepartment.name}` }); 
-                
+                    return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${infoDepartment.name}` });
+
                 let dataInsert = {
+                    userCreate: authorID,
                     company,
                     type: type ? Number(type) : Number(1),
                     name,
-                    description, 
+                    description,
                     sign: `${infoCompany.data.sign}.${sign}`,
-                    owner, 
-                    address, 
-                    startTime: startTime, 
+                    owner,
+                    address,
+                    startTime: startTime,
                     actualStartTime: startTime,
-                    expiredTime: expiredTime, 
+                    expiredTime: expiredTime,
                     actualFinishTime: expiredTime,
-                    status: !isNaN(status) ? Number(status) : 1, 
-                    note, 
-                    projectCapital: !isNaN(projectCapital) ? Number(projectCapital) : 1, 
-                    projectType: !isNaN(projectType) ? Number(projectType) : 1, 
+                    status: !isNaN(status) ? Number(status) : 1,
+                    note,
+                    projectCapital: !isNaN(projectCapital) ? Number(projectCapital) : 1,
+                    projectType: !isNaN(projectType) ? Number(projectType) : 1,
                     buildingGrade: !isNaN(buildingGrade) ? Number(buildingGrade) : 1,
                     buildingType: !isNaN(buildingType) ? Number(buildingType) : 1,
                     investmentAmount: !isNaN(investmentAmount) ? Number(investmentAmount) : 0,
                     admins: [authorID],
-                    members: [authorID], 
+                    members: [authorID],
                     milestones,
                     completedMilestones,
-                    userCreate: authorID,
+                    budget,
+                    vatBudget,
+                    forecastBudget,
+                    vatForecastBudget,
+                    contractValue,
+                    contractVatValue,
+                    contractPlus,
+                    contractVatPlus,
+                    contractAdvancePaymentPaid,
+                    contractAmountPaid
                 }
 
                 if(pm && _isValid(pm)){
@@ -119,14 +128,14 @@ class Model extends BaseModel {
      * Name: Cập nhật mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    update({ 
+    update({
         departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-        description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
-        pm, assistant, budget, note, position, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
-        images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractPlusValue, contractVatValue, contractAdvancePayment,
+        description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
+        pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
+        images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
         contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-        contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+        contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
         closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
         numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
@@ -137,30 +146,30 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPull     = {};
                 let dataInc      = {};
-                
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: "Request params departmentID invalid" });
 
+                const infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
+
                 // KIỂM TRA SIGN VÀ NAME CÓ TỒN TẠI Ở 1 DỰ ÁN KHÁC CHƯA
                 if(sign || name){
-                    let infoDepartmentOrg = await ITEM__DEPARTMENT_COLL.findById(departmentID);
-                    let infoDepartment = await ITEM__DEPARTMENT_COLL.findOne({
-                        company: infoDepartmentOrg.company,
+                    let checkExistsSignAndName = await ITEM__DEPARTMENT_COLL.findOne({
+                        company: infoDepartment.company,
                         $or: [
                             { name: name },
                             { sign: sign },
-                        ], 
+                        ],
                         _id: { $ne: departmentID }
                     }).select('_id name sign');
 
-                    if(infoDepartment)
-                        return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${infoDepartment.name}` }); 
+                    if(checkExistsSignAndName)
+                        return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${checkExistsSignAndName.name}` });
                 }
 
                 if(name){
                     dataUpdate.name = name;
                 }
-           
+
                 if(checkObjectIDs(admins)){
                     dataAddToSet.admins = admins;
                 }
@@ -232,7 +241,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(area)){
                     dataUpdate.area = area;
                 }
-               
+
                 if(startTime){
                     dataUpdate.startTime = startTime;
                 }
@@ -257,17 +266,18 @@ class Model extends BaseModel {
                     dataUpdate.assistant = assistant;
                 }
 
-                if(checkObjectIDs(budget)){
+                if(budget){
                     dataUpdate.budget = budget;
+                }
+
+                if(vatBudget){
+                    dataUpdate.vatBudget = vatBudget;
                 }
 
                 if(note){
                     dataUpdate.note = note;
                 }
 
-                // if(checkObjectIDs(position)){ // Check lại
-                //     dataUpdate.position = position;
-                // }
 
                 if(image){
                     dataUpdate.image = image;
@@ -276,7 +286,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(files)){
                     dataUpdate.files = files;
                 }
-                
+
                 if(checkObjectIDs(userUpdate)){
                     dataUpdate.userUpdate = userUpdate;
                 }
@@ -320,7 +330,11 @@ class Model extends BaseModel {
                 if(!isNaN(forecastBudget)){
                     dataUpdate.forecastBudget = forecastBudget;
                 }
-                
+
+                if(!isNaN(vatForecastBudget)){
+                    dataUpdate.vatForecastBudget = vatForecastBudget;
+                }
+
                 if(!isNaN(realBudget)){
                     dataUpdate.realBudget = realBudget;
                 }
@@ -348,7 +362,7 @@ class Model extends BaseModel {
                 if(!isNaN(realIrr)){
                     dataUpdate.realIrr = realIrr;
                 }
-                
+
                 if(!isNaN(numberOfPackage)){
                     dataUpdate.numberOfPackage = numberOfPackage;
                 }
@@ -365,12 +379,16 @@ class Model extends BaseModel {
                     dataUpdate.contractValue = contractValue;
                 }
 
-                if(!isNaN(contractPlusValue)){
-                    dataUpdate.contractPlusValue = contractPlusValue;
-                }
-
                 if(!isNaN(contractVatValue)){
                     dataUpdate.contractVatValue = contractVatValue;
+                }
+
+                if(!isNaN(contractPlus)){
+                    dataUpdate.contractPlus = contractPlus;
+                }
+
+                if(!isNaN(contractVatPlus)){
+                    dataUpdate.contractVatPlus = contractVatPlus;
                 }
 
                 if(!isNaN(contractAdvancePayment)){
@@ -403,6 +421,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(contractRecommendedPayment)){
                     dataUpdate.contractRecommendedPayment = contractRecommendedPayment;
+                }
+
+                if(!isNaN(contractAdvancePaymentPaid)){
+                    dataUpdate.contractAdvancePaymentPaid = contractAdvancePaymentPaid;
                 }
 
                 if(!isNaN(contractAmountPaid)){
@@ -476,7 +498,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(lastChange)){
                     dataUpdate.lastChange = lastChange;
                 }
-                
+
                 if(!isNaN(numberOfContact)){
                     dataUpdate.numberOfContact = numberOfContact;
                 }
@@ -492,7 +514,7 @@ class Model extends BaseModel {
                 if(!isNaN(numberOfReports)){
                     dataUpdate.numberOfReports = numberOfReports;
                 }
-                
+
                 if(!isNaN(numberOfIpcs)){
                     dataUpdate.numberOfIpcs = numberOfIpcs;
                 }
@@ -538,46 +560,45 @@ class Model extends BaseModel {
                     dataUpdate.$inc = dataInc;
                 }
 
+                if(photos && photos.length) {
+                    if(infoDepartment.photos?.length >= 10){
+						await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(departmentID, {
+							$push: {
+								photos: {
+									$each: photos,
+									$position: 0,
+									$slice: 10
+								}
+							}
+						});
+					} else{
+						await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(departmentID, {
+							$push: {
+								photos: {
+									$each: photos,
+									$position: 0
+								}
+							}
+						});
+					}
+                }
+
                 let infoAfterUpdate = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(departmentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Update department faild" });
+                    return resolve({ error: true, message: "Update department faild", status: 422 });
 
-                return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-     * Name: Xoá dự án/phòng ban ✅
-     * Author: Depv
-     * Code: F00401
-     */
-    remove({ departmentID, userID }) {
-        return new Promise(async (resolve) => {
-            try {
-
-                if(!checkObjectIDs(departmentID))
-                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
-
-                let infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
-                if(!infoDepartment)
-                    return resolve({ error: true, message: "không tìm thấy ID", keyError: KEY_ERROR.GET_INFO_FAILED,  status: 403 });
-
-                if(infoDepartment.userCreate != userID)
-                    return resolve({ error: true, message: "Bạn phải là người tạo ra dự án/phòng ban này mới được xoá", keyError: KEY_ERROR.PERMISSION_DENIED, status: 403 });
-
-                let infoAfterRemove = await ITEM__DEPARTMENT_COLL.findByIdAndDelete(departmentID);
-                if(!infoAfterRemove)
-                return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
-
-                return resolve({ error: false, message: "Xoá thành công", status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
+    /**
+     * Name: Xoá dự án/phòng ban ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
+     * Author: Depv
+     * Code: F00401
+     */
 
 
     /**
@@ -585,7 +606,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: F00401
      */
-    getInfo({ departmentID, 
+    getInfo({ departmentID,
         select, populates={}}) {
         return new Promise(async (resolve) => {
             try {
@@ -610,7 +631,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                
+
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
@@ -642,7 +663,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, isMember, limit = 10, lastestID, select, populates={} }) { 
+    getList({ companyID, keyword, type, userID, isMember, limit = 10, lastestID, select, populates={} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -670,7 +691,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
                 companyID && (conditionObj.company = companyID);
-                
+
                 if(type){
                     conditionObj.type = +type;
                 }
@@ -721,16 +742,16 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort?.data?.sort;
                 }
-               
+
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
                     .limit(limit+1)
-                    .sort(sortBy) 
-                    .select(select) 
+                    .sort(sortBy)
+                    .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
@@ -763,16 +784,16 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00403
      */
-    getListByMembers({ companyID, keyword, type, userID, limit = 10, lastestID, select, populates={} }) { 
+    getListByMembers({ companyID, keyword, type, userID, limit = 10, unLimit, lastestID, select, populates={} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj  =  { 
+                let conditionObj  =  {
                     members: { $in: [userID] }
                 }
-                
+
                 let sortBy;
                 let keys	      = ['createAt__-1', '_id__-1'];
 
@@ -782,7 +803,11 @@ class Model extends BaseModel {
                     limit = +limit
                 }
 
-                /** 
+                if(unLimit){
+                    limit = 100;
+                }
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -790,7 +815,6 @@ class Model extends BaseModel {
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
-                
                 if(type && [1,2].includes(type)){
                     conditionObj.type = type;
                 }
@@ -842,16 +866,16 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy        = dataPagingAndSort?.data?.sort;
                 }
-                
+
                 //_____Bắt đầu query database
                 let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
                     .limit(limit+1)
-                    .sort(sortBy) 
-                    .select(select) 
+                    .sort(sortBy)
+                    .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
@@ -882,29 +906,30 @@ class Model extends BaseModel {
     /**
      * Name  : Thống kê theo tiến độ ngân sách
      * Author: DePV ✅
-     * Code  : 
+     * Code  :
      */
     analysisOntimeOnbudget({ userID }){
         return new Promise(async resolve => {
             let dataBlock1 = await ITEM__DEPARTMENT_COLL.aggregate([
                 {
                     $match: {
+                        type: 2,
                         members : { $in: [_isValid(userID)] },
                         ontime  : { $exists: true },
                         onbudget: { $exists: true },
                     },
                 },
-                { 
+                {
                     $group: {
-                        _id: { 
+                        _id: {
                             ontime  :  "$ontime",
                             onbudget:  "$onbudget",
-                        }, 
+                        },
                         amount: { $sum: 1 },
-                      } 
+                      }
                 },
                 {
-                    $sort: { 
+                    $sort: {
                         "_id.ontime": 1,
                         "_id.onbudget": 1
                     }
@@ -914,17 +939,24 @@ class Model extends BaseModel {
             let dataBlock2 = await ITEM__DEPARTMENT_COLL.aggregate([
                 {
                     $match: {
+                        type: 2,
                         members : { $in: [_isValid(userID)] },
                     },
                 },
-                { 
+                {
                     $group: {
                         _id: null,
                         budget: { $sum: "$budget" },
+                        vatBudget: { $sum: "$vatBudget" },
                         forecastBudget: { $sum: "$forecastBudget" },
-                        contractValueContractPlusValueContractVatValue: { $sum: { $multiply: [ "$contractValue", "$contractPlusValue", "contractVatValue" ]} },
+                        vatForecastBudget: { $sum: "$vatForecastBudget" },
+                        contractValue: { $sum: "$contractValue"},
+                        contractVatValue: { $sum: "$contractVatValue"},
+                        contractPlus: { $sum: "$contractPlus"},
+                        contractVatPlus: { $sum: "$contractVatPlus"},
+                        contractAdvancePaymentPaid: { $sum: "$contractAdvancePaymentPaid" },
                         contractAmountPaid: { $sum: "$contractAmountPaid" },
-                    } 
+                    }
                 }
             ])
 
@@ -932,27 +964,28 @@ class Model extends BaseModel {
                 {
                     $match: {
                         members : { $in: [_isValid(userID)] },
-                        stage: { $ne: null}
+                        stage: { $ne: null},
+                        type: 2,
                     },
                 },
-                { 
+                {
                     $group: {
                         _id: {
                             stage: "$stage",
                         },
                         amount: { $sum: 1 },
-                    } 
+                    }
                 },
                 {
-                    $sort: { 
+                    $sort: {
                         "_id.stage": 1,
                     }
                 },
             ])
 
-            return resolve({ 
-                error: false, 
-                data: { 
+            return resolve({
+                error: false,
+                data: {
                     dataBlock1, dataBlock2, dataBlock3
                 }
             });

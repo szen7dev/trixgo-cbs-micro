@@ -61,7 +61,10 @@ module.exports = {
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID
                 } = ctx.params;
-                
+                console.log({   parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
+                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
+                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID })
+                    
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
@@ -450,6 +453,34 @@ module.exports = {
 
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
                     userID, companyID: company._id, departmentID, packageID
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+            }
+        }
+    },
+
+
+    /**
+	 * Dev: Depv
+	 * Func: Lấy số lượng công việc của tất cả project mà user là members✅
+	 * Date: 13/11/2021
+	 */  
+     getAmountDocumentByProjects: {
+        params: {
+			fromDate : { type: "string", optional: true },
+			toDate   : { type: "string", optional: true }
+        },
+        async handler(ctx) {
+            try {
+				await this.validateEntity(ctx.params);
+				const { _id: userID, company    } = ctx.meta.infoUser;
+                const { fromDate, toDate } = ctx.params;
+
+                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getAmountDocumentByProjects({
+                    userID, fromDate, toDate, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -32,6 +32,7 @@ const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
 const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
 const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
+const MEDIA__REACIONT_COLL              		= require('../database/media.reaction-coll');
 
 class Model extends BaseModel {
 
@@ -363,7 +364,7 @@ class Model extends BaseModel {
 							languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
 							mainColl: {
 								kind: 'media',
-								item: infoMediaAfterInserted
+								item: { _id: infoMediaAfterInserted._id }
 							}
 						},
 						web_url: `/media/post/${mediaID}`,
@@ -812,6 +813,13 @@ class Model extends BaseModel {
 						status: 400
 					})
 				}
+
+				const infoReaction = await MEDIA__REACIONT_COLL.findOne({
+					media: mediaID,
+					author: authorID
+				}).select('type').lean();
+
+				infoMedia.reaction = infoReaction;
 
 				return resolve({ 
 					error: false,

@@ -4,13 +4,10 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }	= require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }		= require('../../../tools/cursor_base/playground/index');
 
-/**
- * import inter-coll, exter-coll
- */
 const MEDIA__FILE_COLL                  = require('../database/media.file-coll');
+const MEDIA__FILE_REACTION_COLL         = require('../database/media.reaction_file-coll');
 
-
-class Model extends BaseModel {               
+class Model extends BaseModel {
 
     constructor() {
         super(MEDIA__FILE_COLL);
@@ -81,7 +78,16 @@ class Model extends BaseModel {
 					})
 				}
 
-				return resolve({ 
+				const infoReaction = await MEDIA__FILE_REACTION_COLL
+					.findOne({
+						file: fileID,
+						media: mediaID,
+						author: authorID
+					}).select('type').lean();
+
+				infoFile.reaction = infoReaction;
+
+				return resolve({
 					error: false,
 					status: 200,
 					data: infoFile

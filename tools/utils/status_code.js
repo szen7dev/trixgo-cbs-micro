@@ -1,11 +1,12 @@
 /**
  * Dev: HuynhVinh
  * Updated: MinhVH
- */ 
+ */
 exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, error_message }) {
     let error = {};
 
     if(resultAfterCallHandler && resultAfterCallHandler.error){
+        console.error({ error: resultAfterCallHandler });
         error = {
             data: {
                 message: resultAfterCallHandler.message,
@@ -29,7 +30,7 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
     // }
 
 	if(error_message){
-		error = { 
+		error = {
             data: {
                 message: error_message,
                 keyError: 'server_error'
@@ -38,7 +39,7 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 	}
 
     if(Object.keys(error).length){
-        ctx.meta.$statusCode    = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 500;
+        ctx.meta.$statusCode    = (resultAfterCallHandler && resultAfterCallHandler.status) ? resultAfterCallHandler.status : 200;
         ctx.meta.$statusMessage = 'server_error';
 
 		return { error: true, status: ctx.meta.$statusCode, ...error };

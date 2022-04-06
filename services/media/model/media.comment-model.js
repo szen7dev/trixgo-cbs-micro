@@ -15,10 +15,11 @@ const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/not
  */
 const MEDIA__COMMENT_COLL               = require('../database/media.comment-coll');
 const MEDIA__COMMENT_FILE_COLL          = require('../database/media.comment_file-coll');
+const MEDIA__COMMENT_REACTION_COLL      = require('../database/media.reaction_comment-coll');
 const MEDIA_COLL                        = require('../database/media-coll');
 const MEDIA__FILE_COLL                  = require('../database/media.file-coll');
 
-class Model extends BaseModel {               
+class Model extends BaseModel {
 
     constructor() {
         super(MEDIA__COMMENT_COLL);
@@ -93,17 +94,28 @@ class Model extends BaseModel {
                     languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
                     mainColl: {
                         kind: 'media',
-                        item: infoMedia
+                        item: {
+                            _id: infoMedia?._id,
+                            title: infoMedia?.title,
+                            author: {
+                                _id: infoMedia?.author?._id,
+                                bizfullname: infoMedia?.author?.bizfullname,
+                                image: infoMedia?.author?.image
+                            }
+                        }
                     },
                     subColl: {
                         kind: 'media_comment',
-                        item: infoComment
+                        item: {
+                            _id: infoComment._id
+                        }
                     },
                 }
 
                 titleMSS        = `BÀI VIẾT: ${infoMedia.title}`;
                 descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
                 arrReceiver     = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+                console.log({ LENGTH: arrReceiver.length, mediaType: infoMedia.type })
 
                 if(arrReceiver && arrReceiver.length) {
                     const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
@@ -113,14 +125,14 @@ class Model extends BaseModel {
                         title: titleMSS,
                         description: descriptionMSS,
                         dataSend,
-                        web_url: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        web_url: `/media/post/${infoMedia._id}#${infoComment._id}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
 
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content,
                         receivers: arrReceiver,
-                        path: `/media/home/${infoMedia._id}#${infoComment._id}`,
+                        path: `/media/post/${infoMedia._id}#${infoComment._id}`,
                         languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
                         app: APP_KEYS.MEDIA,
                         mainColl: {
@@ -136,6 +148,55 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: arrReceiver, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    responseDataComment({ comments, authorID }) {
+        return new Promise(async resolve => {
+            try {
+                let dataResponse = [];
+
+                for (const comment of comments) {
+                    const lastReactionComment = await MEDIA__COMMENT_REACTION_COLL
+                        .find({ "comment.item": comment._id })
+                        .select('type')
+                        .sort({ _id: -1 })
+                        .limit(3)
+                        .lean();
+
+                    const infoReaction = await MEDIA__COMMENT_REACTION_COLL.findOne({
+                        "comment.item": comment._id,
+                        author: authorID
+                    }).select('type').lean();
+
+                    if(comment.lastestReplyID && typeof comment.lastestReplyID !== 'string') {
+                        const lastReactionCommentReply = await MEDIA__COMMENT_REACTION_COLL
+                            .find({ "comment.item": comment.lastestReplyID?._id })
+                            .select('type')
+                            .sort({ _id: -1 })
+                            .limit(3)
+                            .lean();
+
+                        const infoReactionReply = await MEDIA__COMMENT_REACTION_COLL.findOne({
+                            "comment.item": comment.lastestReplyID?._id,
+                            author: authorID
+                        }).select('type').lean();
+
+                        comment.lastestReplyID['reaction'] = infoReactionReply;
+                        comment.lastestReplyID['lastReactionComment'] = lastReactionCommentReply;
+                    }
+
+                    dataResponse[dataResponse.length] = {
+                        ...comment,
+                        reaction: infoReaction,
+                        lastReactionComment
+                    }
+                }
+
+                return resolve({ error: false, data: dataResponse, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -504,7 +565,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, isLoadAll }) { 
+    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, authorID, isLoadAll }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -598,23 +659,22 @@ class Model extends BaseModel {
                     })
                 }
 
+                let totalRecord  = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
+                let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
+                let totalPage    = Math.ceil(totalRecord / limit);
                 let nextCursor	= null;
+
+                if(dataResponse.error) return resolve(dataResponse);
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
-
-                    // infoDataAfterGet = infoDataAfterGet.reverse();
-                    // nextCursor	     = infoDataAfterGet[0]._id;
                 }
 
-                let totalRecord = await MEDIA__COMMENT_COLL.countDocuments(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord / limit);
-
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: dataResponse?.data || infoDataAfterGet,
                     limit,
                     totalRecord,
                     totalPage,
@@ -996,7 +1056,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment file
 	 */
-    getListCommentFile({ mediaID, fileID, parentID, limit = 5, lastestID, select, populates }) { 
+    getListCommentFile({ mediaID, fileID, parentID, limit = 5, lastestID, select, populates, authorID }) { 
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1081,7 +1141,12 @@ class Model extends BaseModel {
                     })
                 }
 
+                let totalRecord = await MEDIA__COMMENT_FILE_COLL.countDocuments(conditionObjOrg);
+                let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
+                let totalPage   = Math.ceil(totalRecord / limit);
                 let nextCursor	= null;
+
+                if(dataResponse.error) return resolve(dataResponse);
 
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
@@ -1090,11 +1155,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await MEDIA__COMMENT_FILE_COLL.countDocuments(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord / limit);
-
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: dataResponse?.data || infoDataAfterGet,
                     limit,
                     totalRecord,
                     totalPage,

@@ -1,15 +1,11 @@
 "use strict";
 const ObjectID                                  = require('mongoose').Types.ObjectId;
+const { APP_KEYS }                              = require('../../../tools/keys');
 
 const FILE__CORE_COLL                           = require('../database/file.core-coll');
-
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid }                        
-                                                = require('../../../tools/utils/utils');
-const { 
-    FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS
-}                                               = require('../helper/file.keys-constant');
-
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid } = require('../../../tools/utils/utils');
+const { FILE_PROCESSING, FILE_UPLOAD_ERROR, FILE_UPLOAD_SUCCESS }  = require('../helper/file.keys-constant');
 class Model extends BaseModel {
     constructor() {
         super(FILE__CORE_COLL);
@@ -26,11 +22,7 @@ class Model extends BaseModel {
      * 8/ get list with list fileID with status
      */
 
-    /**
-     *   lưu ý:
-     *      app: là các name constant
-     * */
-    insert({ appID, companyID, projectID, nameOrg, name, path, size, mimeType, type, userID }) {
+    insert({ appID, companyID, projectID, groupID, nameOrg, name, path, size, mimeType, type, userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -123,10 +115,16 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert' });
 
+                // Thêm file trong pcm
+                if(appID == APP_KEYS.PCM_PLAN_TASK){
+                    if(groupID){
+                        dataInsert.group = groupID
+                    }
+                    dataInsert.file = `${infoAfterInsert._id}`;
+                }
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -247,6 +245,8 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: infoFile, status: 200 });
             } catch (error) {
+                console.info('getInfoFile');
+                console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

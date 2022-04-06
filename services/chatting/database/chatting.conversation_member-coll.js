@@ -5,6 +5,13 @@ const Schema                = require('mongoose').Schema;
 
 module.exports = DATABASE_MIDDLEWARE("message_conversation_member", {
     /**
+     * Tên thành viên cuộc hội thoại (dùng để filter)
+     */
+    name: {
+        type: String,
+    },
+
+    /**
      * Cuộc hội thoại
      */
     conversation: {

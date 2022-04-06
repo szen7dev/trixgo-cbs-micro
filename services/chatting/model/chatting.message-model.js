@@ -166,7 +166,7 @@ class Model extends BaseModel {
 
 				if(!receiversID || !receiversID.length){
 					receiversID = checkExistConversation.members;
-				} else if(!checkObjectIDs(receiversID)){ 
+				} else if(!checkObjectIDs(receiversID)){
 					return resolve({
 						error: true,
 						message: "Tham số receiversID không hợp lệ",
@@ -219,16 +219,16 @@ class Model extends BaseModel {
 							});
 
 							if(!infoFileCore.error) {
-								const { 
+								const {
 									app, company, name, nameOrg, description, path, size, mimeType, type, author
 								} = infoFileCore.data;
 
 								const infoAfterInserted = await CHATTING__CONVERSATION_FILE_MODEL.insert({
 									conversationID,
 									fileID: file._id,
+									description,
 									appID: app, companyID: company, authorID: author,
-									name, nameOrg, path, size, mimeType, 
-									description, type
+									name, nameOrg, path, size, mimeType, type
 								});
 
 								return { file: infoAfterInserted.data && infoAfterInserted.data._id }
@@ -420,8 +420,8 @@ class Model extends BaseModel {
 				await CHATTING__CONVERSATION_COLL.findOneAndUpdate({
 					_id: conversationID,
 					usersMissMessage: {
-						$elemMatch: { 
-							userID, 
+						$elemMatch: {
+							userID,
 							amount: { $gte: amountUpdateMissMessage }
 						}
 					}
@@ -446,8 +446,14 @@ class Model extends BaseModel {
 	deleteMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs([...messagesID, userID, conversationID]))
-                    return resolve({ error: true, message: 'Request Params invalid', status: 400 });
+                if (!checkObjectIDs([...messagesID, userID, conversationID])) {
+					return resolve({
+						error: true,
+						message: "Tham số messagesID hoặc conversationID không hợp lệ",
+						keyError: "params_messagesID_or_conversationID_invalid",
+						status: 400
+					})
+				}
 
 				// CHECK USERID IS MEMBER OF CONVERSATION
                 let checkExistConversation = await CHATTING__CONVERSATION_COLL.findOne({
@@ -455,11 +461,23 @@ class Model extends BaseModel {
 					members: { $all: [userID] }
                 }).lean();
 
-                if(!checkExistConversation)
-                    return resolve({ error: true, message: "You aren't member", status: 403 });
+                if(!checkExistConversation) {
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại này",
+						keyError: "you_are_not_member_of_conversation",
+						status: 403
+					})
+				}
 
-				if(filesID && !checkObjectIDs(filesID))
-					return resolve({ error: true, message: "Request Params filesID Invalid", status: 400 });
+				if(filesID && !checkObjectIDs(filesID)) {
+					return resolve({
+						error: true,
+						message: "Tham số filesID không hợp lệ",
+						keyError: "params_filesID_invalid",
+						status: 400
+					})
+				}
 
 				// Get list message will delete
 				let listMessages = await CHATTING__MESSAGE_COLL
@@ -507,7 +525,7 @@ class Model extends BaseModel {
 										conversation: conversationID,
 										files: {
 											$elemMatch: {
-												file: { $in: filesID }
+												_id: { $in: filesID }
 											}
 										}
 									}, {
@@ -525,8 +543,14 @@ class Model extends BaseModel {
 						return infoMessageAfterUpdated;
 					})
 
-				if(!infoMessageAfterUpdated)
-					return resolve({ error: true, message: "Can't delete message", status: 403 });
+				if(!infoMessageAfterUpdated) {
+					return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+				}
 
 				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
 			} catch(error){
@@ -543,11 +567,10 @@ class Model extends BaseModel {
 	revokeMessage({ conversationID, userID, messagesID, filesID }) {
         return new Promise(async (resolve) => {
             try {
-				// CHECK PARAMS
                 if (!checkObjectIDs([...messagesID, userID, conversationID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số không hợp lệ',
 						keyError: 'params_invalid',
 						status: 400
 					});
@@ -559,18 +582,18 @@ class Model extends BaseModel {
                 }).lean();
 
                 if(!checkExistConversation) {
-					return resolve({ 
-						error: true, 
-						message: 'Bạn không phải thành viên của cuộc hội thoại', 
+					return resolve({
+						error: true,
+						message: 'Bạn không phải thành viên của cuộc hội thoại',
 						keyError: 'you_are_not_member_of_conversation',
 						status: 403
 					});
 				}
 
 				if(filesID && !checkObjectIDs(filesID)) {
-					return resolve({ 
-						error: true, 
-						message: 'File ID không hợp lệ', 
+					return resolve({
+						error: true,
+						message: 'Tham số filesID không hợp lệ',
 						keyError: 'params_filesID_invalid',
 						status: 400
 					});
@@ -580,16 +603,16 @@ class Model extends BaseModel {
 				let listMessages = await CHATTING__MESSAGE_COLL
 					.find({
 						_id: { $in: messagesID },
-						conversation: conversationID,
-						sender: userID
+						conversation: conversationID
+						// sender: userID
 					})
 					.select('_id type createAt')
 					.lean();
 
 				if(!listMessages || !listMessages.length) {
-					return resolve({ 
-						error: true, 
-						message: 'Tin nhắn không thuộc cuộc hội thoại này', 
+					return resolve({
+						error: true,
+						message: 'Tin nhắn không thuộc cuộc hội thoại hoặc tin nhắn không tồn tại',
 						keyError: 'message_is_not_belong_conversation',
 						status: 403
 					});
@@ -608,15 +631,15 @@ class Model extends BaseModel {
 
 				// Recall 1 message and message is expired recall
 				if(messagesID.length === 1 && !listMessagesNotExpire.length) {
-					return resolve({ 
-						error: true, 
-						message: 'Tin nhắn đã hết hạn thu hồi (1 tiếng)', 
+					return resolve({
+						error: true,
+						message: 'Tin nhắn đã hết hạn thu hồi (1 tiếng)',
 						keyError: 'time_to_recall_messages_has_expired',
 						status: 403
 					});
 				}
 
-				const { results: infoMessageAfterUpdated } = await PromisePool
+				const { results } = await PromisePool
 					.for(listMessagesNotExpire)
 					.withConcurrency(2)
 					.process(async message => {
@@ -627,35 +650,22 @@ class Model extends BaseModel {
 							case 6: // Recall message location
 							case 7: // Recall message share contact
 								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
-
-								// Update last message for conversation
-								let isLastMessage = checkExistConversation.lastMessage?.toString() === message._id.toString();
-
-								if(isLastMessage){
-									let lastMessageOfConversation = await CHATTING__MESSAGE_COLL
-										.findOne({ conversation: conversationID })
-										.select('_id')
-										.sort({ _id: -1 })
-
-									await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
-										$set: { lastMessage: lastMessageOfConversation._id }
-									})
-								}
-
 								break;
 							case 1: // Recall message images
 							case 2: // Recall message files
-								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(message._id, {
-									$pull: {
-										files: {
-											_id: { $in: filesID }
-										}
-									},
-								}, { new: true });
+								infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
 
-								if(infoMessageAfterUpdated && !infoMessageAfterUpdated.files.length){
-									await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
-								}
+								// infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findByIdAndUpdate(message._id, {
+								// 	$pullAll: {
+								// 		files: {
+								// 			_id: { $in: filesID }
+								// 		}
+								// 	},
+								// }, { new: true });
+
+								// if(infoMessageAfterUpdated && !infoMessageAfterUpdated.files.length){
+								// 	await CHATTING__MESSAGE_COLL.findByIdAndDelete(message._id);
+								// }
 
 								// infoMessageAfterUpdated = await CHATTING__MESSAGE_COLL.findOneAndUpdate({
 								// 	_id: message._id,
@@ -674,19 +684,33 @@ class Model extends BaseModel {
 								break;
 						}
 
+						// Update last message for conversation
+						let isLastMessage = checkExistConversation.lastMessage?.toString() === message._id.toString();
+
+						if(isLastMessage){
+							let lastMessageOfConversation = await CHATTING__MESSAGE_COLL
+								.findOne({ conversation: conversationID })
+								.select('_id')
+								.sort({ _id: -1 })
+
+							await CHATTING__CONVERSATION_COLL.findByIdAndUpdate(conversationID, {
+								$set: { lastMessage: lastMessageOfConversation._id }
+							})
+						}
+
 						return infoMessageAfterUpdated;
 					})
 
-				if(!infoMessageAfterUpdated || !infoMessageAfterUpdated.length) {
-					return resolve({ 
-						error: true, 
-						message: 'Có lỗi xảy ra', 
-						keyError: 'error_occurs',
+				if(!results || !results.length) {
+					return resolve({
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+						keyError: 'error_occurred',
 						status: 422
 					});
 				}
 
-				return resolve({ error: false, data: infoMessageAfterUpdated, status: 200 });
+				return resolve({ error: false, data: results, status: 200 });
 			} catch(error){
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
@@ -704,7 +728,7 @@ class Model extends BaseModel {
                 if (!checkObjectIDs([userID, conversationID])) {
 					return resolve({
 						error: true,
-						message: 'Tham số không hợp lệ',
+						message: 'Tham số conversationID không hợp lệ',
 						keyError: 'params_userID_or_conversationID_invalid',
 						status: 400
 					})
@@ -842,9 +866,9 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				if(!checkObjectIDs([conversationID, messageID, userID])) {
-					return resolve({ 
-						error: true, 
-						message: "Tham số không hợp lệ", 
+					return resolve({
+						error: true,
+						message: "Tham số không hợp lệ",
 						keyEror: 'params_conversationID_or_messageID_invalid',
 						status: 400
 					});
@@ -856,9 +880,9 @@ class Model extends BaseModel {
 				}).lean();
 
 				if(!infoConversation) {
-					return resolve({ 
-						error: true, 
-						message: "Bạn không phải thành viên của cuộc hội thoại", 
+					return resolve({
+						error: true,
+						message: "Bạn không phải thành viên của cuộc hội thoại",
 						keyEror: 'you_are_not_member_of_conversation',
 						status: 403
 					});
@@ -869,9 +893,9 @@ class Model extends BaseModel {
 					const listAuthorsID = infoConversation.authors.map(author => author.toString());
 					// User is not author of conversation
 					if(!listAuthorsID.includes(userID)) {
-						return resolve({ 
-							error: true, 
-							message: "Bạn không có quyền pin tin nhắn", 
+						return resolve({
+							error: true,
+							message: "Bạn không có quyền pin tin nhắn",
 							keyEror: 'you_do_not_have_permission_to_pin_message',
 							status: 403
 						});
@@ -886,9 +910,9 @@ class Model extends BaseModel {
 				if(isPin){
 
 					if(infoConversation.messagesPin.includes(messageID)) {
-						return resolve({ 
-							error: true, 
-							message: "Tin nhắn đã được pin", 
+						return resolve({
+							error: true,
+							message: "Tin nhắn đã được pin",
 							keyEror: 'message_is_pined',
 							status: 400
 						});
@@ -927,9 +951,9 @@ class Model extends BaseModel {
 				}
 
 				if(!infoConversationAfterUpdate) {
-					return resolve({ 
-						error: true, 
-						message: "Đã xảy ra lỗi", 
+					return resolve({
+						error: true,
+						message: "Đã xảy ra lỗi",
 						keyEror: 'error_occurred',
 						status: 422
 					});
@@ -961,11 +985,11 @@ class Model extends BaseModel {
 					.lean();
 
 				return resolve({
-					error: false, 
+					error: false,
 					data: {
 						infoConversation: infoConversationAfterUpdate,
 						infoMessage: infoMessageNotification
-					}, 
+					},
 					status: 200
 				});
             } catch (error) {
@@ -1029,6 +1053,14 @@ class Model extends BaseModel {
 						},
 						select: select.poll
 					})
+					.populate({
+						path: 'reactions',
+						select: '_id type author',
+						populate: {
+							path: 'author',
+							select: '_id bizfullname image'
+						}
+					})
 					.populate('reminder', select.reminder)
 					.populate('sender', select.sender)
 					.populate({
@@ -1071,9 +1103,9 @@ class Model extends BaseModel {
 		return new Promise(async (resolve) => {
 			try {
 				if(!checkObjectIDs([userID])) {
-					return resolve({ 
-						error: true, 
-						message: 'Tham số user ID', 
+					return resolve({
+						error: true,
+						message: 'Tham số user ID',
 						keyError: 'params_userID_invalid',
 						status: 400
 					});
@@ -1100,9 +1132,9 @@ class Model extends BaseModel {
 					}).lean();
 
 					if(!infoConversation) {
-						return resolve({ 
-							error: true, 
-							message: 'Bạn không phải thành viên của cuộc hội thoại', 
+						return resolve({
+							error: true,
+							message: 'Bạn không phải thành viên của cuộc hội thoại',
 							keyError: 'you_are_not_member_of_conversation',
 							status: 403
 						});
@@ -1137,13 +1169,13 @@ class Model extends BaseModel {
 					},
 					{ $limit: limit + 1 },
 					{ $sort: sortBy },
-					{ 
+					{
                         $lookup: {
                             from: "users",
                             localField: "sender",
                             foreignField: "_id",
                             as: "sender"
-                        } 
+                        }
                     },
                     {
                         $unwind: {
@@ -1151,13 +1183,13 @@ class Model extends BaseModel {
 							preserveNullAndEmptyArrays: true
 						},
                     },
-					{ 
+					{
                         $lookup: {
                             from: "message_message_reminders",
                             localField: "reminder",
                             foreignField: "_id",
                             as: "reminder"
-                        } 
+                        }
                     },
                     {
                         $unwind: {
@@ -1168,21 +1200,21 @@ class Model extends BaseModel {
 					{
 						$match: conditionJoined
 					},
-					{ 
+					{
                         $lookup: {
                             from: "users",
                             localField: "reminder.accepts",
                             foreignField: "_id",
                             as: "reminder.accepts"
-                        } 
+                        }
                     },
-					{ 
+					{
                         $lookup: {
                             from: "users",
                             localField: "reminder.rejects",
                             foreignField: "_id",
                             as: "reminder.rejects"
-                        } 
+                        }
                     },
 					{
                         $project: {

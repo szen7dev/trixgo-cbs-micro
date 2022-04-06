@@ -7,7 +7,7 @@ module.exports  = DATABASE_MIDDLEWARE("app_role", {
     /**
      * PHÂN LOẠI NHÓM CHỨC NĂNG
      * 1 - Nhóm chức năng ứng dụng
-     * 2 - Nhóm chức dự án phòng ban
+     * 2 - Nhóm chức dự án phòng ban/hợp đồng
      * 3 - Nhóm chức năng hợp đồng
      */
     type: { type: Number, default: 1 },

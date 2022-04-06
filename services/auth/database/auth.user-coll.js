@@ -3,6 +3,10 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+function obfuscate (cc) {
+    return '****-****-****-' + cc.slice(cc.length-4, cc.length);
+}
+
 module.exports  = DATABASE_MIDDLEWARE("user", {
     /**
      * index: {fullname: text}
@@ -10,6 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     //_________Thuộc nền tảng
     platform:{
         type: Number,
+        default: 1,
         enum: [1, 2]
     },
     //_______Công ty

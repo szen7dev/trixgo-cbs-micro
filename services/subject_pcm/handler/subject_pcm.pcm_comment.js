@@ -14,11 +14,11 @@ module.exports = {
 	 * Func: Tạo comment
 	 * Date: 17/08/2021
 	 * Update: 22/02/2022
-	 */ 
+	 */
     insert: {
         auth: "required",
         params: {
-			content    : { type: "string" },
+			content    : { type: "string", optional: true },
             taskID     : { type: "string" },
             type       : { type: "number" },
             parentID   : { type: "string", optional: true },
@@ -48,7 +48,7 @@ module.exports = {
 	 * Dev: MinhVH
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
-	 */ 
+	 */
     update: {
         auth: "required",
         params: {
@@ -69,7 +69,7 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
 					taskID, commentID, authorID, content, files, images, select, populates
 				});
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -116,7 +116,7 @@ module.exports = {
         auth: "required",
         params: {
 			commentID: { type: "string" },
-        }, 
+        },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
@@ -133,7 +133,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách hoặc chi tiết comment
 	 * Date: 17/08/2021
 	 * Update: 22/02/2022
@@ -147,6 +147,8 @@ module.exports = {
             lastestID           : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
             commentID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
@@ -154,16 +156,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { taskID, limit, parentID, lastestID, commentID, type, official, sortKey, select, populates } = ctx.params;
+				let { _id: authorID } = ctx.meta.infoUser;
+                let { taskID, limit, parentID, lastestID, commentID, contractID, projectID, type, official, sortKey, select, populates } = ctx.params;
                 let resultAfterCallHandler = null;
-                
+
                 if(commentID){
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getInfo({
                         commentID, select, populates
                     });
                 } else{
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
-                        taskID, parentID, limit, lastestID, type, official, sortKey, select, populates
+                        taskID, contractID, projectID, parentID, limit, lastestID, type, official, sortKey, select, populates, authorID
                     });
                 }
 

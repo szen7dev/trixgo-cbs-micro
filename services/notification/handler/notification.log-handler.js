@@ -27,6 +27,7 @@ module.exports = {
       * Date: 16/12/2021
       */
     insertNotification: {
+        auth: "required",
         params: {
             content     : { type: "string" },
             receivers   : { type: "array" },
@@ -60,17 +61,20 @@ module.exports = {
       * Date: 16/12/2021
       */
     update: {
+        auth: "required",
         params: {
-            notificationID  : { type: "string" },
-            status          : { type: "number", optional: true },
+            notificationID      : { type: "string", optional: true },
+            status              : { type: "number", optional: true },
+            isUpdateSendSuccess : { type: "boolean", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { notificationID, status } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
+                const { notificationID, status, isUpdateSendSuccess } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.update({
-                    notificationID, status
+                    notificationID, status, isUpdateSendSuccess, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -86,7 +90,9 @@ module.exports = {
       * Date: 16/12/2021
       */
     getInfoAndGetList: {
+        auth: "required",
         params: {
+            projectID 		: { type: "string", optional: true },
             lastestID 		: { type: "string", optional: true },
 			keyword 		: { type: "string", optional: true },
 			limit 			: { type: "string", optional: true },
@@ -97,10 +103,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: authorID } = ctx.meta.infoUser;
-                const { lastestID, keyword, limit, populates, select } = ctx.params;
+                const { lastestID, projectID, keyword, limit, populates, select } = ctx.params;
 
                 const resultAfterCallHandler = await NOTIFICATION_LOG_MODEL.getList({
-                    authorID, lastestID, keyword, limit, select, populates
+                    authorID, lastestID, projectID, keyword, limit, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -12,7 +12,7 @@ const AUTH__APP_ROLE_HANDLER 		= require('./handler/auth.app_role-handler');
 const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handler');
 const AUTH__APP_USER_HANDLER 		= require('./handler/auth.app_user-handler');
 const AUTH__APP_COMPANY_HANDLER 	= require('./handler/auth.app_company-handler');
-
+const AUTH__APP_HANDLER 			= require('./handler/auth.app-handler');
 
 const AUTH__USER_COLL				= require('./database/auth.user-coll');
 const AUTH__REGISTER_TRIAL_COLL		= require('./database/auth.register_trial-coll');
@@ -105,6 +105,9 @@ module.exports = {
 		[CF_ACTIONS_AUTH.COMPANY_UPDATE]							: AUTH__COMPANY_HANDLER.update,
 		[CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY]				: AUTH__COMPANY_HANDLER.getInfoAndGetListCompany,
 
+		// App
+		[CF_ACTIONS_AUTH.APP_GET_INFO_GET_LIST]						: AUTH__APP_HANDLER.getInfoAndGetList,
+
 		// App menu
 		[CF_ACTIONS_AUTH.APP_MENU_INSERT]							: AUTH__APP_MENU_HANDLER.insert,
 		[CF_ACTIONS_AUTH.APP_MENU_UPDATE]							: AUTH__APP_MENU_HANDLER.update,
@@ -146,6 +149,10 @@ module.exports = {
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_TYPE]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByType,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_YEAR]		    : AUTH__REGISTER_TRIAL_HANDLER.statisticsByYear,
 		[CF_ACTIONS_AUTH.REGISTER_TRIAL_STATISTICS_BY_COMPANY]		: AUTH__REGISTER_TRIAL_HANDLER.statisticsByCompany,
+	
+		// Version app
+		[CF_ACTIONS_AUTH.CHECK_VERSION_APP]						    : AUTH__APP_HANDLER.checkVersionApp,
+
 	},
 	
 	/**

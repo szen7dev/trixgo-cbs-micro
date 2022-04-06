@@ -53,15 +53,38 @@ class Model extends BaseModel {
 	}) {
         return new Promise(async (resolve) => {
             try {
-				if (!checkObjectIDs(departmentID, packageID, senderID, propertyID, userID)) {
-					return resolve({ 
+                if (!checkObjectIDs(departmentID)) {
+					return resolve({  
                         error: true, 
-                        message: 'Request params departmentID|packageID|senderID|propertyID invalid', 
+                        message: 'Request params departmentID invalid', 
                         keyError: 'params_invalid',
-                        status: 400 
                     });
                 }
 
+                if (!checkObjectIDs(packageID)) {
+					return resolve({  
+                        error: true, 
+                        message: 'Request params packageID invalid', 
+                        keyError: 'params_invalid',
+                    });
+                }
+
+                if (!checkObjectIDs(senderID)) {
+					return resolve({  
+                        error: true, 
+                        message: 'Request params senderID invalid', 
+                        keyError: 'params_invalid',
+                    });
+                }
+
+                if (!checkObjectIDs(propertyID)) {
+					return resolve({  
+                        error: true, 
+                        message: 'Request params propertyID invalid', 
+                        keyError: 'params_invalid',
+                    });
+                }
+                
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
                     return resolve({
                         error: true, 
@@ -168,6 +191,10 @@ class Model extends BaseModel {
                                 numberOfDocs: 1
                             }
                         });
+                    }
+                }else{
+                    if(checkObjectIDs(parentID)){
+                        await DOCUMENT__DOC_COLL.findByIdAndUpdate(parentID, { $inc: { amountDocumentChild: 1 }, new: true })
                     }
                 }
 
@@ -493,6 +520,8 @@ class Model extends BaseModel {
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} })?.select("_id");
                 if(listPackageAccess.length){
                     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                }else{
+                    return resolve({ error: true, message: "Bạn chưa nằm trong gói thầu nào", keyError: "user_not_members_in_package" });
                 }
 
                 if(companyID){
@@ -546,9 +575,11 @@ class Model extends BaseModel {
                 if(checkObjectIDs(departmentID)){
                     conditionObj.project = departmentID
                 }
-
+                
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
+                }else{
+                    conditionObj.parent = { $exists: false }
                 }
 
                 if(marked){
@@ -579,12 +610,11 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-                
                 let infoDataAfterGet = await DOCUMENT__DOC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
+                    .select(select || {})
+                    .populate(populates || {})
                     .lean(); 
                 
                 if(!infoDataAfterGet)
@@ -593,23 +623,23 @@ class Model extends BaseModel {
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-                
                 let totalRecord = await DOCUMENT__DOC_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit: limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
                 }, status: 200 });
                 
             } catch (error) {
+		console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -652,15 +682,14 @@ class Model extends BaseModel {
 
                 let conditionObj = {};
                 let listDoctype = [];
-                companyID       && (conditionObj.company = ObjectID(companyID));
+                // companyID       && (conditionObj.company = ObjectID(companyID));
                 departmentID    && (conditionObj.project = ObjectID(departmentID));
 
                 // User phải nằm trong members của gói thầu.
                 let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
-                if(listPackageAccess.length){
-                    conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
-                }
-
+                // if(listPackageAccess.length){
+                //     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                // }
                 packageID       && (conditionObj.package = ObjectID(packageID));
                 let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
                     {
@@ -1053,6 +1082,44 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 });
+            }
+        })
+    }
+
+
+    /**
+     * Name: Lấy số lượng công việc của tất cả project mà user là members✅
+     * Author: Depv
+     */
+     getAmountDocumentByProjects({ userID, fromDate, toDate, ctx }){
+        return new Promise(async resolve => {
+            try {
+                // Call service list project
+                let listProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    unLimit: "100", select: "sign name"
+                });
+                listProject       = listProject?.data?.listRecords || [];
+
+                let listProjectID = listProject.map(project => ObjectID(project._id));
+                let conditionObj = { project: { $in: listProjectID } };
+
+                if(fromDate && toDate){
+                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                }
+                
+                // Số lượng công việc trong mỗi dự án
+                let listAmountDocument = await DOCUMENT__DOC_COLL.aggregate([
+                    { $match: conditionObj },
+                    { $group: { 
+                        _id: "$project",
+                        amount: { $sum: 1 }
+                    }},
+                    { $sort: { _id: -1} }
+                ]);
+
+                return resolve({ error: false, data: { listProject, listAmountDocument } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

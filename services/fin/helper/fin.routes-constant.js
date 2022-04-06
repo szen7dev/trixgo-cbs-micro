@@ -1,14 +1,15 @@
-const BASE_ROUTE = '/cmcs';
+const BASE_ROUTE = '/fin';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
-const CONTRACT_BILL_JOB = '/contract_bill_jobs';
+const CASH_FLOW_PLAN     = '/cash_flow_plans';
 
-const CF_ROUTINGS_CMCS = {
+const CF_ROUTINGS_FIN = {
     ORIGIN_APP: BASE_ROUTE,
 
-    // ================================CONTRACT BILL JOB=======================================//
-    CONTRACT_BILL_JOB_GET_LIST         : `${BASE_ROUTE}${CONTRACT_BILL_JOB}`, 
+    // ================================CASH_FLOW_PLAN=======================================//
+    CASH_FLOW_PLAN         : `${BASE_ROUTE}${CASH_FLOW_PLAN}`, 
+
 }
 
-exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;
+exports.CF_ROUTINGS_FIN = CF_ROUTINGS_FIN;

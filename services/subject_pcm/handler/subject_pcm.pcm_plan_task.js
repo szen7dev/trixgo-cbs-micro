@@ -20,7 +20,6 @@ module.exports = {
             projectID        : { type: "string" },
             groupID          : { type: "string" },
             assigneeID       : { type: "string" },
-            relatedIDs       : { type: "array", optional: true },
             authorAttachs    : { type: "array", optional: true },
             actualStartTime  : { type: "string", optional: true },
             type             : { type: "number", optional: true },
@@ -91,9 +90,13 @@ module.exports = {
             userIDDelete   : { type: "number", optional: true },
             typeUpdate     : { type: "number", optional: true },
             flags          : { type: "array", optional: true },
+            flagsRemoves   : { type: "array", optional: true },
             related        : { type: "array", optional: true },
             relatedRemoves : { type: "array", optional: true },
             lastLogID      : { type: "string", optional: true },
+            isAddSignature : { type: "boolean", optional: true },
+            authorAttachs  : { type: "array", optional: true },
+            assigneeAttachs: { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
@@ -103,7 +106,7 @@ module.exports = {
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
                     contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature
                  } = ctx.params;
 				const { _id: userID, bizfullname } = ctx.meta.infoUser;
                 // Bước check quyền
@@ -112,7 +115,7 @@ module.exports = {
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
                     contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, lastLogID, bizfullname, ctx
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -132,7 +135,7 @@ module.exports = {
         params: {
             taskIDs         : { type: "array" },
             parentID        : { type: "string" },
-            type            : { type: "number" },
+            type            : { type: "number" }, // 1 việc con / 2 checklist
         },
         async handler(ctx) {
             try {
@@ -143,7 +146,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
-                    parentID, taskIDs, type
+                    parentID, taskIDs, type, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -186,6 +189,8 @@ module.exports = {
             isStatusNot3     : { type: "string", optional: true },
             isUsersDelete    : { type: "string", optional: true },
             statusNe         : { type: "string", optional: true },
+            groupID          : { type: "string", optional: true },
+            isPassPermision  : { type: "string", optional: true },
             
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -200,10 +205,10 @@ module.exports = {
                 
                 let { 
                     taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe,
-                    keyword, limit, lastestID, select, populates
+                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID,
+                    keyword, limit, lastestID, select, populates, isPassPermision
                 } = ctx.params;
-
+                
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler;
@@ -214,9 +219,9 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe,
+                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                        keyword, limit, select, lastestID, populates
+                        keyword, limit, select, lastestID, populates, isPassPermision
                     });
                 }
                 
@@ -297,5 +302,49 @@ module.exports = {
             }
         }
     },
-    
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Lấy số lượng công việc của companyOfAssignee trong dự án ✅
+	 */
+    getAmountTaskOfCompanyOfAssignee: {
+        auth: "required",
+        params: {
+            projectID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                let { projectID } = ctx.params;
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskOfCompanyOfAssigneeV2({ projectID, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+	 * Dev: Depv ✅
+	 * Func: Lấy số lượng công việc của tất cả project mà user là members✅
+	 */
+    getAmountTaskByProjects: {
+        auth: "required",
+        params: {
+            fromDate: { type: "string", optional: true },
+            toDate:   { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                let { fromDate, toDate } = ctx.params;
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskByProjects({ userID, fromDate, toDate, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }
 }

@@ -116,7 +116,7 @@ class Model extends BaseModel {
     update({ doctypeID, name, description, userID }) { 
         return new Promise(async resolve => {
             try {
-                const dataUpdate = { userUpdate: userID };
+                const dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 /** 
                  * VALIDATION STEP (2)
@@ -155,54 +155,9 @@ class Model extends BaseModel {
 
     /**
      * Dev: MinhVH
-     * Func: Remove doctype
+     * Func: Remove doctype => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Date: 22/02/2022
      */
-    remove({ doctypeID, userID }) { 
-        return new Promise(async resolve => {
-            try {
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([doctypeID, userID])) {
-                    return resolve({
-						error: true,
-						message: "Tham số doctypeID hoặc userID không hợp lệ",
-						keyError: "params_doctypeID_or_userID_invalid",
-						status: 400
-					})
-                }
-
-                let infoAterRemove = await ITEM__DOCTYPE_COLL.findOneAndDelete({
-                    _id: doctypeID,
-                    userCreate: userID
-                });
-
-                if(!infoAterRemove) {
-                    return resolve({
-						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurred",
-						status: 422
-					})
-                }
-
-                if(infoAterRemove.parent) {
-                    await ITEM__DOCTYPE_COLL.findByIdAndUpdate(infoAterRemove.parent, {
-                        $pull: {
-                            childs: infoAterRemove._id
-                        }
-                    });
-                }
-
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get Hợp đồng ✅

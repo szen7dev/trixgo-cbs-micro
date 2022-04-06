@@ -18,6 +18,7 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
+            companyID       : { type: "string", optional: true },
             type            : { type: "number" },
             name            : { type: "string" },
             sign            : { type: "string" },
@@ -25,10 +26,7 @@ module.exports = {
             expiredTime     : { type: "string" },
             milestones      : { type: "number" },
             completedMilestones: { type: "number" },
-            companyID       : { type: "string", optional: true },
-
             description     : { type: "string", optional: true },
-            // company         : { type: "string", optional: true },
             parent          : { type: "string", optional: true },
             owner           : { type: "string", optional: true },
             address         : { type: "string", optional: true },
@@ -44,19 +42,48 @@ module.exports = {
             area            : { type: "string", optional: true },
             members         : { type: "array", optional: true },
             admins          : { type: "array", optional: true },
-            admins          : { type: "array", optional: true },
+            budget          : { type: "number" },
+            vatBudget                   : { type: "number" },
+            forecastBudget              : { type: "number" },
+            vatForecastBudget           : { type: "number" },
+            contractValue               : { type: "number" },
+            contractVatValue            : { type: "number" },
+            contractPlus                : { type: "number" },
+            contractVatPlus             : { type: "number" },
+            contractAdvancePaymentPaid  : { type: "number" },
+            contractAmountPaid          : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones  } = ctx.params;
+                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, 
+                    budget,
+                    vatBudget,
+                    forecastBudget,
+                    vatForecastBudget,
+                    contractValue,
+                    contractVatValue,
+                    contractPlus,
+                    contractVatPlus,
+                    contractAdvancePaymentPaid,
+                    contractAmountPaid  } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                   company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, authorID: userID, ctx
+                    ctx, authorID: userID, company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, 
+                    budget, 
+                    vatBudget,
+                    forecastBudget,
+                    vatForecastBudget,
+                    contractValue,
+                    contractVatValue,
+                    contractPlus,
+                    contractVatPlus,
+                    contractAdvancePaymentPaid,
+                    contractAmountPaid
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -72,68 +99,72 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            departmentID            : { type: "string", optional: true },
-            name                    : { type: "string", optional: true },
-            admins                  : { type: "array", optional: true  },
-            adminsRemove            : { type: "array", optional: true },
-            members                 : { type: "array", optional: true  },
-            membersRemove           : { type: "array", optional: true },
-            stage                   : { type: "number", optional: true },
-            ontime                  : { type: "number", optional: true },
-            onbudget                : { type: "number", optional: true },
-            status                  : { type: "number", optional: true },
-            projectType             : { type: "number", optional: true },
-            projectCapital          : { type: "number", optional: true },
-            buildingType            : { type: "number", optional: true },
-            buildingGrade           : { type: "number", optional: true },
-            description             : { type: "string", optional: true },
-            sign                    : { type: "string", optional: true },
-            owner                   : { type: "string", optional: true },
-            location                : { type: "string", optional: true },
-            address                 : { type: "string", optional: true },
-            area                    : { type: "string", optional: true },
-            startTime               : { type: "string", optional: true },
-            expiredTime             : { type: "string", optional: true },
-            actualStartTime         : { type: "string", optional: true },
-            actualFinishTime        : { type: "string", optional: true },
-            pm                      : { type: "string", optional: true },
-            assistant               : { type: "string", optional: true },
-            budget                  : { type: "number", optional: true },
-            note                    : { type: "string", optional: true },
-            position                : { type: "string", optional: true },
-            image                   : { type: "string", optional: true },
-            files                   : { type: "array", optional: true  },
-            userUpdate              : { type: "string", optional: true },
-            milestones              : { type: "number", optional: true },
-            completedMilestones     : { type: "number", optional: true },
-            tasks                   : { type: "number", optional: true },
-            completedTasks          : { type: "number", optional: true },
-            images                  : { type: "string", optional: true },
-            lastComment             : { type: "string", optional: true },
-            revenue                 : { type: "number", optional: true },
-            forecastRevenue         : { type: "number", optional: true },
-            realRevenue             : { type: "number", optional: true },
-            forecastBudget          : { type: "number", optional: true },
-            realBudget              : { type: "number", optional: true },
-            npv                     : { type: "number", optional: true },
-            forecastNpv             : { type: "number", optional: true },
-            realNpv                 : { type: "number", optional: true },
-            irr                     : { type: "number", optional: true },
-            forecastIrr             : { type: "number", optional: true },
-            realIrr                 : { type: "number", optional: true },
-            numberOfPackage         : { type: "number", optional: true },
-            numberOfCompletedPackage: { type: "number", optional: true },
-            numberOfContractIn      : { type: "number", optional: true },
-            contractValue           : { type: "number", optional: true },
-            contractPlusValue       : { type: "number", optional: true },
-            contractVatValue        : { type: "number", optional: true },
-            contractAdvancePayment  : { type: "number", optional: true },
-            contractPlusAcceptance  : { type: "number", optional: true },
-            contractVatAcceptance   : { type: "number", optional: true },
-            contractRetainedValue   : { type: "number", optional: true },
+            departmentID                    : { type: "string", optional: true },
+            name                            : { type: "string", optional: true },
+            admins                          : { type: "array", optional: true  },
+            adminsRemove                    : { type: "array", optional: true },
+            members                         : { type: "array", optional: true  },
+            membersRemove                   : { type: "array", optional: true },
+            stage                           : { type: "number", optional: true },
+            ontime                          : { type: "number", optional: true },
+            onbudget                        : { type: "number", optional: true },
+            status                          : { type: "number", optional: true },
+            projectType                     : { type: "number", optional: true },
+            projectCapital                  : { type: "number", optional: true },
+            buildingType                    : { type: "number", optional: true },
+            buildingGrade                   : { type: "number", optional: true },
+            description                     : { type: "string", optional: true },
+            sign                            : { type: "string", optional: true },
+            owner                           : { type: "string", optional: true },
+            location                        : { type: "string", optional: true },
+            address                         : { type: "string", optional: true },
+            area                            : { type: "string", optional: true },
+            startTime                       : { type: "string", optional: true },
+            expiredTime                     : { type: "string", optional: true },
+            actualStartTime                 : { type: "string", optional: true },
+            actualFinishTime                : { type: "string", optional: true },
+            pm                              : { type: "string", optional: true },
+            assistant                       : { type: "string", optional: true },
+            budget                          : { type: "number", optional: true },
+            vatBudget                       : { type: "number", optional: true },
+            note                            : { type: "string", optional: true },
+            position                        : { type: "string", optional: true },
+            image                           : { type: "string", optional: true },
+            files                           : { type: "array", optional: true  },
+            userUpdate                      : { type: "string", optional: true },
+            milestones                      : { type: "number", optional: true },
+            completedMilestones             : { type: "number", optional: true },
+            tasks                           : { type: "number", optional: true },
+            completedTasks                  : { type: "number", optional: true },
+            images                          : { type: "string", optional: true },
+            lastComment                     : { type: "string", optional: true },
+            revenue                         : { type: "number", optional: true },
+            forecastRevenue                 : { type: "number", optional: true },
+            realRevenue                     : { type: "number", optional: true },
+            forecastBudget                  : { type: "number", optional: true },
+            vatForecastBudget               : { type: "number", optional: true },
+            realBudget                      : { type: "number", optional: true },
+            npv                             : { type: "number", optional: true },
+            forecastNpv                     : { type: "number", optional: true },
+            realNpv                         : { type: "number", optional: true },
+            irr                             : { type: "number", optional: true },
+            forecastIrr                     : { type: "number", optional: true },
+            realIrr                         : { type: "number", optional: true },
+            numberOfPackage                 : { type: "number", optional: true },
+            numberOfCompletedPackage        : { type: "number", optional: true },
+            numberOfContractIn              : { type: "number", optional: true },
+            contractValue                   : { type: "number", optional: true },
+            contractVatValue                : { type: "number", optional: true },
+            contractPlus                    : { type: "number", optional: true },
+            contractVatPlus                 : { type: "number", optional: true },
+            contractAdvancePayment          : { type: "number", optional: true },
+            contractPlusAcceptance          : { type: "number", optional: true },
+            contractVatAcceptance           : { type: "number", optional: true },
+            contractRetainedValue           : { type: "number", optional: true },
             contractAdvancePaymentDeduction: { type: "number", optional: true },
             contractOtherDeduction         : { type: "number", optional: true },
             contractRecommendedPayment     : { type: "number", optional: true },
+            contractAdvancePaymentPaid     : { type: "number", optional: true },
             contractAmountPaid             : { type: "number", optional: true },
             contractRemainingPayment       : { type: "number", optional: true },
             contractAdvancePaymentOverage  : { type: "number", optional: true },
@@ -152,6 +183,7 @@ module.exports = {
             transactionContacts            : { type: "string", optional: true },
             likelihoodOfSuccess            : { type: "string", optional: true },
             lastChange                     : { type: "string", optional: true },
+            photos                         : { type: "array", optional: true },
             numberOfContact                : { type: "number", optional: true },
             numberOfMoms                   : { type: "number", optional: true },
             numberOfDocs                   : { type: "number", optional: true },
@@ -172,11 +204,11 @@ module.exports = {
 
                 let {  departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
-                    pm, assistant, budget, note, position, image, files, milestones, completedMilestones, tasks, completedTasks,
-                    images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-                    realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractPlusValue, contractVatValue, contractAdvancePayment,
-                    contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-                    contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+                    pm, assistant, budget, vatBudget, note, position, image, files, milestones, completedMilestones, tasks, completedTasks,
+                    images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+                    realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
+                    contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction, photos,
+                    contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs } = ctx.params;
@@ -184,11 +216,11 @@ module.exports = {
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
                     departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
-                    pm, assistant, budget, note, position, image, files, userUpdate: userID, milestones, completedMilestones, tasks, completedTasks,
-                    images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-                    realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractPlusValue, contractVatValue, contractAdvancePayment,
-                    contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-                    contractOtherDeduction, contractRecommendedPayment, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
+                    pm, assistant, budget, vatBudget, note, position, image, files, userUpdate: userID, milestones, completedMilestones, tasks, completedTasks,
+                    images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
+                    realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
+                    contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction, photos,
+                    contractOtherDeduction, contractRecommendedPayment,  contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs
@@ -204,29 +236,8 @@ module.exports = {
       
     /**
 	 * Dev: Depv ✅
-	 * Func: Xoá dự án phòng ban
+	 * Func: Xoá dự án phòng ban => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 */
-    remove: {
-        auth: "required",
-        params: {
-            departmentID    : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let {  departmentID } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
-            
-                let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.remove({
-                    departmentID, userID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
     
     /**
 	 * Dev: Depv ✅
@@ -286,6 +297,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
+            unLimit         : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
@@ -294,11 +306,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, type, keyword, limit, unLimit, lastestID, select, populates } = ctx.params;
 				let { _id: userID } = ctx.meta.infoUser;
                
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
-                    companyID, lastestID, userID, type, keyword, limit, select, populates
+                    companyID, lastestID, userID, type, keyword, limit, unLimit, select, populates
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

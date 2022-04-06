@@ -6,6 +6,7 @@ const BASE_ROUTE = '/auth';
  const COMPANY           = '/companies',
        USER              = '/users',
        REGISTER_TRIAL    = '/register_trials',
+       APP               = '/apps',
        APP_MENU          = '/app_menus',
        APP_ROLE_MENU     = '/app_role_menus',
        APP_ROLE          = '/app_roles',
@@ -19,22 +20,27 @@ const CF_ROUTINGS_AUTH = {
     */
     USERS                               : `${BASE_ROUTE}${USER}`,
     ME                                  : `${BASE_ROUTE}${USER}/me`, //GET, PUT, DELETE /auth/users/me
-    
+
     LOGIN                               : `${BASE_ROUTE}${USER}/login`,
     UPDATE_DEVICE_WHEN_LOGIN_MOBILE     : `${BASE_ROUTE}${USER}/update-device`,
 
     SEARCH_WITH_FIND                    : `${BASE_ROUTE}${USER}/search-with-find`,
     SEARCH_WITH_FULL_TEXT               : `${BASE_ROUTE}${USER}/search-with-fulltext`,
-    
+
     GET_LIST_FRIEND                     : `${BASE_ROUTE}${USER}/list-friend`,
     GET_LIST_USER_SEND_TO_FRIENDS       : `${BASE_ROUTE}${USER}/list-user-send-to-friends`,
     GET_LIST_USER_RECEIVE_FROM_FRIENDS  : `${BASE_ROUTE}${USER}/list-user-receiver-from-friends`,
     GET_LIST_USER                       : `${BASE_ROUTE}${USER}/list-user`,
-    
+
     /**
      * COMPANY
      */
     COMPANY                            : `${BASE_ROUTE}${COMPANY}`,
+
+    /**
+     * APP
+     */
+    APP                                : `${BASE_ROUTE}${APP}`,
 
     /**
      * APP_MENU
@@ -45,7 +51,7 @@ const CF_ROUTINGS_AUTH = {
      * APP_COMPANY
      */
     APP_COMPANY                         : `${BASE_ROUTE}${APP_COMPANY}`,
-    
+
     /**
      * APP_ROLE
      */
@@ -58,7 +64,7 @@ const CF_ROUTINGS_AUTH = {
     APP_ROLE_MENU                      : `${BASE_ROUTE}${APP_ROLE_MENU}`,
     APP_ROLE_MENU_PERMISSION            : `${BASE_ROUTE}${APP_ROLE_MENU}/permission`,
     APP_ROLE_MENU_GET_PERMISSION_TO_ACCESS_ONE_MENU_OF_APP : `${BASE_ROUTE}${APP_ROLE_MENU}/permission-to-access-one-menu-of-app`,
-    
+
     /**
      * APP_USER
      */
@@ -72,5 +78,10 @@ const CF_ROUTINGS_AUTH = {
     REGISTER_TRIAL_STATISTICS_BY_TYPE : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-type`,
     REGISTER_TRIAL_STATISTICS_BY_YEAR : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-year`,
     REGISTER_TRIAL_STATISTICS_BY_COMPANY : `${BASE_ROUTE}${REGISTER_TRIAL}/statistics-by-company`,
+
+    /**
+     * VERSION APP
+     */
+    CHECK_LASTEST_APP : `/check-lastest-app`,
 }
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

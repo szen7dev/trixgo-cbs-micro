@@ -17,17 +17,18 @@ module.exports = {
         auth: "required",
         params: {
             projectID : { type: "string" },
+            parentID  : { type: "string", optional: true },
             name      : { type: "string" },
             sign      : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  projectID, name, sign } = ctx.params;
+                let {  projectID, parentID, name, sign } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.insert({
-                    projectID, name, sign, userID
+                    projectID, parentID, name, sign, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -127,11 +128,13 @@ module.exports = {
     getInfoAndGetList: { 
         auth: "required",
         params: {
-            projectID   : { type: "string", optional: true },
-            groupID     : { type: "string", optional: true },
-            isShowAll   : { type: "string", optional: true },
-
-            //========================================
+            projectID               : { type: "string", optional: true },
+            groupID                 : { type: "string", optional: true },
+            parentID                : { type: "string", optional: true },
+            isShowAll               : { type: "string", optional: true },
+            isShowParentAndChild    : { type: "string", optional: true },
+            
+            //==============================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
@@ -141,7 +144,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  projectID, groupID, isShowAll, keyword, limit, lastestID, select, populates } = ctx.params;
+                let {  parentID, projectID, groupID, isShowAll, isShowParentAndChild, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -151,7 +154,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getList({
-                        keyword, isShowAll, limit, userID, lastestID, projectID, select, populates, 
+                        parentID, keyword, isShowAll, isShowParentAndChild, limit, userID, lastestID, projectID, select, populates, 
                     });
                 }
                 

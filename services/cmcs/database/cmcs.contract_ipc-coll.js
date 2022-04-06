@@ -4,39 +4,82 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
-    //_________Phân loại(1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*)
-    type: { type: Number, default: 1 },
+    /**
+     * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
+     */
+    //_________Phân loại (1-Tạm ứng/2-Thanh toán)(*)
+    type: { type: Number, default: 1, enum: [1,2] },
 
-    //_________ Công ty(*)
+    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
+    outin: { type: Number, default: 1, enum: [1,2] },
+
+    //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
+    real: { type: Number, default: 1 },
+
+    //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
+    field: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },  
+    
+    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    chair: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },
+    
+    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
+    personInCharge: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },    
+
+    //_________Bên mua (POSTMAN ITEM > CONTACT)
+    buyerInfo: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+
+    //_________Bên bán (POSTMAN ITEM > CONTACT)
+    sellerInfo: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+
+    //_________Công ty-Được xác định theo IPC(*)
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
 
-    //_________ Dự án(*) 
+    //_________Dự án-Được xác định theo IPC(*) 
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
 
-    //_________Hợp đồng(*)
+    //_________Hợp đồng-Được xác định theo IPC(*)
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
+
+    /**
+     * END THÔNG TIN LẤY TỪ HỢP ĐỒNG
+     */
 
     //_________Nội dung(*)
     name: String,
     
     //_________Mã hiệu
     sign: String,
-
-    //_________Mô tả
-    description: String,
-
+    
     //_________Ngày hoạch toán(*)
     date: { type: Date, default: Date.now },
 
+    //_________Mô tả
+    description: String,
+    
     //_________Ghi chú
     note: String,
 
@@ -78,16 +121,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
      */
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
-    //_________Giá trị thực hiện
-    fcuProduction: { type: Number, default: 0},
-    //_________Thuế giá trị gia tăng
-    fcuVatValue: { type: Number, default: 0 }, 
-    //_________Giá trị giữ lại
-    fcuRetainedValue: { type: Number, default: 0 },
-    //_________Khấu trừ tạm ứng
-    fcuAdvancePaymentDeduction: { type: Number, default: 0 },
-    //_________Khấu trừ khác
-    fcuOtherDeduction: { type: Number, default: 0 },
 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

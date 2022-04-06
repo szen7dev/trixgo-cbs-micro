@@ -30,7 +30,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ companyID, projectID, type, name, parentID, userID }) { 
+    insert({ companyID, projectID, type, name, description, parentID, userID }) { 
         return new Promise(async (resolve) => {
             try {   
 
@@ -63,6 +63,10 @@ class Model extends BaseModel {
 
                 if(name){
                     dataInsert.name = name; 
+                }
+
+                if(description) {
+                    dataInsert.description = description; 
                 }
 
                 if(ObjectID.isValid(parentID)){
@@ -126,7 +130,6 @@ class Model extends BaseModel {
                 }
 
                 if(conditionPin){
-
                     dataUpdate.conditionPin = conditionPin;
                 }
                 

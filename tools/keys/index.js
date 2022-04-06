@@ -15,6 +15,7 @@ exports.APP_KEYS = {
     PCM_PLAN_TASK: "5dfe4b9051dc622100bb9d89",
     DOCUMENT: "5e47867080019357cce04746",
     HUMAN: "61e049c9fdebf77b072d1b13",
+    WORKSHOP:"61e049e7fdebf77b072d1b15"
 }
 
 exports.KEY_ERROR  = {
@@ -27,6 +28,8 @@ exports.KEY_ERROR  = {
     PARAMS_INVALID      : "params_invalid",
     ITEM_EXISTED        : "item_existed",
 }
+
+exports.REACTION_TYPES = [1,2,3,4,5,6,7];
 
 /* 1 createdAt:12/14/2019, 6:57:10 PM*/
 // {

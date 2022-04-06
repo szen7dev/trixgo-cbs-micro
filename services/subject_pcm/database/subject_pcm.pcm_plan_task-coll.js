@@ -270,9 +270,16 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
         ref : "doctype"
     },
     /**
-     * THÔNG TIN VỀ QUẢN LÝ TIẾN ĐỘ/CỘT MỐC-XEM LẠI DÙNG Ở ĐÂU ?????
+     * Mốc tiến độ
+     * 0-Việc thông thường
+     * 1-Pháp lý
+     * 2-Thiết kế
+     * 3-Lựa chọn nhà thầu
+     * 4-Thi công
+     * 5-Bàn giao
+     * 6-Quyết toán
      */
-    // milestone: { type: Number, default: 0 },
+    milestone: { type: Number },
     /**
      * THÔNG TIN ĐỆ TRÌNH/PHÊ DUYỆT
      * http://thongtindauthau.com/17116/thuat-ngu-tieng-anh-trong-dau-thau-va-hop-dong/

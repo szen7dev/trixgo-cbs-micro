@@ -33,26 +33,29 @@ class Model extends BaseModel {
 	 * Func: Tạo storage
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, name, userID, ctx }){
+	insert({ companyID, projectID, name, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 if(!name)
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
 
-                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                    departmentID: projectID
-                })
-
-                if(infoProject.error)
-                    return resolve({ error: true, message: "Request params project invalid" });
-
                 let dataInsert = {
-                    project: projectID, name, userCreate: userID
+                    userCreate: userID,
+                    company: companyID,
+                    // project: projectID, 
+                    name, 
+                }             
+                // dataInsert.company = infoProject.data.company;     
+                if(checkObjectIDs(projectID)){
+                    dataInsert.project = projectID
+
+                    // let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    //     departmentID: projectID
+                    // })
                 }
-                dataInsert.company = infoProject.data.company;                  
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                return resolve({ error: false, data: infoAfterInsert });
+                    return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -86,40 +89,10 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove storage ✅
+     * Name: Remove storage ✅ => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: 
      */
-    remove({ storageID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(storageID))
-                    return resolve({ error: true, message: 'Request params storageID invalid', status: 400 });
-                    
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAterRemove = await ITEM__STORAGE_COLL.findByIdAndDelete(storageID);
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
- 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: get info storage ✅

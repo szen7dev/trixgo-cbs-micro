@@ -21,8 +21,8 @@ const { randomStringFixLengthCode }
                                         = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
-const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 }         = require('../../../tools/cursor_base/playground/index');
-const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }                
+const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
+const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const { 
     PLATFORM_TRIXGO, PLATFORM_WYNDIX,
@@ -33,6 +33,8 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
+
 class Model extends BaseModel {
 
     constructor() {
@@ -77,38 +79,13 @@ class Model extends BaseModel {
                  *  3.1: convert type + update name (ví dụ: string -> number)
                  *  3.2: operation database
                  */    
+                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
                 objectExitsUser.$or = []
-
-                // Nếu username hay email đã tồn tại trong hệ thống thì không cho phép tạo : đảm bảo tính độc lập dữ liệu
-                // if(usernameValid && usernameValid!=''){
-                //     objectExitsUser.$or.push({ username : usernameValid } );
-                // }
-
                 if(email && email!=''){
                     objectExitsUser.$or.push({ email : emailValid });
                 }
                 
                 let isExistUser = await AUTH__USER_COLL.findOne(objectExitsUser);
-                // //________KIỂM TRA XEM  department, position, companyID CÓ HỢP LỆ HAY KHÔNG
-                // let checkIllegal = 0;
-                // if(department){
-                //     let departmentInfo = await DEPARTMENT_COLL.findOne({_id: department, company: companyID});
-                //     if(!departmentInfo){
-                //         checkIllegal++;
-                //     }
-                // }
-                
-                // if(position){
-                //     let positionInfo = await POSITION_COLL.findOne({_id: position, company: companyID});
-                //     if(!positionInfo){
-                //         checkIllegal++;
-                //     }
-                // }
-
-                // if (Number(checkIllegal) > 0)
-                //     return resolve({ error: true, message: 'Illegal data' });
-
-                //________KIỂM TRA XEM EMAIL ĐÃ TỒN TẠI HAY CHƯA
                 if (isExistUser)
                     return resolve({ error: true, message: 'email_exists_or_username_exits' });
 
@@ -127,17 +104,9 @@ class Model extends BaseModel {
                 }
                 if(fullname) {
                     dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
-                    // dataInsert.fullname = `${fullname}-${infoCompany.sign}`;
+                    dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
                 }
-                // if(usernameValid) {
-                //     dataInsert.username = `${usernameValid}.${infoCompany.sign}`;
-                // }
-                // if(department && ObjectID.isValid(department)){
-                //     dataInsert.department = department;
-                // }
-                // if(position && ObjectID.isValid(position)){
-                //     dataInsert.position = position;
-                // }
+
                 if(Number(level) == 0 || Number(level) == 1){
                     dataInsert.level = Number(level);
                 }
@@ -146,33 +115,35 @@ class Model extends BaseModel {
                 if (!infoUserAfterInsert)
                     return resolve({ error: true, message: 'cannot_insert_data' });
 
-                // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
-                // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
-                // let listUserInCompany = await AUTH__USER_COLL.find({ company: companyID });
-                // let arrUserID = listUserInCompany.map(item => item._id);
-                // // Update bạn bè với các thành viên của công ty
-                // let infoUserAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                //     friends: arrUserID,
-                // }, { new: true });
+                /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
+                // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
+                let listUserInCompany = await AUTH__USER_COLL.find({ company: companyID });
+                let arrUserID = listUserInCompany.map(item => item._id);
 
-                // // Update cho các thành viên công ty nhận bạn bè mới
-                // for(const item of listUserInCompany){
-                //     await AUTH__USER_COLL.findByIdAndUpdate(item._id, {
-                //         $addToSet: {
-                //             friends: infoUserAfterInsert._id
-                //         }
-                //     }, { new: true });
-                // }
+                // Update bạn bè với các thành viên của công ty
+                await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                    friends: arrUserID,
+                }, { new: true });
 
-                //TODO add event gửi mail (tích hợp phần event sang service khác)
-                
+                // Update cho các thành viên công ty nhận bạn bè mới
+                for(const item of listUserInCompany){
+                    await AUTH__USER_COLL.findByIdAndUpdate(item._id, {
+                        $addToSet: {
+                            friends: infoUserAfterInsert._id
+                        }
+                    }, { new: true });
+                }
+
+                // Thông báo gửi mail (tích hợp phần event sang service khác)
                 // sendMailNewAccount(email, fullname, password);
+
                 return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true });
             } catch (error) {
                 resolve({ error: true, message: error.message });
             } 
         });
     }
+    
     // implement by: KHANHNEY✅ 
     login({ email, password, platform }) {
         return new Promise(async resolve => {
@@ -189,13 +160,10 @@ class Model extends BaseModel {
                  *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform }))
-                    return resolve({ error: true, message: 'platform_invalid' });
-                
+                    return resolve({ error: true, keyError: 'platform_invalid', message: 'Nền tảng không tồn tại', status: 400 });
+
                 let isExist = await AUTH__USER_COLL
-                    .findOne({ 
-                        email: emailValid,
-                        platform: +platform
-                    })
+                    .findOne({ email: emailValid })
                     .populate({
                         path: 'company department',
                         select: '_id name sign image'
@@ -213,7 +181,7 @@ class Model extends BaseModel {
                 if(isExist.platform !== +platform) {
                     return resolve({ 
                         error: true, 
-                        message: 'Flatform không hợp lệ',
+                        message: 'Nền tảng không tồn tại',
                         keyError: "platform_invalid",
                         status: 400
                     });
@@ -544,8 +512,7 @@ class Model extends BaseModel {
 				let objSort 	 	= {};
                 let sortBy = {
                     modifyAt: -1,
-					createAt: -1,
-					updateAt: -1
+					createAt: -1
                 }
 
 				// GET CONDITION PAGINATION
@@ -772,6 +739,10 @@ class Model extends BaseModel {
                  */    
               
                 let decoded = await verify(token, JWT_SECRET_KEY);
+                // if(decoded.exp < Date.now()) {
+                //     return resolve({ error: true, message: 'token_is_expired' });
+                // }
+
                 if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
 
                 const { infoUser: { _id: userIDAfterDecoded } } = decoded;
@@ -1126,6 +1097,7 @@ class Model extends BaseModel {
                         status: 422
                     })
                 }
+                delete infoUserAfterInsert.password;
 
                 // /*TỰ ĐỘNG KẾT BẠN CÙNG CÔNG TY*/
                 // // Cho phép thành viên auto kết bạn với người cùng công ty, bao gồm cả chính tài khoản đó
@@ -1157,27 +1129,38 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level,
-        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID }) {
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status,
+        sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, company, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                if(!ObjectID.isValid(userID))
+                if(!ObjectID.isValid(userID)) {
                     return resolve({ error: true, message: "UserID không hợp lệ", keyError: "param_not_valid" });
+                }
+
+                let infoUser = await AUTH__USER_COLL.findById(userID);
+                if(!infoUser) {
+                    return resolve({ error: true, message: "Người dùng không tồn tại", keyError: "user_not_exists" });
+                }
 
                 let dataUpdate = { userUpdate: userID };
                 // Cập nhật mật khẩu
                 if(currentPass && newPass){
-                    let { password } = await AUTH__USER_COLL.findById(userID);
-                    let checkCurrentPass = await compare( currentPass, password);
+                    let checkCurrentPass = await compare(currentPass, infoUser.password);
                     if(!checkCurrentPass)
                         return resolve({ error: true, message: "Mật khẩu cũ không đúng", keyError: "current_password_faild" });
+
                     let hashpass = await hash(newPass, 8);
                     dataUpdate.password = hashpass;
                 }
 
                 // Cập nhật thông tin tài khoản
-                if(email){
+                if(email && email !== infoUser.email){
                     dataUpdate.email = email;
+                }
+
+                if(fullname){
+                    dataUpdate.fullname = fullname;
+                    dataUpdate.bizfullname = `${fullname}-${company.sign}`;
                 }
 
                 if(phone){
@@ -1204,8 +1187,12 @@ class Model extends BaseModel {
                     dataUpdate.signature = signature;
                 }
 
-                if(level){
+                if([0,1].includes(level)){
                     dataUpdate.level = level;
+                }
+
+                if([0,1].includes(status)){
+                    dataUpdate.status = status;
                 }
 
                 if(companyID){
@@ -1233,7 +1220,7 @@ class Model extends BaseModel {
 
                 // Chấp nhận kết bạn
                 if(checkObjectIDs(acceptFriendRequestID)){
-                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                         $pull: {
                             receiveFromFriends: acceptFriendRequestID
                         },
@@ -1243,7 +1230,7 @@ class Model extends BaseModel {
                     }, { new: true });
                     // await cachingInfoUser(userID, session);
 
-                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(acceptFriendRequestID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(acceptFriendRequestID, {
                         $pull: {
                             sendToFriends: userID
                         },
@@ -1256,7 +1243,7 @@ class Model extends BaseModel {
 
                 //Hủy lời mời kết bạn
                 if(checkObjectIDs(removeFriendRequestID)){
-                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                         $pull: {
                             receiveFromFriends: removeFriendRequestID
                         },
@@ -1264,7 +1251,7 @@ class Model extends BaseModel {
     
                     // await cachingInfoUser(userID, session);
                    
-                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(removeFriendRequestID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(removeFriendRequestID, {
                         $pull: {
                             sendToFriends: userID
                         },
@@ -1273,7 +1260,7 @@ class Model extends BaseModel {
 
                 //Hủy kết bạn
                 if(checkObjectIDs(unFriendID)){
-                    let infoUserSendAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(userID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(userID, {
                         $pull: {
                             friends: unFriendID
                         },
@@ -1281,7 +1268,7 @@ class Model extends BaseModel {
                     
                     // await cachingInfoUser(userID, session);
                    
-                    let infoUserReceiveAfterUpdate = await AUTH__USER_COLL.findByIdAndUpdate(unFriendID, {
+                    await AUTH__USER_COLL.findByIdAndUpdate(unFriendID, {
                         $pull: {
                             friends: userID
                         },
@@ -1295,6 +1282,14 @@ class Model extends BaseModel {
                 if(!infoUserAfterUpdate)
                     return resolve({ error: false, message: "Cập nhật thất bại", keyError: "cannot_update" });
 
+                if(fullname) {
+                    await ctx.call(`${CF_DOMAIN_SERVICES.CHATTING}.${CF_ACTIONS_CHATTING.UPDATE_MEMBER_NAME}`, {
+                        userID,
+                        bizfullname: dataUpdate.bizfullname
+                    });
+                }
+
+                delete infoUserAfterUpdate.password;
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });
             } catch (error) { 
@@ -1306,28 +1301,29 @@ class Model extends BaseModel {
     /**
 	 * Dev: MinhVH
 	 * Func: Hàm xóa user
+     * Hiepnh: Không được phép xóa User
 	 * Date: 03/03/2022
 	 */
-    delete({ usersID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!usersID.length || !checkObjectIDs(usersID)) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số usersID không hợp lệ",
-                        keyError: "params_usersID_invalid",
-                        status: 400
-                    })
-                }
+    // delete({ usersID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!usersID.length || !checkObjectIDs(usersID)) {
+    //                 return resolve({
+    //                     error: true,
+    //                     message: "Tham số usersID không hợp lệ",
+    //                     keyError: "params_usersID_invalid",
+    //                     status: 400
+    //                 })
+    //             }
 
-                const infoAfterDelete = await AUTH__USER_COLL.deleteMany({ _id: { $in: usersID } });
+    //             const infoAfterDelete = await AUTH__USER_COLL.deleteMany({ _id: { $in: usersID } });
 
-                return resolve({ error: false, data: infoAfterDelete, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAfterDelete, status: 200 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
     /**
 	 * Dev: Depv
@@ -1546,12 +1542,13 @@ class Model extends BaseModel {
                 }
 
                 let infoTask = await AUTH__USER_COLL.findById(userID)
-                                .select(select)
-                                .populate(populates)
-                                .lean();
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
 				if (!infoTask) 
                     return resolve({ error: true, message: 'Cannot get info', keyError: "cannot_get_info" });
+
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -1599,7 +1596,6 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
-
                 // Lấy user theo mảng id
                 if(arrayID && arrayID.length){
                     arrayID = JSON.parse(arrayID);

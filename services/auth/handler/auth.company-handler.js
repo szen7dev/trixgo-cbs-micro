@@ -2,7 +2,11 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
-let AUTH__COMPANY_MODEL                         = require('../model/auth.company-model.js').MODEL;
+
+/**
+ * MODELS
+ */
+const AUTH__COMPANY_MODEL                       = require('../model/auth.company-model.js').MODEL;
 
 module.exports = {
     insert: {
@@ -13,15 +17,17 @@ module.exports = {
             taxid           : { type: "string" },
             address         : { type: "string" },
             area            : { type: "string" },
+            phone           : { type: "string", optional: true },
+            email           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  name, sign, taxid, address, area  } = ctx.params;
+                let {  name, sign, taxid, address, area, phone, email } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await AUTH__COMPANY_MODEL.insert({
-                    name, sign, taxid, address, area, userID 
+                    name, sign, taxid, address, area, phone, email, userID 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -40,15 +46,17 @@ module.exports = {
             taxid           : { type: "string" },
             address         : { type: "string" },
             area            : { type: "string" },
+            phone           : { type: "string", optional: true },
+            email           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, name, sign, taxid, address, area  } = ctx.params;
+                let { companyID, name, sign, taxid, address, area, phone, email } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await AUTH__COMPANY_MODEL.update({
-                    companyID, name, sign, taxid, address, area, userID 
+                    companyID, name, sign, taxid, address, area, phone, email, userID 
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -63,6 +71,8 @@ module.exports = {
         params: {
             // Field bổ sung
             companyID       : { type: "string", optional: true },
+            arrayID         : { type: "string",  optional: true },
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -75,7 +85,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { 
-                    companyID,
+                    companyID, arrayID,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
@@ -86,7 +96,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await AUTH__COMPANY_MODEL.getList({
-                        userID, keyword, limit, lastestID, select, populates
+                        arrayID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
 

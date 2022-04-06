@@ -5,16 +5,12 @@ const { checkObjectIDs, IsJsonString }	= require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }		= require('../../../tools/cursor_base/playground/index');
 const { REACTION_TYPES }			    = require('../helper/media.keys-constant');
 
-/**
- * import inter-coll, exter-coll
- */
 const MEDIA__REACTION_COLL              = require('../database/media.reaction-coll');
 const MEDIA__FILE_REACTION_COLL			= require('../database/media.reaction_file-coll');
 const MEDIA_COLL                        = require('../database/media-coll');
 const MEDIA__FILE_COLL                  = require('../database/media.file-coll');
 
-
-class Model extends BaseModel {               
+class Model extends BaseModel {
 
     constructor() {
         super(MEDIA__REACTION_COLL);
@@ -34,8 +30,8 @@ class Model extends BaseModel {
 
 				if(!checkObjectIDs([authorID, mediaID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số mediaID hoặc authorID không hợp lệ', 
+						error: true,
+						message: 'Tham số mediaID hoặc authorID không hợp lệ',
 						keyError: 'params_mediaID_or_authorID_invalid',
 						status: 400
 					});
@@ -47,8 +43,8 @@ class Model extends BaseModel {
 
 				if(!infoMedia) {
 					return resolve({
-						error: true, 
-						message: 'Bài viết không tồn tại', 
+						error: true,
+						message: 'Bài viết không tồn tại',
 						keyError: 'media_is_not_exists',
 						status: 400
 					});
@@ -90,8 +86,8 @@ class Model extends BaseModel {
 
 				if(!infoAfterInsertReaction) {
 					return resolve({
-						error: true, 
-						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
 						keyError: 'error_occurred',
 						status: 422
 					});
@@ -131,15 +127,15 @@ class Model extends BaseModel {
 					createAt: -1,
 				};
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs([mediaID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số mediaID không hợp lệ', 
+						error: true,
+						message: 'Tham số mediaID không hợp lệ',
 						keyError: 'params_mediaID_invalid',
 						status: 400
 					});
@@ -147,8 +143,8 @@ class Model extends BaseModel {
 
 				if(!checkObjectIDs([authorID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số authorID không hợp lệ', 
+						error: true,
+						message: 'Tham số authorID không hợp lệ',
 						keyError: 'params_authorID_invalid',
 						status: 400
 					});
@@ -197,7 +193,7 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet) {
                     return resolve({
@@ -228,8 +224,8 @@ class Model extends BaseModel {
                     return resolve({
                         error: false,
                         status: 200,
-                        data: { 
-                            listRecords: infoDataAfterGet, 
+                        data: {
+                            listRecords: infoDataAfterGet,
                             limit,
                             nextCursor,
                             totalRecord,
@@ -269,8 +265,8 @@ class Model extends BaseModel {
 
 				if(!checkObjectIDs([authorID, mediaID, fileID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số mediaID hoặc authorID, fileID không hợp lệ', 
+						error: true,
+						message: 'Tham số mediaID hoặc authorID, fileID không hợp lệ',
 						keyError: 'params_mediaID_or_authorID_or_fileID_invalid',
 						status: 400
 					});
@@ -282,8 +278,8 @@ class Model extends BaseModel {
 
 				if(!infoMedia) {
 					return resolve({
-						error: true, 
-						message: 'Bài viết không tồn tại', 
+						error: true,
+						message: 'Bài viết không tồn tại',
 						keyError: 'media_not_exists',
 						status: 400
 					});
@@ -327,8 +323,8 @@ class Model extends BaseModel {
 
 				if(!infoAfterUpdateReaction) {
 					return resolve({
-						error: true, 
-						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
+						error: true,
+						message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
 						keyError: 'error_occurs',
 						status: 422
 					});
@@ -368,15 +364,15 @@ class Model extends BaseModel {
 					createAt: -1,
 				};
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs([mediaID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số mediaID không hợp lệ', 
+						error: true,
+						message: 'Tham số mediaID không hợp lệ',
 						keyError: 'params_mediaID_invalid',
 						status: 400
 					});
@@ -384,8 +380,8 @@ class Model extends BaseModel {
 
 				if(!checkObjectIDs([fileID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số fileID không hợp lệ', 
+						error: true,
+						message: 'Tham số fileID không hợp lệ',
 						keyError: 'params_fileID_invalid',
 						status: 400
 					});
@@ -393,8 +389,8 @@ class Model extends BaseModel {
 
 				if(!checkObjectIDs([authorID])) {
                     return resolve({
-						error: true, 
-						message: 'Tham số authorID không hợp lệ', 
+						error: true,
+						message: 'Tham số authorID không hợp lệ',
 						keyError: 'params_authorID_invalid',
 						status: 400
 					});
@@ -443,7 +439,7 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet) {
                     return resolve({
@@ -474,8 +470,8 @@ class Model extends BaseModel {
                     return resolve({
                         error: false,
                         status: 200,
-                        data: { 
-                            listRecords: infoDataAfterGet, 
+                        data: {
+                            listRecords: infoDataAfterGet,
                             limit,
                             nextCursor,
                             totalRecord,

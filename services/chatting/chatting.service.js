@@ -14,6 +14,7 @@ const { CF_ACTIONS_CHATTING } 	        	= require('./helper/chatting.actions-con
  */
 const CHATTING__CONVERSATION_FOLDER_HANDLER	= require('./handler/chatting.conversation_folder-handler');
 const CHATTING__CONVERSATION_HANDLER    	= require('./handler/chatting.conversation-handler');
+const CHATTING__CONVERSATION_MEMBER_HANDLER	= require('./handler/chatting.conversation_member-handler');
 const CHATTING__MESSAGE_HANDLER         	= require('./handler/chatting.message-handler');
 const CHATTING__MESSAGE_POLL_HANDLER		= require('./handler/chatting.message_poll-handler');
 const CHATTING__MESSAGE_REMINDER_HANDLER	= require('./handler/chatting.message_reminder-handler');
@@ -162,6 +163,9 @@ module.exports = {
 		// Cập nhật tên cuộc hội thoại riêng tư (service call service)
 		[CF_ACTIONS_CHATTING.UPDATE_CONVERSATION_NAME_PRIVATE]					: CHATTING__CONVERSATION_HANDLER.updateConversationNamePrivate,
 
+		// Cập nhật tên thành viên cuộc hội thoại (service call service)
+		[CF_ACTIONS_CHATTING.UPDATE_MEMBER_NAME]								: CHATTING__CONVERSATION_MEMBER_HANDLER.updateName,
+
 		// Thêm thành viên cuộc hội thoại
 		[CF_ACTIONS_CHATTING.ADD_MEMBER_CONVERSATION] 		    				: CHATTING__CONVERSATION_HANDLER.addMembersToConversation,
 
@@ -178,7 +182,7 @@ module.exports = {
 		[CF_ACTIONS_CHATTING.UPDATE_PIN_CONVERSATION] 		    				: CHATTING__CONVERSATION_HANDLER.updatePinConversation,
 
 		// Lấy danh sách thành viên cuộc hội thoại theo ID
-		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    			: CHATTING__CONVERSATION_HANDLER.getListMembersConversationByID,
+		[CF_ACTIONS_CHATTING.GET_LIST_MEMBER_CONVERSATION_BY_ID]    			: CHATTING__CONVERSATION_MEMBER_HANDLER.getList,
 
 		// Lấy thông tin một cuộc hội thoại theo ID
 		[CF_ACTIONS_CHATTING.GET_INFO_CONVERSATION_BY_ID] 						: CHATTING__CONVERSATION_HANDLER.getInfoConversationByID,

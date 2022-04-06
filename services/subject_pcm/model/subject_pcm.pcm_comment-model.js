@@ -1,13 +1,22 @@
 "use strict";
 
 /**
+ * import external
+ */
+const PromisePool							    = require('@supercharge/promise-pool');
+
+/**
  * import internal
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
+
 const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_NOTIFICATION } 		        = require('../../notification/helper/notification.actions-constant');
+const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
+
 const { APP_KEYS, KEY_ERROR, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
 
@@ -16,6 +25,9 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
  */
 const PCM_PLAN_TASK_COLL                        = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
+const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
+const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
+const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -27,11 +39,11 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Thêm comment
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) { 
+    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -46,7 +58,7 @@ class Model extends BaseModel {
                 let descriptionMSS  = '';
                 let languageKey     = '';
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -106,6 +118,7 @@ class Model extends BaseModel {
                 let infoTask = await PCM_PLAN_TASK_COLL
                     .findById(taskID)
                     .populate('project', '_id name sign')
+                    .populate('author', '_id bizfullname image')
                     .lean();
 
                 if(!infoTask) {
@@ -117,6 +130,10 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(infoTask.contract) {
+                    dataInsert.contract = infoTask.contract;
+                }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -126,7 +143,7 @@ class Model extends BaseModel {
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
 
-                let infoAterInsert = await this.insertData(dataInsert); 
+                let infoAterInsert = await this.insertData(dataInsert);
 
                 if(!infoAterInsert) {
                     return resolve({
@@ -137,8 +154,53 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(images && images.length) {
+                    await PromisePool
+                        .for(images)
+                        .withConcurrency(2)
+                        .process(async imageID => {
+                            const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID: imageID
+							}, {
+								meta: {
+									infoUser: { _id: authorID }
+								}
+							});
+
+							if(!infoFileCore.error) {
+								const {
+									name, nameOrg, description, path, size, mimeType, type, author
+								} = infoFileCore.data;
+
+								const infoAfterInserted = await PCM_FILE_MODEL.insert({
+									fileID: imageID,
+                                    taskID,
+                                    commentID: infoAterInsert._id,
+                                    contractID: infoTask.contract,
+                                    projectID: infoTask.project?._id,
+                                    groupID: infoTask.group,
+                                    companyID: infoTask.company,
+                                    authorID: author,
+									name, nameOrg, path, size, mimeType, description, type
+								});
+
+								return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+							}
+                        });
+
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                        contractID: infoTask.contract?.toString(),
+                        photos: images
+                    })
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: infoTask.project?._id?.toString(),
+                        photos: images
+                    })
+                }
+
+                // Cập nhật lastestReplyID và amountCommentReply cho comment cha
                 if(parentID){
-                    await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, { 
+                    await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, {
                         $set: {
                             lastestReplyID: infoAterInsert._id
                         },
@@ -162,10 +224,8 @@ class Model extends BaseModel {
                 let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
 
-                let arrReceiver   = [...new Set([author.toString(), assignee.toString(), ...related])];
-                // let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
-                console.log('CREATE_NEW_COMMENT_TASK')
-                console.log({ arrReceiver })
+                let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
+                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
                 switch (infoAterInsert.type) {
                     case 1:
@@ -187,17 +247,35 @@ class Model extends BaseModel {
                     languageKey,
                     mainColl: {
                         kind: 'pcm_plan_task',
-                        item: infoTask
+                        item: {
+                            _id: taskID,
+                            name: taskName,
+                            project: {
+                                sign: project?.sign
+                            },
+                            author: {
+                                _id: author?._id,
+                                bizfullname: author?.bizfullname,
+                                image: author?.image
+                            }
+                        }
                     },
                     subColl: {
                         kind: 'pcm_comment',
-                        item: infoAterInsert
+                        item: {
+                            _id: infoAterInsert._id
+                        }
                     },
                 }
-                titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+
+                if(taskSign) {
+                    titleMSS = `CÔNG VIỆC: ${taskSign}.${taskName}`;
+                } else{
+                    titleMSS = `CÔNG VIỆC: ${taskName}`;
+                }
 
                 if(arrReceiver && arrReceiver.length) {
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
                         users: arrReceiver,
                         title: titleMSS,
                         description: descriptionMSS,
@@ -246,7 +324,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: Cập nhật comment
 	 * Date: 22/02/2022
-	 */ 
+	 */
     update({ taskID, commentID, authorID, content, files, images, select, populates }) {
         return new Promise(async (resolve) => {
             try {
@@ -255,7 +333,7 @@ class Model extends BaseModel {
                 */
                let dataUpdate = {};
 
-               /** 
+               /**
                 * VALIDATION STEP (2)
                 *  - kiểm tra valid từ các input
                 *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -305,34 +383,52 @@ class Model extends BaseModel {
                     })
                 }
 
-                if(infoComment.type === 2) {
-                    return resolve({
-                        error: true,
-                        message: "Phản hồi liên quan không thể cập nhật",
-                        keyError: "response_cannot_update",
-                        status: 403
-                    })
-                }
-
-               /**
+                /**
                 * LOGIC STEP (3)
                 *  3.1: convert type + update name (ví dụ: string -> number)
                 *  3.2: operation database
-                */    
-                content && (dataUpdate.content = content);
+                */
 
-                // CẬP NHẬT FILE MỚI
-                if(files.length && checkObjectIDs(files)){
-                    dataUpdate.files = files;
-                } else{
-                    dataUpdate.files = [];
-                }
+                if(infoComment.type === 2) {
+                    dataUpdate = {
+                        $addToSet: {}
+                    };
 
-                // CẬP NHẬT HÌNH ẢNH MỚI
-                if(images.length && checkObjectIDs(images)){
-                    dataUpdate.images = images;
+                    if(checkObjectIDs(files)){
+                        dataUpdate.$addToSet['files'] = files;
+                    }
+
+                    if(checkObjectIDs(images)){
+                        dataUpdate.$addToSet['images'] = images;
+                    }
                 } else{
-                    dataUpdate.images = [];
+                    content && (dataUpdate.content = content);
+
+                    const expireTime = new Date(infoComment.createAt).addHours(1);
+                    const now 		 = new Date(Date.now());
+
+                    if(expireTime < now){
+                        return resolve({
+                            error: true,
+                            message: "Bình luận đã hết hạn cập nhật (1 tiếng)",
+                            keyError: "time_to_delete_comment_has_expired",
+                            status: 403
+                        })
+                    }
+
+                    // CẬP NHẬT FILE MỚI
+                    if(checkObjectIDs(files)){
+                        dataUpdate.files = files;
+                    } else{
+                        dataUpdate.files = [];
+                    }
+
+                    // CẬP NHẬT HÌNH ẢNH MỚI
+                    if(checkObjectIDs(images)){
+                        dataUpdate.images = images;
+                    } else{
+                        dataUpdate.images = [];
+                    }
                 }
 
                 let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
@@ -349,6 +445,22 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(infoComment.type !== 2) {
+                    if(!checkObjectIDs(files)) {
+                        await PCM_FILE_COLL.deleteMany({
+                            comment: infoComment._id,
+                            type: 2
+                        })
+                    }
+
+                    if(!checkObjectIDs(images)) {
+                        await PCM_FILE_COLL.deleteMany({
+                            comment: infoComment._id,
+                            type: 1
+                        })
+                    }
+                }
+
                 infoAfterUpdate = await PCM_COMMENT_COLL
                     .findById(commentID)
                     .select(select)
@@ -363,8 +475,8 @@ class Model extends BaseModel {
        })
     }
 
-     /**
-	 * Dev: MinhVH 
+    /**
+	 * Dev: MinhVH
 	 * Func: Cập nhật đánh dấu response
 	 * Date: 22/02/2022
 	 */
@@ -372,20 +484,20 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs([taskID, commentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số commentID hoặc taskID không hợp lệ', 
-                        keyError: 'params_commentID_or_taskID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số commentID hoặc taskID không hợp lệ',
+                        keyError: 'params_commentID_or_taskID_invalid',
                         status: 400
                     });
                 }
 
                 const infoResponse = await PCM_COMMENT_COLL.findById(commentID).lean();
                 if(!infoResponse) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Phản hồi không tồn tại', 
-                        keyError: 'response_not_exists', 
+                    return resolve({
+                        error: true,
+                        message: 'Phản hồi không tồn tại',
+                        keyError: 'response_not_exists',
                         status: 400
                     });
                 }
@@ -405,10 +517,10 @@ class Model extends BaseModel {
 
                 const infoAfterUpdated = await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
                 if(!infoAfterUpdated) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
-                        keyError: 'error_occurred', 
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
                         status: 422
                     });
                 }
@@ -421,50 +533,71 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Xóa comment
 	 * Date: 22/02/2022
 	 */
-    delete({ commentID, authorID }) { 
+    delete({ commentID, authorID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs([commentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số commentID không hợp lệ', 
-                        keyError: 'params_commentID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số commentID không hợp lệ',
+                        keyError: 'params_commentID_invalid',
                         status: 400
                     });
                 }
 
                 if(!checkObjectIDs([authorID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số authorID không hợp lệ', 
-                        keyError: 'params_authorID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số authorID không hợp lệ',
+                        keyError: 'params_authorID_invalid',
                         status: 400
                     });
                 }
 
                 const infoComment = await PCM_COMMENT_COLL
-                    .findOne({ _id: commentID, type: 2 })
+                    .findById(commentID)
                     .lean();
 
-                if(infoComment) {
+                if(!infoComment) {
                     return resolve({
                         error: true,
-                        message: "Comment không tồn tại hoặc comment là phải hồi",
+                        message: "Bình luận không tồn tại",
                         keyError: "comment_not_exists_or_comment_is_response",
                         status: 400
+                    })
+                }
+
+                if(infoComment.type === 2) {
+                    return resolve({
+                        error: true,
+                        message: "Phản hồi liên quan không thể xóa",
+                        keyError: "response_cannot_delete",
+                        status: 403
+                    })
+                }
+
+                const expireTime = new Date(infoComment.createAt).addHours(1);
+                const now 		 = new Date(Date.now());
+
+                if(expireTime < now){
+                    return resolve({
+                        error: true,
+                        message: "Bình luận đã hết hạn xóa (1 tiếng)",
+                        keyError: "time_to_delete_comment_has_expired",
+                        status: 403
                     })
                 }
 
@@ -474,13 +607,17 @@ class Model extends BaseModel {
                 });
 
                 if(!infoDataAfterDelete) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục', 
-                        keyError: 'error_occurred', 
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
                         status: 422
                     });
                 }
+
+                await PCM_FILE_COLL.deleteMany({
+                    comment: commentID
+                });
 
                 return resolve({ error: false, data: infoDataAfterDelete, status: 200 });
             } catch (error) {
@@ -489,8 +626,8 @@ class Model extends BaseModel {
         })
     }
 
-     /**
-	 * Dev: MinhVH 
+    /**
+	 * Dev: MinhVH
 	 * Func: Thông tin comment
 	 * Date: 22/02/2022
 	 */
@@ -498,10 +635,10 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs([commentID])) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Tham số commentID không hợp lệ', 
-                        keyError: 'params_commentID_invalid', 
+                    return resolve({
+                        error: true,
+                        message: 'Tham số commentID không hợp lệ',
+                        keyError: 'params_commentID_invalid',
                         status: 400
                     });
                 }
@@ -525,14 +662,14 @@ class Model extends BaseModel {
                     .lean();
 
 				if (!infoComment) {
-                    return resolve({ 
-                        error: true, 
-                        message: 'Comment không tồn tại', 
-                        keyError: KEY_ERROR.GET_INFO_FAILED, 
+                    return resolve({
+                        error: true,
+                        message: 'Comment không tồn tại',
+                        keyError: KEY_ERROR.GET_INFO_FAILED,
                         status: 400
                     });
                 }
-   
+
                 return resolve({ error: false, data: infoComment, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -541,11 +678,11 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates }) { 
+    getList({ taskID, contractID, projectID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -560,7 +697,7 @@ class Model extends BaseModel {
                 let keys = ['createAt__-1', '_id__-1'];
                 let sortBy = {};
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -596,15 +733,41 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-                if(taskID && checkObjectIDs([taskID])){
-                    conditionObj.task = taskID;
-                }
+                 */
+                if(taskID){
+                    if(!checkObjectIDs([taskID])) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số taskID không hợp lệ",
+                            keyError: "params_taskID_invalid",
+                            status: 400
+                        });
+                    }
 
-                if(parentID && checkObjectIDs([parentID])){
-                    conditionObj.parent = parentID;
-                } else{
-                    conditionObj.parent = { $exists: false };
+					conditionObj.task = taskID;
+				}
+
+                if(contractID || projectID){
+                    if(checkObjectIDs([contractID])) {
+                        conditionObj.contract = contractID;
+                    }
+
+                    if(checkObjectIDs([projectID])) {
+                        conditionObj.project = projectID;
+                    }
+
+                    conditionObj.$expr = {
+                        $gt: [
+                            { $size: "$images" }, 0
+                        ]
+                    }
+                    // conditionObj['images.1'] = { $exists: true };
+				} else {
+                    if(parentID && checkObjectIDs([parentID])){
+                        conditionObj.parent = parentID;
+                    } else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
 
                 if(official === 'true') {
@@ -659,13 +822,49 @@ class Model extends BaseModel {
 
                 let totalRecord = await PCM_COMMENT_COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord / limit);
+                let dataResponse = [];
 
-                // if(!sortKey) {
-                //     infoDataAfterGet = infoDataAfterGet.reverse();
-                // }
+                if(infoDataAfterGet && infoDataAfterGet.length && !contractID) {
+                    for (const comment of infoDataAfterGet) {
+                        const lastReactionComment = await PCM_COMMENT_REACTION_COLL
+                            .find({ comment: comment._id })
+                            .select('type')
+                            .sort({ _id: -1 })
+                            .limit(3)
+                            .lean();
+
+                        const infoReaction = await PCM_COMMENT_REACTION_COLL.findOne({
+                            comment: comment._id,
+                            author: authorID
+                        }).select('type').lean();
+
+                        if(comment.lastestReplyID && typeof comment.lastestReplyID !== 'string') {
+                            const lastReactionCommentReply = await PCM_COMMENT_REACTION_COLL
+                                .find({ comment: comment.lastestReplyID?._id })
+                                .select('type')
+                                .sort({ _id: -1 })
+                                .limit(3)
+                                .lean();
+
+                            const infoReactionReply = await PCM_COMMENT_REACTION_COLL.findOne({
+                                comment: comment.lastestReplyID?._id,
+                                author: authorID
+                            }).select('type').lean();
+
+                            comment.lastestReplyID['reaction'] = infoReactionReply;
+                            comment.lastestReplyID['lastReactionComment'] = lastReactionCommentReply;
+                        }
+
+                        dataResponse[dataResponse.length] = {
+                            ...comment,
+                            reaction: infoReaction,
+                            lastReactionComment
+                        }
+                    }
+                }
 
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
+                    listRecords: dataResponse.length ? dataResponse : infoDataAfterGet,
                     limit,
                     totalRecord,
                     totalPage,
@@ -677,9 +876,9 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
-	 * Dev: MinhVH 
+	 * Dev: MinhVH
 	 * Func: Danh sách comment tìm kiếm theo id
 	 * Date: 22/02/2022
 	 */

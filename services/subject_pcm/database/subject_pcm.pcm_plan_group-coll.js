@@ -6,12 +6,6 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
-    //_________Mã hiệu bằng số do hệ thống tự phát sinh
-    // suid : {
-    //     type   : String,
-    //     require:  true,
-    //     unique : true
-    // },
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
@@ -65,10 +59,10 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
     /**
      * Con
      */
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "pcm_plan_group"
-    }],
+    // childs: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: "pcm_plan_group"
+    // }],
     /**
      * Để populate child
      */

@@ -8,10 +8,10 @@ const Schema    = require('mongoose').Schema;
  */
 module.exports  = DATABASE_MIDDLEWARE("doctype", {
     /** PHÂN LOẠI
-        1 - Văn Bản Lĩnh vực hồ sơ
-        2 - Văn Bản Tính chất hồ sơ
-        3 - Lĩnh vực kinh doanh
-        4- Khách hàng phân loại
+        1-Văn Bản Lĩnh vực hồ sơ
+        2-Văn Bản Tính chất hồ sơ
+        3-Lĩnh vực kinh doanh
+        4-Khách hàng phân loại
         5-Công việc, Phân loại khác
         6-Nhân sự, Trình độ
         7-Nhân sự, Chuyên ngành
@@ -48,7 +48,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         type: Schema.Types.ObjectId,
         ref: "doctype"
     },
-    //_________Phần tử con (áp dụng cho message nps)
+    level: {
+        type: Number,
+        default: 1 
+    },
+    //_________Phần tử con (Sử dụng dụng cho phân loại của Message NPS)
     childs: [{
         type: Schema.Types.ObjectId,
         ref: "doctype"

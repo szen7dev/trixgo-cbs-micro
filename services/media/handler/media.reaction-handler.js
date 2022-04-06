@@ -16,6 +16,7 @@ module.exports = {
      * Updated: 22/02/2022
 	 */
     reaction: {
+        auth: "required",
         params: {
             mediaID         : { type: "string" },
             typeReaction    : { type: "number", optional: true }
@@ -43,6 +44,7 @@ module.exports = {
      * Updated: 22/02/2022
 	 */
     getListReaction: {
+        auth: "required",
         params: {
             mediaID     : { type: "string" },
             type        : { type: "string", optional: true },
@@ -75,6 +77,7 @@ module.exports = {
      * Updated: 22/02/2022
 	 */
     reactionFile: {
+        auth: "required",
         params: {
             mediaID         : { type: "string" },
             fileID          : { type: "string" },
@@ -103,6 +106,7 @@ module.exports = {
      * Updated: 22/02/2022
 	 */
     getListReactionFile: {
+        auth: "required",
         params: {
             mediaID     : { type: "string" },
             fileID      : { type: "string" },

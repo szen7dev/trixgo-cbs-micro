@@ -18,6 +18,7 @@ module.exports = {
     },
 };
 
+// Xử lý Authen cho việc truy cập DB
 // db.createUser({ user: "admin_cbs",
 //                  pwd: "dAGT5ttW6CLrsTuw",
 //                  roles: [{ role: "readWrite", db: "cbs_staging" }] })

@@ -45,7 +45,7 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
 function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
     return new Promise(async resolve => {
         try {
-            if(!fileName || !type)
+            if(!fileName)
                 return resolve({ error: true, message: "params_invalid" });
 
             let result = await render_link_upload_file_s3({ fileName, type, typeUpload, pathS3 });
@@ -140,7 +140,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
     const PACKAGES = [APP_KEYS.DOCUMENT];
     const CONVERSATIONS = [APP_KEYS.CHATTING];
-
+    
     // Validate tham số theo app
     if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) {
         return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };

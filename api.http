@@ -2,17 +2,20 @@ POST http://localhost:3003/api/auth/users/login
 Content-Type: application/json
 
 {
-    "email": "vuhuynhminh9221@gmail.com",
-    "password": "1",
-    "platform": "1"
+    "email": "hiepnh@pgipartner.com",
+    "password": "12345TRX@#",
+    "platform": "1",
+    "domain": "https://staging.cbs.trixgo.com"
 }
 
-### 
+###
 
-GET http://localhost:3003/api/chatting/conversations/list-message-conversation-with-page?conversationID=6131f11414bdc292e1e8ab3e&limit=3
+GET http://localhost:3003/api/cmcs/contract_payments/get-amount-contract-value-group-by-date
 Content-Type: application/json
-authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlbWFpbCI6InZ1aHV5bmhtaW5oOTIyMUBnbWFpbC5jb20iLCJwaG9uZSI6IjA4Mjg5MTI0OTEiLCJmdWxsbmFtZSI6IlbFqSBIdeG7s25oIE1pbmgtVFJYIiwiY29tcGFueSI6IjVlNjBkZmZiMmM0M2E0NDRjNWY4ZTIyNyIsInNpZ25hdHVyZSI6InNpZ25hdHVyZV9kZWZhdWx0LnBuZyIsInN0YXR1cyI6MSwibGV2ZWwiOjEsIl9pZCI6IjVmOTBlZDBkNWU4NDJiN2MxOGRmZjk3MiJ9LCJpYXQiOjE2MzAxNTUyODB9.bmjrpcCMoh_vmm7iR9OTbQ6QomTTRIXBvwhXaPZKzX8
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbmZvVXNlciI6eyJlbWFpbCI6ImhpZXBuaEBwZ2lwYXJ0bmVyLmNvbSIsInBob25lIjoiMDgxNjEzNDI3OSIsImZ1bGxuYW1lIjoiTmd1eeG7hW4gSOG7r3UgSGnhu4dwIiwiYml6ZnVsbG5hbWUiOiJOZ3V54buFbiBI4buvdSBIaeG7h3AtUEdJIiwiY29tcGFueSI6eyJfaWQiOiI2MDQ2YWRkOGI1NTUyNTM2OGIxMDhjZTIiLCJuYW1lIjoiQ8O0bmcgdHkgQ-G7lSBwaOG6p24gUEdJIFBhcnRuZXJzIiwic2lnbiI6IlBHSSIsImltYWdlIjoiNWE0YjBlZTUtNTM0Ny00Nzk1LTgzMGEtM2U0NDZmM2E2MjNkLnBuZyJ9LCJkZXBhcnRtZW50Ijp7Il9pZCI6IjYwNzhjN2Q0OTg0YmUyMzZkMGJhOGEyZSIsIm5hbWUiOiJCQU4gTMODTkggxJDhuqBPIiwic2lnbiI6IlBHSS5CTEQifSwiaW1hZ2UiOiJhZGMyNmRmNC1kMzIwLTQxMWQtOTI1ZS1lMzZmMGNkZTA1NjAuanBnIiwic2lnbmF0dXJlIjoiOTk3NDM2NDMtZDY1Yi00MDI1LWI1NjItNmM1MTQ3ZGYzMzg4LnBuZyIsInN0YXR1cyI6MSwibGV2ZWwiOjEsIl9pZCI6IjYwNzgxMDJhMTI4MzUwMjI1MGY4YmExMiJ9LCJpYXQiOjE2NDg4MzA0NjB9.HZ03P2omuk8JXsz9DxDStoPQBgezeiWoYqTQoFH3ZCA
 
 {
-    "conversationID": "6131f11414bdc292e1e8ab3e"
+    "keyword": "Hợp đồng thuê nhân sự"
 }
+
+# https://mongoosejs.com/docs/populate.html#query-conditions

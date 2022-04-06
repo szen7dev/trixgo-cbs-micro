@@ -5,18 +5,27 @@ const BASE_ROUTE = '/cmcs';
 const CONTRACT_BILL_JOB     = '/contract_bill_jobs';
 const CONTRACT_IPC          = '/contract_ipcs';
 const CONTRACT_PRODUCTION   = '/contract_productions';
+const CONTRACT_PAYMENT      = '/contract_payments';
 
 const CF_ROUTINGS_CMCS = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================CONTRACT BILL JOB=======================================//
-    CONTRACT_BILL_JOB_GET_LIST         : `${BASE_ROUTE}${CONTRACT_BILL_JOB}`, 
-
-    // ================================CONTRACT IPC============================================//
-    CONTRACT_IPC                       : `${BASE_ROUTE}${CONTRACT_IPC}`, 
+    CONTRACT_BILL_JOB_GET_LIST                                  : `${BASE_ROUTE}${CONTRACT_BILL_JOB}`,
 
     // ================================CONTRACT PRODUCTION=====================================//
-    CONTRACT_PRODUCTION                : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`, 
+    CONTRACT_PRODUCTION                                         : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`,
+
+    // ================================CONTRACT IPC============================================//
+    CONTRACT_IPC                                                : `${BASE_ROUTE}${CONTRACT_IPC}`,
+    CONTRACT_IPC_GET_AMOUNT_BY_MONTH                            : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-month`,
+    CONTRACT_IPC_GET_LIST_BY_MONTH                              : `${BASE_ROUTE}${CONTRACT_IPC}/get-list-by-month`,
+
+    // ================================CONTRACT PAYMENT=====================================//
+    CONTRACT_PAYMENT                                            : `${BASE_ROUTE}${CONTRACT_PAYMENT}`,
+    CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH                        : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-month`,
+    CONTRACT_PAYMENT_GET_LIST_BY_MONTH                          : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-list-by-month`,
+    CONTRACT_PAYMENT_GET_AMOUNT_CONTRACT_VALUE_GROUP_BY_DATE    : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-contract-value-group-by-date`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;

@@ -16,6 +16,7 @@ module.exports = {
      * Updated: 27/02/2022
 	 */
     getInfoAndGetListMediaFile: {
+        auth: "required",
         params: {
             mediaID     : { type: "string", optional: true },
             fileID      : { type: "string", optional: true },

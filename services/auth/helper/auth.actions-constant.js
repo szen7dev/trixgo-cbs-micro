@@ -6,12 +6,14 @@ const BASE_ACTIONS = 'ACT_AUTH';
  */
 const COMPANY       = 'COMPANY',
     USER            = 'USER',
+    APP             = 'APP',
     APP_MENU        = 'APP_MENU',
     APP_ROLE        = 'APP_ROLE',
     APP_USER        = 'APP_USER',
     APP_COMPANY     = 'APP_COMPANY',
     APP_ROLE_MENU   = 'APP_ROLE_MENU',
     REGISTER_TRIAL  = "REGISTER_TRIAL";
+    VERSION_APP     = "VERSION_APP";
 /**
  * nguyên tắc chuyển đổi từ method trong .handler
  *  VD: handler(insertFast) -> action(INSERT_FAST)
@@ -66,6 +68,12 @@ const CF_ACTIONS_AUTH = {
     GET_INFO_AND_GET_LIST_COMPANY        : `${BASE_ACTIONS}_${COMPANY}_GET_INFO_AND_GET_LIST`,
     COMPANY_INSERT                       : `${BASE_ACTIONS}_${COMPANY}_INSERT`,
     COMPANY_UPDATE                       : `${BASE_ACTIONS}_${COMPANY}_UPDATE`,
+
+    /**
+     * APP
+     */
+    APP_GET_INFO_GET_LIST                : `${BASE_ACTIONS}_${APP}_GET_INFO_GET_LIST`,
+
     /**
 	 * APP_MENU
 	 */
@@ -119,6 +127,11 @@ const CF_ACTIONS_AUTH = {
     REGISTER_TRIAL_STATISTICS_BY_TYPE   : `${BASE_ACTIONS}_${REGISTER_TRIAL}_STATISTICS_BY_TYPE`,
     REGISTER_TRIAL_STATISTICS_BY_YEAR   : `${BASE_ACTIONS}_${REGISTER_TRIAL}_STATISTICS_BY_YEAR`,
     REGISTER_TRIAL_STATISTICS_BY_COMPANY: `${BASE_ACTIONS}_${REGISTER_TRIAL}_STATISTICS_BY_COMPANY`,
+
+    /**
+     * VERSION APP
+     */
+    CHECK_VERSION_APP               : `${BASE_ACTIONS}_${VERSION_APP}_CHECK_VERSION_APP`,
 }
 
 exports.CF_ACTIONS_AUTH = CF_ACTIONS_AUTH;

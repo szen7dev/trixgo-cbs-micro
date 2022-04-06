@@ -16,19 +16,17 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            type              : { type: "string", optional: true },
-            name              : { type: "string", optional: true },
+            name              : { type: "string" },
             description       : { type: "string", optional: true },
-            content           : { type: "string", optional: true },
             parent            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, name, description, content, parent } = ctx.params;
+                let { name, description, parent } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.insert({
-                        type, name, description, content, parent, userID
+                        name, description, parent, userID
                     });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -49,16 +47,16 @@ module.exports = {
             name              : { type: "string", optional: true },
             description       : { type: "string", optional: true },
             content           : { type: "string", optional: true },
-            logo              : { type: "string", optional: true },
+            image             : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, name, description, content, logo } = ctx.params;
+                let { subjectID, name, description, content, image } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.update({
-                    subjectID, name, logo, description, content, userID
+                    subjectID, name, description, content, image, userID 
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,7 +73,7 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            subjectID         : { type: "string" },
+            subjectID: { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -83,7 +81,6 @@ module.exports = {
                 let { subjectID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
-
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.remove({
                     subjectID
                 });
@@ -102,28 +99,29 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+            subjectID   : { type: "string", optional: true },
+            parentID    : { type: "string", optional: true },
+
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
             lastestID   : { type: "string", optional: true },
-            type        : { type: "string", optional: true },
-            parentID    : { type: "string", optional: true },
-            filter      : { type: "string", optional: true },
             select      : { type: "string", optional: true },
-            subjectID   : { type: "string", optional: true },
+            populates   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, keyword, limit, lastestID, type, parentID, filter, select } = ctx.params;
+                let { subjectID, keyword, limit, lastestID, parentID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler;
                 if(subjectID){
                     resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.getInfo({
-                        subjectID, select, userID
+                        subjectID, userID, select, populates, ctx
                     });
                 }else{
                     resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.getList({
-                        keyword, limit, lastestID, type, parentID, filter, select
+                        parentID, keyword, limit, lastestID, select, populates
                     });
                 }
                 
