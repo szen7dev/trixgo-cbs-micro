@@ -282,7 +282,6 @@ class Model extends BaseModel {
                         ]
                     }
                 }
-                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
