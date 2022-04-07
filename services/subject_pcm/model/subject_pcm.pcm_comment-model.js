@@ -534,6 +534,7 @@ class Model extends BaseModel {
                     })
                 }
 
+                // Cập nhật/Xóa pcm_file
                 if(infoComment.type !== 2) {
                     if(!checkObjectIDs(files)) {
                         await PCM_FILE_COLL.deleteMany({

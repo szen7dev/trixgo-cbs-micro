@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -22,8 +22,8 @@ const { template } = require('lodash');
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
-    
+class Model extends BaseModel {
+
     constructor() {
         super(PCM_PLAN_GROUP_COLL);
     }
@@ -38,17 +38,17 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'projectID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-                
+
                 let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ project: projectID, name, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-                
+
                 let dataInsert = { project: projectID, name, sign, userCreate: userID, admins: [userID], members: [userID] };
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert) 
+                if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
 
                 return resolve({ error: false, data: infoAfterInsert });
@@ -68,12 +68,12 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-                
+
                 let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ _id: { $ne: groupID }, name, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED });
                 let dataInUpdate = { userUpdate: userID, modifyAt: new Date() };
-              
+
                 if(name){
                     dataInUpdate.name =name;
                 }
@@ -89,7 +89,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(membersRemove)){
                     dataInUpdate.$pullAll = { members: membersRemove };
                 }
-                
+
                 if(checkObjectIDs(admins)){
                     dataInUpdate.$addToSet = { admins };
                 }
@@ -108,7 +108,7 @@ class Model extends BaseModel {
             }
         });
     }
-    
+
     /**
      * Name: remove group ✅
      * Author: Depv
@@ -119,9 +119,9 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-                
+
                 let infoAfterRemove = await PCM_PLAN_GROUP_COLL.findByIdAndDelete(groupID);
-                if (!infoAfterRemove) 
+                if (!infoAfterRemove)
                     return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
 
                 return resolve({ error: false, data: infoAfterRemove });
@@ -130,7 +130,7 @@ class Model extends BaseModel {
             }
         })
     };
-    
+
     /**
      * Name: remove many ✅
      * Author: Depv
@@ -141,9 +141,9 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(groupsID))
                     return resolve({ error: true, message: 'groupsID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
-                
+
                 let infoAfterRemove = await PCM_PLAN_GROUP_COLL.deleteMany({ _id: { $in: groupsID }});
-                if (!infoAfterRemove) 
+                if (!infoAfterRemove)
                     return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
 
                 return resolve({ error: false, message: "Xoá thành công" });
@@ -152,7 +152,7 @@ class Model extends BaseModel {
             }
         })
     };
-    
+
     /**
      * Name: get info user_pcm_plan_group ✅
      * Author: Depv
@@ -163,7 +163,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(groupID))
                     return resolve({ error: true, message: 'param_invalid' });
-                
+
                 // populate
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -176,7 +176,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-            
+
                 let infoPlanGroup = await PCM_PLAN_GROUP_COLL.findById(groupID)
                                     .select(select)
                                     .populate(populates)
@@ -193,9 +193,9 @@ class Model extends BaseModel {
     /**
      * Name  : Danh sách user_pcm_plan_group ✅
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
-    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) { 
+    getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -224,7 +224,7 @@ class Model extends BaseModel {
 
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -262,17 +262,25 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.$and = [
-                        {
-                            $or: conditionObj.$or
-                        },
-                        {
-                            $or: [
-                                { name  :  new RegExp(keyword, 'i') },
-                                { sign  :  new RegExp(keyword, 'i') },
-                            ]
-                        }
-                    ]
+
+                    if(conditionObj.$or) {
+                        conditionObj.$and = [
+                            {
+                                $or: conditionObj.$or
+                            },
+                            {
+                                $or: [
+                                    { name  :  new RegExp(keyword, 'i') },
+                                    { sign  :  new RegExp(keyword, 'i') },
+                                ]
+                            }
+                        ]
+                    } else{
+                        conditionObj.$or = [
+                            { name  :  new RegExp(keyword, 'i') },
+                            { sign  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
                 }
                 console.log(conditionObj)
 
@@ -296,10 +304,10 @@ class Model extends BaseModel {
                 let infoDataAfterGet = await PCM_PLAN_GROUP_COLL
                     .find(conditionObj)
                     .limit(limit+1)
-                    .sort(sortBy) 
+                    .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 200 });
@@ -322,7 +330,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
