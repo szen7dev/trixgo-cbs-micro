@@ -262,17 +262,25 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.$and = [
-                        {
-                            $or: conditionObj.$or || []
-                        },
-                        {
-                            $or: [
-                                { name  :  new RegExp(keyword, 'i') },
-                                { sign  :  new RegExp(keyword, 'i') },
-                            ]
-                        }
-                    ]
+
+                    if(conditionObj.$or) {
+                        conditionObj.$and = [
+                            {
+                                $or: conditionObj.$or
+                            },
+                            {
+                                $or: [
+                                    { name  :  new RegExp(keyword, 'i') },
+                                    { sign  :  new RegExp(keyword, 'i') },
+                                ]
+                            }
+                        ]
+                    } else{
+                        conditionObj.$or = [
+                            { name  :  new RegExp(keyword, 'i') },
+                            { sign  :  new RegExp(keyword, 'i') },
+                        ]
+                    }
                 }
                 console.log(conditionObj)
 
