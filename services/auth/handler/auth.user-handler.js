@@ -527,6 +527,7 @@ module.exports = {
             }
         }
     },
+
     /**
      * Perform a textual search with 'find' method
      *  phương án này chỉ dùng cho các trường hợp đơn giản (ko có tìm kiếm+phân trang)
@@ -676,8 +677,8 @@ module.exports = {
                     userID, projectID, companyID, arrayID,
                     keyword, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
-
                 let resultAfterCallHandler;
+
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
                         userID, select, populates
@@ -687,7 +688,7 @@ module.exports = {
                         arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log({ error })

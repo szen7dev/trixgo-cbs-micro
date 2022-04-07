@@ -119,33 +119,6 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
-                
-                //precalculated
-                // companyOfAuthor
-                // companyOfAssignee
-                // subtype (Xử lý sau)
-                // amountChecklist
-                // amountFinishedChecklist
-                // amountSubtask
-                // amountFinishedSubtask
-                // amountResponse
-                // amountMarkedResponse
-                let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: authorID, select: "_id company"
-                })
-
-                let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                    userID: assigneeID, select: "_id company"
-                })
-                // companyOfAuthor
-                if(!infoAuthor.error){
-                    dataInsert.companyOfAuthor = infoAuthor.data.company;
-                }
-
-                // companyOfAssignee
-                if(!infoAssignee.error){
-                    dataInsert.companyOfAssignee = infoAuthor.data.company;
-                }
 
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
@@ -182,6 +155,7 @@ class Model extends BaseModel {
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
                 }
+
                 //_______File của người tạo việc
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
@@ -393,6 +367,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean();
+
                 return resolve({ error: false, data: infoTask, status: 200 });
             } catch (error) {
                 console.error(error);
@@ -803,6 +778,7 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
      * Name: get info task ✅
      * Author: Depv
@@ -828,6 +804,7 @@ class Model extends BaseModel {
                 // Bắt đầu kiểm tra quyền
                 let infoTaskToCheckPermission = await PCM_PLAN_TASK_COLL.findById(taskID).populate("group").lean();
                 let { author, assignee, related, group } = infoTaskToCheckPermission;
+
                 let isAuthor = false;
                 let isAssignee = false;
                 let isRelated = false;
@@ -928,6 +905,7 @@ class Model extends BaseModel {
 
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
                 let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
                 // Lấy công việc mà mình được quyền truy cập
                 conditionObj.$or = [
                     { author: userID },
@@ -948,6 +926,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -1112,7 +1091,6 @@ class Model extends BaseModel {
                         delete conditionObj.status;
                     } else{
                         conditionObj.type = 1;
-                        delete conditionObj.status;
                     }
                     
                     if(isChildTask == 1){
@@ -1537,9 +1515,9 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: { listCompany: listCompany?.data?.listRecords, listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days } });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message });
             }
-        });
+        })
     }
 
     /**

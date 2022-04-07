@@ -146,6 +146,7 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPull     = {};
                 let dataInc      = {};
+
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: "Request params departmentID invalid" });
 
@@ -815,6 +816,7 @@ class Model extends BaseModel {
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
+
                 if(type && [1,2].includes(type)){
                     conditionObj.type = type;
                 }
