@@ -189,6 +189,7 @@ class Model extends BaseModel {
                 if(arrayID && arrayID.length){
                     arrayID = JSON.parse(arrayID);
                     conditionObj._id = { $in: arrayID }
+                    limit =  arrayID.length;
                 }
 
                 let conditionObjOrg = { ...conditionObj };
