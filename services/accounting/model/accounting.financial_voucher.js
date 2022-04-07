@@ -8,7 +8,7 @@ const path                              = require('path');
 /**
  * DOMAIN AND ACTIONS
 */
-
+    
 /**
  * CONSTANTS
 */

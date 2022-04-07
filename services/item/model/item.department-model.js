@@ -664,7 +664,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00402
      */
-    getList({ companyID, keyword, type, userID, isMember, limit = 10, lastestID, select, populates={} }) {
+    getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 10, lastestID, select, populates={} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -683,6 +683,11 @@ class Model extends BaseModel {
                 if(isMember == 1){
                     conditionObj.members = { $in: [userID] }
                 }
+
+                if(isBudget == 1){
+                    conditionObj.budget = { $gt: 0 }
+                }
+
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -785,7 +790,7 @@ class Model extends BaseModel {
      * Author: DePV ✅
      * Code  : F00403
      */
-    getListByMembers({ companyID, keyword, type, userID, limit = 10, unLimit, lastestID, select, populates={} }) {
+    getListByMembers({ companyID, keyword, type, userID, limit = 10, isBudget, unLimit, lastestID, select, populates={} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -806,6 +811,10 @@ class Model extends BaseModel {
 
                 if(unLimit){
                     limit = 100;
+                }
+
+                if(isBudget == 1){
+                    conditionObj.budget = { $gt: 0 }
                 }
 
                 /**

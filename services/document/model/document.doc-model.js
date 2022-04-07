@@ -90,7 +90,6 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Request params direction invalid', 
                         keyError: 'params_direction_invalid',
-                        status: 400 
                     });
                 }
 
@@ -99,7 +98,14 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Request params type invalid', 
                         keyError: 'params_type_invalid',
-                        status: 400 
+                    });
+                }
+                
+                if (!sign) {
+                    return resolve({
+                        error: true, 
+                        message: 'Request params sign invalid', 
+                        keyError: 'params_type_invalid',
                     });
                 }
 
