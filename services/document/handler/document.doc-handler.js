@@ -31,7 +31,7 @@ module.exports = {
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             approver            : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
+            date                : { type: "string", },
             receivedDate        : { type: "string", optional: true },
             style               : { type: "string", optional: true },
             status              : { type: "string", optional: true },
@@ -61,9 +61,9 @@ module.exports = {
                     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
                     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID
                 } = ctx.params;
-                console.log({   parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
-                    amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
-                    fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID })
+                // console.log({   parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
+                //     amount, amountDelivery, requestResponse, expiredResponse, direction, packageID, senderID, receiverID,
+                //     fieldID, propertyID, otherID, storageID, note, departmentID, value, completeStatus, contractID })
                     
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.insert({   
                     parentID, name, sign, storeSign, description, approver, date, receivedDate, type, style, status,
@@ -92,7 +92,7 @@ module.exports = {
             description         : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             approver            : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
+            date                : { type: "string", },
             receivedDate        : { type: "string", optional: true },
             style               : { type: "string", optional: true },
             status              : { type: "string", optional: true },
