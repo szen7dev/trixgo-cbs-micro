@@ -10,8 +10,9 @@
  
  module.exports = {
      /**
-      * Dev: Depv ✅
-      * Func: Thêm contract ipc
+      * Dev: Hiepnh ✅
+      * Func: Thêm
+      * Date: 9/4/2022
       */
      insert: {
          auth: "required",
@@ -33,9 +34,10 @@
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
-                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.insert({
+                 let resultAfterCallHandler = await BUDGET_MODEL.insert({
                     ctx, userID, companyID: company._id, type, projectID, contractID, name, sign, description, date, note, budget
                  });
+
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
              } catch (error) {
                  return { error:  true, message: error.message };
@@ -44,8 +46,9 @@
      },
  
      /**
-      * Dev: Depv ✅
-      * Func: Sửa contract ipc
+      * Dev: Hiepnh ✅
+      * Func: Sửa
+      * Date: 9/4/2022
       */
      update: {
          auth: "required",
@@ -74,7 +77,7 @@
                  let { contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment } = ctx.params;
                 
                  const { _id: userID } = ctx.meta.infoUser;
-                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.update({
+                 let resultAfterCallHandler = await BUDGET_MODEL.update({
                      contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
                  });
                  
@@ -86,8 +89,9 @@
      },
  
      /**
-      * Dev: Depv ✅
-      * Func: Xóa contract ipc
+      * Dev: Hiepnh ✅
+      * Func: Xóa
+      * Date: 9/4/2022
       */
      remove: {
          auth: "required",
@@ -99,7 +103,7 @@
                  await this.validateEntity(ctx.params);
                  let { contractIpcID } = ctx.params;
                  const { _id: userID } = ctx.meta.infoUser;
-                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.remove({
+                 let resultAfterCallHandler = await BUDGET_MODEL.remove({
                      contractIpcID
                  });
                  
@@ -111,8 +115,9 @@
      },
  
      /**
-      * Dev: Depv ✅
-      * Func: get info and get list contract ipc
+      * Dev: Hiepnh ✅
+      * Func: get info and get list
+      * Date: 9/4/2022
       */
      getInfoAndGetList: {
          auth: "required",
@@ -136,11 +141,11 @@
  
                  let resultAfterCallHandler;
                  if(contractIpcID){
-                     resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getInfo({
+                     resultAfterCallHandler = await BUDGET_MODEL.getInfo({
                          contractIpcID, userID, select, populates
                      });
                  }else{
-                     resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getList({
+                     resultAfterCallHandler = await BUDGET_MODEL.getList({
                          type, contractID, userID, keyword, limit, lastestID, select, populates
                      });
                  }

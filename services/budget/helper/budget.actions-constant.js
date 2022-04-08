@@ -4,15 +4,52 @@ const BASE_ACTIONS = 'ACT_BUDGET';
  * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
  */
 const BUDGET                        = 'BUDGET';
+const BUDGET_ITEM                   = 'BUDGET_ITEM';
+const BUDGET_GROUP                  = 'BUDGET_GROUP';
+const BUDGET_WORK                   = 'BUDGET_WORK';
+const BUDGET_SUBMITTAL              = 'BUDGET_SUBMITTAL';
 
-const CF_ACT_BUDGET = {
+const CF_ACTIONS_BUDGET = {
     /**
     * BUDGET
     */
-    BUDGET_INSERT                                      : `${BASE_ACTIONS}_${BUDGET}_INSERT`,
-    BUDGET_UPDATE                                      : `${BASE_ACTIONS}_${BUDGET}_UPDATE`,
-    BUDGET_REMOVE                                      : `${BASE_ACTIONS}_${BUDGET}_REMOVE`,
-    BUDGET_GET_INFO_AND_GET_LIST                       : `${BASE_ACTIONS}_${BUDGET}_GET_INFO_AND_GET_LIST`,
+    BUDGET_INSERT                                                   : `${BASE_ACTIONS}_INSERT`,
+    BUDGET_UPDATE                                                   : `${BASE_ACTIONS}_UPDATE`,
+    BUDGET_REMOVE                                                   : `${BASE_ACTIONS}_REMOVE`,
+    BUDGET_GET_INFO_AND_GET_LIST                                    : `${BASE_ACTIONS}_GET_INFO_AND_GET_LIST`,
+
+    /**
+    * BUDGET_ITEM
+    */
+    BUDGET_ITEM_INSERT                                              : `${BASE_ACTIONS}_${BUDGET_ITEM}_INSERT`,
+    BUDGET_ITEM_UPDATE                                              : `${BASE_ACTIONS}_${BUDGET_ITEM}_UPDATE`,
+    BUDGET_ITEM_REMOVE                                              : `${BASE_ACTIONS}_${BUDGET_ITEM}_REMOVE`,
+    BUDGET_ITEM_GET_INFO_AND_GET_LIST                               : `${BASE_ACTIONS}_${BUDGET_ITEM}_GET_INFO_AND_GET_LIST`,   
+    
+    /**
+    * BUDGET_GROUP
+    */
+    BUDGET_GROUP_INSERT                                             : `${BASE_ACTIONS}_${BUDGET_GROUP}_INSERT`,
+    BUDGET_GROUP_UPDATE                                             : `${BASE_ACTIONS}_${BUDGET_GROUP}_UPDATE`,
+    BUDGET_GROUP_REMOVE                                             : `${BASE_ACTIONS}_${BUDGET_GROUP}_REMOVE`,
+    BUDGET_GROUP_GET_INFO_AND_GET_LIST                              : `${BASE_ACTIONS}_${BUDGET_GROUP}_GET_INFO_AND_GET_LIST`,  
+    
+    /**
+    * BUDGET_WORK
+    */
+    BUDGET_WORK_INSERT                                              : `${BASE_ACTIONS}_${BUDGET_WORK}_INSERT`,
+    BUDGET_WORK_UPDATE                                              : `${BASE_ACTIONS}_${BUDGET_WORK}_UPDATE`,
+    BUDGET_WORK_REMOVE                                              : `${BASE_ACTIONS}_${BUDGET_WORK}_REMOVE`,
+    BUDGET_WORK_GET_INFO_AND_GET_LIST                               : `${BASE_ACTIONS}_${BUDGET_WORK}_GET_INFO_AND_GET_LIST`,   
+    
+    /**
+     * BUDGET_SUBMITTAL
+     */
+    BUDGET_SUBMITTAL_INSERT                                         : `${BASE_ACTIONS}_${BUDGET_SUBMITTAL}_INSERT`,
+    BUDGET_SUBMITTAL_UPDATE                                         : `${BASE_ACTIONS}_${BUDGET_SUBMITTAL}_UPDATE`,
+    BUDGET_SUBMITTAL_REMOVE                                         : `${BASE_ACTIONS}_${BUDGET_SUBMITTAL}_REMOVE`,
+    BUDGET_SUBMITTAL_GET_INFO_AND_GET_LIST                          : `${BASE_ACTIONS}_${BUDGET_SUBMITTAL}_GET_INFO_AND_GET_LIST`,     
+
 }
 
-exports.CF_ACT_BUDGET = CF_ACT_BUDGET;
+exports.CF_ACTIONS_BUDGET = CF_ACTIONS_BUDGET;

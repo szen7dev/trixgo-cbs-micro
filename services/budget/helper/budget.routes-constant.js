@@ -1,19 +1,29 @@
-const BASE_ROUTE = '/budgets';
+const BASE_ROUTE = '/budget';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
-const BUDGET     = '/budgets';
-// const CONTRACT_IPC          = '/contract_ipcs';
-// const CONTRACT_PRODUCTION   = '/contract_productions';
-// const CONTRACT_PAYMENT      = '/contract_payments';
+const BUDGET_ITEM               = '/budget_items';
+const BUDGET_GROUP              = '/budget_groups';
+const BUDGET_WORK               = '/budget_works';
+const BUDGET_SUBMITTAL          = '/budget_submittals';
 
 const CF_ROUTINGS_BUDGET = {
     ORIGIN_APP: BASE_ROUTE,
 
-    // ================================CONTRACT IPC============================================//
-    BUDGET                                                          : `${BASE_ROUTE}`,
-    // CONTRACT_IPC_GET_AMOUNT_BY_MONTH                            : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-month`,
-    // CONTRACT_IPC_GET_LIST_BY_MONTH                              : `${BASE_ROUTE}${CONTRACT_IPC}/get-list-by-month`,
+    // ================================BUDGET============================================//
+    BUDGET                                                         : `${BASE_ROUTE}`,
+
+    // ================================BUDGET_ITEM============================================//
+    BUDGET_ITEM                                                    : `${BASE_ROUTE}${BUDGET_ITEM}`,
+    
+    // ================================BUDGET_GROUP============================================//
+    BUDGET_GROUP                                                   : `${BASE_ROUTE}${BUDGET_GROUP}`,
+    
+    // ================================BUDGET_WORK============================================//
+    BUDGET_WORK                                                    : `${BASE_ROUTE}${BUDGET_WORK}`,
+    
+    // ================================BUDGET_SUBMITTAL============================================//
+    BUDGET_SUBMITTAL                                               : `${BASE_ROUTE}${BUDGET_SUBMITTAL}`,    
 }
 
 exports.CF_ROUTINGS_BUDGET = CF_ROUTINGS_BUDGET;
