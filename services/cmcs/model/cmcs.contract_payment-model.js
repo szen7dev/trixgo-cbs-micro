@@ -676,10 +676,19 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách contract value, group theo tháng năm
 	 * Date: 05/04/2022
 	 */
-	getAmountContractValueGroupByDate2({ projectID, userID, ctx }){
+	getAmountContractValueGroupByDate({ projectID, userID, ctx }){
         return new Promise(async resolve => {
             try {
-                let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                if(!checkObjectIDs([projectID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số projectID không hợp lệ",
+                        keyError: "params_projectID_invalid",
+                        status: 400
+                    });
+                }
+
+                const listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
                     {
                         $match: {
                             project: ObjectID(projectID),
@@ -719,7 +728,8 @@ class Model extends BaseModel {
         })
     }
 
-	getAmountContractValueGroupByDate({ projectID, userID, ctx }){
+    // Get the fuck-off
+	getAmountContractValueGroupByDateTemp({ projectID, userID, ctx }){
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([userID])) {
