@@ -21,9 +21,8 @@ const {
 /**
  * COLLECTIONS
  */
-const DOCUMENT__DOC_FILE_COLL           		    = require('../database/document.doc_file-coll');
-
-
+const DOCUMENT__DOC_FILE_COLL           	= require('../database/document.doc_file-coll');
+const DOCUMENT__DOC_COLL           		    = require('../database/document.doc-coll');
 class Model extends BaseModel {
 
     constructor() {
@@ -64,7 +63,8 @@ class Model extends BaseModel {
                                   
                 if(!infoAterInsert)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
- 
+
+             
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
