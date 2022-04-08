@@ -703,7 +703,7 @@ class Model extends BaseModel {
 
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID,
-                        // select: 'startTime'
+                        select: 'startTime'
                     })
 
                     if(infoProject.error) return resolve(infoProject);
