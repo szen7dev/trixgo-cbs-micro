@@ -270,15 +270,15 @@ class Model extends BaseModel {
                             },
                             {
                                 $or: [
-                                    { name  :  new RegExp(keyword, 'i') },
-                                    { sign  :  new RegExp(keyword, 'i') },
+                                    { name: new RegExp(keyword, 'i') },
+                                    { sign: new RegExp(keyword, 'i') },
                                 ]
                             }
                         ]
                     } else{
                         conditionObj.$or = [
-                            { name  :  new RegExp(keyword, 'i') },
-                            { sign  :  new RegExp(keyword, 'i') },
+                            { name: new RegExp(keyword, 'i') },
+                            { sign: new RegExp(keyword, 'i') },
                         ]
                     }
                 }
