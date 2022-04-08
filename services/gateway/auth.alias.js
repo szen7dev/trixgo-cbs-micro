@@ -32,6 +32,7 @@ const { CF_ROUTINGS_PERSONAL }		= require('../personal/helper/personal.routes-co
 const { CF_ROUTINGS_DATAHUB }		= require('../datahub/helper/datahub.routes-constant');
 const { CF_ROUTINGS_BIDDING }		= require('../bidding/helper/bidding.routes-constant');
 const { CF_ROUTINGS_FIN }			= require('../fin/helper/fin.routes-constant');
+const { CF_ROUTINGS_BUDGET }		= require('../fin/helper/budget.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -60,6 +61,7 @@ const { CF_ACTIONS_PERSONAL }		= require('../personal/helper/personal.actions-co
 const { CF_ACTIONS_DATAHUB }		= require('../datahub/helper/datahub.actions-constant');
 const { CF_ACTIONS_BIDDING }		= require('../bidding/helper/bidding.actions-constant');
 const { CF_ACTIONS_FIN }			= require('../fin/helper/fin.actions-constant');
+const { CF_ACTIONS_BUDGET }			= require('../fin/helper/budget.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -1445,6 +1447,22 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_FLOW_PLAN_GET_INFO_AND_GET_LIST}`],
 
 		//---------------------------🏁 END SERVICE FIN 🏁---------------------------//
+
+		//---------------------------🏁 BEGIN SERVICE BUDGET 🏁-------------------------//
+		//____budget
+		[`POST ${CF_ROUTINGS_BUDGET.BUDGET}`] :
+		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_INSERT}`],
+
+		// [`PUT ${CF_ROUTINGS_FIN.CASH_FLOW_PLAN}`] :
+		// [`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_FLOW_PLAN_UPDATE}`],
+
+		// [`DELETE ${CF_ROUTINGS_FIN.CASH_FLOW_PLAN}`] :
+		// [`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_FLOW_PLAN_REMOVE}`],
+
+		// [`GET ${CF_ROUTINGS_FIN.CASH_FLOW_PLAN}`] :
+		// [`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_FLOW_PLAN_GET_INFO_AND_GET_LIST}`],
+
+		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions

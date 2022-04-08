@@ -24,6 +24,7 @@ let CF_DOMAIN_SERVICES = {
     DATAHUB         : 'datahub',
     BIDDING         : 'biiding',
     FIN             : 'fin',
+    BUDGET          : 'budget',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

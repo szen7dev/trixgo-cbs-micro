@@ -44,7 +44,9 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**
      * THÔNG TIN KHÁC
      */
-    //_________Tên (Tên hợp đồng)
+    //_________Ngày tháng
+    date: { type: Date, default: Date.now },
+    //_________Tên
     name: String,
     //_________Mã hiệu
     sign: String,
