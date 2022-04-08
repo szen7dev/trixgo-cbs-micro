@@ -698,10 +698,21 @@ class Model extends BaseModel {
                             amount: { $sum: "$value" }
                         }
                     },
-                    // {$sort: {"_id.month": 1}}
+                    {
+                        $sort: {
+                            "_id.month": 1,
+                            "_id.year": 1,
+                        }
+                    }
                 ])
 
-                return resolve({ error: false, data: listData, status: 200 });
+                return resolve({
+                    error: false,
+                    data: {
+                        listRecords: listData
+                    },
+                    status: 200
+                });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
