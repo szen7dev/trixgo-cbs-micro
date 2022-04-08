@@ -683,7 +683,6 @@ class Model extends BaseModel {
                     {
                         $match: {
                             project: ObjectID(projectID),
-                            // outin: Number(outin),
                         }
                     },
                     {
@@ -702,9 +701,9 @@ class Model extends BaseModel {
                     // {$sort: {"_id.month": 1}}
                 ])
 
-                return resolve({ error: false, data: listData });
+                return resolve({ error: false, data: listData, status: 200 });
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
@@ -748,10 +747,10 @@ class Model extends BaseModel {
 	// 			}
 
 	// 			const groupObj = {
-	// 				_id: { $dateToString: { format: "%Y-%m", date: "$createAt" } },
+	// 				_id: { $dateToString: { format: "%Y-%m", date: "$date" } },
 	// 				dataFormat: {
 	// 					$first: {
-	// 						$dateToString: { format: "%m/%Y", date: "$createAt" }
+	// 						$dateToString: { format: "%m/%Y", date: "$date" }
 	// 					}
 	// 				},
     //                 count: { $sum: "$value" }
