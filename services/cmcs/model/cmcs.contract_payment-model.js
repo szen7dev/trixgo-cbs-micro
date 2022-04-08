@@ -519,7 +519,6 @@ class Model extends BaseModel {
      * Date: 04/04/2022
      */
     getAmountByMonth({ userID, companyID, outin, year, ctx }){
-        // console.log({ userID, companyID, outin, year })
         return new Promise(async resolve => {
             try {
                 let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
@@ -677,7 +676,7 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách contract value, group theo tháng năm
 	 * Date: 05/04/2022
 	 */
-     getAmountContractValueGroupByDate({ userID, projectID, outin, ctx }){
+	getAmountContractValueGroupByDate({ projectID, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
@@ -696,11 +695,11 @@ class Model extends BaseModel {
                     },
                     {
                         $group: {
-                            _id: { month: "$month", year: "$year"},
+                            _id: { month: "$month", year: "$year" },
                             amount: { $sum: "$value" }
                         }
                     },
-                    {$sort: {"_id.month": 1}}
+                    // {$sort: {"_id.month": 1}}
                 ])
 
                 return resolve({ error: false, data: listData });

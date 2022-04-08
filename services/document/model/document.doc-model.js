@@ -645,7 +645,6 @@ class Model extends BaseModel {
                 }, status: 200 });
                 
             } catch (error) {
-		console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -991,15 +990,6 @@ class Model extends BaseModel {
                 if(!filesID || !filesID.length || !checkObjectIDs(filesID))
                     return resolve({ error: true, message: 'Request params filesID invalid', status: 400 });
 
-                // let infoAuthorDocument = await DOCUMENT__USER_COLL.findOne({
-                //     document: documentID,
-                //     user: authorID,
-                //     permission: 1
-                // }).lean()
-
-                // if(!infoAuthorDocument)
-                //     return resolve({ error: true, message: "Permission denined", status: 403 });
-
                 const listFilesInsert = filesID.map(file => ({
                     document: documentID,
                     user: authorID,
@@ -1012,7 +1002,10 @@ class Model extends BaseModel {
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: 'Add files attachment failed', status: 422 });
-
+                const infoAfterInsertTemp = [...infoAfterInsert];
+                //Cập nhật trường lastFile vào trong document
+                const infoLastFile = infoAfterInsertTemp.pop();
+                const infoAfterUpdateLastFile = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, { lastFile: infoLastFile.file }, { new: true });
                 return resolve({
                     error: false,
                     status: 200,
