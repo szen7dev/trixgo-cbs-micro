@@ -8,7 +8,7 @@ const Schema    = require('mongoose').Schema;
  * NGÂN SÁCH DỰ ÁN => VỚI CHỦ ĐẦU TƯ (HỢP ĐỒNG MUA VÀO)
  * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
  */
-module.exports  = DATABASE_MIDDLEWARE("contract", {
+module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**
      * Phân loại
      * 1-Ngân sách cho chiến dịch

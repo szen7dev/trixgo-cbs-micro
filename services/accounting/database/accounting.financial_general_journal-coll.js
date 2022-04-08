@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 /**
- *  Hồ sơ văn bản
+ *  CHỨNG TỪ KẾ TOÁN
  */
 module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     //_________Công ty      
@@ -17,7 +17,35 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'funda'
     }, 
-    //_________Thuộc dự án phòng ban (NEW***)
+    /**
+     * LINK NGÂN SÁCH
+     */
+    //_________Ngân sách
+    budget: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget'
+    },
+    //_________Hạng mục
+    item: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget_item'
+    },
+    //_________Nhóm
+    group: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget_group'
+    },
+    //_________Công việc
+    work: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget_work'
+    },
+    //_________Ghi nhận thực hiện ngân sách hoặc giảm trừ thực hiện ngân sách (1/-1)
+    updown: { type: Number, default: 1 }, 
+    /**
+     * LINK DỰ ÁN, PHÒNG BAN
+     */
+    //_________Thuộc dự án phòng ban
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
@@ -27,6 +55,9 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     }, 
+    /**
+     * IPC, KHOẢN MỤC PHÍ
+     */
     //_________Kỳ thanh toán
     ipc: {
         type: Schema.Types.ObjectId,
@@ -44,21 +75,31 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
-    //_________Ngân sách-Thuộc nhóm khoản mục phí nào (BUDGET)
-    group: {
-        type: Schema.Types.ObjectId,
-        ref: 'budget_group'
-    },
-    //_________Ngân sách-Thuộc khoản mục phí nào (BUDGET)
-    job: {
-        type: Schema.Types.ObjectId,
-        ref: 'budget_job'
-    },
+    /**
+     * LINK TỪ PHIẾU
+     */
     //_________Phiếu/chứng từ
     voucher: {
         type: Schema.Types.ObjectId,
         ref: 'financial_voucher'
     }, 
+    //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
+    forward: { type: Number, default: 0 },
+    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
+    forwardIs: { type: Number, default: 0 },
+    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
+    returning: { type: Number, default: 0 },
+     /**
+     * Phân biệt phiếu tạm ứng hay thanh toán
+     * 0-Thanh toán
+     * 1-Tạm ứng
+     */
+    advancePayment: { type: Number, default: 0 },
+    //_________Phiếu có hủy hay không
+    cancel: { type: Number, default: 0 },
+    /**
+     * KẾ TOÁN
+     */
     //_________Tài khoản nợ
     debit: {
         type: Schema.Types.ObjectId,
@@ -95,8 +136,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     name: String,
     //_________Ghi chú
     note: String,   
-    //_________Ghi nhận thực hiện ngân sách hoặc giảm trừ thực hiện ngân sách (1/-1)
-    updown: { type: Number, default: 1 }, 
     /**
      * Phân biệt phiếu tạm ứng hay thanh toán
      * 0-Thanh toán
@@ -136,21 +175,4 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref : 'user'
     },
-    /**
-     * KẾT CHUYỂN CUỐI KỲ (31/12)/PHIẾU HỦY
-     */ 
-    //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
-    forward: { type: Number, default: 0 },
-    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
-    forwardIs: { type: Number, default: 0 },
-    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
-    returning: { type: Number, default: 0 },
-     /**
-     * Phân biệt phiếu tạm ứng hay thanh toán
-     * 0-Thanh toán
-     * 1-Tạm ứng
-     */
-    advancePayment: { type: Number, default: 0 },
-    //_________Phiếu có hủy hay không
-    cancel: { type: Number, default: 0 },
 })
