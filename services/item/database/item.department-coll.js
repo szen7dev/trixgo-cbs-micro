@@ -17,17 +17,17 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref: "department"
     },
+    //_________Level
     level: {
         type: Number,
         default: 1 
     },
-    /**
-     * PHÂN QUYỀN TRUY CẬP 
-     */
+    //_________Quản trị
     admins: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    //_________Thành viên
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"
@@ -41,7 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     /**
      * Giai đoạn dự án
      * 1-Đang phát triển
-     * 2-Lập kế hoạch
+     * 2-Lập kế hoạch-triển khai
      * 3-Thiết kế
      * 4-Đấu thầu
      * 5-Xây dựng
@@ -136,63 +136,6 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
     //_________Ghi chú
     note: String,
-    //_________Ảnh đại diện
-    image: {
-        type: String,
-        defautl: 'project_default.png'
-    },
-    //_________Hình ảnh gần đây
-    photos: [{
-        type: Schema.Types.ObjectId,
-        ref: 'file',
-    }],
-    /**
-     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
-     */
-    userCreate: {
-        type: Schema.Types.ObjectId,
-        ref : 'user'
-    },
-    userUpdate: {
-        type: Schema.Types.ObjectId,
-        ref : 'user'
-    },
-
-    /**
-     * COLLECTION CÔNG VIỆC VÀ THÔNG TIN
-     */
-    //______Tổng số cột mốc
-    milestones: {
-        type   : Number,
-        default: 0
-    },
-    //______Số mốc đã hoàn thành
-    completedMilestones: {
-        type   : Number,
-        default: 0
-    },
-
-    //______Tổng số công việc
-    tasks: {
-        type   : Number,
-        default: 0
-    },
-    //______Tổng số công việc
-    completedTasks: {
-        type   : Number,
-        default: 0
-    },
-    //______Hình ảnh gần đây nhất của dự án
-    images: [{
-        type: Schema.Types.ObjectId,
-        ref : 'file'
-    }],
-    //______Bình luận cuối cùng
-    lastComment: {
-        type: Schema.Types.ObjectId,
-        ref : 'comment'
-    },
-
     /**
      * DOANH THU
      */
@@ -201,25 +144,40 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    //______Doanh thu VAT
+    vatRevenue: {
+        type: Number,
+        default : 0
+    },
     //______Dự báo doanh thu tới khi kết thúc
     forecastRevenue: {
         type: Number,
         default : 0
     },
+    //______VAT
+    forecastVatRevenue: {
+        type: Number,
+        default : 0
+    },
     //______Doanh thu thực tế
-    realRevenue: {
+    finalRevenue: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    finalVatRevenue: {
         type: Number,
         default : 0
     },
     /**
-     * NGÂN SÁCH
+     * NGÂN SÁCH/CHI PHÍ
      */
     //_________Ngân sách/Tổng mức đầu tư/Chi phí
     budget: {
         type   : Number,
         default: 0
     },
-    //_________Ngân sách/Tổng mức đầu tư phần VAT
+    //_________VAT
     vatBudget: {
         type   : Number,
         default: 0
@@ -230,20 +188,23 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         default : 0
     },
     //______VAT
-    vatForecastBudget: {
+    forecastVatBudget: {
         type: Number,
         default : 0
     },    
     //______Ngân sách thực tế
-    realBudget: {
+    finalBudget: {
         type: Number,
         default : 0
     },
     //______VAT
-    vatRealBudget: {
+    finalVatBudget: {
         type: Number,
         default : 0
-    },    
+    }, 
+    /**
+     * LỢI NHUẬN
+     */   
     //______Lợi nhuận NPV
     npv: {
         type: Number,
@@ -255,7 +216,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         default : 0
     }, 
     //______Thực tế lợi nhuận
-    realNpv: { 
+    finalNpv: { 
         type: Number,
         default : 0
     }, 
@@ -270,29 +231,18 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         default : 0
     }, 
     //______Thực tế IRR
-    realIrr: { 
+    finalIrr: { 
         type: Number,
         default : 0
     }, 
-    
     /**
-     * COLLECTION DÒNG TIỀN CHI
+     * MUA VÀO
      */
-    //______Số lượng gói thầu
-    numberOfPackage: {
-        type: Number,
-        default : 0
-    },
-    //______Giá trị gói thầu đã hoàn thành
-    numberOfCompletedPackage: {
-        type: Number,
-        default : 0
-    },
     //______Số lượng hợp đồng mua vào
     numberOfContractIn: {
         type: Number,
         default : 0
-    },
+    },    
     //______Giá trị ký hợp đồng trước VAT
     contractValue: {
         type: Number,
@@ -388,183 +338,216 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
-    //______Giá trị quyết toán (ngân sách thực tế)
+    //______Giá trị quyết toán
     contractFinalValue: {
         type: Number,
         default : 0
     },
-
     /**
-     * COLLECTION DÒNG TIỀN THU
+     * BÁN RA
      */
     //______Bắt đầu mở bán
     openTime: {
         type: Date,
     },
-
     //______Kết thúc mở bán
     closedTime: {
         type: Date,
     },
-
     //______Số đại lý tham gia bán hàng
     numberOfAgent: {
         type: Number,
         default : 0
     },
-
     //______Số lượng booking
     numberOfBooking: {
         type: Number,
         default : 0
     },
-
     //______Giá trị booking
     totalBookingValue: {
         type: Number,
         default : 0
     },
-
     //______Số lượng đặt cọc
     numberOfDeposit: {
         type: Number,
         default : 0
     },
-
     //______Giá trị đặt cọc
     totalDepositValue: {
         type: Number,
         default : 0
     },
-
     //______Số hợp đồng bán ra
     numberOfContract: {
         type: Number,
         default : 0
     },
-
     //______Giá trị hợp đồng bán ra
     totalContractValue: {
         type: Number,
         default : 0
     },
-
     //______Công nợ phải thu
     receivable: {
         type: Number,
         default : 0
     },
-
     /**
-    * COLLECTION PHÁT TRIỂN THỊ TRƯỜNG
+    * PHÁT TRIỂN THỊ TRƯỜNG-THAM KHẢO THÊM BẢNG CỦA CBS3
     */
-
     //______Ước tính giá trị
     estimate: {
         type: Number,
         default : 0
     },
-
     //______Ngày liên hệ gần nhất
     lastDateContact: {
         type: Date,
     },
-
     //______Đầu mối kết nối
     transactionContacts: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
-
     //______Khả năng thành công
     likelihoodOfSuccess: {
         type: Date,
     },
-
     //______Tiến trình cuối cùng
     lastChange: {
         type: Schema.Types.ObjectId,
         ref : 'comment'
     },
-    
+
     /**
     * THÔNG TIN KHÁC
     */
+    //______Số lượng gói thầu
+    numberOfPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Giá trị gói thầu đã hoàn thành
+    numberOfCompletedPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Tổng số cột mốc
+    milestones: {
+        type   : Number,
+        default: 0
+    },
+    //______Số mốc đã hoàn thành
+    completedMilestones: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc
+    tasks: {
+        type   : Number,
+        default: 0
+    },
+    //______Tổng số công việc
+    completedTasks: {
+        type   : Number,
+        default: 0
+    },
     //______Số danh bạ
     numberOfContact: {
         type: Number,
         default : 0
     },
-
     //______Số biên bản họp
     numberOfMoms: {
         type: Number,
         default : 0
     },
-
     //______Số lượng hồ sơ văn bản
     numberOfDocs: {
         type: Number,
         default : 0
     },
-    
     //______Số lượng hồ sơ văn bản đã hoàn thành
     numberFinishOfDocs: {
         type: Number,
         default : 0
     },
-    
     //______Số bản vẽ
     numberOfDrawings: {
         type: Number,
         default : 0
     },
-
     //______Số báo cáo
     numberOfReports: {
         type: Number,
         default : 0
     },
-
     //______Số hồ sơ thanh toán
     numberOfIpcs: {
         type: Number,
         default : 0
     },
-
     //______Số RFI
     numberOfRfis: {
         type: Number,
         default : 0
     },
-
     //______Số Submitals
     numberOfSubmitals: {
         type: Number,
         default : 0
     },
-
     //______Số Punch list
     numberOfPunchLists: {
         type: Number,
         default : 0
     },
-
     //______Số hình ảnh
     numberOfPhotos: {
         type: Number,
         default : 0
     },
-
     //______Số hồ sơ chất lượng
     numberOfInspections: {
         type: Number,
         default : 0
     },
-
+    //_________Ảnh đại diện
+    image: {
+        type: String,
+        defautl: 'project_default.png'
+    },
+    //_________Hình ảnh gần đây
+    photos: [{
+        type: Schema.Types.ObjectId,
+        ref: 'file',
+    }],
+    //______Hình ảnh gần đây nhất của dự án
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref : 'file'
+    }],
+    //______Bình luận cuối cùng
+    lastComment: {
+        type: Schema.Types.ObjectId,
+        ref : 'comment'
+    },
     //______Last log cuối cùng của dự án
     lastLog: {
         type: Schema.Types.ObjectId,
         ref : 'history_log'
+    },
+    /**
+     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
+     */
+    userCreate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    },
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
     },
 })

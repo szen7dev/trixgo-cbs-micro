@@ -9,22 +9,6 @@ const Schema    = require('mongoose').Schema;
  * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
  */
 module.exports  = DATABASE_MIDDLEWARE("contract", {
-    /**
-     * PHÂN QUYỀN TRUY CẬP
-     */
-    //_________Quản trị của hợp đồng
-    admins: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
-    //_________Thành viên của hợp đồng
-    members: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
-    /**
-     * THÔNG TIN QUẢN TRỊ VÀ PHÂN LOẠI
-     */
     //_________Công ty 
     company: {
         type: Schema.Types.ObjectId,
@@ -41,11 +25,21 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref: "contract"
     },
-    //_________Cấp của hợp đồng
+    //_________Level
     level: {
         type: Number,
         default: 1
     },
+    //_________Quản trị
+    admins: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+    //_________Thành viên
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
     /**
      * Phân loại chính thức/nháp
      * 1-Chính thức (đã chuyển thành hợp đồng)
@@ -93,7 +87,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref : 'warehouse'
     },
-    
     /**
      * THÔNG TIN KHÁC
      */
@@ -133,9 +126,8 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     packageName: String,
     //_________Khóa cập nhật(1-Open/2-Khóa)
     lock: { type: Number, default: 0 },
-
     /**
-     * THÔNG TIN VÀ GIÁ TRỊ THỰC HIỆN
+     * DOANH THU
      */
     //_________(1)Giá trị trước VAT
     value: { type: Number, default: 0 },
@@ -183,32 +175,52 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     finalValue: { type: Number, default: 0 },
     //_________Thuế VAT (%)
     vat: { type: Number, default: 10 },
-  
     /**
      * USD-NGOẠI TỆ
      */ 
     //_________Tỷ giá hối đoái
     fcuExRate: { type: Number, default: 0 },
-
     /**
-     * THÔNG TIN NGÂN SÁCH
+     * NGÂN SÁCH
      */
-    //_______Ngân sách
-    budget: { type: Number, default: 0 },
-    //_______VAT ngân sách
-    budgetVAT: { type: Number, default: 0 },
-    //_______Dự báo ngân sách
-    forecastBudget: { type: Number, default: 0 },
-    //_______VAT dự báo
-    vatForecastBudget: { type: Number, default: 0 },
-    //_________Phí quản lý
-    managementFee: { type: Number, default: 0 },
-    //_________Tỷ lệ giao khoán
-    subcontractFee: { type: Number, default: 0 },
-    //_________Chi phí
-    expenses: { type: Number, default: 0 },
-    //_________Lợi nhuận
-    profit: { type: Number, default: 0 },
+    //_________Ngân sách/Tổng mức đầu tư/Chi phí
+    budget: {
+        type   : Number,
+        default: 0
+    },
+    //_________VAT
+    vatBudget: {
+        type   : Number,
+        default: 0
+    },
+    //______Dự báo ngân sách
+    forecastBudget: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    forecastVatBudget: {
+        type: Number,
+        default : 0
+    },    
+    //______Ngân sách thực tế
+    finalBudget: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    finalVatBudget: {
+        type: Number,
+        default : 0
+    }, 
+    // //_________Phí quản lý
+    // managementFee: { type: Number, default: 0 },
+    // //_________Tỷ lệ giao khoán
+    // subcontractFee: { type: Number, default: 0 },
+    // //_________Chi phí
+    // expenses: { type: Number, default: 0 },
+    // //_________Lợi nhuận
+    // profit: { type: Number, default: 0 },
 
     /**
      * ĐẤU THẦU
@@ -217,7 +229,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     tenderPrice: { type: Number, default: 0 },
     //_______VAT trúng thầu
     tenderPriceAT: { type: Number, default: 0 },
-
     /**
      * BẢO LÃNH
      */
@@ -229,7 +240,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     agValue: { type: Number, default: 0 },
     //_________Thời hạn bảo lãnh tạm ứng
     expiredAg: { type: Date, default: null },
-
     //_________Ảnh đại diện
     image: {
         type: String,
@@ -240,7 +250,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref: 'file',
     }],
-    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
