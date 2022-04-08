@@ -194,7 +194,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
 
     /**
-     * COLLECTION CHỈ SỐ TÀI CHÍNH
+     * DOANH THU
      */
     //______Doanh thu
     revenue: {
@@ -211,6 +211,9 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    /**
+     * NGÂN SÁCH
+     */
     //_________Ngân sách/Tổng mức đầu tư/Chi phí
     budget: {
         type   : Number,

@@ -200,7 +200,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_______Dự báo ngân sách
     forecastBudget: { type: Number, default: 0 },
     //_______VAT dự báo
-    forecastBudgetVAT: { type: Number, default: 0 },
+    vatForecastBudget: { type: Number, default: 0 },
     //_________Phí quản lý
     managementFee: { type: Number, default: 0 },
     //_________Tỷ lệ giao khoán
