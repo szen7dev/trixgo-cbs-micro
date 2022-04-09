@@ -982,13 +982,13 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([authorID]))
-                    return resolve({ error: true, message: 'Request params authorID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params authorID invalid' });
 
                 if(!checkObjectIDs([documentID]))
-                    return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params documentID invalid' });
 
                 if(!filesID || !filesID.length || !checkObjectIDs(filesID))
-                    return resolve({ error: true, message: 'Request params filesID invalid', status: 400 });
+                    return resolve({ error: true, message: 'Request params filesID invalid' });
 
                 const listFilesInsert = filesID.map(file => ({
                     document: documentID,
@@ -1001,11 +1001,11 @@ class Model extends BaseModel {
                 let infoAfterInsert = await DOCUMENT__FILE_COLL.insertMany(listFilesInsert);
 
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: 'Add files attachment failed', status: 422 });
+                    return resolve({ error: true, message: 'Add files attachment failed' });
                 const infoAfterInsertTemp = [...infoAfterInsert];
                 //Cập nhật trường lastFile vào trong document
                 const infoLastFile = infoAfterInsertTemp.pop();
-                const infoAfterUpdateLastFile = await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, { lastFile: infoLastFile.file }, { new: true });
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(documentID, { lastFile: infoLastFile.file }, { new: true });
                 return resolve({
                     error: false,
                     status: 200,

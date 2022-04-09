@@ -148,7 +148,7 @@ class Model extends BaseModel {
                 
                 // companyOfAssignee
                 if(!infoAssignee.error){
-                    dataInsert.companyOfAssignee = infoAuthor.data.company;
+                    dataInsert.companyOfAssignee = infoAssignee.data.company;
                 }
 
                 // Việc con hoặc check list
