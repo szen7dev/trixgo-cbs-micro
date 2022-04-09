@@ -4,6 +4,7 @@ const CacheCleaner                	    = require("../../tools/mixins/cache.clean
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_DATAHUB } 	       	= require('./helper/datahub.actions-constant');
 
+const DATAHUB_CONTACT_COLL				= require('./database/datahub_contact-coll');
 const DATAHUB_TYPE_COLL					= require('./database/datahub_type-coll');
 const DATAHUB_PROJECT_COLL				= require('./database/datahub_project-coll');
 const DATAHUB_PACKAGE_COLL				= require('./database/datahub_package-coll');
@@ -13,6 +14,7 @@ const DATAHUB_PROFILE_COLL				= require('./database/datahub_profile-coll');
 const DATAHUB_INSPECTION_DOC_COLL		= require('./database/datahub_inspection_doc-coll');
 const DATAHUB_INSPECTION_CHECKLIST_COLL	= require('./database/datahub_inspection_checklist-coll');
 
+const DATAHUB_CONTACT_HANDLER   		= require('./handler/datahub.datahub_contact-handler');
 const DATAHUB_TYPE_HANDLER   			= require('./handler/datahub.datahub_type-handler');
 const DATAHUB_PROJECT_HANDLER   		= require('./handler/datahub.datahub_project-handler');
 const DATAHUB_PACKAGE_HANDLER   		= require('./handler/datahub.datahub_package-handler');
@@ -25,6 +27,7 @@ const DATAHUB_INSPECTION_CHECKLIST_HANDLER  = require('./handler/datahub.datahub
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DATAHUB,
 	mixins: [
+		DbService(DATAHUB_CONTACT_COLL),  
 		DbService(DATAHUB_TYPE_COLL),  
 		DbService(DATAHUB_PROJECT_COLL),  
 		DbService(DATAHUB_PACKAGE_COLL),  
@@ -53,6 +56,12 @@ module.exports = {
 	* Actions
 	*/
 	actions: {	
+		//==========================================   DATAHUB CONTACT   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_CONTACT_INSERT]   			 	: DATAHUB_CONTACT_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_CONTACT_UPDATE]   			 	: DATAHUB_CONTACT_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_CONTACT_REMOVE]					: DATAHUB_CONTACT_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_CONTACT_GET_INFO_AND_GET_LIST]	: DATAHUB_CONTACT_HANDLER.getInfoAndGetList,
+
 		//==========================================   DATAHUB TYPE   ================================
 		[CF_ACTIONS_DATAHUB.DATAHUB_TYPE_INSERT]   			 	: DATAHUB_TYPE_HANDLER.insert,
 		[CF_ACTIONS_DATAHUB.DATAHUB_TYPE_UPDATE]   			 	: DATAHUB_TYPE_HANDLER.update,
