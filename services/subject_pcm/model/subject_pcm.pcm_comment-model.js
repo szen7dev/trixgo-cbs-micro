@@ -262,10 +262,13 @@ class Model extends BaseModel {
 							}
                         });
 
-                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                        contractID: infoTask.contract?.toString(),
-                        photos: images
-                    })
+                    if(infoTask.contract) {
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                            contractID: infoTask.contract.toString(),
+                            photos: images
+                        })
+                    }
+
                     await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
                         departmentID: infoTask.project?._id?.toString(),
                         photos: images
