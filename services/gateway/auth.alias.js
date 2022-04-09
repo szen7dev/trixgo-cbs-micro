@@ -1433,7 +1433,7 @@ module.exports = {
 		//---------------------------🏁 END SERVICE BIDDING 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE FIN 🏁-------------------------//
-		//____bidding_doc
+		//____cash_flow_plan
 		[`POST ${CF_ROUTINGS_FIN.CASH_FLOW_PLAN}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_FLOW_PLAN_INSERT}`],
 
@@ -1445,6 +1445,19 @@ module.exports = {
 
 		[`GET ${CF_ROUTINGS_FIN.CASH_FLOW_PLAN}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_FLOW_PLAN_GET_INFO_AND_GET_LIST}`],
+
+		//____cash_book
+		[`POST ${CF_ROUTINGS_FIN.CASH_BOOK}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_FIN.CASH_BOOK}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_FIN.CASH_BOOK}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_FIN.CASH_BOOK}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_GET_INFO_AND_GET_LIST}`],
 
 		//---------------------------🏁 END SERVICE FIN 🏁---------------------------//
 
@@ -1462,9 +1475,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_BUDGET.BUDGET}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_BUDGET.BUDGET_GET_INFO_AND_GET_LIST}`],
 
-		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
-
-		//---------------------------🏁 BEGIN SERVICE BUDGET ITEM 🏁-------------------------//
 		//____budget_item
 		[`POST ${CF_ROUTINGS_BUDGET.BUDGET_ITEM}`] :
 		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_INSERT}`],
@@ -1478,9 +1488,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_BUDGET.BUDGET_ITEM}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_GET_INFO_AND_GET_LIST}`],
 
-		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
-
-		//---------------------------🏁 BEGIN SERVICE BUDGET GROUP 🏁-------------------------//
 		//____budget_group
 		[`POST ${CF_ROUTINGS_BUDGET.BUDGET_GROUP}`] :
 		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_INSERT}`],
@@ -1494,9 +1501,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_BUDGET.BUDGET_GROUP}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_GET_INFO_AND_GET_LIST}`],
 
-		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
-
-		//---------------------------🏁 BEGIN SERVICE BUDGET WORK 🏁-------------------------//
 		//____budget_work
 		[`POST ${CF_ROUTINGS_BUDGET.BUDGET_WORK}`] :
 		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_INSERT}`],
@@ -1510,9 +1514,6 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_BUDGET.BUDGET_WORK}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_BUDGET.BUDGET_WORK_GET_INFO_AND_GET_LIST}`],
 
-		//---------------------------🏁 END SERVICE BUDGET 🏁---------------------------//
-
-		//---------------------------🏁 BEGIN SERVICE BUDGET SUBMITTAL 🏁-------------------------//
 		//____budget_submittal
 		[`POST ${CF_ROUTINGS_BUDGET.BUDGET_SUBMITTAL}`] :
 		[`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_INSERT}`],

@@ -5,7 +5,7 @@ const Schema                = require('mongoose').Schema;
 /**
  * SỔ QUỸ
  */
-module.exports  = DATABASE_MIDDLEWARE("fin.cash_book", {
+module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
@@ -14,7 +14,7 @@ module.exports  = DATABASE_MIDDLEWARE("fin.cash_book", {
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
-        ref : "cash_flow_plan"
+        ref : "cash_book"
     },
     //_________Tài khoản kế toán
     account: {
@@ -31,12 +31,6 @@ module.exports  = DATABASE_MIDDLEWARE("fin.cash_book", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },    
-    //_________lEVEL
-    level: {
-        type: Number,
-        default: 1,
-        enum: [1, 2]
-    },
     //_________Admin
     admins : [{
         type   : Schema.Types.ObjectId,
@@ -47,10 +41,10 @@ module.exports  = DATABASE_MIDDLEWARE("fin.cash_book", {
         type   : Schema.Types.ObjectId,
         ref: 'user'
     }],
-    //_________Ngày tháng
-    date: Date,
     //_________Tên
     name: String,
+    //_________Ngày tháng
+    date: { type: Date, default: Date.now },    
     //_________Mã hiệu
     sign: String,
     //_________Ghi chú

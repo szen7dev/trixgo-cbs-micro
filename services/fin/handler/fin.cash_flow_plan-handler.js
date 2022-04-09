@@ -26,12 +26,12 @@ module.exports = {
             sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string" },
-            planValue           : { type: "number" },
+            value           : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { contractID, fundaID, parentID, type, property, outin, name, sign, note, date, planValue } = ctx.params;
+                const { contractID, fundaID, parentID, type, property, outin, name, sign, note, date, value } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -41,7 +41,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.insert({
-                    companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, planValue, userID, ctx
+                    companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -63,7 +63,7 @@ module.exports = {
             sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string" },
-            planValue           : { type: "number" },
+            value           : { type: "number" },
         },
         async handler(ctx) {  
             try {

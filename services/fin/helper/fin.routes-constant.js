@@ -3,13 +3,16 @@ const BASE_ROUTE = '/fin';
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
 const CASH_FLOW_PLAN     = '/cash_flow_plans';
+const CASH_BOOK          = '/cash_books';
 
 const CF_ROUTINGS_FIN = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================CASH_FLOW_PLAN=======================================//
-    CASH_FLOW_PLAN         : `${BASE_ROUTE}${CASH_FLOW_PLAN}`, 
+    CASH_FLOW_PLAN          : `${BASE_ROUTE}${CASH_FLOW_PLAN}`, 
 
+    // ================================CASH_FLOW_PLAN=======================================//
+    CASH_BOOK               : `${BASE_ROUTE}${CASH_BOOK}`, 
 }
 
 exports.CF_ROUTINGS_FIN = CF_ROUTINGS_FIN;

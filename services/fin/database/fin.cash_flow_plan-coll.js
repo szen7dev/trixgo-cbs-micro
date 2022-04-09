@@ -7,7 +7,7 @@ const Schema                = require('mongoose').Schema;
  */
 module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     /**
-     * START THÔNG TIN LẤY TỪ HỢP ĐỒNG
+     * THÔNG TIN LẤY TỪ HỢP ĐỒNG
      */
     /**
      * Dòng tiền vào ra
@@ -156,12 +156,12 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
      * CHI TIẾT BÚT TOÁN THU
      * Nhập liệu chi tiết ở cấp 3
      */
-    //__________Dự kiến thu
-    planValue: {
+    //__________Dự kiến
+    value: {
         type: Number,
         default: 0
     },
-    //__________Thực tế thu
+    //__________Thực tế
     realValue: {
         type: Number,
         default: 0

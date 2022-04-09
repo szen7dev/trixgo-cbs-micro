@@ -24,10 +24,10 @@ class Model extends BaseModel {
      * Name: insert cash flow ✅
      * Author: Depv
      */
-    insert({ companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, planValue, userID, ctx }) { 
+    insert({ companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, outin, name, date, planValue };
+                let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value };
 
                 if(checkObjectIDs(contractID)){
                     const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
