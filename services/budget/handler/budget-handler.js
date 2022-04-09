@@ -18,14 +18,14 @@
          auth: "required",
          params: {
             type                : { type: "number" },
-            projectID          : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
             contractID          : { type: "string", optional: true },
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
             date                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            budget          : { type: "number", optional: true },
+            budget              : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
