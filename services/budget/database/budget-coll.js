@@ -19,7 +19,8 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
     //_________Công ty 
     company: {
         type: Schema.Types.ObjectId,
-        ref : "company"
+        ref : "company",
+        require: true,
     },
     //_________Dự án/phòng ban (Thuộc dự án)
     project: {
@@ -54,7 +55,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
     description: String,
     //_________Ghi chú
     note: String,
-    //_________Khóa cập nhật(1-Open/2-Khóa)
+    //_________Khóa cập nhật (1-Open/2-Khóa)
     lock: { type: Number, default: 1 },
     /**
      * DOANH THU
