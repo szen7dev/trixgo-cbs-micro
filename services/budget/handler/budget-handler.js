@@ -180,7 +180,7 @@
     updateValue: {
         auth: "required",
         params: {
-            budgetID             : { type: "string" },
+            budgetID : { type: "string" },
         },
         async handler(ctx) {  
             try {

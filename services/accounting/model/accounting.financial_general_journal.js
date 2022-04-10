@@ -293,14 +293,16 @@ class Model extends BaseModel {
                 }else{
                     responseResultInsert = { error: false, data: infoAfterInsert, status: 200}
                 }
+
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
                 //1.butget service
-                if(job && _isValid(job)){
+                if(budgetWorkID && _isValid(budgetWorkID)){
                     // await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
                     //     $addToSet: { journals: infoAfterInsert._id } 
                     // },{ new: true });
                 }
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
@@ -481,6 +483,112 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 400 })
             }
         });
+    }
+
+    /**
+     * Name  : Tổng hợp ngân sách đã thực hiện ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
+    calImpleBudget({ 
+        option, workID, groupID, itemID, budgetID, userID, ctx
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Tổng hợp ngân sách đã thực hiện của công việc-budgetWork
+                 * 2-Tổng hợp ngân sách đã thực hiện của nhóm-budgetGroup
+                 * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
+                 * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
+                 */
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataBudget = {
+                    quantity: 0,
+                    amount: 0
+                }
+
+                let conditionObjUp = { updown: 1 }
+                let conditionObjDown = { updown: -1 }
+
+                if(workID){
+                    conditionObjUp.budgetWork = ObjectID(workID)
+                    conditionObjDown.budgetWork = ObjectID(workID)
+                }
+                if(groupID){
+                    conditionObjUp.budgetGroup = ObjectID(groupID)
+                    conditionObjDown.budgetGroup = ObjectID(groupID)
+                }
+                if(itemID){
+                    conditionObjUp.budgetItem = ObjectID(itemID)
+                    conditionObjDown.budgetItem = ObjectID(itemID)
+                }
+                if(budgetID){
+                    conditionObjUp.budget = ObjectID(budgetID)
+                    conditionObjDown.budget = ObjectID(budgetID)
+                }
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Dữ liệu tăng ngân sách thực hiện
+                let listDataUp = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjUp
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }, 
+                ])
+
+                // Dữ liệu giảm ngân sách thực hiện
+                let listDataDown = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjDown
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }, 
+                ])
+
+                console.log(listDataUp)
+                console.log(listDataDown)
+
+                // Tổng hợp giá trị tăng, giảm
+                if(listDataUp && listDataUp.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) + Number(listDataUp[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) + Number(listDataUp[0].amount)
+                }
+
+                if(listDataDown && listDataDown.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) - Number(listDataDown[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) - Number(listDataDown[0].amount)
+                }
+
+                return resolve({ error: false, data: dataBudget, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
     }
 
     //_________SỐ DƯ ĐẦU KỲ CỦA 1 TÀI KHOẢN (OK)

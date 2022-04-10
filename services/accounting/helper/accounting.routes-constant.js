@@ -32,7 +32,8 @@ const CF_ROUTINGS_ACCOUNTING = {
     GENERAL_JOURNAL                         : `${BASE_ROUTE}${GENERAL_JOURNAL}`,
     FINANCIAL_REPORT                        : `${BASE_ROUTE}${GENERAL_JOURNAL}/financial-report`,
     FINANCIAL_DEBT_TRACKING                 : `${BASE_ROUTE}${GENERAL_JOURNAL}/debt-tracking`,
-    FINANCIAL_TBOOK                         : `${BASE_ROUTE}${GENERAL_JOURNAL}/tbook`
+    FINANCIAL_TBOOK                         : `${BASE_ROUTE}${GENERAL_JOURNAL}/tbook`,
+    CAL_IMPLE_BUDGET                        : `${BASE_ROUTE}${GENERAL_JOURNAL}/cal-imple-budget`
 
     // UPDATE_GENERAL_JOURNAL  : `${BASE_ROUTE}${GENERAL_JOURNAL}/update`,
 }
