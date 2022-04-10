@@ -7,6 +7,7 @@ const Schema    = require('mongoose').Schema;
  * NGÂN SÁCH
  * 1-Cập nhật ngân sách tổng thể: kế hoạch, thực hiện, dự trù còn lại (ngân sách, hạng mục, nhóm, công việc)
  * 2-Bổ sung vào kế toán các trường phụ tính cập nhật ngân sách
+ * 3-Làm rõ khi ghi nhận thực hiện ngân sách thông qua kế toán, thì phần chi VAT thì hoạch toán như thế nào
  */
 module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**
