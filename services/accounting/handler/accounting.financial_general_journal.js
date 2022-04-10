@@ -30,14 +30,15 @@ module.exports = {
                 const { fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
                     project, job, cash, vat, note, updown, advancePayment , 
-                    date, subtype } = ctx.params;
+                    date, subtype, budgetWorkID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
                     authorID: userID, companyID: company._id, fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
                     project, job, cash, vat, note, updown, advancePayment , 
-                    date, subtype, 
+                    date, subtype, budgetWorkID
                 });
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][INSERT_FULL] ${error}`);

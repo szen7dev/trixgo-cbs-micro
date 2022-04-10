@@ -36,7 +36,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ ctx, userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
+    insert({ ctx, userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity }) { 
         return new Promise(async (resolve) => {
             try {
                     
@@ -48,8 +48,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Budget không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataInsert = { userCreate: userID, company: infoBudget.company, budget: budgetID };
-
-                // Company lấy theo budgetID
 
                 if(checkObjectIDs(infoBudget.project)){
                     dataInsert.project = infoBudget.project
@@ -101,29 +99,10 @@ class Model extends BaseModel {
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataInsert.quantity     = quantity;
                 }
-                // if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
-                //     dataInsert.unitPrice     = unitPrice;
-                //     dataInsert.amount       = Number(quantity)*Number(unitPrice);
-                // }
-                // if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
-                //     dataInsert.vatUnitPrice     = vatUnitPrice;
-                //     dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
-                // }
-                // if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
-                //     dataInsert.forecastQuantity     = forecastQuantity;
-                // }
-                // if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
-                //     dataInsert.forecastUnitPrice     = forecastUnitPrice;
-                //     dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
-                // }
-                // if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
-                //     dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
-                //     dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
-                // }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
+                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_item" });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -138,7 +117,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ 
-        itemID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID, ctx
+        itemID, plus, reasonID, name, sign, unit, description, note, quantity, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {
@@ -165,7 +144,7 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                if(plus && [0,1,2].includes(Number(plus))){
+                 if(plus && [0,1,2].includes(Number(plus))){
                     dataUpdate.plus = plus;
                 }
 
@@ -193,37 +172,10 @@ class Model extends BaseModel {
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataUpdate.quantity     = quantity;
                 }
-                // if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
-                //     dataUpdate.unitPrice     = unitPrice;
-                // }
-                // if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
-                //     dataUpdate.vatUnitPrice     = vatUnitPrice;
-                // }
-                // if(!isNaN(amount) && Number(amount) >= 0){
-                //     dataUpdate.amount     = amount;
-                // }
-                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
-                //     dataUpdate.vatAmount     = vatAmount;
-                // }
-                // if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
-                //     dataUpdate.forecastQuantity     = forecastQuantity;
-                // }
-                // if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
-                //     dataUpdate.forecastUnitPrice     = forecastUnitPrice;
-                // }
-                // if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
-                //     dataUpdate.forecastVatUnitPrice     = forecastVatUnitPrice;
-                // }
-                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
-                //     dataUpdate.forecastAmount     = forecastAmount;
-                // }
-                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
-                //     dataUpdate.forecastVatAmount     = forecastVatAmount;
-                // }
 
                 let infoAterUpdate = await BUDGET__ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget_item", status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -233,15 +185,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
+     * Name: Remove ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
     
     /**
-     * Name: Get info
+     * Name: Get info ✅
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 10/4/2022
      */
     getInfo({ itemID, 
         select, populates }){
@@ -263,13 +215,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BUDGET__ITEM_COLL.findById(itemID)
+                let info = await BUDGET__ITEM_COLL.findById(itemID)
                                 .select(select)
                                 .populate(populates)
 
-				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+				if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -286,11 +238,12 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -303,7 +256,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){

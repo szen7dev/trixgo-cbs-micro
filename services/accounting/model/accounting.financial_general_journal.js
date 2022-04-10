@@ -12,9 +12,11 @@ const { checkObjectIDs, _isValid, IsJsonString, _getLevelMaxInRecursive, _constr
 /**
  * CONSTANTS
 */
-const { CF_DOMAIN_SERVICES } 	= require('../../gateway/helper/domain.constant');
-const { VOUCHER_TYPES }         = require('../config/accounting.financial_config');
-const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-constant')
+const { CF_DOMAIN_SERVICES } 	        = require('../../gateway/helper/domain.constant');
+const { VOUCHER_TYPES }                 = require('../config/accounting.financial_config');
+const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+
 /**
  * TOOLS
 */
@@ -232,14 +234,12 @@ class Model extends BaseModel {
         }
         return dataUpdate;
     }
-    //_________Tạo chi tiết chứng từ (OK)
-    // Author: HiepNH
-    // insertFull({
-    //     authorID, companyID, fundaID, voucher, debit,
-    //      credit, customerDebit, customerCredit, goods, warehouse, 
-    //      quantity, amount, fcuExRate, contract, project, job, group,
-    //       cash, vat, note, updown, advancePayment 
-    //    })
+
+    /**
+     * Name  : Tạo chi tiết chứng từ ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, 
@@ -294,14 +294,22 @@ class Model extends BaseModel {
                     responseResultInsert = { error: false, data: infoAfterInsert, status: 200}
                 }
 
-                //Todos
+                //Todos Butget service
                 //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
-                //1.butget service
+                //1. Cập nhật ngân sách công việc
                 if(budgetWorkID && _isValid(budgetWorkID)){
-                    // await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
-                    //     $addToSet: { journals: infoAfterInsert._id } 
-                    // },{ new: true });
+                    const infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
+                        workID: budgetWorkID
+                    })
+                    console.log('Budget==========================>>>>>')
+                    console.log(infoBudgetWork)
                 }
+
+                //2. Cập nhật ngân sách Nhóm
+
+                //3. Cập nhật ngân sách Hạng mục
+
+                //4. Cập nhật ngân sách Tổng
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -310,6 +318,7 @@ class Model extends BaseModel {
                 responseResultInsert = { error: true, message: `error jounal services: ${error.message}`, status: 400 };
                 // return resolve({ error: true, message: error.message });
             }
+
             finally {
                 session.endSession();
                 const resultC = await connection.close();

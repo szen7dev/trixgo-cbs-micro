@@ -36,14 +36,14 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget }) { 
+    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue }) { 
         return new Promise(async (resolve) => {
             try {
                     
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { userCreate: userID, company: companyID };
+                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
 
                 /** 
                  * VALIDATION STEP (2)
@@ -106,28 +106,10 @@ class Model extends BaseModel {
                 if(!isNaN(finalVatRevenue) && Number(finalVatRevenue) >= 0){
                     dataInsert.finalVatRevenue     = finalVatRevenue;
                 }
-                if(!isNaN(budget) && Number(budget) >= 0){
-                    dataInsert.budget     = budget;
-                }
-                if(!isNaN(vatBudget) && Number(vatBudget) >= 0){
-                    dataInsert.vatBudget     = vatBudget;
-                }
-                if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){
-                    dataInsert.forecastBudget     = forecastBudget;
-                }
-                if(!isNaN(forecastVatBudget) && Number(forecastVatBudget) >= 0){
-                    dataInsert.forecastVatBudget     = forecastVatBudget;
-                }
-                if(!isNaN(finalBudget) && Number(finalBudget) >= 0){
-                    dataInsert.finalBudget     = finalBudget;
-                }
-                if(!isNaN(finalVatBudget) && Number(finalVatBudget) >= 0){
-                    dataInsert.finalVatBudget     = finalVatBudget;
-                }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
+                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget " });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -142,7 +124,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ 
-        budgetID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget, userID, ctx
+        budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {
@@ -160,13 +142,24 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if(checkObjectIDs(projectID)){
+                    dataUpdate.project = projectID
+                }
+
+                if(checkObjectIDs(contractID)){
+                    dataUpdate.contract = contractID
+                }
              
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                 if(name){
+                if(type && [1,2,3].includes(Number(type))){
+                    dataUpdate.type = type;
+                }
+
+                if(name){
                     dataUpdate.name = name;
                 }
 
@@ -205,28 +198,10 @@ class Model extends BaseModel {
                 if(!isNaN(finalVatRevenue) && Number(finalVatRevenue) >= 0){
                     dataUpdate.finalVatRevenue     = finalVatRevenue;
                 }
-                if(!isNaN(budget) && Number(budget) >= 0){
-                    dataUpdate.budget     = budget;
-                }
-                if(!isNaN(vatBudget) && Number(vatBudget) >= 0){
-                    dataUpdate.vatBudget     = vatBudget;
-                }
-                if(!isNaN(forecastBudget) && Number(forecastBudget) >= 0){
-                    dataUpdate.forecastBudget     = forecastBudget;
-                }
-                if(!isNaN(forecastVatBudget) && Number(forecastVatBudget) >= 0){
-                    dataUpdate.forecastVatBudget     = forecastVatBudget;
-                }
-                if(!isNaN(finalBudget) && Number(finalBudget) >= 0){
-                    dataUpdate.finalBudget     = finalBudget;
-                }
-                if(!isNaN(finalVatBudget) && Number(finalVatBudget) >= 0){
-                    dataUpdate.finalVatBudget     = finalVatBudget;
-                }
 
                 let infoAterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -266,13 +241,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BUDGET_COLL.findById(budgetID)
+                let info = await BUDGET_COLL.findById(budgetID)
                                 .select(select)
                                 .populate(populates)
 
-				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+				if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -284,7 +259,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ type, userID,
+    getList({ isMember, companyID, projectID, contractID, type, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -306,7 +281,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -327,6 +301,18 @@ class Model extends BaseModel {
                  */  
                 if(type){
                     conditionObj.type = type
+                }
+                if(companyID){
+                    conditionObj.company = companyID
+                }
+                if(projectID){
+                    conditionObj.project = projectID
+                }
+                if(contractID){
+                    conditionObj.contract = contractID
+                }
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID] }
                 }
 
                 if(keyword){
@@ -465,7 +451,7 @@ class Model extends BaseModel {
 
                 let infoAterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {

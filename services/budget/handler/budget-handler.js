@@ -17,36 +17,30 @@
     insert: {
         auth: "required",
         params: {
-        type                    : { type: "number" },
-        projectID               : { type: "string", optional: true },
-        contractID              : { type: "string", optional: true },
-        name                    : { type: "string" },
-        sign                    : { type: "string", optional: true },
-        description             : { type: "string", optional: true },
-        date                    : { type: "string", optional: true },
-        note                    : { type: "string", optional: true },
-        revenue                 : { type: "number", optional: true },
-        vatRevenue              : { type: "number", optional: true },
-        forecastRevenue         : { type: "number", optional: true },
-        forecastVatRevenue      : { type: "number", optional: true },
-        finalRevenue            : { type: "number", optional: true },
-        finalVatRevenue         : { type: "number", optional: true },
-        budget                  : { type: "number", optional: true },
-        vatBudget               : { type: "number", optional: true },
-        forecastBudget          : { type: "number", optional: true },
-        forecastVatBudget       : { type: "number", optional: true },
-        finalBudget             : { type: "number", optional: true },
-        finalVatBudget          : { type: "number", optional: true },
+            type                    : { type: "number" },
+            projectID               : { type: "string", optional: true },
+            contractID              : { type: "string", optional: true },
+            name                    : { type: "string" },
+            sign                    : { type: "string", optional: true },
+            description             : { type: "string", optional: true },
+            date                    : { type: "string", optional: true },
+            note                    : { type: "string", optional: true },
+            revenue                 : { type: "number", optional: true },
+            vatRevenue              : { type: "number", optional: true },
+            forecastRevenue         : { type: "number", optional: true },
+            forecastVatRevenue      : { type: "number", optional: true },
+            finalRevenue            : { type: "number", optional: true },
+            finalVatRevenue         : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget } = ctx.params;
+                let { type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET_MODEL.insert({
-                ctx, userID, companyID: company._id, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget
+                    ctx, userID, companyID: company._id, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -65,9 +59,9 @@
         auth: "required",
         params: {
             budgetID                : { type: "string" },
-        //  type                    : { type: "number" },
-        //  projectID               : { type: "string", optional: true },
-        //  contractID              : { type: "string", optional: true },
+            type                    : { type: "number" },
+            projectID               : { type: "string", optional: true },
+            contractID              : { type: "string", optional: true },
             name                    : { type: "string" },
             sign                    : { type: "string", optional: true },
             description             : { type: "string", optional: true },
@@ -79,21 +73,16 @@
             forecastVatRevenue      : { type: "number", optional: true },
             finalRevenue            : { type: "number", optional: true },
             finalVatRevenue         : { type: "number", optional: true },
-            budget                  : { type: "number", optional: true },
-            vatBudget               : { type: "number", optional: true },
-            forecastBudget          : { type: "number", optional: true },
-            forecastVatBudget       : { type: "number", optional: true },
-            finalBudget             : { type: "number", optional: true },
-            finalVatBudget          : { type: "number", optional: true },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget } = ctx.params;
+                let { budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue } = ctx.params;
             
                 const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await BUDGET_MODEL.update({
-                budgetID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget, ctx
+                    budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -138,8 +127,12 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-        budgetID : { type: "string", optional: true },
-            type          : { type: "number", optional: true },
+            type : { type: "number", optional: true },
+            isMember : { type: "number", optional: true },
+            budgetID : { type: "string", optional: true },
+            companyID : { type: "string", optional: true },
+            projectID : { type: "string", optional: true },
+            contractID : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -151,17 +144,22 @@
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, type, keyword, limit, lastestID, populates, select } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
+                let { budgetID, isMember, companyID, projectID, contractID, type, keyword, limit, lastestID, populates, select } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id;
+                }
 
                 let resultAfterCallHandler;
                 if(budgetID){
                     resultAfterCallHandler = await BUDGET_MODEL.getInfo({
-                    budgetID, userID, select, populates
+                        budgetID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await BUDGET_MODEL.getList({
-                        type, userID, keyword, limit, lastestID, select, populates
+                        isMember, companyID, projectID, contractID, type, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 

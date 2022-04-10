@@ -17,34 +17,25 @@
     insert: {
         auth: "required",
         params: {
-        budgetID                : { type: "string" },
-        plus                    : { type: "number", optional: true },
-        reasonID                : { type: "string", optional: true },
-        name                    : { type: "string" },
-        sign                    : { type: "string", optional: true },
-        unit                    : { type: "string", optional: true },
-        description             : { type: "string", optional: true },
-        note                    : { type: "string", optional: true },
-        quantity                : { type: "number", optional: true },
-        unitPrice               : { type: "number", optional: true },
-        vatUnitPrice            : { type: "number", optional: true },
-        amount                  : { type: "number", optional: true },
-        vatAmount               : { type: "number", optional: true },
-        forecastQuantity        : { type: "number", optional: true },
-        forecastUnitPrice       : { type: "number", optional: true },
-        forecastVatUnitPrice    : { type: "number", optional: true },
-        forecastAmount          : { type: "number", optional: true },
-        forecastVatAmount       : { type: "number", optional: true },
+            budgetID                : { type: "string" },
+            plus                    : { type: "number", optional: true },
+            reasonID                : { type: "string", optional: true },
+            name                    : { type: "string" },
+            sign                    : { type: "string", optional: true },
+            unit                    : { type: "string", optional: true },
+            description             : { type: "string", optional: true },
+            note                    : { type: "string", optional: true },
+            quantity                : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount } = ctx.params;
+                let { budgetID, plus, reasonID, name, sign, unit, description, note, quantity } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET__ITEM_MODEL.insert({
-                ctx, userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount
+                    ctx, userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -62,36 +53,24 @@
     update: {
         auth: "required",
         params: {
-            budgetID                : { type: "string" },
-        //  type                    : { type: "number" },
-        //  projectID               : { type: "string", optional: true },
-        //  contractID              : { type: "string", optional: true },
+            itemID                  : { type: "string" },
+            plus                    : { type: "number", optional: true },
+            reasonID                : { type: "string", optional: true },
             name                    : { type: "string" },
             sign                    : { type: "string", optional: true },
+            unit                    : { type: "string", optional: true },
             description             : { type: "string", optional: true },
-            date                    : { type: "string", optional: true },
             note                    : { type: "string", optional: true },
-            revenue                 : { type: "number", optional: true },
-            vatRevenue              : { type: "number", optional: true },
-            forecastRevenue         : { type: "number", optional: true },
-            forecastVatRevenue      : { type: "number", optional: true },
-            finalRevenue            : { type: "number", optional: true },
-            finalVatRevenue         : { type: "number", optional: true },
-            budget                  : { type: "number", optional: true },
-            vatBudget               : { type: "number", optional: true },
-            forecastBudget          : { type: "number", optional: true },
-            forecastVatBudget       : { type: "number", optional: true },
-            finalBudget             : { type: "number", optional: true },
-            finalVatBudget          : { type: "number", optional: true },
+            quantity                : { type: "number", optional: true },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget } = ctx.params;
+                let { itemID, plus, reasonID, name, sign, unit, description, note, quantity } = ctx.params;
             
                 const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await BUDGET__ITEM_MODEL.update({
-                budgetID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, budget, vatBudget, forecastBudget, forecastVatBudget, finalBudget, finalVatBudget, ctx
+                    itemID, plus, reasonID, name, sign, unit, description, note, quantity, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -109,16 +88,16 @@
     remove: {
         auth: "required",
         params: {
-        budgetID       : { type: "string" },
+            itemID       : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID } = ctx.params;
+                let { itemID } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await BUDGET__ITEM_MODEL.remove({
-                    budgetID
+                    itemID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -136,8 +115,8 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-        budgetID : { type: "string", optional: true },
-            type          : { type: "number", optional: true },
+            itemID      : { type: "string", optional: true },
+            budgetID    : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -149,17 +128,17 @@
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, type, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { itemID, budgetID, keyword, limit, lastestID, populates, select } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(budgetID){
+                if(itemID){
                     resultAfterCallHandler = await BUDGET__ITEM_MODEL.getInfo({
-                    budgetID, userID, select, populates
+                        itemID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await BUDGET__ITEM_MODEL.getList({
-                        type, userID, keyword, limit, lastestID, select, populates
+                        budgetID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 

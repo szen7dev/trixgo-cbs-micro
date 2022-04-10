@@ -63,7 +63,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_group", {
     //_________Ghi chú
     note: String,
     /**
-     * NGÂN SÁCH
+     * NGÂN SÁCH => TÍNH THEO BUDGET WORK
      */
     //______Khối lượng
     quantity: {
@@ -91,7 +91,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_group", {
         default : 0
     },
     /**
-     * THỰC HIỆN-KHÔNG GỒM VAT
+     * THỰC HIỆN-KHÔNG GỒM VAT => TÍNH THEO ACCOUNTING
      */
     //______Khối lượng thực hiện
     impleQuantity: {
@@ -109,7 +109,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_group", {
         default : 0
     },
     /**
-     * DỰ BÁO
+     * DỰ BÁO => TÍNH THEO BUDGET WORK
      */
     //______Dự báo Khối lượng
     forecastQuantity: {

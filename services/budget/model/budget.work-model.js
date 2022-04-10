@@ -36,9 +36,9 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert contract ipc ✅
-     * Author: Depv
-     * Code: 
+     * Name  : Insert ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
      */
     insert({ ctx, userID, groupID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
         return new Promise(async (resolve) => {
@@ -50,7 +50,7 @@ class Model extends BaseModel {
                  * 2-Khi có hoạch toán ngân sách: tăng, giảm (từ Accounting) => phần ngân sách đã thực hiện sẽ:
                  * +++Cập nhật cho công việc
                  * +++Cập nhật cho Group, Item và Budget
-                 * 3. Không cho sửa giá trị của Item, Group và Budget => Tất cả tính theo Work và Accounting
+                 * 3. Không cho sửa giá trị của Item, Group và Budget => Tất cả tính theo cập nhật của BudgetWork và Accounting
                  */                 
                 
                 /**
@@ -119,12 +119,7 @@ class Model extends BaseModel {
                     dataInsert.vatUnitPrice     = vatUnitPrice;
                     dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
                 }
-                // if(!isNaN(amount) && Number(amount) >= 0){
-                //     dataInsert.amount     = amount;
-                // }
-                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
-                //     dataInsert.vatAmount     = vatAmount;
-                // }
+
                 if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
                     dataInsert.forecastQuantity     = forecastQuantity;
                 }
@@ -136,23 +131,17 @@ class Model extends BaseModel {
                     dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
                     dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
                 }
-                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
-                //     dataInsert.forecastAmount     = forecastAmount;
-                // }
-                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
-                //     dataInsert.forecastVatAmount     = forecastVatAmount;
-                // }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
+                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_work" });
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ NGÂN SÁCH, DỰ KIẾN NGÂN SÁCH
                  */
-                let InfoGroupAfterUpdate         = await BUDGET__GROUP_MODEL.updateValue({ groupID, userID })
-                let InfoItemAfterUpdate          = await BUDGET__ITEM_MODEL.updateValue({ itemID: infoGroup.item, userID })
-                let InfoBudgetAfterUpdate        = await BUDGET_MODEL.updateValue({ budgetID: infoGroup.budget, userID })
+                let InfoGroupAfterUpdate         = await BUDGET__GROUP_MODEL.updateValue({ option: 1, groupID, userID })
+                let InfoItemAfterUpdate          = await BUDGET__ITEM_MODEL.updateValue({ option: 1, itemID: infoGroup.item, userID })
+                let InfoBudgetAfterUpdate        = await BUDGET_MODEL.updateValue({ option: 1, budgetID: infoGroup.budget, userID })
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -162,15 +151,24 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract ipc ✅
-     * Author: Depv
-     * Code: 
+     * Name  : Update ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
      */
-     update({ 
+    update({ 
         workID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * 1-Khi tạo mới/cập nhật khối lượng, đơn giá công việc-budgetWork (cả phần dự kiến còn lại):
+                 * +++Cập nhật Group, Item và Budget của nó tương ứng (viết sẵn hàm Cập nhật để triệu gọi)
+                 * 2-Khi có hoạch toán ngân sách: tăng, giảm (từ Accounting) => phần ngân sách đã thực hiện sẽ:
+                 * +++Cập nhật cho công việc
+                 * +++Cập nhật cho Group, Item và Budget
+                 * 3. Không cho sửa giá trị của Item, Group và Budget => Tất cả tính theo cập nhật của BudgetWork và Accounting
+                 */  
 
                 if(!checkObjectIDs(workID))
                     return resolve({ error: true, message: "Mã không đúng", keyError: "workID_invalid" });
@@ -248,14 +246,14 @@ class Model extends BaseModel {
 
                 let infoAterUpdate = await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget_work", status: 403 });
 
                 /**
                  * CẬP NHẬT GIÁ TRỊ NGÂN SÁCH, DỰ KIẾN NGÂN SÁCH
                  */
-                 let InfoGroupAfterUpdate         = await BUDGET__GROUP_MODEL.updateValue({ groupID: infoWork.group, userID })
-                 let InfoItemAfterUpdate          = await BUDGET__ITEM_MODEL.updateValue({ itemID: infoWork.item, userID })
-                 let InfoBudgetAfterUpdate        = await BUDGET_MODEL.updateValue({ budgetID: infoWork.budget, userID })                    
+                 let InfoGroupAfterUpdate         = await BUDGET__GROUP_MODEL.updateValue({ option: 1, groupID: infoWork.group, userID })
+                 let InfoItemAfterUpdate          = await BUDGET__ITEM_MODEL.updateValue({ option: 1, itemID: infoWork.item, userID })
+                 let InfoBudgetAfterUpdate        = await BUDGET_MODEL.updateValue({ option: 1, budgetID: infoWork.budget, userID })                  
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -265,15 +263,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract ipc ✅
-     * Author: Depv
-     * Code: 
+     * Name: Remove ✅
+     * Author: Hiepnh
+     * Date: 10/4/2022
      */
     
     /**
-     * Name: get info contract ipc ✅
-     * Author: Depv
-     * Code: 
+     * Name: Get info ✅
+     * Author: Hiepnh
+     * Date: 10/4/2022
      */
     getInfo({ workID, 
         select, populates }){
@@ -295,13 +293,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BUDGET__WORK_COLL.findById(workID)
+                let info = await BUDGET__WORK_COLL.findById(workID)
                                 .select(select)
                                 .populate(populates)
 
-				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+				if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -309,20 +307,21 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract ipc ✅
-     * Author: Depv
-     * Code  : 
+     * Name  : Get list ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022
      */
     getList({ groupID, itemID, budgetID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 50, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -335,7 +334,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -349,11 +347,13 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
+                
                 if(groupID && checkObjectIDs(groupID)){
                     conditionObj.group = groupID;
                 }
