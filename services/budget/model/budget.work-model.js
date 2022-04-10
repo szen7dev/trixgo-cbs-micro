@@ -13,7 +13,13 @@ const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-
 /**
  * import inter-coll, exter-coll
  */
-const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
+ const BUDGET_COLL                       = require('../database/budget-coll');
+ const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll');
+ const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
+ const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
+
+const BUDGET__GROUP_MODEL               = require('./budget.group-model').MODEL;
+
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');
 const { ResumeToken }                   = require('mongodb');
@@ -31,35 +37,55 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, budget }) { 
+    insert({ ctx, userID, groupID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
         return new Promise(async (resolve) => {
             try {
-                    
+                /**
+                 * BA
+                 * 1-Khi tạo mới/cập nhật khối lượng, đơn giá công việc (cả phần dự kiến còn lại) => cần cập nhật Group, Item và Budget của nó tương ứng => Viết sẵn hàm update giá trị để gọi lại sử dụng
+                 * 2-Khi có hoạch toán ngân sách: tăng, giảm (từ Accounting) => phần ngân sách đã thực hiện sẽ:
+                 * 2.1-Cập nhật cho công việc
+                 * 2.2-Cập nhật cho Group, Item và Budget
+                 * 3. Không cho sửa giá trị của Item, Group và Budget => Tất cả tính theo work
+                 */                 
+                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { userCreate: userID, company: companyID };
+                await BUDGET__GROUP_MODEL.insert({})
+                
+                let infoGroup = await BUDGET__GROUP_COLL.findById(groupID);
+                if(!infoGroup)
+                    return resolve({ error: true, message: "groupID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let dataInsert = { userCreate: userID, company: infoGroup.company, budget: infoGroup.budget, item: infoGroup.item, group: groupID };
+
+                // Company lấy theo groupID
+
+                if(checkObjectIDs(infoGroup.project)){
+                    dataInsert.project = infoGroup.project
+                }
+
+                if(checkObjectIDs(infoGroup.contract)){
+                    dataInsert.contract = infoGroup.contract
+                }
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(checkObjectIDs(projectID)){
-                    dataInsert.project = projectID
+                if(checkObjectIDs(reasonID)){
+                    dataInsert.reason = reasonID
                 }
 
-                if(checkObjectIDs(contractID)){
-                    dataInsert.contract = contractID
-                }
-                
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                if(type && [1,2,3].includes(Number(type))){
-                    dataInsert.type = type;
+                if(plus && [0,1,2].includes(Number(plus))){
+                    dataInsert.plus = plus;
                 }
 
                 if(name){
@@ -70,21 +96,53 @@ class Model extends BaseModel {
                     dataInsert.sign = sign;
                 }
 
-                if(description){
-                    dataInsert.description = description;
+                if(unit){
+                    dataInsert.unit = unit;
                 }
 
-                if(date){
-                    dataInsert.date = date;
+                if(description){
+                    dataInsert.description = description;
                 }
 
                 if(note){
                     dataInsert.note = note;
                 }
-                //______Giá trị nghiệm thu trước VAT (1)
-                if(!isNaN(budget) && Number(budget) >= 0){
-                    dataInsert.budget     = budget;
+
+                //______Giá trị
+                if(!isNaN(quantity) && Number(quantity) >= 0){
+                    dataInsert.quantity     = quantity;
                 }
+                if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
+                    dataInsert.unitPrice     = unitPrice;
+                    dataInsert.amount       = Number(quantity)*Number(unitPrice);
+                }
+                if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
+                    dataInsert.vatUnitPrice     = vatUnitPrice;
+                    dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
+                }
+                // if(!isNaN(amount) && Number(amount) >= 0){
+                //     dataInsert.amount     = amount;
+                // }
+                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
+                //     dataInsert.vatAmount     = vatAmount;
+                // }
+                if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
+                    dataInsert.forecastQuantity     = forecastQuantity;
+                }
+                if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
+                    dataInsert.forecastUnitPrice     = forecastUnitPrice;
+                    dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
+                }
+                if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
+                    dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
+                    dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
+                }
+                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
+                //     dataInsert.forecastAmount     = forecastAmount;
+                // }
+                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
+                //     dataInsert.forecastVatAmount     = forecastVatAmount;
+                // }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)

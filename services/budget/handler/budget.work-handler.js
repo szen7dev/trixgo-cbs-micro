@@ -9,41 +9,50 @@
  const BUDGET__WORK_MODEL                 = require('../model/budget.work-model').MODEL;
  
  module.exports = {
-     /**
-      * Dev: Hiepnh ✅
-      * Func: Thêm
-      * Date: 9/4/2022
-      */
-     insert: {
-         auth: "required",
-         params: {
-            type                : { type: "number" },
-            projectID          : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
-            name                : { type: "string" },
-            sign                : { type: "string", optional: true },
-            description         : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            budget          : { type: "number", optional: true },
-         },
-         async handler(ctx) {
-             try {
-                 await this.validateEntity(ctx.params);
-                 let { type, projectID, contractID, name, sign, description, date, note, budget } = ctx.params;
+    /**
+     * Dev: Hiepnh ✅
+     * Func: Thêm
+     * Date: 9/4/2022
+     */
+    insert: {
+        auth: "required",
+        params: {
+        groupID                 : { type: "string" },
+        plus                    : { type: "number", optional: true },
+        reasonID                : { type: "string", optional: true },
+        name                    : { type: "string" },
+        sign                    : { type: "string", optional: true },
+        unit                    : { type: "string", optional: true },
+        description             : { type: "string", optional: true },
+        note                    : { type: "string", optional: true },
+        quantity                : { type: "number", optional: true },
+        unitPrice               : { type: "number", optional: true },
+        vatUnitPrice            : { type: "number", optional: true },
+        amount                  : { type: "number", optional: true },
+        vatAmount               : { type: "number", optional: true },
+        forecastQuantity        : { type: "number", optional: true },
+        forecastUnitPrice       : { type: "number", optional: true },
+        forecastVatUnitPrice    : { type: "number", optional: true },
+        forecastAmount          : { type: "number", optional: true },
+        forecastVatAmount       : { type: "number", optional: true },
+    },
+    async handler(ctx) {
+        try {
+            await this.validateEntity(ctx.params);
+            let { groupID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount } = ctx.params;
 
-                 const { _id: userID, company } = ctx.meta.infoUser;
+            const { _id: userID } = ctx.meta.infoUser;
 
-                 let resultAfterCallHandler = await BUDGET__WORK_MODEL.insert({
-                    ctx, userID, companyID: company._id, type, projectID, contractID, name, sign, description, date, note, budget
-                 });
+            let resultAfterCallHandler = await BUDGET__WORK_MODEL.insert({
+            ctx, userID, groupID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount
+            });
 
-                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-             } catch (error) {
-                 return { error:  true, message: error.message };
-             }
-         }
-     },
+            return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+        } catch (error) {
+            return { error:  true, message: error.message };
+        }
+    }
+    },
  
      /**
       * Dev: Hiepnh ✅

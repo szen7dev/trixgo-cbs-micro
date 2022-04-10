@@ -13,7 +13,11 @@ const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-
 /**
  * import inter-coll, exter-coll
  */
- const BUDGET__GROUP_COLL               = require('../database/budget.group-coll');
+ const BUDGET_COLL                       = require('../database/budget-coll');
+ const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll');
+ const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
+ const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');
 const { ResumeToken }                   = require('mongodb');
@@ -31,35 +35,45 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, budget }) { 
+    insert({ ctx, userID, itemID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount }) { 
         return new Promise(async (resolve) => {
             try {
                     
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { userCreate: userID, company: companyID };
+                let infoItem = await BUDGET__ITEM_COLL.findById(itemID);
+                if(!infoItem)
+                    return resolve({ error: true, message: "Item không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let dataInsert = { userCreate: userID, company: infoItem.company, budget: infoItem.budget, item: itemID };
+
+                // Company lấy theo itemID
+
+                if(checkObjectIDs(infoItem.project)){
+                    dataInsert.project = infoItem.project
+                }
+
+                if(checkObjectIDs(infoItem.contract)){
+                    dataInsert.contract = infoItem.contract
+                }
 
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                if(checkObjectIDs(projectID)){
-                    dataInsert.project = projectID
+                if(checkObjectIDs(reasonID)){
+                    dataInsert.reason = reasonID
                 }
 
-                if(checkObjectIDs(contractID)){
-                    dataInsert.contract = contractID
-                }
-                
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                if(type && [1,2,3].includes(Number(type))){
-                    dataInsert.type = type;
+                if(plus && [0,1,2].includes(Number(plus))){
+                    dataInsert.plus = plus;
                 }
 
                 if(name){
@@ -70,21 +84,53 @@ class Model extends BaseModel {
                     dataInsert.sign = sign;
                 }
 
-                if(description){
-                    dataInsert.description = description;
+                if(unit){
+                    dataInsert.unit = unit;
                 }
 
-                if(date){
-                    dataInsert.date = date;
+                if(description){
+                    dataInsert.description = description;
                 }
 
                 if(note){
                     dataInsert.note = note;
                 }
-                //______Giá trị nghiệm thu trước VAT (1)
-                if(!isNaN(budget) && Number(budget) >= 0){
-                    dataInsert.budget     = budget;
+
+                //______Giá trị
+                if(!isNaN(quantity) && Number(quantity) >= 0){
+                    dataInsert.quantity     = quantity;
                 }
+                if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
+                    dataInsert.unitPrice     = unitPrice;
+                    dataInsert.amount       = Number(quantity)*Number(unitPrice);
+                }
+                if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
+                    dataInsert.vatUnitPrice     = vatUnitPrice;
+                    dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
+                }
+                // if(!isNaN(amount) && Number(amount) >= 0){
+                //     dataInsert.amount     = amount;
+                // }
+                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
+                //     dataInsert.vatAmount     = vatAmount;
+                // }
+                if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
+                    dataInsert.forecastQuantity     = forecastQuantity;
+                }
+                if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
+                    dataInsert.forecastUnitPrice     = forecastUnitPrice;
+                    dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
+                }
+                if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
+                    dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
+                    dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
+                }
+                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
+                //     dataInsert.forecastAmount     = forecastAmount;
+                // }
+                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
+                //     dataInsert.forecastVatAmount     = forecastVatAmount;
+                // }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
@@ -102,7 +148,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-     update({ 
+    update({ 
         contractProductionID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
@@ -260,9 +306,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract ipc ✅
-     * Author: Depv
-     * Code  : 
+     * Name  : Danh sách ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
      */
     getList({ type, contractID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
@@ -370,6 +416,77 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
                 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị theo công việc ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
+    updateValue({ 
+        option, groupID, userID, ctx
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(groupID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "groupID_invalid" });
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Cập nhật ngân sách
+                let listDataWork = await BUDGET__WORK_COLL.aggregate([
+                    {
+                        $match: {
+                            group: ObjectID(groupID),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                            vatAmount: { $sum: "$vatAmount" },
+                            forecastAmount: { $sum: "$forecastAmount" },
+                            forecastVatAmount: { $sum: "$forecastVatAmount" },
+                        }
+                    }, 
+                ])
+                if(listDataWork && listDataWork.length){
+                    dataUpdate.amount = Number(listDataWork[0].amount)
+                    dataUpdate.vatAmount = Number(listDataWork[0].vatAmount)
+                    dataUpdate.forecastAmount = Number(listDataWork[0].forecastAmount)
+                    dataUpdate.forecastVatAmount = Number(listDataWork[0].forecastVatAmount)
+                }
+
+                let infoAterUpdate = await BUDGET__GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

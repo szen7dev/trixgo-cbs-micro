@@ -171,4 +171,32 @@
             }
         }
     },
+
+    /**
+     * Dev: Hiepnh ✅
+     * Func: Cập nhật giá trị theo công việc
+     * Date: 9/4/2022
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            budgetID             : { type: "string" },
+        },
+        async handler(ctx) {  
+            try {
+                await this.validateEntity(ctx.params);
+                let { budgetID } = ctx.params;
+            
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await BUDGET_MODEL.updateValue({
+                    budgetID, userID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }

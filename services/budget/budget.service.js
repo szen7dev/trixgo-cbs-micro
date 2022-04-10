@@ -20,6 +20,10 @@ module.exports = {
 	name: CF_DOMAIN_SERVICES.BUDGET,
 	mixins: [
 		DbService(BUDGET_COLL),   
+		DbService(BUDGET__ITEM_COLL),   
+		DbService(BUDGET__GROUP_COLL),   
+		DbService(BUDGET__WORK_COLL),   
+		DbService(BUDGET__SUBMITTAL_COLL),   
 		CacheCleaner([CF_DOMAIN_SERVICES.BUDGET])
     ],
 
@@ -45,24 +49,28 @@ module.exports = {
 		[CF_ACTIONS_BUDGET.BUDGET_UPDATE]   			 							: BUDGET__HANDLER.update,
 		[CF_ACTIONS_BUDGET.BUDGET_REMOVE]				 							: BUDGET__HANDLER.remove,
 		[CF_ACTIONS_BUDGET.BUDGET_GET_INFO_AND_GET_LIST]							: BUDGET__HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE]										: BUDGET__HANDLER.updateValue,
 
 		//==========================================   BUDGET ITEM   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_ITEM_INSERT]   			 						: BUDGET__ITEM_HANDLER.insert,
 		[CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE]   			 						: BUDGET__ITEM_HANDLER.update,
 		[CF_ACTIONS_BUDGET.BUDGET_ITEM_REMOVE]				 						: BUDGET__ITEM_HANDLER.remove,
 		[CF_ACTIONS_BUDGET.BUDGET_ITEM_GET_INFO_AND_GET_LIST]						: BUDGET__ITEM_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE]								: BUDGET__ITEM_HANDLER.updateValue,
 
 		//==========================================   BUDGET GROUP   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_GROUP_INSERT]   			 						: BUDGET__GROUP_HANDLER.insert,
 		[CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE]   			 						: BUDGET__GROUP_HANDLER.update,
 		[CF_ACTIONS_BUDGET.BUDGET_GROUP_REMOVE]				 						: BUDGET__GROUP_HANDLER.remove,
 		[CF_ACTIONS_BUDGET.BUDGET_GROUP_GET_INFO_AND_GET_LIST]						: BUDGET__GROUP_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE]								: BUDGET__GROUP_HANDLER.updateValue,
 
 		//==========================================   BUDGET WORK   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_INSERT]   			 						: BUDGET__WORK_HANDLER.insert,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE]   			 						: BUDGET__WORK_HANDLER.update,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_REMOVE]				 						: BUDGET__WORK_HANDLER.remove,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_GET_INFO_AND_GET_LIST]						: BUDGET__WORK_HANDLER.getInfoAndGetList,
+		// [CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE]								: BUDGET__WORK_HANDLER.updateValue,
 
 		//==========================================   BUDGET HANDLER   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_INSERT]   			 					: BUDGET__SUBMITTAL_HANDLER.insert,

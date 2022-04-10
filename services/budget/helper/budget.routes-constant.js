@@ -12,15 +12,19 @@ const CF_ROUTINGS_BUDGET = {
 
     // ================================BUDGET============================================//
     BUDGET                                                         : `${BASE_ROUTE}`,
+    BUDGET_UPDATE_VALUE                                            : `${BASE_ROUTE}/update-value`,
 
     // ================================BUDGET_ITEM============================================//
     BUDGET_ITEM                                                    : `${BASE_ROUTE}${BUDGET_ITEM}`,
+    BUDGET_ITEM_UPDATE_VALUE                                       : `${BASE_ROUTE}${BUDGET_ITEM}/update-value`,
     
     // ================================BUDGET_GROUP============================================//
     BUDGET_GROUP                                                   : `${BASE_ROUTE}${BUDGET_GROUP}`,
+    BUDGET_GROUP_UPDATE_VALUE                                      : `${BASE_ROUTE}${BUDGET_GROUP}/update-value`,
     
     // ================================BUDGET_WORK============================================//
     BUDGET_WORK                                                    : `${BASE_ROUTE}${BUDGET_WORK}`,
+    BUDGET_WORK_UPDATE_VALUE                                       : `${BASE_ROUTE}${BUDGET_WORK}/update-value`,
     
     // ================================BUDGET_SUBMITTAL============================================//
     BUDGET_SUBMITTAL                                               : `${BASE_ROUTE}${BUDGET_SUBMITTAL}`,    
