@@ -35,7 +35,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-    //_________Thành viên
+    //_________Thành viên được quyền xem ngân sách
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"

@@ -4,9 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- * HỢP ĐỒNG KINH TẾ
- * NGÂN SÁCH DỰ ÁN => VỚI CHỦ ĐẦU TƯ (HỢP ĐỒNG MUA VÀO)
- * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
+ * HẠNG MỤC NGÂN SÁCH
  */
 module.exports  = DATABASE_MIDDLEWARE("budget_item", { 
     //_________Công ty 
