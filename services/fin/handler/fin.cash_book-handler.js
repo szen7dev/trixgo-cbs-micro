@@ -10,9 +10,10 @@ const FIN__CASH_BOOK_MODEL              = require('../model/fin.cash_book-model'
 
 module.exports = {
     /**
-	 * Dev: Hiepnh ✅
-	 * Func: Thêm cash flow plan
-	 */
+     * Name: Insert ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
     insert: {
         auth: "required",
         params: {
@@ -46,26 +47,32 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
-	 * Func: Sửa cash flow plan
-	 */
+     * Name: Update ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
     update: {
         auth: "required",
         params: {
-            cashFlowPlanID   : { type: "string" },
+            cashBookID          : { type: "string" },
+            accountID           : { type: "string", optional: true },
+            customerID          : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            date                : { type: "string" },
-            planValue           : { type: "number" },
+            date                : { type: "string", optional: true },
+            income              : { type: "number", optional: true },
+            expense             : { type: "number", optional: true },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                const { cashFlowPlanID, ipc, date, name, sign, description, value } = ctx.params;
+                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
+
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
-                    cashFlowPlanID, ipc, date, name, sign, description, value, userID
+                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -75,21 +82,23 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
-     * Func: Xóa cash flow plan
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     remove: {
         auth: "required",
         params: {
-            contractPaymentID: { type: "string" },
+            cashBookID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractPaymentID  } = ctx.params;
+                let { cashBookID  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.remove({
-                    contractPaymentID, userID
+                    cashBookID, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -100,20 +109,18 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
-     * Func: get info and get list cash flow plan
+     * Name: Get info and Get list ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashFlowPlanID : { type: "string", optional: true },
-            companyID     : { type: "string", optional: true },
-            projectID     : { type: "string", optional: true },
-            contractID     : { type: "string", optional: true },
-            outin     : { type: "number", optional: true },
-            type     : { type: "number", optional: true },
-            property     : { type: "number", optional: true },
-            priority     : { type: "number", optional: true },
+            cashBookID          : { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
+            accountID           : { type: "string", optional: true },
+            customerID          : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -125,16 +132,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { cashFlowPlanID, companyID, projectID, contractID, outin, type, property, priority, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler;
-                if(cashFlowPlanID){
+                if(cashBookID){
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getInfo({
-                        cashFlowPlanID, userID, select, populates
+                        cashBookID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        companyID, projectID, contractID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates
+                        companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

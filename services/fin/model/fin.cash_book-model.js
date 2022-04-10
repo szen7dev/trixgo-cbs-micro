@@ -20,14 +20,16 @@ class Model extends BaseModel {
     constructor() {
         super(FIN__CASH_BOOK_COLL);
     }
+
     /**
-     * Name: insert cash flow ✅
-     * Author: Depv
+     * Name: Insert ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, name, date };
+                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
@@ -43,6 +45,14 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(contractID)){
                     dataInsert.contract = contractID;
+                }
+
+                if(name){
+                    dataInsert.name = name;
+                }
+
+                if(date){
+                    dataInsert.date = date;
                 }
 
                 if(sign){
@@ -63,7 +73,7 @@ class Model extends BaseModel {
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -73,52 +83,60 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update cash flow ✅
-     * Author: Depv
+     * Name: Update ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
-    update({ contractPaymentID, ipc, date, name, sign, description, value, userID  }){
+    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID  }){
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                if(!checkObjectIDs(contractPaymentID))
-                    return resolve({ error: true, message: "contractPaymentID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+                
+                if(!checkObjectIDs(cashBookID))
+                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                if(ipc){
-                    dataUpdate.ipc =ipc;
-                    let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
-                    if(!infoIPC)
-                        return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
-                    dataUpdate.type =infoIPC.type;
+                if(checkObjectIDs(accountID)){
+                    dataUpdate.account = accountID;
                 }
 
-                if(date){
-                    dataUpdate.date =date;
+                if(checkObjectIDs(customerID)){
+                    dataUpdate.customer = customerID;
+                }
+
+                if(checkObjectIDs(contractID)){
+                    dataUpdate.contract = contractID;
                 }
 
                 if(name){
-                    dataUpdate.name =name;
+                    dataUpdate.name = name;
+                }
+
+                if(date){
+                    dataUpdate.date = date;
                 }
 
                 if(sign){
-                    dataUpdate.sign =sign;
+                    dataUpdate.sign = sign;
                 }
 
-                if(description){
-                    dataUpdate.description = description;
-                }
-                
-                if(value){
-                    dataUpdate.value =value;
+                if(note){
+                    dataUpdate.note = note;
                 }
 
-                console.log({ contractPaymentID, dataUpdate })
+                if(!isNaN(income) && Number(income) >= 0){
+                    dataUpdate.income     = income;
+                }
+
+                if(!isNaN(expense) && Number(expense) >= 0){
+                    dataUpdate.expense     = expense;
+                }                
              
-                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
               
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -128,18 +146,20 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove cash flow ✅
-     * Author: Depv
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
 
     /**
-     * Name: get info cash flow ✅
-     * Author: Depv
+     * Name: Get info ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
-    getInfo({ contractPaymentID, select, populates }){
+    getInfo({ cashBookID, select, populates }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(contractPaymentID))
+                if (!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if(populates && typeof populates === 'string'){
@@ -153,7 +173,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await FIN__CASH_FLOW_PLAN_COLL.findById(contractPaymentID)
+                let infoContractIPC = await FIN__CASH_BOOK_COLL.findById(cashBookID)
                                 .select(select)
                                 .populate(populates)
 
@@ -167,23 +187,34 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách cash flow ✅
-     * Author: Depv
+     * Name  : Get list ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
-    getList({ companyID, projectID, contractID, outin, type, property, priority,
-        keyword, limit = 20, lastestID, select, populates= {} }) { 
+    getList({ companyID, accountID, customerID, contractID, parentID,
+        keyword, limit = 50, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20;
-                } else{
+                if(limit > 50){
+                    limit = 50
+                }else{
                     limit = +limit;
                 }
-
-                let sortBy;
-                let conditionObj = {};
-                let keys	     = ['createAt__-1', '_id__-1'];
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                 let sortBy;
+                 let conditionObj = {};
+                 let keys	     = ['createAt__-1', '_id__-1'];
+             
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
               
+                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -195,33 +226,25 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = companyID;
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                 if(checkObjectIDs(companyID)){    
+                    conditionObj.company = companyID
                 }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
+                if(checkObjectIDs(accountID)){    
+                    conditionObj.account = accountID
                 }
-
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID;
+                if(checkObjectIDs(customerID)){    
+                    conditionObj.customer = customerID
                 }
-
-                if(!isNaN(outin)){
-                    conditionObj.outin = Number(outin);
+                if(checkObjectIDs(contractID)){    
+                    conditionObj.contract = contractID
                 }
-
-                if(!isNaN(type)){
-                    conditionObj.type = Number(type);
-                }
-
-                if(!isNaN(property)){
-                    conditionObj.property = Number(property);
-                }
-
-                if(!isNaN(priority)){
-                    conditionObj.priority = Number(priority);
+                if(checkObjectIDs(parentID)){    
+                    conditionObj.parent = parentID
                 }
 
                 if(keyword){
@@ -230,10 +253,11 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
-
                 let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await FIN__CASH_FLOW_PLAN_COLL.findById(lastestID);
+					let infoData = await FIN__CASH_BOOK_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
@@ -248,15 +272,16 @@ class Model extends BaseModel {
                     sortBy       = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await FIN__CASH_FLOW_PLAN_COLL.find(conditionObj)
+                let infoDataAfterGet = await FIN__CASH_BOOK_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean(); 
-
+                
+                // GET TOTAL RECORD
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data" });
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -266,7 +291,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await FIN__CASH_FLOW_PLAN_COLL.count(conditionObjOrg);
+                let totalRecord = await FIN__CASH_BOOK_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

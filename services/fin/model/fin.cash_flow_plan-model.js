@@ -213,12 +213,12 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ companyID, projectID, contractID, parentID, outin, type, property, priority,
-        keyword, limit = 20, lastestID, select, populates= {} }) { 
+        keyword, limit = 50, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
