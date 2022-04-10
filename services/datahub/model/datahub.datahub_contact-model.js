@@ -86,7 +86,7 @@ class Model extends BaseModel {
                 if(info)
                     return resolve({ error: true, message: "Mã số thuế đã tồn tại", keyError: 'cannot_update' })
 
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { name, taxid, userUpdate: userID };
 
                 if(sign){
                     dataUpdate.sign = sign;
