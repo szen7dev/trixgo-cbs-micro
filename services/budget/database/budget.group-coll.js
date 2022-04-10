@@ -91,7 +91,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_group", {
         default : 0
     },
     /**
-     * THỰC HIỆN
+     * THỰC HIỆN-KHÔNG GỒM VAT
      */
     //______Khối lượng thực hiện
     impleQuantity: {

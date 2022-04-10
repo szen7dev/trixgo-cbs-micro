@@ -94,7 +94,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**
      * NGÂN SÁCH/CHI PHÍ
      */
-    //_________Ngân sách/Tổng mức đầu tư/Chi phí
+    //_________Ngân sách kế hoạch
     budget: {
         type   : Number,
         default: 0
@@ -104,7 +104,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type   : Number,
         default: 0
     },
-    //______Ngân sách thực tế/thực hiện
+    //______Ngân sách thực hiện
     finalBudget: {
         type: Number,
         default : 0

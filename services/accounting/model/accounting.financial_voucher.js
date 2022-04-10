@@ -421,12 +421,7 @@ class AccountingFinancialVoucher extends BaseModel {
                             }
                         }
 
-                        //_________Kiểm tra xem có Dự án hay không (phục vụ ngân sách dự án)
-                        if(subitem.project && _isValid(subitem.project)){
-                            dataInsert.project = subitem.project
-                        }
-
-                        //_________Nếu tạo phiếu link với khoản mục phí ứng dụng Quản lý chi phí/Ngân sách
+                        //_________Cập nhật ngân sách thực hiện
                         if(subitem.budget && _isValid(subitem.budget)){
                             let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
                             dataInsert.job = subitem.budget;
@@ -579,6 +574,7 @@ class AccountingFinancialVoucher extends BaseModel {
                             }
 
                             //_________Kiểm tra xem có Hợp đồng hay không
+                            //_________Nếu không  có thì lấy theo hợp đồng trên phiếu
                             if(subitem.contract && _isValid(subitem.contract)){
                                 dataInsert.contract = subitem.contract;
                             }else{
@@ -587,18 +583,13 @@ class AccountingFinancialVoucher extends BaseModel {
                                 }
                             }
 
-                            //_________Kiểm tra xem có Dự án hay không (phục vụ ngân sách dự án)
-                            if(subitem.project && _isValid(subitem.project)){
-                                dataInsert.project = subitem.project
-                            }
+                            //_________Cập nhật ngân sách thực hiện
+                            if(subitem.budget && _isValid(subitem.budget)){
+                                let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
+                                dataInsert.job = subitem.budget;
+                                dataInsert.group = infoGroup.group;
+                            }                            
 
-                            ////_________Nếu tạo phiếu link với khoản mục phí ứng dụng Quản lý chi phí/Ngân sách
-                            // if(subitem.budget && _isValid(subitem.budget)){
-                            //     let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
-                            //     dataInsert.job = subitem.budget;
-                            //     dataInsert.group = infoGroup.group;
-                            // }
-                            // console.log('==============Tạo mới==============>')
                             //_________Tiến hành tạo chi tiết_________//
                             let infoAfterInsert = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
                         }else{

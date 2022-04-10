@@ -70,7 +70,7 @@ module.exports = {
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE]   			 						: BUDGET__WORK_HANDLER.update,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_REMOVE]				 						: BUDGET__WORK_HANDLER.remove,
 		[CF_ACTIONS_BUDGET.BUDGET_WORK_GET_INFO_AND_GET_LIST]						: BUDGET__WORK_HANDLER.getInfoAndGetList,
-		// [CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE]								: BUDGET__WORK_HANDLER.updateValue,
+		[CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE]								: BUDGET__WORK_HANDLER.updateValue,
 
 		//==========================================   BUDGET HANDLER   ================================//
 		[CF_ACTIONS_BUDGET.BUDGET_SUBMITTAL_INSERT]   			 					: BUDGET__SUBMITTAL_HANDLER.insert,

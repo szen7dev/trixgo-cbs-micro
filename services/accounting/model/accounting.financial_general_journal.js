@@ -243,8 +243,8 @@ class Model extends BaseModel {
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, 
-        project, job, cash, vat, note, updown, advancePayment , 
-        date, subtype, warehouse, group, unitprice
+        project, job, cash, vat, note, updown, advancePayment, 
+        date, subtype, warehouse, group, unitprice, budgetWorkID
     }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -3498,4 +3498,3 @@ class Model extends BaseModel {
 }
 exports.MODEL = new Model;
 var ACCOUNTING__FINANCIAL_VOUCHER     = require('../model/accounting.financial_voucher').MODEL;
-

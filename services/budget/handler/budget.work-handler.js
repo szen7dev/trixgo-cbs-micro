@@ -167,4 +167,34 @@
             }
         }
     },
+
+    /**
+     * Dev: Hiepnh ✅
+     * Func: Cập nhật giá trị (ngân sách, thực hiện, dự báo)
+     * Date: 9/4/2022
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            option : { type: "number" },
+            workID : { type: "string" },
+        },
+        async handler(ctx) {  
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, workID } = ctx.params;
+            
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await BUDGET__WORK_MODEL.updateValue({
+                    option, workID, userID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+    
  }

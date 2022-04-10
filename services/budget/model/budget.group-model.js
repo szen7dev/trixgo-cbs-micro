@@ -101,36 +101,24 @@ class Model extends BaseModel {
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataInsert.quantity     = quantity;
                 }
-                if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
-                    dataInsert.unitPrice     = unitPrice;
-                    dataInsert.amount       = Number(quantity)*Number(unitPrice);
-                }
-                if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
-                    dataInsert.vatUnitPrice     = vatUnitPrice;
-                    dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
-                }
-                // if(!isNaN(amount) && Number(amount) >= 0){
-                //     dataInsert.amount     = amount;
+                // if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
+                //     dataInsert.unitPrice     = unitPrice;
+                //     dataInsert.amount       = Number(quantity)*Number(unitPrice);
                 // }
-                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
-                //     dataInsert.vatAmount     = vatAmount;
+                // if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
+                //     dataInsert.vatUnitPrice     = vatUnitPrice;
+                //     dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
                 // }
-                if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
-                    dataInsert.forecastQuantity     = forecastQuantity;
-                }
-                if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
-                    dataInsert.forecastUnitPrice     = forecastUnitPrice;
-                    dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
-                }
-                if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
-                    dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
-                    dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
-                }
-                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
-                //     dataInsert.forecastAmount     = forecastAmount;
+                // if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
+                //     dataInsert.forecastQuantity     = forecastQuantity;
                 // }
-                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
-                //     dataInsert.forecastVatAmount     = forecastVatAmount;
+                // if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
+                //     dataInsert.forecastUnitPrice     = forecastUnitPrice;
+                //     dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
+                // }
+                // if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
+                //     dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
+                //     dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
                 // }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
@@ -145,7 +133,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract ipc ✅
+     * Name: update
      * Author: Depv
      * Code: 
      */
@@ -263,13 +251,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract ipc ✅
+     * Name: Remove
      * Author: Depv
      * Code: 
      */
     
     /**
-     * Name: get info contract ipc ✅
+     * Name: get info
      * Author: Depv
      * Code: 
      */
@@ -307,7 +295,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách ✅
+     * Name  : Danh sách
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */

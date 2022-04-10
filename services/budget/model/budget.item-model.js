@@ -9,6 +9,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -100,36 +101,24 @@ class Model extends BaseModel {
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataInsert.quantity     = quantity;
                 }
-                if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
-                    dataInsert.unitPrice     = unitPrice;
-                    dataInsert.amount       = Number(quantity)*Number(unitPrice);
-                }
-                if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
-                    dataInsert.vatUnitPrice     = vatUnitPrice;
-                    dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
-                }
-                // if(!isNaN(amount) && Number(amount) >= 0){
-                //     dataInsert.amount     = amount;
+                // if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
+                //     dataInsert.unitPrice     = unitPrice;
+                //     dataInsert.amount       = Number(quantity)*Number(unitPrice);
                 // }
-                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
-                //     dataInsert.vatAmount     = vatAmount;
+                // if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
+                //     dataInsert.vatUnitPrice     = vatUnitPrice;
+                //     dataInsert.vatAmount     = Number(quantity)*Number(vatUnitPrice);
                 // }
-                if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
-                    dataInsert.forecastQuantity     = forecastQuantity;
-                }
-                if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
-                    dataInsert.forecastUnitPrice     = forecastUnitPrice;
-                    dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
-                }
-                if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
-                    dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
-                    dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
-                }
-                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
-                //     dataInsert.forecastAmount     = forecastAmount;
+                // if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
+                //     dataInsert.forecastQuantity     = forecastQuantity;
                 // }
-                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
-                //     dataInsert.forecastVatAmount     = forecastVatAmount;
+                // if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
+                //     dataInsert.forecastUnitPrice     = forecastUnitPrice;
+                //     dataInsert.forecastAmount       = Number(forecastQuantity)*Number(forecastUnitPrice);
+                // }
+                // if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
+                //     dataInsert.forecastVatUnitPrice     = forecastVatUnitPrice;
+                //     dataInsert.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
                 // }
                 
                 let infoAterInsert = await this.insertData(dataInsert);
@@ -148,7 +137,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-     update({ 
+    update({ 
         itemID, plus, reasonID, name, sign, unit, description, note, quantity, unitPrice, vatUnitPrice, amount, vatAmount, forecastQuantity, forecastUnitPrice, forecastVatUnitPrice, forecastAmount, forecastVatAmount, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
@@ -204,33 +193,33 @@ class Model extends BaseModel {
                 if(!isNaN(quantity) && Number(quantity) >= 0){
                     dataUpdate.quantity     = quantity;
                 }
-                if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
-                    dataUpdate.unitPrice     = unitPrice;
-                }
-                if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
-                    dataUpdate.vatUnitPrice     = vatUnitPrice;
-                }
-                if(!isNaN(amount) && Number(amount) >= 0){
-                    dataUpdate.amount     = amount;
-                }
-                if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
-                    dataUpdate.vatAmount     = vatAmount;
-                }
-                if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
-                    dataUpdate.forecastQuantity     = forecastQuantity;
-                }
-                if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
-                    dataUpdate.forecastUnitPrice     = forecastUnitPrice;
-                }
-                if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
-                    dataUpdate.forecastVatUnitPrice     = forecastVatUnitPrice;
-                }
-                if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
-                    dataUpdate.forecastAmount     = forecastAmount;
-                }
-                if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
-                    dataUpdate.forecastVatAmount     = forecastVatAmount;
-                }
+                // if(!isNaN(unitPrice) && Number(unitPrice) >= 0){
+                //     dataUpdate.unitPrice     = unitPrice;
+                // }
+                // if(!isNaN(vatUnitPrice) && Number(vatUnitPrice) >= 0){
+                //     dataUpdate.vatUnitPrice     = vatUnitPrice;
+                // }
+                // if(!isNaN(amount) && Number(amount) >= 0){
+                //     dataUpdate.amount     = amount;
+                // }
+                // if(!isNaN(vatAmount) && Number(vatAmount) >= 0){
+                //     dataUpdate.vatAmount     = vatAmount;
+                // }
+                // if(!isNaN(forecastQuantity) && Number(forecastQuantity) >= 0){
+                //     dataUpdate.forecastQuantity     = forecastQuantity;
+                // }
+                // if(!isNaN(forecastUnitPrice) && Number(forecastUnitPrice) >= 0){
+                //     dataUpdate.forecastUnitPrice     = forecastUnitPrice;
+                // }
+                // if(!isNaN(forecastVatUnitPrice) && Number(forecastVatUnitPrice) >= 0){
+                //     dataUpdate.forecastVatUnitPrice     = forecastVatUnitPrice;
+                // }
+                // if(!isNaN(forecastAmount) && Number(forecastAmount) >= 0){
+                //     dataUpdate.forecastAmount     = forecastAmount;
+                // }
+                // if(!isNaN(forecastVatAmount) && Number(forecastVatAmount) >= 0){
+                //     dataUpdate.forecastVatAmount     = forecastVatAmount;
+                // }
 
                 let infoAterUpdate = await BUDGET__ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
@@ -244,13 +233,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove ✅
+     * Name: Remove
      * Author: Hiepnh
      * Date: 9/4/2022
      */
     
     /**
-     * Name: Get info ✅
+     * Name: Get info
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -288,7 +277,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list ✅
+     * Name  : Get list
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -399,7 +388,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị theo công việc ✅
+     * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) ✅
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
@@ -434,28 +423,43 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                // Cập nhật ngân sách
-                let listDataWork = await BUDGET__WORK_COLL.aggregate([
-                    {
-                        $match: {
-                            item: ObjectID(itemID),
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            forecastAmount: { $sum: "$forecastAmount" },
-                            forecastVatAmount: { $sum: "$forecastVatAmount" },
-                        }
-                    }, 
-                ])
-                if(listDataWork && listDataWork.length){
-                    dataUpdate.amount = Number(listDataWork[0].amount)
-                    dataUpdate.vatAmount = Number(listDataWork[0].vatAmount)
-                    dataUpdate.forecastAmount = Number(listDataWork[0].forecastAmount)
-                    dataUpdate.forecastVatAmount = Number(listDataWork[0].forecastVatAmount)
+                // Cập nhật Ngân sách theo kế hoạch và dự báo ngân sách
+                if(option && Number(option) === 1){
+                    let listDataWork = await BUDGET__WORK_COLL.aggregate([
+                        {
+                            $match: {
+                                item: ObjectID(itemID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
+                                forecastAmount: { $sum: "$forecastAmount" },
+                                forecastVatAmount: { $sum: "$forecastVatAmount" },
+                            }
+                        }, 
+                    ])
+                    if(listDataWork && listDataWork.length){
+                        dataUpdate.amount = Number(listDataWork[0].amount)
+                        dataUpdate.vatAmount = Number(listDataWork[0].vatAmount)
+                        dataUpdate.forecastAmount = Number(listDataWork[0].forecastAmount)
+                        dataUpdate.forecastVatAmount = Number(listDataWork[0].forecastVatAmount)
+                    }
+                }
+
+                // Cập nhật Ngân sách thực hiện
+                if(option && Number(option) === 2){
+                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
+                        itemID
+                    })
+                    // console.log(infoImpleBudget)
+                    if(infoImpleBudget){
+                        dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
+                        dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
+                        dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                    }
                 }
 
                 let infoAterUpdate = await BUDGET__ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
@@ -467,7 +471,8 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
-    }    
+    }
+
 }
 
 exports.MODEL = new Model;

@@ -9,6 +9,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -136,7 +137,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update ✅
+     * Name: update
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -235,13 +236,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove ✅
+     * Name: Remove
      * Author: Hiepnh
      * Date: 9/4/2022
      */
     
     /**
-     * Name: Get info ✅
+     * Name: Get info
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -279,7 +280,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list ✅
+     * Name  : Get list
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -390,7 +391,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị theo công việc ✅
+     * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) ✅
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
@@ -425,28 +426,41 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                // Cập nhật ngân sách
-                let listDataWork = await BUDGET__WORK_COLL.aggregate([
-                    {
-                        $match: {
-                            budget: ObjectID(budgetID),
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                            vatAmount: { $sum: "$vatAmount" },
-                            forecastAmount: { $sum: "$forecastAmount" },
-                            forecastVatAmount: { $sum: "$forecastVatAmount" },
-                        }
-                    }, 
-                ])
-                if(listDataWork && listDataWork.length){
-                    dataUpdate.budget = Number(listDataWork[0].amount)
-                    dataUpdate.vatBudget = Number(listDataWork[0].vatAmount)
-                    dataUpdate.forecastBudget = Number(listDataWork[0].forecastAmount)
-                    dataUpdate.forecastVatBudget = Number(listDataWork[0].forecastVatAmount)
+                // Cập nhật Ngân sách theo kế hoạch và dự báo ngân sách
+                if(option && Number(option) === 1){
+                    let listDataWork = await BUDGET__WORK_COLL.aggregate([
+                        {
+                            $match: {
+                                budget: ObjectID(budgetID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: "$amount" },
+                                vatAmount: { $sum: "$vatAmount" },
+                                forecastAmount: { $sum: "$forecastAmount" },
+                                forecastVatAmount: { $sum: "$forecastVatAmount" },
+                            }
+                        }, 
+                    ])
+                    if(listDataWork && listDataWork.length){
+                        dataUpdate.budget = Number(listDataWork[0].amount)
+                        dataUpdate.vatBudget = Number(listDataWork[0].vatAmount)
+                        dataUpdate.forecastBudget = Number(listDataWork[0].forecastAmount)
+                        dataUpdate.forecastVatBudget = Number(listDataWork[0].forecastVatAmount)
+                    }
+                }
+
+                // Cập nhật Ngân sách thực hiện
+                if(option && Number(option) === 2){
+                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
+                        budgetID
+                    })
+                    // console.log(infoImpleBudget)
+                    if(infoImpleBudget){
+                        dataUpdate.finalBudget = Number(infoImpleBudget.data.amount)
+                    }
                 }
 
                 let infoAterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
@@ -458,7 +472,8 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
-    }    
+    }
+    
 }
 
 exports.MODEL = new Model;

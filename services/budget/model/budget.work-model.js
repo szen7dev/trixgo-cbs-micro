@@ -9,6 +9,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -418,6 +419,71 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
                 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
+    updateValue({ 
+        option, workID, userID, ctx
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(workID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "workID_invalid" });
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Cập nhật Ngân sách theo kế hoạch và dự báo ngân sách
+                if(option && Number(option) === 1){
+                    //
+                }
+
+                // Cập nhật Ngân sách thực hiện
+                if(option && Number(option) === 2){
+                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
+                        workID
+                    })
+                    // console.log(infoImpleBudget)
+                    if(infoImpleBudget){
+                        dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
+                        dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
+                        dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                    }
+                }
+
+                let infoAterUpdate = await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
+                if(!infoAterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

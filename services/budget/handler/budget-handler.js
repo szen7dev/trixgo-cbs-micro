@@ -174,23 +174,24 @@
 
     /**
      * Dev: Hiepnh ✅
-     * Func: Cập nhật giá trị theo công việc
+     * Func: Cập nhật giá trị (ngân sách, thực hiện, dự báo)
      * Date: 9/4/2022
      */
     updateValue: {
         auth: "required",
         params: {
+            option : { type: "number" },
             budgetID : { type: "string" },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID } = ctx.params;
+                let { option, budgetID } = ctx.params;
             
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET_MODEL.updateValue({
-                    budgetID, userID, ctx
+                    option, budgetID, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -199,4 +200,5 @@
             }
         }
     },
+    
 }
