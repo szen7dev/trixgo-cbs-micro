@@ -10,12 +10,14 @@ const FIN__CASH_FLOW_PLAN_MODEL              = require('../model/fin.cash_flow_p
 
 module.exports = {
     /**
-	 * Dev: Hiepnh ✅
-	 * Func: Thêm cash flow plan
-	 */
+     * Name: Insert ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
     insert: {
         auth: "required",
         params: {
+            companyID           : { type: "string", optional: true },
             fundaID             : { type: "string", optional: true },
             contractID          : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
@@ -26,22 +28,21 @@ module.exports = {
             sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string" },
-            value           : { type: "number" },
+            value               : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { contractID, fundaID, parentID, type, property, outin, name, sign, note, date, value } = ctx.params;
+                let { companyID, fundaID, contractID, parentID, type, property, outin, name, sign, note, date, value } = ctx.params;
 
-                const { _id: userID, company } = ctx.meta.infoUser;
-
-                let companyID;
-                if(!contractID){
+                let { _id: userID, company } = ctx.meta.infoUser;
+                
+                if(!companyID){
                     companyID = company._id
                 }
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.insert({
-                    companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx
+                    companyID, fundaID, contractID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -52,27 +53,31 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
-	 * Func: Sửa cash flow plan
-	 */
+     * Name: Update ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
     update: {
         auth: "required",
         params: {
-            cashFlowPlanID   : { type: "string" },
+            cashFlowID          : { type: "string" },
+            contractID          : { type: "string", optional: true },
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            date                : { type: "string" },
-            value           : { type: "number" },
+            date                : { type: "string", optional: true },
+            value               : { type: "number", optional: true },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                const { cashFlowPlanID, ipc, date, name, sign, description, value } = ctx.params;
+                const { cashFlowID, contractID, name, sign, note, date, value } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
+
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
-                    cashFlowPlanID, ipc, date, name, sign, description, value, userID
+                    cashFlowID, contractID, name, sign, note, date, value, userID, ctx
                 });
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -81,21 +86,23 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
-     * Func: Xóa cash flow plan
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     remove: {
         auth: "required",
         params: {
-            contractPaymentID: { type: "string" },
+            cashFlowID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractPaymentID  } = ctx.params;
+                let { cashFlowID  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.remove({
-                    contractPaymentID, userID
+                    cashFlowID, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -106,20 +113,22 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
-     * Func: get info and get list cash flow plan
+     * Name: Get info and get list ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashFlowPlanID : { type: "string", optional: true },
-            companyID     : { type: "string", optional: true },
-            projectID     : { type: "string", optional: true },
-            contractID     : { type: "string", optional: true },
-            outin     : { type: "number", optional: true },
-            type     : { type: "number", optional: true },
-            property     : { type: "number", optional: true },
-            priority     : { type: "number", optional: true },
+            cashFlowID      : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            contractID      : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            outin           : { type: "number", optional: true },
+            type            : { type: "number", optional: true },
+            property        : { type: "number", optional: true },
+            priority        : { type: "number", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -131,16 +140,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { cashFlowPlanID, companyID, projectID, contractID, outin, type, property, priority, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { cashFlowID, companyID, projectID, contractID, parentID, outin, type, property, priority, keyword, limit, lastestID, populates, select } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
+                
                 let resultAfterCallHandler;
-                if(cashFlowPlanID){
+                if(cashFlowID){
                     resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getInfo({
-                        cashFlowPlanID, userID, select, populates
+                        cashFlowID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getList({
-                        companyID, projectID, contractID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates
+                        companyID, projectID, contractID, parentID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -14,12 +14,13 @@ const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.
 /**
  * import inter-coll, exter-coll
  */
- const BUDGET_COLL                       = require('../database/budget-coll');
- const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll');
- const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
- const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
+const BUDGET_COLL                      = require('../database/budget-coll');
+const BUDGET__ITEM_COLL                = require('../database/budget.item-coll');
+const BUDGET__GROUP_COLL               = require('../database/budget.group-coll');
+const BUDGET__WORK_COLL                = require('../database/budget.work-coll');
 
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+const { KEY_ERROR }                     = require('../../../tools/keys/index')
 const { template }                      = require('lodash');
 const { ResumeToken }                   = require('mongodb');
 
@@ -109,7 +110,7 @@ class Model extends BaseModel {
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" , keyError: "can't_insert_budget " });
+                    return resolve({ error: true, message: "Thêm thất bại" , keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -130,7 +131,7 @@ class Model extends BaseModel {
             try {
 
                 if(!checkObjectIDs(budgetID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "budgetID_invalid" });
+                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
                 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -201,7 +202,7 @@ class Model extends BaseModel {
 
                 let infoAfterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

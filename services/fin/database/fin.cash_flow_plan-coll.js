@@ -19,52 +19,43 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         default: 1,
         enum: [1,2]
     },
-
     //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
     real: { type: Number, default: 1 },
-
     //_________Phân loại theo lĩnh vực (type = 3) (POSTMAN -> ITEM - > DOCTYPE)
     field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },  
-    
     //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
     chair: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
-    
     //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
     personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },    
-
     //_________Bên mua (POSTMAN ITEM > CONTACT)
     buyerInfo: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-
     //_________Bên bán (POSTMAN ITEM > CONTACT)
     sellerInfo: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-
     //_________Công ty-Được xác định theo CONTACT(*)
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-
     //_________Dự án-Được xác định theo CONTACT(*) 
     project: {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-
     //_________Hợp đồng-Được xác định theo CONTACT(*)
     contract: {
         type: Schema.Types.ObjectId,
@@ -89,6 +80,16 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         default: 1,
         enum: [1, 2]
     },
+    //_________Admin
+    admins : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'user'
+    }],
+    //_________Thành viên (được quyền xem)
+    members : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'user'
+    }],
     /**
      * Phân loại:
      * 1-Kế hoạch năm
@@ -107,7 +108,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
      * Tính chất
      * 1-Sản lượng
      * 2-Doanh thu
-     * 3-Tiền về
+     * 3-Dòng tiền
      */
     property: {
         type: Number,

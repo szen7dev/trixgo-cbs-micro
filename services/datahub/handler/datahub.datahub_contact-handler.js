@@ -15,6 +15,7 @@ module.exports = {
      * Date: 9/4/2022
 	 */
     insert: {
+        auth: "required",
         params: {
             name                : { type: "string" },
             taxid               : { type: "string" },
@@ -45,6 +46,7 @@ module.exports = {
      * Date: 9/4/2022
 	 */
     update: {
+        auth: "required",
         params: {
             contactID: { type: "string" },
             name                : { type: "string" },
@@ -76,6 +78,7 @@ module.exports = {
      * Date: 9/4/2022
      */
     remove: {
+        auth: "required",
         params: {
             contactID: { type: "string" },
         },
@@ -102,6 +105,7 @@ module.exports = {
      * Date: 9/4/2022
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             contactID : { type: "string", optional: true },
 

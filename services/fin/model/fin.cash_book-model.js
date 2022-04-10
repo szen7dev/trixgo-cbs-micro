@@ -8,7 +8,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * import inter-coll, exter-coll
  */
-const FIN__CASH_BOOK_COLL          = require('../database/fin.cash_book-coll');
+const FIN__CASH_BOOK_COLL               = require('../database/fin.cash_book-coll');
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
