@@ -570,8 +570,8 @@ class Model extends BaseModel {
                     }, 
                 ])
 
-                console.log(listDataUp)
-                console.log(listDataDown)
+                // console.log(listDataUp)
+                // console.log(listDataDown)
 
                 // Tổng hợp giá trị tăng, giảm
                 if(listDataUp && listDataUp.length){

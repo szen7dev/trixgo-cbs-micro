@@ -56,6 +56,9 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
     description: String,
     //_________Ghi chú
     note: String,
+    /**
+     * NGÂN SÁCH
+     */
     //______Khối lượng
     quantity: {
         type: Number,
@@ -81,6 +84,27 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
         type: Number,
         default : 0
     },
+    /**
+     * THỰC HIỆN
+     */
+    //______Khối lượng thực hiện
+    impleQuantity: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá thực hiện
+    impleUnitPrice: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền thực hiện
+    impleAmount: {
+        type: Number,
+        default : 0
+    },
+    /**
+     * DỰ BÁO
+     */        
     //______Dự báo Khối lượng
     forecastQuantity: {
         type: Number,

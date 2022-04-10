@@ -168,23 +168,24 @@
 
     /**
      * Dev: Hiepnh ✅
-     * Func: Cập nhật giá trị theo công việc
+     * Func: Cập nhật giá trị (ngân sách, thực hiện, dự báo)
      * Date: 9/4/2022
      */
     updateValue: {
         auth: "required",
         params: {
-            groupID             : { type: "string" },
+            option : { type: "number" },
+            groupID : { type: "string" },
         },
         async handler(ctx) {  
             try {
                 await this.validateEntity(ctx.params);
-                let { groupID } = ctx.params;
+                let { option, groupID } = ctx.params;
             
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET__GROUP_MODEL.updateValue({
-                    groupID, userID, ctx
+                    option, groupID, userID, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

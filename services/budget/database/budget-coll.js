@@ -103,6 +103,16 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type   : Number,
         default: 0
     },
+    //______Ngân sách thực tế/thực hiện
+    finalBudget: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    finalVatBudget: {
+        type: Number,
+        default : 0
+    },     
     //______Dự báo ngân sách
     forecastBudget: {
         type: Number,
@@ -113,16 +123,6 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type: Number,
         default : 0
     },    
-    //______Ngân sách thực tế
-    finalBudget: {
-        type: Number,
-        default : 0
-    },
-    //______VAT
-    finalVatBudget: {
-        type: Number,
-        default : 0
-    }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
