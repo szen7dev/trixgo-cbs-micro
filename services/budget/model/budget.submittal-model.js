@@ -27,7 +27,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert contract ipc ✅
+     * Name: insert
      * Author: Depv
      * Code: 
      */
@@ -88,7 +88,7 @@ class Model extends BaseModel {
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
+                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_submittal " });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -98,7 +98,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract ipc ✅
+     * Name: update
      * Author: Depv
      * Code: 
      */
@@ -116,11 +116,6 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                // Object update contract ($inc)
-                let updateContract = {};
-                let infoContractProduction = await BUDGET_COLL.findById(contractProductionID);
-                let contractID = infoContractProduction.contract;
-                
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -147,66 +142,10 @@ class Model extends BaseModel {
                 if(date){
                     dataUpdate.date = date;
                 }
-
-                if(produce){
-                    dataUpdate.produce = produce;
-                    // Giá trị produce hiện tại lúc chưa thay đổi
-                    let produceCurrent = infoContractProduction.produce;
-            
-                    // Giá trị chênh lệch khi thay đổi
-                    let produceAfter   = produce - produceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.produce = produceAfter;
-                }
-
-                if(vatProduce){
-                    dataUpdate.vatProduce = vatProduce;
-
-                    // Giá trị vatProduce hiện tại lúc chưa thay đổi
-                    let vatProduceCurrent = infoContractProduction.vatProduce;
-        
-                    // Giá trị chênh lệch khi thay đổi
-                    let vatProduceAfter   = vatProduce - vatProduceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.vatProduce = vatProduceAfter;
-                }
-
-                if(plusProduce){
-                    dataUpdate.plusProduce = plusProduce;
-
-                    // Giá trị plusProduce hiện tại lúc chưa thay đổi
-                    let plusProduceCurrent = infoContractProduction.plusProduce;
-    
-                    // Giá trị chênh lệch khi thay đổi
-                    let plusProduceAfter   = plusProduce - plusProduceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.plusProduce = plusProduceAfter;
-                }
-                
-                if(vatPlusProduce){
-                    dataUpdate.vatPlusProduce = vatPlusProduce;
-
-                    // Giá trị vatPlusProduce hiện tại lúc chưa thay đổi
-                    let vatPlusProduceCurrent = infoContractProduction.vatPlusProduce;
-
-                    // Giá trị chênh lệch khi thay đổi
-                    let vatPlusProduceAfter   = vatPlusProduce - vatPlusProduceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.vatPlusProduce = vatPlusProduceAfter;
-                }
-
-                let infoAterUpdate = await BUDGET_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true });
+             
+                let infoAterUpdate = await BUDGET__SUBMITTAL_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true });
                 if(!infoAterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
-
-                // Cập nhật Hợp đồng (Precaculate)
-                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID: `${contractID}`, dataInc: updateContract
-                })
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget_submittal", status: 403 });
 
                 return resolve({ error: false, data: infoAterUpdate, status: 200 });
             } catch (error) {
@@ -216,13 +155,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract ipc ✅
+     * Name: Remove
      * Author: Depv
      * Code: 
      */
     
     /**
-     * Name: get info contract ipc ✅
+     * Name: Get info
      * Author: Depv
      * Code: 
      */
@@ -246,7 +185,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID)
+                let infoContractIPC = await BUDGET__SUBMITTAL_COLL.findById(contractIpcID)
                                 .select(select)
                                 .populate(populates)
 
@@ -260,7 +199,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract ipc ✅
+     * Name  : Danh sách
      * Author: Depv
      * Code  : 
      */
@@ -286,7 +225,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -305,15 +243,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                // TRẠNG THÁI CÔNG VIỆC
-                if(type){
-                    conditionObj.type = type
-                }
-
-                // HỢP ĐỒNG
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID;
-                }
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -325,7 +254,7 @@ class Model extends BaseModel {
 
                 // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await CMCS__CONTRACT_IPC_COLL.findById(lastestID);
+					let infoData = await BUDGET__SUBMITTAL_COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
@@ -340,7 +269,7 @@ class Model extends BaseModel {
                     sortBy       = dataPagingAndSort.data.sort;
                 }
                 
-                let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find(conditionObj)
+                let infoDataAfterGet = await BUDGET__SUBMITTAL_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -359,7 +288,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await CMCS__CONTRACT_IPC_COLL.count(conditionObjOrg);
+                let totalRecord = await BUDGET__SUBMITTAL_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {

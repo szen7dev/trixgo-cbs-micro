@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert ✅
+     * Name: Insert ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -109,7 +109,7 @@ class Model extends BaseModel {
                 
                 let infoAterInsert = await this.insertData(dataInsert);
                 if(!infoAterInsert)
-                    return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget " });
+                    return resolve({ error: true, message: "Không thể thêm contract ipc" , keyError: "can't_insert_budget " });
 
                 return resolve({ error: false, data: infoAterInsert, status: 200 });
             } catch (error) {
@@ -119,7 +119,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update
+     * Name: Update ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -217,7 +217,7 @@ class Model extends BaseModel {
      */
     
     /**
-     * Name: Get info
+     * Name: Get info ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -255,7 +255,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list
+     * Name  : Get list ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -269,6 +269,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
+                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
