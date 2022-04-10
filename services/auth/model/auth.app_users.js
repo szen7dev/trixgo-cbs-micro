@@ -60,7 +60,7 @@ class Model extends BaseModel {
                     if(checkExist)
                         return resolve({ error: true, message: "Người dùng đã tồn tại trong app user", keyError: "user_existed_in_app_user", status: 200 });
                     // Bắt đầu thêm
-                    let infoAterInsert = await this.insertData({ app, company, user, endTime, userCreate: userID, userUpdate: userID });
+                    let infoAfterInsert = await this.insertData({ app, company, user, endTime, userCreate: userID, userUpdate: userID });
                 }
 
                 return resolve({ error: false, message: "Thêm thành công", status: 200 });

@@ -112,15 +112,15 @@ class Model extends BaseModel {
                     updateContract.vatPlusProduce = vatPlusProduce;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: "can_not_insert_contract_production", status: 403 });
 
                 // update contract precalculated
                 let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
                     contractID, dataInc: updateContract
                 })
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

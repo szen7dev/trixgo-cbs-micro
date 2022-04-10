@@ -82,9 +82,9 @@ class Model extends BaseModel {
                     dataInsert.parent = parent;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert);
 
-                if(!infoAterInsert) {
+                if(!infoAfterInsert) {
                     return resolve({
 						error: true,
 						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -96,12 +96,12 @@ class Model extends BaseModel {
                 if(parent) {
                     await ITEM__DOCTYPE_COLL.findByIdAndUpdate(parent, {
                         $addToSet: {
-                            childs: infoAterInsert._id
+                            childs: infoAfterInsert._id
                         }
                     });
                 }
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

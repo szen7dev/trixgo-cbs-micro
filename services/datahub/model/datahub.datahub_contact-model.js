@@ -64,7 +64,7 @@ class Model extends BaseModel {
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_insert' });
                 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

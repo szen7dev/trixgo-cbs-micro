@@ -100,11 +100,11 @@ class Model extends BaseModel {
                     dataInsert.quantity     = quantity;
                 }
                 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_group" });
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

@@ -71,16 +71,16 @@ class Model extends BaseModel {
                     dataInsert.parent = parent;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert);
 
-                if(!infoAterInsert)
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Can't insert subject",  keyError: KEY_ERROR.INSERT_FAILED });
 
                 if(checkObjectIDs(parent)){
                     await TRAINING__SUBJECT_COLL.findByIdAndUpdate(parent, { $inc: { amountLessions: 1 }}, { new: true });
                 }
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

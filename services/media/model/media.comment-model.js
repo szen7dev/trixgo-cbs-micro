@@ -286,8 +286,8 @@ class Model extends BaseModel {
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert) {
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -299,7 +299,7 @@ class Model extends BaseModel {
                 if(parentID){
                     await MEDIA__COMMENT_COLL.findByIdAndUpdate(parentID, { 
                         $set: {
-                            lastestReplyID: infoAterInsert._id
+                            lastestReplyID: infoAfterInsert._id
                         },
                         $inc: {
                             amountCommentReply: 1
@@ -317,22 +317,22 @@ class Model extends BaseModel {
                 // Insert notification to DB
                 const infoAfterCreateNoti = await this.createNotification({ 
                     infoMedia, 
-                    infoComment: infoAterInsert, 
+                    infoComment: infoAfterInsert, 
                     bizfullname,
                     authorID,
                     ctx 
                 });
                 if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
 
-                infoAterInsert = await MEDIA__COMMENT_COLL
-                    .findById(infoAterInsert._id)
+                infoAfterInsert = await MEDIA__COMMENT_COLL
+                    .findById(infoAfterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
 
-                infoAterInsert.receivers = infoAfterCreateNoti.data;
+                infoAfterInsert.receivers = infoAfterCreateNoti.data;
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -777,8 +777,8 @@ class Model extends BaseModel {
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
 
-                let infoAterInsert = await MEDIA__COMMENT_FILE_COLL.create(dataInsert);
-                if(!infoAterInsert) {
+                let infoAfterInsert = await MEDIA__COMMENT_FILE_COLL.create(dataInsert);
+                if(!infoAfterInsert) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -790,7 +790,7 @@ class Model extends BaseModel {
                 if(parentID){
                     await MEDIA__COMMENT_FILE_COLL.findByIdAndUpdate(parentID, { 
                         $set: {
-                            lastestReplyID: infoAterInsert._id
+                            lastestReplyID: infoAfterInsert._id
                         },
                         $inc: {
                             amountCommentReply: 1
@@ -808,22 +808,22 @@ class Model extends BaseModel {
                 // Insert notification to DB
                 const infoAfterCreateNoti = await this.createNotification({ 
                     infoMedia, 
-                    infoComment: infoAterInsert, 
+                    infoComment: infoAfterInsert, 
                     bizfullname,
                     authorID, 
                     ctx 
                 });
                 if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
 
-                infoAterInsert = await MEDIA__COMMENT_FILE_COLL
-                    .findById(infoAterInsert._id)
+                infoAfterInsert = await MEDIA__COMMENT_FILE_COLL
+                    .findById(infoAfterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
 
-                infoAterInsert.receivers = infoAfterCreateNoti.data;
+                infoAfterInsert.receivers = infoAfterCreateNoti.data;
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

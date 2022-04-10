@@ -252,8 +252,8 @@ class Model extends BaseModel {
                 }
 
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 // Cập nhật amountChecklist hoặc amountSubtask cho việc cha
@@ -280,11 +280,11 @@ class Model extends BaseModel {
                     let isChecklist         = type === 2;
 
                     if(!parentID) {
-                        taskID = infoAterInsert._id;
+                        taskID = infoAfterInsert._id;
                         webUrl = `/pcm/detail/${taskID}`;
                         languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
                     } else {
-                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAterInsert._id}`;
+                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAfterInsert._id}`;
                         languageKey = isChecklist ? LANGUAGE_KEYS.CREATE_CHECKLIST_PCM : LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
                     }
 
@@ -346,7 +346,7 @@ class Model extends BaseModel {
                             },
                             subColl: {
                                 kind: "pcm_plan_task",
-                                item: infoAterInsert._id
+                                item: infoAfterInsert._id
                             },
                             type: 1 // InApp (Socket)
                         })
@@ -363,7 +363,7 @@ class Model extends BaseModel {
                 }
 
                 const infoTask = await PCM_PLAN_TASK_COLL
-                    .findById(infoAterInsert._id)
+                    .findById(infoAfterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();

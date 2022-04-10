@@ -39,14 +39,14 @@ class Model extends BaseModel {
                 if(checkExist)
                     return resolve({ error: true, message: "App của công ty đã tồn tại", keyError: "app_company_exist", status: 400 });
 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 422 });
 
                 // Cập nhật endTime cho app user
                 await AUTH__APP_USER_COLL.updateMany({ app, company }, { $set: { endTime }});
                 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

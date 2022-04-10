@@ -258,8 +258,8 @@ class Model extends BaseModel {
                     updateContract.remainingPayment = Number(updateContract.remainingPayment)+Number(remainingPayment)
                 }
                 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
               
                 // Cập nhật các trường thông tin cho hợp đồng
@@ -277,7 +277,7 @@ class Model extends BaseModel {
                     remainingPayment: Number(updateContract.remainingPayment),
                 })
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

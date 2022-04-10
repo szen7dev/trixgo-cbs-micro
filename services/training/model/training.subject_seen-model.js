@@ -71,14 +71,14 @@ class Model extends BaseModel {
                         dataInsert.type = type;
                     }
 
-                    let infoAterInsert = await this.insertData(dataInsert);
+                    let infoAfterInsert = await this.insertData(dataInsert);
     
-                    if(!infoAterInsert)
+                    if(!infoAfterInsert)
                         return resolve({ error: true, message: "Can't insert",  keyError: KEY_ERROR.INSERT_FAILED });
 
                     // Cập nhật amountUserViews
                     await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, { $inc: { amountUserViews: 1, amountViews: 1 }}, { new:true });
-                    return resolve({ error: false, data: infoAterInsert, status: 200 });
+                    return resolve({ error: false, data: infoAfterInsert, status: 200 });
                 }
             
             } catch (error) {
