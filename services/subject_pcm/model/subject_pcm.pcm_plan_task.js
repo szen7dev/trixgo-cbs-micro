@@ -670,19 +670,19 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
-                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
+                let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 // Cập nhật amountFinishedChecklist hoặc amountFinishedSubtask cho việc cha
-                if(infoAterUpdate.parent && status == 3){
+                if(infoAfterUpdate.parent && status == 3){
                     // Việc con
-                    if(infoAterUpdate.type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountFinishedSubtask: 1}})
+                    if(infoAfterUpdate.type == 1){
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedSubtask: 1}})
                     }else{
                         // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
 
@@ -692,7 +692,7 @@ class Model extends BaseModel {
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
                     const webUrl = `/pcm/detail/${taskID}`;
-                    let { name: taskName, project, contract } = infoAterUpdate;
+                    let { name: taskName, project, contract } = infoAfterUpdate;
                     
                     const dataSend = {
                         app: APP_KEYS.PCM_PLAN_TASK,
@@ -728,7 +728,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

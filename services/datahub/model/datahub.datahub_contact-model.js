@@ -104,7 +104,7 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "cannot_update", status: 403 });
                 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

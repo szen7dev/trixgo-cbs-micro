@@ -96,11 +96,11 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 
-                let infoAterUpdate = await OPERATION__UTILITY_COLL.findByIdAndUpdate(utilityID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await OPERATION__UTILITY_COLL.findByIdAndUpdate(utilityID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
  
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

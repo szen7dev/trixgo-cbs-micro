@@ -173,11 +173,11 @@ class Model extends BaseModel {
                     dataUpdate.quantity     = quantity;
                 }
 
-                let infoAterUpdate = await BUDGET__GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await BUDGET__GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget_group", status: 403 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -418,11 +418,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterUpdate = await BUDGET__GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await BUDGET__GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

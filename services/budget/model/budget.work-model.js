@@ -244,8 +244,8 @@ class Model extends BaseModel {
                     dataUpdate.forecastVatAmount       = Number(forecastQuantity)*Number(forecastVatUnitPrice);
                 }                
 
-                let infoAterUpdate = await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget_work", status: 403 });
 
                 /**
@@ -255,7 +255,7 @@ class Model extends BaseModel {
                  let InfoItemAfterUpdate          = await BUDGET__ITEM_MODEL.updateValue({ option: 1, itemID: infoWork.item, userID })
                  let InfoBudgetAfterUpdate        = await BUDGET_MODEL.updateValue({ option: 1, budgetID: infoWork.budget, userID })                  
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -479,11 +479,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterUpdate = await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

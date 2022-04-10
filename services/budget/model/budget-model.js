@@ -199,11 +199,11 @@ class Model extends BaseModel {
                     dataUpdate.finalVatRevenue     = finalVatRevenue;
                 }
 
-                let infoAterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -450,11 +450,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await BUDGET_COLL.findByIdAndUpdate(budgetID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

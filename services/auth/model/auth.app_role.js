@@ -109,11 +109,11 @@ class Model extends BaseModel {
                     }
                 }
                 
-                let infoAterUpdate = await AUTH__APP_ROLE_COLL.findByIdAndUpdate(appRoleID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await AUTH__APP_ROLE_COLL.findByIdAndUpdate(appRoleID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
  
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

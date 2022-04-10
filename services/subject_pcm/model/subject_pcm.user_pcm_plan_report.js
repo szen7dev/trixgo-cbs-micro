@@ -114,12 +114,12 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 dataUpdate.role = role;
-                let infoAterUpdate = await USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate, { new: true });
+                let infoAfterUpdate = await USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate, { new: true });
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't update user_pcm_plan_report", keyError: KEY_ERROR.UPDATE_FAILED, status: 200 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

@@ -340,8 +340,8 @@ class Model extends BaseModel {
                 // console.log('updateContract===========>>>>>>')
                 // console.log(updateContract)
 
-                let infoAterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
 
                 /**
@@ -374,7 +374,7 @@ class Model extends BaseModel {
                     remainingPayment: Number(remainingPayment)
                 })    
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

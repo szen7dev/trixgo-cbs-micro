@@ -132,11 +132,11 @@ class Model extends BaseModel {
 
     //             console.log({ contractPaymentID, dataUpdate })
              
-    //             let infoAterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
-    //             if(!infoAterUpdate)
+    //             let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
+    //             if(!infoAfterUpdate)
     //                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
               
-    //             return resolve({ error: false, data: infoAterUpdate, status: 200 });
+    //             return resolve({ error: false, data: infoAfterUpdate, status: 200 });
     //         } catch (error) {
     //             return resolve({ error: true, message: error.message, status: 500 });
     //         }

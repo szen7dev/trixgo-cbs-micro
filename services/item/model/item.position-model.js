@@ -111,9 +111,9 @@ class Model extends BaseModel {
                 name        && (dataUpdate.name = name);
                 description && (dataUpdate.description = description);
 
-                let infoAterUpdate = await ITEM__POSITION_COLL.findByIdAndUpdate(positionID, dataUpdate, { new: true });
+                let infoAfterUpdate = await ITEM__POSITION_COLL.findByIdAndUpdate(positionID, dataUpdate, { new: true });
 
-                if(!infoAterUpdate) {
+                if(!infoAfterUpdate) {
                     return resolve({
 						error: true,
 						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -122,7 +122,7 @@ class Model extends BaseModel {
 					})
                 }
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

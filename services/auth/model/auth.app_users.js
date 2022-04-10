@@ -83,14 +83,14 @@ class Model extends BaseModel {
                 if(!checkExist)
                     return resolve({ error: true, message: "App user không tồn tại", keyError: "app_user_not_exist", status: 200 });
                 
-                let infoAterUpdate = await AUTH__APP_USER_COLL.findOneAndUpdate({ app: appID, company: companyID, user: memberID}, { 
+                let infoAfterUpdate = await AUTH__APP_USER_COLL.findOneAndUpdate({ app: appID, company: companyID, user: memberID}, { 
                     level, userUpdate: userID, modifyAt: new Date() 
                 }, { new: true });
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 200 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
