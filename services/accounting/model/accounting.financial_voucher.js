@@ -276,6 +276,16 @@ class AccountingFinancialVoucher extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 /**
+                 * BA-Author: HiepNH/10/4/2022
+                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
+                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
+                 * +++budgetWorkID cũ
+                 * +++budgetWorkID mới
+                 * 
+                 * !!!!Check xem "authorID/customer/warehouse" có thuộc companyID hay không?
+                */
+
+                /**
                  * Hiepnh (27/12/2019)
                  * !!!!Check xem "authorID/customer/warehouse" có thuộc companyID hay không?
                 */

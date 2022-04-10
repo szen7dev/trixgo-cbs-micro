@@ -5,6 +5,8 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema    = require('mongoose').Schema;
 /**
  * NGÂN SÁCH
+ * 1-Cập nhật ngân sách tổng thể: kế hoạch, thực hiện, dự trù còn lại (ngân sách, hạng mục, nhóm, công việc)
+ * 2-Bổ sung vào kế toán các trường phụ tính cập nhật ngân sách
  */
 module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**

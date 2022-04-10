@@ -20,23 +20,33 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     /**
      * LINK NGÂN SÁCH
      */
+    //_________Link tới dự án
+    budgetProject: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
+    }, 
+    //_________Link tới hợp đồng
+    budgetContract: {
+        type: Schema.Types.ObjectId,
+        ref: 'contract'
+    },     
     //_________Ngân sách
     budget: {
         type: Schema.Types.ObjectId,
         ref: 'budget'
     },
     //_________Hạng mục
-    item: {
+    budgetItem: {
         type: Schema.Types.ObjectId,
         ref: 'budget_item'
     },
     //_________Nhóm
-    group: {
+    budgetGroup: {
         type: Schema.Types.ObjectId,
         ref: 'budget_group'
     },
     //_________Công việc
-    work: {
+    budgetWork: {
         type: Schema.Types.ObjectId,
         ref: 'budget_work'
     },
@@ -47,20 +57,15 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
      */
     updown: { type: Number, default: 1 }, 
     /**
-     * LINK DỰ ÁN, HỢP ĐỒNG, IPC,...
+     * LINK HỢP ĐỒNG, IPC,...
      */
-    //_________Thuộc dự án phòng ban
-    project: {
-        type: Schema.Types.ObjectId,
-        ref: 'department'
-    }, 
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     }, 
     //_________Kỳ thanh toán
-    ipc: {
+    contractIpc: {
         type: Schema.Types.ObjectId,
         ref: 'contract_ipc'
     }, 
