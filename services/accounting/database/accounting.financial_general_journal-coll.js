@@ -12,7 +12,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
-    //_________Đơn vị cơ sở (khai báo danh mục)
+    //_________Đơn vị cơ sở
     funda: {
         type: Schema.Types.ObjectId,
         ref: 'funda'
@@ -40,10 +40,14 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'budget_work'
     },
-    //_________Ghi nhận thực hiện ngân sách hoặc giảm trừ thực hiện ngân sách (1/-1)
+    /**
+     * Ghi nhận thực hiện ngân sách
+     * 1-Ghi nhận tăng ngân sách thực hiện
+     * 2-Ghi nhận giảm ngân sách thực hiện (hoàn ứng,...)
+     */
     updown: { type: Number, default: 1 }, 
     /**
-     * LINK DỰ ÁN, PHÒNG BAN
+     * LINK DỰ ÁN, HỢP ĐỒNG, IPC,...
      */
     //_________Thuộc dự án phòng ban
     project: {
@@ -55,22 +59,19 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     }, 
-    /**
-     * IPC, KHOẢN MỤC PHÍ
-     */
     //_________Kỳ thanh toán
     ipc: {
         type: Schema.Types.ObjectId,
         ref: 'contract_ipc'
     }, 
     /**
-     * Loại khoản mục (NEW***)
+     * Phân loại khoản mục phí
      * 1-Chung
      * 2-Chi phí
      * 3-Doanh thu
      */
     feeType: { type: Number, default: 1 },
-    //_________Khoản mục phí (NEW***)
+    //_________Khoản mục phí
     fee: {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
@@ -97,6 +98,12 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     advancePayment: { type: Number, default: 0 },
     //_________Phiếu có hủy hay không
     cancel: { type: Number, default: 0 },
+    /**
+     * Phân biệt phiếu tạm ứng hay thanh toán
+     * 0-Thanh toán
+     * 1-Tạm ứng
+     */
+    advancePayment: { type: Number, default: 0 }, 
     /**
      * KẾ TOÁN
      */
@@ -130,22 +137,19 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
-    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher) (NEW***)
+    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
     date: { type: Date, default: Date.now },
     //_________Diễn giải nội dung
     name: String,
     //_________Ghi chú
     note: String,   
-    /**
-     * Phân biệt phiếu tạm ứng hay thanh toán
-     * 0-Thanh toán
-     * 1-Tạm ứng
-     */
-    advancePayment: { type: Number, default: 0 }, 
     //_________Khối lượng/Số lượng (mặc định là 0 để phục vụ việc hạch toán chi phí vào trực tiếp hàng hoá: lô đất, căn hộ)
     quantity: { type: Number, default: 0 },  
-    //_________Đơn giá (được tính dự theo thành tiền/khối lượng)
-    // Khi chạy được giá vốn => nhân ra thành tiền và update cho trường Amount
+    /**
+     * Đơn giá
+     * - Được tính dự theo thành tiền/khối lượng
+     * - Khi chạy được giá vốn => nhân ra thành tiền và update cho trường Amount
+     */
     unitprice: { type: Number, default: 0 },   
     //_________Thành tiền
     amount: { type: Number, default: 0 }, 
