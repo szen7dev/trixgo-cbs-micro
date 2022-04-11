@@ -110,6 +110,13 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
      */
     advancePayment: { type: Number, default: 0 }, 
     /**
+     * Có phải là hóa đơn dịch vụ hay không
+     * 0-Không phải
+     * 1-Mua vào
+     * 2-Bán ra
+     */
+    vat: { type: Number, default: 0 }, 
+    /**
      * KẾ TOÁN
      */
     //_________Tài khoản nợ
@@ -170,9 +177,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     //_________Thành tiền ngoại tệ
     fcuAmount: { type: Number, default: 0 }, 
     //_________Có in ra trên phiếu để tính giá trị hay không
-    cash: { type: Number, default: 1 },    
-    //_________Có hóa đơn hay không
-    vat: { type: Number, default: 0 },  
+    cash: { type: Number, default: 1 },     
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
