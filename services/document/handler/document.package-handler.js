@@ -131,6 +131,7 @@ module.exports = {
         params: {
 			departmentID     : { type: "string", optional: true },
 			packageID        : { type: "string", optional: true },
+			parentID         : { type: "string", optional: true },
 			isShowAll        : { type: "string", optional: true },
             // =========================
             lastestID       : { type: "string", optional: true },
@@ -143,7 +144,7 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { isShowAll, packageID, lastestID, departmentID, keyword, select, populates, limit } = ctx.params;
+                const { isShowAll, packageID, lastestID, departmentID, parentID, keyword, select, populates, limit } = ctx.params;
                 let resultAfterCallHandler;
                 
                 if(packageID){
@@ -152,7 +153,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
-                        isShowAll, departmentID, userID, lastestID, keyword, select, populates, limit
+                        isShowAll, departmentID, parentID, userID, lastestID, keyword, select, populates, limit
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
