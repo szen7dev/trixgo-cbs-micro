@@ -57,6 +57,23 @@ exports.compareTwoTime = function (time1, time2) {
     }
 };
 
+exports.isValidDate = function (date) {
+    try {
+        const parse = Date.parse(date);
+        if(isNaN(parse)) return false;
+
+        const d = new Date(date);
+
+        if(d.toString() === 'Invalid Date') return false;
+        if(d instanceof Date) return true;
+
+        return false;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 /**
  * Get the number of seconds between two dates
  */

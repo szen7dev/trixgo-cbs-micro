@@ -127,8 +127,8 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-            type : { type: "number", optional: true },
-            isMember : { type: "number", optional: true },
+            type : { type: "string", optional: true },
+            isMember : { type: "string", optional: true },
             budgetID : { type: "string", optional: true },
             companyID : { type: "string", optional: true },
             projectID : { type: "string", optional: true },
