@@ -137,7 +137,7 @@ class Model extends BaseModel {
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: authorID, select: "_id company"
                 })
-
+                
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: assigneeID, select: "_id company"
                 })
@@ -150,7 +150,7 @@ class Model extends BaseModel {
                 if(!infoAssignee.error){
                     dataInsert.companyOfAssignee = infoAssignee.data.company;
                 }
-
+                
                 // Việc con hoặc check list
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
