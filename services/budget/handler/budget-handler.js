@@ -18,8 +18,8 @@
         auth: "required",
         params: {
             type                    : { type: "number" },
-            projectID               : { type: "string", optional: true },
-            contractID              : { type: "string", optional: true },
+            projectID               : { type: "string", optional: true }, // Để lại sau
+            contractID              : { type: "string", optional: true }, // Để lại sau
             name                    : { type: "string" },
             sign                    : { type: "string", optional: true },
             description             : { type: "string", optional: true },
