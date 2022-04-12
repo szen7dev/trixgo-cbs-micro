@@ -10,10 +10,12 @@ const DATAHUB_CONTACT_MODEL                   = require('../model/datahub.datahu
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
-	 * Func: Thêm datahub contractor
+	 * Name: Insert ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
 	 */
     insert: {
+        auth: "required",
         params: {
             name                : { type: "string" },
             taxid               : { type: "string" },
@@ -39,27 +41,28 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
-	 * Func: Sửa datahub contractor
+	 * Name: Update✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
 	 */
     update: {
+        auth: "required",
         params: {
-            datahubContractorID: { type: "string" },
-            field             : { type: "string" },
-            contractor        : { type: "string" },
-            areas             : { type: "array", optional: true },
-            ranking           : { type: "number", optional: true },
-            note              : { type: "string", optional: true },
-            status            : { type: "number", optional: true },
+            contactID: { type: "string" },
+            name                : { type: "string" },
+            taxid               : { type: "string" },
+            address             : { type: "string",  optional: true },
+            sign                : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  datahubContractorID, field, areas, areasRemove, contractor, ranking, note, status } = ctx.params;
+                let {  contactID, name, sign, address, taxid, note } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.update({
-                    datahubContractorID, field, areas, areasRemove, contractor, ranking, note, status, userID
+                    contactID, name, sign, address, taxid, note, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -70,21 +73,23 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv ✅
-     * Func: Xóa datahub contractor
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     remove: {
+        auth: "required",
         params: {
-            datahubContractorID: { type: "string" },
+            contactID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubContractorID } = ctx.params;
+                let { contactID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.remove({
-                    datahubContractorID 
+                    contactID 
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -95,12 +100,15 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
-     * Func: get info and get list datahub contractor
+     * Name: Get info and Get list ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
-            datahubContractorID : { type: "string", optional: true },
+            contactID : { type: "string", optional: true },
+
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -111,13 +119,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubContractorID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { contactID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(datahubContractorID){
+                if(contactID){
                     resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.getInfo({
-                        datahubContractorID, select, populates
+                        contactID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.getList({

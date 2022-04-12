@@ -30,14 +30,15 @@ module.exports = {
                 const { fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
                     project, job, cash, vat, note, updown, advancePayment , 
-                    date, subtype } = ctx.params;
+                    date, subtype, budgetWorkID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
                     authorID: userID, companyID: company._id, fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
                     project, job, cash, vat, note, updown, advancePayment , 
-                    date, subtype, 
+                    date, subtype, budgetWorkID
                 });
+                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][INSERT_FULL] ${error}`);
@@ -113,6 +114,37 @@ module.exports = {
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][GET_INFO] ${error}`);
                 return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Dev: Hiepnh ✅
+     * Func: Tổng hợp ngân sách đã thực hiện
+     * Date: 10/4/2022
+     */
+     calImpleBudget: {
+        auth: "required",
+        params: {
+            workID : { type: "string", optional: true },
+            groupID : { type: "string", optional: true },
+            itemID : { type: "string", optional: true },
+            budgetID : { type: "string", optional: true },
+        },
+        async handler(ctx) {  
+            try {
+                await this.validateEntity(ctx.params);
+                let { workID, groupID, itemID, budgetID } = ctx.params;
+            
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.calImpleBudget({
+                    workID, groupID, itemID, budgetID, userID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
             }
         }
     },

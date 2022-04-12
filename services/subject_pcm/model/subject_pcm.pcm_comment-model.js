@@ -217,9 +217,9 @@ class Model extends BaseModel {
                 files   && (dataInsert.files    = files);
                 images  && (dataInsert.images   = images);
 
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert);
 
-                if(!infoAterInsert) {
+                if(!infoAfterInsert) {
                     return resolve({
                         error: true,
                         message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
@@ -249,7 +249,7 @@ class Model extends BaseModel {
 								const infoAfterInserted = await PCM_FILE_MODEL.insert({
 									fileID: imageID,
                                     taskID,
-                                    commentID: infoAterInsert._id,
+                                    commentID: infoAfterInsert._id,
                                     contractID: infoTask.contract,
                                     projectID: infoTask.project?._id,
                                     groupID: infoTask.group,
@@ -279,7 +279,7 @@ class Model extends BaseModel {
                 if(parentID){
                     await PCM_COMMENT_COLL.findByIdAndUpdate(parentID, {
                         $set: {
-                            lastestReplyID: infoAterInsert._id
+                            lastestReplyID: infoAfterInsert._id
                         },
                         $inc: {
                             amountCommentReply: 1
@@ -304,16 +304,16 @@ class Model extends BaseModel {
                 let listReceivers   = [...new Set([author?._id.toString(), assignee.toString(), ...related])];
                 let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
 
-                switch (infoAterInsert.type) {
+                switch (infoAfterInsert.type) {
                     case 1:
                         languageKey     = LANGUAGE_KEYS.CREATE_COMMENT_PCM;
                         descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
-                        webUrl          = `/pcm/detail/${taskID}#comment_${infoAterInsert._id}`;
+                        webUrl          = `/pcm/detail/${taskID}#comment_${infoAfterInsert._id}`;
                         break;
                     case 2:
                         languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
                         descriptionMSS  = `${bizfullname} đã tạo 1 phản hồi liên quan`;
-                        webUrl          = `/pcm/detail/${taskID}#response_${infoAterInsert._id}`;
+                        webUrl          = `/pcm/detail/${taskID}#response_${infoAfterInsert._id}`;
                         break;
                     default:
                         break;
@@ -340,7 +340,7 @@ class Model extends BaseModel {
                     subColl: {
                         kind: 'pcm_comment',
                         item: {
-                            _id: infoAterInsert._id
+                            _id: infoAfterInsert._id
                         }
                     },
                 }
@@ -375,21 +375,21 @@ class Model extends BaseModel {
                         },
                         subColl: {
                             kind: "pcm_comment",
-                            item: infoAterInsert._id
+                            item: infoAfterInsert._id
                         },
                         type: 1 // InApp (Socket)
                     })
                 }
 
-                infoAterInsert = await PCM_COMMENT_COLL
-                    .findById(infoAterInsert._id)
+                infoAfterInsert = await PCM_COMMENT_COLL
+                    .findById(infoAfterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
 
-                infoAterInsert.receivers = arrReceiver;
+                infoAfterInsert.receivers = arrReceiver;
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 console.error(error);
                 return resolve({ error: true, message: error.message, status: 500 });

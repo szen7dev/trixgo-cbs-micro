@@ -4,9 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- * HỢP ĐỒNG KINH TẾ
- * NGÂN SÁCH DỰ ÁN => VỚI CHỦ ĐẦU TƯ (HỢP ĐỒNG MUA VÀO)
- * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
+ * HẠNG MỤC NGÂN SÁCH
  */
 module.exports  = DATABASE_MIDDLEWARE("budget_item", { 
     //_________Công ty 
@@ -58,6 +56,9 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
     description: String,
     //_________Ghi chú
     note: String,
+    /**
+     * NGÂN SÁCH
+     */
     //______Khối lượng
     quantity: {
         type: Number,
@@ -83,6 +84,27 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
         type: Number,
         default : 0
     },
+    /**
+     * THỰC HIỆN-KHÔNG GỒM VAT
+     */
+    //______Khối lượng thực hiện
+    impleQuantity: {
+        type: Number,
+        default : 0
+    },
+    //______Đơn giá thực hiện
+    impleUnitPrice: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền thực hiện
+    impleAmount: {
+        type: Number,
+        default : 0
+    },
+    /**
+     * DỰ BÁO
+     */        
     //______Dự báo Khối lượng
     forecastQuantity: {
         type: Number,

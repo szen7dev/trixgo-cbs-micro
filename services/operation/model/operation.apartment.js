@@ -74,11 +74,11 @@ class Model extends BaseModel {
                     dataInsert.level  = 2;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
  
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -185,11 +185,11 @@ class Model extends BaseModel {
                     dataInsert.$pull = dataPull;
                 }
                 
-                let infoAterUpdate = await OPERATION__APARTMENT_COLL.findByIdAndUpdate(apartmentID, dataUpdate, { new: true });
-                if(!infoAterUpdate)
+                let infoAfterUpdate = await OPERATION__APARTMENT_COLL.findByIdAndUpdate(apartmentID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
  
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

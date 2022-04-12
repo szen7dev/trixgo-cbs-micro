@@ -10,8 +10,8 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  */
 const FIN__CASH_FLOW_PLAN_COLL          = require('../database/fin.cash_flow_plan-coll');
 
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR }                     = require('../../../tools/keys/index');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+const { KEY_ERROR }                     = require('../../../tools/keys/index')
 
 /**
  * import inter-model, exter-model
@@ -20,23 +20,29 @@ class Model extends BaseModel {
     constructor() {
         super(FIN__CASH_FLOW_PLAN_COLL);
     }
+
     /**
-     * Name: insert cash flow ✅
-     * Author: Depv
+     * Name: Insert ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
-    insert({ companyID, contractID, fundaID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx }) { 
+    insert({ companyID, fundaID, contractID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value };
+                if(!name || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value, admins: [userID], members: [userID] };
 
                 if(checkObjectIDs(contractID)){
                     const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                         contractID
                     })
-                    // console.log('===========================')
-                    // console.log(infoContract)
+
+                    // Trường hợp lập kế hoạch cho Hợp đồng của Dự án thuộc công ty khác
                     if(infoContract){
                         const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+
                         dataInsert.outin = outin
                         dataInsert.real = real
                         dataInsert.field = field
@@ -46,6 +52,7 @@ class Model extends BaseModel {
                         dataInsert.sellerInfo = sellerInfo
                         dataInsert.company = company
                         dataInsert.project = project
+                        dataInsert.contract = contractID
                     }
                 }
 
@@ -65,10 +72,6 @@ class Model extends BaseModel {
                     dataInsert.property = Number(property);
                 }
 
-                if(name){
-                    dataInsert.name = name;
-                }
-
                 if(sign){
                     dataInsert.sign = sign;
                 }
@@ -77,11 +80,11 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -89,137 +92,96 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update cash flow ✅
-     * Author: Depv
+     * Name: Update ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
      */
-    // update({ contractPaymentID, ipc, date, name, sign, description, value, userID  }){
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             /**
-    //              * DECALARTION VARIABLE (1)
-    //              */
-    //             let dataUpdate = { userUpdate: userID };
-    //             if(!checkObjectIDs(contractPaymentID))
-    //                 return resolve({ error: true, message: "contractPaymentID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
-
-    //             if(ipc){
-    //                 dataUpdate.ipc =ipc;
-    //                 let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
-    //                 if(!infoIPC)
-    //                     return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
-    //                 dataUpdate.type =infoIPC.type;
-    //             }
-
-    //             if(date){
-    //                 dataUpdate.date =date;
-    //             }
-
-    //             if(name){
-    //                 dataUpdate.name =name;
-    //             }
-
-    //             if(sign){
-    //                 dataUpdate.sign =sign;
-    //             }
-
-    //             if(description){
-    //                 dataUpdate.description = description;
-    //             }
-                
-    //             if(value){
-    //                 dataUpdate.value =value;
-    //             }
-
-    //             console.log({ contractPaymentID, dataUpdate })
-             
-    //             let infoAterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
-    //             if(!infoAterUpdate)
-    //                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
-              
-    //             return resolve({ error: false, data: infoAterUpdate, status: 200 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
-
-    /**
-     * Name: Remove cash flow ✅
-     * Author: Depv
-     */
-    // remove({ contractPaymentID, userID }) { 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!checkObjectIDs(contractPaymentID))
-    //                 return resolve({ error: true, message: 'Request params contractPaymentID invalid' });
-
-    //             let checkAuthor = await FIN__CASH_FLOW_PLAN_COLL.findOne({ _id: contractPaymentID, userCreate: userID });
-    //             if(!checkAuthor)
-    //                 return resolve({ error: true, message: 'Bạn không có quyền xóa hoặc ID không tồn tại', keyError: KEY_ERROR.DELETE_FAILED }); 
-                
-    //             let infoAterRemove = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndDelete(contractPaymentID);
-    //             if(!infoAterRemove)
-    //                 return resolve({ error: true, message: "can't_remove", keyError: KEY_ERROR.DELETE_FAILED });
- 
-    //             return resolve({ error: false, message: "Xóa thành công" });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
-
-    /**
-     * Name: get info cash flow ✅
-     * Author: Depv
-     */
-    // getInfo({ contractPaymentID, select, populates }){
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if (!checkObjectIDs(contractPaymentID))
-    //                 return resolve({ error: true, message: 'param_invalid' });
-
-    //             if(populates && typeof populates === 'string'){
-	// 				if(!IsJsonString(populates))
-	// 					return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-	// 				populates = JSON.parse(populates);
-	// 			}else{
-	// 				populates = {
-    //                     path: "",
-    //                     select: ""
-    //                 }
-    //             }
-
-    //             let infoContractIPC = await FIN__CASH_FLOW_PLAN_COLL.findById(contractPaymentID)
-    //                             .select(select)
-    //                             .populate(populates)
-
-	// 			if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
-
-    //             return resolve({ error: false, data: infoContractIPC });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
-
-    /**
-     * Name  : Danh sách cash flow ✅
-     * Author: Depv
-     */
-    getList({ companyID, projectID, contractID, outin, type, property, priority,
-        keyword, limit = 20, lastestID, select, populates= {} }) { 
+    update({ cashFlowID, contractID, name, sign, note, date, value, userID, ctx  }){
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20;
-                } else{
-                    limit = +limit;
+                if(!name || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID, name };
+
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs(cashFlowID))
+                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                if(checkObjectIDs(contractID)){
+                    const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                        contractID
+                    })
+
+                    // Trường hợp lập kế hoạch cho Hợp đồng của Dự án thuộc công ty khác
+                    if(infoContract){
+                        const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+                        dataUpdate.outin = outin
+                        dataUpdate.real = real
+                        dataUpdate.field = field
+                        dataUpdate.chair = chair
+                        dataUpdate.personInCharge = personInCharge
+                        dataUpdate.buyerInfo = buyerInfo
+                        dataUpdate.sellerInfo = sellerInfo
+                        dataUpdate.company = company
+                        dataUpdate.project = project
+                        dataInsert.contract = contractID
+                    }
                 }
 
-                let sortBy;
-                let conditionObj = {};
-                let keys	     = ['createAt__-1', '_id__-1'];
+                if(date){
+                    dataUpdate.date =date;
+                }
+
+                if(sign){
+                    dataUpdate.sign = sign;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
+                }
+
+                if(!isNaN(value) && Number(value) >= 0){
+                    dataUpdate.value     = value;
+                }
+             
+                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
               
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+
+    /**
+     * Name: Get info ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+     getInfo({ cashFlowID, 
+        select, populates }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(cashFlowID))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -232,32 +194,89 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = companyID;
-                }
+                let info = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
+                                .select(select)
+                                .populate(populates)
 
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
-                }
+				if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID;
-                }
+                return resolve({ error: false, data: info });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
-                if(!isNaN(outin)){
-                    conditionObj.outin = Number(outin);
-                }
+    /**
+     * Name  : Get list ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    getList({ companyID, projectID, contractID, parentID, outin, type, property, priority,
+        keyword, limit = 50, lastestID, select, populates= {} }) { 
+        return new Promise(async (resolve) => {
+            try {
 
+                if(limit > 50){
+                    limit = 50
+                }else{
+                    limit = +limit;
+                }
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                 let sortBy;
+                 let conditionObj = {};
+                 let keys	     = ['createAt__-1', '_id__-1'];
+             
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+              
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                if(outin){
+                    conditionObj.outin = outin
+                }
                 if(!isNaN(type)){
                     conditionObj.type = Number(type);
                 }
-
                 if(!isNaN(property)){
                     conditionObj.property = Number(property);
                 }
-
                 if(!isNaN(priority)){
                     conditionObj.priority = Number(priority);
+                }
+
+                if(checkObjectIDs(companyID)){
+                    conditionObj.company = companyID
+                }
+                if(checkObjectIDs(projectID)){    
+                    conditionObj.project = projectID
+                }
+                if(checkObjectIDs(contractID)){    
+                    conditionObj.contract = contractID
+                }
+                if(checkObjectIDs(parentID)){    
+                    conditionObj.parent = parentID
                 }
 
                 if(keyword){
@@ -266,8 +285,9 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
-
                 let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await FIN__CASH_FLOW_PLAN_COLL.findById(lastestID);
 					if(!infoData)
@@ -290,9 +310,10 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean(); 
-
+                
+                // GET TOTAL RECORD
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data" });
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){

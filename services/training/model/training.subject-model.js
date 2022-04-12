@@ -71,16 +71,16 @@ class Model extends BaseModel {
                     dataInsert.parent = parent;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert);
 
-                if(!infoAterInsert)
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Can't insert subject",  keyError: KEY_ERROR.INSERT_FAILED });
 
                 if(checkObjectIDs(parent)){
                     await TRAINING__SUBJECT_COLL.findByIdAndUpdate(parent, { $inc: { amountLessions: 1 }}, { new: true });
                 }
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -131,12 +131,12 @@ class Model extends BaseModel {
                     dataUpdate.content = content;
                 }
                 
-                let infoAterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, dataUpdate, { new: true });
+                let infoAfterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndUpdate(subjectID, dataUpdate, { new: true });
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't insert subject", keyError: KEY_ERROR.UPDATE_FAILED });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -169,14 +169,14 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                let infoAterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndDelete(subjectID);
+                let infoAfterUpdate = await TRAINING__SUBJECT_COLL.findByIdAndDelete(subjectID);
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't remove subject", keyError: KEY_ERROR.DELETE_FAILED  });
 
                 // Cập nhật lại amountLessions trong chủ đề nếu xóa Bài học
-                if(infoAterUpdate.parent){
-                    await TRAINING__SUBJECT_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountLessions: -1 }}, { new: true });
+                if(infoAfterUpdate.parent){
+                    await TRAINING__SUBJECT_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountLessions: -1 }}, { new: true });
                 }
 
                 return resolve({ error: false, message: "Remove success", status: 200 });

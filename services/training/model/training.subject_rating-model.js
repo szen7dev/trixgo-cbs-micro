@@ -66,7 +66,7 @@ class Model extends BaseModel {
                 if(checkExist)
                     return resolve({ error: true, message: "Bạn đã đánh giá bài học này", status: 400 });
 
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert);
                 // Update amountStars cho subject(lession)
                 let { amountStars } = await TRAINING__SUBJECT_COLL.findById(lession);
                 let starAVG = (Number(amountStars) + Number(score))/2;
@@ -74,10 +74,10 @@ class Model extends BaseModel {
                 // Cập nhật amountStars
                 await TRAINING__SUBJECT_COLL.findByIdAndUpdate(lession, { amountStars: starAVG }, { new: true });
 
-                if(!infoAterInsert)
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Can't insert subject", status: 403 });
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

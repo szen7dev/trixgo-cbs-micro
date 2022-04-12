@@ -252,8 +252,8 @@ class Model extends BaseModel {
                 }
 
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
-                let infoAterInsert = await this.insertData(dataInsert);
-                if(!infoAterInsert)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 // Cập nhật amountChecklist hoặc amountSubtask cho việc cha
@@ -280,11 +280,11 @@ class Model extends BaseModel {
                     let isChecklist         = type === 2;
 
                     if(!parentID) {
-                        taskID = infoAterInsert._id;
+                        taskID = infoAfterInsert._id;
                         webUrl = `/pcm/detail/${taskID}`;
                         languageKey = LANGUAGE_KEYS.CREATE_NEW_TASK;
                     } else {
-                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAterInsert._id}`;
+                        webUrl = `/pcm/detail/${taskID}#${isChecklist ? 'checklist' : 'childtask'}_${infoAfterInsert._id}`;
                         languageKey = isChecklist ? LANGUAGE_KEYS.CREATE_CHECKLIST_PCM : LANGUAGE_KEYS.CREATE_CHILDTASK_PCM;
                     }
 
@@ -346,7 +346,7 @@ class Model extends BaseModel {
                             },
                             subColl: {
                                 kind: "pcm_plan_task",
-                                item: infoAterInsert._id
+                                item: infoAfterInsert._id
                             },
                             type: 1 // InApp (Socket)
                         })
@@ -363,7 +363,7 @@ class Model extends BaseModel {
                 }
 
                 const infoTask = await PCM_PLAN_TASK_COLL
-                    .findById(infoAterInsert._id)
+                    .findById(infoAfterInsert._id)
                     .select(select)
                     .populate(populates)
                     .lean();
@@ -670,19 +670,19 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
-                let infoAterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
+                let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 // Cập nhật amountFinishedChecklist hoặc amountFinishedSubtask cho việc cha
-                if(infoAterUpdate.parent && status == 3){
+                if(infoAfterUpdate.parent && status == 3){
                     // Việc con
-                    if(infoAterUpdate.type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountFinishedSubtask: 1}})
+                    if(infoAfterUpdate.type == 1){
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedSubtask: 1}})
                     }else{
                         // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
 
@@ -692,7 +692,7 @@ class Model extends BaseModel {
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
                     const webUrl = `/pcm/detail/${taskID}`;
-                    let { name: taskName, project, contract } = infoAterUpdate;
+                    let { name: taskName, project, contract } = infoAfterUpdate;
                     
                     const dataSend = {
                         app: APP_KEYS.PCM_PLAN_TASK,
@@ -728,7 +728,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

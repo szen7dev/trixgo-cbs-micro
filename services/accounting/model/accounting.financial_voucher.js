@@ -276,6 +276,16 @@ class AccountingFinancialVoucher extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 /**
+                 * BA-Author: HiepNH/10/4/2022
+                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
+                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
+                 * +++budgetWorkID cũ
+                 * +++budgetWorkID mới
+                 * 
+                 * !!!!Check xem "authorID/customer/warehouse" có thuộc companyID hay không?
+                */
+
+                /**
                  * Hiepnh (27/12/2019)
                  * !!!!Check xem "authorID/customer/warehouse" có thuộc companyID hay không?
                 */
@@ -411,12 +421,7 @@ class AccountingFinancialVoucher extends BaseModel {
                             }
                         }
 
-                        //_________Kiểm tra xem có Dự án hay không (phục vụ ngân sách dự án)
-                        if(subitem.project && _isValid(subitem.project)){
-                            dataInsert.project = subitem.project
-                        }
-
-                        //_________Nếu tạo phiếu link với khoản mục phí ứng dụng Quản lý chi phí/Ngân sách
+                        //_________Cập nhật ngân sách thực hiện
                         if(subitem.budget && _isValid(subitem.budget)){
                             let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
                             dataInsert.job = subitem.budget;
@@ -569,6 +574,7 @@ class AccountingFinancialVoucher extends BaseModel {
                             }
 
                             //_________Kiểm tra xem có Hợp đồng hay không
+                            //_________Nếu không  có thì lấy theo hợp đồng trên phiếu
                             if(subitem.contract && _isValid(subitem.contract)){
                                 dataInsert.contract = subitem.contract;
                             }else{
@@ -577,18 +583,13 @@ class AccountingFinancialVoucher extends BaseModel {
                                 }
                             }
 
-                            //_________Kiểm tra xem có Dự án hay không (phục vụ ngân sách dự án)
-                            if(subitem.project && _isValid(subitem.project)){
-                                dataInsert.project = subitem.project
-                            }
+                            //_________Cập nhật ngân sách thực hiện
+                            if(subitem.budget && _isValid(subitem.budget)){
+                                let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
+                                dataInsert.job = subitem.budget;
+                                dataInsert.group = infoGroup.group;
+                            }                            
 
-                            ////_________Nếu tạo phiếu link với khoản mục phí ứng dụng Quản lý chi phí/Ngân sách
-                            // if(subitem.budget && _isValid(subitem.budget)){
-                            //     let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
-                            //     dataInsert.job = subitem.budget;
-                            //     dataInsert.group = infoGroup.group;
-                            // }
-                            // console.log('==============Tạo mới==============>')
                             //_________Tiến hành tạo chi tiết_________//
                             let infoAfterInsert = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
                         }else{

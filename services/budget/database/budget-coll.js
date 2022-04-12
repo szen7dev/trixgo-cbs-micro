@@ -4,9 +4,10 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- * HỢP ĐỒNG KINH TẾ
- * NGÂN SÁCH DỰ ÁN => VỚI CHỦ ĐẦU TƯ (HỢP ĐỒNG MUA VÀO)
- * NGÂN SÁCH HỢP ĐỒNG/THẦU PHỤ => VỚI NHÀ THẦU (HỢP ĐỒNG BÁN RA)
+ * NGÂN SÁCH
+ * 1-Cập nhật ngân sách tổng thể: kế hoạch, thực hiện, dự trù còn lại (ngân sách, hạng mục, nhóm, công việc)
+ * 2-Bổ sung vào kế toán các trường phụ tính cập nhật ngân sách
+ * 3-Làm rõ khi ghi nhận thực hiện ngân sách thông qua kế toán, thì phần chi VAT thì hoạch toán như thế nào
  */
 module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**
@@ -37,7 +38,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-    //_________Thành viên
+    //_________Thành viên được quyền xem ngân sách
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"
@@ -93,7 +94,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
     /**
      * NGÂN SÁCH/CHI PHÍ
      */
-    //_________Ngân sách/Tổng mức đầu tư/Chi phí
+    //_________Ngân sách kế hoạch
     budget: {
         type   : Number,
         default: 0
@@ -103,6 +104,16 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type   : Number,
         default: 0
     },
+    //______Ngân sách thực hiện
+    finalBudget: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    finalVatBudget: {
+        type: Number,
+        default : 0
+    },     
     //______Dự báo ngân sách
     forecastBudget: {
         type: Number,
@@ -113,16 +124,6 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type: Number,
         default : 0
     },    
-    //______Ngân sách thực tế
-    finalBudget: {
-        type: Number,
-        default : 0
-    },
-    //______VAT
-    finalVatBudget: {
-        type: Number,
-        default : 0
-    }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

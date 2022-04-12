@@ -17,6 +17,7 @@ const CF_ACTIONS_BUDGET = {
     BUDGET_UPDATE                                                   : `${BASE_ACTIONS}_UPDATE`,
     BUDGET_REMOVE                                                   : `${BASE_ACTIONS}_REMOVE`,
     BUDGET_GET_INFO_AND_GET_LIST                                    : `${BASE_ACTIONS}_GET_INFO_AND_GET_LIST`,
+    BUDGET_UPDATE_VALUE                                             : `${BASE_ACTIONS}_UPDATE_VALUE`, 
 
     /**
     * BUDGET_ITEM
@@ -25,6 +26,7 @@ const CF_ACTIONS_BUDGET = {
     BUDGET_ITEM_UPDATE                                              : `${BASE_ACTIONS}_${BUDGET_ITEM}_UPDATE`,
     BUDGET_ITEM_REMOVE                                              : `${BASE_ACTIONS}_${BUDGET_ITEM}_REMOVE`,
     BUDGET_ITEM_GET_INFO_AND_GET_LIST                               : `${BASE_ACTIONS}_${BUDGET_ITEM}_GET_INFO_AND_GET_LIST`,   
+    BUDGET_ITEM_UPDATE_VALUE                                        : `${BASE_ACTIONS}_${BUDGET_ITEM}_UPDATE_VALUE`, 
     
     /**
     * BUDGET_GROUP
@@ -32,7 +34,8 @@ const CF_ACTIONS_BUDGET = {
     BUDGET_GROUP_INSERT                                             : `${BASE_ACTIONS}_${BUDGET_GROUP}_INSERT`,
     BUDGET_GROUP_UPDATE                                             : `${BASE_ACTIONS}_${BUDGET_GROUP}_UPDATE`,
     BUDGET_GROUP_REMOVE                                             : `${BASE_ACTIONS}_${BUDGET_GROUP}_REMOVE`,
-    BUDGET_GROUP_GET_INFO_AND_GET_LIST                              : `${BASE_ACTIONS}_${BUDGET_GROUP}_GET_INFO_AND_GET_LIST`,  
+    BUDGET_GROUP_GET_INFO_AND_GET_LIST                              : `${BASE_ACTIONS}_${BUDGET_GROUP}_GET_INFO_AND_GET_LIST`, 
+    BUDGET_GROUP_UPDATE_VALUE                                       : `${BASE_ACTIONS}_${BUDGET_GROUP}_UPDATE_VALUE`, 
     
     /**
     * BUDGET_WORK
@@ -41,6 +44,7 @@ const CF_ACTIONS_BUDGET = {
     BUDGET_WORK_UPDATE                                              : `${BASE_ACTIONS}_${BUDGET_WORK}_UPDATE`,
     BUDGET_WORK_REMOVE                                              : `${BASE_ACTIONS}_${BUDGET_WORK}_REMOVE`,
     BUDGET_WORK_GET_INFO_AND_GET_LIST                               : `${BASE_ACTIONS}_${BUDGET_WORK}_GET_INFO_AND_GET_LIST`,   
+    BUDGET_WORK_UPDATE_VALUE                                        : `${BASE_ACTIONS}_${BUDGET_WORK}_UPDATE_VALUE`, 
     
     /**
      * BUDGET_SUBMITTAL

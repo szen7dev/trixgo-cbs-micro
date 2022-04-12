@@ -59,13 +59,13 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */ 
-                let infoAterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
+                let infoAfterInsert = await this.insertData({ document: documentID, file: fileID, userCreate: userID });
                                   
-                if(!infoAterInsert)
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_insert", status: 403 });
 
              
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -96,11 +96,11 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */ 
-                let infoAterInsert = await DOCUMENT__DOC_FILE_COLL.findByIdAndDelete(docFileID);
-                if(!infoAterInsert)
+                let infoAfterInsert = await DOCUMENT__DOC_FILE_COLL.findByIdAndDelete(docFileID);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "can't_delete", status: 403 });
  
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

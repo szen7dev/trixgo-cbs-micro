@@ -24,22 +24,6 @@ module.exports = {
     ],
 
 	/**
-	 	* Service settings
-	*/
-	// settings: {
-	// 	fields: ["_id", "name", "products"],
-	// 	populates : {
-	// 		"products": {
-	// 			action: "products.get",
-	// 			params: ["name"]
-	// 		}
-	// 	},
-	// 	entityValidator: {
-	// 		name: { type: "string"}
-	// 	}
-	// },
-
-	/**
 	* Service metadata
 	*/
 	metadata: {
@@ -50,7 +34,7 @@ module.exports = {
 	* Service dependencies
 	*/
 	dependencies: [
-		// CF_DOMAIN_SERVICES.AUTH
+		CF_DOMAIN_SERVICES.AUTH
 	],
 
 	/**
@@ -78,11 +62,11 @@ module.exports = {
 		[CF_ACTIONS_ACCOUNTING.FINANCIAL_REPORT]		 		    				: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLE.financialReport,
 		[CF_ACTIONS_ACCOUNTING.FINANCIAL_DEBT_TRACKING]		 		    			: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLE.debtTracking,
 		[CF_ACTIONS_ACCOUNTING.FINANCIAL_TBOOK]		 		    					: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLE.tBookAccount,
+		[CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET]		 		    				: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLE.calImpleBudget,
 
 		// tBookAccount
 		// CONVERT OLD DB ==. NEW DB
 		[CF_ACTIONS_ACCOUNTING.CONVERT_DB]  		 		    					: ACCOUNTING__FINANCIAL_VOUCHER_HANDLE.updateOlDB,
-
 	},
 
 	/**
@@ -119,4 +103,4 @@ module.exports = {
 	async stopped() {
 
 	}
-};
+}

@@ -12,9 +12,11 @@ const { checkObjectIDs, _isValid, IsJsonString, _getLevelMaxInRecursive, _constr
 /**
  * CONSTANTS
 */
-const { CF_DOMAIN_SERVICES } 	= require('../../gateway/helper/domain.constant');
-const { VOUCHER_TYPES }         = require('../config/accounting.financial_config');
-const { CF_ACTIONS_ITEM }       = require('../../item/helper/item.actions-constant')
+const { CF_DOMAIN_SERVICES } 	        = require('../../gateway/helper/domain.constant');
+const { VOUCHER_TYPES }                 = require('../config/accounting.financial_config');
+const { CF_ACTIONS_ITEM }               = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
+
 /**
  * TOOLS
 */
@@ -232,19 +234,17 @@ class Model extends BaseModel {
         }
         return dataUpdate;
     }
-    //_________Tạo chi tiết chứng từ (OK)
-    // Author: HiepNH
-    // insertFull({
-    //     authorID, companyID, fundaID, voucher, debit,
-    //      credit, customerDebit, customerCredit, goods, warehouse, 
-    //      quantity, amount, fcuExRate, contract, project, job, group,
-    //       cash, vat, note, updown, advancePayment 
-    //    })
+
+    /**
+     * Name  : Tạo chi tiết chứng từ ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, 
-        project, job, cash, vat, note, updown, advancePayment , 
-        date, subtype, warehouse, group, unitprice
+        project, job, cash, vat, note, updown, advancePayment, 
+        date, subtype, warehouse, group, unitprice, budgetWorkID
     }) {
         const that = this;
         return new Promise(async (resolve) => {
@@ -293,14 +293,24 @@ class Model extends BaseModel {
                 }else{
                     responseResultInsert = { error: false, data: infoAfterInsert, status: 200}
                 }
-                //Todos
+
+                //Todos Butget service
                 //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
-                //1.butget service
-                if(job && _isValid(job)){
-                    // await BUDGET_JOB_COLL.findByIdAndUpdate(job, {
-                    //     $addToSet: { journals: infoAfterInsert._id } 
-                    // },{ new: true });
+                //1. Cập nhật ngân sách công việc
+                if(budgetWorkID && _isValid(budgetWorkID)){
+                    const infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
+                        workID: budgetWorkID
+                    })
+                    console.log('Budget==========================>>>>>')
+                    console.log(infoBudgetWork)
                 }
+
+                //2. Cập nhật ngân sách Nhóm
+
+                //3. Cập nhật ngân sách Hạng mục
+
+                //4. Cập nhật ngân sách Tổng
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
@@ -308,6 +318,7 @@ class Model extends BaseModel {
                 responseResultInsert = { error: true, message: `error jounal services: ${error.message}`, status: 400 };
                 // return resolve({ error: true, message: error.message });
             }
+
             finally {
                 session.endSession();
                 const resultC = await connection.close();
@@ -481,6 +492,112 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 400 })
             }
         });
+    }
+
+    /**
+     * Name  : Tổng hợp ngân sách đã thực hiện ✅
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
+    calImpleBudget({ 
+        option, workID, groupID, itemID, budgetID, userID, ctx
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Tổng hợp ngân sách đã thực hiện của công việc-budgetWork
+                 * 2-Tổng hợp ngân sách đã thực hiện của nhóm-budgetGroup
+                 * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
+                 * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
+                 */
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataBudget = {
+                    quantity: 0,
+                    amount: 0
+                }
+
+                let conditionObjUp = { updown: 1 }
+                let conditionObjDown = { updown: -1 }
+
+                if(workID){
+                    conditionObjUp.budgetWork = ObjectID(workID)
+                    conditionObjDown.budgetWork = ObjectID(workID)
+                }
+                if(groupID){
+                    conditionObjUp.budgetGroup = ObjectID(groupID)
+                    conditionObjDown.budgetGroup = ObjectID(groupID)
+                }
+                if(itemID){
+                    conditionObjUp.budgetItem = ObjectID(itemID)
+                    conditionObjDown.budgetItem = ObjectID(itemID)
+                }
+                if(budgetID){
+                    conditionObjUp.budget = ObjectID(budgetID)
+                    conditionObjDown.budget = ObjectID(budgetID)
+                }
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Dữ liệu tăng ngân sách thực hiện
+                let listDataUp = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjUp
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }, 
+                ])
+
+                // Dữ liệu giảm ngân sách thực hiện
+                let listDataDown = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjDown
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }, 
+                ])
+
+                // console.log(listDataUp)
+                // console.log(listDataDown)
+
+                // Tổng hợp giá trị tăng, giảm
+                if(listDataUp && listDataUp.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) + Number(listDataUp[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) + Number(listDataUp[0].amount)
+                }
+
+                if(listDataDown && listDataDown.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) - Number(listDataDown[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) - Number(listDataDown[0].amount)
+                }
+
+                return resolve({ error: false, data: dataBudget, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
     }
 
     //_________SỐ DƯ ĐẦU KỲ CỦA 1 TÀI KHOẢN (OK)
@@ -3390,4 +3507,3 @@ class Model extends BaseModel {
 }
 exports.MODEL = new Model;
 var ACCOUNTING__FINANCIAL_VOUCHER     = require('../model/accounting.financial_voucher').MODEL;
-

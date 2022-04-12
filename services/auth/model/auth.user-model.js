@@ -1073,7 +1073,7 @@ class Model extends BaseModel {
                 }
 
                 if(fullname){
-                    dataInsert.bizfullname = `${fullname}-${infoCompany.sign}`;
+                    dataInsert.bizfullname = fullname;
                 }
 
                 if(departmentID && checkObjectIDs([departmentID])){
@@ -1160,7 +1160,7 @@ class Model extends BaseModel {
 
                 if(fullname){
                     dataUpdate.fullname = fullname;
-                    dataUpdate.bizfullname = `${fullname}-${company.sign}`;
+                    dataUpdate.bizfullname = fullname;
                 }
 
                 if(phone){

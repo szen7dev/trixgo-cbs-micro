@@ -77,12 +77,12 @@ class Model extends BaseModel {
                     dataInsert.project = projectID;
                 }
 
-                let infoAterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert);
 
-                if(!infoAterInsert)
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: KEY_ERROR.INSERT_FAILED, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                return resolve({ error: false, data: infoAterInsert, status: 200 });
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -133,12 +133,12 @@ class Model extends BaseModel {
                     dataUpdate.conditionPin = conditionPin;
                 }
                 
-                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
+                let infoAfterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't update pcm plan report", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
-                return resolve({ error: false, data: infoAterUpdate, status: 200 });
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -173,9 +173,9 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
               
-                let infoAterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
+                let infoAfterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
 
-                if(!infoAterUpdate)
+                if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't remove subject", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
 
                 return resolve({ error: false, message: "Remove success", status: 200 });
