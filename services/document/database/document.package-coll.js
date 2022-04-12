@@ -19,14 +19,14 @@ module.exports = DATABASE_MIDDLEWARE("document_package", {
         ref: 'company'
     },
     //_________Phòng ban/dự án
-    project: { 
+    project: {
         type: Schema.Types.ObjectId,
-        ref : "department"                  
+        ref : "department"
     },
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
-        ref : "contract"                  
+        ref : "contract"
     },
     //_________Phần tử cha
     parent: {

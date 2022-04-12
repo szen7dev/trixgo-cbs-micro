@@ -34,7 +34,7 @@ class Model extends BaseModel {
     /**
 	 * Name: insert document package ✅
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
     insert({ name, sign, userID, projectID, parentID, ctx }) {
         return new Promise(async resolve => {
@@ -58,8 +58,8 @@ class Model extends BaseModel {
                 let suid = await stringUtils.randomAndCheckExists( DOCUMENT__PACKAGE_COLL, 'suid');
                 let dataInsert = {
                     suid,
-                    author: userID, 
-                    company: companyID, 
+                    author: userID,
+                    company: companyID,
                     project: projectID,
                     name,
                     sign,
@@ -75,9 +75,9 @@ class Model extends BaseModel {
                 }
                 //__________Tạo gói thầu
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert) 
+                if (!infoAfterInsert)
                     return resolve({ error: true, message: "Tạo mới thất bại", keyError: 'cannot_update' });
-                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -88,7 +88,7 @@ class Model extends BaseModel {
     /**
 	 * Name: update document package ✅
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
     update({ packageID, name, sign, members, membersRemove, admins, adminsRemove, userID }) {
         return new Promise(async resolve => {
@@ -120,9 +120,9 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await DOCUMENT__PACKAGE_COLL.findByIdAndUpdate(packageID, dataUpdate, { new: true });
-                if (!infoAfterUpdate) 
+                if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED });
-                
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -135,18 +135,18 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	remove({ packageID }) { 
+	remove({ packageID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(packageID))
                     return resolve({ error: true, message: 'Mã gói thầu không hợp lệ', keyError: "packageID_invalid", status: 400 });
-                
+
                 let infoAterRemove = await DOCUMENT__PACKAGE_COLL.findByIdAndDelete(packageID)
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: "remove_failed", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -157,7 +157,7 @@ class Model extends BaseModel {
 	 * Author: Depv
 	 * Code:
 	 */
-	removeMany({ packagesID }) { 
+	removeMany({ packagesID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(packagesID))
@@ -166,9 +166,9 @@ class Model extends BaseModel {
                 let infoAterRemove = await DOCUMENT__PACKAGE_COLL.deleteMany({ _id: { $in: packagesID } });
                 if(!infoAterRemove)
                     return resolve({ error: true, message: "Xoá thất bại", keyError: KEY_ERROR.DELETE_FAILED, status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {               
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -177,22 +177,22 @@ class Model extends BaseModel {
 	/**
 	 * Name: get info document package ✅
 	 * Author: Depv
-	 * Code: 
+	 * Code:
 	 */
-	getInfo({ packageID, select, populates }) { 
+	getInfo({ packageID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(packageID))
                     return resolve({ error: true, message: 'Request params packageID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -211,11 +211,13 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 let infoAterGet = await DOCUMENT__PACKAGE_COLL.findById(packageID)
-                                    .select(select)
-                                    .populate(populates)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -228,14 +230,14 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getListPackage({ departmentID, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
+    getListPackage({ departmentID, parentID, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
                 let conditionObj = { members: { $in: [userID] }, project: departmentID };
-                let sortBy; 
+                let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
@@ -260,6 +262,10 @@ class Model extends BaseModel {
 						select: ""
 					}
 				}
+
+                if(parentID && checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID;
+                }
 
                 // SEARCH TEXT
                 if(keyword){
@@ -300,7 +306,7 @@ class Model extends BaseModel {
                 let totalRecord = await DOCUMENT__PACKAGE_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 				let nextCursor	= null;
-                
+
 				if(listPackages && listPackages.length){
 					if(listPackages.length > limit){
 						nextCursor = listPackages[limit - 1]._id;
@@ -313,7 +319,7 @@ class Model extends BaseModel {
 					status: 200,
 					data: {
 						listRecords: listPackages,
-						limit: +limit,
+						limit,
 						totalRecord,
                         totalPage,
 						nextCursor
