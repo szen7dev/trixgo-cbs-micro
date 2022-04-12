@@ -1,7 +1,6 @@
 "use strict";
 
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const moment                            = require('moment');
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -13,9 +12,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 
-const CMCS__CONTRACT_PRODUCTION_MODEL   = require('./cmcs.contract_production-model').MODEL;
 const CMCS__CONTRACT_IPC_MODEL          = require('./cmcs.contract_ipc-model').MODEL;
-const CMCS__CONTRACT_PAYMENT_MODEL      = require('./cmcs.contract_payment-model').MODEL;
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
@@ -208,7 +205,6 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
-        console.log({ contractPaymentID, ipc, date, name, sign, description, value, userID  })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -217,7 +213,7 @@ class Model extends BaseModel {
                  * Bước 2: Cập nhật thông tin vào Hợp đồng
                  * Bước 3: Cập nhật thông tin vào dự án => Nếu là dòng tiền của hợp đồng mua vào
                  */
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */

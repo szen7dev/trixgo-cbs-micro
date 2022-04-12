@@ -1,47 +1,36 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const BaseModel                         = require('../../../tools/db/base_model');
+const { checkObjectIDs }                = require('../../../tools/utils/utils');
+
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 
 /**
  * import inter-coll, exter-coll
  */
-const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 
-const CMCS__CONTRACT_PRODUCTION_MODEL   = require('./cmcs.contract_production-model').MODEL;
-const CMCS__CONTRACT_IPC_MODEL          = require('./cmcs.contract_ipc-model').MODEL;
-const CMCS__CONTRACT_PAYMENT_MODEL      = require('./cmcs.contract_payment-model').MODEL;
-
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template }                      = require('lodash');
-const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
+class Model extends BaseModel {
     constructor() {
         super(CMCS__CONTRACT_IPC_COLL);
     }
-    
+
     /**
      * Name: insert contract ipc ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) { 
+    insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) {
         return new Promise(async (resolve) => {
             try {
-                    
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -52,7 +41,7 @@ class Model extends BaseModel {
                 // Precalculate-Trường để update các giá trị vào Hợp đồng
                 let updateContract = {};
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -70,7 +59,7 @@ class Model extends BaseModel {
                 /**
                  * Company lấy theo company của project
                  * Chứ không phải lấy theo company của user tạo task
-                 */ 
+                 */
                 companyID = infoContract?.data?.company;
                 projectID = infoContract?.data?.project;
 
@@ -81,7 +70,7 @@ class Model extends BaseModel {
                 if(projectID){
                     dataInsert.project = projectID
                 }
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -93,7 +82,7 @@ class Model extends BaseModel {
                         $match: {
                             contract: ObjectID(contractID),
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
@@ -107,7 +96,7 @@ class Model extends BaseModel {
                             recommendedPayment: { $sum: "$recommendedPayment" },
                             remainingPayment: { $sum: "$remainingPayment" },
                         }
-                    }, 
+                    },
                 ])
                 if(listData.length){
                     updateContract.acceptance = Number(listData[0].acceptance)
@@ -143,13 +132,13 @@ class Model extends BaseModel {
                             contract: ObjectID(contractID),
                             type: 1,
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
                             advancePaymentPaid: { $sum: "$amountPaid" },
                         }
-                    }, 
+                    },
                 ])
 
                 // Đã thanh toán
@@ -159,13 +148,13 @@ class Model extends BaseModel {
                             contract: ObjectID(contractID),
                             type: 2,
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
                             amountPaid: { $sum: "$amountPaid" },
                         }
-                    }, 
+                    },
                 ])
 
                 if(listData1.length){
@@ -213,7 +202,7 @@ class Model extends BaseModel {
                     updateContract.vatAcceptance = Number(updateContract.vatAcceptance)+Number(vatAcceptance)
                 }
                 //______Giá trị nghiệm thu phát sinh trước VAT(3)
-                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){   
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){
                     dataInsert.plusAcceptance     = plusAcceptance;
                     updateContract.plusAcceptance = Number(updateContract.plusAcceptance)+Number(plusAcceptance)
                 }
@@ -223,22 +212,22 @@ class Model extends BaseModel {
                     updateContract.vatPlusAcceptance = Number(updateContract.vatPlusAcceptance)+Number(vatPlusAcceptance)
                 }
                 //_____Giá trị giữ lại (5)
-                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){  
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){
                     dataInsert.retainedValue     = retainedValue;
                     updateContract.retainedValue = Number(updateContract.retainedValue)+Number(retainedValue)
                 }
                 //_____Thu hồi tạm ứng (6)
-                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){  
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){
                     dataInsert.advancePaymentDeduction     = advancePaymentDeduction;
                     updateContract.advancePaymentDeduction = Number(updateContract.advancePaymentDeduction)+Number(advancePaymentDeduction)
                 }
                 //_____Khấu trừ khác (nếu có) (7)
-                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){   
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){
                     dataInsert.otherDeduction     = otherDeduction;
                     updateContract.otherDeduction = Number(updateContract.otherDeduction)+Number(otherDeduction)
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){ 
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){
                     dataInsert.recommendedPayment     = recommendedPayment;
                     updateContract.recommendedPayment = Number(updateContract.recommendedPayment)+Number(recommendedPayment)
                 }
@@ -248,27 +237,27 @@ class Model extends BaseModel {
                     dataInsert.timeForPayment     = timeForPayment;
                 }
                 //_____Đã giải ngân (10)
-                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){    
+                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){
                     dataInsert.amountPaid     = amountPaid;
 
                     if(Number(type) === 1){
                         updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(amountPaid)
                     }
-                    
+
                     if(Number(type) === 2){
                         updateContract.amountPaid = Number(updateContract.amountPaid)+Number(amountPaid)
                     }
                 }
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){  
+                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){
                     dataInsert.remainingPayment     = remainingPayment;
                     updateContract.remainingPayment = Number(updateContract.remainingPayment)+Number(remainingPayment)
                 }
-                
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
-              
+
                 // Cập nhật các trường thông tin cho hợp đồng
                 let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
                     contractID,
@@ -294,9 +283,9 @@ class Model extends BaseModel {
     /**
      * Name: update contract ipc ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    update({ 
+    update({
         contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
     }){
         return new Promise(async (resolve) => {
@@ -325,7 +314,7 @@ class Model extends BaseModel {
                             contract: ObjectID(contractID),
                             _id: { $nin: [ ObjectID(contractIpcID) ] },
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
@@ -339,7 +328,7 @@ class Model extends BaseModel {
                             recommendedPayment: { $sum: "$recommendedPayment" },
                             remainingPayment: { $sum: "$remainingPayment" },
                         }
-                    }, 
+                    },
                 ])
                 if(listData.length){
                     updateContract.acceptance = Number(listData[0].acceptance)
@@ -375,13 +364,13 @@ class Model extends BaseModel {
                             type: 1,
                             _id: { $nin: [ ObjectID(contractIpcID) ] },
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
                             advancePaymentPaid: { $sum: "$amountPaid" },
                         }
-                    }, 
+                    },
                 ])
 
                 // Đã thanh toán
@@ -392,13 +381,13 @@ class Model extends BaseModel {
                             type: 2,
                             _id: { $nin: [ ObjectID(contractIpcID) ] },
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { },
                             amountPaid: { $sum: "$amountPaid" },
                         }
-                    }, 
+                    },
                 ])
 
                 if(listData1.length){
@@ -450,7 +439,7 @@ class Model extends BaseModel {
                 }
 
                 //______Giá trị nghiệm thu phát sinh trước VAT(3)
-                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){    
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){
                     dataUpdate.plusAcceptance = plusAcceptance;
                     updateContract.plusAcceptance = Number(updateContract.plusAcceptance)+Number(plusAcceptance)
                 }
@@ -462,25 +451,25 @@ class Model extends BaseModel {
                 }
 
                 //_____Giá trị giữ lại (5)
-                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){    
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){
                     dataUpdate.retainedValue = retainedValue;
                     updateContract.retainedValue = Number(updateContract.retainedValue)+Number(retainedValue)
                 }
 
                 //_____Thu hồi tạm ứng (6)
-                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){    
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){
                     dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
                     updateContract.advancePaymentDeduction = Number(updateContract.advancePaymentDeduction)+Number(advancePaymentDeduction)
                 }
 
                 //_____Khấu trừ khác (nếu có) (7)
-                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){    
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){
                     dataUpdate.otherDeduction = otherDeduction;
                     updateContract.otherDeduction = Number(updateContract.otherDeduction)+Number(otherDeduction)
                 }
-                
+
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
-                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){    
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){
                     dataUpdate.recommendedPayment = recommendedPayment;
                     updateContract.recommendedPayment = Number(updateContract.recommendedPayment)+Number(recommendedPayment)
                 }
@@ -491,20 +480,20 @@ class Model extends BaseModel {
                 }
 
                 //_____Đã giải ngân (10)
-                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){   
+                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){
                     dataUpdate.amountPaid = amountPaid;
 
                     if(Number(type) === 1){
                         updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(amountPaid)
                     }
-                    
+
                     if(Number(type) === 2){
                         updateContract.amountPaid = Number(updateContract.amountPaid)+Number(amountPaid)
                     }
                 }
 
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
-                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){    
+                if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){
                     dataUpdate.remainingPayment = remainingPayment;
                     updateContract.remainingPayment = Number(updateContract.remainingPayment)+Number(remainingPayment)
                 }
@@ -513,7 +502,7 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(contractIpcID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại" ,keyError: "can't_update_contract_ipc", status: 403 });
-                
+
                 // Cập nhật các trường thông tin cho hợp đồng
                 let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
                     contractID: `${contractID}`, // Convert để nhận đầu vào dạng String do Model contract yêu cầu
@@ -541,15 +530,15 @@ class Model extends BaseModel {
     /**
      * Name: Remove contract ipc ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    
+
     /**
      * Name: get info contract ipc ✅
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ contractIpcID, 
+    getInfo({ contractIpcID,
         select, populates }){
         return new Promise(async resolve => {
             try {
@@ -585,10 +574,10 @@ class Model extends BaseModel {
     /**
      * Name  : Danh sách contract ipc ✅
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({ type, contractID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -603,14 +592,14 @@ class Model extends BaseModel {
                  let sortBy;
                  let conditionObj = {};
                  let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                  //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -627,7 +616,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 // TRẠNG THÁI CÔNG VIỆC
                 if(type){
                     conditionObj.type = type
@@ -662,14 +651,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await CMCS__CONTRACT_IPC_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -692,7 +681,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -712,9 +701,9 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             outin: Number(outin),
                         }
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
@@ -724,14 +713,14 @@ class Model extends BaseModel {
                         $match: {
                             "year": Number(year),
                         }
-                    }, 
+                    },
                     {
                         $group: {
                             _id: { month: "$month" },
                             amount: { $sum: "$amount" },
                         }
                     },
-                    {$sort: {"_id.month": 1}}    
+                    {$sort: {"_id.month": 1}}
                 ])
 
                 return resolve({ error: false, data: listData });
@@ -746,7 +735,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, outin, month, year, 
+    getListByMonth({ userID, companyID, outin, month, year,
         keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
@@ -855,17 +844,16 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         })
-    } 
+    }
 
     /**
      * Name  : Cập nhật giá trị ✅
      * Author: Hiepnh
-     * Date  : 12/4/2022 
+     * Date  : 12/4/2022
      */
-    updateValue({ 
-        option, ipcID, userID, ctx
-    }){ 
-        console.log({option, ipcID, userID})
+    updateValue({
+        option, ipcID, userID
+    }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -877,18 +865,18 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(ipcID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" });
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -914,13 +902,13 @@ class Model extends BaseModel {
                             $match: {
                                 ipc: ObjectID(ipcID),
                             }
-                        }, 
+                        },
                         {
                             $group: {
                                 _id: { },
                                 amount: { $sum: "$value" },
                             }
-                        }, 
+                        },
                     ])
                     if(listData && listData.length){
                         dataUpdate.amountPaid = Number(listData[0].amount)
