@@ -213,7 +213,7 @@ class Model extends BaseModel {
                  * Bước 2: Cập nhật thông tin vào Hợp đồng
                  * Bước 3: Cập nhật thông tin vào dự án => Nếu là dòng tiền của hợp đồng mua vào
                  */
-
+                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -351,9 +351,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
                 // Giá trị còn lại phải thanh toán của IPC
-                console.log('1111==============>>>>>>>>>>>>>>>>>>>')
-               let infoNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ userID, companyID: infoPayment.company, outin: 1, month: 2, year: 2021 })
-            //    let infoNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 2, ipcID: ipc, userID, ctx })
+               let infoNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 2, ipcID: ipc, userID, ctx })
                console.log('==============>>>>>>>>>>>>>>>>>>>')
                console.log(infoNew)
 

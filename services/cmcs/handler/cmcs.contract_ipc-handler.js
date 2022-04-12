@@ -138,6 +138,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { contractIpcID, type, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
