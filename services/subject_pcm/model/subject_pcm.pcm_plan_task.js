@@ -688,8 +688,9 @@ class Model extends BaseModel {
 
                 
                 if(related && related.length) {
-                    const newRelated = related.filter(item => !infoTask?.related?.includes(item));
-                    console.log({ newRelated, related })
+                    const relatedCurrent = infoTask?.related?.map(item => item.toString()) ?? [];
+                    const newRelated = related.filter(item => !relatedCurrent.includes(item));
+                    console.log({ newRelated, related, relatedCurrent, task: infoTask?.related })
 
                     /**
                      * Thêm người liên quan trong công việc
