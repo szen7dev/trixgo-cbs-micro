@@ -7,13 +7,13 @@
 // //   useFindAndModify: false,
 // // });
 
-// // const conn = mongoose.createConnection('mongodb://localhost/my_db', {
-// const conn = mongoose.createConnection('mongodb://admin_cbs:dAGT5ttW6CLrsTuw@ip-172-31-24-73.ap-southeast-1.compute.internal:27017/cbs_official', {
+// const conn = mongoose.createConnection('mongodb://admin_cbs:dAGT5ttW6CLrsTuw@localhost:27017/cbs_staging', {
+// // const conn = mongoose.createConnection('mongodb://admin_cbs:dAGT5ttW6CLrsTuw@ip-172-31-24-73.ap-southeast-1.compute.internal:27017/cbs_official', {
 //     useNewUrlParser: true,
 //     useUnifiedTopology: true,
 //     useCreateIndex: true,
 //     useFindAndModify: false,
-//   });
+// });
 
 // conn.on('error', () => console.error.bind(console, 'connection error'));
 

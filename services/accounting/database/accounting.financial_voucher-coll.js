@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 /**
- *  Hồ sơ văn bản
+ *  PHIẾU (ORDER)
  */
 module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     //_________Công ty      
