@@ -112,7 +112,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx  }){
+    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx }){
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
