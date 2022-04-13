@@ -26,13 +26,17 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, fundaID, contractID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx }) { 
+    insert({ companyID, fundaID, projectID, contractID, parentID, type, property, outin, name, sign, note, date, value, realDate, realValue, userID, ctx }) { 
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
                 let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value, admins: [userID], members: [userID] };
+
+                if(checkObjectIDs(projectID)){    
+                    dataInsert.project = projectID
+                }
 
                 if(checkObjectIDs(contractID)){
                     const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
@@ -80,6 +84,14 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                if(realDate){
+                    dataInsert.realDate =realDate;
+                }
+
+                if(!isNaN(realValue) && Number(realValue) >= 0){
+                    dataInsert.realValue     = realValue;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
@@ -96,7 +108,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashFlowID, contractID, name, sign, note, date, value, userID, ctx  }){
+    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, userID, ctx  }){
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -150,6 +162,14 @@ class Model extends BaseModel {
 
                 if(!isNaN(value) && Number(value) >= 0){
                     dataUpdate.value     = value;
+                }
+
+                if(realDate){
+                    dataUpdate.realDate =realDate;
+                }
+
+                if(!isNaN(realValue) && Number(realValue) >= 0){
+                    dataUpdate.realValue     = realValue;
                 }
              
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
