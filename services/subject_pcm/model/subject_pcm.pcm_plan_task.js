@@ -685,16 +685,19 @@ class Model extends BaseModel {
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
-                console.log({ related })
 
+                
                 if(related && related.length) {
+                    const newRelated = related.filter(item => !infoTask?.related?.includes(item));
+                    console.log({ newRelated, related })
+
                     /**
                      * Thêm người liên quan trong công việc
                      * + Insert thông báo vào DB và bắn Cloud MSS
                      */
                     const webUrl = `/pcm/detail/${taskID}`;
                     let { name: taskName, project, contract } = infoAfterUpdate;
-                    
+
                     const dataSend = {
                         app: APP_KEYS.PCM_PLAN_TASK,
                         languageKey: LANGUAGE_KEYS.CREATE_RESPONSE_PCM,
@@ -703,11 +706,10 @@ class Model extends BaseModel {
                             item: { _id: taskID }
                         }
                     };
-                    console.log({ related })
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,
-                        receivers: related,
+                        receivers: newRelated,
                         project: project?.toString(),
                         contract: contract?.toString(),
                         path: webUrl,
@@ -721,7 +723,7 @@ class Model extends BaseModel {
                     })
 
                     ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: related,
+                        users: newRelated,
                         title: taskName,
                         description: `${bizfullname} đã thêm bạn làm người liên quan`,
                         dataSend,
