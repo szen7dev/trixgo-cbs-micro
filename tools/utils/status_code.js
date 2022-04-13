@@ -6,7 +6,6 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
     let error = {};
 
     if(resultAfterCallHandler && resultAfterCallHandler.error){
-        console.error({ error: resultAfterCallHandler });
         error = {
             data: {
                 message: resultAfterCallHandler.message,

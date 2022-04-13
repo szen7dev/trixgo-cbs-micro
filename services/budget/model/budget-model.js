@@ -1,15 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone, isValidDate }      = require('../../../tools/utils/time_utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { isValidDate }                   = require('../../../tools/utils/time_utils');
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const moment                            = require('moment');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
 const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
 /**
@@ -22,8 +17,6 @@ const BUDGET__WORK_COLL                = require('../database/budget.work-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { KEY_ERROR }                     = require('../../../tools/keys/index')
-const { template }                      = require('lodash');
-const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
@@ -206,6 +199,44 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     *
+     */
+    remove({ budgetsID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([userID])){
+                    return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    });
+                }
+
+                if(!checkObjectIDs(budgetsID)){
+                    return resolve({
+                        error: true,
+                        message: "Tham số budgetsID không hợp lệ",
+                        keyError: "params_budgetsID_invalid",
+                        status: 400
+                    });
+                }
+
+                const infoAfterDelete = await BUDGET_COLL.deleteMany({
+                    _id: {
+                        $in: budgetsID
+                    },
+                    userCreate: userID
+                })
+
+                return resolve({ error: false, data: infoAfterDelete, status: 201 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
