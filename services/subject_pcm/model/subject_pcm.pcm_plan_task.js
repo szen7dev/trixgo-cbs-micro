@@ -301,10 +301,9 @@ class Model extends BaseModel {
                         if(parentID) {
                             const infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`, {
                                 userID: assigneeID,
-                                // select: '_id'
+                                select: '_id'
                             });
 
-                            console.log({ infoAssignee, data: infoAssignee?.data })
                             if(!infoAssignee.error) {
                                 arrReceiver = [infoAssignee?.data?._id];
                             }
@@ -331,7 +330,6 @@ class Model extends BaseModel {
                             titleMSS        = `THÔNG BÁO`;
                             descriptionMSS  = `${bizfullname} đã tạo 1 công việc mới`;
                         }
-                        console.log({ arrReceiver, parentID })
 
                         // INSERT NOTIFICATION
                         await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
@@ -687,6 +685,7 @@ class Model extends BaseModel {
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
+                console.log({ related })
 
                 if(related && related.length) {
                     /**
@@ -704,6 +703,7 @@ class Model extends BaseModel {
                             item: { _id: taskID }
                         }
                     };
+                    console.log({ related })
 
                     await ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
                         content: taskName,
