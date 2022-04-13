@@ -249,8 +249,8 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             let responseResultInsert = {};
-            const session = await connection.startSession();
-            await session.startTransaction();
+            const session = await connection.startSession(); // có poolconnect --> relase()
+            await session.startTransaction(); 
             try {
                 const checkInput = this.checkInputInsertFull({  voucher, companyID, authorID, fundaID, customerDebit, customerCredit });
                 if(checkInput.error)
@@ -1506,10 +1506,10 @@ class Model extends BaseModel {
     financialReport({ ctx, companyID, fundaID, fromDate, toDate }){
         return new Promise(async resolve => {
             try {
-                let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: false, status : 1 })//ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
+                let listAccountsAsync    =  ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{  isNestedOfCompany: false, status : 1 }) // ACCOUNT_MODEL.getListByCompany({ companyID, status : 1 });
                 let listDataSAsyn        = this.getDataGroupByAccountAndContactS({ companyID, fundaID, fromDate });
 
-                //  * - LẤY DỮ LIỆU TRONG KỲ
+                //  * - LẤY DỮ LIỆU TRONG KỲ.
                 let listDataAsyn         = this.getDataGroupByAccountAndContact({ companyID, fundaID, fromDate, toDate })
                 
                 let [  listAccounts, listDataS, listData ] = await Promise.all([ listAccountsAsync, listDataSAsyn, listDataAsyn ]);
@@ -3454,7 +3454,7 @@ class Model extends BaseModel {
                         // infoAccount: infoAccount.data,
                         accountID,
                         // listContacts: listContacts.data, [bổ xung]
-                        arrDebitOpeningS:  Object.assign({}, _listJournalsOpening.data.arrDebitS),
+                        arrDebitOpeningS:  Object.assign({}, _listJournalsOpening.data.arrDebitS), 
                         arrCreditOpeningS: Object.assign({}, _listJournalsOpening.data.arrCreditS),
                         arrDebitOpening: Object.assign({}, _listJournalsOpening.data.arrDebit),
                         arrCreditOpening: Object.assign({}, _listJournalsOpening.data.arrCredit),
@@ -3462,6 +3462,7 @@ class Model extends BaseModel {
                         arrCredit: Object.assign({}, _listJournals.data.arrCredit),
                     } 
                 })     
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
