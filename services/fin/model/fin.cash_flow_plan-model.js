@@ -27,6 +27,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     insert({ companyID, fundaID, projectID, contractID, parentID, type, property, priority, outin, name, sign, note, date, value, realDate, realValue, userID, ctx }) {
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -100,6 +101,11 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
+                // Cập nhật lại phần tử cha
+                if(checkObjectIDs(parentID)){
+                    await that.updateValue({cashFlowID: parentID, userID})
+                }
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -113,6 +119,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx }){
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID))
@@ -197,6 +204,11 @@ class Model extends BaseModel {
                         select: '_id name',
                     }
                 })
+
+                // Cập nhật lại phần tử cha
+                if(checkObjectIDs(infoAfterUpdate.parent)){
+                    await that.updateValue({cashFlowID: infoAfterUpdate.parent, userID})
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -406,6 +418,73 @@ class Model extends BaseModel {
             }
         })
     }
+
+     /**
+     * Name  : Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date  : 14/4/2022
+     */
+    updateValue({
+        cashFlowID, userID
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(cashFlowID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashFlowID_invalid" });
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                 let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(cashFlowID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            value: { $sum: "$value" },
+                            realValue: { $sum: "$realValue" },
+                        }
+                    },
+                ])
+                if(listData && listData.length){
+                    dataUpdate.value = Number(listData[0].value)
+                    dataUpdate.realValue = Number(listData[0].realValue)
+                }
+
+                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
