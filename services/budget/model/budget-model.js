@@ -1,14 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { isValidDate }                   = require('../../../tools/utils/time_utils');
 
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
 const { CF_ACTIONS_ACCOUNTING } 		= require('../../accounting/helper/accounting.actions-constant');
 
 /**
@@ -21,32 +17,30 @@ const BUDGET__WORK_COLL                = require('../database/budget.work-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { KEY_ERROR }                     = require('../../../tools/keys/index')
-const { template }                      = require('lodash');
-const { ResumeToken }                   = require('mongodb');
 
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
+class Model extends BaseModel {
     constructor() {
         super(BUDGET_COLL);
     }
-    
+
     /**
      * Name: Insert ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue }) { 
+    insert({ ctx, userID, companyID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue }) {
         return new Promise(async (resolve) => {
             try {
-                    
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -58,7 +52,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(contractID)){
                     dataInsert.contract = contractID
                 }
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -80,8 +74,8 @@ class Model extends BaseModel {
                     dataInsert.description = description;
                 }
 
-                if(date){
-                    dataInsert.date = date;
+                if(date && isValidDate(date)){
+                    dataInsert.date = new Date(date);
                 }
 
                 if(note){
@@ -107,7 +101,7 @@ class Model extends BaseModel {
                 if(!isNaN(finalVatRevenue) && Number(finalVatRevenue) >= 0){
                     dataInsert.finalVatRevenue     = finalVatRevenue;
                 }
-                
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại" , keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
@@ -124,21 +118,21 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ 
+    update({
         budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
 
                 if(!checkObjectIDs(budgetID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -150,7 +144,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(contractID)){
                     dataUpdate.contract = contractID
                 }
-             
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -212,17 +206,55 @@ class Model extends BaseModel {
     }
 
     /**
+     *
+     */
+    remove({ budgetsID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs([userID])){
+                    return resolve({
+                        error: true,
+                        message: "Tham số userID không hợp lệ",
+                        keyError: "params_userID_invalid",
+                        status: 400
+                    });
+                }
+
+                if(!checkObjectIDs(budgetsID)){
+                    return resolve({
+                        error: true,
+                        message: "Tham số budgetsID không hợp lệ",
+                        keyError: "params_budgetsID_invalid",
+                        status: 400
+                    });
+                }
+
+                const infoAfterDelete = await BUDGET_COLL.deleteMany({
+                    _id: {
+                        $in: budgetsID
+                    },
+                    userCreate: userID
+                })
+
+                return resolve({ error: false, data: infoAfterDelete, status: 201 })
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: Remove
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    
+
     /**
      * Name: Get info ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getInfo({ budgetID, 
+    getInfo({ budgetID,
         select, populates }){
         return new Promise(async resolve => {
             try {
@@ -261,7 +293,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ isMember, companyID, projectID, contractID, type, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -270,20 +302,20 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                  let sortBy;
                  let conditionObj = {};
                  let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -300,7 +332,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if(type){
                     conditionObj.type = type
                 }
@@ -341,14 +373,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await BUDGET_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -371,7 +403,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -381,11 +413,11 @@ class Model extends BaseModel {
     /**
      * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) ✅
      * Author: Hiepnh
-     * Date  : 10/4/2022 
+     * Date  : 10/4/2022
      */
-    updateValue({ 
+    updateValue({
         option, budgetID, userID, ctx
-    }){ 
+    }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -397,18 +429,18 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(budgetID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "budgetID_invalid" });
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -421,7 +453,7 @@ class Model extends BaseModel {
                             $match: {
                                 budget: ObjectID(budgetID),
                             }
-                        }, 
+                        },
                         {
                             $group: {
                                 _id: { },
@@ -430,7 +462,7 @@ class Model extends BaseModel {
                                 forecastAmount: { $sum: "$forecastAmount" },
                                 forecastVatAmount: { $sum: "$forecastVatAmount" },
                             }
-                        }, 
+                        },
                     ])
                     if(listDataWork && listDataWork.length){
                         dataUpdate.budget = Number(listDataWork[0].amount)
@@ -461,7 +493,7 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
 }
 
 exports.MODEL = new Model;

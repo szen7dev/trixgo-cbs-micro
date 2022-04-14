@@ -13,12 +13,12 @@ module.exports  = DATABASE_MIDDLEWARE("budget_work", {
         ref : "company",
         require: true,
     },
-    //_________Dự án/phòng ban (Thuộc dự án)
+    //_________Dự án/phòng ban (Thuộc dự án)-Để lại sau
     project: {
         type: Schema.Types.ObjectId,
         ref : "department",
     },
-    //_________Hợp đồng
+    //_________Hợp đồng-Để lại sau
     contract: {
         type: Schema.Types.ObjectId,
         ref: "contract"

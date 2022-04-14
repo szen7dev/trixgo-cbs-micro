@@ -16,7 +16,7 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index')
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
+class Model extends BaseModel {
     constructor() {
         super(FIN__CASH_FLOW_PLAN_COLL);
     }
@@ -26,13 +26,17 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, fundaID, contractID, parentID, type, property, outin, name, sign, note, date, value, userID, ctx }) { 
+    insert({ companyID, fundaID, projectID, contractID, parentID, type, property, priority, outin, name, sign, note, date, value, realDate, realValue, userID, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
                 let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value, admins: [userID], members: [userID] };
+
+                if(checkObjectIDs(projectID)){
+                    dataInsert.project = projectID
+                }
 
                 if(checkObjectIDs(contractID)){
                     const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
@@ -72,12 +76,24 @@ class Model extends BaseModel {
                     dataInsert.property = Number(property);
                 }
 
+                if(!isNaN(priority) && [1,2].includes(priority)) {
+                    dataInsert.priority = priority;
+                }
+
                 if(sign){
                     dataInsert.sign = sign;
                 }
 
                 if(note){
                     dataInsert.note = note;
+                }
+
+                if(realDate){
+                    dataInsert.realDate = realDate;
+                }
+
+                if(!isNaN(realValue) && Number(realValue) >= 0){
+                    dataInsert.realValue = realValue;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -96,7 +112,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashFlowID, contractID, name, sign, note, date, value, userID, ctx  }){
+    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx  }){
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -107,7 +123,7 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID, name };
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -148,14 +164,26 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
+                if(!isNaN(priority) && [1,2].includes(priority)) {
+                    dataUpdate.priority = priority;
+                }
+
                 if(!isNaN(value) && Number(value) >= 0){
                     dataUpdate.value     = value;
                 }
-             
+
+                if(realDate){
+                    dataUpdate.realDate =realDate;
+                }
+
+                if(!isNaN(realValue) && Number(realValue) >= 0){
+                    dataUpdate.realValue     = realValue;
+                }
+
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-              
+
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -168,13 +196,35 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
+    remove({ cashFlowsID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(cashFlowsID))
+                    return resolve({ error: true, message: 'param_cashFlowsID_invalid', status: 400 });
+
+                if(!checkObjectIDs([userID]))
+                    return resolve({ error: true, message: 'param_userID_invalid', status: 400 });
+
+                const infoAfterDelete = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
+                    _id: {
+                        $in: cashFlowsID
+                    },
+                    userCreate: userID
+                })
+
+                return resolve({ error: false, data: infoAfterDelete, status: 201 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Name: Get info ✅
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-     getInfo({ cashFlowID, 
+     getInfo({ cashFlowID,
         select, populates }){
         return new Promise(async resolve => {
             try {
@@ -195,8 +245,9 @@ class Model extends BaseModel {
                 }
 
                 let info = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
-                                .select(select)
-                                .populate(populates)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
 				if (!info) return resolve({ error: true, message: 'cannot_get' });
 
@@ -213,7 +264,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ companyID, projectID, contractID, parentID, outin, type, property, priority,
-        keyword, limit = 50, lastestID, select, populates= {} }) { 
+        keyword, limit = 50, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -222,20 +273,20 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                  let sortBy;
                  let conditionObj = {};
                  let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-              
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -252,7 +303,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if(outin){
                     conditionObj.outin = outin
                 }
@@ -269,13 +320,13 @@ class Model extends BaseModel {
                 if(checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
-                if(checkObjectIDs(projectID)){    
+                if(checkObjectIDs(projectID)){
                     conditionObj.project = projectID
                 }
-                if(checkObjectIDs(contractID)){    
+                if(checkObjectIDs(contractID)){
                     conditionObj.contract = contractID
                 }
-                if(checkObjectIDs(parentID)){    
+                if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 }
 
@@ -303,14 +354,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await FIN__CASH_FLOW_PLAN_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -333,7 +384,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

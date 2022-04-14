@@ -7,7 +7,7 @@
   * MODELS
   */
  const BUDGET_MODEL                 = require('../model/budget-model').MODEL;
- 
+
  module.exports = {
     /**
      * Dev: Hiepnh ✅
@@ -18,8 +18,8 @@
         auth: "required",
         params: {
             type                    : { type: "number" },
-            projectID               : { type: "string", optional: true },
-            contractID              : { type: "string", optional: true },
+            projectID               : { type: "string", optional: true }, // Để lại sau
+            contractID              : { type: "string", optional: true }, // Để lại sau
             name                    : { type: "string" },
             sign                    : { type: "string", optional: true },
             description             : { type: "string", optional: true },
@@ -74,24 +74,24 @@
             finalRevenue            : { type: "number", optional: true },
             finalVatRevenue         : { type: "number", optional: true },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue } = ctx.params;
-            
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET_MODEL.update({
                     budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
- 
+
     /**
      * Dev: Hiepnh ✅
      * Func: Xóa
@@ -100,25 +100,25 @@
     remove: {
         auth: "required",
         params: {
-        budgetID       : { type: "string" },
+            budgetsID: { type: "array" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID } = ctx.params;
-
                 const { _id: userID } = ctx.meta.infoUser;
-                let resultAfterCallHandler = await BUDGET_MODEL.remove({
-                    budgetID
+                const { budgetsID } = ctx.params;
+
+                const resultAfterCallHandler = await BUDGET_MODEL.remove({
+                    budgetsID, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
- 
+
     /**
      * Dev: Hiepnh ✅
      * Func: get info and get list
@@ -127,8 +127,8 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-            type : { type: "number", optional: true },
-            isMember : { type: "number", optional: true },
+            type : { type: "string", optional: true },
+            isMember : { type: "string", optional: true },
             budgetID : { type: "string", optional: true },
             companyID : { type: "string", optional: true },
             projectID : { type: "string", optional: true },
@@ -162,7 +162,7 @@
                         isMember, companyID, projectID, contractID, type, userID, keyword, limit, lastestID, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -181,22 +181,22 @@
             option : { type: "number" },
             budgetID : { type: "string" },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, budgetID } = ctx.params;
-            
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET_MODEL.updateValue({
                     option, budgetID, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
-    
+
 }

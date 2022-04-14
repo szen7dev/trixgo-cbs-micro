@@ -1,16 +1,19 @@
 "use strict";
 
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const moment                            = require('moment');
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+
 /**
  * import inter-coll, exter-coll
  */
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
+
+const CMCS__CONTRACT_IPC_MODEL          = require('./cmcs.contract_ipc-model').MODEL;
+
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
@@ -348,13 +351,9 @@ class Model extends BaseModel {
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
                 // Giá trị còn lại phải thanh toán của IPC
-                if(Number( Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) >= 0)){
-                    updateIpc.remainingPayment = Number(infoIPC.recommendedPayment)-Number(updateIpc.amountPaid) // Đề nghị thanh toán - Đã thanh toán
-                }else{
-                    updateIpc.remainingPayment = Number(0)
-                }
-               
-                await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(infoPayment.ipc, updateIpc, { new: true });
+               let infoNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 2, ipcID: ipc, userID, ctx })
+               console.log('==============>>>>>>>>>>>>>>>>>>>')
+               console.log(infoNew)
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
@@ -728,93 +727,6 @@ class Model extends BaseModel {
         })
     }
 
-    // Get the fuck-off
-	getAmountContractValueGroupByDateTemp({ projectID, userID, ctx }){
-		return new Promise(async resolve => {
-			try {
-				if(!checkObjectIDs([userID])) {
-					return resolve({
-                        error: true,
-                        message: "Tham số userID không hợp lệ",
-                        keyError: "params_userID_invalid",
-                        status: 400
-                    });
-                }
-
-				let conditionObj = {};
-
-				if(projectID){
-                    if(!checkObjectIDs([projectID])) {
-                        return resolve({
-                            error: true,
-                            message: "Tham số projectID không hợp lệ",
-                            keyError: "params_projectID_invalid",
-                            status: 400
-                        });
-                    }
-
-                    // Lấy thông tin dự án để kiểm tra ngày bắt đầu, ngày kết thúc
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID,
-                        select: 'startTime'
-                    })
-
-                    if(infoProject.error) return resolve(infoProject);
-
-					conditionObj.project = ObjectID(projectID);
-                    conditionObj.createAt = {
-						$gte: new Date(moment(infoProject.data?.startTime || Date.now()).startOf('day').format()),
-					};
-				}
-
-				const groupObj = {
-					_id: { $dateToString: { format: "%Y-%m", date: "$date" } },
-					dataFormat: {
-						$first: {
-							$dateToString: { format: "%m/%Y", date: "$date" }
-						}
-					},
-                    count: { $sum: "$value" }
-				}
-
-                const pipeline = [
-                    {
-                        $match: conditionObj
-                    },
-                    {
-                        $group: groupObj
-                    },
-                    {
-                        $sort: {
-                            _id: -1
-                        }
-                    }
-                ]
-
-                const dataContractValueGroupByDate = await CMCS__CONTRACT_PAYMENT_COLL.aggregate(pipeline);
-
-                if(!dataContractValueGroupByDate) {
-                    return resolve({
-                        error: true,
-                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-                        keyError: "error_occurred",
-                        status: 422
-                    });
-                }
-
-				return resolve({
-					error: false,
-					data: {
-						listRecords: dataContractValueGroupByDate,
-					},
-					status: 200,
-				})
-			} catch (error) {
-                console.error(error);
-				return resolve({ error: true, message: error.message, status: 500 });
-			}
-		})
-	}
 }
 
 exports.MODEL = new Model;

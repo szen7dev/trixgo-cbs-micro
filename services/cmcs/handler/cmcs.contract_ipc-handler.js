@@ -138,6 +138,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { contractIpcID, type, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -223,4 +224,34 @@ module.exports = {
             }
         }
     }, 
+    
+    /**
+     * Name  : Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date  : 12/4/2022 
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            option : { type: "number" },
+            ipcID : { type: "string" },
+        },
+        async handler(ctx) {  
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, ipcID } = ctx.params;
+            
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.updateValue({
+                    option, ipcID, userID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
 }

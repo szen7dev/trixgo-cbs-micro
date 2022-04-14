@@ -18,8 +18,8 @@
         auth: "required",
         params: {
             groupID                 : { type: "string" },
-            plus                    : { type: "number", optional: true },
-            reasonID                : { type: "string", optional: true },
+            plus                    : { type: "number", optional: true }, // Để lại sau
+            reasonID                : { type: "string", optional: true }, // Để lại sau
             name                    : { type: "string" },
             sign                    : { type: "string", optional: true },
             unit                    : { type: "string", optional: true },

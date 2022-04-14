@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 /**
- *  CHỨNG TỪ KẾ TOÁN
+ *  BÚT TOÁN (PRODUCT)
  */
 module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     //_________Công ty      
@@ -84,6 +84,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     /**
      * LINK TỪ PHIẾU
      */
+    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
+    date: { type: Date, default: Date.now },
     //_________Phiếu/chứng từ
     voucher: {
         type: Schema.Types.ObjectId,
@@ -149,8 +151,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
-    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
-    date: { type: Date, default: Date.now },
     //_________Diễn giải nội dung
     name: String,
     //_________Ghi chú

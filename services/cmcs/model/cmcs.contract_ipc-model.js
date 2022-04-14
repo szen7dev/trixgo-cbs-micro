@@ -13,7 +13,10 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * import inter-coll, exter-coll
  */
+const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
+const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');
 const { ResumeToken }                   = require('mongodb');
@@ -697,7 +700,6 @@ class Model extends BaseModel {
      * Author: Hiepnh
      */
     getAmountByMonth({ userID, companyID, outin, year, ctx }){
-        // console.log({ userID, companyID, outin, year })
         return new Promise(async resolve => {
             try {
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
@@ -850,6 +852,87 @@ class Model extends BaseModel {
             }
         })
     } 
+
+    /**
+     * Name  : Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date  : 12/4/2022 
+     */
+    updateValue({ 
+        option, ipcID, userID, ctx
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(ipcID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" });
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Cập nhật Sản lượng
+                if(option && Number(option) === 1){
+                    // const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
+                    //     ipcID
+                    // })
+
+                    // if(infoImpleBudget){
+                    //     dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
+                    //     dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
+                    //     dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                    // }
+                }
+
+                // Cập nhật Tiền về
+                if(option && Number(option) === 2){
+                    let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                ipc: ObjectID(ipcID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: "$value" },
+                            }
+                        }, 
+                    ])
+                    if(listData && listData.length){
+                        dataUpdate.amountPaid = Number(listData[0].amount)
+                    }
+                }
+
+                let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;
