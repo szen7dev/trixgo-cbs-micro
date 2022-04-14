@@ -145,7 +145,7 @@ class Model extends BaseModel {
                 if(!infoAuthor.error){
                     dataInsert.companyOfAuthor = infoAuthor.data.company;
                 }
-                
+
                 // companyOfAssignee
                 if(!infoAssignee.error){
                     dataInsert.companyOfAssignee = infoAssignee.data.company;
@@ -665,7 +665,7 @@ class Model extends BaseModel {
                 if(dataAddToset){
                     dataUpdate.$addToSet = dataAddToset;
                 }
-                
+
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
@@ -686,11 +686,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                
+
                 if(related && related.length) {
                     const relatedCurrent = infoTask?.related?.map(item => item.toString()) ?? [];
                     const newRelated = related.filter(item => !relatedCurrent.includes(item));
-                    console.log({ newRelated, related, relatedCurrent, task: infoTask?.related })
 
                     /**
                      * Thêm người liên quan trong công việc
@@ -1097,7 +1096,7 @@ class Model extends BaseModel {
                     } else{
                         conditionObj.type = 1;
                     }
-                    
+
                     if(isChildTask == 1){
                         conditionObj.type = 1;
                         delete conditionObj.status;
@@ -1112,7 +1111,7 @@ class Model extends BaseModel {
                 // Công ty của người thực hiện
                 if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
                     conditionObj.companyOfAssignee = companyOfAssignee;
-                    
+
                     // isPassPermision dùng để bỏ qua 1 trong 4 quyền
                     if(isPassPermision == 1){
                         delete conditionObj.$or;
@@ -1453,10 +1452,10 @@ class Model extends BaseModel {
                 }
 
                 let listCompanyAndTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
-                    { 
-                        $match: { 
-                            project: ObjectID(projectID), 
-                            companyOfAssignee: { $exists: true }, 
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            companyOfAssignee: { $exists: true },
                             actualFinishTime: {
                                 $lt: start,
                                 $exists: true,
@@ -1466,19 +1465,19 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$companyOfAssignee",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 let listCompanyAndTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
-                        $match: { 
-                            project: ObjectID(projectID), 
-                            companyOfAssignee: { $exists: true }, 
+                        $match: {
+                            project: ObjectID(projectID),
+                            companyOfAssignee: { $exists: true },
                             actualFinishTime: {
                                 $gte: start,
                                 $lt: addDate(7),
@@ -1489,19 +1488,19 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$companyOfAssignee",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 let listCompanyAndTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
                     {
-                        $match: { 
-                            project: ObjectID(projectID), 
-                            companyOfAssignee: { $exists: true }, 
+                        $match: {
+                            project: ObjectID(projectID),
+                            companyOfAssignee: { $exists: true },
                             actualFinishTime: {
                                 $gte: addDate(7),
                                 $exists: true,
@@ -1511,33 +1510,33 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$companyOfAssignee",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 let listCompanyAndTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
                     {
-                        $match: { 
-                            project: ObjectID(projectID), 
-                            companyOfAssignee: { $exists: true }, 
+                        $match: {
+                            project: ObjectID(projectID),
+                            companyOfAssignee: { $exists: true },
                             status: 3
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$companyOfAssignee",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 return resolve({ error: false, data: { listCompany: listCompany?.data?.listRecords,
-                    listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days, 
+                    listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
                     } });
             } catch (error) {
@@ -1569,7 +1568,7 @@ class Model extends BaseModel {
                 // Số lượng công việc trong mỗi dự án
                 let listAmountTask = await PCM_PLAN_TASK_COLL.aggregate([
                     { $match: conditionObj },
-                    { $group: { 
+                    { $group: {
                         _id: "$project",
                         amount: { $sum: 1 }
                     }},
@@ -1587,84 +1586,84 @@ class Model extends BaseModel {
 
                 // Số lượng công việc quá hạn
                 let listAmountTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
-                    { 
-                        $match: { 
-                            project: { $in: listProjectID } , 
-                            status: { $ne: 3 }, 
+                    {
+                        $match: {
+                            project: { $in: listProjectID } ,
+                            status: { $ne: 3 },
                             actualFinishTime: {
                                 $lt: start,
                                 $exists: true,
                                 $ne: null
-                            } 
+                            }
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$project",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 // Số lượng công việc Tuần tới
                 let listAmountTaskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
-                    { 
-                        $match: { 
-                            project: { $in: listProjectID } , 
-                            status: { $ne: 3 }, 
+                    {
+                        $match: {
+                            project: { $in: listProjectID } ,
+                            status: { $ne: 3 },
                             actualFinishTime: {
                                 $gte: start,
                                 $lt: addDate(7),
                                 $exists: true,
                                 $ne: null
-                            } 
+                            }
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$project",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 // Số lượng công việc > 7 ngày tới
                 let listAmountTaskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
-                    { 
-                        $match: { 
-                            project: { $in: listProjectID } , 
-                            status: { $ne: 3 }, 
+                    {
+                        $match: {
+                            project: { $in: listProjectID } ,
+                            status: { $ne: 3 },
                             actualFinishTime: {
                                 $gte: addDate(7),
                                 $exists: true,
                                 $ne: null
-                            } 
+                            }
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$project",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);
 
                 // Số lượng công việc > 7 ngày tới
                 let listAmountTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
-                    { 
-                        $match: { 
-                            project: { $in: listProjectID } , 
-                            status: 3, 
+                    {
+                        $match: {
+                            project: { $in: listProjectID } ,
+                            status: 3,
                         }
                     },
                     {
-                        $group: { 
+                        $group: {
                             _id: "$project",
                             count: { $sum: 1 }
-                        } 
+                        }
                     },
                     { $sort: { _id: -1 }},
                 ]);

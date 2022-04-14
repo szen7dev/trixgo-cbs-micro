@@ -112,16 +112,16 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx  }){
+    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx }){
         return new Promise(async (resolve) => {
             try {
-                if(!name || !checkObjectIDs(userID))
+                if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID, name };
+                let dataUpdate = { userUpdate: userID };
 
                 /**
                  * VALIDATION STEP (2)
@@ -137,8 +137,9 @@ class Model extends BaseModel {
                     })
 
                     // Trường hợp lập kế hoạch cho Hợp đồng của Dự án thuộc công ty khác
-                    if(infoContract){
+                    if(infoContract && !infoContract.error){
                         const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+
                         dataUpdate.outin = outin
                         dataUpdate.real = real
                         dataUpdate.field = field
@@ -148,12 +149,16 @@ class Model extends BaseModel {
                         dataUpdate.sellerInfo = sellerInfo
                         dataUpdate.company = company
                         dataUpdate.project = project
-                        dataInsert.contract = contractID
+                        dataUpdate.contract = contractID
                     }
                 }
 
+                if(name) {
+                    dataUpdate.name = name;
+                }
+
                 if(date){
-                    dataUpdate.date =date;
+                    dataUpdate.date = date;
                 }
 
                 if(sign){
@@ -173,7 +178,7 @@ class Model extends BaseModel {
                 }
 
                 if(realDate){
-                    dataUpdate.realDate =realDate;
+                    dataUpdate.realDate = realDate;
                 }
 
                 if(!isNaN(realValue) && Number(realValue) >= 0){
@@ -183,6 +188,15 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+                infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.populate(infoAfterUpdate, {
+                    path: 'contract',
+                    select: '_id sellerInfo',
+                    populate: {
+                        path: 'sellerInfo',
+                        select: '_id name',
+                    }
+                })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -279,7 +293,7 @@ class Model extends BaseModel {
                  */
                  let sortBy;
                  let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                 let keys	     = ['createAt__1', '_id__1'];
 
                 /**
                  * VALIDATION STEP (2)
@@ -328,6 +342,8 @@ class Model extends BaseModel {
                 }
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
+                } else{
+                    conditionObj.parent = { $exists: false }
                 }
 
                 if(keyword){
@@ -379,7 +395,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
