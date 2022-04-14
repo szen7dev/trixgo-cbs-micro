@@ -23,24 +23,27 @@
             name                    : { type: "string" },
             sign                    : { type: "string", optional: true },
             unit                    : { type: "string", optional: true },
+            unitPrice               : { type: "number", optional: true },
             description             : { type: "string", optional: true },
             note                    : { type: "string", optional: true },
             quantity                : { type: "number", optional: true },
+            forecastAmount          : { type: "number", optional: true },
+            forecastQuantity        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, plus, reasonID, name, sign, unit, description, note, quantity } = ctx.params;
+                const { budgetID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await BUDGET__ITEM_MODEL.insert({
-                    ctx, userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity
+                const resultAfterCallHandler = await BUDGET__ITEM_MODEL.insert({
+                    userID, budgetID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -115,7 +118,7 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-            itemID      : { type: "string", optional: true },
+            budgetItemID: { type: "string", optional: true },
             budgetID    : { type: "string", optional: true },
 
             // Field mặc định
@@ -128,13 +131,13 @@
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { itemID, budgetID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { budgetItemID, budgetID, keyword, limit, lastestID, populates, select } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(itemID){
+                if(budgetItemID){
                     resultAfterCallHandler = await BUDGET__ITEM_MODEL.getInfo({
-                        itemID, userID, select, populates
+                        budgetItemID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await BUDGET__ITEM_MODEL.getList({

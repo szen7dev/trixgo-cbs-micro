@@ -17,7 +17,7 @@
     insert: {
         auth: "required",
         params: {
-            type                    : { type: "number" },
+            type                    : { type: "number", optional: true },
             projectID               : { type: "string", optional: true }, // Để lại sau
             contractID              : { type: "string", optional: true }, // Để lại sau
             name                    : { type: "string" },
@@ -59,7 +59,7 @@
         auth: "required",
         params: {
             budgetID                : { type: "string" },
-            type                    : { type: "number" },
+            type                    : { type: "number", optional: true },
             projectID               : { type: "string", optional: true },
             contractID              : { type: "string", optional: true },
             name                    : { type: "string" },
