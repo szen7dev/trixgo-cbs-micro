@@ -67,7 +67,7 @@ module.exports = {
         params: {
             cashFlowID          : { type: "string" },
             contractID          : { type: "string", optional: true },
-            name                : { type: "string" },
+            name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string", optional: true },
