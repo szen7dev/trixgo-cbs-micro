@@ -21,7 +21,8 @@ const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant')
  * COLLECTIONS
  */
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
-
+const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
+const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
 
 class Model extends BaseModel {
 
@@ -1199,7 +1200,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-     getListByMonth({ userID, companyID, outin, month, year, 
+    getListByMonth({ userID, companyID, outin, month, year, 
         keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
@@ -1309,6 +1310,104 @@ class Model extends BaseModel {
             }
         })
     } 
+
+    /**
+     * Name  : Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date  : 12/4/2022 
+     */
+    updateValue({ 
+        option, contractID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(contractID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "contractID_invalid" });
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                
+                // Cập nhật Sản lượng
+                if(option && Number(option) === 1){
+                   
+                }
+
+                // Cập nhật Doanh thu
+
+                // Cập nhật Tiền về
+                if(option && Number(option) === 3){
+                    // Tạm ứng
+                    let listData1 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                contract: ObjectID(contractID),
+                                type: 1,
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                value: { $sum: "$value" },
+                            }
+                        }, 
+                    ])
+                    
+                    // Thanh toán
+                    let listData2 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                contract: ObjectID(contractID),
+                                type: 2,
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                value: { $sum: "$value" },
+                            }
+                        }, 
+                    ])
+
+                    if(listData1 && listData1.length){
+                        dataUpdate.advancePaymentPaid = Number(listData1[0].value)
+                    }
+
+                    if(listData2 && listData2.length){
+                        dataUpdate.amountPaid = Number(listData2[0].value)
+                    }
+                }
+
+                let infoAfterUpdate = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

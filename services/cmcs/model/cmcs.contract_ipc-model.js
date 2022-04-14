@@ -859,7 +859,7 @@ class Model extends BaseModel {
      * Date  : 12/4/2022 
      */
     updateValue({ 
-        option, ipcID, userID, ctx
+        option, ipcID, userID
     }){ 
         return new Promise(async (resolve) => {
             try {
@@ -889,21 +889,16 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
+
                 // Cập nhật Sản lượng
                 if(option && Number(option) === 1){
-                    // const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
-                    //     ipcID
-                    // })
-
-                    // if(infoImpleBudget){
-                    //     dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
-                    //     dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
-                    //     dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
-                    // }
+                   
                 }
 
+                // Cập nhật Doanh thu
+
                 // Cập nhật Tiền về
-                if(option && Number(option) === 2){
+                if(option && Number(option) === 3){
                     let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
                         {
                             $match: {
@@ -917,6 +912,7 @@ class Model extends BaseModel {
                             }
                         }, 
                     ])
+
                     if(listData && listData.length){
                         dataUpdate.amountPaid = Number(listData[0].amount)
                     }
