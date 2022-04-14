@@ -36,7 +36,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ ctx, userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity }) { 
+    insert({ 
+        userID, budgetID, plus, reasonID, name, sign, unit, description, note, quantity,
+        unitPrice, forecastAmount, forecastQuantity
+    }) { 
         return new Promise(async (resolve) => {
             try {
                     
@@ -87,6 +90,10 @@ class Model extends BaseModel {
                     dataInsert.unit = unit;
                 }
 
+                if(unitPrice){
+                    dataInsert.unitPrice = unitPrice;
+                }
+
                 if(description){
                     dataInsert.description = description;
                 }
@@ -95,11 +102,19 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                //______Giá trị
-                if(!isNaN(quantity) && Number(quantity) >= 0){
-                    dataInsert.quantity     = quantity;
+                if(!isNaN(forecastAmount) && +forecastAmount >= 0){
+                    dataInsert.forecastAmount = forecastAmount;
                 }
-                
+
+                if(!isNaN(forecastQuantity) && +forecastQuantity >= 0){
+                    dataInsert.forecastQuantity = forecastQuantity;
+                }
+
+                //______Giá trị
+                if(!isNaN(quantity) && +quantity >= 0){
+                    dataInsert.quantity = quantity;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_budget_item" });
@@ -195,11 +210,11 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 10/4/2022
      */
-    getInfo({ itemID, 
+    getInfo({ budgetItemID, 
         select, populates }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(itemID))
+                if (!checkObjectIDs(budgetItemID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populates
@@ -215,7 +230,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let info = await BUDGET__ITEM_COLL.findById(itemID)
+                let info = await BUDGET__ITEM_COLL.findById(budgetItemID)
                                 .select(select)
                                 .populate(populates)
 

@@ -6,8 +6,8 @@ const Schema    = require('mongoose').Schema;
 /**
  * HẠNG MỤC NGÂN SÁCH
  */
-module.exports  = DATABASE_MIDDLEWARE("budget_item", { 
-    //_________Công ty 
+module.exports  = DATABASE_MIDDLEWARE("budget_item", {
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company",
@@ -28,7 +28,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
         type: Schema.Types.ObjectId,
         ref: "budget",
         require: true,
-    },    
+    },
     /**
      * THÔNG TIN NGÂN SÁCH
      */
@@ -38,20 +38,20 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
      * 1-Phát sinh hợp lệ
      * 2-Phát sinh không hợp lệ
      */
-    plus: { type: Number, default: 0 },      
+    plus: { type: Number, default: 0 },
     //_________Khóa cập nhật(1-Open/2-Khóa)
-    lock: { type: Number, default: 1 },    
+    lock: { type: Number, default: 1 },
     //_________Lý do phát sinh
     reason: {
         type: Schema.Types.ObjectId,
         ref: "doctype",
-    },        
+    },
     //_________Tên
     name: String,
     //_________Mã hiệu
     sign: String,
     //_________Đơn vị tính
-    unit: String,    
+    unit: String,
     //_________Mô tả
     description: String,
     //_________Ghi chú
@@ -104,7 +104,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
     },
     /**
      * DỰ BÁO
-     */        
+     */
     //______Dự báo Khối lượng
     forecastQuantity: {
         type: Number,
@@ -129,7 +129,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_item", {
     forecastVatAmount: {
         type: Number,
         default : 0
-    },    
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
