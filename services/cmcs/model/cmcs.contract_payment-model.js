@@ -12,6 +12,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 
+const ITEM__CONTRACT_MODEL              = require('../../item/model/item.contract-model').MODEL;
 const CMCS__CONTRACT_IPC_MODEL          = require('./cmcs.contract_ipc-model').MODEL;
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
@@ -226,86 +227,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Payment không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(infoPayment.ipc);    
-
-                let contractID = infoPayment.contract;       
-
-                // Precalculate-Trường để update các giá trị vào Dự án
-
-                // Precalculate-Trường để update các giá trị vào Hợp đồng
-                let updateIpc = {}, updateContract = {}
-
-                // Dữ liệu giải ngân của cùng IPC
-                let listDataIpc = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                    {
-                        $match: {
-                            ipc: ObjectID(infoPayment.ipc),
-                            _id: { $nin: [ ObjectID(contractPaymentID) ] },
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            value: { $sum: "$value" },
-                        }
-                    }, 
-                ])
-                
-                if(listDataIpc.length){
-                    updateIpc.amountPaid = Number(listDataIpc[0].value)
-                }else{
-                    updateIpc.amountPaid = Number(0)
-                }
-                // console.log('(listDataIp==================>>>>>>')
-                // console.log(listDataIpc)
-
-                // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
-                // Tạm ứng
-                let listData1 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            type: 1,
-                            _id: { $nin: [ ObjectID(contractPaymentID) ] },
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            value: { $sum: "$value" },
-                        }
-                    }, 
-                ])
-                // Thanh toán
-                let listData2 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            type: 2,
-                            _id: { $nin: [ ObjectID(contractPaymentID) ] },
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            value: { $sum: "$value" },
-                        }
-                    }, 
-                ])
-                // console.log('listData1=================>>>>')
-                // console.log(listData1)
-                // console.log('listData2=================>>>>')
-                // console.log(listData2)
-
-                if(listData1.length){
-                    updateContract.advancePaymentPaid = Number(listData1[0].value)
-                }else{
-                    updateContract.advancePaymentPaid = Number(0)
-                }
-                if(listData2.length){
-                    updateContract.amountPaid = Number(listData2[0].value)
-                }else{
-                    updateContract.amountPaid = Number(0)
-                }
+                let contractID = infoPayment.contract;
 
                 dataUpdate.type = Number(infoIPC.type);
 
@@ -328,20 +250,7 @@ class Model extends BaseModel {
                 // Cập nhật giá trị cho IPC, Hợp đồng và Dự án
                 if(value){
                     dataUpdate.value = value;
-                    
-                    if(Number(infoPayment.type) === 1){
-
-                        // Cập nhật cho IPC
-                        updateIpc.amountPaid = Number(updateIpc.amountPaid)+Number(value)
-
-                        // Cập nhật cho Hợp đồng
-                        updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(value)
-                    }else{
-                        updateContract.amountPaid = Number(updateContract.amountPaid)+Number(value)
-                    }
                 }
-                // console.log('updateContract===========>>>>>>')
-                // console.log(updateContract)
 
                 let infoAfterUpdate = await CMCS__CONTRACT_PAYMENT_COLL.findByIdAndUpdate(contractPaymentID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
@@ -351,27 +260,19 @@ class Model extends BaseModel {
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
                 // Giá trị còn lại phải thanh toán của IPC
-               let infoNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 2, ipcID: ipc, userID, ctx })
-               console.log('==============>>>>>>>>>>>>>>>>>>>')
-               console.log(infoNew)
+                let infoIpcNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
+                // console.log(infoIpcNew)
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                // Cập nhật các trường thông tin cho hợp đồng
-                let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
-                    contractID: `${contractID}`,
-                })    
-                
-                // Giá trị còn lại phải thanh toán của hợp đồng
-                let remainingPayment = Number(infoContract.data.recommendedPayment)-Number(updateContract.advancePaymentPaid)-Number(updateContract.amountPaid)
+                 let infoContractNew = await ITEM__CONTRACT_MODEL.updateValue({ option: 3, contractID, userID })
+                //  console.log(infoContractNew)
 
-                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID: `${contractID}`, // Convert để nhận đầu vào dạng String do Model contract yêu cầu
-                    advancePaymentPaid: Number(updateContract.advancePaymentPaid),
-                    amountPaid: Number(updateContract.amountPaid),
-                    remainingPayment: Number(remainingPayment)
-                })    
+                // Cập nhật các trường thông tin cho hợp đồng
+                
+                // Giá trị còn lại phải thanh toán của hợp đồng 
+                // let infoContractNew = await ITEM__CONTRACT_MODEL.updateValue({ option: 3, ipcID: ipc, userID, ctx })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
