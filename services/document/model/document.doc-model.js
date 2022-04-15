@@ -84,6 +84,14 @@ class Model extends BaseModel {
                         keyError: 'params_invalid',
                     });
                 }
+
+                if (!checkObjectIDs(datahubContactID)) {
+					return resolve({  
+                        error: true, 
+                        message: 'Request params datahubContactID invalid', 
+                        keyError: 'params_invalid',
+                    });
+                }
                 
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
                     return resolve({
