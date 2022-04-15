@@ -34,27 +34,25 @@ class Model extends BaseModel {
      * Code: 
      */
     insert({ contractID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx  }) { 
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataInsert = { userCreate: userID, contract: contractID };
-
-                // Trường để update các giá trị vào hợp đồng
-                let updateContract = {};
+                let dataInsert = { userCreate: userID, contract: contractID }
 
                 let companyID;
                 let projectID;
                 if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: "Mã hợp đồng không đúng", keyError: "contractID_invalid" });
+                    return resolve({ error: true, message: "Mã hợp đồng không đúng", keyError: "contractID_invalid" })
 
                 // call service department để lấy thông tin
-                
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                     contractID
                 })
+
                 /**
                  * Company lấy theo company của project
                  * Chứ không phải lấy theo company của user tạo task
@@ -62,10 +60,10 @@ class Model extends BaseModel {
                 companyID = infoContract.data.company;
                 projectID = infoContract.data.project;
                 if(!companyID)
-                    return resolve({ error: true, message: "Mã công ty không đúng", keyError: "company_invalid" });
+                    return resolve({ error: true, message: "Mã công ty không đúng", keyError: "company_invalid" })
 
                 if(!projectID)
-                    return resolve({ error: true, message: "Mã dự án không đúng", keyError: "project_invalid" });
+                    return resolve({ error: true, message: "Mã dự án không đúng", keyError: "project_invalid" })
                 
 
                 if(companyID){
@@ -77,49 +75,42 @@ class Model extends BaseModel {
                 }
 
                 if(name){
-                    dataInsert.name = name;
+                    dataInsert.name = name
                 }
 
                 if(sign){
-                    dataInsert.sign = sign;
+                    dataInsert.sign = sign
                 }
 
                 if(description){
-                    dataInsert.description = description;
+                    dataInsert.description = description
                 }
 
                 if(date){
-                    dataInsert.date = date;
+                    dataInsert.date = date
                 }
 
                 if(produce){
-                    dataInsert.produce     = produce;
-                    updateContract.produce = produce;
+                    dataInsert.produce = produce
                 }
 
                 if(vatProduce){
-                    dataInsert.vatProduce     = vatProduce;
-                    updateContract.vatProduce = vatProduce;
+                    dataInsert.vatProduce = vatProduce
                 }
 
                 if(plusProduce){
-                    dataInsert.plusProduce     = plusProduce;
-                    updateContract.plusProduce = plusProduce;
+                    dataInsert.plusProduce = plusProduce
                 }
                 
                 if(vatPlusProduce){
-                    dataInsert.vatPlusProduce     = vatPlusProduce;
-                    updateContract.vatPlusProduce = vatPlusProduce;
+                    dataInsert.vatPlusProduce = vatPlusProduce
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: "can_not_insert_contract_production", status: 403 });
 
-                // update contract precalculated
-                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID, dataInc: updateContract
-                })
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -135,6 +126,7 @@ class Model extends BaseModel {
     update({ 
         contractProductionID, name, sign, description, date, produce, vatProduce, plusProduce, vatPlusProduce, userID, ctx
     }){ 
+        const that = this
         return new Promise(async (resolve) => {
             try {
 
@@ -146,8 +138,6 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                // Object update contract ($inc)
-                let updateContract = {};
                 let infoContractProduction = await CMCS__CONTRACT_PRODUCTION_COLL.findById(contractProductionID);
                 let contractID = infoContractProduction.contract;
                 
@@ -163,80 +153,64 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 if(name){
-                    dataUpdate.name = name;
+                    dataUpdate.name = name
                 }
 
                 if(sign){
-                    dataUpdate.sign = sign;
+                    dataUpdate.sign = sign
                 }
 
                 if(description){
-                    dataUpdate.description = description;
+                    dataUpdate.description = description
                 }
 
                 if(date){
-                    dataUpdate.date = date;
+                    dataUpdate.date = date
                 }
 
                 if(produce){
-                    dataUpdate.produce = produce;
-                    // Giá trị produce hiện tại lúc chưa thay đổi
-                    let produceCurrent = infoContractProduction.produce;
-            
-                    // Giá trị chênh lệch khi thay đổi
-                    let produceAfter   = produce - produceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.produce = produceAfter;
+                    dataUpdate.produce = produce
                 }
 
                 if(vatProduce){
-                    dataUpdate.vatProduce = vatProduce;
-
-                    // Giá trị vatProduce hiện tại lúc chưa thay đổi
-                    let vatProduceCurrent = infoContractProduction.vatProduce;
-        
-                    // Giá trị chênh lệch khi thay đổi
-                    let vatProduceAfter   = vatProduce - vatProduceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.vatProduce = vatProduceAfter;
+                    dataUpdate.vatProduce = vatProduce
                 }
 
                 if(plusProduce){
-                    dataUpdate.plusProduce = plusProduce;
-
-                    // Giá trị plusProduce hiện tại lúc chưa thay đổi
-                    let plusProduceCurrent = infoContractProduction.plusProduce;
-    
-                    // Giá trị chênh lệch khi thay đổi
-                    let plusProduceAfter   = plusProduce - plusProduceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.plusProduce = plusProduceAfter;
+                    dataUpdate.plusProduce = plusProduce
                 }
                 
                 if(vatPlusProduce){
-                    dataUpdate.vatPlusProduce = vatPlusProduce;
-
-                    // Giá trị vatPlusProduce hiện tại lúc chưa thay đổi
-                    let vatPlusProduceCurrent = infoContractProduction.vatPlusProduce;
-
-                    // Giá trị chênh lệch khi thay đổi
-                    let vatPlusProduceAfter   = vatPlusProduce - vatPlusProduceCurrent;
-
-                    // Gán giá trị chênh lệch cho hợp đồng
-                    updateContract.vatPlusProduce = vatPlusProduceAfter;
+                    dataUpdate.vatPlusProduce = vatPlusProduce
                 }
 
-                let infoAfterUpdate = await CMCS__CONTRACT_PRODUCTION_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true });
+                let infoAfterUpdate = await CMCS__CONTRACT_PRODUCTION_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 })
 
-                // Cập nhật Hợp đồng (Precaculate)
-                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID: `${contractID}`, dataInc: updateContract
-                })
+                /**
+                 * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
+                 */    
+                 let infoAmountContract = await that.getAmountByObject({userID, contractID})
+                //  console.log(infoAmountContract)
+ 
+                 if(infoAmountContract){
+                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                        contractID,
+                        userID,
+                        acceptance: infoAmountContract.data.acceptance, 
+                        vatAcceptance: infoAmountContract.data.vatAcceptance, 
+                        plusAcceptance: infoAmountContract.data.plusAcceptance, 
+                        vatPlusAcceptance: infoAmountContract.data.vatPlusAcceptance, 
+                        retainedValue: infoAmountContract.data.retainedValue, 
+                        advancePaymentDeduction: infoAmountContract.data.advancePaymentDeduction, 
+                        otherDeduction: infoAmountContract.data.otherDeduction, 
+                        recommendedPayment: infoAmountContract.data.recommendedPayment, 
+                        advancePaymentPaid: infoAmountContract.data.advancePaymentPaid, 
+                        amountPaid: infoAmountContract.data.amountPaid, 
+                        remainingPayment: infoAmountContract.data.remainingPayment, 
+                    })
+                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -436,6 +410,64 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Gom nhóm theo đối tượng ✅
+     * Author: Hiepnh
+     * Date: 15/04/2022
+     */
+    getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        return new Promise(async resolve => {
+            try {
+                let produce=0, vatProduce=0, plusProduce=0, vatPlusProduce=0
+
+                let conditionObj = { }
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }
+
+                let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            produce: { $sum: "$produce" },
+                            vatProduce: { $sum: "$vatProduce" },
+                            plusProduce: { $sum: "$plusProduce" },
+                            vatPlusProduce: { $sum: "$vatPlusProduce" },
+                        }
+                    }, 
+                ])
+
+                if(listData && listData.length){
+                    produce = Number(listData[0].produce)
+                    vatProduce = Number(listData[0].vatProduce)
+                    plusProduce = Number(listData[0].plusProduce)
+                    vatPlusProduce = Number(listData[0].vatPlusProduce)
+                }
+
+                return resolve({ error: false, data: { produce, vatProduce, plusProduce, vatPlusProduce } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

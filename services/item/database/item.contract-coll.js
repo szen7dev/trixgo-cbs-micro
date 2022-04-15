@@ -139,6 +139,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vatPlus: { type: Number, default: 0 },
     //_________(5)Tạm ứng theo hợp đồng
     advancePayment: { type: Number, default: 0 },
+    /**SẢN LƯỢNG */
     //_________(6)Sản lượng trước VAT
     produce: { type: Number, default: 0 },
     //_________(7)Sản lượng phần VAT
