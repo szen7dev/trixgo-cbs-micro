@@ -53,6 +53,11 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
+    //_________Danh bạ hệ thống
+    datahubContact: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_contact"
+    },
     //_________Phân loại theo tính chất (type=2)
     property: {
         type: Schema.Types.ObjectId,
