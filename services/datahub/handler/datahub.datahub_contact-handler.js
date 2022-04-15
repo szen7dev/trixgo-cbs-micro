@@ -48,7 +48,7 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            contactID: { type: "string" },
+            datahubContactID           : { type: "string" },
             name                : { type: "string" },
             taxid               : { type: "string" },
             address             : { type: "string",  optional: true },
@@ -58,11 +58,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  contactID, name, sign, address, taxid, note } = ctx.params;
+                let {  datahubContactID, name, sign, address, taxid, note } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.update({
-                    contactID, name, sign, address, taxid, note, userID
+                    datahubContactID, name, sign, address, taxid, note, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -80,16 +80,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            contactID: { type: "string" },
+            datahubContactID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactID } = ctx.params;
+                let { datahubContactID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.remove({
-                    contactID 
+                    datahubContactID 
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -107,7 +107,7 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            contactID : { type: "string", optional: true },
+            datahubContactID : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -119,13 +119,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contactID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { datahubContactID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(contactID){
+                if(datahubContactID){
                     resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.getInfo({
-                        contactID, select, populates
+                        datahubContactID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_CONTACT_MODEL.getList({
