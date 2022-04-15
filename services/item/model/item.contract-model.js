@@ -43,6 +43,9 @@ class Model extends BaseModel {
          }){
         return new Promise(async resolve => {
             try {
+                if(!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
+
                 let dataInsert = {
                     project: projectID, name, sign, date, userCreate: userID, members: [userID], admins: [userID]
                 }
@@ -334,18 +337,9 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPull     = {};
 
-                // Tạm thời không cho update projectID sau khi đã tạo mới xong
-                // if(projectID){
-                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                //         departmentID: projectID
-                //     })
-
-                //     if(infoProject.error)
-                //         return resolve({ error: true, message: "Request params project invalid" });
-
-                //     //________company được lấy theo dự án
-                //     dataUpdate.company = infoProject.data.company;
-                // }
+                /**
+                 * Tạm thời không cho update projectID sau khi đã tạo mẩu tin
+                 */
 
                 const infoContract = await ITEM__CONTRACT_COLL.findById(contractID).lean();
 
@@ -356,10 +350,6 @@ class Model extends BaseModel {
                         keyError: "contract_not_exists",
                         status: 400
                     });
-                }
-
-                if(checkObjectIDs(projectID)){
-                    dataUpdate.project = projectID;
                 }
 
                 if(checkObjectIDs(parentID)){
