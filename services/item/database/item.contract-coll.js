@@ -147,6 +147,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     plusProduce: { type: Number, default: 0 },
     //_________(9)Sản lượng phát sinh phần VAT
     vatPlusProduce: { type: Number, default: 0 },
+    /**IPC */
     //_________(10)Giá trị nghiệm thu trước VAT
     acceptance: { type: Number, default: 0 },
     //_________(11)Giá trị nghiệm thu phần VAT
@@ -169,7 +170,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     amountPaid: { type: Number, default: 0 },
     //_________(20 = (17 - 18 - 19))Còn lại chưa giải ngân
     remainingPayment: { type: Number, default: 0 },
-    //_________(21 = (5) - (18))Dư ứng
+    //_________(21 = (5) - (15))Dư ứng
     advancePaymentOverage: { type: Number, default: 0 },
     //_________(22)Giá trị quyết toán
     finalValue: { type: Number, default: 0 },

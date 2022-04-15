@@ -1317,8 +1317,9 @@ class Model extends BaseModel {
      * Date  : 12/4/2022 
      */
     updateValue({ 
-        option, contractID, userID
+        contractID, userID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment
     }){ 
+        console.log({acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1330,6 +1331,9 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "contractID_invalid" });
+
+                // let infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
+                // let recommendedPayment = infoContract.recommendedPayment | 0
                 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -1349,54 +1353,45 @@ class Model extends BaseModel {
                  */
                 
                 // Cập nhật Sản lượng
-                if(option && Number(option) === 1){
-                   
-                }
+
 
                 // Cập nhật Doanh thu
-
-                // Cập nhật Tiền về
-                if(option && Number(option) === 3){
-                    // Tạm ứng
-                    let listData1 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                        {
-                            $match: {
-                                contract: ObjectID(contractID),
-                                type: 1,
-                            }
-                        }, 
-                        {
-                            $group: {
-                                _id: { },
-                                value: { $sum: "$value" },
-                            }
-                        }, 
-                    ])
-                    
-                    // Thanh toán
-                    let listData2 = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                        {
-                            $match: {
-                                contract: ObjectID(contractID),
-                                type: 2,
-                            }
-                        }, 
-                        {
-                            $group: {
-                                _id: { },
-                                value: { $sum: "$value" },
-                            }
-                        }, 
-                    ])
-
-                    if(listData1 && listData1.length){
-                        dataUpdate.advancePaymentPaid = Number(listData1[0].value)
-                    }
-
-                    if(listData2 && listData2.length){
-                        dataUpdate.amountPaid = Number(listData2[0].value)
-                    }
+                if(!isNaN(acceptance) && Number(acceptance) >= 0){      
+                    dataUpdate.acceptance = Number(acceptance);
                 }
+                if(!isNaN(vatAcceptance) && Number(vatAcceptance) >= 0){      
+                    dataUpdate.vatAcceptance = Number(vatAcceptance);
+                }
+                if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){      
+                    dataUpdate.plusAcceptance = Number(plusAcceptance);
+                }
+                if(!isNaN(vatPlusAcceptance) && Number(vatPlusAcceptance) >= 0){      
+                    dataUpdate.vatPlusAcceptance = Number(vatPlusAcceptance);
+                }
+                if(!isNaN(retainedValue) && Number(retainedValue) >= 0){      
+                    dataUpdate.retainedValue = Number(retainedValue);
+                }
+                if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){      
+                    dataUpdate.advancePaymentDeduction = Number(advancePaymentDeduction);
+                }
+                if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){      
+                    dataUpdate.otherDeduction = Number(otherDeduction);
+                }
+                if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){      
+                    dataUpdate.recommendedPayment = Number(recommendedPayment);
+                }
+
+                // Cập nhật Tiền về và còn lại phải trả
+                if(!isNaN(advancePaymentPaid) && Number(advancePaymentPaid) >= 0){      
+                    dataUpdate.advancePaymentPaid = Number(advancePaymentPaid);
+                }
+
+                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){      
+                    dataUpdate.amountPaid = Number(amountPaid);
+                }
+
+                // Giá trị còn lại phải thanh toán
+                dataUpdate.remainingPayment = Number(recommendedPayment) - Number(advancePaymentPaid) - Number(amountPaid)
 
                 let infoAfterUpdate = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
