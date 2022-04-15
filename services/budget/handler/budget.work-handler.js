@@ -62,7 +62,7 @@
     update: {
         auth: "required",
         params: {
-        workID       : { type: "string" },
+            workID                  : { type: "string" },
             plus                    : { type: "number", optional: true },
             reasonID                : { type: "string", optional: true },
             name                    : { type: "string" },

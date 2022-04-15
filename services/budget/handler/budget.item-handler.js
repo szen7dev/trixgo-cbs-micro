@@ -7,7 +7,7 @@
   * MODELS
   */
  const BUDGET__ITEM_MODEL                 = require('../model/budget.item-model').MODEL;
- 
+
  module.exports = {
     /**
      * Dev: Hiepnh ✅
@@ -64,25 +64,28 @@
             unit                    : { type: "string", optional: true },
             description             : { type: "string", optional: true },
             note                    : { type: "string", optional: true },
+            unitPrice               : { type: "number", optional: true },
             quantity                : { type: "number", optional: true },
+            forecastAmount          : { type: "number", optional: true },
+            forecastQuantity        : { type: "number", optional: true },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { itemID, plus, reasonID, name, sign, unit, description, note, quantity } = ctx.params;
-            
+                let { itemID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity } = ctx.params;
+
                 const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await BUDGET__ITEM_MODEL.update({
-                    itemID, plus, reasonID, name, sign, unit, description, note, quantity, userID, ctx
+                    itemID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
- 
+
     /**
      * Dev: Hiepnh ✅
      * Func: Xóa
@@ -102,14 +105,14 @@
                 let resultAfterCallHandler = await BUDGET__ITEM_MODEL.remove({
                     itemID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
- 
+
     /**
      * Dev: Hiepnh ✅
      * Func: get info and get list
@@ -144,7 +147,7 @@
                         budgetID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -163,17 +166,17 @@
             option : { type: "number" },
             itemID : { type: "string" },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, itemID } = ctx.params;
-            
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET__ITEM_MODEL.updateValue({
                     option, itemID, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
