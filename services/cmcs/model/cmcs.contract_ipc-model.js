@@ -35,6 +35,7 @@ class Model extends BaseModel {
      * Code: 
      */
     insert({ type, contractID, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx  }) { 
+        const that = this
         return new Promise(async (resolve) => {
             try {
                     
@@ -42,11 +43,6 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = { userCreate: userID, contract: contractID };
-
-                // Precalculate-Trường để update các giá trị vào Dự án
-
-                // Precalculate-Trường để update các giá trị vào Hợp đồng
-                let updateContract = {};
 
                 /** 
                  * VALIDATION STEP (2)
@@ -83,98 +79,6 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
-                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            acceptance: { $sum: "$acceptance" },
-                            vatAcceptance: { $sum: "$vatAcceptance" },
-                            plusAcceptance: { $sum: "$plusAcceptance" },
-                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
-                            retainedValue: { $sum: "$retainedValue" },
-                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
-                            otherDeduction: { $sum: "$otherDeduction" },
-                            recommendedPayment: { $sum: "$recommendedPayment" },
-                            remainingPayment: { $sum: "$remainingPayment" },
-                        }
-                    }, 
-                ])
-                if(listData.length){
-                    updateContract.acceptance = Number(listData[0].acceptance)
-                    updateContract.vatAcceptance = Number(listData[0].vatAcceptance)
-                    updateContract.plusAcceptance = Number(listData[0].plusAcceptance)
-                    updateContract.vatPlusAcceptance = Number(listData[0].vatPlusAcceptance)
-                    updateContract.retainedValue = Number(listData[0].retainedValue)
-                    updateContract.advancePaymentDeduction = Number(listData[0].advancePaymentDeduction)
-                    updateContract.otherDeduction = Number(listData[0].otherDeduction)
-                    updateContract.recommendedPayment = Number(listData[0].recommendedPayment)
-                    updateContract.remainingPayment = Number(listData[0].remainingPayment)
-                    updateContract.advancePaymentPaid = Number(0)
-                    updateContract.amountPaid = Number(0)
-                }else{
-                    updateContract.acceptance = Number(0)
-                    updateContract.vatAcceptance = Number(0)
-                    updateContract.plusAcceptance = Number(0)
-                    updateContract.vatPlusAcceptance = Number(0)
-                    updateContract.retainedValue = Number(0)
-                    updateContract.advancePaymentDeduction = Number(0)
-                    updateContract.otherDeduction = Number(0)
-                    updateContract.recommendedPayment = Number(0)
-                    updateContract.remainingPayment = Number(0)
-                    updateContract.advancePaymentPaid = Number(0)
-                    updateContract.amountPaid = Number(0)
-                }
-                // console.log(updateContract)
-
-                // Đã tạm ứng
-                let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            type: 1,
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            advancePaymentPaid: { $sum: "$amountPaid" },
-                        }
-                    }, 
-                ])
-
-                // Đã thanh toán
-                let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            type: 2,
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            amountPaid: { $sum: "$amountPaid" },
-                        }
-                    }, 
-                ])
-
-                if(listData1.length){
-                    updateContract.advancePaymentPaid = Number(listData1[0].advancePaymentPaid)
-                }
-
-                if(listData2.length){
-                    updateContract.amountPaid = Number(listData2[0].amountPaid)
-                }
-                console.log('End==============contract')
-                console.log(updateContract)
-                /**End tính toán cho hợp đồng */
-
                 if(type && [1,2].includes(Number(type))){
                     dataInsert.type = type;
                 }
@@ -201,84 +105,78 @@ class Model extends BaseModel {
                 //______Giá trị nghiệm thu trước VAT (1)
                 if(!isNaN(acceptance) && Number(acceptance) >= 0){
                     dataInsert.acceptance     = acceptance;
-                    updateContract.acceptance = Number(updateContract.acceptance)+Number(acceptance)
                 }
                 //______Giá trị nghiệm thu phần VAT (2)
                 if(!isNaN(vatAcceptance) && Number(vatAcceptance) >= 0){
                     dataInsert.vatAcceptance     = vatAcceptance;
-                    updateContract.vatAcceptance = Number(updateContract.vatAcceptance)+Number(vatAcceptance)
                 }
                 //______Giá trị nghiệm thu phát sinh trước VAT(3)
                 if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){   
                     dataInsert.plusAcceptance     = plusAcceptance;
-                    updateContract.plusAcceptance = Number(updateContract.plusAcceptance)+Number(plusAcceptance)
                 }
                 //_____Giá trị nghiệm thu phát sinh phần VAT(4)
                 if(!isNaN(vatPlusAcceptance) && Number(vatPlusAcceptance) >= 0){
                     dataInsert.vatPlusAcceptance  = vatPlusAcceptance;
-                    updateContract.vatPlusAcceptance = Number(updateContract.vatPlusAcceptance)+Number(vatPlusAcceptance)
                 }
                 //_____Giá trị giữ lại (5)
                 if(!isNaN(retainedValue) && Number(retainedValue) >= 0){  
                     dataInsert.retainedValue     = retainedValue;
-                    updateContract.retainedValue = Number(updateContract.retainedValue)+Number(retainedValue)
                 }
                 //_____Thu hồi tạm ứng (6)
                 if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){  
                     dataInsert.advancePaymentDeduction     = advancePaymentDeduction;
-                    updateContract.advancePaymentDeduction = Number(updateContract.advancePaymentDeduction)+Number(advancePaymentDeduction)
                 }
                 //_____Khấu trừ khác (nếu có) (7)
                 if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){   
                     dataInsert.otherDeduction     = otherDeduction;
-                    updateContract.otherDeduction = Number(updateContract.otherDeduction)+Number(otherDeduction)
                 }
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
                 if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){ 
                     dataInsert.recommendedPayment     = recommendedPayment;
-                    updateContract.recommendedPayment = Number(updateContract.recommendedPayment)+Number(recommendedPayment)
                 }
 
                 //_____Thời hạn thanh toán theo hợp đồng (9)
                 if(timeForPayment){
                     dataInsert.timeForPayment     = timeForPayment;
                 }
-                //_____Đã giải ngân (10)
-                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){    
-                    dataInsert.amountPaid     = amountPaid;
 
-                    if(Number(type) === 1){
-                        updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(amountPaid)
-                    }
-                    
-                    if(Number(type) === 2){
-                        updateContract.amountPaid = Number(updateContract.amountPaid)+Number(amountPaid)
-                    }
-                }
+                // //_____Đã giải ngân (10)
+                // if(!isNaN(amountPaid) && Number(amountPaid) >= 0){    
+                //     dataInsert.amountPaid     = amountPaid;
+                // }
+
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
                 if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){  
                     dataInsert.remainingPayment     = remainingPayment;
-                    updateContract.remainingPayment = Number(updateContract.remainingPayment)+Number(remainingPayment)
                 }
                 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm contract ipc" ,keyError: "can't_insert_contract_ipc " });
-              
-                // Cập nhật các trường thông tin cho hợp đồng
-                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID,
-                    acceptance: Number(updateContract.acceptance),
-                    vatAcceptance: Number(updateContract.vatAcceptance),
-                    plusAcceptance: Number(updateContract.plusAcceptance),
-                    vatPlusAcceptance: Number(updateContract.vatPlusAcceptance),
-                    retainedValue: Number(updateContract.retainedValue),
-                    advancePaymentDeduction: Number(updateContract.advancePaymentDeduction),
-                    otherDeduction: Number(updateContract.otherDeduction),
-                    recommendedPayment: Number(updateContract.recommendedPayment),
-                    amountPaid: Number(updateContract.amountPaid),
-                    remainingPayment: Number(updateContract.remainingPayment),
-                })
+
+                /**
+                 * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
+                 */    
+                let infoAmountContract = await that.getAmountByObject({userID, contractID})
+                console.log(infoAmountContract)
+
+                if(infoAmountContract){
+                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                        contractID,
+                        userID,
+                        acceptance: infoAmountContract.data.acceptance, 
+                        vatAcceptance: infoAmountContract.data.vatAcceptance, 
+                        plusAcceptance: infoAmountContract.data.plusAcceptance, 
+                        vatPlusAcceptance: infoAmountContract.data.vatPlusAcceptance, 
+                        retainedValue: infoAmountContract.data.retainedValue, 
+                        advancePaymentDeduction: infoAmountContract.data.advancePaymentDeduction, 
+                        otherDeduction: infoAmountContract.data.otherDeduction, 
+                        recommendedPayment: infoAmountContract.data.recommendedPayment, 
+                        advancePaymentPaid: infoAmountContract.data.advancePaymentPaid, 
+                        amountPaid: infoAmountContract.data.amountPaid, 
+                        remainingPayment: infoAmountContract.data.remainingPayment, 
+                    })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -295,6 +193,7 @@ class Model extends BaseModel {
     update({ 
         contractIpcID, type, name, sign, description, date, note, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, timeForPayment, amountPaid, remainingPayment, userID, ctx
     }){
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -302,112 +201,11 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                // Object update contract ($inc)
-                let updateContract = {}
-
                 if(!checkObjectIDs(contractIpcID))
                     return resolve({ error: true, message: "Mã IPC không hợp kệ", keyError: "contract_ipc_invalid" })
 
                 let infoContractIPC = await CMCS__CONTRACT_IPC_COLL.findById(contractIpcID);
                 let contractID = infoContractIPC.contract;
-                // console.log(infoContractIPC)
-                // console.log(contractID)
-
-                // Tính toán tổng giá trị của hợp đồng tới hiện tại, không gồm mẩu tin đang xét
-                //===========CẦN DỰA VÀO TYPE ĐỂ PHÂN TÍNH TOÁN UPDATE CHO CONTRACT
-                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            _id: { $nin: [ ObjectID(contractIpcID) ] },
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            acceptance: { $sum: "$acceptance" },
-                            vatAcceptance: { $sum: "$vatAcceptance" },
-                            plusAcceptance: { $sum: "$plusAcceptance" },
-                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
-                            retainedValue: { $sum: "$retainedValue" },
-                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
-                            otherDeduction: { $sum: "$otherDeduction" },
-                            recommendedPayment: { $sum: "$recommendedPayment" },
-                            remainingPayment: { $sum: "$remainingPayment" },
-                        }
-                    }, 
-                ])
-                if(listData.length){
-                    updateContract.acceptance = Number(listData[0].acceptance)
-                    updateContract.vatAcceptance = Number(listData[0].vatAcceptance)
-                    updateContract.plusAcceptance = Number(listData[0].plusAcceptance)
-                    updateContract.vatPlusAcceptance = Number(listData[0].vatPlusAcceptance)
-                    updateContract.retainedValue = Number(listData[0].retainedValue)
-                    updateContract.advancePaymentDeduction = Number(listData[0].advancePaymentDeduction)
-                    updateContract.otherDeduction = Number(listData[0].otherDeduction)
-                    updateContract.recommendedPayment = Number(listData[0].recommendedPayment)
-                    updateContract.remainingPayment = Number(listData[0].remainingPayment)
-                    updateContract.advancePaymentPaid = Number(0)
-                    updateContract.amountPaid = Number(0)
-                }else{
-                    updateContract.acceptance = Number(0)
-                    updateContract.vatAcceptance = Number(0)
-                    updateContract.plusAcceptance = Number(0)
-                    updateContract.vatPlusAcceptance = Number(0)
-                    updateContract.retainedValue = Number(0)
-                    updateContract.advancePaymentDeduction = Number(0)
-                    updateContract.otherDeduction = Number(0)
-                    updateContract.recommendedPayment = Number(0)
-                    updateContract.remainingPayment = Number(0)
-                    updateContract.advancePaymentPaid = Number(0)
-                    updateContract.amountPaid = Number(0)
-                }
-
-                // Đã tạm ứng
-                let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            type: 1,
-                            _id: { $nin: [ ObjectID(contractIpcID) ] },
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            advancePaymentPaid: { $sum: "$amountPaid" },
-                        }
-                    }, 
-                ])
-
-                // Đã thanh toán
-                let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: {
-                            contract: ObjectID(contractID),
-                            type: 2,
-                            _id: { $nin: [ ObjectID(contractIpcID) ] },
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            amountPaid: { $sum: "$amountPaid" },
-                        }
-                    }, 
-                ])
-
-                if(listData1.length){
-                    updateContract.advancePaymentPaid = Number(listData1[0].advancePaymentPaid)
-                }
-
-                if(listData2.length){
-                    updateContract.amountPaid = Number(listData2[0].amountPaid)
-                }
-                console.log('End==============contract')
-                console.log(updateContract)
-
-                /**End tính toán cho hợp đồng */
 
                 if(type){
                     dataUpdate.type = type;
@@ -436,49 +234,41 @@ class Model extends BaseModel {
                 //______Giá trị nghiệm thu trước VAT (1)
                 if(!isNaN(acceptance) && Number(acceptance) >= 0){
                     dataUpdate.acceptance = acceptance;
-                    updateContract.acceptance = Number(updateContract.acceptance)+Number(acceptance)
                 }
 
                 //______Giá trị nghiệm thu phần VAT (2)
                 if(!isNaN(vatAcceptance) && Number(vatAcceptance) >= 0){
                     dataUpdate.vatAcceptance = vatAcceptance;
-                    updateContract.vatAcceptance = Number(updateContract.vatAcceptance)+Number(vatAcceptance)
                 }
 
                 //______Giá trị nghiệm thu phát sinh trước VAT(3)
                 if(!isNaN(plusAcceptance) && Number(plusAcceptance) >= 0){    
                     dataUpdate.plusAcceptance = plusAcceptance;
-                    updateContract.plusAcceptance = Number(updateContract.plusAcceptance)+Number(plusAcceptance)
                 }
 
                 //_____Giá trị nghiệm thu phát sinh phần VAT(4)
                 if(!isNaN(vatPlusAcceptance) && Number(vatPlusAcceptance) >= 0){
                     dataUpdate.vatPlusAcceptance = vatPlusAcceptance;
-                    updateContract.vatPlusAcceptance = Number(updateContract.vatPlusAcceptance)+Number(vatPlusAcceptance)
                 }
 
                 //_____Giá trị giữ lại (5)
                 if(!isNaN(retainedValue) && Number(retainedValue) >= 0){    
                     dataUpdate.retainedValue = retainedValue;
-                    updateContract.retainedValue = Number(updateContract.retainedValue)+Number(retainedValue)
                 }
 
                 //_____Thu hồi tạm ứng (6)
                 if(!isNaN(advancePaymentDeduction) && Number(advancePaymentDeduction) >= 0){    
                     dataUpdate.advancePaymentDeduction = advancePaymentDeduction;
-                    updateContract.advancePaymentDeduction = Number(updateContract.advancePaymentDeduction)+Number(advancePaymentDeduction)
                 }
 
                 //_____Khấu trừ khác (nếu có) (7)
                 if(!isNaN(otherDeduction) && Number(otherDeduction) >= 0){    
                     dataUpdate.otherDeduction = otherDeduction;
-                    updateContract.otherDeduction = Number(updateContract.otherDeduction)+Number(otherDeduction)
                 }
                 
                 //_____Đề nghị tạm ứng/thanh toán '(8)=(1+2+3+4)-(5+6+7)
                 if(!isNaN(recommendedPayment) && Number(recommendedPayment) >= 0){    
                     dataUpdate.recommendedPayment = recommendedPayment;
-                    updateContract.recommendedPayment = Number(updateContract.recommendedPayment)+Number(recommendedPayment)
                 }
 
                 //_____Thời hạn thanh toán theo hợp đồng (9)
@@ -487,48 +277,48 @@ class Model extends BaseModel {
                 }
 
                 //_____Đã giải ngân (10)
-                if(!isNaN(amountPaid) && Number(amountPaid) >= 0){   
-                    dataUpdate.amountPaid = amountPaid;
-
-                    if(Number(type) === 1){
-                        updateContract.advancePaymentPaid = Number(updateContract.advancePaymentPaid)+Number(amountPaid)
-                    }
-                    
-                    if(Number(type) === 2){
-                        updateContract.amountPaid = Number(updateContract.amountPaid)+Number(amountPaid)
-                    }
-                }
+                // if(!isNaN(amountPaid) && Number(amountPaid) >= 0){   
+                //     dataUpdate.amountPaid = amountPaid;
+                // }
 
                 //_____Còn lại chưa giải ngân (11)=(8)-(10)
                 if(!isNaN(remainingPayment) && Number(remainingPayment) >= 0){    
                     dataUpdate.remainingPayment = remainingPayment;
-                    updateContract.remainingPayment = Number(updateContract.remainingPayment)+Number(remainingPayment)
                 }
-                console.log(updateContract)
 
                 let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(contractIpcID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại" ,keyError: "can't_update_contract_ipc", status: 403 });
+
+                /**
+                 * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
+                 */    
+                console.log('=============Update contract=============>>>>>>>>>>>>') 
+                let infoAmountContract = await that.getAmountByObject({userID, contractID})
+                console.log(infoAmountContract)    
                 
-                // Cập nhật các trường thông tin cho hợp đồng
-                let infoContractAfterUpdate = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                    contractID: `${contractID}`, // Convert để nhận đầu vào dạng String do Model contract yêu cầu
-                    acceptance: Number(updateContract.acceptance),
-                    vatAcceptance: Number(updateContract.vatAcceptance),
-                    plusAcceptance: Number(updateContract.plusAcceptance),
-                    vatPlusAcceptance: Number(updateContract.vatPlusAcceptance),
-                    retainedValue: Number(updateContract.retainedValue),
-                    advancePaymentDeduction: Number(updateContract.advancePaymentDeduction),
-                    otherDeduction: Number(updateContract.otherDeduction),
-                    recommendedPayment: Number(updateContract.recommendedPayment),
-                    advancePaymentPaid: Number(updateContract.advancePaymentPaid),
-                    amountPaid: Number(updateContract.amountPaid),
-                    remainingPayment: Number(updateContract.remainingPayment),
-                })
-                // console.log(infoContractAfterUpdate)
+                if(infoAmountContract){
+                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                        contractID: `${contractID}`,
+                        userID,
+                        acceptance: infoAmountContract.data.acceptance, 
+                        vatAcceptance: infoAmountContract.data.vatAcceptance, 
+                        plusAcceptance: infoAmountContract.data.plusAcceptance, 
+                        vatPlusAcceptance: infoAmountContract.data.vatPlusAcceptance, 
+                        retainedValue: infoAmountContract.data.retainedValue, 
+                        advancePaymentDeduction: infoAmountContract.data.advancePaymentDeduction, 
+                        otherDeduction: infoAmountContract.data.otherDeduction, 
+                        recommendedPayment: infoAmountContract.data.recommendedPayment, 
+                        advancePaymentPaid: infoAmountContract.data.advancePaymentPaid, 
+                        amountPaid: infoAmountContract.data.amountPaid, 
+                        remainingPayment: infoAmountContract.data.remainingPayment, 
+                    })
+                    // console.log(infoContract)   
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
+                console.log(error)   
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
@@ -738,6 +528,113 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Gom nhóm theo đối tượng ✅
+     * Author: Hiepnh
+     * Date: 04/04/2022
+     */
+    getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        return new Promise(async resolve => {
+            try {
+                let acceptance=0, vatAcceptance=0, plusAcceptance=0, vatPlusAcceptance=0, retainedValue=0, advancePaymentDeduction=0, otherDeduction=0, recommendedPayment = 0, advancePaymentPaid=0, amountPaid=0, remainingPayment=0
+
+                let conditionObj1 = {type: 1}, conditionObj2 = {type: 2}
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj1.outin = outin
+                    conditionObj2.outin = outin
+                }
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj1.company = ObjectID(companyID)
+                    conditionObj2.company = ObjectID(companyID)
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj1.project = ObjectID(projectID)
+                    conditionObj2.project = ObjectID(projectID)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj1.contract = ObjectID(contractID)
+                    conditionObj2.contract = ObjectID(contractID)
+                }
+
+                let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj1
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            acceptance: { $sum: "$acceptance" },
+                            vatAcceptance: { $sum: "$vatAcceptance" },
+                            plusAcceptance: { $sum: "$plusAcceptance" },
+                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                            retainedValue: { $sum: "$retainedValue" },
+                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                            otherDeduction: { $sum: "$otherDeduction" },
+                            recommendedPayment: { $sum: "$recommendedPayment" },
+                            amountPaid: { $sum: "$amountPaid" },
+                            remainingPayment: { $sum: "$remainingPayment" }
+                        }
+                    }, 
+                ])
+
+                let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj2
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            acceptance: { $sum: "$acceptance" },
+                            vatAcceptance: { $sum: "$vatAcceptance" },
+                            plusAcceptance: { $sum: "$plusAcceptance" },
+                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                            retainedValue: { $sum: "$retainedValue" },
+                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                            otherDeduction: { $sum: "$otherDeduction" },
+                            recommendedPayment: { $sum: "$recommendedPayment" },
+                            amountPaid: { $sum: "$amountPaid" },
+                            remainingPayment: { $sum: "$remainingPayment" }
+                        }
+                    }, 
+                ])
+
+                if(listData1 && listData1.length){
+                    acceptance = Number(acceptance) + Number(listData1[0].acceptance)
+                    vatAcceptance = Number(vatAcceptance) +  Number(listData1[0].vatAcceptance)
+                    plusAcceptance = Number(plusAcceptance) +  Number(listData1[0].plusAcceptance)
+                    vatPlusAcceptance = Number(vatPlusAcceptance) +  Number(listData1[0].vatPlusAcceptance)
+                    retainedValue = Number(retainedValue) +  Number(listData1[0].retainedValue)
+                    advancePaymentDeduction = Number(advancePaymentDeduction) +  Number(listData1[0].advancePaymentDeduction)
+                    otherDeduction = Number(otherDeduction) +  Number(listData1[0].otherDeduction)
+                    recommendedPayment = Number(recommendedPayment) +  Number(listData1[0].recommendedPayment)
+                    advancePaymentPaid = Number(advancePaymentPaid) +  Number(listData1[0].amountPaid) // Tạm ứng
+                    remainingPayment = Number(remainingPayment) +  Number(listData1[0].remainingPayment)
+                }
+
+                if(listData2 && listData2.length){
+                    acceptance = Number(acceptance) + Number(listData2[0].acceptance)
+                    vatAcceptance = Number(vatAcceptance) +  Number(listData2[0].vatAcceptance)
+                    plusAcceptance = Number(plusAcceptance) +  Number(listData2[0].plusAcceptance)
+                    vatPlusAcceptance = Number(vatPlusAcceptance) +  Number(listData2[0].vatPlusAcceptance)
+                    retainedValue = Number(retainedValue) +  Number(listData2[0].retainedValue)
+                    advancePaymentDeduction = Number(advancePaymentDeduction) +  Number(listData2[0].advancePaymentDeduction)
+                    otherDeduction = Number(otherDeduction) +  Number(listData2[0].otherDeduction)
+                    recommendedPayment = Number(recommendedPayment) +  Number(listData2[0].recommendedPayment)
+                    amountPaid = Number(amountPaid) +  Number(listData2[0].amountPaid) // Thanh toán
+                    remainingPayment = Number(remainingPayment) +  Number(listData2[0].remainingPayment)
+                }
+
+                return resolve({ error: false, data: { acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
      * Date: 05/04/2022
@@ -871,7 +768,10 @@ class Model extends BaseModel {
                  */
 
                 if(!checkObjectIDs(ipcID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" });
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" })
+
+                let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
+                let recommendedPayment = infoIpc.recommendedPayment | 0
                 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -915,6 +815,7 @@ class Model extends BaseModel {
 
                     if(listData && listData.length){
                         dataUpdate.amountPaid = Number(listData[0].amount)
+                        dataUpdate.remainingPayment = Number(recommendedPayment) - Number(listData[0].amount)
                     }
                 }
 

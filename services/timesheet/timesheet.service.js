@@ -39,7 +39,7 @@ module.exports = {
 	dependencies: [
 		CF_DOMAIN_SERVICES.AUTH
 	],
-		
+	
 	/**
 	* Actions
 	*/

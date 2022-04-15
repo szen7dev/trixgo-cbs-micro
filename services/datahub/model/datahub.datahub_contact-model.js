@@ -76,13 +76,13 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
 	 */
-    update({ contactID, name, sign, address, taxid, note, userID  }) {
+    update({ datahubContactID, name, sign, address, taxid, note, userID  }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
-                let info = await DATAHUB_CONTACT_COLL.findOne({ taxid: taxid, _id: { $nin: [contactID] } })
+                let info = await DATAHUB_CONTACT_COLL.findOne({ taxid: taxid, _id: { $nin: [datahubContactID] } })
                 if(info)
                     return resolve({ error: true, message: "Mã số thuế đã tồn tại", keyError: 'cannot_update' })
 
@@ -100,7 +100,7 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                let infoAfterUpdate = await DATAHUB_CONTACT_COLL.findByIdAndUpdate(contactID, dataUpdate, { new: true });
+                let infoAfterUpdate = await DATAHUB_CONTACT_COLL.findByIdAndUpdate(datahubContactID, dataUpdate, { new: true });
                 if (!infoAfterUpdate) 
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "cannot_update", status: 403 });
                 
@@ -122,11 +122,11 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-     getInfo({ contactID, 
+     getInfo({ datahubContactID, 
         select, populates }){
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(contactID))
+                if (!checkObjectIDs(datahubContactID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populates
@@ -142,7 +142,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let info = await DATAHUB_CONTACT_COLL.findById(contactID)
+                let info = await DATAHUB_CONTACT_COLL.findById(datahubContactID)
                                 .select(select)
                                 .populate(populates)
 

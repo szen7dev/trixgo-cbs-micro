@@ -48,7 +48,7 @@ class Model extends BaseModel {
 	 */
 	insert({
         parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, ctx
 	}) {
         return new Promise(async (resolve) => {
@@ -145,8 +145,9 @@ class Model extends BaseModel {
                 amount          && (dataInsert.amount           = +amount || 1);
                 amountDelivery  && (dataInsert.amountDelivery   = +amountDelivery || 0);
 
-                (receiverID && checkObjectIDs(receiverID))  && (dataInsert.receiver = receiverID);
-                (fieldID    && checkObjectIDs(fieldID))     && (dataInsert.field    = fieldID);
+                (receiverID          && checkObjectIDs(receiverID))         && (dataInsert.receiver          = receiverID);
+                (fieldID             && checkObjectIDs(fieldID))            && (dataInsert.field             = fieldID);
+                (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact    = datahubContactID);
                 (otherID    && checkObjectIDs(otherID))     && (dataInsert.other    = otherID);
                 (storageID  && checkObjectIDs(storageID))   && (dataInsert.storage  = storageID);
 
@@ -218,7 +219,7 @@ class Model extends BaseModel {
 	 */
     update({
 		documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate,
+        requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, ctx
 	}) {
         return new Promise(async (resolve) => {
@@ -335,10 +336,11 @@ class Model extends BaseModel {
                     dataUpdate.type = +type;
                 }
 
-                (packageID  && checkObjectIDs(packageID))   && (dataUpdate.package  = packageID);
-                (senderID   && checkObjectIDs(senderID))    && (dataUpdate.sender   = senderID);
-                (receiverID && checkObjectIDs(receiverID))  && (dataUpdate.receiver = receiverID);
-                (fieldID    && checkObjectIDs(fieldID))     && (dataUpdate.field    = fieldID);
+                (packageID           && checkObjectIDs(packageID))          && (dataUpdate.package  = packageID);
+                (senderID            && checkObjectIDs(senderID))           && (dataUpdate.sender   = senderID);
+                (receiverID          && checkObjectIDs(receiverID))         && (dataUpdate.receiver = receiverID);
+                (fieldID             && checkObjectIDs(fieldID))            && (dataUpdate.field    = fieldID);
+                (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact    = datahubContactID);
                 (otherID    && checkObjectIDs(otherID))     && (dataUpdate.other    = otherID);
                 (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = propertyID);
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
