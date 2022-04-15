@@ -405,4 +405,43 @@ module.exports = {
             }
         }
     }, 
+
+    /**
+     * Name: Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date: 15/04/2022
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            contractID                  : { type: "string" },
+            acceptance                  : { type: "number", optional: true },
+            vatAcceptance               : { type: "number", optional: true },
+            plusAcceptance              : { type: "number", optional: true },
+            vatPlusAcceptance           : { type: "number", optional: true },
+            retainedValue               : { type: "number", optional: true },
+            advancePaymentDeduction     : { type: "number", optional: true },
+            otherDeduction              : { type: "number", optional: true },
+            recommendedPayment          : { type: "number", optional: true },
+            advancePaymentPaid          : { type: "number", optional: true },
+            amountPaid                  : { type: "number", optional: true },
+            remainingPayment            : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { contractID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.updateValue({
+                    contractID, userID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
 }
