@@ -7,7 +7,7 @@
   * MODELS
   */
  const BUDGET__GROUP_MODEL                 = require('../model/budget.group-model').MODEL;
- 
+
  module.exports = {
     /**
      * Dev: Hiepnh ✅
@@ -26,21 +26,24 @@
             description             : { type: "string", optional: true },
             note                    : { type: "string", optional: true },
             quantity                : { type: "number", optional: true },
+            unitPrice               : { type: "number", optional: true },
+            forecastAmount          : { type: "number", optional: true },
+            forecastQuantity        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { itemID, plus, reasonID, name, sign, unit, description, note, quantity } = ctx.params;
+                const { itemID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await BUDGET__GROUP_MODEL.insert({
-                    ctx, userID, itemID, plus, reasonID, name, sign, unit, description, note, quantity
+                const resultAfterCallHandler = await BUDGET__GROUP_MODEL.insert({
+                    ctx, userID, itemID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -62,17 +65,20 @@
             description             : { type: "string", optional: true },
             note                    : { type: "string", optional: true },
             quantity                : { type: "number", optional: true },
+            unitPrice               : { type: "number", optional: true },
+            forecastAmount          : { type: "number", optional: true },
+            forecastQuantity        : { type: "number", optional: true },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { groupID, plus, reasonID, name, sign, unit, description, note, quantity } = ctx.params;
-            
+                let { groupID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity } = ctx.params;
+
                 const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await BUDGET__GROUP_MODEL.update({
-                    groupID, plus, reasonID, name, sign, unit, description, note, quantity, userID, ctx
+                    groupID, plus, reasonID, name, sign, unit, unitPrice, forecastAmount, forecastQuantity, description, note, quantity, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -98,14 +104,14 @@
                 let resultAfterCallHandler = await BUDGET__GROUP_MODEL.remove({
                     groupID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
- 
+
     /**
      * Dev: Hiepnh ✅
      * Func: Get info and get list
@@ -141,7 +147,7 @@
                         itemID, budgetID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -160,22 +166,22 @@
             option : { type: "number" },
             groupID : { type: "string" },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, groupID } = ctx.params;
-            
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET__GROUP_MODEL.updateValue({
                     option, groupID, userID, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
-    
+
  }
