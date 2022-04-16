@@ -162,6 +162,26 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
+     remove({ cashBooksID, userID }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(cashBooksID))
+                    return resolve({ error: true, message: 'cashBooksID_invalid', status: 400 });
+
+                const infoAfterRemove = await FIN__CASH_BOOK_COLL.deleteMany({
+                    _id: {
+                        $in: cashBooksID
+                    },
+                    userCreate: userID
+                });
+                if (!infoAfterRemove) return resolve({ error: true, message: 'cannot_remove_cashbook', status: 422 });
+
+                return resolve({ error: false, data: infoAfterRemove, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
 
     /**
      * Name: Get info ✅
