@@ -348,7 +348,7 @@ class Model extends BaseModel {
                 (senderID            && checkObjectIDs(senderID))           && (dataUpdate.sender   = senderID);
                 (receiverID          && checkObjectIDs(receiverID))         && (dataUpdate.receiver = receiverID);
                 (fieldID             && checkObjectIDs(fieldID))            && (dataUpdate.field    = fieldID);
-                (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataInsert.datahubContact    = datahubContactID);
+                (datahubContactID    && checkObjectIDs(datahubContactID))   && (dataUpdate.datahubContact    = datahubContactID);
                 (otherID    && checkObjectIDs(otherID))     && (dataUpdate.other    = otherID);
                 (propertyID && checkObjectIDs(propertyID))  && (dataUpdate.property = propertyID);
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
