@@ -38,41 +38,22 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                    
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * BA
+                 * Bước 1: Cập nhật thông tin vào IPC
+                 * Bước 2: Cập nhật thông tin vào Hợp đồng
+                 * Bước 3: Cập nhật thông tin vào Dự án => Nếu là dòng tiền của hợp đồng mua vào
                  */
-                let dataInsert = { userCreate: userID, contract: contractID };
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                let companyID;
-                let projectID;
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: "Mã hợp đồng Không hợp lệ", keyError: "contractID_invalid" })
-
-                // call service contract để lấy thông tin
-                let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                 const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                     contractID
                 })
 
-                /**
-                 * Company lấy theo company của project
-                 * Chứ không phải lấy theo company của user tạo task
-                 */ 
-                companyID = infoContract?.data?.company;
-                projectID = infoContract?.data?.project;
+                if(infoContract.error)
+                    return resolve({ error: true, message: "Hợp đồng không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                if(companyID){
-                    dataInsert.company = companyID
-                }
+                const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
-                if(projectID){
-                    dataInsert.project = projectID
-                }
+                let dataInsert = { userCreate: userID, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
                 
                 /**
                  * LOGIC STEP (3)

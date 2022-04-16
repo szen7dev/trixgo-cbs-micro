@@ -44,11 +44,22 @@ class Model extends BaseModel {
          }){
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'Request params projectID invalid', status: 400 });
+                if(!checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
+                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|chair|personInCharge|field invalid', status: 400 });
 
                 let dataInsert = {
-                    project: projectID, name, sign, date, userCreate: userID, members: [userID], admins: [userID]
+                    project: projectID, 
+                    buyerInfo: buyerInfo, 
+                    sellerInfo: sellerInfo, 
+                    chair: chair, 
+                    personInCharge: personInCharge, 
+                    field: field, 
+                    userCreate: userID, 
+                    members: [userID], 
+                    admins: [userID],
+                    name, 
+                    sign, 
+                    date
                 }
 
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
@@ -101,18 +112,6 @@ class Model extends BaseModel {
                     dataInsert.type = type;
                 }
 
-                if(field){
-                    dataInsert.field = field;
-                }
-
-                if(chair){
-                    dataInsert.chair = chair;
-                }
-
-                if(personInCharge){
-                    dataInsert.personInCharge = personInCharge;
-                }
-
                 if(debtStatus){
                     dataInsert.debtStatus = debtStatus;
                 }
@@ -157,16 +156,8 @@ class Model extends BaseModel {
                     dataInsert.endTime = endTime;
                 }
 
-                if(checkObjectIDs(buyerInfo)){
-                    dataInsert.buyerInfo = buyerInfo;
-                }
-
                 if(buyerBank){
                     dataInsert.buyerBank = buyerBank;
-                }
-
-                if(checkObjectIDs(sellerInfo)){
-                    dataInsert.sellerInfo = sellerInfo;
                 }
 
                 if(buyerBank){
@@ -330,17 +321,12 @@ class Model extends BaseModel {
         }){
         return new Promise(async resolve => {
             try {
-                console.log(contractID)
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
 
                 let dataUpdate    = {}
                 let dataAddToSet = {};
                 let dataPull     = {};
-
-                /**
-                 * Tạm thời không cho update projectID sau khi đã tạo mẩu tin
-                 */
 
                 const infoContract = await ITEM__CONTRACT_COLL.findById(contractID).lean();
 
@@ -359,6 +345,10 @@ class Model extends BaseModel {
                     if(infoContractParent){
                         dataUpdate.level = infoContractParent.level + 1;
                     }
+                }
+
+                if(checkObjectIDs(projectID)){
+                    dataUpdate.projectID = projectID;
                 }
 
                 if(name){
@@ -413,15 +403,15 @@ class Model extends BaseModel {
                     dataUpdate.type = type;
                 }
 
-                if(field){
+                if(checkObjectIDs(field)){
                     dataUpdate.field = field;
                 }
 
-                if(chair){
+                if(checkObjectIDs(chair)){
                     dataUpdate.chair = chair;
                 }
 
-                if(personInCharge){
+                if(checkObjectIDs(personInCharge)){
                     dataUpdate.personInCharge = personInCharge;
                 }
 
@@ -663,6 +653,16 @@ class Model extends BaseModel {
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot update contract", status: 422 });
+
+                /**
+                 * CẬP NHẬT LẠI CÁC THUỘC TÍNH CHO SẢN LƯỢNG, NGHIỆM THU, TIỀN VỀ
+                 * - projectID
+                 * - field
+                 * - chair
+                 * - personInCharge
+                 * - buyerInfo
+                 * - sellerInfo
+                 */
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {

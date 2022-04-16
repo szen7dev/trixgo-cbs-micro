@@ -36,7 +36,7 @@ class Model extends BaseModel {
                  * BA
                  * Bước 1: Cập nhật thông tin vào IPC
                  * Bước 2: Cập nhật thông tin vào Hợp đồng
-                 * Bước 3: Cập nhật thông tin vào dự án => Nếu là dòng tiền của hợp đồng mua vào
+                 * Bước 3: Cập nhật thông tin vào Dự án => Nếu là dòng tiền của hợp đồng mua vào
                  */
                 const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                     contractID
