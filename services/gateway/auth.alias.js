@@ -1307,9 +1307,17 @@ module.exports = {
 		
 		[`POST ${CF_ROUTINGS_PERSONAL.CHECK_CODE}`] :
 		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.FRIEND_REQUEST_CHECK_CODE}`],
-		
-		//---------------------------🏁 END SERVICE PRERSONAL 🏁---------------------------//
 
+		// note
+		[`POST ${CF_ROUTINGS_PERSONAL.NOTE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.NOTE_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_PERSONAL.NOTE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.NOTE_UPDATE}`],
+
+		[`GET ${CF_ROUTINGS_PERSONAL.NOTE}`] :
+		[`${CF_DOMAIN_SERVICES.PERSONAL}.${CF_ACTIONS_PERSONAL.NOTE_GET_INFO_AND_GET_LIST}`],
+		//---------------------------🏁 END SERVICE PRERSONAL 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE DATAHUB 🏁-------------------------//
 		//____datahub_contact
