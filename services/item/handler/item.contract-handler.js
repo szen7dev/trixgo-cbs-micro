@@ -414,6 +414,7 @@ module.exports = {
     updateValue: {
         auth: "required",
         params: {
+            option                      : { type: "number", optional: true },
             contractID                  : { type: "string" },
             acceptance                  : { type: "number", optional: true },
             vatAcceptance               : { type: "number", optional: true },
@@ -431,11 +432,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { contractID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } = ctx.params;
+                let { option, contractID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.updateValue({
-                    contractID, userID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment
+                    option, contractID, userID, acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

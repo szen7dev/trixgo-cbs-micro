@@ -84,22 +84,16 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
-                // Giá trị còn lại phải thanh toán của IPC
-                let infoIpcNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
+                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
-                 */    
-                let infoAmountContract = await that.getAmountByObject({userID, contractID})
-
-                if(infoAmountContract){
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
-                        contractID,
-                        advancePaymentPaid: infoAmountContract.data.value1, 
-                        amountPaid: infoAmountContract.data.value2, 
-                        userID
-                    })
-                }
+                 */   
+                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                    option: 2,
+                    contractID,
+                    userID
+                }) 
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -167,22 +161,16 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
-                // Giá trị còn lại phải thanh toán của IPC
-                let infoIpcNew = await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
+                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
-                 */    
-                let infoAmountContract = await that.getAmountByObject({userID, contractID})
-
-                if(infoAmountContract){
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
-                        contractID: `${contractID}`, // Ép kiểu
-                        advancePaymentPaid: infoAmountContract.data.value1, 
-                        amountPaid: infoAmountContract.data.value2, 
-                        userID
-                    })
-                }
+                 */   
+                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                    option: 2,
+                    contractID: `${contractID}`,
+                    userID
+                }) 
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

@@ -157,26 +157,11 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                let infoAmountContract = await that.getAmountByObject({userID, contractID})
-                console.log(infoAmountContract)
-
-                if(infoAmountContract){
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
-                        contractID,
-                        userID,
-                        acceptance: infoAmountContract.data.acceptance, 
-                        vatAcceptance: infoAmountContract.data.vatAcceptance, 
-                        plusAcceptance: infoAmountContract.data.plusAcceptance, 
-                        vatPlusAcceptance: infoAmountContract.data.vatPlusAcceptance, 
-                        retainedValue: infoAmountContract.data.retainedValue, 
-                        advancePaymentDeduction: infoAmountContract.data.advancePaymentDeduction, 
-                        otherDeduction: infoAmountContract.data.otherDeduction, 
-                        recommendedPayment: infoAmountContract.data.recommendedPayment, 
-                        advancePaymentPaid: infoAmountContract.data.advancePaymentPaid, 
-                        amountPaid: infoAmountContract.data.amountPaid, 
-                        remainingPayment: infoAmountContract.data.remainingPayment, 
-                    })
-                }
+                await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                    option: 2,
+                    contractID,
+                    userID
+                })
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -293,28 +278,11 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                console.log('=============Update contract=============>>>>>>>>>>>>') 
-                let infoAmountContract = await that.getAmountByObject({userID, contractID})
-                console.log(infoAmountContract)    
-                
-                if(infoAmountContract){
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
-                        contractID: `${contractID}`,
-                        userID,
-                        acceptance: infoAmountContract.data.acceptance, 
-                        vatAcceptance: infoAmountContract.data.vatAcceptance, 
-                        plusAcceptance: infoAmountContract.data.plusAcceptance, 
-                        vatPlusAcceptance: infoAmountContract.data.vatPlusAcceptance, 
-                        retainedValue: infoAmountContract.data.retainedValue, 
-                        advancePaymentDeduction: infoAmountContract.data.advancePaymentDeduction, 
-                        otherDeduction: infoAmountContract.data.otherDeduction, 
-                        recommendedPayment: infoAmountContract.data.recommendedPayment, 
-                        advancePaymentPaid: infoAmountContract.data.advancePaymentPaid, 
-                        amountPaid: infoAmountContract.data.amountPaid, 
-                        remainingPayment: infoAmountContract.data.remainingPayment, 
-                    })
-                    // console.log(infoContract)   
-                }
+                let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                    option: 2,
+                    contractID: `${contractID}`,
+                    userID
+                })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

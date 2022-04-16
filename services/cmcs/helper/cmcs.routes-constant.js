@@ -20,6 +20,7 @@ const CF_ROUTINGS_CMCS = {
     CONTRACT_IPC                                                : `${BASE_ROUTE}${CONTRACT_IPC}`,
     CONTRACT_IPC_GET_AMOUNT_BY_MONTH                            : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-month`,
     CONTRACT_IPC_GET_LIST_BY_MONTH                              : `${BASE_ROUTE}${CONTRACT_IPC}/get-list-by-month`,
+    CONTRACT_IPC_GET_AMOUNT_BY_OBJECT                           : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-object`,
 
     // ================================CONTRACT PAYMENT=====================================//
     CONTRACT_PAYMENT                                            : `${BASE_ROUTE}${CONTRACT_PAYMENT}`,
