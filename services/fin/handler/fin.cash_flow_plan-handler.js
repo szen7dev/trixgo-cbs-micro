@@ -27,6 +27,9 @@ module.exports = {
             outin               : { type: "number", optional: true },
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
+            openingBalance      : { type: "number", optional: true },
+            arising             : { type: "number", optional: true },
+            closingBalance      : { type: "number", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string" },
             value               : { type: "number", optional: true },
@@ -38,7 +41,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, sign, note, date, value, realDate, realValue } = ctx.params;
+                let { companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue } = ctx.params;
 
                 let { _id: userID, company } = ctx.meta.infoUser;
 
@@ -47,7 +50,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.insert({
-                    companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, sign, note, date, value, realDate, realValue, userID, ctx
+                    companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -69,6 +72,10 @@ module.exports = {
             contractID          : { type: "string", optional: true },
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
+            openingBalance      : { type: "number", optional: true },
+            arising             : { type: "number", optional: true },
+            closingBalance      : { type: "number", optional: true },
+            note                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             date                : { type: "string", optional: true },
             value               : { type: "number", optional: true },
@@ -79,11 +86,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority } = ctx.params;
+                const { cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
-                    cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx
+                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -49,6 +49,12 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     sign: String,
     //_________Ghi chú
     note: String, 
+    //_________Số dư đầu kỳ     
+    openingBalance: { type: Number, default: 0 }, 
+    //_________Phát sinh trong kỳ
+    arising: { type: Number, default: 0 }, 
+    //_________Số dư cuối kỳ
+    closingBalance: { type: Number, default: 0 }, 
     //_________Thu
     income: { type: Number, default: 0 }, 
     //_________Chi

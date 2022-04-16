@@ -26,7 +26,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, fundaID, projectID, contractID, parentID, type, property, priority, outin, name, sign, note, date, value, realDate, realValue, userID, ctx }) {
+    insert({ companyID, fundaID, projectID, contractID, parentID, type, property, priority, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, userID, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
