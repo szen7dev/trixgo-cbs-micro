@@ -27,21 +27,24 @@ module.exports = {
             date                : { type: "string", optional: true },
             income              : { type: "number", optional: true },
             expense             : { type: "number", optional: true },
+            arising             : { type: "number", optional: true },
+            openingBalance      : { type: "number", optional: true },
+            closingBalance      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, accountID, customerID, contractID, name, sign, note, date, income, expense } = ctx.params;
+                const { parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.insert({
-                    companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, ctx
+                    companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -89,18 +92,18 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            cashBookID: { type: "string" },
+            cashBooksID: { type: "array" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { cashBookID  } = ctx.params;
+                const { cashBooksID  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.remove({
-                    cashBookID, userID
+                const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.remove({
+                    cashBooksID, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

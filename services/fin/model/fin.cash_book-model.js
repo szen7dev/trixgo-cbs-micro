@@ -16,7 +16,7 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index');
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
+class Model extends BaseModel {
     constructor() {
         super(FIN__CASH_BOOK_COLL);
     }
@@ -26,7 +26,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, ctx }) { 
+    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
@@ -63,13 +63,25 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
+                if(!isNaN(arising) && Number(arising) >= 0){
+                    dataInsert.arising = arising;
+                }
+
+                if(!isNaN(openingBalance) && Number(openingBalance) >= 0){
+                    dataInsert.openingBalance = openingBalance;
+                }
+
+                if(!isNaN(closingBalance) && Number(closingBalance) >= 0){
+                    dataInsert.closingBalance = closingBalance;
+                }
+
                 if(!isNaN(income) && Number(income) >= 0){
-                    dataInsert.income     = income;
+                    dataInsert.income = income;
                 }
 
                 if(!isNaN(expense) && Number(expense) >= 0){
-                    dataInsert.expense     = expense;
-                }                
+                    dataInsert.expense = expense;
+                }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
@@ -94,7 +106,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { userUpdate: userID };
-                
+
                 if(!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
@@ -132,12 +144,12 @@ class Model extends BaseModel {
 
                 if(!isNaN(expense) && Number(expense) >= 0){
                     dataUpdate.expense     = expense;
-                }                
-             
+                }
+
                 let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-              
+
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -192,7 +204,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ companyID, accountID, customerID, contractID, parentID,
-        keyword, limit = 50, lastestID, select, populates= {} }) { 
+        keyword, limit = 50, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -200,20 +212,20 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-                
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                  let sortBy;
                  let conditionObj = {};
                  let keys	     = ['createAt__-1', '_id__-1'];
-             
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-              
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -230,20 +242,20 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-                 if(checkObjectIDs(companyID)){    
+                 */
+                 if(checkObjectIDs(companyID)){
                     conditionObj.company = companyID
                 }
-                if(checkObjectIDs(accountID)){    
+                if(checkObjectIDs(accountID)){
                     conditionObj.account = accountID
                 }
-                if(checkObjectIDs(customerID)){    
+                if(checkObjectIDs(customerID)){
                     conditionObj.customer = customerID
                 }
-                if(checkObjectIDs(contractID)){    
+                if(checkObjectIDs(contractID)){
                     conditionObj.contract = contractID
                 }
-                if(checkObjectIDs(parentID)){    
+                if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 }
 
@@ -271,14 +283,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await FIN__CASH_BOOK_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
-                
+                    .lean();
+
                 // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -301,7 +313,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
