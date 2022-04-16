@@ -161,9 +161,9 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Request params subjectID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let infoData =  await TRAINING__SUBJECT_COLL.findById(subjectID);
-                if(infoData.userCreate.toString() != userID.toString())
+                if(infoData && infoData.userCreate.toString() != userID.toString())
                     return resolve({ error: true, message: 'Bạn không có quyền xóa, người tạo mới được phép xóa', keyError: KEY_ERROR.DELETE_FAILED });
-
+                
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
