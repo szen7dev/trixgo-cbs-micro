@@ -82,7 +82,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 // Bước check quyền
                 let resultAfterCallHandler = await TRAINING__SUBJECT_MODEL.remove({
-                    subjectID
+                    subjectID, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

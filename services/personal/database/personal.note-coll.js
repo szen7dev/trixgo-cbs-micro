@@ -25,6 +25,13 @@ module.exports  = DATABASE_MIDDLEWARE("note", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
+
+    //_________user pin
+    usersPin: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    
     //_________Note cha
     parent: {
         type: Schema.Types.ObjectId,
