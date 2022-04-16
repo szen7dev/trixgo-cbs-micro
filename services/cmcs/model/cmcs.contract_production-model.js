@@ -37,42 +37,22 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * BA
+                 * Bước 1: Cập nhật thông tin vào IPC
+                 * Bước 2: Cập nhật thông tin vào Hợp đồng
+                 * Bước 3: Cập nhật thông tin vào Dự án => Nếu là dòng tiền của hợp đồng mua vào
                  */
-                let dataInsert = { userCreate: userID, contract: contractID }
-
-                let companyID;
-                let projectID;
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: "Mã hợp đồng không đúng", keyError: "contractID_invalid" })
-
-                // call service department để lấy thông tin
-                let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                 const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                     contractID
                 })
 
-                /**
-                 * Company lấy theo company của project
-                 * Chứ không phải lấy theo company của user tạo task
-                 */ 
-                companyID = infoContract.data.company;
-                projectID = infoContract.data.project;
-                if(!companyID)
-                    return resolve({ error: true, message: "Mã công ty không đúng", keyError: "company_invalid" })
+                if(infoContract.error)
+                    return resolve({ error: true, message: "Hợp đồng không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                if(!projectID)
-                    return resolve({ error: true, message: "Mã dự án không đúng", keyError: "project_invalid" })
-                
+                const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
-                if(companyID){
-                    dataInsert.company = companyID
-                }
-
-                if(projectID){
-                    dataInsert.project = projectID
-                }
+                let dataInsert = { userCreate: userID, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
 
                 if(name){
                     dataInsert.name = name
@@ -110,7 +90,15 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: "can_not_insert_contract_production", status: 403 });
 
-
+                /**
+                 * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
+                 */    
+                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                    option: 1,
+                    contractID,
+                    userID
+                })
+                
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -187,30 +175,15 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await CMCS__CONTRACT_PRODUCTION_COLL.findByIdAndUpdate(contractProductionID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 })
-
+ 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
-                 let infoAmountContract = await that.getAmountByObject({userID, contractID})
-                //  console.log(infoAmountContract)
- 
-                 if(infoAmountContract){
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
-                        contractID,
-                        userID,
-                        acceptance: infoAmountContract.data.acceptance, 
-                        vatAcceptance: infoAmountContract.data.vatAcceptance, 
-                        plusAcceptance: infoAmountContract.data.plusAcceptance, 
-                        vatPlusAcceptance: infoAmountContract.data.vatPlusAcceptance, 
-                        retainedValue: infoAmountContract.data.retainedValue, 
-                        advancePaymentDeduction: infoAmountContract.data.advancePaymentDeduction, 
-                        otherDeduction: infoAmountContract.data.otherDeduction, 
-                        recommendedPayment: infoAmountContract.data.recommendedPayment, 
-                        advancePaymentPaid: infoAmountContract.data.advancePaymentPaid, 
-                        amountPaid: infoAmountContract.data.amountPaid, 
-                        remainingPayment: infoAmountContract.data.remainingPayment, 
-                    })
-                 }
+                 await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
+                    option: 1,
+                    contractID: `${contractID}`,
+                    userID
+                })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {

@@ -163,6 +163,41 @@ module.exports = {
     },
 
     /**
+     * Name: Gom nhóm theo đối tượng ✅
+     * Author: Hiepnh
+     * Date: 16/04/2022
+     */
+    getAmountByObject: {
+        auth: "required",
+        params: {
+            companyID   : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
+            contractID  : { type: "string", optional: true },
+            outin       : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, outin } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler=await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByObject({
+                    userID, outin, companyID, projectID, contractID, ipcID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
+
+    /**
      * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
      * Date: 05/04/2022

@@ -357,10 +357,9 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo đối tượng ✅
      * Author: Hiepnh
-     * Date: 04/04/2022
+     * Date: 16/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID, ipcID }){
-        // console.log({ userID, outin, companyID, projectID, contractID, ipcID })
         return new Promise(async resolve => {
             try {
                 let value1 = 0

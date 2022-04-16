@@ -739,12 +739,9 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
 
-                // Cập nhật Sản lượng
-                if(option && Number(option) === 1){
-                   
-                }
+                //1-Cập nhật Sản lượng
 
-                // Cập nhật Doanh thu
+                //2-Cập nhật Doanh thu
 
                 // Cập nhật Tiền về
                 if(option && Number(option) === 3){

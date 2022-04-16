@@ -15,6 +15,7 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT PRODUCTION=====================================//
     CONTRACT_PRODUCTION                                         : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`,
+    CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT                    : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-amount-by-object`,
 
     // ================================CONTRACT IPC============================================//
     CONTRACT_IPC                                                : `${BASE_ROUTE}${CONTRACT_IPC}`,
@@ -27,6 +28,7 @@ const CF_ROUTINGS_CMCS = {
     CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH                        : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-month`,
     CONTRACT_PAYMENT_GET_LIST_BY_MONTH                          : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-list-by-month`,
     CONTRACT_PAYMENT_GET_AMOUNT_CONTRACT_VALUE_GROUP_BY_DATE    : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-contract-value-group-by-date`,
+    CONTRACT_PAYMENT_GET_AMOUNT_BY_OBJECT                       : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-object`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;

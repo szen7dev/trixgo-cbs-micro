@@ -1340,13 +1340,27 @@ class Model extends BaseModel {
                  */
                 
                 //1-Cập nhật Sản lượng
+                if(option && Number(option) === 1){
+                    console.log('1-Cập nhật Sản lượng')
+                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, contractID
+                    })
+                    // console.log(infoIpcContract)
+                    if(infoIpcContract){
+                        dataUpdate.produce = Number(infoIpcContract.data.produce);
+                        dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce);
+                        dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce);
+                        dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce);
+                    }
+                }
 
                 //2-Cập nhật Doanh thu
                 if(option && Number(option) === 2){
+                    console.log('2-Cập nhật Doanh thu')
                     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
-                    console.log(infoIpcContract)
+                    // console.log(infoIpcContract)
                     if(infoIpcContract){
                         dataUpdate.acceptance = Number(infoIpcContract.data.acceptance);
                         dataUpdate.vatAcceptance = Number(infoIpcContract.data.vatAcceptance);
