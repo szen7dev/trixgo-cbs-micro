@@ -489,17 +489,30 @@ class Model extends BaseModel {
                 // Công nợ phải thực hiện
                 if(!isNaN(option) && Number(option) >= 0){
 
+                    // Cấu hình thời gian để kiểm tra quá hạn
+                    let start = new Date();
+                    start.setHours(0,0,0,0);
+
                     conditionObj.remainingPayment = {
                         $gt: 0
                     }   
 
-                    // Công nợ quá hạn
-                    if(!isNaN(option) && Number(option)=== 2){
-                        // Cấu hình thời gian để kiểm tra quá hạn
-                        let start = new Date();
-                        start.setHours(0,0,0,0);
+                    // Tổng công nợ
+                    if(!isNaN(option) && Number(option)=== 1){
+                       
+                    }
 
-                        // Lấy việc quá hạn
+                    // Công nợ trong kỳ
+                    if(!isNaN(option) && Number(option)=== 2){
+                         conditionObj.timeForPayment = {
+                             $gte: start,
+                             $exists: true,
+                             $ne: null
+                         }
+                    }
+
+                    // Công nợ quá hạn
+                    if(!isNaN(option) && Number(option)=== 3){
                         conditionObj.timeForPayment = {
                             $lt: start,
                             $exists: true,
@@ -872,7 +885,7 @@ class Model extends BaseModel {
     getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, debt, year, ctx }){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
 
                 if(!isNaN(outin) && Number(outin) >= 0){
                     conditionObj.outin = outin
@@ -930,8 +943,8 @@ class Model extends BaseModel {
                         amount: { $sum: "$remainingPayment" },
                     }
 
-                     // Gom nhóm theo Lĩnh vực
-                     if(!isNaN(option) && Number(option) === 1){
+                    // Gom nhóm theo Lĩnh vực
+                    if(!isNaN(option) && Number(option) === 1){
                         conditionGroup = {
                             _id: { field: "$field" },
                             amount: { $sum: "$remainingPayment" },
@@ -941,6 +954,10 @@ class Model extends BaseModel {
                             path: '_id.field',
                             select: '_id name sign',
                             model: 'doctype'
+                        }
+
+                        sortBy = {
+                            "_id.field": 1,
                         }
                     }
 
@@ -956,6 +973,10 @@ class Model extends BaseModel {
                             select: '_id name sign',
                             model: 'contact'
                         }
+
+                        sortBy = {
+                            "_id.buyerInfo": 1,
+                        }
                     }
                     
                     // Gom nhóm theo Đơn vị
@@ -970,6 +991,10 @@ class Model extends BaseModel {
                             select: '_id name sign',
                             model: 'contact'
                         }
+
+                        sortBy = {
+                            "_id.chair": 1,
+                        }
                     }
 
                     // Gom nhóm theo Phụ trách
@@ -983,6 +1008,10 @@ class Model extends BaseModel {
                             path: '_id.personInCharge',
                             select: '_id name sign',
                             model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.personInCharge": 1,
                         }
                     }  
                 }else{
@@ -1011,6 +1040,10 @@ class Model extends BaseModel {
                                 select: '_id name sign',
                                 model: 'doctype'
                             }
+
+                            sortBy = {
+                                "_id.field": 1,
+                            }
                         }
 
                         // Gom nhóm theo Khách hàng
@@ -1024,6 +1057,10 @@ class Model extends BaseModel {
                                 path: '_id.buyerInfo',
                                 select: '_id name sign',
                                 model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.buyerInfo": 1,
                             }
                         }
                         
@@ -1039,6 +1076,10 @@ class Model extends BaseModel {
                                 select: '_id name sign',
                                 model: 'contact'
                             }
+
+                            sortBy = {
+                                "_id.chair": 1,
+                            }
                         }
 
                         // Gom nhóm theo Phụ trách
@@ -1052,6 +1093,10 @@ class Model extends BaseModel {
                                 path: '_id.personInCharge',
                                 select: '_id name sign',
                                 model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.personInCharge": 1,
                             }
                         }  
                     }else{
@@ -1075,6 +1120,10 @@ class Model extends BaseModel {
                                 select: '_id name sign',
                                 model: 'doctype'
                             }
+
+                            sortBy = {
+                                "_id.field": 1,
+                            }
                         }
 
                         // Gom nhóm theo Khách hàng
@@ -1088,6 +1137,10 @@ class Model extends BaseModel {
                                 path: '_id.buyerInfo',
                                 select: '_id name sign',
                                 model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.buyerInfo": 1,
                             }
                         }
                         
@@ -1103,6 +1156,10 @@ class Model extends BaseModel {
                                 select: '_id name sign',
                                 model: 'contact'
                             }
+
+                            sortBy = {
+                                "_id.chair": 1,
+                            }
                         }
 
                         // Gom nhóm theo Phụ trách
@@ -1116,6 +1173,10 @@ class Model extends BaseModel {
                                 path: '_id.personInCharge',
                                 select: '_id name sign',
                                 model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.personInCharge": 1,
                             }
                         }  
                     }
@@ -1151,6 +1212,9 @@ class Model extends BaseModel {
                     {
                         $group: conditionGroup
                     }, 
+                    {
+                        $sort: sortBy
+                    } 
                 ])
 
                 if(!isNaN(option) && Number(option) > 0){
