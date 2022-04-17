@@ -401,7 +401,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ type, contractID, userID,
+    getList({ isMember, option, companyID, projectID, contractID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -442,14 +442,70 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                // TRẠNG THÁI CÔNG VIỆC
-                if(type){
+                if(!isNaN(type) && Number(type) >= 0){
                     conditionObj.type = type
                 }
 
-                // HỢP ĐỒNG
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(!isNaN(real) && Number(real) >= 0){
+                    conditionObj.real = real
+                }
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+                }
+
                 if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID;
+                    conditionObj.contract = ObjectID(contractID)
+                }
+
+                if(field && checkObjectIDs(field)){
+                    conditionObj.field = ObjectID(field)
+                }
+
+                if(chair && checkObjectIDs(chair)){
+                    conditionObj.chair = ObjectID(chair)
+                }
+
+                if(personInCharge && checkObjectIDs(personInCharge)){
+                    conditionObj.personInCharge = ObjectID(personInCharge)
+                }
+
+                if(buyerInfo && checkObjectIDs(buyerInfo)){
+                    conditionObj.buyerInfo = ObjectID(buyerInfo)
+                }
+
+                if(sellerInfo && checkObjectIDs(sellerInfo)){
+                    conditionObj.sellerInfo = ObjectID(sellerInfo)
+                }
+
+                // Công nợ phải thực hiện
+                if(!isNaN(option) && Number(option) >= 0){
+
+                    conditionObj.remainingPayment = {
+                        $gt: 0
+                    }   
+
+                    // Công nợ quá hạn
+                    if(!isNaN(option) && Number(option)=== 2){
+                        // Cấu hình thời gian để kiểm tra quá hạn
+                        let start = new Date();
+                        start.setHours(0,0,0,0);
+
+                        // Lấy việc quá hạn
+                        conditionObj.timeForPayment = {
+                            $lt: start,
+                            $exists: true,
+                            $ne: null
+                        }
+                    }
                 }
 
                 if(keyword){

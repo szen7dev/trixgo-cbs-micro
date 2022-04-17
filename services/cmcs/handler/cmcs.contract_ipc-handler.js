@@ -152,9 +152,20 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            contractIpcID : { type: "string", optional: true },
-            type          : { type: "number", optional: true },
-            contractID    : { type: "string", optional: true },
+            contractIpcID   : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            contractID      : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            outin           : { type: "string", optional: true },
+            real            : { type: "string", optional: true },
+            field           : { type: "string", optional: true },
+            chair           : { type: "string", optional: true },
+            personInCharge  : { type: "string", optional: true },
+            buyerInfo       : { type: "string", optional: true },
+            sellerInfo      : { type: "string", optional: true },
+            isMember        : { type: "string", optional: true },
+            option          : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -166,9 +177,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractIpcID, type, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
+                console.log({ contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select })
 
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(contractIpcID){
@@ -176,8 +188,12 @@ module.exports = {
                         contractIpcID, userID, select, populates
                     });
                 }else{
+                    if(!companyID && !projectID && !contractID){
+                        companyID = company._id
+                    }
+
                     resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getList({
-                        type, contractID, userID, keyword, limit, lastestID, select, populates
+                        isMember, option, companyID, projectID, contractID, type: Number(type), outin: Number(outin), real: Number(real), field, chair, personInCharge, buyerInfo, sellerInfo, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 
