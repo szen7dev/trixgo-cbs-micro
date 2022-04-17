@@ -872,7 +872,7 @@ class Model extends BaseModel {
     getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, debt, year, ctx }){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
 
                 if(!isNaN(outin) && Number(outin) >= 0){
                     conditionObj.outin = outin
