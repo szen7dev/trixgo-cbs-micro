@@ -274,6 +274,83 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name  : Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date  : 12/4/2022 
+     */
+    updateValue({ 
+        option, ipcID, userID
+    }){ 
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật giá trị ngân sách
+                 * 2-Cập nhật dự báo ngân sách
+                 * 3-Cập nhật thực hiện ngân sách
+                 */
+
+                if(!checkObjectIDs(ipcID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" })
+
+                let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
+                let recommendedPayment = infoIpc.recommendedPayment | 0
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+
+                //1-Cập nhật Sản lượng
+
+                //2-Cập nhật Doanh thu
+
+                // Cập nhật Tiền về
+                if(option && Number(option) === 3){
+                    let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                ipc: ObjectID(ipcID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: "$value" },
+                            }
+                        }, 
+                    ])
+
+                    if(listData && listData.length){
+                        dataUpdate.amountPaid = Number(listData[0].amount)
+                        dataUpdate.remainingPayment = Number(recommendedPayment) - Number(listData[0].amount)
+                    }
+                }
+
+                let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: Remove contract ipc ✅
      * Author: Depv
      * Code: 
@@ -435,78 +512,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm✅
-     * Author: Hiepnh
-     * Date: 5/4/2022
-     */
-    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
-        return new Promise(async resolve => {
-            try {
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
-
-                // Tính toán theo companyID
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-
-                    conditionGroup = {
-                        _id: { month: "$month" },
-                        amount: { $sum: "$amount" },
-                    }
-                }
-
-                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
-
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        amount: { $sum: "$amount" },
-                    }
-                }
-
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = outin
-                }
-
-                if(!isNaN(year) && Number(year) >= 0){
-                    conditionObjYear = {
-                        "year": Number(year),
-                    }
-                }
-
-                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    }, 
-                    {
-                        $project : { 
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    }, 
-                    {
-                        $group: conditionGroup
-                    },
-                    {
-                        $sort: {
-                            "_id.year": 1,
-                            "_id.month": 1,
-                        }
-                    } 
-                ])
-
-                return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
      * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
      * Date: 05/04/2022
@@ -623,6 +628,78 @@ class Model extends BaseModel {
     } 
 
     /**
+     * Name: Gom nhóm theo tháng trong năm✅
+     * Author: Hiepnh
+     * Date: 5/4/2022
+     */
+    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+
+                // Tính toán theo companyID
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+
+                    conditionGroup = {
+                        _id: { month: "$month" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+                }
+
+                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    }, 
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: {
+                            "_id.year": 1,
+                            "_id.month": 1,
+                        }
+                    } 
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Gom nhóm theo đối tượng ✅
      * Author: Hiepnh
      * Date: 04/04/2022
@@ -730,78 +807,56 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị ✅
+     * Name: Gom nhóm theo thuộc tính ✅
      * Author: Hiepnh
-     * Date  : 12/4/2022 
+     * Date: 17/04/2022
      */
-    updateValue({ 
-        option, ipcID, userID
-    }){ 
-        return new Promise(async (resolve) => {
+    getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, ctx }){
+        return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * 1-Cập nhật giá trị ngân sách
-                 * 2-Cập nhật dự báo ngân sách
-                 * 3-Cập nhật thực hiện ngân sách
-                 */
+                let conditionObj = {}, conditionGroup = {_id: { }}
 
-                if(!checkObjectIDs(ipcID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" })
-
-                let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
-                let recommendedPayment = infoIpc.recommendedPayment | 0
-                
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
-                
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-             
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-
-                //1-Cập nhật Sản lượng
-
-                //2-Cập nhật Doanh thu
-
-                // Cập nhật Tiền về
-                if(option && Number(option) === 3){
-                    let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                        {
-                            $match: {
-                                ipc: ObjectID(ipcID),
-                            }
-                        }, 
-                        {
-                            $group: {
-                                _id: { },
-                                amount: { $sum: "$value" },
-                            }
-                        }, 
-                    ])
-
-                    if(listData && listData.length){
-                        dataUpdate.amountPaid = Number(listData[0].amount)
-                        dataUpdate.remainingPayment = Number(recommendedPayment) - Number(listData[0].amount)
-                    }
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
                 }
 
-                let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+                }
 
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }
+
+                if(!isNaN(option) && Number(option) === 1){
+                    conditionGroup = {
+                        _id: { },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+                console.log(conditionObj)
+
+                let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    }, 
+                ])
+
+                return resolve({ error: false, data: listData });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message });
             }
         })
     }

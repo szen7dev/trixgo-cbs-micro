@@ -137,31 +137,6 @@ module.exports = {
      * Dev: Hiepnh ✅
      * Func: get amount by month
      */
-    // getAmountByMonth: {
-    //     auth: "required",
-    //     params: {
-    //         year : { type: "string", optional: true },
-    //         outin : { type: "string", optional: true },
-    //     },
-    //     async handler(ctx) {
-    //         try {
-    //             await this.validateEntity(ctx.params);
-    //             let { year, outin } = ctx.params;
-
-    //             const { _id: userID, company } = ctx.meta.infoUser;
-    //             // console.log({company})
-
-    //             let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
-    //                 userID, companyID: company._id, outin: Number(outin), year, ctx
-    //             });
-
-    //             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-    //         } catch (error) {
-    //             return { error:  true, message: error.message };
-    //         }
-    //     }
-    // },
-
     getAmountByMonth: {
         auth: "required",
         params: {
@@ -214,12 +189,13 @@ module.exports = {
                 let { companyID, projectID, contractID, outin } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
+                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
+                if(!projectID && !companyID){
                     companyID = company._id
                 }
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByObject({
-                    userID, outin, companyID, projectID, contractID, ipcID, ctx
+                    userID, outin: Number(outin), companyID, projectID, contractID, ipcID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -256,7 +232,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_PAYMENT_MODEL.getListByMonth({
-                    userID, companyID: company._id, outin, month, year, keyword, limit, lastestID, select, populates
+                    userID, companyID: company._id, outin: Number(outin), month, year, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

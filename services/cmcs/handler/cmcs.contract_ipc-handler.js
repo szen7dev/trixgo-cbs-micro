@@ -92,6 +92,35 @@ module.exports = {
     },
 
     /**
+     * Name  : Cập nhật giá trị ✅
+     * Author: Hiepnh
+     * Date  : 12/4/2022 
+     */
+    updateValue: {
+        auth: "required",
+        params: {
+            option : { type: "number" },
+            ipcID : { type: "string" },
+        },
+        async handler(ctx) {  
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, ipcID } = ctx.params;
+            
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.updateValue({
+                    option, ipcID, userID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Dev: Depv ✅
      * Func: Xóa contract ipc
      */
@@ -222,7 +251,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getListByMonth({
-                    userID, companyID: company._id, outin, month, year, keyword, limit, lastestID, select, populates
+                    userID, companyID: company._id, outin: Number(outin), month, year, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -257,7 +286,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByObject({
-                    userID, outin, companyID, projectID, contractID, ctx
+                    userID, outin: Number(outin), companyID, projectID, contractID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -266,34 +295,42 @@ module.exports = {
             }
         }
     }, 
-    
+
     /**
-     * Name  : Cập nhật giá trị ✅
+     * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
-     * Date  : 12/4/2022 
+     * Date: 05/04/2022
      */
-    updateValue: {
+     getAmountByProperty: {
         auth: "required",
         params: {
-            option : { type: "number" },
-            ipcID : { type: "string" },
+            companyID   : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
+            contractID  : { type: "string", optional: true },
+            outin       : { type: "string", optional: true },
+            option      : { type: "string", optional: true },
         },
-        async handler(ctx) {  
+        async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, ipcID } = ctx.params;
-            
-                const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.updateValue({
-                    option, ipcID, userID, ctx
+                let { companyID, projectID, contractID, outin, option } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
+                if(!projectID && !companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByProperty({
+                    userID, outin: Number(outin), companyID, projectID, contractID, option, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
-    },
+    }, 
 
 }

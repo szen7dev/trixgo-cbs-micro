@@ -163,7 +163,7 @@ module.exports = {
                 if(!projectID && !companyID){
                     companyID = company._id
                 }
-                console.log({ companyID, projectID, year, outin })
+                // console.log({ companyID, projectID, year, outin })
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PRODUCTION_MODEL.getAmountByMonth({
                     userID, companyID, projectID, outin: Number(outin), year, ctx
@@ -201,7 +201,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_PRODUCTION_MODEL.getAmountByObject({
-                    userID, outin, companyID, projectID, contractID, ctx
+                    userID, outin: Number(outin), companyID, projectID, contractID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

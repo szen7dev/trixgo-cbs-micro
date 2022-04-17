@@ -405,7 +405,7 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getListByMonth({
-                    userID, companyID: company._id, outin, month, year, keyword, limit, lastestID, select, populates
+                    userID, companyID: company._id, outin: Number(outin), month, year, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
