@@ -137,22 +137,54 @@ module.exports = {
      * Dev: Hiepnh ✅
      * Func: get amount by month
      */
+    // getAmountByMonth: {
+    //     auth: "required",
+    //     params: {
+    //         year : { type: "string", optional: true },
+    //         outin : { type: "string", optional: true },
+    //     },
+    //     async handler(ctx) {
+    //         try {
+    //             await this.validateEntity(ctx.params);
+    //             let { year, outin } = ctx.params;
+
+    //             const { _id: userID, company } = ctx.meta.infoUser;
+    //             // console.log({company})
+
+    //             let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
+    //                 userID, companyID: company._id, outin: Number(outin), year, ctx
+    //             });
+
+    //             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+    //         } catch (error) {
+    //             return { error:  true, message: error.message };
+    //         }
+    //     }
+    // },
+
     getAmountByMonth: {
         auth: "required",
         params: {
-            year : { type: "string", optional: true },
-            outin : { type: "string", optional: true },
+            companyID   : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
+            year        : { type: "string", optional: true },
+            outin       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { year, outin } = ctx.params;
+                let { companyID, projectID, year, outin } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log({company})
+                
+                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
+                if(!projectID && !companyID){
+                    companyID = company._id
+                }
+                console.log({ companyID, projectID, year, outin })
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
-                    userID, companyID: company._id, outin: Number(outin), year, ctx
+                    userID, companyID, projectID, outin: Number(outin), year, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -232,33 +264,5 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }, 
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Lấy danh sách contract value, group theo tháng năm
-	 * Date: 05/04/2022
-	 */
-    getAmountContractValueGroupByDate: {
-        auth: "required",
-        params: {
-            projectID : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { projectID } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
-
-                const resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountContractValueGroupByDate({
-                    projectID, userID, ctx
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
     },
-
 }

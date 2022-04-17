@@ -54,7 +54,11 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
      * 4-Tạm dừng
      */
     status: { type: Number, default: 1 },
-    //_________Phân loại vào ra (1-Hợp đồng bán ra/2-Hợp đồng mua vào) (CONTRACT_OUTIN in cf_constant)
+    /**
+     * Phân loại vào ra
+     * 1-Hợp đồng bán ra
+     * 2-Hợp đồng mua vào
+     */
     outin: { type: Number, default: 1 },
     //_________Phân loại NA (Thực/Gửi dấu) (CONTRACT_TA in cf_constant)
     real: { type: Number, default: 1 },

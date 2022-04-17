@@ -141,6 +141,42 @@ module.exports = {
     },
 
     /**
+     * Dev: Hiepnh ✅
+     * Func: get amount by month
+     */
+    getAmountByMonth: {
+        auth: "required",
+        params: {
+            companyID   : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
+            year        : { type: "string", optional: true },
+            outin       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, projectID, year, outin } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+                
+                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
+                if(!projectID && !companyID){
+                    companyID = company._id
+                }
+                console.log({ companyID, projectID, year, outin })
+
+                let resultAfterCallHandler = await CMCS__CONTRACT_PRODUCTION_MODEL.getAmountByMonth({
+                    userID, companyID, projectID, outin: Number(outin), year, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Gom nhóm theo đối tượng ✅
      * Author: Hiepnh
      * Date: 16/04/2022

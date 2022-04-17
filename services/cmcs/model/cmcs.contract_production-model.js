@@ -385,6 +385,78 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Gom nhóm theo tháng trong năm✅
+     * Author: Hiepnh
+     * Date: 5/4/2022
+     */
+    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+
+                // Tính toán theo companyID
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+
+                    conditionGroup = {
+                        _id: { month: "$month" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+                }
+
+                let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            amount: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    }, 
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: {
+                            "_id.year": 1,
+                            "_id.month": 1,
+                        }
+                    } 
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Gom nhóm theo đối tượng ✅
      * Author: Hiepnh
      * Date: 15/04/2022

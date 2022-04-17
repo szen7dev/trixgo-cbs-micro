@@ -15,6 +15,7 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT PRODUCTION=====================================//
     CONTRACT_PRODUCTION                                         : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`,
+    CONTRACT_PRODUCTION_GET_AMOUNT_BY_MONTH                     : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-amount-by-month`,
     CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT                    : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-amount-by-object`,
 
     // ================================CONTRACT IPC============================================//

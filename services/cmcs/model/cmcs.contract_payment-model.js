@@ -316,35 +316,69 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 04/04/2022
      */
-    getAmountByMonth({ userID, companyID, outin, year, ctx }){
+    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * 1-Áp dụng cho công ty
+                 * 2-Áp dụng cho dự án
+                 */
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+
+                // Tính toán theo companyID
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+
+                    conditionGroup = {
+                        _id: { month: "$month" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+                }
+
                 let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            outin: Number(outin),
-                        }
-                    },
+                        $match: conditionObj
+                    }, 
                     {
-                        $project : {
+                        $project : { 
                             year : {$year : "$date"},
                             month : {$month : "$date"},
-                            value: 1
+                            amount: { $sum: ["$value"] },
                         }
                     },
                     {
-                        $match: {
-                            "year": Number(year),
-                        }
+                        $match: conditionObjYear
+                    }, 
+                    {
+                        $group: conditionGroup
                     },
                     {
-                        $group: {
-                            _id: { month: "$month"},
-                            amount: { $sum: "$value" }
+                        $sort: {
+                            "_id.year": 1,
+                            "_id.month": 1,
                         }
-                    },
-                    {$sort: {"_id.month": 1}}
+                    } 
                 ])
 
                 return resolve({ error: false, data: listData });
@@ -549,64 +583,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Lấy danh sách contract value, group theo tháng năm
-	 * Date: 05/04/2022
-	 */
-	getAmountContractValueGroupByDate({ projectID, userID, ctx }){
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs([projectID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số projectID không hợp lệ",
-                        keyError: "params_projectID_invalid",
-                        status: 400
-                    });
-                }
-
-                const listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
-                    {
-                        $match: {
-                            project: ObjectID(projectID),
-                        }
-                    },
-                    {
-                        $project : {
-                            year : { $year : "$date" },
-                            month : { $month : "$date" },
-                            value: 1
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { month: "$month", year: "$year" },
-                            amount: { $sum: "$value" }
-                        }
-                    },
-                    {
-                        $sort: {
-                            "_id.month": 1,
-                            "_id.year": 1,
-                        }
-                    }
-                ])
-
-                return resolve({
-                    error: false,
-                    data: {
-                        listRecords: listData
-                    },
-                    status: 200
-                });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
 }
 
 exports.MODEL = new Model;

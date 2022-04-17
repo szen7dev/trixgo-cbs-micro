@@ -437,16 +437,46 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo tháng trong năm✅
      * Author: Hiepnh
+     * Date: 5/4/2022
      */
-    getAmountByMonth({ userID, companyID, outin, year, ctx }){
+    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
         return new Promise(async resolve => {
             try {
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+
+                // Tính toán theo companyID
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+
+                    conditionGroup = {
+                        _id: { month: "$month" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+                }
+
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            outin: Number(outin),
-                        }
+                        $match: conditionObj
                     }, 
                     {
                         $project : { 
@@ -456,127 +486,20 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $match: {
-                            "year": Number(year),
-                        }
+                        $match: conditionObjYear
                     }, 
                     {
-                        $group: {
-                            _id: { month: "$month" },
-                            amount: { $sum: "$amount" },
-                        }
+                        $group: conditionGroup
                     },
-                    {$sort: {"_id.month": 1}}    
+                    {
+                        $sort: {
+                            "_id.year": 1,
+                            "_id.month": 1,
+                        }
+                    } 
                 ])
 
                 return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-     * Name: Gom nhóm theo đối tượng ✅
-     * Author: Hiepnh
-     * Date: 04/04/2022
-     */
-    getAmountByObject({ userID, outin, companyID, projectID, contractID }){
-        return new Promise(async resolve => {
-            try {
-                let acceptance=0, vatAcceptance=0, plusAcceptance=0, vatPlusAcceptance=0, retainedValue=0, advancePaymentDeduction=0, otherDeduction=0, recommendedPayment = 0, advancePaymentPaid=0, amountPaid=0, remainingPayment=0
-
-                let conditionObj1 = {type: 1}, conditionObj2 = {type: 2}
-
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj1.outin = outin
-                    conditionObj2.outin = outin
-                }
-
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj1.company = ObjectID(companyID)
-                    conditionObj2.company = ObjectID(companyID)
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj1.project = ObjectID(projectID)
-                    conditionObj2.project = ObjectID(projectID)
-                }
-
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj1.contract = ObjectID(contractID)
-                    conditionObj2.contract = ObjectID(contractID)
-                }
-
-                let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: conditionObj1
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            acceptance: { $sum: "$acceptance" },
-                            vatAcceptance: { $sum: "$vatAcceptance" },
-                            plusAcceptance: { $sum: "$plusAcceptance" },
-                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
-                            retainedValue: { $sum: "$retainedValue" },
-                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
-                            otherDeduction: { $sum: "$otherDeduction" },
-                            recommendedPayment: { $sum: "$recommendedPayment" },
-                            amountPaid: { $sum: "$amountPaid" },
-                            remainingPayment: { $sum: "$remainingPayment" }
-                        }
-                    }, 
-                ])
-
-                let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
-                    {
-                        $match: conditionObj2
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            acceptance: { $sum: "$acceptance" },
-                            vatAcceptance: { $sum: "$vatAcceptance" },
-                            plusAcceptance: { $sum: "$plusAcceptance" },
-                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
-                            retainedValue: { $sum: "$retainedValue" },
-                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
-                            otherDeduction: { $sum: "$otherDeduction" },
-                            recommendedPayment: { $sum: "$recommendedPayment" },
-                            amountPaid: { $sum: "$amountPaid" },
-                            remainingPayment: { $sum: "$remainingPayment" }
-                        }
-                    }, 
-                ])
-
-                if(listData1 && listData1.length){
-                    acceptance = Number(acceptance) + Number(listData1[0].acceptance)
-                    vatAcceptance = Number(vatAcceptance) +  Number(listData1[0].vatAcceptance)
-                    plusAcceptance = Number(plusAcceptance) +  Number(listData1[0].plusAcceptance)
-                    vatPlusAcceptance = Number(vatPlusAcceptance) +  Number(listData1[0].vatPlusAcceptance)
-                    retainedValue = Number(retainedValue) +  Number(listData1[0].retainedValue)
-                    advancePaymentDeduction = Number(advancePaymentDeduction) +  Number(listData1[0].advancePaymentDeduction)
-                    otherDeduction = Number(otherDeduction) +  Number(listData1[0].otherDeduction)
-                    recommendedPayment = Number(recommendedPayment) +  Number(listData1[0].recommendedPayment)
-                    advancePaymentPaid = Number(advancePaymentPaid) +  Number(listData1[0].amountPaid) // Tạm ứng
-                    remainingPayment = Number(remainingPayment) +  Number(listData1[0].remainingPayment)
-                }
-
-                if(listData2 && listData2.length){
-                    acceptance = Number(acceptance) + Number(listData2[0].acceptance)
-                    vatAcceptance = Number(vatAcceptance) +  Number(listData2[0].vatAcceptance)
-                    plusAcceptance = Number(plusAcceptance) +  Number(listData2[0].plusAcceptance)
-                    vatPlusAcceptance = Number(vatPlusAcceptance) +  Number(listData2[0].vatPlusAcceptance)
-                    retainedValue = Number(retainedValue) +  Number(listData2[0].retainedValue)
-                    advancePaymentDeduction = Number(advancePaymentDeduction) +  Number(listData2[0].advancePaymentDeduction)
-                    otherDeduction = Number(otherDeduction) +  Number(listData2[0].otherDeduction)
-                    recommendedPayment = Number(recommendedPayment) +  Number(listData2[0].recommendedPayment)
-                    amountPaid = Number(amountPaid) +  Number(listData2[0].amountPaid) // Thanh toán
-                    remainingPayment = Number(remainingPayment) +  Number(listData2[0].remainingPayment)
-                }
-
-                return resolve({ error: false, data: { acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -698,6 +621,113 @@ class Model extends BaseModel {
             }
         })
     } 
+
+    /**
+     * Name: Gom nhóm theo đối tượng ✅
+     * Author: Hiepnh
+     * Date: 04/04/2022
+     */
+    getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        return new Promise(async resolve => {
+            try {
+                let acceptance=0, vatAcceptance=0, plusAcceptance=0, vatPlusAcceptance=0, retainedValue=0, advancePaymentDeduction=0, otherDeduction=0, recommendedPayment = 0, advancePaymentPaid=0, amountPaid=0, remainingPayment=0
+
+                let conditionObj1 = {type: 1}, conditionObj2 = {type: 2}
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj1.outin = outin
+                    conditionObj2.outin = outin
+                }
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj1.company = ObjectID(companyID)
+                    conditionObj2.company = ObjectID(companyID)
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj1.project = ObjectID(projectID)
+                    conditionObj2.project = ObjectID(projectID)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj1.contract = ObjectID(contractID)
+                    conditionObj2.contract = ObjectID(contractID)
+                }
+
+                let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj1
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            acceptance: { $sum: "$acceptance" },
+                            vatAcceptance: { $sum: "$vatAcceptance" },
+                            plusAcceptance: { $sum: "$plusAcceptance" },
+                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                            retainedValue: { $sum: "$retainedValue" },
+                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                            otherDeduction: { $sum: "$otherDeduction" },
+                            recommendedPayment: { $sum: "$recommendedPayment" },
+                            amountPaid: { $sum: "$amountPaid" },
+                            remainingPayment: { $sum: "$remainingPayment" }
+                        }
+                    }, 
+                ])
+
+                let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
+                    {
+                        $match: conditionObj2
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            acceptance: { $sum: "$acceptance" },
+                            vatAcceptance: { $sum: "$vatAcceptance" },
+                            plusAcceptance: { $sum: "$plusAcceptance" },
+                            vatPlusAcceptance: { $sum: "$vatPlusAcceptance" },
+                            retainedValue: { $sum: "$retainedValue" },
+                            advancePaymentDeduction: { $sum: "$advancePaymentDeduction" },
+                            otherDeduction: { $sum: "$otherDeduction" },
+                            recommendedPayment: { $sum: "$recommendedPayment" },
+                            amountPaid: { $sum: "$amountPaid" },
+                            remainingPayment: { $sum: "$remainingPayment" }
+                        }
+                    }, 
+                ])
+
+                if(listData1 && listData1.length){
+                    acceptance = Number(acceptance) + Number(listData1[0].acceptance)
+                    vatAcceptance = Number(vatAcceptance) +  Number(listData1[0].vatAcceptance)
+                    plusAcceptance = Number(plusAcceptance) +  Number(listData1[0].plusAcceptance)
+                    vatPlusAcceptance = Number(vatPlusAcceptance) +  Number(listData1[0].vatPlusAcceptance)
+                    retainedValue = Number(retainedValue) +  Number(listData1[0].retainedValue)
+                    advancePaymentDeduction = Number(advancePaymentDeduction) +  Number(listData1[0].advancePaymentDeduction)
+                    otherDeduction = Number(otherDeduction) +  Number(listData1[0].otherDeduction)
+                    recommendedPayment = Number(recommendedPayment) +  Number(listData1[0].recommendedPayment)
+                    advancePaymentPaid = Number(advancePaymentPaid) +  Number(listData1[0].amountPaid) // Tạm ứng
+                    remainingPayment = Number(remainingPayment) +  Number(listData1[0].remainingPayment)
+                }
+
+                if(listData2 && listData2.length){
+                    acceptance = Number(acceptance) + Number(listData2[0].acceptance)
+                    vatAcceptance = Number(vatAcceptance) +  Number(listData2[0].vatAcceptance)
+                    plusAcceptance = Number(plusAcceptance) +  Number(listData2[0].plusAcceptance)
+                    vatPlusAcceptance = Number(vatPlusAcceptance) +  Number(listData2[0].vatPlusAcceptance)
+                    retainedValue = Number(retainedValue) +  Number(listData2[0].retainedValue)
+                    advancePaymentDeduction = Number(advancePaymentDeduction) +  Number(listData2[0].advancePaymentDeduction)
+                    otherDeduction = Number(otherDeduction) +  Number(listData2[0].otherDeduction)
+                    recommendedPayment = Number(recommendedPayment) +  Number(listData2[0].recommendedPayment)
+                    amountPaid = Number(amountPaid) +  Number(listData2[0].amountPaid) // Thanh toán
+                    remainingPayment = Number(remainingPayment) +  Number(listData2[0].remainingPayment)
+                }
+
+                return resolve({ error: false, data: { acceptance, vatAcceptance, plusAcceptance, vatPlusAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
     /**
      * Name  : Cập nhật giá trị ✅

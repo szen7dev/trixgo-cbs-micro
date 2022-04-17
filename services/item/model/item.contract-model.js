@@ -321,6 +321,18 @@ class Model extends BaseModel {
         }){
         return new Promise(async resolve => {
             try {
+                 /**
+                * BA
+                 * CẬP NHẬT LẠI CÁC THUỘC TÍNH CHO SẢN LƯỢNG, NGHIỆM THU, TIỀN VỀ
+                 * - outin,...
+                 * - projectID
+                 * - field
+                 * - chair
+                 * - personInCharge
+                 * - buyerInfo
+                 * - sellerInfo
+                 */
+
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Request params contractID invalid" });
 
@@ -1146,17 +1158,46 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo tháng trong năm✅
      * Author: Hiepnh
+     * Date: 05/04/2022
      */
-    getAmountByMonth({ userID, companyID, outin, year, ctx }){
-        // console.log({ userID, companyID, outin, year })
+    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
         return new Promise(async resolve => {
             try {
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+
+                // Tính toán theo companyID
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = ObjectID(companyID)
+
+                    conditionGroup = {
+                        _id: { month: "$month" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
+                }
+
+                if(!isNaN(outin) && Number(outin) >= 0){
+                    conditionObj.outin = outin
+                }
+
+                if(!isNaN(year) && Number(year) >= 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+                }
+                
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            outin: Number(outin),
-                        }
+                        $match: conditionObj
                     }, 
                     {
                         $project : { 
@@ -1166,17 +1207,17 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $match: {
-                            "year": Number(year),
-                        }
+                        $match: conditionObjYear
                     }, 
                     {
-                        $group: {
-                            _id: { month: "$month" },
-                            amount: { $sum: "$amount" },
-                        }
+                        $group: conditionGroup
                     },
-                    {$sort: {"_id.month": 1}}    
+                    {
+                        $sort: {
+                            "_id.year": 1,
+                            "_id.month": 1,
+                        }
+                    } 
                 ])
 
                 return resolve({ error: false, data: listData });
@@ -1390,6 +1431,8 @@ class Model extends BaseModel {
             }
         })
     }
+
+
 }
 
 exports.MODEL = new Model;
