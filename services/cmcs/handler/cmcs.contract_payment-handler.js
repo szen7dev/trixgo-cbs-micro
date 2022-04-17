@@ -151,12 +151,11 @@ module.exports = {
                 let { companyID, projectID, year, outin } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                
+
                 // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
                 if(!projectID && !companyID){
                     companyID = company._id
                 }
-                console.log({ companyID, projectID, year, outin })
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
                     userID, companyID, projectID, outin: Number(outin), year, ctx

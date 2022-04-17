@@ -99,7 +99,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID  }){
+    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -277,6 +277,8 @@ class Model extends BaseModel {
                 }
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
+                } else{
+                    conditionObj.parent = { $exists: false }
                 }
 
                 if(keyword){
