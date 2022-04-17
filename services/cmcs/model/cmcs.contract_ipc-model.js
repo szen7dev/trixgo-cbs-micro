@@ -813,10 +813,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, year, ctx }){
+    getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, debt, year, ctx }){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}
 
                 if(!isNaN(outin) && Number(outin) >= 0){
                     conditionObj.outin = outin
@@ -834,52 +834,57 @@ class Model extends BaseModel {
                     conditionObj.contract = ObjectID(contractID)
                 }
 
-                // Gom nhóm theo năm/tháng
-                if(!isNaN(year) && Number(year) >= 0){
-                    console.log('111111111==================')
-                    conditionObjYear = {
-                        "year": Number(year),
-                    }
-
-                    // Gom nhóm theo Lĩnh vực
-                    if(!isNaN(option) && Number(option) === 1){
-                        conditionGroup = {
-                            _id: { field: "$field", month: "$month", year: "$year" },
-                            amount: { $sum: "$amount" },
+                // BÁO CÁO CÔNG NỢ
+                if(!isNaN(debt) && Number(debt) >= 0){
+                    // Tổng công nợ
+                    if(Number(debt) === 1){
+                        console.log('1.1==================')
+                        // Giá trị còn lại phải thanh toán > 0
+                        conditionObj.remainingPayment = {
+                            $gt: 0
                         }
                     }
 
-                    // Gom nhóm theo Khách hàng
-                    if(!isNaN(option) && Number(option) === 2){
-                        conditionGroup = {
-                            _id: { buyerInfo: "$buyerInfo", month: "$month", year: "$year" },
-                            amount: { $sum: "$amount" },
+                    // Tổng công nợ quá hạn
+                    if(Number(debt) === 2){
+                        console.log('1.2==================')
+                        // Cấu hình thời gian để kiểm tra quá hạn
+                        let start = new Date();
+                        start.setHours(0,0,0,0);
+        
+                        let end = new Date();
+                        end.setHours(23,59,59,999);
+        
+                        // Lấy việc quá hạn
+                        conditionObj.timeForPayment = {
+                            $lt: start,
+                            $exists: true,
+                            $ne: null
+                        }
+
+                        // Giá trị còn lại phải thanh toán > 0
+                        conditionObj.remainingPayment = {
+                            $gt: 0
                         }
                     }
                     
-                    // Gom nhóm theo Đơn vị
-                    if(!isNaN(option) && Number(option) === 3){
-                        conditionGroup = {
-                            _id: { chair: "$chair", month: "$month", year: "$year" },
-                            amount: { $sum: "$amount" },
-                        }
+                    // Tổng hợp chung, không phân loại
+                    conditionGroup = {
+                        _id: { },
+                        amount: { $sum: "$remainingPayment" },
                     }
 
-                    // Gom nhóm theo Phụ trách
-                    if(!isNaN(option) && Number(option) === 4){
-                        conditionGroup = {
-                            _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
-                            amount: { $sum: "$amount" },
-                        }
-                    }  
-                }else{
-                    console.log('2222222222==================')
-
-                    // Gom nhóm theo Lĩnh vực
-                    if(!isNaN(option) && Number(option) === 1){
+                     // Gom nhóm theo Lĩnh vực
+                     if(!isNaN(option) && Number(option) === 1){
                         conditionGroup = {
                             _id: { field: "$field" },
-                            amount: { $sum: "$amount" },
+                            amount: { $sum: "$remainingPayment" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.field',
+                            select: '_id name sign',
+                            model: 'doctype'
                         }
                     }
 
@@ -887,7 +892,13 @@ class Model extends BaseModel {
                     if(!isNaN(option) && Number(option) === 2){
                         conditionGroup = {
                             _id: { buyerInfo: "$buyerInfo" },
-                            amount: { $sum: "$amount" },
+                            amount: { $sum: "$remainingPayment" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.buyerInfo',
+                            select: '_id name sign',
+                            model: 'contact'
                         }
                     }
                     
@@ -895,7 +906,13 @@ class Model extends BaseModel {
                     if(!isNaN(option) && Number(option) === 3){
                         conditionGroup = {
                             _id: { chair: "$chair" },
-                            amount: { $sum: "$amount" },
+                            amount: { $sum: "$remainingPayment" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.chair',
+                            select: '_id name sign',
+                            model: 'contact'
                         }
                     }
 
@@ -903,10 +920,154 @@ class Model extends BaseModel {
                     if(!isNaN(option) && Number(option) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
-                            amount: { $sum: "$amount" },
+                            amount: { $sum: "$remainingPayment" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.personInCharge',
+                            select: '_id name sign',
+                            model: 'contact'
                         }
                     }  
+                }else{
+                    // BÁO CÁO DOANH THU
+                    if(!isNaN(year) && Number(year) >= 0){
+                        console.log('2.1==================')
+                        conditionObjYear = {
+                            "year": Number(year),
+                        }
+
+                        // Tổng hợp chung, không phân loại
+                        conditionGroup = {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        // Gom nhóm theo Lĩnh vực
+                        if(!isNaN(option) && Number(option) === 1){
+                            conditionGroup = {
+                                _id: { field: "$field", month: "$month", year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.field',
+                                select: '_id name sign',
+                                model: 'doctype'
+                            }
+                        }
+
+                        // Gom nhóm theo Khách hàng
+                        if(!isNaN(option) && Number(option) === 2){
+                            conditionGroup = {
+                                _id: { buyerInfo: "$buyerInfo", month: "$month", year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.buyerInfo',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+                        }
+                        
+                        // Gom nhóm theo Đơn vị
+                        if(!isNaN(option) && Number(option) === 3){
+                            conditionGroup = {
+                                _id: { chair: "$chair", month: "$month", year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.chair',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+                        }
+
+                        // Gom nhóm theo Phụ trách
+                        if(!isNaN(option) && Number(option) === 4){
+                            conditionGroup = {
+                                _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.personInCharge',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+                        }  
+                    }else{
+                        console.log('2.2==================')
+
+                        // Tổng hợp chung, không phân loại
+                        conditionGroup = {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        // Gom nhóm theo Lĩnh vực
+                        if(!isNaN(option) && Number(option) === 1){
+                            conditionGroup = {
+                                _id: { field: "$field" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.field',
+                                select: '_id name sign',
+                                model: 'doctype'
+                            }
+                        }
+
+                        // Gom nhóm theo Khách hàng
+                        if(!isNaN(option) && Number(option) === 2){
+                            conditionGroup = {
+                                _id: { buyerInfo: "$buyerInfo" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.buyerInfo',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+                        }
+                        
+                        // Gom nhóm theo Đơn vị
+                        if(!isNaN(option) && Number(option) === 3){
+                            conditionGroup = {
+                                _id: { chair: "$chair" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.chair',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+                        }
+
+                        // Gom nhóm theo Phụ trách
+                        if(!isNaN(option) && Number(option) === 4){
+                            conditionGroup = {
+                                _id: { personInCharge: "$personInCharge" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.personInCharge',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+                        }  
+                    }
                 }
+
+                console.log(conditionObj)
+                console.log(conditionObjYear)
+                console.log(conditionGroup)
 
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
@@ -924,6 +1085,8 @@ class Model extends BaseModel {
                             buyerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
+                            timeForPayment: 1,
+                            remainingPayment: 1,
                         }
                     },
                     {
@@ -933,12 +1096,10 @@ class Model extends BaseModel {
                         $group: conditionGroup
                     }, 
                 ])
-                
-                let listDataAfterNew = await CMCS__CONTRACT_IPC_COLL.populate(listData, {
-                    path: '_id.field',
-                    select: '_id name',
-                    model: 'doctype'
-                })
+
+                if(!isNaN(option) && Number(option) > 0){
+                    await CMCS__CONTRACT_IPC_COLL.populate(listData, conditionPopulate)
+                }
 
                 return resolve({ error: false, data: listData });
             } catch (error) {

@@ -310,12 +310,13 @@ module.exports = {
             outin       : { type: "string", optional: true },
             option      : { type: "string", optional: true },
             year        : { type: "string", optional: true },
+            debt        : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, contractID, outin, option, year } = ctx.params;
+                let { companyID, projectID, contractID, outin, option, year, debt } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
@@ -324,7 +325,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByProperty({
-                    userID, outin: Number(outin), year: Number(year), companyID, projectID, contractID, option, ctx
+                    userID, outin: Number(outin), year: Number(year), debt: Number(debt), companyID, projectID, contractID, option, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -107,13 +107,13 @@ module.exports  = DATABASE_MIDDLEWARE("contract_ipc", {
     //_________((8) = (1 + 2 + 3 + 4) - (5 + 6 + 7))Đề nghị tạm ứng/thanh toán
     recommendedPayment: { type: Number, default: 0},
 
-    //_________(9)Thời hạn thanh toán
-    timeForPayment:  { type: Date, default: 0},
+    //_________(9)Thời hạn thanh toán (Để theo dõi công nợ***)
+    timeForPayment: { type: Date, default: Date.now },
 
     //_________(10)Đã giải ngân
     amountPaid:  { type: Number, default: 0},
 
-    //_________((11) = 8- 10) Còn lại chưa giải ngân
+    //_________((11) = 8- 10) Còn lại chưa giải ngân (Để theo dõi công nợ***)
     remainingPayment:  { type: Number, default: 0},
 
     /**
