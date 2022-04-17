@@ -493,13 +493,27 @@ class Model extends BaseModel {
                         $gt: 0
                     }   
 
+                    // Công nợ trong kỳ
+                    if(!isNaN(option) && Number(option)=== 1){
+                        // Cấu hình thời gian để kiểm tra quá hạn
+                        let start = new Date();
+                        start.setHours(0,0,0,0);
+
+                        // Lấy công nợ trong kỳ
+                        conditionObj.timeForPayment = {
+                            $gte: start,
+                            $exists: true,
+                            $ne: null
+                        }
+                    }
+
                     // Công nợ quá hạn
                     if(!isNaN(option) && Number(option)=== 2){
                         // Cấu hình thời gian để kiểm tra quá hạn
                         let start = new Date();
                         start.setHours(0,0,0,0);
 
-                        // Lấy việc quá hạn
+                        // Lấy công nợ quá hạn
                         conditionObj.timeForPayment = {
                             $lt: start,
                             $exists: true,
