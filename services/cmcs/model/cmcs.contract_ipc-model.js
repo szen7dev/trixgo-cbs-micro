@@ -17,6 +17,8 @@ const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_pro
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 
+const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');
 const { ResumeToken }                   = require('mongodb');
@@ -811,10 +813,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, ctx }){
+    getAmountByProperty({ userID, outin, companyID, projectID, contractID, option, year, ctx }){
         return new Promise(async resolve => {
             try {
-                let conditionObj = {}, conditionGroup = {_id: { }}
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
                 if(!isNaN(outin) && Number(outin) >= 0){
                     conditionObj.outin = outin
@@ -832,13 +834,79 @@ class Model extends BaseModel {
                     conditionObj.contract = ObjectID(contractID)
                 }
 
-                if(!isNaN(option) && Number(option) === 1){
-                    conditionGroup = {
-                        _id: { },
-                        amount: { $sum: "$amount" },
+                // Gom nhóm theo năm/tháng
+                if(!isNaN(year) && Number(year) >= 0){
+                    console.log('111111111==================')
+                    conditionObjYear = {
+                        "year": Number(year),
                     }
+
+                    // Gom nhóm theo Lĩnh vực
+                    if(!isNaN(option) && Number(option) === 1){
+                        conditionGroup = {
+                            _id: { field: "$field", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+
+                    // Gom nhóm theo Khách hàng
+                    if(!isNaN(option) && Number(option) === 2){
+                        conditionGroup = {
+                            _id: { buyerInfo: "$buyerInfo", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+                    
+                    // Gom nhóm theo Đơn vị
+                    if(!isNaN(option) && Number(option) === 3){
+                        conditionGroup = {
+                            _id: { chair: "$chair", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+
+                    // Gom nhóm theo Phụ trách
+                    if(!isNaN(option) && Number(option) === 4){
+                        conditionGroup = {
+                            _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }  
+                }else{
+                    console.log('2222222222==================')
+
+                    // Gom nhóm theo Lĩnh vực
+                    if(!isNaN(option) && Number(option) === 1){
+                        conditionGroup = {
+                            _id: { field: "$field" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+
+                    // Gom nhóm theo Khách hàng
+                    if(!isNaN(option) && Number(option) === 2){
+                        conditionGroup = {
+                            _id: { buyerInfo: "$buyerInfo" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+                    
+                    // Gom nhóm theo Đơn vị
+                    if(!isNaN(option) && Number(option) === 3){
+                        conditionGroup = {
+                            _id: { chair: "$chair" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }
+
+                    // Gom nhóm theo Phụ trách
+                    if(!isNaN(option) && Number(option) === 4){
+                        conditionGroup = {
+                            _id: { personInCharge: "$personInCharge" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }  
                 }
-                console.log(conditionObj)
 
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
@@ -846,13 +914,31 @@ class Model extends BaseModel {
                     }, 
                     {
                         $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
                             amount: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                            type: 1,
+                            outin: 1,
+                            real: 1,
+                            field: 1,
+                            buyerInfo: 1,
+                            chair: 1,
+                            personInCharge: 1,
                         }
                     },
+                    {
+                        $match: conditionObjYear
+                    }, 
                     {
                         $group: conditionGroup
                     }, 
                 ])
+                
+                let listDataAfterNew = await CMCS__CONTRACT_IPC_COLL.populate(listData, {
+                    path: '_id.field',
+                    select: '_id name',
+                    model: 'doctype'
+                })
 
                 return resolve({ error: false, data: listData });
             } catch (error) {

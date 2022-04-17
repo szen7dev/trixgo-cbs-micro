@@ -333,8 +333,8 @@ class Model extends BaseModel {
                  * - sellerInfo
                  */
 
-                if(!checkObjectIDs(contractID))
-                    return resolve({ error: true, message: "Request params contractID invalid" });
+                if(!checkObjectIDs(contractID) || !checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
+                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|chair|personInCharge|field invalid', status: 400 });
 
                 let dataUpdate    = {}
                 let dataAddToSet = {};
@@ -675,6 +675,21 @@ class Model extends BaseModel {
                  * - buyerInfo
                  * - sellerInfo
                  */
+                // HiepNH: Dùng tạm theo cách này, sau bổ theo call Service
+                await CMCS__CONTRACT_IPC_COLL.updateMany(
+                    { contract: ObjectID(contractID) },
+                    { $set: { 
+                        "project" : ObjectID(projectID),
+                        "field" : ObjectID(field),
+                        "chair" : ObjectID(chair),
+                        "personInCharge" : ObjectID(personInCharge),
+                        "buyerInfo" : ObjectID(buyerInfo),
+                        "sellerInfo" : ObjectID(sellerInfo),
+                        "type" : Number(type),
+                        "outin" : Number(outin),
+                        "real" : Number(real),
+                    } }
+                 );
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
