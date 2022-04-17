@@ -930,8 +930,8 @@ class Model extends BaseModel {
                         amount: { $sum: "$remainingPayment" },
                     }
 
-                     // Gom nhóm theo Lĩnh vực
-                     if(!isNaN(option) && Number(option) === 1){
+                    // Gom nhóm theo Lĩnh vực
+                    if(!isNaN(option) && Number(option) === 1){
                         conditionGroup = {
                             _id: { field: "$field" },
                             amount: { $sum: "$remainingPayment" },

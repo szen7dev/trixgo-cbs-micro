@@ -1073,37 +1073,72 @@ class Model extends BaseModel {
     }
 
     // [core] Lấy danh sách chi tiết phiếu 
-    getList({ companyID, voucherID, contractID, isGetForAccountDetails, fromDate, toDate, fundaID,
-        keyword, limit = 10, lastestID, select, populates= {}, arrAccountObjectID }){
+    getList({ option, companyID, fundaID, voucherID, contractID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, isGetForAccountDetails, arrAccountObjectID, fromDate, toDate, keyword, limit = 10, lastestID, select, populates= {} }){
+        // console.log({ companyID, fundaID, voucherID, contractID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, isGetForAccountDetails, arrAccountObjectID, fromDate, toDate})
         return new Promise(async resolve => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                 */
-               let conditionObj = {};
-                if(voucherID){
-                    if(!_isValid(voucherID))
-                        return { error: true, message: 'voucherID_invalid' };
-                    conditionObj.voucher = voucherID
-                }   
-                if(companyID){
-                    if(!_isValid(companyID))
-                        return { error: true, message: 'companyID_invalid' };
-                    conditionObj.company = companyID;
+                let conditionObj = {
+                    company: companyID
                 }
+
+                if(!option){
+                    
+                }else{
+                    // Bút toán của Phiếu
+                    if(Number(option) == 1){
+                        conditionObj = {
+                            voucher: voucherID
+                        }
+                    }
+
+                    // Bút toán của Hợp đồng
+                    // if(Number(option) == 2){
+
+                    // }
+
+                    // Bút toán của Thực hiện ngân sách
+                    if(Number(option) == 3){
+                        if(_isValid(budgetID)){
+                            conditionObj = {
+                                budget: budgetID
+                            }
+                        }  
+        
+                        if(_isValid(budgetItemID)){
+                            conditionObj = {
+                                budgetItem: budgetItemID
+                            }
+                        }  
+        
+                        if(_isValid(budgetGroupID)){
+                            conditionObj = {
+                                budgetGroup: budgetGroupID
+                            }
+                        }  
+        
+                        if(_isValid(budgetWorkID)){
+                            conditionObj = {
+                                budgetWork: budgetWorkID
+                            }
+                        } 
+                    }
+                }  
 
                 if(limit > 20){
                     limit = 20
                 }
 
                 let sortBy   = { createAt: -1, _id: -1 };
-   
 
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -1122,6 +1157,9 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
+                console.log('================>>>>>>>>>>>>>>>>>>>')
+                console.log(conditionObj)
 
                 // Lấy danh sách phiếu cho một tài khoản vd : tk :  111 có các chi tiết phiếu trong kì 9/2021
                 if(isGetForAccountDetails){

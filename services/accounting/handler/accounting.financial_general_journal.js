@@ -150,6 +150,7 @@ module.exports = {
     },
 
     getList: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -160,12 +161,12 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                const { voucherID, keyword, limit, lastestID, select,
-                    populates, accountID, fromDate, toDate, isGetForAccountDetails, arrAccountObjectID
-                } = ctx.params;
+                const { option, companyID, fundaID, voucherID, contractID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, isGetForAccountDetails, arrAccountObjectID, fromDate, toDate, keyword, limit, lastestID, select, populates } = ctx.params;
+
                 const { _id: userID, company } = ctx.meta.infoUser;
-                let fundaID;
+
                 let resultAfterCallHandler;
+
                 if(isGetForAccountDetails){
                     let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
             
@@ -177,10 +178,9 @@ module.exports = {
                     fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 }
                 
-                resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({ companyID: company._id, voucherID, keyword,
-                    limit, lastestID, select, populates,
-                    accountID, fromDate, toDate, isGetForAccountDetails, fundaID, arrAccountObjectID
+                resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({  option, companyID: company._id, fundaID, voucherID, contractID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, isGetForAccountDetails, arrAccountObjectID, fromDate, toDate, keyword, limit, lastestID, select, populates
                 });
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][JOUNRAL_HANEDLER][getListJournalOfAccount] ${error}`);
