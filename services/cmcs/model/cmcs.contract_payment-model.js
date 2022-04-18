@@ -585,6 +585,302 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Name: Gom nhóm theo thuộc tính ✅
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getAmountByProperty({ userID, type, outin, real, companyID, projectID, year, optionTime, optionProperty, ctx }){
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * optionTime: Báo cáo theo trục thời gian
+                 * optionProperty: Báo cáo theo tính chất/phân loại
+                 * 1-Báo cáo theo phân loại: Giá trị ký, Sản lượng, Doanh thu, Tiền về
+                 * 2.1-Tính tổng Tất cả-Theo năm (1)/Theo tháng (2)
+                 * 2.2-Tính tổng theo thuộc tính: Lĩnh vực (1)/Người mua (2)/Người bán (3)/Đơn vị (4)/Chủ trì (5)
+                 * 2.3-Tính tổng kết hợp
+                 */
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
+
+                if(type && Number(type) > 0){
+                    conditionObj.type = type
+                }
+
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = outin
+                }
+
+                if(real && Number(real) > 0){
+                    conditionObj.real = real
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+                }
+
+                // TÍNH TỔNG THEO TẤT CẢ/THEO NĂM
+                if(Number(optionTime) === 1){
+                    conditionGroup = {
+                        _id: { },
+                        amount: { $sum: "$amount" },
+                    }
+
+                    if(!isNaN(year) && Number(year) >= 0){
+                        conditionObjYear = {
+                            "year": Number(year),
+                        }
+                    }
+
+                    // Theo Lĩnh vực
+                    if(Number(optionProperty) === 1){
+                        conditionGroup = {
+                            _id: { field: "$field" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.field',
+                            select: '_id name sign',
+                            model: 'doctype'
+                        }
+
+                        sortBy = {
+                            "_id.field": 1,
+                        }
+                    }
+
+                    // Theo Người mua
+                    if(Number(optionProperty) === 2){
+                        conditionGroup = {
+                            _id: { buyerInfo: "$buyerInfo" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.buyerInfo',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.buyerInfo": 1,
+                        }
+                    }
+
+                    // Theo Người bán
+                    if(Number(optionProperty) === 3){
+                        conditionGroup = {
+                            _id: { sellerInfo: "$sellerInfo" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.sellerInfo',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.sellerInfo": 1,
+                        }
+                    }
+
+                    // Theo Phụ trách/đơn vị
+                    if(Number(optionProperty) === 4){
+                        conditionGroup = {
+                            _id: { personInCharge: "$personInCharge" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.personInCharge',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.personInCharge": 1,
+                        }
+                    }
+
+                    // Theo Chủ trì
+                    if(Number(optionProperty) === 5){
+                        conditionGroup = {
+                            _id: { chair: "$chair" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.chair',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.chair": 1,
+                        }
+                    }
+                }
+
+                // TÍNH TỔNG THEO THÁNG
+                if(Number(optionTime) === 2){
+                    conditionGroup = {
+                        _id: { month: "$month", year: "$year" },
+                        amount: { $sum: "$amount" },
+                    }
+
+                    // Theo tháng trong một năm cụ thể
+                    if(!isNaN(year) && Number(year) >= 0){
+                        conditionObjYear = {
+                            "year": Number(year),
+                        }
+                    }
+
+                    // Theo Lĩnh vực
+                    if(Number(optionProperty) === 1){
+                        conditionGroup = {
+                            _id: { field: "$field", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.field',
+                            select: '_id name sign',
+                            model: 'doctype'
+                        }
+
+                        sortBy = {
+                            "_id.field": 1,
+                        }
+                    }
+
+                    // Theo Người mua
+                    if(Number(optionProperty) === 2){
+                        conditionGroup = {
+                            _id: { buyerInfo: "$buyerInfo", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.buyerInfo',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.buyerInfo": 1,
+                        }
+                    }
+
+                    // Theo Người bán
+                    if(Number(optionProperty) === 3){
+                        conditionGroup = {
+                            _id: { sellerInfo: "$sellerInfo", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.sellerInfo',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.sellerInfo": 1,
+                        }
+                    }
+
+                    // Theo Phụ trách/đơn vị
+                    if(Number(optionProperty) === 4){
+                        conditionGroup = {
+                            _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.personInCharge',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.personInCharge": 1,
+                        }
+                    }
+
+                    // Theo Chủ trì
+                    if(Number(optionProperty) === 5){
+                        conditionGroup = {
+                            _id: { chair: "$chair", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.chair',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.chair": 1,
+                        }
+                    }
+                }
+
+                console.log(conditionObj)
+                console.log(conditionObjYear)
+                console.log(conditionGroup)
+
+                let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            amount: { $sum: ["$value"] },
+                            type: 1,
+                            outin: 1,
+                            real: 1,
+                            field: 1,
+                            buyerInfo: 1,
+                            chair: 1,
+                            personInCharge: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    }, 
+                    {
+                        $group: conditionGroup
+                    }, 
+                    {
+                        $sort: sortBy
+                    } 
+                ])
+
+                if(!isNaN(optionProperty) && Number(optionProperty) > 0){
+                    await CMCS__CONTRACT_PAYMENT_COLL.populate(listData, conditionPopulate)
+                }
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

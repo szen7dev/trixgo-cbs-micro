@@ -240,4 +240,45 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Gom nhóm theo thuộc tính ✅
+     * Author: Hiepnh
+     * Date: 18/04/2022
+     */
+     getAmountByProperty: {
+        auth: "required",
+        params: {
+            companyID           : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+            real                : { type: "string", optional: true },
+            year                : { type: "string", optional: true },
+            optionTime          : { type: "string", optional: true },
+            optionProperty      : { type: "string", optional: true }, 
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, type, outin, real, year, optionTime, optionProperty, debt } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
+                if(!projectID && !companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler=await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByProperty({
+                    userID, companyID, projectID, contractID, type: Number(type), outin: Number(outin), real: Number(real), year: Number(year), optionTime: Number(optionTime), optionProperty: Number(optionProperty), ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
 }

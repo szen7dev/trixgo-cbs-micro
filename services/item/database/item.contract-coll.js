@@ -71,13 +71,13 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
-    chair: {
+    //_________Phân loại theo phụ trách-Đơn vị (POSTMAN ITEM -> CONTACT)
+    personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
-    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
-    personInCharge: {
+    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    chair: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
