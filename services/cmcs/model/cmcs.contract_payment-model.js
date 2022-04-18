@@ -312,7 +312,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm✅
+     * Name: Gom nhóm theo tháng trong năm (BỎ)
      * Author: Hiepnh
      * Date: 04/04/2022
      */
@@ -475,7 +475,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm (BỎ)
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      *  Date: 04/04/2022
      */

@@ -46,6 +46,7 @@ const CF_ROUTINGS_AUTH = {
      * APP_MENU
      */
     APP_MENU                           : `${BASE_ROUTE}${APP_MENU}`,
+    APP_MENU_GET_LIST_COMPANY          : `${BASE_ROUTE}${APP_MENU}/get-list-comapny`,
 
     /**
      * APP_COMPANY
