@@ -129,8 +129,12 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     priority: {
         type: Number,
         default: 1
-    },    
-    //_________Trạng thái phê duyệt(1-Chưa phê duyệt/2-Đã phê duyệt)
+    }, 
+    /**
+     * Trạng thái phê duyệt 
+     * 1-Chưa phê duyệt
+     * 2-Đã phê duyệt
+     */   
     status: {
         type: Number,
         default: 1
