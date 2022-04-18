@@ -67,15 +67,16 @@ module.exports = {
             date: { type: "string", optional: true },
             income: { type: "number", optional: true },
             expense: { type: "number", optional: true },
+            active: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense } = ctx.params;
+                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID
+                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

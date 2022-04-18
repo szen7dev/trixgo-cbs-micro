@@ -99,7 +99,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID }) {
+    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -144,6 +144,10 @@ class Model extends BaseModel {
 
                 if (!isNaN(expense) && Number(expense) >= 0) {
                     dataUpdate.expense = expense;
+                }
+
+                if (!isNaN(active) && Number(active) > 0) {
+                    dataUpdate.active = active;
                 }
 
                 let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
@@ -341,16 +345,21 @@ class Model extends BaseModel {
                  * Lấy sổ quỹ hiện tại của Công ty đang truy cập
                  */
 
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
                 if(parentID && checkObjectIDs(parentID)){
+                    console.log('1111111111111111111========')
                     conditionObj.parent = ObjectID(parentID) 
-                }else{
-                    // Tính tổng theo công ty
-                }
 
-                if(accountID && checkObjectIDs(accountID)){
-                    conditionObj.account = ObjectID(accountID)
+                    if(accountID && checkObjectIDs(accountID)){
+                        conditionObj.account = ObjectID(accountID)
+                    }
+                }else{
+                    console.log('2222222222========')
+                    // Tính tổng theo công ty
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({ active: 1 })
+
+                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
                 }
 
                 conditionGroup = {
@@ -371,14 +380,14 @@ class Model extends BaseModel {
                         select: '_id name description',
                         model: 'account'
                     }
-                }
 
-                sortBy = {
-                    "_id.account": 1,
+                    sortBy = {
+                        "_id.account": 1,
+                    }
                 }
 
                 // Thống kê theo biểu đồ (tháng/năm)
-                if(!isNaN(year) && Number(year) >= 0){
+                if(!isNaN(year) && Number(year) > 0){
                     conditionObjYear = {
                         "year": Number(year),
                     }
@@ -403,10 +412,6 @@ class Model extends BaseModel {
                             month : {$month : "$date"},
                             parent: 1,
                             account: 1,
-                            // customer: 1,
-                            // contract: 1,
-                            // arising: 1,
-                            // closingBalance: 1,
                             income: 1,
                             expense: 1,
                         }
