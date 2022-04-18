@@ -366,6 +366,8 @@ class Model extends BaseModel {
                         income: Number(listData[0].income),
                         expense: Number(listData[0].expense)
                     }
+                } else{
+                    listData = null;
                 }
 
                 return resolve({ error: false, data: listData, status: 200 });
