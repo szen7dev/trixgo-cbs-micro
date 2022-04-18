@@ -1,17 +1,17 @@
 "use strict";
-const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
-const ObjectID                          = require('mongoose').Types.ObjectId;
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const BaseModel = require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
+const ObjectID = require('mongoose').Types.ObjectId;
+const { CF_DOMAIN_SERVICES } = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } = require('../../item/helper/item.actions-constant');
 
 /**
  * import inter-coll, exter-coll
  */
-const FIN__CASH_BOOK_COLL               = require('../database/fin.cash_book-coll');
+const FIN__CASH_BOOK_COLL = require('../database/fin.cash_book-coll');
 
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR }                     = require('../../../tools/keys/index');
+const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
+const { KEY_ERROR } = require('../../../tools/keys/index');
 
 /**
  * import inter-model, exter-model
@@ -31,60 +31,60 @@ class Model extends BaseModel {
             try {
                 let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
 
-                if(checkObjectIDs(parentID)){
+                if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
                 }
 
-                if(checkObjectIDs(accountID)){
+                if (checkObjectIDs(accountID)) {
                     dataInsert.account = accountID;
                 }
 
-                if(checkObjectIDs(customerID)){
+                if (checkObjectIDs(customerID)) {
                     dataInsert.customer = customerID;
                 }
 
-                if(checkObjectIDs(contractID)){
+                if (checkObjectIDs(contractID)) {
                     dataInsert.contract = contractID;
                 }
 
-                if(name){
+                if (name) {
                     dataInsert.name = name;
                 }
 
-                if(date){
+                if (date) {
                     dataInsert.date = date;
                 }
 
-                if(sign){
+                if (sign) {
                     dataInsert.sign = sign;
                 }
 
-                if(note){
+                if (note) {
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(arising) && Number(arising) >= 0){
+                if (!isNaN(arising) && Number(arising) >= 0) {
                     dataInsert.arising = arising;
                 }
 
-                if(!isNaN(openingBalance) && Number(openingBalance) >= 0){
+                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
                     dataInsert.openingBalance = openingBalance;
                 }
 
-                if(!isNaN(closingBalance) && Number(closingBalance) >= 0){
+                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
                     dataInsert.closingBalance = closingBalance;
                 }
 
-                if(!isNaN(income) && Number(income) >= 0){
+                if (!isNaN(income) && Number(income) >= 0) {
                     dataInsert.income = income;
                 }
 
-                if(!isNaN(expense) && Number(expense) >= 0){
+                if (!isNaN(expense) && Number(expense) >= 0) {
                     dataInsert.expense = expense;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                if(!infoAfterInsert)
+                if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -99,7 +99,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID }){
+    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -107,47 +107,47 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                if(!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                if(checkObjectIDs(accountID)){
+                if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
                 }
 
-                if(checkObjectIDs(customerID)){
+                if (checkObjectIDs(customerID)) {
                     dataUpdate.customer = customerID;
                 }
 
-                if(checkObjectIDs(contractID)){
+                if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
                 }
 
-                if(name){
+                if (name) {
                     dataUpdate.name = name;
                 }
 
-                if(date){
+                if (date) {
                     dataUpdate.date = date;
                 }
 
-                if(sign){
+                if (sign) {
                     dataUpdate.sign = sign;
                 }
 
-                if(note){
+                if (note) {
                     dataUpdate.note = note;
                 }
 
-                if(!isNaN(income) && Number(income) >= 0){
-                    dataUpdate.income     = income;
+                if (!isNaN(income) && Number(income) >= 0) {
+                    dataUpdate.income = income;
                 }
 
-                if(!isNaN(expense) && Number(expense) >= 0){
-                    dataUpdate.expense     = expense;
+                if (!isNaN(expense) && Number(expense) >= 0) {
+                    dataUpdate.expense = expense;
                 }
 
                 let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
+                if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -162,10 +162,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-     remove({ cashBooksID, userID }){
+    remove({ cashBooksID, userID }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(cashBooksID))
+                if (!checkObjectIDs(cashBooksID))
                     return resolve({ error: true, message: 'cashBooksID_invalid', status: 400 });
 
                 const infoAfterRemove = await FIN__CASH_BOOK_COLL.deleteMany({
@@ -188,28 +188,28 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getInfo({ cashBookID, select, populates }){
+    getInfo({ cashBookID, select, populates }) {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: 'param_invalid' });
 
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-					populates = JSON.parse(populates);
-				}else{
-					populates = {
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
                         path: "",
                         select: ""
                     }
                 }
 
                 let infoContractIPC = await FIN__CASH_BOOK_COLL.findById(cashBookID)
-                                .select(select)
-                                .populate(populates)
+                    .select(select)
+                    .populate(populates)
 
-				if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
 
                 return resolve({ error: false, data: infoContractIPC });
             } catch (error) {
@@ -224,21 +224,21 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ companyID, accountID, customerID, contractID, parentID,
-        keyword, limit = 50, lastestID, select, populates= {} }) {
+        keyword, limit = 50, lastestID, select, populates = {} }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 50){
+                if (limit > 50) {
                     limit = 50
-                }else{
+                } else {
                     limit = +limit;
                 }
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                 let sortBy;
-                 let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                let conditionObj = {};
+                let keys = ['date__1', 'createAt__-1'];
 
                 /**
                  * VALIDATION STEP (2)
@@ -247,13 +247,13 @@ class Model extends BaseModel {
                  */
 
                 // POPULATE
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				}else{
-					populates = {
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
                         path: "",
                         select: ""
                     }
@@ -263,25 +263,25 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                 if(checkObjectIDs(companyID)){
+                if (checkObjectIDs(companyID)) {
                     conditionObj.company = companyID
                 }
-                if(checkObjectIDs(accountID)){
+                if (checkObjectIDs(accountID)) {
                     conditionObj.account = accountID
                 }
-                if(checkObjectIDs(customerID)){
+                if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID
                 }
-                if(checkObjectIDs(contractID)){
+                if (checkObjectIDs(contractID)) {
                     conditionObj.contract = contractID
                 }
-                if(checkObjectIDs(parentID)){
+                if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
-                } else{
+                } else {
                     conditionObj.parent = { $exists: false }
                 }
 
-                if(keyword){
+                if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');
@@ -290,51 +290,53 @@ class Model extends BaseModel {
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
-                if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await FIN__CASH_BOOK_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+                if (lastestID && checkObjectIDs(lastestID)) {
+                    let infoData = await FIN__CASH_BOOK_COLL.findById(lastestID);
+                    if (!infoData)
+                        return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    if (!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
                     conditionObj = dataPagingAndSort.data.find;
-					sortBy       = dataPagingAndSort.data.sort;
-				}else{
+                    sortBy = dataPagingAndSort.data.sort;
+                } else {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                    sortBy       = dataPagingAndSort.data.sort;
+                    sortBy = dataPagingAndSort.data.sort;
                 }
 
                 let infoDataAfterGet = await FIN__CASH_BOOK_COLL.find(conditionObj)
-                    .limit(limit+1)
+                    .limit(limit + 1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
                     .lean();
 
                 // GET TOTAL RECORD
-                if(!infoDataAfterGet)
+                if (!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
+                let nextCursor = null;
+                if (infoDataAfterGet && infoDataAfterGet.length) {
+                    if (infoDataAfterGet.length > limit) {
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
 
                 let totalRecord = await FIN__CASH_BOOK_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit);
+                let totalPage = Math.ceil(totalRecord / limit);
 
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: +limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                }, status: 200 });
+                return resolve({
+                    error: false, data: {
+                        listRecords: infoDataAfterGet,
+                        limit: +limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    }, status: 200
+                });
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
