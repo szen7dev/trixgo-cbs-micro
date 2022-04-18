@@ -294,7 +294,7 @@ class Model extends BaseModel {
 
                 let conditionPopulate = {
                     path: '_id.company',
-                    select: '_id name sign',
+                    select: '_id name sign image',
                     model: 'company'
                 }
                 await AUTH__APP_ROLE_MENU_COLL.populate(listData, conditionPopulate)
