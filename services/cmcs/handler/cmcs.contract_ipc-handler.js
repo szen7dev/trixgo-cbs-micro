@@ -297,9 +297,12 @@ module.exports = {
                 let { companyID, projectID, contractID, outin } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
+                console.log('Handler IPC getAmountByObject')
+
+                if(!companyID || !projectID || !contractID){
                     companyID = company._id
                 }
+                console.log({ companyID, projectID, contractID, outin })
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByObject({
                     userID, outin: Number(outin), companyID, projectID, contractID, ctx

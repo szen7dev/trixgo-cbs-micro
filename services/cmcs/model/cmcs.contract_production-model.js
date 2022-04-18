@@ -462,27 +462,30 @@ class Model extends BaseModel {
      * Date: 15/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
                 let produce=0, vatProduce=0, plusProduce=0, vatPlusProduce=0
 
                 let conditionObj = { }
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = outin
-                }
-
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
-                }
+                // if(!isNaN(outin) && Number(outin) >= 0){
+                //     conditionObj.outin = outin
+                // }
 
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
                 }
+
+                console.log(conditionObj)
 
                 let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
                     {

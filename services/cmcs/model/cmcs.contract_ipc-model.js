@@ -261,6 +261,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
                  */    
+                console.log('CẬP NHẬT CHO PHẦN HỢP ĐỒNG')
                 let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE}`, {
                     option: 2,
                     contractID: `${contractID}`,
@@ -296,7 +297,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "ipcID_invalid" })
 
                 let infoIpc = await CMCS__CONTRACT_IPC_COLL.findById(ipcID)
-                let recommendedPayment = infoIpc.recommendedPayment | 0
+                let recommendedPayment = 0
+                if(infoIpc.recommendedPayment){
+                    recommendedPayment = infoIpc.recommendedPayment
+                }
+
+                // console.log(infoIpc)
+                // console.log(infoIpc.recommendedPayment)
+                // console.log({recommendedPayment})
                 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -335,11 +343,16 @@ class Model extends BaseModel {
                         }, 
                     ])
 
+                    // console.log(listData)
+
                     if(listData && listData.length){
                         dataUpdate.amountPaid = Number(listData[0].amount)
                         dataUpdate.remainingPayment = Number(recommendedPayment) - Number(listData[0].amount)
                     }
                 }
+                // console.log("dataUpdate====================>>>>>>>>>>>>>>")
+                // console.log(dataUpdate)
+                
 
                 let infoAfterUpdate = await CMCS__CONTRACT_IPC_COLL.findByIdAndUpdate(ipcID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
@@ -776,31 +789,41 @@ class Model extends BaseModel {
      * Date: 04/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        console.log('=================IPC:getAmountByObject==>>>>>>>>>>>')
+        console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA-Hiepnh 18/4/2022
+                 * Kiểm tra lại tại sao lại truyền companyID mặc định lên ở đây khi update IPC?
+                 */
+
                 let acceptance=0, vatAcceptance=0, plusAcceptance=0, vatPlusAcceptance=0, retainedValue=0, advancePaymentDeduction=0, otherDeduction=0, recommendedPayment = 0, advancePaymentPaid=0, amountPaid=0, remainingPayment=0
 
                 let conditionObj1 = {type: 1}, conditionObj2 = {type: 2}
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj1.outin = outin
-                    conditionObj2.outin = outin
-                }
-
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj1.company = ObjectID(companyID)
-                    conditionObj2.company = ObjectID(companyID)
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj1.project = ObjectID(projectID)
-                    conditionObj2.project = ObjectID(projectID)
-                }
+                // if(!isNaN(outin) && Number(outin) >= 0){
+                //     conditionObj1.outin = outin
+                //     conditionObj2.outin = outin
+                // }
 
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj1.contract = ObjectID(contractID)
                     conditionObj2.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj1.project = ObjectID(projectID)
+                        conditionObj2.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj1.company = ObjectID(companyID)
+                            conditionObj2.company = ObjectID(companyID)
+                        }
+                    }
                 }
+
+                // console.log(conditionObj1)
+                // console.log(conditionObj2)
 
                 let listData1 = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
@@ -822,6 +845,8 @@ class Model extends BaseModel {
                         }
                     }, 
                 ])
+                // console.log('listData1')
+                // console.log(listData1)
 
                 let listData2 = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
@@ -843,6 +868,8 @@ class Model extends BaseModel {
                         }
                     }, 
                 ])
+                // console.log('listData2')
+                // console.log(listData2)
 
                 if(listData1 && listData1.length){
                     acceptance = Number(acceptance) + Number(listData1[0].acceptance)

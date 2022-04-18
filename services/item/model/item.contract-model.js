@@ -1243,6 +1243,86 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Gom nhóm theo thuộc tính ✅
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getAmountByProperty({ userID, type, outin, real, companyID, projectID, year, optionTime, optionProperty, ctx }){
+        /**
+         * BA
+         * 1-Tính tổng Tất cả (1)/Theo năm (2)/Theo tháng (3)
+         * 2-Tính tổng theo thuộc tính: Lĩnh vực (1)/Khách hàng (2)/Đơn vị (3)/Phụ trách (4)
+         * 3-Tính tổng kết hợp
+         */
+        let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
+
+        // TÍNH TỔNG THEO TẤT CẢ
+        if(Number(optionTime) === 1){
+            conditionGroup = {
+                _id: { },
+                amount: { $sum: "$amount" },
+            }
+
+            // Theo lĩnh vực
+            if(Number(optionProperty) === 1){
+                conditionGroup = {
+                    _id: { field: "$field" },
+                    amount: { $sum: "$amount" },
+                }
+            }
+
+            // Theo khách hàng
+            if(Number(optionProperty) === 1){
+                conditionGroup = {
+                    _id: { field: "$field" },
+                    amount: { $sum: "$amount" },
+                }
+            }
+
+            // Theo đơn vị
+            if(Number(optionProperty) === 1){
+                conditionGroup = {
+                    _id: { field: "$field" },
+                    amount: { $sum: "$amount" },
+                }
+            }
+
+            // Theo phụ trách
+            if(Number(optionProperty) === 1){
+                conditionGroup = {
+                    _id: { field: "$field" },
+                    amount: { $sum: "$amount" },
+                }
+            }
+        }
+
+        // TÍNH TỔNG THEO NĂM
+        if(Number(optionTime) === 1){
+            conditionGroup = {
+                _id: { },
+                amount: { $sum: "$amount" },
+            }
+
+            if(!isNaN(year) && Number(year) >= 0){
+                conditionObjYear = {
+                    "year": Number(year),
+                }
+            }
+        }
+
+
+        // TÍNH TỔNG THEO THÁNG
+        if(Number(optionTime) === 1){
+            conditionGroup = {
+                _id: { month: "$month", year: "$year" },
+                amount: { $sum: "$amount" },
+            }
+
+            
+        }
+    }
+
+    /**
      * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
      * Date: 05/04/2022
@@ -1439,6 +1519,8 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+                
+                console.log(infoAfterUpdate)
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -1446,7 +1528,6 @@ class Model extends BaseModel {
             }
         })
     }
-
 
 }
 
