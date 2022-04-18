@@ -532,7 +532,14 @@ class Model extends BaseModel {
                 /**
                  * BA
                  * optionTime: Báo cáo theo trục thời gian
+                 * 1-Tổng hợp
+                 * 2-Phân theo tháng của các nămg
                  * optionProperty: Báo cáo theo tính chất/phân loại
+                 * 1-Lĩnh vực
+                 * 2-Người mua
+                 * 3-Người bán
+                 * 4-Đơn vị
+                 * 5-Chủ trì
                  * 1-Báo cáo theo phân loại: Giá trị ký, Sản lượng, Doanh thu, Tiền về
                  * 2.1-Tính tổng Tất cả-Theo năm (1)/Theo tháng (2)
                  * 2.2-Tính tổng theo thuộc tính: Lĩnh vực (1)/Người mua (2)/Người bán (3)/Đơn vị (4)/Chủ trì (5)
