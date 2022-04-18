@@ -126,7 +126,7 @@ module.exports = {
             customerID: { type: "string", optional: true },
             contractID: { type: "string", optional: true },
             sortKey: { type: "string", optional: true },
-            isMember: { type: "number", optional: true },
+            outin: { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -138,7 +138,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { isMember, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { outin, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -153,7 +153,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        isMember, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
+                        outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

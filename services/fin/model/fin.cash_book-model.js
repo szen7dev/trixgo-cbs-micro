@@ -209,9 +209,9 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ isMember, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-        console.log({ isMember, userID, companyID, accountID, customerID, contractID, parentID, sortKey })
+        console.log({ outin, userID, companyID, accountID, customerID, contractID, parentID, sortKey })
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -258,10 +258,6 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if(isMember){
-                    conditionObj = { members: { $in: [userID] } };
-                }
-
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
 
@@ -269,8 +265,19 @@ class Model extends BaseModel {
                         conditionObj.account = accountID
                     }
                 } else {
+                    conditionObj = { members: { $in: [userID] } };
                     conditionObj.company = companyID
                     conditionObj.parent = { $exists: false }
+                }
+
+                // Lấy dòng tiền vào ra (có giá trị income > 0)
+                if(Number(outin) === 1){
+                    conditionObj.income = { $gt: 0 }
+                }
+
+                // Lấy dòng tiền vào ra (có giá trị income > 0)
+                if(Number(outin) === 2){
+                    conditionObj.expense = { $gt: 0 }
                 }
 
                 console.log(conditionObj)
