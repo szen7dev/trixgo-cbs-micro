@@ -209,8 +209,9 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ isMember, userID, companyID, accountID, customerID, contractID, parentID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        console.log({ isMember, userID, companyID, accountID, customerID, contractID, parentID, sortKey })
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -224,7 +225,7 @@ class Model extends BaseModel {
                  */
                 // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
-                let conditionObj = { members: { $in: [userID] } };
+                let conditionObj = { };
                 let keys = ['createAt__-1', '_id__-1'];
 
                 /**
@@ -257,23 +258,22 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(companyID)) {
-                    conditionObj.company = companyID
+                if(isMember){
+                    conditionObj = { members: { $in: [userID] } };
                 }
-                if (checkObjectIDs(accountID)) {
-                    conditionObj.account = accountID
-                }
-                if (checkObjectIDs(customerID)) {
-                    conditionObj.customer = customerID
-                }
-                if (checkObjectIDs(contractID)) {
-                    conditionObj.contract = contractID
-                }
+
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
+
+                    if (checkObjectIDs(accountID)) {
+                        conditionObj.account = accountID
+                    }
                 } else {
+                    conditionObj.company = companyID
                     conditionObj.parent = { $exists: false }
                 }
+
+                console.log(conditionObj)
 
                 if (keyword) {
                     keyword = keyword.split(" ");
