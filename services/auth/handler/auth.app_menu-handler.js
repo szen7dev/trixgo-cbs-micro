@@ -132,13 +132,14 @@ module.exports = {
         params: {
             menuID          : { type: "string", optional: true },
             appID           : { type: "string", optional: true },
-            type            : { type: "string", optional: true },
-           
+            type            : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { menuID, appID, type } = ctx.params;
+
+                // console.log({menuID, appID, type})
 
                 let { _id: userID } = ctx.meta.infoUser;
 

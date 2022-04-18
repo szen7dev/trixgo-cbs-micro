@@ -4,6 +4,9 @@ const BaseModel = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
 const ObjectID = require('mongoose').Types.ObjectId;
 
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+
 /**
  * import inter-coll, exter-coll
  */
@@ -383,37 +386,106 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
      getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
+        console.log({ userID, companyID, parentID, accountID, year, option })
         return new Promise(async resolve => {
             try {
                 /**
                  * BA
-                 * Lấy sổ quỹ hiện tại của Công ty đang truy cập
+                 * Tham số của option:
+                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                 * 2-Tổng hợp của công ty user
+                 * 3-Tổng hợp theo sổ quỹ cụ thể
                  */
-
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
-                if(parentID && checkObjectIDs(parentID)){
-                    console.log('1111111111111111111========')
-                    conditionObj.parent = ObjectID(parentID) 
+                if (!option || isNaN(option))
+                    return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
 
-                    if(accountID && checkObjectIDs(accountID)){
-                        conditionObj.account = ObjectID(accountID)
-                    }
-                }else{
-                    console.log('2222222222========')
-                    // Tính tổng theo công ty
-                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({ active: 1 })
-
-                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-                }
-
+                // Cấu hình gom nhóm mặc định
                 conditionGroup = {
                     _id: {  },
                     income: { $sum: "$income" },
                     expense: { $sum: "$expense" },
+                }               
+
+                // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                if(Number(option) === 1){
+                    console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị')
+                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
+                        appID: "5dfe4bc751dc622100bb9d8a", menuID: "623f2465e998e94feda0cdaa", type: 1
+                    })
+
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({ 
+                        active: 1, 
+                        parent: {$exists: false},
+                        company: {$in: listCompany.data.map(item=>item._id.company._id)} 
+                    })
+                    
+                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
+
+                    // console.log(listActiveParent)
+                    // console.log(listCompany.data)
+                    // console.log(listCompany.data.map(item=>item._id.company._id))
+
+                    conditionGroup = {
+                        _id: { account: "$account", company: "$company" },
+                        income: { $sum: "$income" },
+                        expense: { $sum: "$expense" },
+                    }
+
+                    conditionPopulate = {
+                        path: '_id.account',
+                        select: '_id name description',
+                        model: 'account'
+                    }
+
+                    sortBy = {
+                        "_id.account": 1,
+                    }
                 }
 
-                if(option && Number(option) === 1){
+                // 2-Tổng hợp của công ty user
+                if(Number(option) === 2){
+                    console.log('2-Tổng hợp của công ty user')
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({ 
+                        active: 1, 
+                        parent: {$exists: false},
+                        company: companyID 
+                    })
+                    
+                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
+
+                    // console.log(listActiveParent)
+
+                    conditionGroup = {
+                        _id: { account: "$account" },
+                        income: { $sum: "$income" },
+                        expense: { $sum: "$expense" },
+                    }
+
+                    conditionPopulate = {
+                        path: '_id.account',
+                        select: '_id name description',
+                        model: 'account'
+                    }
+
+                    sortBy = {
+                        "_id.account": 1,
+                    }
+                }
+
+                // 3-Tổng hợp theo sổ quỹ cụ thể
+                if(Number(option) === 3){
+                    console.log('3-Tổng hợp theo sổ quỹ cụ thể')
+                    if(parentID && checkObjectIDs(parentID)){
+                        conditionObj.parent = ObjectID(parentID) 
+                        
+                        // Gom nhóm theo các loại tài khoản
+                        if(accountID && checkObjectIDs(accountID)){
+                            conditionObj.account = ObjectID(accountID)
+                        }
+                    }
+                    
                     conditionGroup = {
                         _id: { account: "$account" },
                         income: { $sum: "$income" },
@@ -456,6 +528,7 @@ class Model extends BaseModel {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             parent: 1,
+                            company: 1,
                             account: 1,
                             income: 1,
                             expense: 1,
@@ -472,6 +545,7 @@ class Model extends BaseModel {
                     } 
                 ])
 
+                // Pop lấy thông tin tài khoản
                 if(!isNaN(option) && Number(option) > 0){
                     await FIN__CASH_BOOK_COLL.populate(listData, conditionPopulate)
                 }

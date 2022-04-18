@@ -270,7 +270,7 @@ class Model extends BaseModel {
                 })
                 .select('_id name')
 
-                console.log(listRoles.map(item=>item._id))
+                // console.log(listRoles.map(item=>item._id))
                 
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
