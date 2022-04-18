@@ -1247,7 +1247,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ userID, type, outin, real, companyID, projectID, year, optionTime, optionProperty, ctx }){
+    getAmountByProperty({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty, ctx }){
+        console.log({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty })
         return new Promise(async resolve => {
             try {
                 /**
@@ -1284,6 +1285,8 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                console.log(conditionObj)
 
                 // TÍNH TỔNG THEO TẤT CẢ/THEO NĂM
                 if(Number(optionTime) === 1){

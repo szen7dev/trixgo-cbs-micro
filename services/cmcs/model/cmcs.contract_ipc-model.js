@@ -930,6 +930,8 @@ class Model extends BaseModel {
                     }
                 }
 
+                console.log(conditionObj)
+
                 // BÁO CÁO CÔNG NỢ
                 if(!isNaN(debt) && Number(debt) >= 0){
                     // Tổng công nợ

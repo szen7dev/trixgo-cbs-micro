@@ -338,10 +338,10 @@ module.exports = {
                 let { companyID, projectID, contractID, outin, option, year, debt } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
-                if(!projectID && !companyID){
+                if(!companyID){
                     companyID = company._id
                 }
+                console.log({companyID})
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByProperty({
                     userID, outin: Number(outin), year: Number(year), debt: Number(debt), companyID, projectID, contractID, option, ctx
