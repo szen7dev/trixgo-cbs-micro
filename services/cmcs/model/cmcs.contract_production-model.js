@@ -390,27 +390,26 @@ class Model extends BaseModel {
      * Date: 5/4/2022
      */
     getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+        console.log({ userID, companyID, projectID, outin, year })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
-                // Tính toán theo companyID
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-
-                    conditionGroup = {
-                        _id: { month: "$month" },
-                        amount: { $sum: "$amount" },
-                    }
-                }
-
-                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = ObjectID(projectID)
 
                     conditionGroup = {
                         _id: { month: "$month", year: "$year" },
                         amount: { $sum: "$amount" },
+                    }
+                }else{
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+    
+                        conditionGroup = {
+                            _id: { month: "$month" },
+                            amount: { $sum: "$amount" },
+                        }
                     }
                 }
 

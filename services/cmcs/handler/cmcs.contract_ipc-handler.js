@@ -223,11 +223,10 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 
-                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
-                if(!projectID && !companyID){
+                if(!companyID){
                     companyID = company._id
                 }
-                console.log({ companyID, projectID, year, outin })
+                console.log({companyID})
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getAmountByMonth({
                     userID, companyID, projectID, outin: Number(outin), year, ctx
@@ -299,10 +298,10 @@ module.exports = {
 
                 console.log('Handler IPC getAmountByObject')
 
-                if(!companyID || !projectID || !contractID){
+                if(!companyID){
                     companyID = company._id
                 }
-                console.log({ companyID, projectID, contractID, outin })
+                console.log({companyID})
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByObject({
                     userID, outin: Number(outin), companyID, projectID, contractID, ctx

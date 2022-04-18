@@ -326,23 +326,21 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
-                // Tính toán theo companyID
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-
-                    conditionGroup = {
-                        _id: { month: "$month" },
-                        amount: { $sum: "$amount" },
-                    }
-                }
-
-                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = ObjectID(projectID)
 
                     conditionGroup = {
                         _id: { month: "$month", year: "$year" },
                         amount: { $sum: "$amount" },
+                    }
+                }else{
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+    
+                        conditionGroup = {
+                            _id: { month: "$month" },
+                            amount: { $sum: "$amount" },
+                        }
                     }
                 }
 

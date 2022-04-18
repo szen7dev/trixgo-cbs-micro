@@ -152,10 +152,10 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
-                if(!projectID && !companyID){
+                if(!companyID){
                     companyID = company._id
                 }
+                console.log({companyID})
 
                 let resultAfterCallHandler = await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByMonth({
                     userID, companyID, projectID, outin: Number(outin), year, ctx
@@ -188,10 +188,10 @@ module.exports = {
                 let { companyID, projectID, contractID, outin } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                // Chỉ được phép lấy điều kiện hoặc theo Project hoặc theo Company
-                if(!projectID && !companyID){
+                if(!companyID){
                     companyID = company._id
                 }
+                console.log({companyID})
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_PAYMENT_MODEL.getAmountByObject({
                     userID, outin: Number(outin), companyID, projectID, contractID, ipcID, ctx
