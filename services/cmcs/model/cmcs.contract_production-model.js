@@ -385,7 +385,72 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm✅
+     * Name: Gom nhóm theo đối tượng ✅
+     * Author: Hiepnh
+     * Date: 15/04/2022
+     */
+    getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        console.log('=================PRODUCTION:getAmountByObject==>>>>>>>>>>>')
+        console.log({ userID, outin, companyID, projectID, contractID })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * Phục vụ cập nhật thông tin cho hợp đồng, dự án, công ty
+                 */
+                let produce=0, vatProduce=0, plusProduce=0, vatPlusProduce=0
+
+                let conditionObj = { }
+
+                // if(!isNaN(outin) && Number(outin) >= 0){
+                //     conditionObj.outin = outin
+                // }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+                }
+
+                console.log(conditionObj)
+
+                let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            produce: { $sum: "$produce" },
+                            vatProduce: { $sum: "$vatProduce" },
+                            plusProduce: { $sum: "$plusProduce" },
+                            vatPlusProduce: { $sum: "$vatPlusProduce" },
+                        }
+                    }, 
+                ])
+
+                if(listData && listData.length){
+                    produce = Number(listData[0].produce)
+                    vatProduce = Number(listData[0].vatProduce)
+                    plusProduce = Number(listData[0].plusProduce)
+                    vatPlusProduce = Number(listData[0].vatPlusProduce)
+                }
+
+                return resolve({ error: false, data: { produce, vatProduce, plusProduce, vatPlusProduce } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Gom nhóm theo tháng trong năm (BỎ)
      * Author: Hiepnh
      * Date: 5/4/2022
      */
@@ -449,71 +514,6 @@ class Model extends BaseModel {
                 ])
 
                 return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-     * Name: Gom nhóm theo đối tượng ✅
-     * Author: Hiepnh
-     * Date: 15/04/2022
-     */
-    getAmountByObject({ userID, outin, companyID, projectID, contractID }){
-        console.log('=================PRODUCTION:getAmountByObject==>>>>>>>>>>>')
-        console.log({ userID, outin, companyID, projectID, contractID })
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * BA
-                 * Phục vụ cập nhật thông tin cho hợp đồng, dự án, công ty
-                 */
-                let produce=0, vatProduce=0, plusProduce=0, vatPlusProduce=0
-
-                let conditionObj = { }
-
-                // if(!isNaN(outin) && Number(outin) >= 0){
-                //     conditionObj.outin = outin
-                // }
-
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = ObjectID(contractID)
-                }else{
-                    if(projectID && checkObjectIDs(projectID)){
-                        conditionObj.project = ObjectID(projectID)
-                    }else{
-                        if(companyID && checkObjectIDs(companyID)){
-                            conditionObj.company = ObjectID(companyID)
-                        }
-                    }
-                }
-
-                console.log(conditionObj)
-
-                let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            produce: { $sum: "$produce" },
-                            vatProduce: { $sum: "$vatProduce" },
-                            plusProduce: { $sum: "$plusProduce" },
-                            vatPlusProduce: { $sum: "$vatPlusProduce" },
-                        }
-                    }, 
-                ])
-
-                if(listData && listData.length){
-                    produce = Number(listData[0].produce)
-                    vatProduce = Number(listData[0].vatProduce)
-                    plusProduce = Number(listData[0].plusProduce)
-                    vatPlusProduce = Number(listData[0].vatPlusProduce)
-                }
-
-                return resolve({ error: false, data: { produce, vatProduce, plusProduce, vatPlusProduce } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

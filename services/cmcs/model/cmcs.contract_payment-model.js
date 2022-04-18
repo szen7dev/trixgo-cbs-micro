@@ -396,6 +396,11 @@ class Model extends BaseModel {
         console.log({ userID, outin, companyID, projectID, contractID, ipcID })
         return new Promise(async resolve => {
             try {
+                /**
+                 * BA
+                 * Phục vụ cập nhật thông tin cho hợp đồng, dự án, công ty
+                 */
+
                 let value1 = 0
                 let value2 = 0
 
@@ -470,7 +475,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm (BỎ)
      * Author: Hiepnh
      *  Date: 04/04/2022
      */
