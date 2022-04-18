@@ -84,6 +84,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_GET_AMOUNT_BY_MONTH]			: ITEM__CONTRACT_HANDLER.getAmountByMonth,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_LIST_BY_MONTH]			: ITEM__CONTRACT_HANDLER.getListByMonth,
 		[CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE]					: ITEM__CONTRACT_HANDLER.updateValue,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_AMOUNT_BY_PROPERTY]		: ITEM__CONTRACT_HANDLER.getAmountByProperty,
 
 		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,

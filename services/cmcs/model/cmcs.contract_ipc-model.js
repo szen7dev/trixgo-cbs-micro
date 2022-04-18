@@ -918,16 +918,16 @@ class Model extends BaseModel {
                     conditionObj.outin = outin
                 }
 
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
-                }
-
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
                 }
 
                 // BÁO CÁO CÔNG NỢ
@@ -948,9 +948,6 @@ class Model extends BaseModel {
                         let start = new Date();
                         start.setHours(0,0,0,0);
         
-                        let end = new Date();
-                        end.setHours(23,59,59,999);
-        
                         // Lấy việc quá hạn
                         conditionObj.timeForPayment = {
                             $lt: start,
@@ -970,7 +967,7 @@ class Model extends BaseModel {
                         amount: { $sum: "$remainingPayment" },
                     }
 
-                    // Gom nhóm theo Lĩnh vực
+                    // Theo Lĩnh vực
                     if(!isNaN(option) && Number(option) === 1){
                         conditionGroup = {
                             _id: { field: "$field" },
@@ -988,7 +985,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Gom nhóm theo Khách hàng
+                    // Theo Người mua
                     if(!isNaN(option) && Number(option) === 2){
                         conditionGroup = {
                             _id: { buyerInfo: "$buyerInfo" },
@@ -1005,26 +1002,26 @@ class Model extends BaseModel {
                             "_id.buyerInfo": 1,
                         }
                     }
-                    
-                    // Gom nhóm theo Đơn vị
+
+                    // Theo Người bán
                     if(!isNaN(option) && Number(option) === 3){
                         conditionGroup = {
-                            _id: { chair: "$chair" },
+                            _id: { sellerInfo: "$sellerInfo" },
                             amount: { $sum: "$remainingPayment" },
                         }
 
                         conditionPopulate = {
-                            path: '_id.chair',
+                            path: '_id.sellerInfo',
                             select: '_id name sign',
                             model: 'contact'
                         }
 
                         sortBy = {
-                            "_id.chair": 1,
+                            "_id.sellerInfo": 1,
                         }
                     }
-
-                    // Gom nhóm theo Phụ trách
+                    
+                    // Theo Phụ trách/đơn vị
                     if(!isNaN(option) && Number(option) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
@@ -1039,6 +1036,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.personInCharge": 1,
+                        }
+                    }
+
+                    // Theo Chủ trì
+                    if(!isNaN(option) && Number(option) === 5){
+                        conditionGroup = {
+                            _id: { chair: "$chair" },
+                            amount: { $sum: "$remainingPayment" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.chair',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.chair": 1,
                         }
                     }  
                 }else{
@@ -1055,7 +1070,7 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" },
                         }
 
-                        // Gom nhóm theo Lĩnh vực
+                        // Theo Lĩnh vực
                         if(!isNaN(option) && Number(option) === 1){
                             conditionGroup = {
                                 _id: { field: "$field", month: "$month", year: "$year" },
@@ -1073,7 +1088,7 @@ class Model extends BaseModel {
                             }
                         }
 
-                        // Gom nhóm theo Khách hàng
+                        // Theo Người mua
                         if(!isNaN(option) && Number(option) === 2){
                             conditionGroup = {
                                 _id: { buyerInfo: "$buyerInfo", month: "$month", year: "$year" },
@@ -1090,26 +1105,26 @@ class Model extends BaseModel {
                                 "_id.buyerInfo": 1,
                             }
                         }
-                        
-                        // Gom nhóm theo Đơn vị
+
+                        // Theo Người bán
                         if(!isNaN(option) && Number(option) === 3){
                             conditionGroup = {
-                                _id: { chair: "$chair", month: "$month", year: "$year" },
+                                _id: { sellerInfo: "$sellerInfo", month: "$month", year: "$year" },
                                 amount: { $sum: "$amount" },
                             }
 
                             conditionPopulate = {
-                                path: '_id.chair',
+                                path: '_id.sellerInfo',
                                 select: '_id name sign',
                                 model: 'contact'
                             }
 
                             sortBy = {
-                                "_id.chair": 1,
+                                "_id.sellerInfo": 1,
                             }
                         }
-
-                        // Gom nhóm theo Phụ trách
+                        
+                        // Theo Phụ trách/đơn vị
                         if(!isNaN(option) && Number(option) === 4){
                             conditionGroup = {
                                 _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
@@ -1125,6 +1140,24 @@ class Model extends BaseModel {
                             sortBy = {
                                 "_id.personInCharge": 1,
                             }
+                        }
+
+                        // Theo Chủ trì
+                        if(!isNaN(option) && Number(option) === 5){
+                            conditionGroup = {
+                                _id: { chair: "$chair", month: "$month", year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.chair',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.chair": 1,
+                            }
                         }  
                     }else{
                         console.log('2.2==================')
@@ -1135,7 +1168,7 @@ class Model extends BaseModel {
                             amount: { $sum: "$amount" },
                         }
 
-                        // Gom nhóm theo Lĩnh vực
+                        // Theo Lĩnh vực
                         if(!isNaN(option) && Number(option) === 1){
                             conditionGroup = {
                                 _id: { field: "$field" },
@@ -1153,7 +1186,7 @@ class Model extends BaseModel {
                             }
                         }
 
-                        // Gom nhóm theo Khách hàng
+                        // Theo Người mua
                         if(!isNaN(option) && Number(option) === 2){
                             conditionGroup = {
                                 _id: { buyerInfo: "$buyerInfo" },
@@ -1170,26 +1203,26 @@ class Model extends BaseModel {
                                 "_id.buyerInfo": 1,
                             }
                         }
-                        
-                        // Gom nhóm theo Đơn vị
-                        if(!isNaN(option) && Number(option) === 3){
+
+                        // Theo Người bán
+                        if(!isNaN(option) && Number(option) === 2){
                             conditionGroup = {
-                                _id: { chair: "$chair" },
+                                _id: { sellerInfo: "$sellerInfo" },
                                 amount: { $sum: "$amount" },
                             }
 
                             conditionPopulate = {
-                                path: '_id.chair',
+                                path: '_id.sellerInfo',
                                 select: '_id name sign',
                                 model: 'contact'
                             }
 
                             sortBy = {
-                                "_id.chair": 1,
+                                "_id.sellerInfo": 1,
                             }
                         }
 
-                        // Gom nhóm theo Phụ trách
+                        // Theo Phụ trách/đơn vị
                         if(!isNaN(option) && Number(option) === 4){
                             conditionGroup = {
                                 _id: { personInCharge: "$personInCharge" },
@@ -1206,6 +1239,24 @@ class Model extends BaseModel {
                                 "_id.personInCharge": 1,
                             }
                         }  
+
+                        // Theo Chủ trì
+                        if(!isNaN(option) && Number(option) === 5){
+                            conditionGroup = {
+                                _id: { chair: "$chair" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.chair',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.chair": 1,
+                            }
+                        }
                     }
                 }
 

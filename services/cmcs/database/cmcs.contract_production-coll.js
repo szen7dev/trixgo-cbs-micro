@@ -98,6 +98,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
 
     //_________Sản lượng phát sinh phần VAT
     vatPlusProduce: { type: Number, default: 0 },
+    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
