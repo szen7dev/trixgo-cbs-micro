@@ -126,7 +126,7 @@ module.exports = {
             customerID: { type: "string", optional: true },
             contractID: { type: "string", optional: true },
             sortKey: { type: "string", optional: true },
-            isMember: { type: "string", optional: true },
+            isMember: { type: "number", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
