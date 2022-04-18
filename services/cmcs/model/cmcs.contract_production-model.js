@@ -462,6 +462,7 @@ class Model extends BaseModel {
      * Date: 15/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID }){
+        console.log('=================PRODUCTION:getAmountByObject==>>>>>>>>>>>')
         console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {

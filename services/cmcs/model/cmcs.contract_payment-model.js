@@ -394,6 +394,8 @@ class Model extends BaseModel {
      * Date: 16/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID, ipcID }){
+        console.log('=================PAYMENT:getAmountByObject==>>>>>>>>>>>')
+        console.log({ userID, outin, companyID, projectID, contractID, ipcID })
         return new Promise(async resolve => {
             try {
                 let value1 = 0
@@ -401,29 +403,29 @@ class Model extends BaseModel {
 
                 let conditionObj1 = { type: 1 }, conditionObj2 = { type: 2 }
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj1.outin = outin
-                    conditionObj2.outin = outin
-                }
-
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj1.company = ObjectID(companyID)
-                    conditionObj2.company = ObjectID(companyID)
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj1.project = ObjectID(projectID)
-                    conditionObj2.project = ObjectID(projectID)
-                }
-
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj1.contract = ObjectID(contractID)
-                    conditionObj2.contract = ObjectID(contractID)
-                }
+                // if(!isNaN(outin) && Number(outin) >= 0){
+                //     conditionObj1.outin = outin
+                //     conditionObj2.outin = outin
+                // }
 
                 if(ipcID && checkObjectIDs(ipcID)){
                     conditionObj1.ipc = ObjectID(ipcID)
                     conditionObj2.ipc = ObjectID(ipcID)
+                }else{
+                    if(contractID && checkObjectIDs(contractID)){
+                        conditionObj1.contract = ObjectID(contractID)
+                        conditionObj2.contract = ObjectID(contractID)
+                    }else{
+                        if(projectID && checkObjectIDs(projectID)){
+                            conditionObj1.project = ObjectID(projectID)
+                            conditionObj2.project = ObjectID(projectID)
+                        }else{
+                            if(companyID && checkObjectIDs(companyID)){
+                                conditionObj1.company = ObjectID(companyID)
+                                conditionObj2.company = ObjectID(companyID)
+                            }
+                        }
+                    }
                 }
 
                 // Tạm ứng
