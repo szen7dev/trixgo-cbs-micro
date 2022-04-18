@@ -1,12 +1,12 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
 
 /**
  * MODELS
  */
-const FIN__CASH_BOOK_MODEL              = require('../model/fin.cash_book-model').MODEL;
+const FIN__CASH_BOOK_MODEL = require('../model/fin.cash_book-model').MODEL;
 
 module.exports = {
     /**
@@ -17,19 +17,19 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            parentID            : { type: "string", optional: true },
-            accountID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
-            name                : { type: "string" },
-            sign                : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
-            income              : { type: "number", optional: true },
-            expense             : { type: "number", optional: true },
-            arising             : { type: "number", optional: true },
-            openingBalance      : { type: "number", optional: true },
-            closingBalance      : { type: "number", optional: true },
+            parentID: { type: "string", optional: true },
+            accountID: { type: "string", optional: true },
+            customerID: { type: "string", optional: true },
+            contractID: { type: "string", optional: true },
+            name: { type: "string" },
+            sign: { type: "string", optional: true },
+            note: { type: "string", optional: true },
+            date: { type: "string", optional: true },
+            income: { type: "number", optional: true },
+            expense: { type: "number", optional: true },
+            arising: { type: "number", optional: true },
+            openingBalance: { type: "number", optional: true },
+            closingBalance: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -57,16 +57,16 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            cashBookID          : { type: "string" },
-            accountID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
-            name                : { type: "string", optional: true },
-            sign                : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
-            income              : { type: "number", optional: true },
-            expense             : { type: "number", optional: true },
+            cashBookID: { type: "string" },
+            accountID: { type: "string", optional: true },
+            customerID: { type: "string", optional: true },
+            contractID: { type: "string", optional: true },
+            name: { type: "string", optional: true },
+            sign: { type: "string", optional: true },
+            note: { type: "string", optional: true },
+            date: { type: "string", optional: true },
+            income: { type: "number", optional: true },
+            expense: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -79,7 +79,7 @@ module.exports = {
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -97,8 +97,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBooksID  } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                const { cashBooksID } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.remove({
                     cashBooksID, userID
@@ -106,7 +106,7 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -119,38 +119,38 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID          : { type: "string", optional: true },
-            parentID            : { type: "string", optional: true },
-            accountID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
+            cashBookID: { type: "string", optional: true },
+            parentID: { type: "string", optional: true },
+            accountID: { type: "string", optional: true },
+            customerID: { type: "string", optional: true },
+            contractID: { type: "string", optional: true },
 
             // Field mặc định
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            populates   : { type: "string", optional: true },
+            keyword: { type: "string", optional: true },
+            limit: { type: "string", optional: true },
+            lastestID: { type: "string", optional: true },
+            select: { type: "string", optional: true },
+            populates: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(cashBookID){
+                if (cashBookID) {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getInfo({
                         cashBookID, userID, select, populates
                     });
-                }else{
+                } else {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
                         companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
