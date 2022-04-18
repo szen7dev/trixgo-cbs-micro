@@ -121,4 +121,34 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Danh sách các công ty mà user được quyền truy cập vào 1 màn hình cụ thể
+     * Author: Hiepnh
+     * Date: 18/4/2022
+     */
+    getListCompany: {
+        auth: "required",
+        params: {
+            menuID          : { type: "string", optional: true },
+            appID           : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+           
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { menuID, appID, type } = ctx.params;
+
+                let { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await AUTH__APP_MENU.getListCompany({ type, user: userID, app: appID, menu: menuID });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }

@@ -596,11 +596,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm (BỎ)
+     * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, outin, month, year, 
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, 
         keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
@@ -613,6 +613,63 @@ class Model extends BaseModel {
                 let sortBy;
                 let conditionObj = {};
                 let keys	     = ['createAt__-1', '_id__-1'];
+
+                // Điều kiện để Aggregate
+                let conditionObjAgg = {}, conditionObjYear = {}
+
+                if(month && Number(month) > 0){
+                    conditionObjYear.month = Number(month)
+                    conditionObjYear.year = Number(year)
+                }else{
+                    conditionObjYear.year = Number(year)
+                }
+
+                if(type && Number(type) > 0){
+                    conditionObjAgg.type = Number(type)
+                }
+
+                if(outin && Number(outin) > 0){
+                    conditionObjAgg.outin = Number(outin)
+                }
+
+                if(real && Number(real) > 0){
+                    conditionObjAgg.real = Number(real)
+                }
+
+                if(field && checkObjectIDs(field)){
+                    conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(chair && checkObjectIDs(chair)){
+                    conditionObjAgg.chair = ObjectID(chair)
+                }
+
+                if(personInCharge && checkObjectIDs(personInCharge)){
+                    conditionObjAgg.personInCharge = ObjectID(personInCharge)
+                }
+
+                if(buyerInfo && checkObjectIDs(buyerInfo)){
+                    conditionObjAgg.buyerInfo = ObjectID(buyerInfo)
+                }
+
+                if(sellerInfo && checkObjectIDs(sellerInfo)){
+                    conditionObjAgg.sellerInfo = ObjectID(sellerInfo)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObjAgg.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObjAgg.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObjAgg.company = ObjectID(companyID)
+                        }
+                    }
+                }
+
+                console.log(conditionObjAgg)
+                console.log(conditionObjYear)
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -636,10 +693,7 @@ class Model extends BaseModel {
                 // Danh sách các Payment trong tháng, năm của công ty
                 let listData = await CMCS__CONTRACT_IPC_COLL.aggregate([
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            outin: Number(outin),
-                        }
+                        $match: conditionObjAgg
                     },
                     {
                         $project : {
@@ -648,13 +702,14 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $match: {
-                            "year": Number(year),
-                            "month": Number(month),
-                        }
+                        $match: conditionObjYear
                     },
                     {$sort: {"date": 1}}
                 ])
+
+                console.log(conditionObjAgg)
+                console.log(listData)
+
                 conditionObj._id = {$in: listData.map(item=>item._id)}
 
                 // Trả về danh sách mẩu tin
@@ -833,7 +888,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm✅
+     * Name: Gom nhóm theo tháng trong năm (BỎ)
      * Author: Hiepnh
      * Date: 5/4/2022
      */

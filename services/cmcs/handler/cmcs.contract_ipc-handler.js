@@ -243,14 +243,24 @@ module.exports = {
     /**
      * Name: Danh sách theo tháng trong năm✅
      * Author: Hiepnh
-     * Date: 05/04/2022
+     * Date: 18/04/2022
      */
     getListByMonth: {
         auth: "required",
         params: {
-            month : { type: "string", optional: true },
-            year : { type: "string", optional: true },
-            outin : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            contractID      : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            outin           : { type: "string", optional: true },
+            real            : { type: "string", optional: true },
+            field           : { type: "string", optional: true },
+            chair           : { type: "string", optional: true },
+            personInCharge  : { type: "string", optional: true },
+            buyerInfo       : { type: "string", optional: true },
+            sellerInfo      : { type: "string", optional: true },
+            month           : { type: "string", optional: true },
+            year            : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -263,11 +273,16 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { outin, month, year, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
+
 				const { _id: userID, company } = ctx.meta.infoUser;
 
+                if(!companyID){
+                    companyID = company._id
+                }
+
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getListByMonth({
-                    userID, companyID: company._id, outin: Number(outin), month, year, keyword, limit, lastestID, select, populates
+                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -27,7 +27,6 @@ module.exports  = DATABASE_MIDDLEWARE("document_doc", {
         type: Schema.Types.ObjectId,
         ref : "document_package"
     },
-
     /**
      * THÔNG TIN CĂN BẢN
      */

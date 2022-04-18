@@ -48,9 +48,9 @@ module.exports = {
         params: {
             noteID              : { type: "string" },
             name                : { type: "string", optional: true },
-            description          : { type: "string", optional: true },
-            members             : { type: "array", optional: true },
-            membersRemove       : { type: "array", optional: true },
+            description         : { type: "string", optional: true },
+            members             : { type: "array" , optional: true },
+            membersRemove       : { type: "array" , optional: true },
             trash               : { type: "number", optional: true }, // 1 là xóa
             pin                 : { type: "number", optional: true }, // 1 là ghim
             removePin           : { type: "number", optional: true }, // 1 bỏ ghim

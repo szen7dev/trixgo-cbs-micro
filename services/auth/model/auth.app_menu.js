@@ -13,7 +13,10 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index');
 /**s
  * import inter-coll, exter-coll
  */
+const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
 const AUTH__APP_MENU_COLL                   = require('../database/permission/auth.app_menu-coll');
+const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/auth.app_role_menu-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
@@ -250,6 +253,57 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
+    }
+
+    /**
+     * Name: Danh sách các công ty mà user được quyền truy cập vào 1 màn hình cụ thể
+     * Author: Hiepnh
+     * Date: 18/4/2022
+     */
+    getListCompany({ type=1, user, app, menu }) {
+        return new Promise(async resolve => {
+            try {
+                let listRoles = await AUTH__APP_ROLE_COLL.find({
+                    type: type,
+                    app: app,
+                    members:  { $in: [user] }
+                })
+                .select('_id name')
+
+                console.log(listRoles.map(item=>item._id))
+                
+                let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
+                    {
+                        $match: {
+                            "read": {$gt: 0},
+                            "menu" : ObjectID(menu),
+                            "app" : ObjectID(app),
+                            "role": { $in: listRoles.map(item=>item._id) }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { company: "$company" },
+                        }
+                    },
+                ]);
+                // console.log(listData)
+
+                if (!listData) 
+                    return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
+
+                let conditionPopulate = {
+                    path: '_id.company',
+                    select: '_id name sign image',
+                    model: 'company'
+                }
+                await AUTH__APP_ROLE_MENU_COLL.populate(listData, conditionPopulate)
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
     }
 }
 

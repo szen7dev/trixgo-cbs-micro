@@ -67,15 +67,16 @@ module.exports = {
             date: { type: "string", optional: true },
             income: { type: "number", optional: true },
             expense: { type: "number", optional: true },
+            active: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense } = ctx.params;
+                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, userID
+                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -157,10 +158,10 @@ module.exports = {
     },
 
     /**
-     * Name: Get info and Get list ✅
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
+    * Name  : Lấy tổng thu và chi theo sổ
+    * Author: MinhVH
+    * Date  : 18/4/2022
+    */
     getAmountIncomeAndExpenseByParent: {
         auth: "required",
         params: {
@@ -180,5 +181,48 @@ module.exports = {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
-    }
+    },
+
+    /**
+     * Name: Gom nhóm theo thuộc tính ✅
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getAmountByProperty: {
+        auth: "required",
+        params: {
+            companyID: { type: "string", optional: true },
+            parentID: { type: "string", optional: true },
+            accountID: { type: "string", optional: true },
+            year: { type: "string", optional: true },
+            option: { type: "string", optional: true },
+
+            // Field mặc định
+            keyword: { type: "string", optional: true },
+            limit: { type: "string", optional: true },
+            lastestID: { type: "string", optional: true },
+            select: { type: "string", optional: true },
+            populates: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, parentID, accountID, year, option } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getAmountByProperty({
+                    userID, companyID, parentID, accountID, year, option, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
