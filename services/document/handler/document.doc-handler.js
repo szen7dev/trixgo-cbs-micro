@@ -446,19 +446,26 @@ module.exports = {
 	 */  
     statisticalByType: {
         params: {
-			departmentID: { type: "string", optional: true },
-			packageID   : { type: "string", optional: true }
+			departmentID        : { type: "string", optional: true },
+			packageID           : { type: "string", optional: true },
+			isDatahubContact    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company    } = ctx.meta.infoUser;
-                const { departmentID, packageID } = ctx.params;
-                
-                const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
-                    userID, companyID: company._id, departmentID, packageID
-                });
-                
+                const { departmentID, packageID, isDatahubContact } = ctx.params;
+                let resultAfterCallHandler;
+                if(isDatahubContact == 1){
+                    resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByDatahubContact({
+                        userID, companyID: company._id, departmentID, packageID, isDatahubContact
+                    });
+                }else{
+                    resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
+                        userID, companyID: company._id, departmentID, packageID
+                    });
+                }
+                console.log({ resultAfterCallHandler })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });

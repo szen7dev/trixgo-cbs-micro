@@ -780,6 +780,122 @@ class Model extends BaseModel {
     }
 
     /**
+     * Dev: MinhVH
+     * Func: Thông kê số lượng văn bản theo datahubContact
+     * Date: 27/10/2021
+     */
+    statisticalByDatahubContact({ userID, companyID, departmentID, packageID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(departmentID && !checkObjectIDs([departmentID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params departmentID invalid', 
+                        keyError: 'params_departmentID_invalid',
+                        status: 400 
+                    });
+                }
+
+                if(packageID && !checkObjectIDs([packageID])) {
+                    return resolve({ 
+                        error: true, 
+                        message: 'Request params packageID invalid', 
+                        keyError: 'params_packageID_invalid',
+                        status: 400 
+                    });
+                }
+
+                let conditionObj = {};
+                let listDoctype = [];
+                departmentID    && (conditionObj.project = ObjectID(departmentID));
+                // Nếu không có dự án thì lấy theo công ty
+                if(!departmentID){
+                    companyID && (conditionObj.company = ObjectID(companyID));
+                }
+                
+                // User phải nằm trong members của gói thầu.
+                // let listPackageAccess = await DOCUMENT__PACKAGE_COLL.find({ members: { $in: [userID]} }).select("_id");
+                // if(listPackageAccess.length){
+                //     conditionObj.package = { $in: listPackageAccess.map(item => item._id )}
+                // }
+                packageID       && (conditionObj.package = ObjectID(packageID));
+                conditionObj.datahubContact = { $exists: true }
+                let	listDoctypeGroupByType = await DOCUMENT__DOC_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: {
+                            _id: "$datahubContact",
+                            totalDocument: { $sum: 1 }
+                        }
+                    },
+                    {
+                        $sort: { _id: 1 }
+                    }
+                ])
+                
+                let	listDoctypeGroupByWeek = await DOCUMENT__DOC_COLL.aggregate([
+                    {
+                        $match: {
+                            ...conditionObj,
+                            createAt: {
+                                $gte: ISOdate(moment().startOf('month').format()),
+                                $lte: ISOdate(moment().endOf('month').format()),
+                            }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$datahubContact",
+                            totalDocument: { $sum: 1 }
+                        }
+                    },
+                    {
+                        $sort: { _id: 1 }
+                    }
+                ]);
+
+                if(listDoctypeGroupByType.length){
+                    listDoctypeGroupByType.map(doctype => {
+                        const doctypeHaveNewDocumentInWeek = listDoctypeGroupByWeek.find(newDoc => newDoc._id.toString() == doctype._id.toString())
+                        listDoctype[listDoctype.length] = {
+                            datahubContact: doctype._id,
+                            totalDocument: doctype.totalDocument,
+                            totalDocumentNew: doctypeHaveNewDocumentInWeek ? doctypeHaveNewDocumentInWeek.totalDocument : 0
+                        }
+                    })
+                }
+
+                await DOCUMENT__DOC_COLL.populate(listDoctype, {
+                    path: "datahubContact",
+                    select: "name",
+                    model: "datahub_contact"
+                })
+
+                if(!listDoctype) {
+                    return resolve({ 
+                        error: true, 
+                        message: "Can't get list doctype", 
+                        keyError: "get_list_doctype_failed",
+                        status: 403 
+                    });
+                }
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: {
+                        listRecords: listDoctype
+                    }
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, keyError: 'server_error', status: 500 })
+            }
+        })
+    }
+
+    /**
  	 * Dev: MinhVH
  	 * Func: Chia sẻ văn bản
  	 * Date: 05/11/2021
