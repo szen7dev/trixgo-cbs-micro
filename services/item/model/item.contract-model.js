@@ -1525,7 +1525,6 @@ class Model extends BaseModel {
      * Date: 05/04/2022
      */
     getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit = 20, lastestID, select, populates= {} }){
-
         return new Promise(async resolve => {
             try {
 

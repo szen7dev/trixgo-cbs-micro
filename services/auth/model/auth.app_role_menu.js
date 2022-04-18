@@ -207,7 +207,7 @@ class Model extends BaseModel {
                         }
                     },
                 ]);
-                if (!listData && user !== '5f90ed0d5e842b7c18dff972') 
+                if (!listData) 
                     return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
 
                 return resolve({ error: false, data: listData });
@@ -253,7 +253,7 @@ class Model extends BaseModel {
                     }
                 ]);
 
-                if (!listData || (listData && !listData.length) && user !== '5f90ed0d5e842b7c18dff972') 
+                if (!listData || (listData && !listData.length)) 
                     return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED });
 
                 return resolve({ error: false, data: listData && listData[0]});

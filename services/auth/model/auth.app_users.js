@@ -347,7 +347,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
 
-                if(!checkPermission && userID !== '5f90ed0d5e842b7c18dff972')
+                if(!checkPermission)
                     return resolve({ error: true, message: "permission denied", keyError: KEY_ERROR.PERMISSION_DENIED, status: 200 });                    
                 return resolve({ error: false, data: checkPermission, status: 200 });
             } catch (error) {
