@@ -15,6 +15,8 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index');
  */
 const AUTH__APP_ROLE_COLL                   = require('../database/permission/auth.app_role-coll');
 const AUTH__APP_MENU_COLL                   = require('../database/permission/auth.app_menu-coll');
+const AUTH__APP_ROLE_MENU_COLL              = require('../database/permission/auth.app_role_menu-coll');
+
 const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_base/playground/index');
 const { template }                          = require('lodash');
 
@@ -267,29 +269,37 @@ class Model extends BaseModel {
                     members:  { $in: [user] }
                 })
                 .select('_id name')
+
+                console.log(listRoles.map(item=>item._id))
                 
-                // let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
-                //     {
-                //         $match: {
-                //             "role": {
-                //                 $in: listRoles.map(item=>item._id)
-                //             },
-                //         }
-                //     },
-                //     {
-                //         $group: {
-                //             _id:        { menu: "$menu"}, 
-                //             read:       { $sum: "$read"},
-                //             create:     { $sum: "$create"},
-                //             update:     { $sum: "$update"},
-                //             delete:     { $sum: "$delete"},
-                //         }
-                //     },
-                // ]);
-                if (!listRoles) 
+                let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
+                    {
+                        $match: {
+                            "read": {$gt: 0},
+                            "menu" : ObjectID(menu),
+                            "app" : ObjectID(app),
+                            "role": { $in: listRoles.map(item=>item._id) }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { company: "$company" },
+                        }
+                    },
+                ]);
+                // console.log(listData)
+
+                if (!listData) 
                     return resolve({ error: true, message: 'cannot_get_list_data', keyError: KEY_ERROR.GET_LIST_FAILED });
 
-                return resolve({ error: false, data: listRoles });
+                let conditionPopulate = {
+                    path: '_id.company',
+                    select: '_id name sign',
+                    model: 'company'
+                }
+                await AUTH__APP_ROLE_MENU_COLL.populate(listData, conditionPopulate)
+
+                return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
