@@ -15,21 +15,22 @@ const CF_ROUTINGS_CMCS = {
 
     // ================================CONTRACT PRODUCTION=====================================//
     CONTRACT_PRODUCTION                                         : `${BASE_ROUTE}${CONTRACT_PRODUCTION}`,
+    CONTRACT_PRODUCTION_GET_LIST_BY_MONTH                       : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-list-by-month`,
     CONTRACT_PRODUCTION_GET_AMOUNT_BY_MONTH                     : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-amount-by-month`,
     CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT                    : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-amount-by-object`,
     CONTRACT_PRODUCTION_GET_AMOUNT_BY_PROPERTY                  : `${BASE_ROUTE}${CONTRACT_PRODUCTION}/get-amount-by-property`,
 
     // ================================CONTRACT IPC============================================//
     CONTRACT_IPC                                                : `${BASE_ROUTE}${CONTRACT_IPC}`,
-    CONTRACT_IPC_GET_AMOUNT_BY_MONTH                            : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-month`,
     CONTRACT_IPC_GET_LIST_BY_MONTH                              : `${BASE_ROUTE}${CONTRACT_IPC}/get-list-by-month`,
+    CONTRACT_IPC_GET_AMOUNT_BY_MONTH                            : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-month`,
     CONTRACT_IPC_GET_AMOUNT_BY_OBJECT                           : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-object`,
     CONTRACT_IPC_GET_AMOUNT_BY_PROPERTY                         : `${BASE_ROUTE}${CONTRACT_IPC}/get-amount-by-property`,
 
     // ================================CONTRACT PAYMENT=====================================//
     CONTRACT_PAYMENT                                            : `${BASE_ROUTE}${CONTRACT_PAYMENT}`,
-    CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH                        : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-month`,
     CONTRACT_PAYMENT_GET_LIST_BY_MONTH                          : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-list-by-month`,
+    CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH                        : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-month`,
     CONTRACT_PAYMENT_GET_AMOUNT_CONTRACT_VALUE_GROUP_BY_DATE    : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-contract-value-group-by-date`,
     CONTRACT_PAYMENT_GET_AMOUNT_BY_OBJECT                       : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-object`,
     CONTRACT_PAYMENT_GET_AMOUNT_BY_PROPERTY                     : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-property`,

@@ -16,8 +16,9 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_production-coll');
-const { RANGE_BASE_PAGINATION } 	    = require('../../../tools/cursor_base/playground/index');
-const { template }                      = require('lodash');
+
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const { KEY_ERROR }                     = require('../../../tools/keys/index');
 
 /**
  * import inter-model, exter-model
@@ -272,28 +273,24 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ projectID, contractID, userID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        /**
+     * Name  : Danh sách contract payment ✅
+     * Author: Depv
+     */
+    getList({ projectID, contractID,
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { 
-                    // state: 1,
-                };
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
 
-                let conditionFind = { };
-                let sortBy   = { createAt: -1 };
-				let objSort  = {};
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                 //__________B1: Get danh sách các nhóm dữ liệu mà userID là members
-            
-                // POPULATE
+                let sortBy;
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -305,59 +302,48 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
 
-                // DỰ ÁN
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
-                }
-
-                // HỢP ĐỒNG
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj.contract = contractID;
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = projectID;
+                    }
                 }
 
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regExpSearch = RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regExpSearch },
-                        { sign: regExpSearch }
-                    ]
+                    conditionObj.name = regExpSearch;
                 }
 
-                // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
+                let conditionObjOrg = { ...conditionObj };
+                if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await CMCS__CONTRACT_PRODUCTION_COLL.findById(lastestID);
 					if(!infoData)
-						return resolve({ error: true, message: "Can't get info last message", status: 400 });
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
-					let nextInfo = `${infoData.createAt}_${infoData._id}`;
-                    // Lưu ý nêu sắp xếp tăng dần thì sửa lại ['createAt__1', '_id__1'];
-					let keys	 = ['createAt__-1', '_id__-1'];
-					let dataPagingAndSort = await RANGE_BASE_PAGINATION({ nextInfo, keys });
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
 					if(!dataPagingAndSort || dataPagingAndSort.error)
 						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-					conditionFind = dataPagingAndSort.data.find;
-					sortBy = dataPagingAndSort.data.sort;
-				}
-                
-                let infoDataAfterGet = await CMCS__CONTRACT_PRODUCTION_COLL.find({...conditionObj, ...conditionFind })
-                    .limit(+limit+1)
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await CMCS__CONTRACT_PRODUCTION_COLL.find(conditionObj)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
-                
-                // GET TOTAL RECORD
+                    .lean();
+
                 if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+                    return resolve({ error: true, message: "Can't get data" });
 
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
@@ -367,9 +353,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await CMCS__CONTRACT_PRODUCTION_COLL.count(conditionObj);
+                let totalRecord = await CMCS__CONTRACT_PRODUCTION_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
-                
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
@@ -377,12 +363,183 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
+
+    /**
+     * Name: Danh sách theo tháng trong năm✅
+     * Author: Hiepnh
+     * Date: 05/04/2022
+     */
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, 
+        keyword, limit = 20, lastestID, select, populates= {} }){
+        return new Promise(async resolve => {
+            try {
+                if(limit > 20){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
+                let sortBy;
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
+
+                // Điều kiện để Aggregate
+                let conditionObjAgg = {}, conditionObjYear = {}
+
+                if(month && Number(month) > 0){
+                    conditionObjYear.month = Number(month)
+                    conditionObjYear.year = Number(year)
+                }else{
+                    conditionObjYear.year = Number(year)
+                }
+
+                if(type && Number(type) > 0){
+                    conditionObjAgg.type = Number(type)
+                }
+
+                if(outin && Number(outin) > 0){
+                    conditionObjAgg.outin = Number(outin)
+                }
+
+                if(real && Number(real) > 0){
+                    conditionObjAgg.real = Number(real)
+                }
+
+                if(field && checkObjectIDs(field)){
+                    conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(chair && checkObjectIDs(chair)){
+                    conditionObjAgg.chair = ObjectID(chair)
+                }
+
+                if(personInCharge && checkObjectIDs(personInCharge)){
+                    conditionObjAgg.personInCharge = ObjectID(personInCharge)
+                }
+
+                if(buyerInfo && checkObjectIDs(buyerInfo)){
+                    conditionObjAgg.buyerInfo = ObjectID(buyerInfo)
+                }
+
+                if(sellerInfo && checkObjectIDs(sellerInfo)){
+                    conditionObjAgg.sellerInfo = ObjectID(sellerInfo)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObjAgg.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObjAgg.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObjAgg.company = ObjectID(companyID)
+                        }
+                    }
+                }
+
+                console.log(conditionObjAgg)
+                console.log(conditionObjYear)
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                }
+
+                // Danh sách các Payment trong tháng, năm của công ty
+                let listData = await CMCS__CONTRACT_PRODUCTION_COLL.aggregate([
+                    {
+                        $match: conditionObjAgg
+                    },
+                    {
+                        $project : {
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    },
+                    {$sort: {"date": 1}}
+                ])
+
+                console.log(conditionObjAgg)
+                console.log(listData)
+
+                conditionObj._id = {$in: listData.map(item=>item._id)}
+
+                // Trả về danh sách mẩu tin
+                let conditionObjOrg = { ...conditionObj };
+
+                if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await CMCS__CONTRACT_PRODUCTION_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await CMCS__CONTRACT_PRODUCTION_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data" });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await CMCS__CONTRACT_PRODUCTION_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    } 
 
     /**
      * Name: Gom nhóm theo đối tượng ✅
