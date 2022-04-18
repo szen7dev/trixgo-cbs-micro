@@ -590,6 +590,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty, ctx }){
+        console.log({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty })
         return new Promise(async resolve => {
             try {
                 /**
