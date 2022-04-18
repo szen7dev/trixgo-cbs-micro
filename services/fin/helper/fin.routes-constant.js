@@ -9,10 +9,11 @@ const CF_ROUTINGS_FIN = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================CASH_FLOW_PLAN=======================================//
-    CASH_FLOW_PLAN          : `${BASE_ROUTE}${CASH_FLOW_PLAN}`, 
+    CASH_FLOW_PLAN                                  : `${BASE_ROUTE}${CASH_FLOW_PLAN}`,
 
     // ================================CASH_FLOW_PLAN=======================================//
-    CASH_BOOK               : `${BASE_ROUTE}${CASH_BOOK}`, 
+    CASH_BOOK                                       : `${BASE_ROUTE}${CASH_BOOK}`,
+    CASH_BOOK_GET_AMOUNT_INCOME_EXPENSE_BY_PARENT   : `${BASE_ROUTE}${CASH_BOOK}/get-amount-income-expense-by-parent`,
 }
 
 exports.CF_ROUTINGS_FIN = CF_ROUTINGS_FIN;

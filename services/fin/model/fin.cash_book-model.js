@@ -1,9 +1,8 @@
 "use strict";
+
 const BaseModel = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
 const ObjectID = require('mongoose').Types.ObjectId;
-const { CF_DOMAIN_SERVICES } = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } = require('../../item/helper/item.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -138,11 +137,11 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if (!isNaN(income) && Number(income) >= 0) {
+                if (income >= 0) {
                     dataUpdate.income = income;
                 }
 
-                if (!isNaN(expense) && Number(expense) >= 0) {
+                if (expense >= 0) {
                     dataUpdate.expense = expense;
                 }
 
@@ -224,7 +223,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ companyID, accountID, customerID, contractID, parentID,
-        keyword, limit = 50, lastestID, select, populates = {} }) {
+        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -238,7 +237,7 @@ class Model extends BaseModel {
                  */
                 let sortBy;
                 let conditionObj = {};
-                let keys = ['date__1', 'createAt__-1'];
+                let keys = ['createAt__-1', '_id__-1'];
 
                 /**
                  * VALIDATION STEP (2)
@@ -246,7 +245,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                // POPULATE
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -258,6 +256,14 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -338,6 +344,46 @@ class Model extends BaseModel {
                     }, status: 200
                 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+    * Name  : Lấy tổng thu và chi theo sổ
+    * Author: MinhVH
+    * Date  : 18/4/2022
+    */
+    getAmountIncomeAndExpenseByParent({ parentID }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (!checkObjectIDs(parentID))
+                    return resolve({ error: true, message: "Tham số parentID không hợp lệ", keyError: "parentID_invalid" });
+
+                let listData = await FIN__CASH_BOOK_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(parentID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            income: { $sum: "$income" },
+                            expense: { $sum: "$expense" },
+                        }
+                    },
+                ])
+
+                if (listData && listData.length) {
+                    listData = {
+                        income: Number(listData[0].income),
+                        expense: Number(listData[0].expense)
+                    }
+                }
+
+                return resolve({ error: false, data: listData, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

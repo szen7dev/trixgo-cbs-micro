@@ -1500,6 +1500,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_FIN.CASH_BOOK}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_GET_INFO_AND_GET_LIST}`],
 
+		[`GET ${CF_ROUTINGS_FIN.CASH_BOOK_GET_AMOUNT_INCOME_EXPENSE_BY_PARENT}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_GET_GET_AMOUNT_INCOME_EXPENSE_BY_PARENT}`],
+
 		//---------------------------🏁 END SERVICE FIN 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE BUDGET 🏁-------------------------//

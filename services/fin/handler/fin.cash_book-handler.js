@@ -124,6 +124,7 @@ module.exports = {
             accountID: { type: "string", optional: true },
             customerID: { type: "string", optional: true },
             contractID: { type: "string", optional: true },
+            sortKey: { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -135,7 +136,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -145,7 +146,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates
+                        companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -154,4 +155,30 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Get info and Get list ✅
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    getAmountIncomeAndExpenseByParent: {
+        auth: "required",
+        params: {
+            parentID: { type: "string" }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { parentID } = ctx.params;
+
+                const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getAmountIncomeAndExpenseByParent({
+                    parentID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    }
 }
