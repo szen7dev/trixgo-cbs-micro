@@ -1506,6 +1506,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_FIN.CASH_BOOK}`] :
 		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_GET_INFO_AND_GET_LIST}`],
 
+		[`GET ${CF_ROUTINGS_FIN.CASH_BOOK_GET_AMOUNT_BY_PROPERTY}`] :
+		[`${CF_DOMAIN_SERVICES.FIN}.${CF_ACTIONS_FIN.CASH_BOOK_GET_AMOUNT_BY_PROPERTY}`],
+
 		//---------------------------🏁 END SERVICE FIN 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE BUDGET 🏁-------------------------//

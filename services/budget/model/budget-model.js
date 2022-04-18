@@ -336,18 +336,23 @@ class Model extends BaseModel {
                 if(type){
                     conditionObj.type = type
                 }
-                if(companyID){
-                    conditionObj.company = companyID
-                }
-                if(projectID){
-                    conditionObj.project = projectID
-                }
+                
                 if(contractID){
                     conditionObj.contract = contractID
+                }else{
+                    if(projectID){
+                        conditionObj.project = projectID
+                    }else{
+                        if(companyID){
+                            conditionObj.company = companyID
+                        }
+                    }
                 }
-                if(isMember == 1){
-                    conditionObj.members = { $in: [userID] }
-                }
+
+                // if(isMember == 1){
+                //     conditionObj.members = { $in: [userID] }
+                // }
+                conditionObj.members = { $in: [userID] }
 
                 if(keyword){
                     keyword = keyword.split(" ");

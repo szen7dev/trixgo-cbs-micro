@@ -59,6 +59,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     income: { type: Number, default: 0 }, 
     //_________Chi
     expense: { type: Number, default: 0 },     
+    
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
