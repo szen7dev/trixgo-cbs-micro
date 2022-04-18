@@ -816,52 +816,56 @@ class Model extends BaseModel {
                     conditionObj.parent = parentID
                 }
 
-                if(draft){
-                    conditionObj.draft = draft
+                if(draft && Number(draft) > 0){
+                    conditionObj.draft = Number(draft)
                 }
 
-                if(outin){
-                    conditionObj.outin = outin
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
                 }
 
-                if(status){
-                    conditionObj.status = status
+                if(status && Number(status) > 0){
+                    conditionObj.status = Number(status)
                 }
 
-                if(real){
-                    conditionObj.real = real
+                if(real && Number(real) > 0){
+                    conditionObj.real = Number(real)
                 }
 
-                if(subType){
-                    conditionObj.subType = subType
+                if(subType && Number(subType) > 0){
+                    conditionObj.subType = Number(subType)
                 }
 
-                if(type){
-                    conditionObj.type = type
+                if(type && Number(type) > 0){
+                    conditionObj.type = Number(type)
                 }
 
-                if(field){
-                    conditionObj.field = field
+                if(field && checkObjectIDs(field)){
+                    conditionObj.field = ObjectID(field)
                 }
 
-                if(chair){
-                    conditionObj.chair = chair
+                if(chair && checkObjectIDs(chair)){
+                    conditionObj.chair = ObjectID(chair)
                 }
 
-                if(personInCharge){
-                    conditionObj.personInCharge = personInCharge
+                if(personInCharge && checkObjectIDs(personInCharge)){
+                    conditionObj.personInCharge = ObjectID(personInCharge)
                 }
 
-                if(debtStatus){
-                    conditionObj.debtStatus = debtStatus
+                if(buyerInfo && checkObjectIDs(buyerInfo)){
+                    conditionObj.buyerInfo = ObjectID(buyerInfo)
                 }
 
-                if(warehouse){
-                    conditionObj.warehouse = warehouse
+                if(sellerInfo && checkObjectIDs(sellerInfo)){
+                    conditionObj.sellerInfo = ObjectID(sellerInfo)
                 }
 
-                if(date){
-                    conditionObj.date = date
+                if(debtStatus && checkObjectIDs(debtStatus)){
+                    conditionObj.debtStatus = ObjectID(debtStatus)
+                }
+
+                if(warehouse && checkObjectIDs(warehouse)){
+                    conditionObj.warehouse = ObjectID(warehouse)
                 }
 
                 if(startTime){
@@ -872,27 +876,11 @@ class Model extends BaseModel {
                     conditionObj.endTime = endTime
                 }
 
-                if(buyerInfo){
-                    conditionObj.buyerInfo = buyerInfo
-                }
-
-                if(buyerBank){
-                    conditionObj.buyerBank = buyerBank
-                }
-
-                if(sellerInfo){
-                    conditionObj.sellerInfo = sellerInfo
-                }
-
-                if(sellerBank){
-                    conditionObj.sellerBank = sellerBank
-                }
-
                 if(lock){
                     conditionObj.lock = lock
                 }
 
-                // Theo giỏi bảo lảnh
+                // Theo dõi bảo lảnh
                 if(isExpiredAg == 1){
                     conditionObj.expiredAg = { $exists: true, $ne: null }
                 }
@@ -1011,65 +999,66 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-
-                if(companyID){
-                    conditionObj.company = companyID
-                }
-
-                if(projectID){
+                 if(projectID){
                     conditionObj.project = projectID
+                }else{
+                    conditionObj.company = companyID
                 }
 
                 if(parentID){
                     conditionObj.parent = parentID
                 }
 
-                if(draft){
-                    conditionObj.draft = draft
+                if(draft && Number(draft) > 0){
+                    conditionObj.draft = Number(draft)
                 }
 
-                if(outin){
-                    conditionObj.outin = outin
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
                 }
 
-                if(status){
-                    conditionObj.status = status
+                if(status && Number(status) > 0){
+                    conditionObj.status = Number(status)
                 }
 
-                if(real){
-                    conditionObj.real = real
+                if(real && Number(real) > 0){
+                    conditionObj.real = Number(real)
                 }
 
-                if(subType){
-                    conditionObj.subType = subType
+                if(subType && Number(subType) > 0){
+                    conditionObj.subType = Number(subType)
                 }
 
-                if(type){
-                    conditionObj.type = type
+                if(type && Number(type) > 0){
+                    conditionObj.type = Number(type)
                 }
 
-                if(field){
-                    conditionObj.field = field
+                if(field && checkObjectIDs(field)){
+                    conditionObj.field = ObjectID(field)
                 }
 
-                if(chair){
-                    conditionObj.chair = chair
+                if(chair && checkObjectIDs(chair)){
+                    conditionObj.chair = ObjectID(chair)
                 }
 
-                if(personInCharge){
-                    conditionObj.personInCharge = personInCharge
+                if(personInCharge && checkObjectIDs(personInCharge)){
+                    conditionObj.personInCharge = ObjectID(personInCharge)
                 }
 
-                if(debtStatus){
-                    conditionObj.debtStatus = debtStatus
+                if(buyerInfo && checkObjectIDs(buyerInfo)){
+                    conditionObj.buyerInfo = ObjectID(buyerInfo)
                 }
 
-                if(warehouse){
-                    conditionObj.warehouse = warehouse
+                if(sellerInfo && checkObjectIDs(sellerInfo)){
+                    conditionObj.sellerInfo = ObjectID(sellerInfo)
                 }
 
-                if(date){
-                    conditionObj.date = date
+                if(debtStatus && checkObjectIDs(debtStatus)){
+                    conditionObj.debtStatus = ObjectID(debtStatus)
+                }
+
+                if(warehouse && checkObjectIDs(warehouse)){
+                    conditionObj.warehouse = ObjectID(warehouse)
                 }
 
                 if(startTime){
@@ -1080,26 +1069,10 @@ class Model extends BaseModel {
                     conditionObj.endTime = endTime
                 }
 
-                if(buyerInfo){
-                    conditionObj.buyerInfo = buyerInfo
-                }
-
-                if(buyerBank){
-                    conditionObj.buyerBank = buyerBank
-                }
-
-                if(sellerInfo){
-                    conditionObj.sellerInfo = sellerInfo
-                }
-
-                if(sellerBank){
-                    conditionObj.sellerBank = sellerBank
-                }
-
                 if(lock){
                     conditionObj.lock = lock
                 }
-
+                
                 // Theo giỏi bảo lảnh
                 if(isExpiredAg == 1){
                     conditionObj.expiredAg = { $exists: true, $ne: null }
@@ -1175,33 +1148,38 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+    getAmountByMonth({ userID, type, outin, real, companyID, projectID, contractID, year, ctx }){
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}
 
-                // Tính toán theo companyID
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-
-                    conditionGroup = {
-                        _id: { month: "$month" },
-                        amount: { $sum: "$amount" },
-                    }
+                if(type && Number(type) > 0){
+                    conditionObj.type = Number(type)
                 }
 
-                // Tính toán theo projectID: gom nhóm theo các tháng trong năm
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
-
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        amount: { $sum: "$amount" },
-                    }
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
                 }
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = outin
+                if(real && Number(real) > 0){
+                    conditionObj.real = Number(real)
+                }
+
+                conditionGroup = {
+                    _id: { month: "$month", year: "$year" },
+                    amount: { $sum: "$amount" },
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
                 }
 
                 if(!isNaN(year) && Number(year) >= 0){
@@ -1263,15 +1241,15 @@ class Model extends BaseModel {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
 
                 if(type && Number(type) > 0){
-                    conditionObj.type = type
+                    conditionObj.type = Number(type)
                 }
 
                 if(outin && Number(outin) > 0){
-                    conditionObj.outin = outin
+                    conditionObj.outin = Number(outin)
                 }
 
                 if(real && Number(real) > 0){
-                    conditionObj.real = real
+                    conditionObj.real = Number(real)
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
@@ -1546,10 +1524,11 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, outin, month, year, 
-        keyword, limit = 20, lastestID, select, populates= {} }){
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit = 20, lastestID, select, populates= {} }){
+
         return new Promise(async resolve => {
             try {
+
                 if(limit > 20){
                     limit = 20;
                 } else{
@@ -1559,6 +1538,64 @@ class Model extends BaseModel {
                 let sortBy;
                 let conditionObj = {};
                 let keys	     = ['createAt__-1', '_id__-1'];
+
+                // Điều kiện để Aggregate
+                let conditionObjAgg = {}, conditionObjYear = {}
+
+                if(month && Number(month) > 0){
+                    conditionObjYear.month = Number(month)
+                    conditionObjYear.year = Number(year)
+                }else{
+                    conditionObjYear.year = Number(year)
+                }
+
+                if(type && Number(type) > 0){
+                    conditionObjAgg.type = Number(type)
+                }
+
+                if(outin && Number(outin) > 0){
+                    conditionObjAgg.outin = Number(outin)
+                }
+
+                if(real && Number(real) > 0){
+                    conditionObjAgg.real = Number(real)
+                }
+
+                if(field && checkObjectIDs(field)){
+                    conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(chair && checkObjectIDs(chair)){
+                    conditionObjAgg.chair = ObjectID(chair)
+                }
+
+                if(personInCharge && checkObjectIDs(personInCharge)){
+                    conditionObjAgg.personInCharge = ObjectID(personInCharge)
+                }
+
+                if(buyerInfo && checkObjectIDs(buyerInfo)){
+                    conditionObjAgg.buyerInfo = ObjectID(buyerInfo)
+                }
+
+                if(sellerInfo && checkObjectIDs(sellerInfo)){
+                    conditionObjAgg.sellerInfo = ObjectID(sellerInfo)
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObjAgg.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObjAgg.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObjAgg.company = ObjectID(companyID)
+                        }
+                    }
+                }
+
+                console.log(conditionObjAgg)
+                console.log(conditionObjYear)
+                // console.log(conditionGroup)
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -1582,10 +1619,7 @@ class Model extends BaseModel {
                 // Danh sách các Payment trong tháng, năm của công ty
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            outin: Number(outin),
-                        }
+                        $match: conditionObjAgg
                     },
                     {
                         $project : {
@@ -1594,13 +1628,14 @@ class Model extends BaseModel {
                         }
                     },
                     {
-                        $match: {
-                            "year": Number(year),
-                            "month": Number(month),
-                        }
+                        $match: conditionObjYear
                     },
                     {$sort: {"date": 1}}
                 ])
+
+                console.log(conditionObjAgg)
+                console.log(listData)
+
                 conditionObj._id = {$in: listData.map(item=>item._id)}
 
                 // Trả về danh sách mẩu tin

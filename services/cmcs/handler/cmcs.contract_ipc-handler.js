@@ -188,7 +188,8 @@ module.exports = {
                         contractIpcID, userID, select, populates
                     });
                 }else{
-                    if(!companyID && !projectID && !contractID){
+
+                    if(!companyID){
                         companyID = company._id
                     }
 

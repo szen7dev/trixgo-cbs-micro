@@ -455,28 +455,28 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                if(!isNaN(type) && Number(type) >= 0){
-                    conditionObj.type = type
+                if(!isNaN(type) && Number(type) > 0){
+                    conditionObj.type = Number(type)
                 }
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = outin
+                if(!isNaN(outin) && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
                 }
 
-                if(!isNaN(real) && Number(real) >= 0){
+                if(!isNaN(real) && Number(real) > 0){
                     conditionObj.real = real
-                }
-
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = ObjectID(companyID)
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = ObjectID(projectID)
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
                     conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }        
+                    }
                 }
 
                 if(field && checkObjectIDs(field)){

@@ -344,11 +344,11 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!isNaN(outin) && Number(outin) >= 0){
-                    conditionObj.outin = outin
+                if(!isNaN(outin) && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
                 }
 
-                if(!isNaN(year) && Number(year) >= 0){
+                if(!isNaN(year) && Number(year) > 0){
                     conditionObjYear = {
                         "year": Number(year),
                     }
@@ -610,15 +610,15 @@ class Model extends BaseModel {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
 
                 if(type && Number(type) > 0){
-                    conditionObj.type = type
+                    conditionObj.type = Number(type)
                 }
 
                 if(outin && Number(outin) > 0){
-                    conditionObj.outin = outin
+                    conditionObj.outin = Number(outin)
                 }
 
                 if(real && Number(real) > 0){
-                    conditionObj.real = real
+                    conditionObj.real = Number(real)
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
