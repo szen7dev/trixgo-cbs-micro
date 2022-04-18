@@ -19,7 +19,7 @@ module.exports = {
         auth: "required",
         params: {
             name                    : { type: "string" },
-            description              : { type: "string", optional: true },
+            description             : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -47,8 +47,8 @@ module.exports = {
         auth: "required",
         params: {
             noteID              : { type: "string" },
-            name                : { type: "number", optional: true },
-            desciption          : { type: "number", optional: true },
+            name                : { type: "string", optional: true },
+            description          : { type: "string", optional: true },
             members             : { type: "array", optional: true },
             membersRemove       : { type: "array", optional: true },
             trash               : { type: "number", optional: true }, // 1 là xóa
@@ -58,11 +58,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { noteID, name, desciption, members, membersRemove, trash, pin, removePin } = ctx.params;
+                let { noteID, name, description, members, membersRemove, trash, pin, removePin } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PERSONAL__NOTE_MODEL.update({
-                    noteID, name, desciption, members, membersRemove, trash, pin, removePin, userID
+                    noteID, name, description, members, membersRemove, trash, pin, removePin, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

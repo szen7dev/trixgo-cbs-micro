@@ -354,7 +354,7 @@ class Model extends BaseModel {
                 (storageID  && checkObjectIDs(storageID))   && (dataUpdate.storage  = storageID);
 
 				let infoAfterUpdate = await this.updateWhereClause({ _id: documentID }, dataUpdate);
-
+                
 				if (!infoAfterUpdate) {
                     return resolve({ 
                         error: true, 

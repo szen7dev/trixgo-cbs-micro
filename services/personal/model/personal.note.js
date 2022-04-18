@@ -47,7 +47,7 @@ class Model extends BaseModel {
         })
     }
 
-    update({ noteID, name, desciption, members, membersRemove, trash, pin, removePin, userID }) {
+    update({ noteID, name, description, members, membersRemove, trash, pin, removePin, userID }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(noteID))
@@ -60,8 +60,8 @@ class Model extends BaseModel {
                     dataUpdate.name = name;
                 }
 
-                if(desciption){
-                    dataUpdate.desciption = desciption;
+                if(description){
+                    dataUpdate.description = description;
                 }
 
                 // Chia sẽ cho bạn bè
