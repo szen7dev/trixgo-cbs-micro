@@ -207,6 +207,8 @@ module.exports = {
             contractID	    : { type: "string", optional: true },
 			requestResponse : { type: "string", optional: true },
 			type            : { type: "string", optional: true },
+			direction       : { type: "string", optional: true },
+			datahubContactID: { type: "string", optional: true },
 			marked          : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
@@ -219,7 +221,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { 
-                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
+                    parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate, datahubContactID,
                     type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, keyword, limit, lastestID, select, populates
                 } = ctx.params;
                 
@@ -228,7 +230,7 @@ module.exports = {
                 // }
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.getList({
                     parentID, companyID, packageID, departmentID, direction, senderID, receiverID, propertyID, receivedDate,
-                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, userID, keyword,
+                    type, contractID, storageID, requestResponse, fieldID, fromDate, toDate, marked, datahubContactID, userID, keyword, 
                     limit, lastestID, select, populates
                 });
 
@@ -452,7 +454,7 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company    } = ctx.meta.infoUser;
                 const { departmentID, packageID } = ctx.params;
-
+                
                 const resultAfterCallHandler = await DOCUMENT__DOC_MODEL.statisticalByType({
                     userID, companyID: company._id, departmentID, packageID
                 });
@@ -463,7 +465,6 @@ module.exports = {
             }
         }
     },
-
 
     /**
 	 * Dev: Depv

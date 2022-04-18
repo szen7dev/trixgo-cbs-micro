@@ -476,7 +476,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID,
+        parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, datahubContactID,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -542,6 +542,10 @@ class Model extends BaseModel {
 
                 if(companyID){
                     conditionObj.company = companyID
+                }
+
+                if(datahubContactID){
+                    conditionObj.datahubContact = datahubContactID
                 }
 
                 if(type){
