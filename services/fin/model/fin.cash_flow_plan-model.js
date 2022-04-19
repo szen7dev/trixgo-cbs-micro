@@ -290,7 +290,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, projectID, contractID, parentID, outin, type, property, priority,
+    getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
         keyword, limit = 50, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -344,19 +344,21 @@ class Model extends BaseModel {
                     conditionObj.priority = Number(priority);
                 }
 
-                if(checkObjectIDs(companyID)){
-                    conditionObj.company = companyID
-                }
-                if(checkObjectIDs(projectID)){
-                    conditionObj.project = projectID
-                }
-                if(checkObjectIDs(contractID)){
-                    conditionObj.contract = contractID
-                }
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 } else{
+                    conditionObj = { members: { $in: [userID] } }
                     conditionObj.parent = { $exists: false }
+
+                    if(checkObjectIDs(contractID)){
+                        conditionObj.contract = contractID
+                    }else{
+                        if(checkObjectIDs(projectID)){
+                            conditionObj.project = projectID
+                        }else{
+                            conditionObj.company = companyID
+                        }
+                    }
                 }
 
                 if(keyword){
