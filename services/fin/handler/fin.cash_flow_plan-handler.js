@@ -35,7 +35,6 @@ module.exports = {
             value               : { type: "number", optional: true },
             realDate            : { type: "string", optional: true },
             realValue           : { type: "number", optional: true },
-            value               : { type: "number", optional: true },
             priority            : { type: "number", optional: true },
         },
         async handler(ctx) {
