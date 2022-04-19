@@ -136,7 +136,11 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashFlowID, contractID, name, sign, note, date, value, realDate, realValue, priority, userID, ctx }){
+    update({ 
+        cashFlowID, contractID, name, sign, note, date, 
+        value, realDate, realValue, priority,
+        outin, property, status, type, userID, ctx
+    }){
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -208,6 +212,16 @@ class Model extends BaseModel {
 
                 if(!isNaN(realValue) && Number(realValue) >= 0){
                     dataUpdate.realValue     = realValue;
+                }
+
+                outin       && (dataUpdate.outin    = outin);
+                property    && (dataUpdate.property = property);
+                status      && (dataUpdate.status   = status);
+                type        && (dataUpdate.type     = type);
+
+                if(status && status === 2) {
+                    dataUpdate.approver = userID;
+                    dataUpdate.timeApproved = new Date();
                 }
 
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
@@ -308,11 +322,9 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
-        keyword, limit = 50, lastestID, select, populates= {} }) {
-        console.log({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority })
+        keyword, limit = 50, lastestID, select, populates= {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-
                 if(limit > 50){
                     limit = 50
                 }else{
@@ -324,7 +336,7 @@ class Model extends BaseModel {
                  */
                  let sortBy;
                  let conditionObj = {};
-                 let keys	     = ['createAt__1', '_id__1'];
+                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 /**
                  * VALIDATION STEP (2)
@@ -332,7 +344,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
 
-                // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -344,6 +355,14 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
