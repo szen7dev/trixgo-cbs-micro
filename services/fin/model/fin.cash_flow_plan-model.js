@@ -37,7 +37,18 @@ class Model extends BaseModel {
                 let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value, admins: [userID], members: [userID] };
 
                 if(checkObjectIDs(projectID)){
-                    dataInsert.project = projectID
+                    const infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                        departmentID: projectID
+                    })
+                    console.log(infoProject)
+
+                    // Trường hợp lập kế hoạch cho Dự án thuộc công ty khác
+                    if(infoProject){
+                        const { company } = infoProject.data;
+
+                        dataInsert.project = projectID
+                        dataInsert.company = company
+                    }
                 }
 
                 if(checkObjectIDs(contractID)){
@@ -500,6 +511,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, ctx }){
+        console.log('=========>Tham số đầu vào')
         console.log({ userID, companyID, parentID, projectID, outin, year, type, property, option })
         return new Promise(async resolve => {
             try {
@@ -514,7 +526,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"_id.realValue": -1}
 
-                if (isNaN(type) || isNaN(property) || isNaN(option) || ![1,2,3,4,5].includes(Number(option)))
+                if (isNaN(type) || isNaN(property) || isNaN(Number(option)) || ![1,2,3,4,5].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số type|property|option không hợp lệ", keyError: "option_invalid" })
 
                 // Cấu hình gom nhóm mặc định
@@ -560,6 +572,7 @@ class Model extends BaseModel {
                         parent: {$exists: false},// Không lấy các phần tử cha-Kế hoạch tổng
                         company: companyID 
                     })
+                    console.log(listActiveParent)
                     
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
                 }

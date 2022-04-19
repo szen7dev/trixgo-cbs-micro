@@ -197,11 +197,11 @@ module.exports = {
     getAmountByProperty: {
         auth: "required",
         params: {
-            companyID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            year: { type: "string", optional: true },
-            option: { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            accountID       : { type: "string", optional: true },
+            year            : { type: "string", optional: true },
+            option          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

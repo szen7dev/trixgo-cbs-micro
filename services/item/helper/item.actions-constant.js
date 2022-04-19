@@ -16,7 +16,6 @@ const FUNDA             = 'FUNDA';
 const GOOD              = 'GOOD';
 const SIGNATURE         = 'SIGNATURE';
 
-
 const CF_ACTIONS_ITEM = {
     /**
      * DEPARTMENT

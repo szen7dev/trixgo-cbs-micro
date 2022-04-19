@@ -191,7 +191,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             projectID       : { type: "string", optional: true },
-            contractID       : { type: "string", optional: true },
+            contractID      : { type: "string", optional: true },
             year            : { type: "string", optional: true },
             outin           : { type: "string", optional: true },
             type            : { type: "string", optional: true },
