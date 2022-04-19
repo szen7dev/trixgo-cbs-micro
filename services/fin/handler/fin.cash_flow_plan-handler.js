@@ -196,11 +196,12 @@ module.exports = {
             type            : { type: "string", optional: true },
             property        : { type: "string", optional: true },
             option          : { type: "string", optional: true },
+            real            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, parentID, projectID, contractID, outin, year, type, property, option } = ctx.params;
+                let { companyID, parentID, projectID, contractID, outin, year, type, property, option, real } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -209,7 +210,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getAmountByProperty({
-                    userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, ctx
+                    userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

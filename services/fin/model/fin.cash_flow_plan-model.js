@@ -516,7 +516,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/04/2022
      */
-    getAmountByProperty({ userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, ctx }){
+    getAmountByProperty({ userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx }){
         console.log('=========>Tham số đầu vào')
         console.log({ userID, companyID, parentID, projectID, outin, year, type, property, option })
         return new Promise(async resolve => {
@@ -531,6 +531,32 @@ class Model extends BaseModel {
                  * 5-Tổng hợp theo hợp đồng
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"_id.realValue": -1}
+
+                let conditionProject = { 
+                    year : {$year : "$date"},
+                    month : {$month : "$date"},
+                    parent: 1,
+                    company: 1,
+                    value: 1,
+                    realValue: 1,
+                    type: 1,
+                    property: 1,
+                    outin: 1,
+                }
+
+                if(real && Number(real) === 1){
+                    conditionProject = { 
+                        year : {$year : "$realDate"},
+                        month : {$month : "$realDate"},
+                        parent: 1,
+                        company: 1,
+                        value: 1,
+                        realValue: 1,
+                        type: 1,
+                        property: 1,
+                        outin: 1,
+                    }    
+                }
 
                 if (isNaN(type) || isNaN(property) || isNaN(Number(option)) || ![1,2,3,4,5].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số type|property|option không hợp lệ", keyError: "option_invalid" })
@@ -628,17 +654,7 @@ class Model extends BaseModel {
                         $match: conditionObj
                     }, 
                     {
-                        $project : { 
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            parent: 1,
-                            company: 1,
-                            value: 1,
-                            realValue: 1,
-                            type: 1,
-                            property: 1,
-                            outin: 1,
-                        }
+                        $project : conditionProject
                     },
                     {
                         $match: conditionObjYear
