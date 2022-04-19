@@ -528,7 +528,7 @@ class Model extends BaseModel {
                 if(Number(option) === 1){
                     console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị')
                     let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
-                        appID: "5dfe4bc751dc622100bb9d8a", menuID: "623f2465e998e94feda0cdaa", type: 1
+                        appID: "5dfe4bc751dc622100bb9d8a", menuID: "623f2465e998e94feda0cdaa", type: "1"
                     })
 
                     console.log(listCompany)
