@@ -132,7 +132,7 @@ module.exports = {
         params: {
             menuID          : { type: "string", optional: true },
             appID           : { type: "string", optional: true },
-            type            : { type: "number", optional: true },
+            type            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
