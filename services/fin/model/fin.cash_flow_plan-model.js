@@ -37,28 +37,26 @@ class Model extends BaseModel {
                 let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value, admins: [userID], members: [userID] };
 
                 if(checkObjectIDs(projectID)){
-                    const infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
                     })
-                    console.log(infoProject)
+                    // console.log(infoProject)
 
                     // Trường hợp lập kế hoạch cho Dự án thuộc công ty khác
                     if(infoProject){
-                        const { company } = infoProject.data;
-
                         dataInsert.project = projectID
-                        dataInsert.company = company
+                        dataInsert.company = infoProject.data.company
                     }
                 }
 
                 if(checkObjectIDs(contractID)){
-                    const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
+                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
                         contractID
                     })
 
                     // Trường hợp lập kế hoạch cho Hợp đồng của Dự án thuộc công ty khác
                     if(infoContract){
-                        const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+                        let { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
                         dataInsert.outin = outin
                         dataInsert.real = real
@@ -77,8 +75,16 @@ class Model extends BaseModel {
                     dataInsert.funda = funda;
                 }
 
+                // Nếu được tạo từ phần tử cha => lấy company theo phần tử cha
                 if(checkObjectIDs(parentID)){
-                    dataInsert.parent = parentID;
+                    let infoParent = await FIN__CASH_FLOW_PLAN_COLL.findById(parentID)
+                    console.log(infoParent)
+                    if(infoParent){
+                        let { company } = infoParent;
+
+                        dataInsert.parent = parentID;
+                        dataInsert.company = company;
+                    }
                 }
 
                 if(!isNaN(type)){
