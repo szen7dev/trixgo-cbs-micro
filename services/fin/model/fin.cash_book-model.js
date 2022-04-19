@@ -405,7 +405,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
-                if (!option || isNaN(option))
+                if (!option || isNaN(option) || ![1,2,3].includes(Number(option)))
                     return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
 
                 // Cấu hình gom nhóm mặc định
@@ -429,10 +429,6 @@ class Model extends BaseModel {
                     })
                     
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    // console.log(listActiveParent)
-                    // console.log(listCompany.data)
-                    // console.log(listCompany.data.map(item=>item._id.company._id))
 
                     conditionGroup = {
                         _id: { account: "$account", company: "$company" },
@@ -459,10 +455,7 @@ class Model extends BaseModel {
                         parent: {$exists: false},
                         company: companyID 
                     })
-                    
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    // console.log(listActiveParent)
 
                     conditionGroup = {
                         _id: { account: "$account" },
@@ -523,8 +516,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
-                console.log(conditionGroup)
+                // console.log(conditionObj)
+                // console.log(conditionGroup)
 
                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
                     {

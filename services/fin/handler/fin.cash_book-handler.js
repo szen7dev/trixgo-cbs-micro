@@ -202,13 +202,6 @@ module.exports = {
             accountID: { type: "string", optional: true },
             year: { type: "string", optional: true },
             option: { type: "string", optional: true },
-
-            // Field mặc định
-            keyword: { type: "string", optional: true },
-            limit: { type: "string", optional: true },
-            lastestID: { type: "string", optional: true },
-            select: { type: "string", optional: true },
-            populates: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

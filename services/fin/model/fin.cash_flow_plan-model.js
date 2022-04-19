@@ -4,6 +4,7 @@ const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 
 /**
  * import inter-coll, exter-coll
@@ -222,28 +223,28 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    remove({ cashFlowsID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(cashFlowsID))
-                    return resolve({ error: true, message: 'param_cashFlowsID_invalid', status: 400 });
+    // remove({ cashFlowsID, userID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!checkObjectIDs(cashFlowsID))
+    //                 return resolve({ error: true, message: 'param_cashFlowsID_invalid', status: 400 });
 
-                if(!checkObjectIDs([userID]))
-                    return resolve({ error: true, message: 'param_userID_invalid', status: 400 });
+    //             if(!checkObjectIDs([userID]))
+    //                 return resolve({ error: true, message: 'param_userID_invalid', status: 400 });
 
-                const infoAfterDelete = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
-                    _id: {
-                        $in: cashFlowsID
-                    },
-                    userCreate: userID
-                })
+    //             const infoAfterDelete = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
+    //                 _id: {
+    //                     $in: cashFlowsID
+    //                 },
+    //                 userCreate: userID
+    //             })
 
-                return resolve({ error: false, data: infoAfterDelete, status: 201 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //             return resolve({ error: false, data: infoAfterDelete, status: 201 });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
     /**
      * Name: Get info ✅
@@ -420,7 +421,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name  : Cập nhật giá trị ✅
+     * Name  : Cập nhật giá trị khi chi tiết thay đổi ✅
      * Author: Hiepnh
      * Date  : 14/4/2022
      */
@@ -431,11 +432,9 @@ class Model extends BaseModel {
             try {
                 /**
                  * BA
-                 * 1-Cập nhật giá trị ngân sách
-                 * 2-Cập nhật dự báo ngân sách
-                 * 3-Cập nhật thực hiện ngân sách
+                 * 1-Cập nhật kế hoạch
+                 * 2-Cập nhật thực tế
                  */
-
                 if(!checkObjectIDs(cashFlowID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashFlowID_invalid" });
 
@@ -485,6 +484,150 @@ class Model extends BaseModel {
         })
     }
 
+    /*
+     * Name: Gom nhóm theo thuộc tính ✅
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+    getAmountByProperty({ userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, ctx }){
+        console.log({ userID, companyID, parentID, projectID, outin, year, type, property, option })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * Tham số của option:
+                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                 * 2-Tổng hợp của công ty user
+                 * 3-Tổng hợp theo kế hoạch cụ thể
+                 * 4-Tổng hợp theo dự án
+                 * 5-Tổng hợp theo hợp đồng
+                 */
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"_id.realValue": -1}
+
+                if (isNaN(type) || isNaN(property) || isNaN(option) || ![1,2,3,4,5].includes(Number(option)))
+                    return resolve({ error: true, message: "Tham số type|property|option không hợp lệ", keyError: "option_invalid" })
+
+                // Cấu hình gom nhóm mặc định
+                conditionGroup = {
+                    _id: { outin: "$outin" },
+                    value: { $sum: "$value" },
+                    realValue: { $sum: "$realValue" }
+                }               
+
+                // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                if(Number(option) === 1){
+                    console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị')
+                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
+                        appID: "5dfe4bc751dc622100bb9d8a", menuID: "623f2465e998e94feda0cdaa", type: 1
+                    })
+
+                    console.log(listCompany)
+
+                    if(listCompany){
+                        let listActiveParent = await FIN__CASH_FLOW_PLAN_COLL.find({ 
+                            type: Number(type), 
+                            property: Number(property), 
+                            parent: {$exists: false}, // Không lấy các phần tử cha-Kế hoạch tổng
+                            company: {$in: listCompany.data.map(item=>item._id.company._id)} 
+                        })
+                        
+                        conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
+    
+                        conditionGroup = {
+                            _id: { outin: "$outin", company: "$company" },
+                            value: { $sum: "$value" },
+                            realValue: { $sum: "$realValue" }
+                        }
+                    }
+                }
+
+                // 2-Tổng hợp của công ty user
+                if(Number(option) === 2){
+                    console.log('2-Tổng hợp của công ty user')
+                    let listActiveParent = await FIN__CASH_FLOW_PLAN_COLL.find({ 
+                        type: Number(type), 
+                        property: Number(property), 
+                        parent: {$exists: false},// Không lấy các phần tử cha-Kế hoạch tổng
+                        company: companyID 
+                    })
+                    
+                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
+                }
+
+                // 3-Tổng hợp theo kế hoạch cụ thể
+                if(Number(option) === 3 && parentID && checkObjectIDs(parentID)){
+                    console.log('3-Tổng hợp theo kế hoạch cụ thể')
+                    if(parentID && checkObjectIDs(parentID)){
+                        conditionObj.parent = ObjectID(parentID)
+                    }
+                }
+
+                // 4-Tổng hợp theo dự án
+                if(Number(option) === 4 && projectID && checkObjectIDs(projectID)){
+                    console.log('4-Tổng hợp theo dự án')
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }
+                }
+
+                // 5-Tổng hợp theo hợp đồng
+                if(Number(option) === 5 && contractID && checkObjectIDs(contractID)){
+                    console.log('5-Tổng hợp theo hợp đồng')
+                    if(contractID && checkObjectIDs(contractID)){
+                        conditionObj.contract = ObjectID(contractID)
+                    }
+                }
+
+                // Thống kê theo biểu đồ (tháng/năm)
+                if(!isNaN(year) && Number(year) > 0){
+                    conditionObjYear = {
+                        "year": Number(year),
+                    }
+
+                    conditionGroup = {
+                        _id: {outin: "$outin", month: "$month", year: "$year" },
+                        value: { $sum: "$value" },
+                        realValue: { $sum: "$realValue" }
+                    }
+                }
+
+                console.log(conditionObj)
+                console.log(conditionGroup)
+
+                let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            parent: 1,
+                            company: 1,
+                            value: 1,
+                            realValue: 1,
+                            type: 1,
+                            property: 1,
+                            outin: 1,
+                        }
+                    },
+                    {
+                        $match: conditionObjYear
+                    }, 
+                    {
+                        $group: conditionGroup
+                    }, 
+                    {
+                        $sort: sortBy
+                    } 
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

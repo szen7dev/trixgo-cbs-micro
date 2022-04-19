@@ -174,4 +174,44 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Gom nhóm theo thuộc tính ✅
+     * Author: Hiepnh
+     * Date: 17/04/2022
+     */
+     getAmountByProperty: {
+        auth: "required",
+        params: {
+            companyID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            contractID       : { type: "string", optional: true },
+            year            : { type: "string", optional: true },
+            outin           : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            property        : { type: "string", optional: true },
+            option          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, parentID, projectID, contractID, outin, year, type, property, option } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getAmountByProperty({
+                    userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
