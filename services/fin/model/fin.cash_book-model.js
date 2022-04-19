@@ -29,6 +29,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
@@ -89,6 +90,11 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
+                // Cập nhật lại phần tử cha
+                if(checkObjectIDs(parentID)){
+                    await that.updateValue({cashBookID: parentID, userID})
+                }
+
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -102,6 +108,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -155,6 +162,84 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+                // Cập nhật lại phần tử cha
+                if(checkObjectIDs(infoAfterUpdate.parent)){
+                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị khi chi tiết thay đổi ✅
+     * Author: Hiepnh
+     * Date  : 14/4/2022
+     */
+    updateValue({
+        cashBookID, userID
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Cập nhật kế hoạch
+                 * 2-Cập nhật thực tế
+                 */
+                if(!checkObjectIDs(cashBookID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
+                  
+                let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
+                console.log(infoCashBook)
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { userUpdate: userID };
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(cashBookID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            income: { $sum: "$income" },
+                            expense: { $sum: "$expense" },
+                        }
+                    },
+                ])
+                if(listData && listData.length){
+                    
+                    let arising = Number(listData[0].income) - Number(listData[0].expense)
+                    let closingBalance = Number(infoCashBook.openingBalance) + Number(arising)
+
+                    dataUpdate.arising = Number(arising)
+                    dataUpdate.closingBalance = Number(closingBalance)
+                    dataUpdate.income = Number(listData[0].income)
+                    dataUpdate.expense = Number(listData[0].expense)
+                }
+
+                let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
