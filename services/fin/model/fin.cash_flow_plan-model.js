@@ -292,6 +292,7 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
         keyword, limit = 50, lastestID, select, populates= {} }) {
+        console.log({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority })
         return new Promise(async (resolve) => {
             try {
 
@@ -351,15 +352,22 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false }
 
                     if(checkObjectIDs(contractID)){
+                        // conditionObj = { members: { $in: [userID] } }
+                        // conditionObj.parent = { $exists: false }
                         conditionObj.contract = contractID
                     }else{
                         if(checkObjectIDs(projectID)){
+                            // conditionObj = { members: { $in: [userID] } }
+                            // conditionObj.parent = { $exists: false }
                             conditionObj.project = projectID
                         }else{
+                            // conditionObj = { members: { $in: [userID] } }
+                            // conditionObj.parent = { $exists: false }
                             conditionObj.company = companyID
                         }
                     }
                 }
+                console.log(conditionObj)
 
                 if(keyword){
                     keyword = keyword.split(" ");
