@@ -139,7 +139,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { menuID, appID, type } = ctx.params;
 
-                // console.log({menuID, appID, type})
+                console.log({menuID, appID, type})
 
                 let { _id: userID } = ctx.meta.infoUser;
 
