@@ -16,6 +16,7 @@ module.exports = {
      *  Author: Depv
      */
     insertFull: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -35,9 +36,23 @@ module.exports = {
                     fcuExRate, selectedJournals, isImport,
                     ipc, fee, subtype, project } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                console.log(userID)
+
+                console.log( { fundaID, type, date, 
+                    dateInvoice, name, sign, signInvoice, 
+                    customer, receiver, note, vat, contract, 
+                    storage, inspection, termination, advancePayment,
+                    returning, forward, cancel, source, orderNew, pricePolicy,
+                    discountCost, otherCost, shipperName, shipperCost, staff, 
+                    fcuExRate, selectedJournals, isImport,
+                    ipc, fee, subtype, project })
+
                 let  resultAfterCallHandler;
 
                 let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
+
+                // console.log(infoFundaCompany)
                 
                 if(infoFundaCompany.error){
                     resultAfterCallHandler.message = 'Not found funda comany ';

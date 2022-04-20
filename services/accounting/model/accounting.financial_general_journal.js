@@ -246,12 +246,23 @@ class Model extends BaseModel {
         project, job, cash, vat, note, updown, advancePayment, 
         date, subtype, warehouse, group, unitprice, budgetWorkID
     }) {
+        console.log({ 
+            authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
+            customerCredit, goods, quantity, amount, fcuExRate, contract, 
+            project, job, cash, vat, note, updown, advancePayment, 
+            date, subtype, warehouse, group, unitprice, budgetWorkID
+        })
+
         const that = this;
         return new Promise(async (resolve) => {
+            console.log('Budget1==========================>>>>>')
+
             let responseResultInsert = {};
             const session = await connection.startSession(); // có poolconnect --> relase()
             await session.startTransaction(); 
             try {
+                console.log('Budget2==========================>>>>>')
+
                 const checkInput = this.checkInputInsertFull({  voucher, companyID, authorID, fundaID, customerDebit, customerCredit });
                 if(checkInput.error)
                     return resolve(checkInput)

@@ -341,6 +341,9 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve({ error: true, message: "cannot_insert", status: 400 });
                 
                 if(selectedJournals && selectedJournals.length >0){
+                    console.log('=============>OKKKKKKKKKKKKKKKKKKKKKKKKK')
+                    console.log(selectedJournals)
+
                     //_________Get ID của phiếu vừa tạo để tiến hành tạo chi tiết chứng từ
                     const voucherID = infoAfterInsert._id;           
 
@@ -427,6 +430,8 @@ class AccountingFinancialVoucher extends BaseModel {
                             dataInsert.job = subitem.budget;
                             dataInsert.group = infoGroup.group;
                         }
+
+                        console.log(dataInsert)
                         
                         //_________Tiến hành tạo chi tiết_________//
                         const res = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
