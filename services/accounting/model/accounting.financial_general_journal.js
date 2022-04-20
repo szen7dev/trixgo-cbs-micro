@@ -258,8 +258,10 @@ class Model extends BaseModel {
             console.log('Budget1==========================>>>>>')
 
             let responseResultInsert = {};
-            const session = await connection.startSession(); // có poolconnect --> relase()
+
+            const session = await connection.startSession(); // có poolconnect --> relase() cấu hình trong file: connectionMongo.js. Đang tạm đóng lại để đỡ tốn tài nguyên
             await session.startTransaction(); 
+            
             try {
                 console.log('Budget2==========================>>>>>')
 
@@ -325,7 +327,10 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL]: ${error}`);
+
+                // Roll back lại nếu hành động thất bại
                 await session.abortTransaction();
+
                 responseResultInsert = { error: true, message: `error jounal services: ${error.message}`, status: 400 };
                 // return resolve({ error: true, message: error.message });
             }

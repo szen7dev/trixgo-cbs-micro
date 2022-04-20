@@ -29,8 +29,8 @@ const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/pl
 /**
  * COLLECTIONS
 */
+const FUNDA_COLL                                    = require('../../item/database/item.funda-coll'); // Kiểm tra fix lại, không Import trực tiếp
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll');
-const FUNDA_COLL                                    = require('../../item/database/item.funda-coll');
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll');
 
 /**
@@ -45,7 +45,9 @@ class AccountingFinancialVoucher extends BaseModel {
         super(require('../database/accounting.financial_voucher-coll'));
     }
 
-    // -------------------- start function check params for add, update, remove, search -----------
+    // -------------------- Start function check params for add, update, remove, search -----------
+
+    // OK
     checkInputVoucher({ date, name, type, authorID, customerID }){
         if(!date)
             return { error: true, message: 'date_invalid', status: 400 };
@@ -66,6 +68,7 @@ class AccountingFinancialVoucher extends BaseModel {
         return { error: false };
     }
 
+    // OK
     checkInputInsertFull({ date, name, type, fundaID, authorID, customerID }){
         const checkVoucher = this.checkInputVoucher({ date, name, type, authorID, customerID });
         if(checkVoucher.error)
@@ -87,8 +90,9 @@ class AccountingFinancialVoucher extends BaseModel {
         return { error: false }; 
     }
 
-    // -------------------- end function check params for add, update, remove, search -----------
-    // -------------------- start function collect data for add, update, search -----------------
+    // -------------------- End function check params for add, update, remove, search -----------
+
+    // -------------------- Start function collect data for add, update, search -----------------
     collectDataForInsertFull({ ctx, authorID , fundaID, type, date, 
         dateInvoice, name, sign, signInvoice, 
         customer, receiver, note, vat, contract, 
@@ -281,33 +285,30 @@ class AccountingFinancialVoucher extends BaseModel {
                  * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
                  * +++budgetWorkID cũ
                  * +++budgetWorkID mới
-                 * 
-                 * !!!!Check xem "authorID/customer/warehouse" có thuộc companyID hay không?
                 */
 
                 /**
-                 * Hiepnh (27/12/2019)
-                 * !!!!Check xem "authorID/customer/warehouse" có thuộc companyID hay không?
+                 * Hiepnh-20/4/2022
+                 * Kiểm tra xem "authorID/customer/warehouse" có thuộc companyID hay không?
                 */
 
-                // if(!date || !name || Number.isNaN(Number(type)) || !ObjectId.isValid(fundaID) || !ObjectId.isValid(authorID) || !ObjectId.isValid(customer))
-                //     return resolve({ error: true, message: 'params_not_valid' });
+                //_________Kiểm tra xác thực dữ liệu đầu vào
                 const checkParams = this.checkInputInsertFull({ date, name, type, fundaID, authorID, customerID: customer });
                 if(checkParams.error){
                     return resolve(checkParams)
                 }
 
                 //_________Lấy số lượng phiếu hiện tại của công ty/đơn vị cơ sở
-                // const number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type });
                 const number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type });
                 const infoFunda       = await FUNDA_COLL.findById(fundaID);
+                
                 /**
-                 *  DOMI.PX4740 
-                 *  infoFunda.sign = DOMI
-                 *  VOUCHER_TYPES  = PX
-                 *  {Number(number+1)} = 4740
+                 * Sample:
+                 * DOMI.PX4740 
+                 * infoFunda.sign = DOMI
+                 * VOUCHER_TYPES  = PX
+                 * {Number(number+1)} = 4740
                  */
-
 
                 let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
                 const companyID = infoFunda.company;
@@ -337,6 +338,8 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve(dataInsertVoucher);
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher.data);
+                // Tạo lỗi để test Roll back
+
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert", status: 400 });
                 
@@ -347,15 +350,8 @@ class AccountingFinancialVoucher extends BaseModel {
                     //_________Get ID của phiếu vừa tạo để tiến hành tạo chi tiết chứng từ
                     const voucherID = infoAfterInsert._id;           
 
-                    //_________Thông tin về tài khoản thuế phải nộp/được khấu trừ
-                    const infoAccount133          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME}`,{ companyID : `${companyID}`, name: '133'});
-                    const listNestedAccount133    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID: `${ infoAccount133.data._id }` });
-                    const nestedAccount133        = listNestedAccount133.data.map(item => item.toString());
-                    const infoAccount333          = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME}`,{ companyID : `${companyID}`, name: '133'});
-                    const listNestedAccount333    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID: `${ infoAccount333.data._id }` });
-                    const nestedAccount333        = listNestedAccount333.data.map(item => item.toString());
-
                     for (const subitem of selectedJournals) {
+
                         const dataInsert = {
                             authorID, companyID, fundaID, voucher: voucherID, 
                             quantity: subitem.quantity ? Number(subitem.quantity) : 1,
@@ -367,45 +363,43 @@ class AccountingFinancialVoucher extends BaseModel {
                             advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0
                         }
 
-                        //_________Kiểm tra xem có tài khoản nợ/có không
-                        //_________Nếu không thì lấy giá trị null
+                        /**
+                         * Kiểm tra xem có tài khoản nợ/có không
+                         * Nếu không thì lấy giá trị null
+                         */
                         if(subitem.debit && _isValid(subitem.debit)){
                             dataInsert.debit = subitem.debit
-
-                            //_________Kiểm tra xem có phải là 133 hoặc 333 hay không
-                            if(nestedAccount133.includes(subitem.debit.toString()) || nestedAccount333.includes(subitem.debit.toString())){
-                                dataInsert.vat = 1;
-                            }
                         }else{
                             dataInsert.debit = null
                         }
+
                         if(subitem.credit && _isValid(subitem.credit)){
                             dataInsert.credit = subitem.credit
-
-                            //_________Kiểm tra xem có phải là 133 hoặc 333 hay không
-                            if(nestedAccount133.includes(subitem.credit.toString()) || nestedAccount333.includes(subitem.credit.toString())){
-                                dataInsert.vat = 1;
-                            }
                         }else{
                             dataInsert.credit = null
                         }
 
-                        //_________Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
-                        //_________Nếu không  có thì lấy theo mã khách trên phiếu
+                        /**
+                         * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
+                         * Nếu không  có thì lấy theo mã khách trên phiếu
+                         */
                         if(subitem.customerDebit && _isValid(subitem.customerDebit)){
                             dataInsert.customerDebit = subitem.customerDebit
                         }else{
                             dataInsert.customerDebit = customer
                         }
+
                         if(subitem.customerCredit && _isValid(subitem.customerCredit)){
                             dataInsert.customerCredit = subitem.customerCredit
                         }else{
                             dataInsert.customerCredit = customer
                         }
 
-                        //_________Kiểm tra xem có hàng hóa/kho hay không
-                        //_________Nếu không  có thì lấy theo mã khách trên phiếu
-                        //_________Chỉ insert khi có cả thông tin goods và warehouse
+                        /**
+                         * Kiểm tra xem có hàng hóa/kho hay không
+                         * Nếu không  có thì lấy theo mã khách trên phiếu
+                         * Chỉ insert khi có cả thông tin goods và warehouse
+                         */
                         if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
                             dataInsert.goods = subitem.goods
                             dataInsert.warehouse = subitem.warehouse
@@ -414,8 +408,10 @@ class AccountingFinancialVoucher extends BaseModel {
                             dataInsert.warehouse = null
                         }
 
-                        //_________Kiểm tra xem có Hợp đồng hay không
-                        //_________Nếu không  có thì lấy theo hợp đồng trên phiếu
+                        /**
+                         * Kiểm tra xem có Hợp đồng hay không
+                         * Nếu không  có thì lấy theo hợp đồng trên phiếu
+                         */
                         if(subitem.contract && _isValid(subitem.contract)){
                             dataInsert.contract = subitem.contract
                         }else{
@@ -424,7 +420,9 @@ class AccountingFinancialVoucher extends BaseModel {
                             }
                         }
 
-                        //_________Cập nhật ngân sách thực hiện
+                        /**
+                         * Cập nhật ngân sách thực hiện
+                         */
                         if(subitem.budget && _isValid(subitem.budget)){
                             let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
                             dataInsert.job = subitem.budget;
