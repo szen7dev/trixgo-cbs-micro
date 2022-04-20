@@ -342,6 +342,7 @@ module.exports = {
             projectID   : { type: "string", optional: true },
             contractID  : { type: "string", optional: true },
             outin       : { type: "string", optional: true },
+            optionTime  : { type: "string", optional: true },
             option      : { type: "string", optional: true },
             year        : { type: "string", optional: true },
             debt        : { type: "string", optional: true },
@@ -350,7 +351,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, contractID, outin, option, year, debt } = ctx.params;
+                let { companyID, projectID, contractID, outin, optionTime, option, year, debt } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -359,7 +360,7 @@ module.exports = {
                 console.log({companyID})
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getAmountByProperty({
-                    userID, outin: Number(outin), year: Number(year), debt: Number(debt), companyID, projectID, contractID, option, ctx
+                    userID, outin: Number(outin), year: Number(year), debt: Number(debt), companyID, projectID, contractID, optionTime: Number(optionTime), option: Number(option), ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
