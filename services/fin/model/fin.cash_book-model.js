@@ -192,7 +192,7 @@ class Model extends BaseModel {
                  */
                 if(!checkObjectIDs(cashBookID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
-                  
+
                 let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
                 console.log(infoCashBook)
 
@@ -227,7 +227,7 @@ class Model extends BaseModel {
                     },
                 ])
                 if(listData && listData.length){
-                    
+
                     let arising = Number(listData[0].income) - Number(listData[0].expense)
                     let closingBalance = Number(infoCashBook.openingBalance) + Number(arising)
 
@@ -495,9 +495,10 @@ class Model extends BaseModel {
 
                 // Cấu hình gom nhóm mặc định
                 conditionGroup = {
-                    _id: {  },
+                    _id: {},
                     income: { $sum: "$income" },
                     expense: { $sum: "$expense" },
+                    date: { $first: "$date" },
                 }
 
                 // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
@@ -509,10 +510,10 @@ class Model extends BaseModel {
 
                     console.log(listCompany)
 
-                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({ 
-                        active: 1, 
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({
+                        active: 1,
                         parent: {$exists: false},
-                        company: {$in: listCompany.data.map(item=>item._id.company._id)} 
+                        company: {$in: listCompany.data.map(item=>item._id.company._id)}
                     })
 
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
@@ -521,6 +522,7 @@ class Model extends BaseModel {
                         _id: { account: "$account", company: "$company" },
                         income: { $sum: "$income" },
                         expense: { $sum: "$expense" },
+                        date: { $first: "$date" },
                     }
 
                     conditionPopulate = {
@@ -537,10 +539,10 @@ class Model extends BaseModel {
                 // 2-Tổng hợp của công ty user
                 if(Number(option) === 2){
                     console.log('2-Tổng hợp của công ty user')
-                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({ 
-                        active: 1, 
+                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({
+                        active: 1,
                         parent: {$exists: false},
-                        company: companyID 
+                        company: companyID
                     })
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
 
@@ -548,6 +550,7 @@ class Model extends BaseModel {
                         _id: { account: "$account" },
                         income: { $sum: "$income" },
                         expense: { $sum: "$expense" },
+                        date: { $first: "$date" },
                     }
 
                     conditionPopulate = {
@@ -565,18 +568,19 @@ class Model extends BaseModel {
                 if(Number(option) === 3){
                     console.log('3-Tổng hợp theo sổ quỹ cụ thể')
                     if(parentID && checkObjectIDs(parentID)){
-                        conditionObj.parent = ObjectID(parentID) 
-                        
+                        conditionObj.parent = ObjectID(parentID)
+
                         // Gom nhóm theo các loại tài khoản
                         if(accountID && checkObjectIDs(accountID)){
                             conditionObj.account = ObjectID(accountID)
                         }
                     }
-                    
+
                     conditionGroup = {
                         _id: { account: "$account" },
                         income: { $sum: "$income" },
                         expense: { $sum: "$expense" },
+                        date: { $first: "$date" },
                     }
 
                     conditionPopulate = {
@@ -600,6 +604,7 @@ class Model extends BaseModel {
                         _id: { month: "$month", year: "$year" },
                         income: { $sum: "$income" },
                         expense: { $sum: "$expense" },
+                        date: { $first: "$date" },
                     }
                 }
 
@@ -609,9 +614,9 @@ class Model extends BaseModel {
                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
-                        $project : { 
+                        $project : {
                             year : {$year : "$date"},
                             month : {$month : "$date"},
                             parent: 1,
@@ -619,17 +624,18 @@ class Model extends BaseModel {
                             account: 1,
                             income: 1,
                             expense: 1,
+                            date: 1,
                         }
                     },
                     {
                         $match: conditionObjYear
-                    }, 
+                    },
                     {
                         $group: conditionGroup
-                    }, 
+                    },
                     {
                         $sort: sortBy
-                    } 
+                    }
                 ])
 
                 // Pop lấy thông tin tài khoản
