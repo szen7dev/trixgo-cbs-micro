@@ -83,7 +83,7 @@ class Model extends BaseModel {
                 // Xóa
                 if(trash == 1){ 
                     // Check xem có phải author mới cho xóa
-                    dataAddToSet.trash = trash;
+                    dataUpdate.trash = trash;
                 }
 
                 if(dataAddToSet){
@@ -96,7 +96,7 @@ class Model extends BaseModel {
                 
                 let infoAfterUpdate = await PERSONAL__NOTE_COLL.findByIdAndUpdate(noteID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_insert" });
+                    return resolve({ error: true, message: "cannot_update" });
 
                 return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {
@@ -159,9 +159,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                 let sortBy;
-                 let conditionObj = { members: { $in: [userID] }};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+                let conditionObj = { members: { $in: [userID] }, trash: 0 };
+                let keys	     = ['createAt__-1', '_id__-1'];
 
                 /**
                  * VALIDATION STEP (2)
