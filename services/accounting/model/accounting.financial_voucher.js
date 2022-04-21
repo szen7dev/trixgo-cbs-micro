@@ -341,7 +341,6 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve(dataInsertVoucher);
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher.data);
-                // Tạo lỗi để test Roll back
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert", status: 400 });
