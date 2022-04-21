@@ -261,8 +261,6 @@ class Model extends BaseModel {
      * Date: 18/4/2022
      */
     getListCompany({ type=1, user, app, menu }) {
-        console.log({app, menu})
-        console.log('Danh sách các công ty mà user được quyền truy cập vào 1 màn hình cụ thể')
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({
@@ -273,7 +271,7 @@ class Model extends BaseModel {
                 .select('_id name')
 
                 console.log(listRoles.map(item=>item._id))
-                
+
                 let listData = await AUTH__APP_ROLE_MENU_COLL.aggregate([
                     {
                         $match: {

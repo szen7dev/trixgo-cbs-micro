@@ -137,18 +137,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { menuID, appID, type } = ctx.params;
+                const { menuID, appID, type } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
 
-                console.log({menuID, appID, type})
+                const resultAfterCallHandler = await AUTH__APP_MENU.getListCompany({ type, user: userID, app: appID, menu: menuID });
 
-                let { _id: userID } = ctx.meta.infoUser;
-
-                let resultAfterCallHandler = await AUTH__APP_MENU.getListCompany({ type, user: userID, app: appID, menu: menuID });
-                
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-
             } catch (error) {
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
