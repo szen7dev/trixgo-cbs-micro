@@ -45,13 +45,13 @@ class Model extends BaseModel {
                 if(infoContract.error)
                     return resolve({ error: true, message: "Hợp đồng không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
+                const { outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, company, project } = infoContract.data;
 
                 let infoIPC = await CMCS__CONTRACT_IPC_COLL.findById(ipc);
                 if(!infoIPC)
                     return resolve({ error: true, message: "IPC không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataInsert = { userCreate: userID, type: infoIPC.type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project, contract: contractID };
+                let dataInsert = { userCreate: userID, type: infoIPC.type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, company, project, contract: contractID };
 
                 if(ipc){
                     dataInsert.ipc = ipc;
@@ -316,7 +316,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-     getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, 
+     getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, 
         keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
