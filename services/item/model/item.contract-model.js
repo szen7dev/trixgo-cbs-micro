@@ -22,6 +22,7 @@ const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-co
  * COLLECTIONS
  */
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
+const CMCS__CONTRACT_PRODUCTION_COLL            	= require('../../cmcs/database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
 
@@ -51,8 +52,9 @@ class Model extends BaseModel {
                     project: projectID, 
                     buyerInfo: buyerInfo, 
                     sellerInfo: sellerInfo, 
-                    chair: chair, 
+                    dependentUnit: personInCharge, // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
                     personInCharge: personInCharge, 
+                    chair: chair, 
                     field: field, 
                     userCreate: userID, 
                     members: [userID], 
@@ -419,12 +421,13 @@ class Model extends BaseModel {
                     dataUpdate.field = field;
                 }
 
-                if(checkObjectIDs(chair)){
-                    dataUpdate.chair = chair;
-                }
-
                 if(checkObjectIDs(personInCharge)){
                     dataUpdate.personInCharge = personInCharge;
+                    dataUpdate.dependentUnit = personInCharge; // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                }
+
+                if(checkObjectIDs(chair)){
+                    dataUpdate.chair = chair;
                 }
 
                 if(debtStatus){
@@ -670,19 +673,53 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI CÁC THUỘC TÍNH CHO SẢN LƯỢNG, NGHIỆM THU, TIỀN VỀ
                  * - projectID
                  * - field
-                 * - chair
+                 * - dependentUnit
                  * - personInCharge
+                 * - chair
                  * - buyerInfo
                  * - sellerInfo
                  */
                 // HiepNH: Dùng tạm theo cách này, sau bổ theo call Service
-                await CMCS__CONTRACT_IPC_COLL.updateMany(
+                await CMCS__CONTRACT_PRODUCTION_COLL.updateMany(
                     { contract: ObjectID(contractID) },
                     { $set: { 
                         "project" : ObjectID(projectID),
                         "field" : ObjectID(field),
-                        "chair" : ObjectID(chair),
+                        "dependentUnit" : ObjectID(personInCharge), // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
                         "personInCharge" : ObjectID(personInCharge),
+                        "chair" : ObjectID(chair),
+                        "buyerInfo" : ObjectID(buyerInfo),
+                        "sellerInfo" : ObjectID(sellerInfo),
+                        "type" : Number(type),
+                        "outin" : Number(outin),
+                        "real" : Number(real),
+                    } }
+                 );
+
+                 await CMCS__CONTRACT_IPC_COLL.updateMany(
+                    { contract: ObjectID(contractID) },
+                    { $set: { 
+                        "project" : ObjectID(projectID),
+                        "field" : ObjectID(field),
+                        "dependentUnit" : ObjectID(personInCharge), // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                        "personInCharge" : ObjectID(personInCharge),
+                        "chair" : ObjectID(chair),
+                        "buyerInfo" : ObjectID(buyerInfo),
+                        "sellerInfo" : ObjectID(sellerInfo),
+                        "type" : Number(type),
+                        "outin" : Number(outin),
+                        "real" : Number(real),
+                    } }
+                 );
+
+                 await CMCS__CONTRACT_PAYMENT_COLL.updateMany(
+                    { contract: ObjectID(contractID) },
+                    { $set: { 
+                        "project" : ObjectID(projectID),
+                        "field" : ObjectID(field),
+                        "dependentUnit" : ObjectID(personInCharge), // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                        "personInCharge" : ObjectID(personInCharge),
+                        "chair" : ObjectID(chair),
                         "buyerInfo" : ObjectID(buyerInfo),
                         "sellerInfo" : ObjectID(sellerInfo),
                         "type" : Number(type),
