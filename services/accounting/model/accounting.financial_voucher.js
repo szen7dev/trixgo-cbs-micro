@@ -323,15 +323,18 @@ class AccountingFinancialVoucher extends BaseModel {
                     }
                 }
 
+                /**
+                 * Thực hiện Insert phiếu
+                 */
                 const dataInsertVoucher = this.collectDataForInsertFull({
-                    authorID , fundaID, type, date, 
+                    authorID, companyID, fundaID, type, date, 
                     dateInvoice, name, sign, signInvoice, 
-                    customer, receiver, note, vat, contract, 
+                    customer, receiver, note, vat, 
                     storage, inspection, termination, advancePayment,
                     returning, forward, cancel, source, orderNew, pricePolicy,
                     discountCost, otherCost, shipperName, shipperCost, staff, 
-                    fcuExRate, selectedJournals, isImport, voucherSign, companyID,
-                    ipc, subtype, fee, project
+                    fcuExRate, selectedJournals, isImport, voucherSign, 
+                    subtype, fee, project, contract, ipc
                 });
 
                 if(dataInsertVoucher.error)
