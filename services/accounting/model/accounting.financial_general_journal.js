@@ -91,9 +91,9 @@ class Model extends BaseModel {
         companyID, fundaID, authorID, voucher, customerDebit,
         customerCredit, quantityCalculate, unitpriceCalculate,
         amountCalculate, fcuExRate, fcuAmountCalculate,
-        cash, vat, note, date, subtype, project,
-        updown, advancePayment, debit, credit,
-        goods, contract, job, warehouse, group
+        cash, vat, note, date, subtype,
+        updown, advancePayment, debit, credit, contract, warehouse, 
+        budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
     }){
         let dataInsert = {
             company: companyID, 
@@ -112,9 +112,9 @@ class Model extends BaseModel {
             note,
             date,
             subtype,
-            project,
             updown: (!isNaN(updown) && [1,-1].includes(Number(updown))) ? Number(updown) : 1,
-            advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0
+            advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
+            budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
         }
 
         if(debit && _isValid(debit)){
@@ -133,17 +133,6 @@ class Model extends BaseModel {
         //_________Kiểm tra xem có Hợp đồng hay không
         if(contract && _isValid(contract)) {
             dataInsert.contract = contract
-        }
-
-        //_________Kiểm tra xem có Dự án hay không
-        if(project && _isValid(project)) {
-            dataInsert.project = project
-        }
-
-        //_________Ứng dụng quản lý chi phí
-        if(job && _isValid(job) && group && _isValid(group)) {
-            dataInsert.job = job
-            dataInsert.group = group
         }
 
         return dataInsert;
@@ -242,15 +231,13 @@ class Model extends BaseModel {
      */
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
-        customerCredit, goods, quantity, amount, fcuExRate, contract, 
-        project, job, cash, vat, note, updown, advancePayment, 
-        date, subtype, warehouse, group, unitprice, budgetWorkID
+        customerCredit, goods, quantity, amount, fcuExRate, contract, cash, vat, note, updown, advancePayment, 
+        date, subtype, warehouse, unitprice, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
     }) {
         console.log({ 
             authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
-            customerCredit, goods, quantity, amount, fcuExRate, contract, 
-            project, job, cash, vat, note, updown, advancePayment, 
-            date, subtype, warehouse, group, unitprice, budgetWorkID
+        customerCredit, goods, quantity, amount, fcuExRate, contract, cash, vat, note, updown, advancePayment, 
+        date, subtype, warehouse, unitprice, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
         })
 
         const that = this;
@@ -268,7 +255,9 @@ class Model extends BaseModel {
                 const checkInput = this.checkInputInsertFull({  voucher, companyID, authorID, fundaID, customerDebit, customerCredit });
                 if(checkInput.error)
                     return resolve(checkInput)
+
                 // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
+
                 // Kiểm tra check trùng tài khoản đối ứng
                 if(debit && credit && debit.toString() === credit.toString())
                     return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
@@ -284,9 +273,9 @@ class Model extends BaseModel {
                     companyID, fundaID, authorID, voucher, customerDebit,
                     customerCredit, quantityCalculate, unitpriceCalculate,
                     amountCalculate, fcuExRate, fcuAmountCalculate,
-                    cash, vat, note, date, subtype, project,
+                    cash, vat, note, date, subtype,
                     updown, advancePayment, debit, credit,
-                    goods, contract, job, warehouse, group
+                    goods, contract, warehouse, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
                 })
                
                 // console.log(dataInsert)
@@ -307,9 +296,14 @@ class Model extends BaseModel {
                     responseResultInsert = { error: false, data: infoAfterInsert, status: 200}
                 }
 
-                //Todos Butget service
-                //___________CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
-                //1. Cập nhật ngân sách công việc
+                /**
+                 * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
+                 * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
+                 * 1. Cập nhật ngân sách công việc
+                 * 2. Cập nhật ngân sách Nhóm
+                 * 3. Cập nhật ngân sách Hạng mục
+                 * 4. Cập nhật ngân sách Tổng
+                 */
                 if(budgetWorkID && _isValid(budgetWorkID)){
                     const infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
                         workID: budgetWorkID
@@ -317,12 +311,6 @@ class Model extends BaseModel {
                     console.log('Budget==========================>>>>>')
                     console.log(infoBudgetWork)
                 }
-
-                //2. Cập nhật ngân sách Nhóm
-
-                //3. Cập nhật ngân sách Hạng mục
-
-                //4. Cập nhật ngân sách Tổng
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
