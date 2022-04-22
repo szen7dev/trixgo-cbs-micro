@@ -156,7 +156,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -175,6 +175,15 @@ class Model extends BaseModel {
                 };
                 let keys	 = ['createAt__-1', '_id__-1'];
                 let sortBy;
+
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
+                }
 
                 /** 
                  * VALIDATION STEP (2)

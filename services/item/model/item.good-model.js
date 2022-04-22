@@ -157,7 +157,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -187,6 +187,15 @@ class Model extends BaseModel {
 
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
+                }
+
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
                 
                 if(keyword){

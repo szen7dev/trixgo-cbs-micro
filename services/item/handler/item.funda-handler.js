@@ -65,6 +65,8 @@ module.exports = {
         params: {
             fundaID         : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            isListParentOfListChilds: { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -75,7 +77,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, companyID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 
                 if(!companyID){
@@ -89,12 +91,12 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__FUNDA_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates
+                        companyID, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds,
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error: true, message: error.message };
+                return { error: true, message: error.message }; 
             }
         }
     },

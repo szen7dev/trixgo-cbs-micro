@@ -57,6 +57,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref : "file"
     }],
+     // Số lượng phần tử con
+    amountChilds: {
+        type: Number,
+        default: 0 
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

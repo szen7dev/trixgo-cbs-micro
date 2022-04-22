@@ -76,11 +76,11 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ accountID, name, description, userID }){
+	update({ fundaID, name, description, userID }){
         return new Promise(async resolve => { 
             try {
-                if(!checkObjectIDs(accountID))
-                    return resolve({ error: true, message: "accountID không hợp lệ", keyError: "Request params accountID invalid" });
+                if(!checkObjectIDs(fundaID))
+                    return resolve({ error: true, message: "fundaID không hợp lệ", keyError: "Request params fundaID invalid" });
 
                 if(!name)
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
@@ -93,7 +93,7 @@ class Model extends BaseModel {
                     dataUpdate.description = description;
                 }
 
-                let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
+                let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true });
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -157,7 +157,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -186,6 +186,15 @@ class Model extends BaseModel {
 
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
+                }
+
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
                 
                 if(keyword){

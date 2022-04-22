@@ -65,6 +65,8 @@ module.exports = {
         params: {
             warehouseID     : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            isListParentOfListChilds: { type: "string", optional: true },
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -75,7 +77,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, warehouseID,  keyword, limit, lastestID, select, populates } = ctx.params;
+                let { companyID, warehouseID,  keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -89,7 +91,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__WAREHOUSE_MODEL.getList({
-                        companyID, lastestID, keyword, limit, select, populates
+                        companyID, lastestID, keyword, limit, select, populates, parentID, isListParentOfListChilds,
                     });
                 }
 

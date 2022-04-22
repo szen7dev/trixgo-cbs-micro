@@ -15,3 +15,30 @@ listStorage.forEach(item => {
     db.storages.updateOne({ _id: ObjectId(item._id)}, { $set: { amountChilds }});
 })
 -------------------------------------------------------------------------------------
+
+// UPDATE amountChilds CHO accounts
+-------------------------------------------------------------------------------------
+let listaccounts = db.accounts.find({}).toArray();
+listaccounts.forEach(item => {
+    let amountChilds = db.accounts.count({ parent: ObjectId(item._id)});
+    db.accounts.updateOne({ _id: ObjectId(item._id)}, { $set: { amountChilds }});
+})
+-------------------------------------------------------------------------------------
+
+// UPDATE amountChilds CHO funda
+-------------------------------------------------------------------------------------
+let listfundas = db.fundas.find({}).toArray();
+listfundas.forEach(item => {
+    let amountChilds = db.fundas.count({ parent: ObjectId(item._id)});
+    db.fundas.updateOne({ _id: ObjectId(item._id)}, { $set: { amountChilds }});
+})
+-------------------------------------------------------------------------------------
+// UPDATE amountChilds CHO warehouses
+-------------------------------------------------------------------------------------
+
+let listwarehouses = db.warehouses.find({}).toArray();
+listwarehouses.forEach(item => {
+    let amountChilds = db.warehouses.count({ parent: ObjectId(item._id)});
+    db.warehouses.updateOne({ _id: ObjectId(item._id)}, { $set: { amountChilds }});
+})
+-------------------------------------------------------------------------------------

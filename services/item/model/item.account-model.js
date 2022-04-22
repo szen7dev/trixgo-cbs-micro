@@ -158,7 +158,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID,
+        companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {},
         status, type, level, isAccountingService
     }) { 
@@ -207,6 +207,15 @@ class Model extends BaseModel {
 
                 if(level){
                     conditionObj.level = level;
+                }
+
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
                 
                 let conditionObjOrg = { ...conditionObj };

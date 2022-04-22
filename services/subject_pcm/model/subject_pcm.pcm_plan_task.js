@@ -1074,7 +1074,7 @@ class Model extends BaseModel {
                         $ne: null
                     }
                 }
-
+                
                 // Lấy việc của người thực hiện
                 if(assigneeID && checkObjectIDs(assigneeID)){
                     conditionObj.assignee = assigneeID;
