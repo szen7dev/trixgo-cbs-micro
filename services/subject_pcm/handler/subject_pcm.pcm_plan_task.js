@@ -109,7 +109,7 @@ module.exports = {
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature
                  } = ctx.params;
 				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
-                // Bước check quyền
+
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
