@@ -123,6 +123,9 @@ class Model extends BaseModel {
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
                     dataInsert.actualFinishTime = new Date(expiredTime);
+                }else{
+                    dataInsert.expiredTime = new Date();
+                    dataInsert.actualFinishTime = new Date();
                 }
                 //precalculated
                 // companyOfAuthor
@@ -189,8 +192,8 @@ class Model extends BaseModel {
                     dataInsert.startTime = new Date(startTime);
                     dataInsert.actualStartTime = new Date(startTime);
                 } else {
-                    dataInsert.startTime = Date.now();
-                    dataInsert.actualStartTime = Date.now();
+                    dataInsert.startTime =  new Date();
+                    dataInsert.actualStartTime = new Date();
                 }
 
                 //_________B2.1 Kiểm tra có docreID hay không (nếu tạo từ tài liệu)
@@ -1052,7 +1055,7 @@ class Model extends BaseModel {
                 // Lấy việc quá hạn
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $lt: start,
+                        $lt: moment(start).endOf('day')._d,
                         $exists: true,
                         $ne: null
                     }
@@ -1061,8 +1064,8 @@ class Model extends BaseModel {
                 // lấy việc tới hạn Tuần tới
                 if(typeStatus && typeStatus == 2){
                     conditionObj.actualFinishTime = {
-                        $gte: start,
-                        $lt: addDate(7),
+                        $gte:  moment(start).startOf('day')._d,
+                        $lt: moment(addDate(7)).endOf('day')._d,
                         $exists: true,
                         $ne: null
                     }

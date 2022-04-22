@@ -1,4 +1,4 @@
-// UPDATE amountChilds CHO DANH BẠ
+// UPDATE amountChilds CHO DANH BẠ done
 -------------------------------------------------------------------------------------
 let listContact = db.contacts.find({}).toArray();
 listContact.forEach(item => {
@@ -7,7 +7,7 @@ listContact.forEach(item => {
 })
 -------------------------------------------------------------------------------------
 
-// UPDATE amountChilds CHO Storage
+// UPDATE amountChilds CHO Storage done
 -------------------------------------------------------------------------------------
 let listStorage = db.storages.find({}).toArray();
 listStorage.forEach(item => {
@@ -16,7 +16,7 @@ listStorage.forEach(item => {
 })
 -------------------------------------------------------------------------------------
 
-// UPDATE amountChilds CHO accounts
+// UPDATE amountChilds CHO accounts Done
 -------------------------------------------------------------------------------------
 let listaccounts = db.accounts.find({}).toArray();
 listaccounts.forEach(item => {
@@ -25,7 +25,7 @@ listaccounts.forEach(item => {
 })
 -------------------------------------------------------------------------------------
 
-// UPDATE amountChilds CHO funda
+// UPDATE amountChilds CHO funda Done
 -------------------------------------------------------------------------------------
 let listfundas = db.fundas.find({}).toArray();
 listfundas.forEach(item => {
