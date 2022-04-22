@@ -62,6 +62,8 @@ const CF_ACTIONS_ITEM = {
     /**
      * WAREHOUSE
      */
+    WAREHOUSE_INSERT                            : `${BASE_ACTIONS}_${WAREHOUSE}_INSERT`,
+    WAREHOUSE_UPDATE                            : `${BASE_ACTIONS}_${WAREHOUSE}_UPDATE`,
     WAREHOUSE_GET_INFO_AND_GET_LIST             : `${BASE_ACTIONS}_${WAREHOUSE}_GET_INFO_AND_GET_LIST`,
 
     /**
@@ -88,6 +90,8 @@ const CF_ACTIONS_ITEM = {
     /**
     * ACCOUNT
     */
+    ACCOUNT_INSERT                              : `${BASE_ACTIONS}_${ACCOUNT}_INSERT`,
+    ACCOUNT_UPDATE                              : `${BASE_ACTIONS}_${ACCOUNT}_UPDATE`,
     ACCOUNT_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${ACCOUNT}_GET_INFO_AND_GET_LIST`,
     ACCOUNT_GET_INFO_WITH_NAME                  : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_INFO_WITH_NAME`,
     ACCOUNT_GET_INFO_WITH_ID                    : `${BASE_ACTIONS}_${ACCOUNT}_ACCOUNT_GET_INFO_WITH_ID`,
@@ -97,12 +101,16 @@ const CF_ACTIONS_ITEM = {
     /**
     * FUNDA
     */
+    FUNDA_INSERT                                : `${BASE_ACTIONS}_${FUNDA}_INSERT`,
+    FUNDA_UPDATE                                : `${BASE_ACTIONS}_${FUNDA}_UPDATE`,
     FUNDA_GET_INFO_AND_GET_LIST                 : `${BASE_ACTIONS}_${FUNDA}_GET_INFO_AND_GET_LIST`,
-
     FUNDA_GET_LIST_BY_COMPANY_USER              : `${BASE_ACTIONS}_${FUNDA}_GET_LIST_BY_COMPANY_USER`,
+    
     /**
     * GOODS
     */
+    GOOD_INSERT                                 : `${BASE_ACTIONS}_${GOOD}_INSERT`,
+    GOOD_UPDATE                                 : `${BASE_ACTIONS}_${GOOD}_UPDATE`,
     GOOD_GET_INFO_AND_GET_LIST                  : `${BASE_ACTIONS}_${GOOD}_GET_INFO_AND_GET_LIST`,
 
     /**

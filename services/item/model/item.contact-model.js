@@ -218,7 +218,8 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 if(parent) {
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
-                        $addToSet: { childs: infoAfterInsert._id } 
+                        $addToSet: { childs: infoAfterInsert._id },
+                        $inc: { amountChilds: 1 }
                     }, { new: true });
                 }
                 
@@ -268,6 +269,8 @@ class Model extends BaseModel {
                     inTimesheet: 0,
                     inFinancial: 1,
                     inDocument: 1,
+                    modifyAt: new Date(),
+                    userUpdate: authorID
                 }
 
                 if(type){
@@ -557,7 +560,8 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParent,
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+        insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -639,6 +643,14 @@ class Model extends BaseModel {
                 // Lấy những tài khoản có trường linkUser
                 if(isLinkUser == 1){
                     conditionObj.linkUser = { $exists: true }
+                }
+                // Lấy danh sách danh bạ cha hoặc danh bạ con
+                if(isListParentOrListChilds == 1){
+                    if(checkObjectIDs(parentID)){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
                 }
 
                 if(keyword){

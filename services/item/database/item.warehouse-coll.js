@@ -21,6 +21,11 @@ module.exports  = DATABASE_MIDDLEWARE("warehouse", {
         type: Number,
         default: 1 
     },
+    // Số lượng phần tử con
+    amountChilds: {
+        type: Number,
+        default: 0 
+    },
     //_________Tên
     name: String,
     //_________Mô tả

@@ -9,6 +9,53 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 const ITEM__FUNDA_MODEL                   = require('../model/item.funda-model').MODEL;
 
 module.exports = {
+
+    /**
+     * Dev: Depv ✅
+     * Func: Thêm funda
+     */
+    insert:{
+        params: {
+            name          : { type: "string" },
+            description   : { type: "string", optional: true },
+            parentID      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const { name, description, parentID } = ctx.params;
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, name, description, userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        },
+    },
+
+        /**
+     * Dev: Depv ✅
+     * Func: Cập nhật funda
+     */
+    update:{  
+        params: {
+            fundaID       : { type: "string" }, 
+            name          : { type: "string", optional: true },
+            description   : { type: "string", optional: true },
+            parentID      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const { fundaID, name, description } = ctx.params;
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, name, description, userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        },
+    },
     
    /**
 	 * Dev: Depv ✅

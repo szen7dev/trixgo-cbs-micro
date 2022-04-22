@@ -45,6 +45,12 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Schema.Types.ObjectId,
         ref: "account"
     }],
+    // Số lượng phần tử con
+    amountChilds: {
+        type: Number,
+        default: 0 
+    },
+
     level: {
         type: Number,
         default: 1 
