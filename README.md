@@ -142,3 +142,5 @@ const AUTH__USER_MODEL                          = require
 - 404 NOT FOUND	Indicates that the targeted resource does not exist.
 
 - 500 INTERNAL SERVER ERROR	An internal error occurred in the server. 
+
+# Call service mà qua handler => định nghĩa kiểu gì thì phải ép đúng kiểu, đặc biệt với objectID
