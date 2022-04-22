@@ -7,7 +7,7 @@ const Schema    = require('mongoose').Schema;
  *  Dụng cụ, thiết bị lưu trữ hồ sơ
  */
 module.exports  = DATABASE_MIDDLEWARE("storage", {
-    //_________Thuộc về công ty nào  
+    //_________Thuộc về công ty nào
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -29,7 +29,11 @@ module.exports  = DATABASE_MIDDLEWARE("storage", {
     //_________Tên
     name: String,
     //_________Mô tả
-    description: String,
+    description: String,    
+    amountChilds:  {
+        type: Number,
+        default : 0
+    },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'

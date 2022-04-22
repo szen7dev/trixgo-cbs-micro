@@ -46,6 +46,12 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Number,
         default: 1 
     },
+
+    amountChilds: {
+        type: Number,
+        default: 0
+    },
+    
     /**
      * PHÂN QUYỀN TRUY CẬP
      */
