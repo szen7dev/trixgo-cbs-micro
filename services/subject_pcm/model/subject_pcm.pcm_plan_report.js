@@ -26,7 +26,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert pcm_plan_report ✅
+     * Name: insert pcm_plan_report 
      * Author: Depv
      * Code: 
      */
@@ -90,7 +90,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: update pcm_plan_report ✅
+     * Name: update pcm_plan_report 
      * Author: Depv
      * Code: 
      */
@@ -147,7 +147,7 @@ class Model extends BaseModel {
 
 
      /**
-     * Name: Remove pcm_plan_report ✅
+     * Name: Remove pcm_plan_report 
      * Author: Depv 
      * Code: F02503
      */
@@ -186,7 +186,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Get info pcm_plan_report ✅
+     * Name: Get info pcm_plan_report 
      * Author: Depv 
      * Code: F02504
      */
@@ -240,7 +240,7 @@ class Model extends BaseModel {
     }
     
     /** 
-     * Name: Danh sách pcm_plan_report ✅
+     * Name: Danh sách pcm_plan_report 
      * Author: Depv 
      * Code:
      */

@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert expert timesheet ✅
+     * Name: Insert expert timesheet 
      * Author: Depv
      * Code: 
      */
@@ -116,7 +116,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Update expert timesheet ✅
+     * Name: Update expert timesheet 
      * Author: Depv
      * Code: 
      */
@@ -235,7 +235,7 @@ class Model extends BaseModel {
     }
 
     /**
-    * Name: Remove expert timesheet ✅
+    * Name: Remove expert timesheet 
     * Author: Depv
     * Code: 
     */
@@ -277,7 +277,7 @@ class Model extends BaseModel {
    }
 
     /**
-     * Name: get info expert timesheet ✅
+     * Name: get info expert timesheet 
      * Author: Depv
      * Code: 
      */
@@ -326,7 +326,7 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách expert timesheet ✅
+     * Name  : Danh sách expert timesheet 
      * Author: Depv
      * Code  : 
      */

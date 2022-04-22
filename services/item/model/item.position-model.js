@@ -136,7 +136,7 @@ class Model extends BaseModel {
      */
 
     /**
-     * Name: get info position ✅
+     * Name: get info position 
      * Author: Depv
      * Code: 
      */
@@ -185,7 +185,7 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách position ✅
+     * Name  : Danh sách position 
      * Author: Depv
      * Code  : 
      */

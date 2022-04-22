@@ -11,7 +11,7 @@ const HUMAN__CONTACT_DOCUMENT_MODEL                    = require('../model/human
 module.exports = {
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Insert contact document
 	 */
     insert: {
@@ -60,7 +60,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Update contact document
 	 */
     update: {
@@ -114,7 +114,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Remove contact document
 	 */
     remove: {
@@ -136,7 +136,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách contact document
 	 */
     getInfoAndGetList: {
@@ -182,7 +182,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thống kê chứng chỉ
 	 */
     statisticsCertificate: {

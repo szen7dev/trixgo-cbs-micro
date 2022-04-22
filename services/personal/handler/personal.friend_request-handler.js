@@ -11,7 +11,7 @@ const PERSONAL__FRIEND_REQUEST_MODEL                    = require('../model/pers
 module.exports = {
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Insert friend request
 	 */
     getCode: {
@@ -33,7 +33,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Get friend request
 	 */
     checkCodeFriendRequest: {

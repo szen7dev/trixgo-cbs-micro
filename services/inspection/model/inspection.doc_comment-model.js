@@ -28,7 +28,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Thêm comment ✅
+     * Name: Thêm comment 
      * Author: Depv
      * Code: F0236
      */
@@ -72,7 +72,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Xóa template docs: ✅
+     * Name: Xóa template docs: 
      * Author: DePV
      * Code: F0237
      */
@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thông tin comment template doc ✅
+     * Name: Thông tin comment template doc 
      * Author: Depv 
      * Code: F0238
      */
@@ -163,7 +163,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách template docs  ✅
+     * Name: Danh sách template docs  
      * Author: DePV
      * Code: F0239
      * problem: Bị hạn chế không thể sort createAt = 1

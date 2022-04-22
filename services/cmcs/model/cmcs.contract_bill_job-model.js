@@ -25,7 +25,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy thông tin contract bill job ✅
+     * Name: Lấy thông tin contract bill job 
      * Author: Depv 
      */
     getInfo({ contractBillJobID, select }) { 

@@ -24,7 +24,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert utility ✅
+     * Name: insert utility 
      * Author: Depv
      * Code: 
      */
@@ -61,7 +61,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update utility ✅
+     * Name: update utility 
      * Author: Depv
      * Code: 
      */
@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove utility ✅
+     * Name: Remove utility 
      * Author: Depv
      * Code: 
      */
@@ -144,7 +144,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get utility ✅
+     * Name: get utility 
      * Author: Depv
      * Code: 
      */
@@ -180,7 +180,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách utility✅
+     * Name  : Danh sách utility
      * Author: Depv
      * Code  : 
      */

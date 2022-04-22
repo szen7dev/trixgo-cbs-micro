@@ -76,7 +76,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Xóa reaction: DePV ✅
+     * Name: Xóa reaction: DePV 
      * Author: Depv
      * Code: F0240A
      */
@@ -117,7 +117,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách template docs ✅
+     * Name: Danh sách template docs 
      * Author: DePV
      * Code: F0240B
      * problem: Bị hạn chế không thể sort createAt = 1

@@ -160,7 +160,7 @@ class Model extends BaseModel {
      */
 
     /**
-     * Name: get Hợp đồng ✅
+     * Name: get Hợp đồng 
      * Author: Depv
      * Code: 
      */
@@ -214,7 +214,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng ✅
+     * Name  : Danh sách hợp đồng 
      * Author: Depv
      * Code  : 
      */

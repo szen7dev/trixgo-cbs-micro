@@ -146,7 +146,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy thông tin comment core ✅
+     * Name: Lấy thông tin comment core 
      * Author: Depv
      * Code: 
      */

@@ -11,7 +11,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm khu vực
 	 * Date: 19/08/2021
 	 */
@@ -50,7 +50,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật khu vực
 	 * Date: 19/08/2021
 	 */
@@ -81,7 +81,7 @@ module.exports = {
 
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Xóa khu vực
 	 * Date: 19/08/2021
 	 */
@@ -107,7 +107,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Xóa khu vực
 	 * Date: 19/08/2021
 	 */

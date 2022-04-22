@@ -225,7 +225,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Tạo chi tiết chứng từ ✅
+     * Name  : Tạo chi tiết chứng từ 
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
@@ -499,7 +499,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Tổng hợp ngân sách đã thực hiện ✅
+     * Name  : Tổng hợp ngân sách đã thực hiện 
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */

@@ -11,7 +11,7 @@ const ITEM__CONTACT_MODEL                       = require('../model/item.contact
 module.exports = {
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Thêm contact
      */
     insert: {
@@ -87,7 +87,7 @@ module.exports = {
         }
     },
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Cập nhật contact
      */
     update: {
@@ -178,7 +178,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách contact
 	 */
     getInfoAndGetList: {
@@ -234,7 +234,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách danh bạ của hệ thống
 	 */
     getListOfSystem: {

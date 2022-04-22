@@ -10,7 +10,7 @@
 
  module.exports = {
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: Thêm
      * Date: 9/4/2022
      */
@@ -49,7 +49,7 @@
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: Sửa
      * Date: 9/4/2022
      */
@@ -87,7 +87,7 @@
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: Xóa
      * Date: 9/4/2022
      */
@@ -114,7 +114,7 @@
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: get info and get list
      * Date: 9/4/2022
      */
@@ -156,7 +156,7 @@
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: Cập nhật giá trị (ngân sách, thực hiện, dự báo)
      * Date: 9/4/2022
      */

@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert subject seen ✅
+     * Name: insert subject seen 
      * Author: Depv 
      * Code: F02501
      */
@@ -88,7 +88,7 @@ class Model extends BaseModel {
     }
   
     /** 
-     * Name: Danh sách subject ✅
+     * Name: Danh sách subject 
      * Author: Depv 
      * Code: F02505
      */

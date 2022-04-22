@@ -26,7 +26,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Thêm comment ✅
+     * Thêm comment 
      * Depv
      * F0222
      */
@@ -67,7 +67,7 @@ class Model extends BaseModel {
     }
      
     /**
-     * Thông tin comment template doc ✅
+     * Thông tin comment template doc 
      * Depv 
      * F0223
      */
@@ -105,7 +105,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Xóa template docs: DePV ✅
+     * Xóa template docs: DePV 
      * F0224
      */
     remove({ commentID }) { 
@@ -140,7 +140,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Danh sách template docs: DePV ✅
+     * Danh sách template docs: DePV 
      * F0225
      * problem: Bị hạn chế không thể sort createAt = 1
      */

@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert contactDocument ✅
+     * Name: Insert contactDocument 
      * Author: Depv
      * Code: 
      */
@@ -142,7 +142,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Update contactDocument ✅
+     * Name: Update contactDocument 
      * Author: Depv
      * Code: 
      */
@@ -272,7 +272,7 @@ class Model extends BaseModel {
     }
 
     /**
-    * Name: Remove contactDocument ✅
+    * Name: Remove contactDocument 
     * Author: Depv
     * Code: 
     */
@@ -337,7 +337,7 @@ class Model extends BaseModel {
    }
 
     /**
-     * Name: get info contactDocument ✅
+     * Name: get info contactDocument 
      * Author: Depv
      * Code: 
      */
@@ -386,7 +386,7 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách contactDocument ✅
+     * Name  : Danh sách contactDocument 
      * Author: Depv
      * Code  : 
      */
@@ -505,7 +505,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thống kê chứng chỉ ✅
+     * Name: Thống kê chứng chỉ 
      * Author: Depv
      * Code: 
      * SCREEN: S18-2.1
@@ -561,7 +561,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: Thống kê khu vực làm việc ✅
+     * Name: Thống kê khu vực làm việc 
      * Author: Depv
      * Code: 
      * SCREEN: S18-2.4.1

@@ -54,7 +54,7 @@ class Model extends BaseModel {
     }
     
     /** 
-     * Name  : update app company ✅
+     * Name  : update app company 
      * Author: Depv
      * Code  : 
      */
@@ -102,7 +102,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Remove app company ✅ 
+     * Name  : Remove app company  
      * Author: Depv
      * Code  : 
      */
@@ -127,7 +127,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info app company ✅
+     * Name: get info app company 
      * Author: Depv
      * Code: 
      */
@@ -177,7 +177,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách app company ✅
+     * Name  : Danh sách app company 
      * Author: Depv
      * Code  : 
      */

@@ -23,7 +23,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert ✅
+     * Name: Insert 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -132,7 +132,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update ✅
+     * Name: Update 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -278,7 +278,7 @@ class Model extends BaseModel {
     // }
 
     /**
-     * Name: Get info ✅
+     * Name: Get info 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -317,7 +317,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list ✅
+     * Name  : Get list 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -467,7 +467,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name  : Cập nhật giá trị khi chi tiết thay đổi ✅
+     * Name  : Cập nhật giá trị khi chi tiết thay đổi 
      * Author: Hiepnh
      * Date  : 14/4/2022
      */
@@ -531,7 +531,7 @@ class Model extends BaseModel {
     }
 
     /*
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 17/04/2022
      */

@@ -27,7 +27,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert register trial ✅
+     * Name: insert register trial 
      * Author: Depv
      * Code: 
      */
@@ -89,7 +89,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update register trial ✅
+     * Name: update register trial 
      * Author: Depv
      * Code: 
      */
@@ -162,7 +162,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove register trial ✅
+     * Name: Remove register trial 
      * Author: Depv
      * Code: 
      */
@@ -198,7 +198,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get register trial ✅
+     * Name: get register trial 
      * Author: Depv
      * Code: 
      */
@@ -234,7 +234,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách register trial✅
+     * Name  : Danh sách register trial
      * Author: Depv
      * Code  : 
      */

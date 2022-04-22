@@ -11,7 +11,7 @@ const ITEM__WAREHOUSE_MODEL                    = require('../model/item.warehous
 module.exports = {
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách doctype
 	 */
     getInfoAndGetList: {

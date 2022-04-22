@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info goods ✅
+     * Name: get info goods 
      * Author: Depv
      * Code: 
      */
@@ -80,7 +80,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách goods ✅
+     * Name  : Danh sách goods 
      * Author: Depv
      * Code  : 
      */

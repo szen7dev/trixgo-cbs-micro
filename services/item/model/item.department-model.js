@@ -596,14 +596,14 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Xoá dự án/phòng ban ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
+     * Name: Xoá dự án/phòng ban KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: F00401
      */
 
 
     /**
-     * Name: Lấy thông tin dự án/phòng ban ✅
+     * Name: Lấy thông tin dự án/phòng ban 
      * Author: Depv
      * Code: F00401
      */
@@ -661,7 +661,7 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách dự án (Hàm dùng chung)
-     * Author: DePV ✅
+     * Author: DePV 
      * Code  : F00402
      */
     getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 10, lastestID, select, populates={} }) {
@@ -787,7 +787,7 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách dự án mà user được quyền truy cập (là member)
-     * Author: DePV ✅
+     * Author: DePV 
      * Code  : F00403
      */
     getListByMembers({ companyID, keyword, type, userID, limit = 10, isBudget, unLimit, lastestID, select, populates={} }) {
@@ -916,7 +916,7 @@ class Model extends BaseModel {
 
     /**
      * Name  : Thống kê theo tiến độ ngân sách
-     * Author: DePV ✅
+     * Author: DePV 
      * Code  :
      */
     analysisOntimeOnbudget({ userID }){

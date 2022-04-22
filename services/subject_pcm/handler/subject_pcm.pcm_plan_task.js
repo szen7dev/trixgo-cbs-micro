@@ -10,7 +10,7 @@ const PCM_PLAN_TASK_MODEL             = require('../model/subject_pcm.pcm_plan_t
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: insert pcm_plan_task
 	 */
     insert: {
@@ -50,14 +50,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                
+
 				let { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 let { projectID, groupID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, select, populates } = ctx.params;
 
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
                     projectID, groupID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, isproposal, template, workflowTemplateID, amountoftime, amountPerHour, fieldID,  authorAttachs, type, bizfullname, select, populates, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -66,7 +66,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: update pcm_plan_task
 	 */
     update: {
@@ -103,21 +103,21 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let {
                     typeUpdate,
-                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID, 
-                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
+                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID,
+                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature
                  } = ctx.params;
-				const { _id: userID, bizfullname } = ctx.meta.infoUser;
+				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
                 // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
-                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, 
-                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, 
-                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, 
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, ctx
+                    taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
+                    contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
+                    links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, companyOfUser: company._id, ctx
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -126,7 +126,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: update status mutiple
 	 * type: 1-Việc con/ 2- checklist
 	 */
@@ -148,16 +148,16 @@ module.exports = {
                 let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.updateStatusMutiple({
                     parentID, taskIDs, type, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
-    
+
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
@@ -191,7 +191,7 @@ module.exports = {
             statusNe         : { type: "string", optional: true },
             groupID          : { type: "string", optional: true },
             isPassPermision  : { type: "string", optional: true },
-            
+
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -202,15 +202,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                
-                let { 
+
+                let {
                     taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID,
                     keyword, limit, lastestID, select, populates, isPassPermision
                 } = ctx.params;
-                
+
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler;
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
@@ -224,16 +224,16 @@ module.exports = {
                         keyword, limit, select, lastestID, populates, isPassPermision
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
             }
         }
     },
-    
+
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: Lấy số lượng công việc của bạn để hiển thị ngoài trang chủ
 	 */
     getAmountTask: {
@@ -254,7 +254,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: Lấy số lượng công việc đấu thầu
 	 */
     getBadgeBidding: {
@@ -274,12 +274,12 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv
 	 * Func: Gửi email trong task
 	 */
     sendEmailToMembersInTask: {
         auth: "required",
-        params: { 
+        params: {
             taskID   : { type: "string" },
             title    : { type: "string" },
             notice   : { type: "string" },
@@ -292,7 +292,7 @@ module.exports = {
                 let { taskID, title, notice, members } = ctx.params;
                 members.push(userID);
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.sendEmailToMembersInTask({ taskID, title, notice, 
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.sendEmailToMembersInTask({ taskID, title, notice,
                     sender: { email, fullname }, receivers: members, ctx
                 });
 
@@ -304,8 +304,8 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
-	 * Func: Lấy số lượng công việc của companyOfAssignee trong dự án ✅
+	 * Dev: Depv
+	 * Func: Lấy số lượng công việc của companyOfAssignee trong dự án
 	 */
     getAmountTaskOfCompanyOfAssignee: {
         auth: "required",
@@ -326,8 +326,8 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
-	 * Func: Lấy số lượng công việc của tất cả project mà user là members✅
+	 * Dev: Depv
+	 * Func: Lấy số lượng công việc của tất cả project mà user là members
 	 */
     getAmountTaskByProjects: {
         auth: "required",
@@ -346,5 +346,89 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến việc cha
+     * Date: 22/04/2022
+	 */
+    moveTaskToParent: {
+        auth: "required",
+        params: {
+            parentID    : { type: "string" },
+            taskID      : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const { parentID, taskID } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToParent({
+                    parentID, taskID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
+     * Date: 22/04/2022
+	 */
+    moveTaskToGroup: {
+        auth: "required",
+        params: {
+            groupID    : { type: "string" },
+            taskID     : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const { groupID, taskID } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.moveTaskToGroup({
+                    groupID, taskID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
+     * Dev: MinhVH
+     * Func: Copy công việc
+     * Date: 22/04/2022
+     */
+    copyTask: {
+        auth: 'required',
+        params: {
+            taskID: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const { taskID } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.copyTask({
+                    taskID, userID, companyOfUser: company._id
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
 }

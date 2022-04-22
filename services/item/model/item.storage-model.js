@@ -89,13 +89,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove storage ✅ => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
+     * Name: Remove storage  => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: 
      */
 
     /**
-     * Name: get info storage ✅
+     * Name: get info storage 
      * Author: Depv
      * Code: 
      */
@@ -145,7 +145,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách storage ✅
+     * Name  : Danh sách storage 
      * Author: Depv
      * Code  : 
      */

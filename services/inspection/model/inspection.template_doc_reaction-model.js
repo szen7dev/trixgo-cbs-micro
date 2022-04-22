@@ -26,7 +26,7 @@ class Model extends BaseModel {
     }
         
     /**
-     * Thêm mẩu tin: HiepNH ✅
+     * Thêm mẩu tin: HiepNH 
      * F0211
      */
     insert({ template, reaction, author }) { 
@@ -75,7 +75,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Xóa template docs: DePV ✅
+     * Xóa template docs: DePV 
      * F0213
      */
     remove({ templateDocReactionID }) { 
@@ -115,7 +115,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Danh sách template docs: DePV ✅
+     * Danh sách template docs: DePV 
      * F0214
      * problem: Bị hạn chế không thể sort createAt = 1
      */

@@ -11,7 +11,7 @@ const ITEM__ACCOUNT_MODEL                    = require('../model/item.account-mo
 module.exports = {
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách account
 	 */
     getInfoAndGetList: {
@@ -73,7 +73,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: HuynhVinh ✅
+	 * Dev: HuynhVinh 
 	 * Func:
 	 */
     getInfoAccount: {
@@ -93,7 +93,7 @@ module.exports = {
     },
 
     /**
-     * Dev: HuynhVinh ✅
+     * Dev: HuynhVinh 
      * Func:
     */
     getListNestedItem: {

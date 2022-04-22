@@ -10,7 +10,7 @@ const PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.pcm_plan_
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: insert pcm_plan_report
 	 */
     insert: {
@@ -39,7 +39,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: update pcm_plan_report
 	 */
     update: {
@@ -70,7 +70,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: remove pcm_plan_report
 	 */
     remove: {
@@ -98,7 +98,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {

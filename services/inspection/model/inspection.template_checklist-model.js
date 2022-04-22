@@ -26,7 +26,7 @@ class Model extends BaseModel {
 
     
     /**
-     * Thêm mẩu tin: DePV ✅
+     * Thêm mẩu tin: DePV 
      * F0215
      */
     insert({ inspection, name, description, authorID }) { 
@@ -76,7 +76,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Cập nhật template docs: DePV ✅
+     * Cập nhật template docs: DePV 
      * F0216
      */
     update({ checklistID, name, description, authorID }) { 
@@ -123,7 +123,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Xóa template docs: DePV ✅
+     * Xóa template docs: DePV 
      * F0217
      */
     remove({ checklistID }) { 
@@ -159,7 +159,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Lấy thông tin checklist mẫu ✅
+     * Lấy thông tin checklist mẫu 
      * Author: Depv
      */
     getInfo({ checklistID, filter }) { 
@@ -195,7 +195,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách checklist mẫu ✅
+     * Name: Danh sách checklist mẫu 
      * Author: Depv 
      */
     getList({ keyword, templateID, limit = 10, lastestID, filter = {}, select = {} }) { 

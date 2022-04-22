@@ -33,7 +33,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert datahub project ✅
+	 * Name: insert datahub project 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -126,7 +126,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub project ✅
+	 * Name: update datahub project 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -220,7 +220,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub project ✅
+	 * Name: Remove datahub project 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -242,7 +242,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub ✅
+	 * Name: get info datahub 
 	 * Author: Depv
 	 * Code: 
 	 */

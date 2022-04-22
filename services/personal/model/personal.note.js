@@ -106,7 +106,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: Get info ✅
+     * Name: Get info 
      * Author: Depv
      * Date: 9/4/2022
      */
@@ -143,7 +143,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list ✅
+     * Name  : Get list 
      * Author: Depv
      * Date: 9/4/2022
      */

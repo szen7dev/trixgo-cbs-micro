@@ -12,7 +12,7 @@
 
 module.exports = {
     /**
-	 * Dev: DePV ✅
+	 * Dev: DePV 
 	 * Func: Thêm template checklist
 	 * Date: 17/08/2021
 	 */
@@ -41,7 +41,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật template checklist
 	 * Date: 17/08/2021
 	 */
@@ -70,7 +70,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Xóa template checklist
 	 * Date: 17/08/2021
 	 */
@@ -97,7 +97,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv✅
+	 * Dev: Depv
 	 * Func: Danh sách template checklist của inspection
 	 * Date: 17/08/2021
 	 */

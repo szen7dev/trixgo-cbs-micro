@@ -12,7 +12,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm dự án/phòng ban
 	 */
     insert: {
@@ -93,7 +93,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật dự án/phòng ban
 	 */
     update: {
@@ -235,12 +235,12 @@ module.exports = {
 
       
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Xoá dự án phòng ban => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 */
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách dự án (Hàm dùng chung)
 	 */
     getInfoAndGetList: {
@@ -287,7 +287,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Danh sách dự án mà user được quyền truy cập
      */
     getListByMembers: {
@@ -323,7 +323,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thống kê theo tiến độ, ngân sách
 	 */
     analysisOntimeOnbudget: {

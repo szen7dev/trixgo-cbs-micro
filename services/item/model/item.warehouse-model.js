@@ -29,7 +29,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info warehouse ✅
+     * Name: get info warehouse 
      * Author: Depv
      * Code: 
      */
@@ -79,7 +79,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách warehouse ✅
+     * Name  : Danh sách warehouse 
      * Author: Depv
      * Code  : 
      */

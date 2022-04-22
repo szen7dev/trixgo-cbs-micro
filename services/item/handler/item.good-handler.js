@@ -11,7 +11,7 @@ const ITEM__GOODS_MODEL                    = require('../model/item.good-model')
 module.exports = {
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách goods
 	 */
     getInfoAndGetList: {

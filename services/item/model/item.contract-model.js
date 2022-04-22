@@ -736,13 +736,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove Hợp đồng ✅KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
+     * Name: Remove Hợp đồng KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code:
      */
 
     /**
-     * Name: get Hợp đồng ✅
+     * Name: get Hợp đồng 
      * Author: Depv
      * Code:
      */
@@ -793,7 +793,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng ✅
+     * Name  : Danh sách hợp đồng 
      * Author: Depv
      * Code  :
      */
@@ -992,7 +992,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng mà user là members ✅
+     * Name  : Danh sách hợp đồng mà user là members 
      * Author: Depv
      * Code  :
      */
@@ -1181,7 +1181,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo tháng trong năm✅
+     * Name: Gom nhóm theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -1258,7 +1258,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 17/04/2022
      */
@@ -1557,7 +1557,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -1729,7 +1729,7 @@ class Model extends BaseModel {
     } 
 
     /**
-     * Name  : Cập nhật giá trị ✅
+     * Name  : Cập nhật giá trị 
      * Author: Hiepnh
      * Date  : 16/4/2022 
      */

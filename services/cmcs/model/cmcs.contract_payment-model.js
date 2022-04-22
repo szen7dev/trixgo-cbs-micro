@@ -25,7 +25,7 @@ class Model extends BaseModel {
         super(CMCS__CONTRACT_PAYMENT_COLL);
     }
     /**
-     * Name: insert contract payment ✅
+     * Name: insert contract payment 
      * Author: Depv
      */
     insert({ contractID, ipc, date, name, sign, description, value, userID, ctx  }) {
@@ -103,7 +103,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract payment ✅
+     * Name: update contract payment 
      * Author: Depv
      */
     update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
@@ -180,12 +180,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract payment ✅
+     * Name: Remove contract payment 
      * Author: Depv
      */
 
     /**
-     * Name: get info contract payment ✅
+     * Name: get info contract payment 
      * Author: Depv
      */
     getInfo({ contractPaymentID, select, populates }){
@@ -219,7 +219,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract payment ✅
+     * Name  : Danh sách contract payment 
      * Author: Depv
      */
     getList({ contractID,
@@ -312,7 +312,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -558,7 +558,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo đối tượng ✅
+     * Name: Gom nhóm theo đối tượng 
      * Author: Hiepnh
      * Date: 16/04/2022
      */
@@ -646,7 +646,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 17/04/2022
      */

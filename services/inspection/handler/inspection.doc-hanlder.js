@@ -10,7 +10,7 @@
 
 module.exports = {
     /**
-	 * Dev: HiepNH ✅
+	 * Dev: HiepNH 
 	 * Func: Thêm template hồ sơ/biên bản
 	 * Date: 17/08/2021
 	 */
@@ -109,7 +109,7 @@ module.exports = {
     },
 
     /**
-	 * Func: Danh sách template hồ sơ/biên bản ✅
+	 * Func: Danh sách template hồ sơ/biên bản 
 	 * Author: Depv 
 	 * Date: 17/08/2021
 	 */

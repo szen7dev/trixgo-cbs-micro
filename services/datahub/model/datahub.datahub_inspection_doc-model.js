@@ -33,7 +33,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert datahub inspection doc ✅
+	 * Name: insert datahub inspection doc 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -71,7 +71,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub inspection doc✅
+	 * Name: update datahub inspection doc
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub inspection doc✅
+	 * Name: Remove datahub inspection doc
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -130,7 +130,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub ✅
+	 * Name: get info datahub 
 	 * Author: Depv
 	 * Code: 
 	 */
