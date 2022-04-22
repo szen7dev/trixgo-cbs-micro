@@ -25,7 +25,7 @@ class Model extends BaseModel {
     }
     
     /**
-     *  Thêm mẩu tin: Depv ✅
+     *  Thêm mẩu tin: Depv 
      *  F0226
      */
     insert({ parentID, projectID, name, sign, description, userID }) { 
@@ -85,7 +85,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Cập nhât mẩu tin: Depv ✅
+     * Cập nhât mẩu tin: Depv 
      * F0227
      */
     update({ areaID, name, sign, description, userID }) { 
@@ -143,7 +143,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Xóa mẩu tin: Depv ✅
+     * Xóa mẩu tin: Depv 
      * F0228
      */
     remove({ areaID }) { 
@@ -173,7 +173,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Lấy thông tin khu vực: Depv ✅
+     * Lấy thông tin khu vực: Depv 
      * F0229
      */
     getInfo({ areaID, select }) { 
@@ -203,7 +203,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách area theo project: DePV ✅
+     * Name: Danh sách area theo project: DePV 
      * Code: F0230
      * Author: Depv 
      */

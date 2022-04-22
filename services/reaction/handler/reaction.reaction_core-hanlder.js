@@ -10,7 +10,7 @@ const REACTION_CORE_MODEL      = require('../model/reaction.reaction_core-model'
 
 module.exports = {
     /**
-	 * Dev: DePV ✅
+	 * Dev: DePV 
 	 * Func: Thêm reaction core
 	 * Date: 17/08/2021
 	 */
@@ -38,7 +38,7 @@ module.exports = {
 
 
     /**
-	 * Dev: DePV ✅
+	 * Dev: DePV 
 	 * Func: Sửa reaction core
 	 * Date: 17/08/2021
 	 */

@@ -12,7 +12,7 @@ const INSPECTION__DOC_REACTION_MODEL   = require('../model/inspection.doc_reacti
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm reaction cho inspection
 	 * Date: 17/08/2021
 	 */
@@ -43,7 +43,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Xóa reaction cho inspection
 	 * Date: 17/08/2021
 	 */
@@ -70,7 +70,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách reaction của inspection
 	 * Date: 17/08/2021
 	 */

@@ -32,7 +32,7 @@ class Model extends BaseModel {
     
     /**
      * Name: Thêm inspection docs
-     * Author: DePV ✅
+     * Author: DePV 
      * Code: F0231
      */
     insert({ projectID, contractID, sign, template, assignee, members, name, expiredTime, job, areas, description, userID }) { 
@@ -112,7 +112,7 @@ class Model extends BaseModel {
 
     /** 
      * Name: Cập nhật inspection docs
-     * Author: DePV ✅
+     * Author: DePV 
      * Code: F0232
      */
     update({ docID, sign, template, assignee, members, name, expiredTime, job, areas, description, status, lastComment, userID }) { 
@@ -198,7 +198,7 @@ class Model extends BaseModel {
     
     /**
      * Name: Xóa inspection docs
-     * Author: DePV ✅
+     * Author: DePV 
      * Code: F0233
      */
     remove({ docID }) { 
@@ -229,7 +229,7 @@ class Model extends BaseModel {
 
      /**
      * Name: Lấy thông tin inspection docs
-     * Author: DePV ✅
+     * Author: DePV 
      * Code: F0234
      */
     getInfo({ docID, select }) { 
@@ -286,7 +286,7 @@ class Model extends BaseModel {
     
     /**
      * Name: Danh sách area theo project
-     * Author: DePV ✅
+     * Author: DePV 
      * Code: F0235
      */
     getList({limit = 10, lastestID, select, filter, projectID, contractID, assignee, author, userID, signature, area, fromDate, toDate, fromCreateAt, toCreateAt }) { 

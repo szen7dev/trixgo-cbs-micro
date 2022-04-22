@@ -27,7 +27,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert sale booking ✅
+     * Name: insert sale booking 
      * Author: Depv
      * Code: 
      */
@@ -96,7 +96,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update sale booking ✅
+     * Name: update sale booking 
      * Author: Depv
      * Code: 
      */
@@ -192,7 +192,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove sale booking ✅
+     * Name: Remove sale booking 
      * Author: Depv
      * Code: 
      */
@@ -228,7 +228,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get sale booking ✅
+     * Name: get sale booking 
      * Author: Depv
      * Code: 
      */
@@ -264,7 +264,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách sale booking✅
+     * Name  : Danh sách sale booking
      * Author: Depv
      * Code  : 
      */

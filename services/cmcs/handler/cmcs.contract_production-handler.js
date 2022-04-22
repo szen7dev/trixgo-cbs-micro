@@ -10,7 +10,7 @@ const CMCS__CONTRACT_PRODUCTION_MODEL            = require('../model/cmcs.contra
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm contract production 
 	 */
     insert: {
@@ -43,7 +43,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Sửa contract production
 	 */
     update: {
@@ -76,7 +76,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Xóa contract production
      */
     remove: {
@@ -101,7 +101,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: get info and get list contract production
      */
     getInfoAndGetList: {
@@ -141,7 +141,7 @@ module.exports = {
     },
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 18/04/2022
      */
@@ -193,7 +193,7 @@ module.exports = {
     }, 
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: get amount by month
      */
     getAmountByMonth: {
@@ -228,7 +228,7 @@ module.exports = {
     },
 
     /**
-     * Name: Gom nhóm theo đối tượng ✅
+     * Name: Gom nhóm theo đối tượng 
      * Author: Hiepnh
      * Date: 16/04/2022
      */
@@ -263,7 +263,7 @@ module.exports = {
     }, 
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 18/04/2022
      */

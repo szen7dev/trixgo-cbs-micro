@@ -422,7 +422,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: get văn bản ✅
+     * Name: get văn bản 
      * Author: Depv
      * Code: 
      */
@@ -471,7 +471,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách văn bản ✅
+     * Name  : Danh sách văn bản 
      * Author: Depv
      * Code  : 
      */
@@ -1217,7 +1217,7 @@ class Model extends BaseModel {
 
 
     /**
-     * Name: Lấy số lượng công việc của tất cả project mà user là members✅
+     * Name: Lấy số lượng công việc của tất cả project mà user là members
      * Author: Depv
      */
      getAmountDocumentByProjects({ userID, fromDate, toDate, ctx }){

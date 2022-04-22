@@ -39,9 +39,22 @@
 		],
 		"description": "Render status code and response (error)"
 	},
-	"Resolve response in model": {
+	"Resolve response in model (params error)": {
 		"scope": "javascript,typescript",
-		"prefix": "rse",
+		"prefix": "repe",
+		"body": [
+			"return resolve({",
+			"\terror: true,",
+			"\tmessage: 'Tham số $1 không hợp lệ',",
+			"\tkeyError: 'params_$2_invalid',",
+			"\tstatus: 400",
+			"});"
+		],
+		"description": "Resolve response in model (params error)"
+	},
+	"Resolve response in model (operator error)": {
+		"scope": "javascript,typescript",
+		"prefix": "reoe",
 		"body": [
 			"return resolve({",
 			"\terror: true,",
@@ -50,14 +63,66 @@
 			"\tstatus: 422",
 			"});"
 		],
-		"description": "Resolve response in model"
+		"description": "Resolve response in model (operator error)"
 	},
 	"Resolve response in model (server error)": {
 		"scope": "javascript,typescript",
-		"prefix": "rsse",
+		"prefix": "rese",
 		"body": [
 			"return resolve({ error: true, message: error.message, status: 500 });"
 		],
 		"description": "Resolve response in model (server error)"
+	},
+	"Generate handler function": {
+		"scope": "javascript,typescript",
+		"prefix": "geh",
+		"body": [
+			"/**",
+			" * Dev: MinhVH",
+			" * Func: $1",
+			" * Date: $2/$3/2022",
+			" */",
+			"$4: {",
+			"\tauth: 'required',",
+			"\tparams: {",
+			"\t\t$5",
+			"\t},",
+			"\tasync handler(ctx) {",
+			"\t\ttry {",
+			"\t\t\tawait this.validateEntity(ctx.params);",
+			"\t\t\tconst { _id: userID } = ctx.meta.infoUser;",
+			"\t\t\tconst { $5 } = ctx.params;\n",
+			"\t\t\tconst resultAfterCallHandler = await $6\n",
+			"\t\t\treturn renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });",
+			"\t\t} catch (error) {",
+			"\t\t\treturn renderStatusCodeAndResponse({ error_message: error.message, ctx });",
+			"\t\t}",
+			"\t}",
+			"},"
+		],
+		"description": "Generate handler function"
+	},
+	"Generate model function": {
+		"scope": "javascript,typescript",
+		"prefix": "gem",
+		"body": [
+			"/**",
+			" * Dev: MinhVH",
+			" * Func: $1",
+			" * Date: $2/$3/2022",
+			" */",
+			"$4({ $5 }) {",
+			"\treturn new Promise(async resolve => {",
+			"\t\ttry {",
+			"\t\t\tconst validation = validateParamsObjectID({ $5 });",
+			"\t\t\tif(validation.error) return resolve(validation);\n",
+			"\t\t\treturn resolve({ error: false, data: result, status: 200 });",
+			"\t\t} catch (error) {",
+			"\t\t\treturn resolve({ error: true, message: error.message, status: 500 });",
+			"\t\t}",
+			"\t})",
+			"}",
+		],
+		"description": "Generate model function"
 	},
 }

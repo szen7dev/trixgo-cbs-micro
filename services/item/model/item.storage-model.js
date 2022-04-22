@@ -33,7 +33,7 @@ class Model extends BaseModel {
 	 * Func: Tạo storage
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, projectID, name, userID, ctx }){
+	insert({ companyID, projectID, parentID, name, description, userID, ctx }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -42,20 +42,36 @@ class Model extends BaseModel {
                 let dataInsert = {
                     userCreate: userID,
                     company: companyID,
-                    // project: projectID, 
                     name, 
                 }             
+
+                if(description){
+                    dataInsert.description = description;
+                }
+
+                if(checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                }
+
                 // dataInsert.company = infoProject.data.company;     
                 if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID
-
                     // let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     //     departmentID: projectID
                     // })
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                    return resolve({ error: false, data: infoAfterInsert });
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "cannot_insert" });
+
+                // Cập nhật amountChilds cho phần tử cha
+                if(checkObjectIDs(parentID)){
+                    await ITEM__STORAGE_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                }
+
+                return resolve({ error: false, data: infoAfterInsert });
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -67,7 +83,7 @@ class Model extends BaseModel {
 	 * Func: update storage
 	 * Date: 13/12/2021
 	 */
-	update({ storageID, name, userID }){
+	update({ storageID, name, description, userID }){
         return new Promise(async resolve => { 
             try {
                 if(!checkObjectIDs(storageID))
@@ -77,10 +93,15 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
                 
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date
+                    name, userUpdate: userID, modifyAt: new Date()
+                }
+
+                if(description){
+                    dataUpdate.description = description;
                 }
 
                 let infoAfterUpdate = await ITEM__STORAGE_COLL.findByIdAndUpdate(storageID, dataUpdate, { new: true });
+                console.log({ infoAfterUpdate })
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -89,13 +110,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove storage ✅ => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
+     * Name: Remove storage  => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
      * Author: Depv
      * Code: 
      */
 
     /**
-     * Name: get info storage ✅
+     * Name: get info storage 
      * Author: Depv
      * Code: 
      */
@@ -145,12 +166,12 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách storage ✅
+     * Name  : Danh sách storage 
      * Author: Depv
      * Code  : 
      */
     getList({
-        companyID, projectID,
+        companyID, projectID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -193,6 +214,14 @@ class Model extends BaseModel {
                 if(checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
                 }
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
+                }
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -223,7 +252,7 @@ class Model extends BaseModel {
                 }
 
                 let infoDataAfterGet = await ITEM__STORAGE_COLL.find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)

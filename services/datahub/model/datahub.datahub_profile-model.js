@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
     
     /**
-	 * Name: insert datahub profile✅
+	 * Name: insert datahub profile
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -55,7 +55,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub profile✅
+	 * Name: update datahub profile
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -88,7 +88,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub profile ✅
+	 * Name: Remove datahub profile 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -110,7 +110,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub profile ✅
+	 * Name: get info datahub profile 
 	 * Author: Depv
 	 * Code: 
 	 */

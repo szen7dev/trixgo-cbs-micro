@@ -10,7 +10,7 @@ const CMCS__CONTRACT_IPC_MODEL                 = require('../model/cmcs.contract
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm contract ipc
 	 */
     insert: {
@@ -50,7 +50,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Sửa contract ipc
 	 */
     update: {
@@ -92,7 +92,7 @@ module.exports = {
     },
 
     /**
-     * Name  : Cập nhật giá trị ✅
+     * Name  : Cập nhật giá trị 
      * Author: Hiepnh
      * Date  : 12/4/2022 
      */
@@ -121,7 +121,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Xóa contract ipc
      */
     remove: {
@@ -146,7 +146,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: get info and get list contract ipc
      */
     getInfoAndGetList: {
@@ -206,7 +206,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: get amount by month
      */
     getAmountByMonth: {
@@ -241,7 +241,7 @@ module.exports = {
     },
     
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 18/04/2022
      */
@@ -293,7 +293,7 @@ module.exports = {
     }, 
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -331,7 +331,7 @@ module.exports = {
     }, 
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */

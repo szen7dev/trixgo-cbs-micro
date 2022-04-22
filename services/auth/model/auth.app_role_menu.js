@@ -28,7 +28,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert app role menu ✅
+     * Name: insert app role menu 
      * Author: Depv
      * Code: 
      */

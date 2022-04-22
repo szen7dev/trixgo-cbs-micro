@@ -475,7 +475,7 @@ module.exports = {
 
     /**
 	 * Dev: Depv
-	 * Func: Lấy số lượng công việc của tất cả project mà user là members✅
+	 * Func: Lấy số lượng công việc của tất cả project mà user là members
 	 * Date: 13/11/2021
 	 */  
      getAmountDocumentByProjects: {

@@ -135,7 +135,7 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách company ✅
+     * Name  : Danh sách company 
      * Author: Depv
      * Code  : 20/12/2021
      */

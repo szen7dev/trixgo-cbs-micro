@@ -41,7 +41,7 @@ class Model extends BaseModel {
         super(require('../database/auth.user-coll'));
     }
     
-    // implement by: KHANHNEY✅ 
+    // implement by: KHANHNEY 
     register({ email, fullname, level, department, position, companyID, platform }) {
         return new Promise(async resolve => {
             try {
@@ -144,7 +144,7 @@ class Model extends BaseModel {
         });
     }
     
-    // implement by: KHANHNEY✅ 
+    // implement by: KHANHNEY 
     login({ email, password, platform }) {
         return new Promise(async resolve => {
             try {
@@ -264,7 +264,7 @@ class Model extends BaseModel {
         })
     }
 
-    // implement by: KHANHNEY✅ 
+    // implement by: KHANHNEY 
     updateDeviceLogin({ userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env }) {
         return new Promise(async resolve => {
             try {
@@ -382,7 +382,7 @@ class Model extends BaseModel {
         })
     }
 
-    // implement by: MINHVH ✅ 
+    // implement by: MINHVH  
     getListFriend({ userID, lastestID, keyword, limit = 10, select, populates }){
         return new Promise(async resolve => {
             try {
@@ -477,7 +477,7 @@ class Model extends BaseModel {
         })
     }
 
-    // implement by: MINHVH ✅ 
+    // implement by: MINHVH  
     getListUser({ userID, lastestID, departmentID, keyword, limit = 20, filter = {}, select = {} }){
         return new Promise(async resolve => {
             try {
@@ -615,7 +615,7 @@ class Model extends BaseModel {
         })
     }
 
-    // implement by: KHANHNEY✅ 
+    // implement by: KHANHNEY 
     getInfo({ userID, filter, select }) {
         return new Promise(async (resolve) => {
             try {
@@ -663,7 +663,7 @@ class Model extends BaseModel {
         })
     }
 
-    // implement by: MINHVH ✅ 
+    // implement by: MINHVH  
 	getInfoById({ userID, select }) {
         return new Promise(async (resolve) => {
             try {
@@ -696,7 +696,7 @@ class Model extends BaseModel {
     }
 
 
-	// implement by: MINHVH ✅ 
+	// implement by: MINHVH  
 	getListUserWithCondition({ condition, select, filter = {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -1519,7 +1519,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: get info user ✅
+     * Name: get info user 
      * Author: Depv
      */
     getInfoV2({ userID, select, populates }){
@@ -1557,7 +1557,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user ✅
+     * Name  : Danh sách user 
      * Author: Depv
      * Code  : 
      */

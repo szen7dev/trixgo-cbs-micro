@@ -29,8 +29,80 @@ class Model extends BaseModel {
         super(ITEM__FUNDA_COLL);
     }
 
+     /**
+	 * Dev : Depv
+	 * Func: Tạo account
+	 * Date: 13/12/2021
+	 */
+	insert({ companyID, parentID, name, description, userID }){
+        return new Promise(async resolve => {
+            try {
+                if(!name)
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+
+                let dataInsert = {
+                    userCreate: userID,
+                    company: companyID,
+                    name, 
+                }    
+
+                if(checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID;
+                }
+
+                if(description){
+                    dataInsert.description = description;
+                }
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "cannot_insert" });
+
+                // Cập nhật amountChilds cho phần tử cha
+                if(checkObjectIDs(parentID)){
+                    await ITEM__FUNDA_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                }
+
+                return resolve({ error: false, data: infoAfterInsert });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
     /**
-     * Name: get info funda ✅
+	 * Dev : Depv
+	 * Func: update account
+	 * Date: 13/12/2021
+	 */
+	update({ accountID, name, description, userID }){
+        return new Promise(async resolve => { 
+            try {
+                if(!checkObjectIDs(accountID))
+                    return resolve({ error: true, message: "accountID không hợp lệ", keyError: "Request params accountID invalid" });
+
+                if(!name)
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+                
+                let dataUpdate = {
+                    name, userUpdate: userID, modifyAt: new Date()
+                }
+
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: get info funda 
      * Author: Depv
      * Code: 
      */
@@ -80,7 +152,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách funda ✅
+     * Name  : Danh sách funda 
      * Author: Depv
      * Code  : 
      */

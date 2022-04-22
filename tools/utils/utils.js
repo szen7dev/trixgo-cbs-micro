@@ -470,3 +470,24 @@ exports._getLevelMaxInRecursive = async (coll) => {
     let levelForRecursive = Number(levelMax[0].maxLevel);
     return levelForRecursive;
 }
+
+/**
+ * Dev: MinhVH
+ * Date: 22/04/2022
+ */
+exports.validateParamsObjectID = (params) => {
+    if(!params || !Object.keys(params).length) return false;
+
+    for (const [key, value] of Object.entries(params)) {
+        if (!this.checkObjectIDs([value])) {
+            return {
+                error: true,
+                message: `Tham số ${key} không hợp lệ`,
+                keyError: `params_${key}_invalid`,
+                status: 400
+            }
+        }
+    }
+
+    return { error: false };
+}

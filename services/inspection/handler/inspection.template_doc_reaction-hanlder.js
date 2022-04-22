@@ -12,7 +12,7 @@ const INSPECTION__TEMPLATE_DOC_REACTION_MODEL   = require('../model/inspection.t
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm template reaction cho inspection
 	 * Date: 17/08/2021
 	 */

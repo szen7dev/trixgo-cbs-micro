@@ -89,7 +89,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info history log ✅
+     * Name: get info history log 
      * Author: Depv
      * Code: 
      */
@@ -139,7 +139,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách history log ✅
+     * Name  : Danh sách history log 
      * Author: Depv
      * Code  : 
      */

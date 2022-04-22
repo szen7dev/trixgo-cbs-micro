@@ -104,7 +104,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get app menu ✅
+     * Name: get app menu 
      * Author: Depv
      * Code: 
      */
@@ -152,7 +152,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách app menu ✅
+     * Name  : Danh sách app menu 
      * Author: Depv
      * Code  : 
      */

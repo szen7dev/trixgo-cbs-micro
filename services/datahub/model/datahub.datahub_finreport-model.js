@@ -34,7 +34,7 @@ class Model extends BaseModel {
     }
  
     /**
-	 * Name: insert datahub finreport✅
+	 * Name: insert datahub finreport
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -98,7 +98,7 @@ class Model extends BaseModel {
     }
     
     /**
-	 * Name: update datahub finreport✅
+	 * Name: update datahub finreport
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -162,7 +162,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub finreport ✅
+	 * Name: Remove datahub finreport 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -184,7 +184,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub finreport ✅
+	 * Name: get info datahub finreport 
 	 * Author: Depv
 	 * Code: 
 	 */

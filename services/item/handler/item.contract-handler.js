@@ -24,7 +24,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm contract
 	 * Date: 19/08/2021
 	 */
@@ -116,7 +116,7 @@ module.exports = {
 
 
      /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật hợp đồng
 	 * Date: 19/08/2021
 	 */
@@ -216,13 +216,13 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: XÓA HỢP ĐỒNG => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 * Date: 19/08/2021
 	 */
 
      /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: LẤY THÔNG TIN HOẶC LẤY DANH SACH HỢP ĐỒNG
 	 * Date: 19/08/2021
 	 */
@@ -288,7 +288,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: LẤY DANH SÁCH HỢP ĐỒNG MÀ USER LÀ MEMBERS
 	 * Date: 19/08/2021
 	 */
@@ -341,7 +341,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: get amount by month
      */
      getAmountByMonth: {
@@ -376,7 +376,7 @@ module.exports = {
     },
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -428,7 +428,7 @@ module.exports = {
     }, 
 
     /**
-     * Name: Cập nhật giá trị ✅
+     * Name: Cập nhật giá trị 
      * Author: Hiepnh
      * Date: 15/04/2022
      */
@@ -468,7 +468,7 @@ module.exports = {
     }, 
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 18/04/2022
      */

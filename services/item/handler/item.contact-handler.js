@@ -11,7 +11,7 @@ const ITEM__CONTACT_MODEL                       = require('../model/item.contact
 module.exports = {
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Thêm contact
      */
     insert: {
@@ -73,7 +73,7 @@ module.exports = {
                     sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
+                
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
                     company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
@@ -87,7 +87,7 @@ module.exports = {
         }
     },
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Cập nhật contact
      */
     update: {
@@ -159,8 +159,6 @@ module.exports = {
                     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-
-                console.log({ contactID, amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory});
                 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({
                     contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
@@ -178,7 +176,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách contact
 	 */
     getInfoAndGetList: {
@@ -195,6 +193,8 @@ module.exports = {
             companyID           : { type: "string", optional: true },
             isBirthday          : { type: "string", optional: true },
             isLinkUser          : { type: "string", optional: true },
+            isListParentOrListChilds: { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
             
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -206,7 +206,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, contactID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
+                let { companyID, contactID, type, departmentID, positionID, contractTypeID, 
+                    workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -221,7 +222,8 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser,
+                        companyID, type, departmentID, positionID, contractTypeID, 
+                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }
@@ -234,7 +236,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách danh bạ của hệ thống
 	 */
     getListOfSystem: {

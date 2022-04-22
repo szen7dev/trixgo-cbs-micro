@@ -33,7 +33,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert datahub inspection checklist ✅
+	 * Name: insert datahub inspection checklist 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -71,7 +71,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub inspection checklist✅
+	 * Name: update datahub inspection checklist
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub inspection checklist✅
+	 * Name: Remove datahub inspection checklist
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -130,7 +130,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub inspection checklist✅
+	 * Name: get info datahub inspection checklist
 	 * Author: Depv
 	 * Code: 
 	 */

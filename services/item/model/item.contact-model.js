@@ -29,7 +29,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thêm danh bạ, nhân sự ✅
+     * Name: Thêm danh bạ, nhân sự 
      * Author: Depv
      * Code: 
      */
@@ -218,7 +218,8 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
                 if(parent) {
                     await ITEM__CONTACT_COLL.findByIdAndUpdate(parent, {
-                        $addToSet: { childs: infoAfterInsert._id } 
+                        $addToSet: { childs: infoAfterInsert._id },
+                        $inc: { amountChilds: 1 }
                     }, { new: true });
                 }
                 
@@ -230,7 +231,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: update danh bạ, nhân sự ✅
+     * Name: update danh bạ, nhân sự 
      * Author: Depv
      * Code: 
      */
@@ -268,6 +269,8 @@ class Model extends BaseModel {
                     inTimesheet: 0,
                     inFinancial: 1,
                     inDocument: 1,
+                    modifyAt: new Date(),
+                    userUpdate: authorID
                 }
 
                 if(type){
@@ -503,7 +506,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thông tin nhân sự ✅
+     * Name: Thông tin nhân sự 
      * Author: Depv
      * Code: 
      */
@@ -552,12 +555,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách nhân sự ✅
+     * Name  : Danh sách nhân sự 
      * Author: Depv
      * Code  : 
      */
     getList({
-        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParent,
+        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+        insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -640,6 +644,14 @@ class Model extends BaseModel {
                 if(isLinkUser == 1){
                     conditionObj.linkUser = { $exists: true }
                 }
+                // Lấy danh sách danh bạ cha hoặc danh bạ con
+                if(isListParentOrListChilds == 1){
+                    if(checkObjectIDs(parentID)){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
+                }
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -707,7 +719,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách danh bạ của hệ thống ✅
+     * Name  : Danh sách danh bạ của hệ thống 
      * Author: HiepNH/DePV-update
      * Code  : 
      */
@@ -813,7 +825,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Báo cáo biến động nhân sự ✅
+     * Name  : Báo cáo biến động nhân sự 
      * Author: Depv
      * Code  : 
      */

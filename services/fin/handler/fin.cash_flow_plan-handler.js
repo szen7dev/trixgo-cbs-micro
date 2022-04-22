@@ -10,7 +10,7 @@ const FIN__CASH_FLOW_PLAN_MODEL              = require('../model/fin.cash_flow_p
 
 module.exports = {
     /**
-     * Name: Insert ✅
+     * Name: Insert 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -60,7 +60,7 @@ module.exports = {
     },
 
     /**
-     * Name: Update ✅
+     * Name: Update 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -132,7 +132,7 @@ module.exports = {
     },
 
     /**
-     * Name: Get info and get list ✅
+     * Name: Get info and get list 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -186,7 +186,7 @@ module.exports = {
     },
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 17/04/2022
      */

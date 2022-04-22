@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert contract ipc ✅
+     * Name: insert contract ipc 
      * Author: Depv
      * Code: 
      */
@@ -154,7 +154,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract ipc ✅
+     * Name: update contract ipc 
      * Author: Depv
      * Code: 
      */
@@ -277,7 +277,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị ✅
+     * Name  : Cập nhật giá trị 
      * Author: Hiepnh
      * Date  : 12/4/2022 
      */
@@ -366,13 +366,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract ipc ✅
+     * Name: Remove contract ipc 
      * Author: Depv
      * Code: 
      */
     
     /**
-     * Name: get info contract ipc ✅
+     * Name: get info contract ipc 
      * Author: Depv
      * Code: 
      */
@@ -410,7 +410,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract ipc ✅
+     * Name  : Danh sách contract ipc 
      * Author: Depv
      * Code  : 
      */
@@ -596,7 +596,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -767,7 +767,7 @@ class Model extends BaseModel {
     } 
 
     /**
-     * Name: Gom nhóm theo đối tượng ✅
+     * Name: Gom nhóm theo đối tượng 
      * Author: Hiepnh
      * Date: 04/04/2022
      */
@@ -958,7 +958,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 17/04/2022
      */

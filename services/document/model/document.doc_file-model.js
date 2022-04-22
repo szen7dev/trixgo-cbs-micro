@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert doc file ✅
+	 * Name: insert doc file 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -73,7 +73,7 @@ class Model extends BaseModel {
     }
 
      /**
-	 * Name: delete doc file ✅
+	 * Name: delete doc file 
 	 * Author: Depv
 	 * Code:
 	 */
@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
     
     /**
-	 * Name: get info doc file ✅
+	 * Name: get info doc file 
 	 * Author: Depv
 	 * Code: 
 	 */

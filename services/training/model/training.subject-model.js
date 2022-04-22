@@ -31,7 +31,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert subject ✅
+     * Name: insert subject 
      * Author: Depv 
      * Code: F02501
      */
@@ -87,7 +87,7 @@ class Model extends BaseModel {
         })
     }
      /**
-     * Name: update subject ✅
+     * Name: update subject 
      * Author: Depv 
      * Code: F02502
      */
@@ -145,7 +145,7 @@ class Model extends BaseModel {
 
 
      /**
-     * Name: Remove subject ✅
+     * Name: Remove subject 
      * Author: Depv 
      * Code: F02503
      */
@@ -187,7 +187,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Get info subject ✅
+     * Name: Get info subject 
      * Author: Depv 
      * Code: F02504
      */
@@ -239,7 +239,7 @@ class Model extends BaseModel {
     }
     
     /** 
-     * Name: Danh sách subject ✅
+     * Name: Danh sách subject 
      * Author: Depv 
      * Code: F02505
      */

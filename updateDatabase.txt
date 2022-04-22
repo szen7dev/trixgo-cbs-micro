@@ -1,0 +1,17 @@
+// UPDATE amountChilds CHO DANH BẠ
+-------------------------------------------------------------------------------------
+let listContact = db.contacts.find({}).toArray();
+listContact.forEach(item => {
+    let amountChilds = item.childs?.length || 0;
+    db.contacts.updateOne({ _id: ObjectId(item._id)}, { $set: { amountChilds }});
+})
+-------------------------------------------------------------------------------------
+
+// UPDATE amountChilds CHO Storage
+-------------------------------------------------------------------------------------
+let listStorage = db.storages.find({}).toArray();
+listStorage.forEach(item => {
+    let amountChilds = db.storages.count({ parent: ObjectId(item._id)});
+    db.storages.updateOne({ _id: ObjectId(item._id)}, { $set: { amountChilds }});
+})
+-------------------------------------------------------------------------------------

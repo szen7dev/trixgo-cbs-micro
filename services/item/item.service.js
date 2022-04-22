@@ -37,6 +37,7 @@ const ITEM__WAREHOUSE_COLL				= require('./database/item.warehouse-coll');
 const ITEM__POSITION_COLL				= require('./database/item.position-coll');
 const ITEM__STORAGE_COLL				= require('./database/item.storage-coll');
 const ITEM__SIGNATURE_COLL				= require('./database/item.signature-coll');
+const ITEM__ACCOUNT_COLL				= require('./database/item.account-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ITEM,
@@ -50,6 +51,7 @@ module.exports = {
 		DbService(ITEM__POSITION_COLL),
 		DbService(ITEM__STORAGE_COLL),
 		DbService(ITEM__SIGNATURE_COLL),
+		DbService(ITEM__ACCOUNT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ITEM])
     ],
 
@@ -98,6 +100,8 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTACT_GET_LIST_OF_SYSTEM] 			: ITEM__CONTACT_HANDLER.getListOfSystem,
 
 		//==========================================  WAREHOUSE  =================================
+		[CF_ACTIONS_ITEM.WAREHOUSE_INSERT] 						: ITEM__WAREHOUSE_HANDLER.insert,
+		[CF_ACTIONS_ITEM.WAREHOUSE_UPDATE] 						: ITEM__WAREHOUSE_HANDLER.update,
 		[CF_ACTIONS_ITEM.WAREHOUSE_GET_INFO_AND_GET_LIST] 		: ITEM__WAREHOUSE_HANDLER.getInfoAndGetList,
 
 		//==========================================  AREA  ======================================
@@ -114,6 +118,8 @@ module.exports = {
 		[CF_ACTIONS_ITEM.STORAGE_GET_INFO_AND_GET_LIST] 		: ITEM__STORAGE_HANDLER.getInfoAndGetList,
 
 		//==========================================  ACCOUNT  ===================================
+		[CF_ACTIONS_ITEM.ACCOUNT_INSERT] 						: ITEM__ACCOUNT_HANDLER.insert,
+		[CF_ACTIONS_ITEM.ACCOUNT_UPDATE] 						: ITEM__ACCOUNT_HANDLER.update,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_AND_GET_LIST] 		: ITEM__ACCOUNT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_NAME] 			: ITEM__ACCOUNT_HANDLER.getInfoAccountWithName,
 		[CF_ACTIONS_ITEM.ACCOUNT_GET_INFO_WITH_ID] 				: ITEM__ACCOUNT_HANDLER.getInfoAccount,
@@ -121,9 +127,13 @@ module.exports = {
 		[CF_ACTIONS_ITEM.ACCOUNT_SEARCH_WITH_KEY] 				: ITEM__ACCOUNT_HANDLER.getListWithKey,
 
 		//==========================================  FUNDA  ================================
+		[CF_ACTIONS_ITEM.FUNDA_INSERT] 							: ITEM__FUNDA_HANDLER.insert,
+		[CF_ACTIONS_ITEM.FUNDA_UPDATE] 							: ITEM__FUNDA_HANDLER.update,
 		[CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST] 			: ITEM__FUNDA_HANDLER.getInfoAndGetList,
 
 		//==========================================  GOOD  ======================================
+		[CF_ACTIONS_ITEM.GOOD_INSERT] 							: ITEM__GOOD_HANDLER.insert,
+		[CF_ACTIONS_ITEM.GOOD_UPDATE] 							: ITEM__GOOD_HANDLER.update,
 		[CF_ACTIONS_ITEM.GOOD_GET_INFO_AND_GET_LIST] 			: ITEM__GOOD_HANDLER.getInfoAndGetList,
 
 		//==========================================  SIGNATURE  ======================================

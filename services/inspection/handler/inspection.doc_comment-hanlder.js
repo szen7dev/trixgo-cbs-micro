@@ -14,7 +14,7 @@ const INSPECTION__DOC_COMMENT_FILE_MODEL   = require('../model/inspection.doc_co
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: comment cho inspection docs
 	 * Date: 17/08/2021
 	 */
@@ -65,7 +65,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật comment inspection docs
 	 * Date: 17/08/2021
 	 */
@@ -121,7 +121,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Xóa comment trong inspection docs
 	 * Date: 17/08/2021
 	 */

@@ -14,20 +14,6 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
         }
     }
 
-    // if(!ctx){
-    //     errors = [...errors, {
-    //         message: 'error_render_status_code_miss_ctx',
-    //         keyError: 'ctx'
-    //     }]
-    // }
-
-    // if(ctx && !ctx.meta){
-    //     errors = [...errors, {
-    //         message: 'error_render_status_code_miss_ctx.meta',
-    //         keyError: 'ctx.meta'
-    //     }]
-    // }
-
 	if(error_message){
 		error = {
             data: {
@@ -43,7 +29,7 @@ exports.renderStatusCodeAndResponse = function ({ resultAfterCallHandler, ctx, e
 
 		return { error: true, status: ctx.meta.$statusCode, ...error };
     }
-    
+
     ctx.meta.$statusCode    = 200;
     ctx.meta.$statusMessage = resultAfterCallHandler?.message ?? 'success';
 

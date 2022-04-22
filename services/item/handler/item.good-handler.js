@@ -10,8 +10,55 @@ const ITEM__GOODS_MODEL                    = require('../model/item.good-model')
 
 module.exports = {
 
+     /**
+     * Dev: Depv ✅
+     * Func: Thêm goods
+     */
+    insert:{
+        params: {
+            name          : { type: "string" },
+            description   : { type: "string", optional: true },
+            parentID      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const { name, description, parentID } = ctx.params;
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, name, description, userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        },
+    },
+
     /**
-	 * Dev: Depv ✅
+     * Dev: Depv ✅
+     * Func: Cập nhật goods
+     */
+    update:{  
+        params: {
+            goodsID       : { type: "string" }, 
+            name          : { type: "string", optional: true },
+            description   : { type: "string", optional: true },
+            parentID      : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID, company } = ctx.meta.infoUser;
+                const { goodsID, name, description } = ctx.params;
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, description, userID });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        },
+    },
+
+    /**
+	 * Dev: Depv 
 	 * Func: Danh sách goods
 	 */
     getInfoAndGetList: {

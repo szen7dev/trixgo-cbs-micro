@@ -25,7 +25,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Thêm mẩu tin: DePV ✅
+     * Thêm mẩu tin: DePV 
      * F0211
      */
     insert({ comment, inspection, file }) { 
@@ -61,7 +61,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Xóa template docs: DePV ✅
+     * Xóa template docs: DePV 
      * F0213
      */
     remove({ fileID }) { 
@@ -96,7 +96,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Danh sách template docs: DePV ✅
+     * Danh sách template docs: DePV 
      * F0214
      * problem: Bị hạn chế không thể sort createAt = 1
      */

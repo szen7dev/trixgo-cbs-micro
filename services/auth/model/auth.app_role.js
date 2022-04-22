@@ -28,7 +28,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert app role ✅
+     * Name: insert app role 
      * Author: Depv
      * Code: 
      */
@@ -73,7 +73,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update app role ✅
+     * Name: update app role 
      * - Lưu ý: không được phép update Type của Role. Khi tạo mới, type như thế nào thì giữ nguyên như vậy
      * Author: Depv
      * Code: 
@@ -121,7 +121,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove app role ✅
+     * Name: Remove app role 
      * Author: Depv
      * Code: 
      */
@@ -159,7 +159,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove app role ✅
+     * Name: Remove app role 
      * Author: Depv
      * Code: 
      */
@@ -195,7 +195,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get app role ✅
+     * Name: get app role 
      * Author: Depv
      * Code: 
      */
@@ -244,7 +244,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách app role✅
+     * Name  : Danh sách app role
      * Author: Depv
      * Code  : 
      */

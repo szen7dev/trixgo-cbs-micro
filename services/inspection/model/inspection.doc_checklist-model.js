@@ -25,7 +25,7 @@ class Model extends BaseModel {
     }
      
     /**
-     * Name: Thêm checklist  ✅
+     * Name: Thêm checklist  
      * Author: DePV
      * Code: F02401
      */
@@ -76,7 +76,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: Cập nhật trạng thái checklist  ✅
+     * Name: Cập nhật trạng thái checklist  
      * Author: DePV
      * Code: F02402
      */
@@ -125,7 +125,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy thông tin checklist  ✅
+     * Name: Lấy thông tin checklist  
      * Author: DePV
      * Code: F02403
      */
@@ -161,7 +161,7 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: Lấy danh sách checklist ✅
+     * Name: Lấy danh sách checklist 
      * Author: DePV
      * Code: F02404
      */

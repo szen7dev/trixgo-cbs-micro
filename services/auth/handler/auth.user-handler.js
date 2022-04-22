@@ -653,7 +653,7 @@ module.exports = {
      */
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: getList and getInfo user
 	 */
     getInfoAndGetList: {
