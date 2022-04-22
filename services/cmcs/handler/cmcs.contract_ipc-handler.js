@@ -177,8 +177,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
-                console.log({ contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select })
+                let { contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
+                console.log({ contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select })
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -194,7 +194,7 @@ module.exports = {
                     }
 
                     resultAfterCallHandler = await CMCS__CONTRACT_IPC_MODEL.getList({
-                        isMember, option, companyID, projectID, contractID, type: Number(type), outin: Number(outin), real: Number(real), field, chair, personInCharge, buyerInfo, sellerInfo, userID, keyword, limit, lastestID, select, populates
+                        isMember, option, companyID, projectID, contractID, type: Number(type), outin: Number(outin), real: Number(real), field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 
@@ -273,7 +273,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -282,7 +282,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler=await CMCS__CONTRACT_IPC_MODEL.getListByMonth({
-                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
+                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

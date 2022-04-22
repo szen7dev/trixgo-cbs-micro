@@ -33,6 +33,8 @@ const FUNDA_COLL                                    = require('../../item/databa
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll');
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll');
 
+const BUDGET_WORK_COLL                              = require('../../budget/database/budget.work-coll'); // Kiểm tra fix lại, không Import trực tiếp
+
 /**
  * MODELS
 */
@@ -341,11 +343,13 @@ class AccountingFinancialVoucher extends BaseModel {
                     return resolve(dataInsertVoucher);
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher.data);
-                // Tạo lỗi để test Roll back
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert", status: 400 });
                 
+                /**
+                 * CẬP NHẬT BÚT TOÁN
+                 */
                 if(selectedJournals && selectedJournals.length >0){
                     console.log('=============>OKKKKKKKKKKKKKKKKKKKKKKKKK')
                     console.log(selectedJournals)
@@ -426,10 +430,26 @@ class AccountingFinancialVoucher extends BaseModel {
                         /**
                          * Cập nhật ngân sách thực hiện
                          */
-                        if(subitem.budget && _isValid(subitem.budget)){
-                            let infoGroup = await BUDGET_JOB_COLL.findById(subitem.budget);
-                            dataInsert.job = subitem.budget;
-                            dataInsert.group = infoGroup.group;
+                        if(subitem.budgetWorkID && _isValid(subitem.budgetWorkID)){
+                            let infoWork = await BUDGET_WORK_COLL.findById(subitem.budgetWorkID);
+                            if(infoWork){
+                                if(infoWork.budget){
+                                    dataInsert.budget = infoWork.budget;
+                                }
+                                if(infoWork.project){
+                                    dataInsert.budgetProject = infoWork.project;
+                                }
+                                if(infoWork.contract){
+                                    dataInsert.budgetContract = infoWork.contract;
+                                }
+                                if(infoWork.item){
+                                    dataInsert.budgetItem = infoWork.item;
+                                }
+                                if(infoWork.group){
+                                    dataInsert.budgetGroup = infoWork.group;
+                                }
+                                dataInsert.budgetWork = infoWork.budgetWorkID;
+                            }
                         }
 
                         console.log(dataInsert)

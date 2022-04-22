@@ -23,17 +23,23 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
         ref : "doctype"
     },  
     
-    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
-    chair: {
+    //_________Phân loại theo Đơn vị (POSTMAN ITEM -> CONTACT)
+    dependentUnit: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     },
-    
+
     //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
     personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
-    },    
+    }, 
+
+    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    chair: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    },   
 
     //_________Bên mua (POSTMAN ITEM > CONTACT)
     buyerInfo: {
