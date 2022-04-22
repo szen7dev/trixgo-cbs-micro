@@ -92,7 +92,7 @@ class Model extends BaseModel {
         customerCredit, quantityCalculate, unitpriceCalculate,
         amountCalculate, fcuExRate, fcuAmountCalculate,
         cash, vat, note, date, subtype,
-        updown, advancePayment, debit, credit, contract, warehouse, 
+        updown, advancePayment, debit, credit, contract, goods, warehouse, 
         budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
     }){
         let dataInsert = {
@@ -225,20 +225,22 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Tạo chi tiết chứng từ ✅
+     * Name  : Tạo chi tiết chứng từ 
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */
     insertFull({ 
         authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, cash, vat, note, updown, advancePayment, 
-        date, subtype, warehouse, unitprice, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
+        date, subtype, warehouse, unitprice, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork, ctx
     }) {
         console.log({ 
             authorID, companyID, fundaID, voucher, debit, credit, customerDebit,
         customerCredit, goods, quantity, amount, fcuExRate, contract, cash, vat, note, updown, advancePayment, 
         date, subtype, warehouse, unitprice, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
         })
+
+        // console.log({'_________ctx':ctx})
 
         const that = this;
         return new Promise(async (resolve) => {
@@ -274,14 +276,16 @@ class Model extends BaseModel {
                     customerCredit, quantityCalculate, unitpriceCalculate,
                     amountCalculate, fcuExRate, fcuAmountCalculate,
                     cash, vat, note, date, subtype,
-                    updown, advancePayment, debit, credit,
-                    goods, contract, warehouse, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
+                    updown, advancePayment, debit, credit, contract,
+                    goods, warehouse, budget, budgetProject, budgetContract, budgetItem, budgetGroup, budgetWork
                 })
                
                 // console.log(dataInsert)
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "ERROR [ACCOUNTING_JOURNAL][ADD_JOURNAL] cannot_insert", status: 400 });
+
+                    console.log('Budget3==========================>>>>>')
                 
                 //Todos
                 //___________CẬP NHẬT LẠI THÔNG TIN PHIẾU
@@ -296,6 +300,8 @@ class Model extends BaseModel {
                     responseResultInsert = { error: false, data: infoAfterInsert, status: 200}
                 }
 
+                console.log('Budget4=========================>>>>>')
+
                 /**
                  * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
                  * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
@@ -304,11 +310,36 @@ class Model extends BaseModel {
                  * 3. Cập nhật ngân sách Hạng mục
                  * 4. Cập nhật ngân sách Tổng
                  */
-                if(budgetWorkID && _isValid(budgetWorkID)){
-                    const infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
-                        workID: budgetWorkID
+                if(budgetWork && _isValid(budgetWork)){
+                    console.log('Budget5==========================>>>>>')
+                    console.log(budget)
+                    const infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
+                        option: 2,
+                        budgetID: `${budget}`
                     })
-                    console.log('Budget==========================>>>>>')
+                    console.log(infoBudget)
+                    console.log('Budget Update==========================>>>>>')
+                   
+
+                    const infoBudgetItem = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
+                        option: 2,
+                        itemID: `${budgetItem}`
+                    })
+                    console.log('Budget Update==========================>>>>>')
+                    console.log(infoBudgetItem)
+
+                    const infoBudgetGroup = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
+                        option: 2,
+                        groupID: `${budgetGroup}`
+                    })
+                    console.log('Budget Update==========================>>>>>')
+                    console.log(infoBudgetGroup)
+
+                    const infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
+                        option: 2,
+                        workID: `${budgetWork}`
+                    })
+                    console.log('Budget Update==========================>>>>>')
                     console.log(infoBudgetWork)
                 }
 
@@ -499,7 +530,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Tổng hợp ngân sách đã thực hiện ✅
+     * Name  : Tổng hợp ngân sách đã thực hiện 
      * Author: Hiepnh
      * Date  : 10/4/2022 
      */

@@ -37,16 +37,16 @@ module.exports = {
                     ipc, fee, subtype, project } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(userID)
+                // console.log(userID)
 
-                console.log( { fundaID, type, date, 
-                    dateInvoice, name, sign, signInvoice, 
-                    customer, receiver, note, vat, contract, 
-                    storage, inspection, termination, advancePayment,
-                    returning, forward, cancel, source, orderNew, pricePolicy,
-                    discountCost, otherCost, shipperName, shipperCost, staff, 
-                    fcuExRate, selectedJournals, isImport,
-                    ipc, fee, subtype, project })
+                // console.log( { fundaID, type, date, 
+                //     dateInvoice, name, sign, signInvoice, 
+                //     customer, receiver, note, vat, contract, 
+                //     storage, inspection, termination, advancePayment,
+                //     returning, forward, cancel, source, orderNew, pricePolicy,
+                //     discountCost, otherCost, shipperName, shipperCost, staff, 
+                //     fcuExRate, selectedJournals, isImport,
+                //     ipc, fee, subtype, project })
 
                 let  resultAfterCallHandler;
 
@@ -59,6 +59,7 @@ module.exports = {
                     return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
                 }
                 fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
+                
                 resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insertFull({ 
                     authorID : userID, companyID: company._id, ctx,
                     fundaID, type, date, 
@@ -70,6 +71,7 @@ module.exports = {
                     fcuExRate, selectedJournals, isImport,
                     ipc, fee, subtype, project
                 }) 
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 console.log(`[ACCOUNTING][VOUCHER_HANDLER][INSERT_FULL] ${error}`);

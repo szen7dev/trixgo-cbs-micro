@@ -31,7 +31,7 @@ class Model extends BaseModel {
 
     /**
 	 * Dev : Depv
-	 * Func: Tạo account
+	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
 	insert({ companyID, parentID, name, description, userID }){
@@ -73,7 +73,7 @@ class Model extends BaseModel {
 
     /**
 	 * Dev : Depv
-	 * Func: update account
+	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
 	update({ goodsID, name, description, userID }){
@@ -152,7 +152,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách goods ✅
+     * Name  : Danh sách goods 
      * Author: Depv
      * Code  : 
      */

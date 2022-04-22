@@ -64,7 +64,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     }],
     /**
      * PHÂN LOẠI PHỤC VỤ BÁO CÁO
-     */ 
+     */
     /**
      * Phân loại công việc mẫu/thông thường
      * 0-Việc thông thường
@@ -119,17 +119,17 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     //_________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
-        ref : "department"                  
+        ref : "department"
     },
     //_________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
-        ref : "pcm_plan_group"                  
+        ref : "pcm_plan_group"
     },
     //_________Thuộc hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
-        ref : "contract"                  
+        ref : "contract"
     },
     //_________Xử lý việc cho văn bản tài liệu nào
     document: {
@@ -263,7 +263,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     //________Thực tế thời lượng (h)
     executiontime: { type: Number, default: 0 },
     //_________Đơn giá cho 1 giờ làm
-    amountPerHour: { type: Number, default: 0 }, 
+    amountPerHour: { type: Number, default: 0 },
     //_________Khác
     quality: {
         type: Schema.Types.ObjectId,

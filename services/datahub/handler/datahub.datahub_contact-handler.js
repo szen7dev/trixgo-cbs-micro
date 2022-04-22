@@ -10,7 +10,7 @@ const DATAHUB_CONTACT_MODEL                   = require('../model/datahub.datahu
 
 module.exports = {
     /**
-	 * Name: Insert ✅
+	 * Name: Insert 
      * Author: Hiepnh
      * Date: 9/4/2022
 	 */
@@ -41,7 +41,7 @@ module.exports = {
     },
 
     /**
-	 * Name: Update✅
+	 * Name: Update
      * Author: Hiepnh
      * Date: 9/4/2022
 	 */
@@ -100,7 +100,7 @@ module.exports = {
     },
 
     /**
-     * Name: Get info and Get list ✅
+     * Name: Get info and Get list 
      * Author: Hiepnh
      * Date: 9/4/2022
      */

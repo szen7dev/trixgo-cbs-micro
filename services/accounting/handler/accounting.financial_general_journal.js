@@ -29,14 +29,18 @@ module.exports = {
             try {
                 const { fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
-                    project, job, cash, vat, note, updown, advancePayment , 
-                    date, subtype, budgetWorkID } = ctx.params;
+                    cash, vat, note, updown, advancePayment , 
+                    date, subtype, budgetWork } = ctx.params;
+
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log(ctx)
+
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
                     authorID: userID, companyID: company._id, fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
-                    project, job, cash, vat, note, updown, advancePayment , 
-                    date, subtype, budgetWorkID
+                   cash, vat, note, updown, advancePayment , 
+                    date, subtype, budgetWork, ctx
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -119,7 +123,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Hiepnh ✅
+     * Dev: Hiepnh 
      * Func: Tổng hợp ngân sách đã thực hiện
      * Date: 10/4/2022
      */

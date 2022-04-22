@@ -27,7 +27,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert apartment ✅
+     * Name: insert apartment 
      * Author: Depv
      * Code: 
      */
@@ -86,7 +86,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update apartment ✅
+     * Name: update apartment 
      * Author: Depv
      * Code: 
      */
@@ -197,7 +197,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove apartment ✅
+     * Name: Remove apartment 
      * Author: Depv
      * Code: 
      */
@@ -233,7 +233,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get apartment ✅
+     * Name: get apartment 
      * Author: Depv
      * Code: 
      */
@@ -269,7 +269,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách apartment✅
+     * Name  : Danh sách apartment
      * Author: Depv
      * Code  : 
      */

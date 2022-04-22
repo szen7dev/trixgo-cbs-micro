@@ -153,7 +153,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách account ✅
+     * Name  : Danh sách account 
      * Author: Depv
      * Code  : 
      */
@@ -281,7 +281,7 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name: get info account ✅
+     * Name: get info account 
      * Author: vinh
      * Xoá nhớ báo Vinh vì có thể liên quan đến accouting
      * Code: 

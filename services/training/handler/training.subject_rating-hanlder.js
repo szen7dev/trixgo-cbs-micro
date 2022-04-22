@@ -10,7 +10,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: insert subject rating
 	 */
     insert: {

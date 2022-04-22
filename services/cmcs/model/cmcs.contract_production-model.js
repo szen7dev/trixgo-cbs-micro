@@ -30,7 +30,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: insert contract production ✅
+     * Name: insert contract production 
      * Author: Depv
      * Code: 
      */
@@ -108,7 +108,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update contract production ✅
+     * Name: update contract production 
      * Author: Depv
      * Code: 
      */
@@ -194,7 +194,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove contract production ✅
+     * Name: Remove contract production 
      * Author: Depv
      * Code: 
      */
@@ -231,7 +231,7 @@ class Model extends BaseModel {
 
 
     /**
-     * Name: get info contract production ✅
+     * Name: get info contract production 
      * Author: Depv
      * Code: 
      */
@@ -269,12 +269,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách contract production ✅
+     * Name  : Danh sách contract production 
      * Author: Depv
      * Code  : 
      */
         /**
-     * Name  : Danh sách contract payment ✅
+     * Name  : Danh sách contract payment 
      * Author: Depv
      */
     getList({ projectID, contractID,
@@ -371,7 +371,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo tháng trong năm✅
+     * Name: Danh sách theo tháng trong năm
      * Author: Hiepnh
      * Date: 05/04/2022
      */
@@ -542,7 +542,7 @@ class Model extends BaseModel {
     } 
 
     /**
-     * Name: Gom nhóm theo đối tượng ✅
+     * Name: Gom nhóm theo đối tượng 
      * Author: Hiepnh
      * Date: 15/04/2022
      */
@@ -678,7 +678,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Gom nhóm theo thuộc tính ✅
+     * Name: Gom nhóm theo thuộc tính 
      * Author: Hiepnh
      * Date: 17/04/2022
      */

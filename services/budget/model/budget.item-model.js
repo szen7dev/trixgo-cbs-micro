@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert ✅
+     * Name: insert 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -127,7 +127,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update ✅
+     * Name: update 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -212,13 +212,13 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove ✅
+     * Name: Remove 
      * Author: Hiepnh
      * Date: 9/4/2022
      */
 
     /**
-     * Name: Get info ✅
+     * Name: Get info 
      * Author: Hiepnh
      * Date: 10/4/2022
      */
@@ -367,7 +367,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) ✅
+     * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) 
      * Author: Hiepnh
      * Date  : 10/4/2022
      */

@@ -11,7 +11,7 @@ const ITEM__AREA_MODEL                    = require('../model/item.area-model').
 module.exports = {
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách area
 	 */
     getInfoAndGetList: {

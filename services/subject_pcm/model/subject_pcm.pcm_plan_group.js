@@ -29,7 +29,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert group ✅
+     * Name: insert group 
      * Author: Depv
      * Code:
      */
@@ -59,7 +59,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group ✅
+     * Name: update group 
      * Author: Depv
      * Code:
      */
@@ -110,7 +110,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: remove group ✅
+     * Name: remove group 
      * Author: Depv
      * Code:
      */
@@ -132,7 +132,7 @@ class Model extends BaseModel {
     };
 
     /**
-     * Name: remove many ✅
+     * Name: remove many 
      * Author: Depv
      * Code:
      */
@@ -154,7 +154,7 @@ class Model extends BaseModel {
     };
 
     /**
-     * Name: get info user_pcm_plan_group ✅
+     * Name: get info user_pcm_plan_group 
      * Author: Depv
      * Code:
      */
@@ -191,7 +191,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách user_pcm_plan_group ✅
+     * Name  : Danh sách user_pcm_plan_group 
      * Author: Depv
      * Code  :
      */

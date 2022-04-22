@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
  
     /**
-	 * Name: insert datahub contractor✅
+	 * Name: insert datahub contractor
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -71,7 +71,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update datahub contractor✅
+	 * Name: update datahub contractor
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -120,7 +120,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove datahub contractor ✅
+	 * Name: Remove datahub contractor 
 	 * Author: Depv
 	 * Code: 
 	 */
@@ -142,7 +142,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info datahub contractor ✅
+	 * Name: get info datahub contractor 
 	 * Author: Depv
 	 * Code: 
 	 */

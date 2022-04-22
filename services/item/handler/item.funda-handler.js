@@ -58,7 +58,7 @@ module.exports = {
     },
     
    /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách funda
 	 */
     getInfoAndGetList: {

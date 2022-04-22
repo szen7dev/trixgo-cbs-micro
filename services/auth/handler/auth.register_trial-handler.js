@@ -10,7 +10,7 @@
  
 module.exports = {
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: insert register trial
      */
     insert: {
@@ -38,7 +38,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: update pcm_plan_report
      */
     update: {
@@ -72,7 +72,7 @@ module.exports = {
 
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: remove pcm_plan_report
      */
     remove: {
@@ -98,7 +98,7 @@ module.exports = {
 
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: get info and get list register trialprogram
      */
     getInfoAndGetList: {
@@ -133,7 +133,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Thống kê theo tổ chức
      */
     statisticsByType: {
@@ -160,7 +160,7 @@ module.exports = {
 
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Thống kê theo năm
      */
     statisticsByYear: {
@@ -186,7 +186,7 @@ module.exports = {
 
 
       /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Thống kê theo công ty
      */
     statisticsByCompany: {

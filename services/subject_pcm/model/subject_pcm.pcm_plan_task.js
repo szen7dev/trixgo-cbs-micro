@@ -1,7 +1,7 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment')
@@ -28,7 +28,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert task ✅
+     * Name: insert task
      * Author: Depv
      * Code:
      */
@@ -137,7 +137,7 @@ class Model extends BaseModel {
                 let infoAuthor = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: authorID, select: "_id company"
                 })
-                
+
                 let infoAssignee = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
                     userID: assigneeID, select: "_id company"
                 })
@@ -150,7 +150,7 @@ class Model extends BaseModel {
                 if(!infoAssignee.error){
                     dataInsert.companyOfAssignee = infoAssignee.data.company;
                 }
-                
+
                 // Việc con hoặc check list
                 if(parentID && checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
@@ -377,7 +377,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update task ✅
+     * Name: update task
      * Author: Depv
      * Code:
      */
@@ -385,7 +385,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
         contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, ctx
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, ctx
     }){
         return new Promise(async (resolve) => {
             try {
@@ -397,7 +397,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate   = { };
+                let dataUpdate   = {};
                 let dataAddToset = {};
                 let dataPullAll  = {};
 
@@ -476,8 +476,10 @@ class Model extends BaseModel {
                 }
 
                 //_________Việc nháp
-                if([0, 1].includes(draft)){
-                    dataUpdate.draft = draft;
+                if(draft && infoTask.draft === 1){
+                    dataUpdate.draft = 0;
+                    dataUpdate.companyOfAuthor = companyOfUser;
+                    dataUpdate.author = userID;
                 }
 
                 //_________Phân loại công việc
@@ -740,7 +742,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update status mutiple ✅
+     * Name: update status mutiple
      * Author: Depv
      * Code:
      */
@@ -784,7 +786,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info task ✅
+     * Name: get info task
      * Author: Depv
      * Code:
      */
@@ -855,7 +857,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách pcm_plan_task ✅
+     * Name  : Danh sách pcm_plan_task
      * Author: Depv
      * Code  :
      */
@@ -1192,7 +1194,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng task của bạn ✅
+     * Name: Lấy số lượng task của bạn
      * Author: Depv
      */
     getAmountTask({ userID }){
@@ -1288,7 +1290,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng task đấu thầu ✅
+     * Name: Lấy số lượng task đấu thầu
      * Author: Depv
      */
     getBadgeBidding({ userID }){
@@ -1421,7 +1423,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2 ✅
+     * Name: Lấy số lượng công việc của companyOfAssignee trong dự án V2
      * Author: Depv
      * Code:
      */
@@ -1546,7 +1548,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Lấy số lượng công việc của tất cả project mà user là members✅
+     * Name: Lấy số lượng công việc của tất cả project mà user là members
      * Author: Depv
      */
     getAmountTaskByProjects({ userID, fromDate, toDate, ctx }){
@@ -1674,6 +1676,180 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến việc cha
+     * Date: 22/04/2022
+	 */
+    moveTaskToParent({ parentID, taskID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    parentID,
+                    taskID,
+                    userID
+                })
+                if(validation.error) return resolve(validation);
+
+                const infoParent = await PCM_PLAN_TASK_COLL.findById(parentID);
+
+                if(!infoParent) {
+                    return resolve({
+                        error: true,
+                        message: 'Công việc cha không tồn tại',
+                        keyError: 'parent_task_not_exists',
+                        status: 400
+                    });
+                }
+
+                const { project, group } = infoParent;
+
+                const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
+                    _id: taskID,
+                    project,
+                    $or: [
+                        { author: userID },
+                        { assignee: userID },
+                    ]
+                }, {
+                    $set: {
+                        parent: parentID,
+                        group
+                    }
+                }, { new: true })
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Di chuyển không thành công (công việc không tồn tại hoặc không cùng dự án)',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, data: result, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Di chuyển công việc đến nhóm dữ liệu khác (trong cùng dự án)
+     * Date: 22/04/2022
+	 */
+    moveTaskToGroup({ groupID, taskID, userID }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({
+                    groupID,
+                    taskID,
+                    userID
+                })
+
+                if(validation.error) return resolve(validation);
+
+                const infoGroup = await PCM_PLAN_GROUP_COLL.findById(groupID);
+
+                if(!infoGroup) {
+                    return resolve({
+                        error: true,
+                        message: 'Nhóm dữ liệu không tồn tại',
+                        keyError: 'group_not_exists',
+                        status: 400
+                    });
+                }
+
+                const result = await PCM_PLAN_TASK_COLL.findOneAndUpdate({
+                    _id: taskID,
+                    project: infoGroup.project,
+                    $or: [
+                        { author: userID },
+                        { assignee: userID },
+                    ]
+                }, {
+                    $set: {
+                        group: groupID
+                    }
+                }, { new: true })
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Di chuyển không thành công (công việc không tồn tại hoặc không cùng dự án)',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, data: result, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Copy task
+     * Date: 22/04/2022
+     */
+    copyTask({ taskID, userID, companyOfUser }) {
+        return new Promise(async resolve => {
+            try {
+                const validation = validateParamsObjectID({ taskID, userID, companyOfUser });
+                if(validation.error) return resolve(validation);
+
+                const infoOldTask = await PCM_PLAN_TASK_COLL
+                    .findById(taskID)
+                    .select('company project group parent name related assignee companyOfAssignee')
+                    .lean();
+
+                if(!infoOldTask) {
+                    return resolve({
+                        error: true,
+                        message: 'Công việc cũ không tồn tại',
+                        keyError: 'old_task_not_exists',
+                        status: 400
+                    });
+                }
+
+                const { company, project, group, parent, name, related, assignee, companyOfAssignee } = infoOldTask;
+
+                const suid = await stringUtils.randomAndCheckExists(PCM_PLAN_TASK_COLL, 'suid');
+                const result = await this.insertData({
+                    suid,
+                    name: `Copy of ${name}`,
+                    draft: 1, // Việc nháp
+                    companyOfAuthor: companyOfUser,
+                    companyOfAssignee,
+                    author: userID,
+                    assignee,
+                    related,
+                    company,
+                    project,
+                    group,
+                    parent
+                });
+
+                if(!result) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                return resolve({ error: false, data: result, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
 }
 
 exports.MODEL = new Model;

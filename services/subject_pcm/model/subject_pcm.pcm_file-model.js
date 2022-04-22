@@ -29,8 +29,10 @@ class Model extends BaseModel {
     }
 
     /**
-     * Thêm pcm_file: DePV ✅
-     */
+	 * Dev: MinhVH
+	 * Func: Thêm pcm file
+	 * Date: ...
+	 */
     insert({
         companyID, projectID, groupID, contractID, taskID, commentID, fileID,
         type, nameOrg, name, description, path, size, mimeType, authorID
@@ -86,12 +88,12 @@ class Model extends BaseModel {
         })
     }
 
-    /**
-     * Danh sách file pcm: Depv ✅
-     */
-    getList({
-        companyID, projectID, groupID, taskID, type,
-        limit = 10, lastestID, select, populates }) {
+   /**
+	 * Dev: MinhVH
+	 * Func: Lấy danh sách file
+	 * Date: ...
+	 */
+    getList({ companyID, projectID, groupID, taskID, keyword, type, limit = 10, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(!companyID && !projectID && !groupID && !taskID) {
@@ -143,6 +145,12 @@ class Model extends BaseModel {
                     conditionObj.type = type;
                 }
 
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.nameOrg = new RegExp(keyword, 'i');
+                }
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_FILE_COLL.findById(lastestID);
@@ -183,7 +191,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,

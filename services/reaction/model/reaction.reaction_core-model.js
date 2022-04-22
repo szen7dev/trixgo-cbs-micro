@@ -13,7 +13,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thêm reaction core ✅
+     * Name: Thêm reaction core 
      * Author: Depv
      * Code: F0275
      */
@@ -55,7 +55,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: Cập nhật type reaction ✅
+     * Name: Cập nhật type reaction 
      * Author: Depv
      * Code: F0276
      */

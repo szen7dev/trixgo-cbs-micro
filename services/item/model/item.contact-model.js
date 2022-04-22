@@ -29,7 +29,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thêm danh bạ, nhân sự ✅
+     * Name: Thêm danh bạ, nhân sự 
      * Author: Depv
      * Code: 
      */
@@ -231,7 +231,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name: update danh bạ, nhân sự ✅
+     * Name: update danh bạ, nhân sự 
      * Author: Depv
      * Code: 
      */
@@ -506,7 +506,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thông tin nhân sự ✅
+     * Name: Thông tin nhân sự 
      * Author: Depv
      * Code: 
      */
@@ -555,7 +555,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách nhân sự ✅
+     * Name  : Danh sách nhân sự 
      * Author: Depv
      * Code  : 
      */
@@ -719,7 +719,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách danh bạ của hệ thống ✅
+     * Name  : Danh sách danh bạ của hệ thống 
      * Author: HiepNH/DePV-update
      * Code  : 
      */
@@ -825,7 +825,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Báo cáo biến động nhân sự ✅
+     * Name  : Báo cáo biến động nhân sự 
      * Author: Depv
      * Code  : 
      */

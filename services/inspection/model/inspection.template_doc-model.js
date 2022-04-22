@@ -26,7 +26,7 @@ class Model extends BaseModel {
 
     
     /**
-     * Thêm mẩu tin: HiepNH ✅
+     * Thêm mẩu tin: HiepNH 
      * F0211
      */
     insert({ type, name, sign, description, userID }) { 
@@ -82,7 +82,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Cập nhật template docs: DePV ✅
+     * Cập nhật template docs: DePV 
      * F0212
      */
     update({ templateID, name, sign, description, userID }) { 
@@ -136,7 +136,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Xóa template docs: DePV ✅
+     * Xóa template docs: DePV 
      * F0213
      */
     remove({ templateID }) { 
@@ -173,7 +173,7 @@ class Model extends BaseModel {
 
 
     /**
-     * Name: Danh sách template docs ✅
+     * Name: Danh sách template docs 
      * Author: Depv 
      */
     getList({ type, keyword, limit = 10, lastestID, filter = {}, select = {} }) { 
@@ -287,7 +287,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Lấy thông tin template DePV ✅
+     * Lấy thông tin template DePV 
      * F0214A
      */
     getInfo({ templateID, filter }) { 

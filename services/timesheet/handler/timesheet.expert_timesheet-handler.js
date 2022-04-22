@@ -11,7 +11,7 @@ const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../model/timesheet.ex
 module.exports = {
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Insert expert timesheet
 	 */
     insert: {
@@ -42,7 +42,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Update expert timesheet
 	 */
     update: {
@@ -84,7 +84,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Remove expert timesheet
 	 */
     remove: {
@@ -106,7 +106,7 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách expert timesheet
 	 */
     getInfoAndGetList: {

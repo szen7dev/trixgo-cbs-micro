@@ -78,7 +78,7 @@ module.exports = {
 	 */
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách position
 	 */
     getInfoAndGetList: {

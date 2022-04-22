@@ -10,7 +10,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách và lấy thông tin contract bill job
 	 */
     getListAndGetInfoContractBillJob: {

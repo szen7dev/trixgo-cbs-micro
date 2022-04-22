@@ -10,7 +10,7 @@ const DATAHUB_INSPECTION_CHECKLIST_MODEL                = require('../model/data
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm datahub inspection checklist
 	 */
     insert: {
@@ -38,7 +38,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Sửa datahub inspection checklist
 	 */
     update: {
@@ -66,7 +66,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Xóa datahub inspection checklist
      */
     remove: {
@@ -91,7 +91,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: get info and get list datahub checklist
      */
     getInfoAndGetList: {

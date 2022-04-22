@@ -10,7 +10,7 @@ const DATAHUB_PROFILE_MODEL                   = require('../model/datahub.datahu
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm datahub profile
 	 */
     insert: {
@@ -37,7 +37,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Sửa datahub profile
 	 */
     update: {
@@ -65,7 +65,7 @@ module.exports = {
     },
     
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: Xóa datahub profile
      */
     remove: {
@@ -90,7 +90,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv ✅
+     * Dev: Depv 
      * Func: get info and get list datahub profile
      */
     getInfoAndGetList: {

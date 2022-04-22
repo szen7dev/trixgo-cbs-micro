@@ -26,7 +26,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert subject rating ✅
+     * Name: insert subject rating 
      * Author: Depv 
      * Code: F02506
      */

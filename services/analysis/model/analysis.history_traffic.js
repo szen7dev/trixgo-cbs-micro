@@ -265,7 +265,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách history traffic ✅
+     * Name  : Danh sách history traffic 
      * Author: Depv
      * Code  : 
      */

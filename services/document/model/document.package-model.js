@@ -32,7 +32,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: insert document package ✅
+	 * Name: insert document package 
 	 * Author: Depv
 	 * Code:
 	 */
@@ -86,7 +86,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: update document package ✅
+	 * Name: update document package 
 	 * Author: Depv
 	 * Code:
 	 */
@@ -131,7 +131,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove document package ✅
+	 * Name: Remove document package 
 	 * Author: Depv
 	 * Code:
 	 */
@@ -153,7 +153,7 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Name: Remove document package many ✅
+	 * Name: Remove document package many 
 	 * Author: Depv
 	 * Code:
 	 */
@@ -175,7 +175,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: get info document package ✅
+	 * Name: get info document package 
 	 * Author: Depv
 	 * Code:
 	 */

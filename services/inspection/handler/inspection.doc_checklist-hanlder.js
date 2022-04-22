@@ -10,7 +10,7 @@ const INSPECTION__CHECKLIST_MODEL      = require('../model/inspection.doc_checkl
 
 module.exports = {
     /**
-	 * Dev: DePV ✅
+	 * Dev: DePV 
 	 * Func: Cập nhật trạng thái hoàn thành checklist
 	 * Date: 17/08/2021
 	 */
@@ -38,7 +38,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv✅
+	 * Dev: Depv
 	 * Func: Danh sách checklist của inspection hoặc thông tin checklist
 	 * Date: 17/08/2021
 	 */

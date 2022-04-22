@@ -32,19 +32,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { pcmFileID, companyID, projectID, groupID, taskID, type, limit, lastestID, select, populates } = ctx.params;
+                const { keyword, companyID, projectID, groupID, taskID, type, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                let resultAfterCallHandler;
-                if(pcmFileID){
-                    // Get info xử lý sau nếu cần
-                }else{
-                    resultAfterCallHandler = await PCM_FILE_MODEL.getList({
-                        companyID, projectID, groupID, taskID, type, limit, lastestID, select, populates
-                    });
-                }
+
+                const resultAfterCallHandler = await PCM_FILE_MODEL.getList({
+                    companyID, projectID, groupID, taskID, keyword, type, limit, lastestID, select, populates
+                });
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },

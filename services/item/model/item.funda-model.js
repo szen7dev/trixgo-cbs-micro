@@ -102,7 +102,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info funda ✅
+     * Name: get info funda 
      * Author: Depv
      * Code: 
      */
@@ -152,7 +152,7 @@ class Model extends BaseModel {
     }
     
     /**
-     * Name  : Danh sách funda ✅
+     * Name  : Danh sách funda 
      * Author: Depv
      * Code  : 
      */

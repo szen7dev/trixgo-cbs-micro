@@ -10,7 +10,7 @@
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Thêm template hồ sơ/biên bản
 	 * Date: 17/08/2021
 	 */
@@ -41,7 +41,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật template hồ sơ/biên bản
 	 * Date: 17/08/2021
 	 */
@@ -71,7 +71,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Cập nhật template hồ sơ/biên bản
 	 * Date: 17/08/2021
 	 */
@@ -97,7 +97,7 @@ module.exports = {
         }
     },
     /**
-	 * Dev: Depv ✅
+	 * Dev: Depv 
 	 * Func: Danh sách template hồ sơ/biên bản
 	 * Date: 17/08/2021
 	 */

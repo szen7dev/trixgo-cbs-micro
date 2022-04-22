@@ -367,7 +367,8 @@ class AccountingFinancialVoucher extends BaseModel {
                             fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
                             note: subitem.note,
                             updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
-                            advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0
+                            advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
+                            ctx
                         }
 
                         /**
@@ -430,8 +431,11 @@ class AccountingFinancialVoucher extends BaseModel {
                         /**
                          * Cập nhật ngân sách thực hiện
                          */
-                        if(subitem.budgetWorkID && _isValid(subitem.budgetWorkID)){
-                            let infoWork = await BUDGET_WORK_COLL.findById(subitem.budgetWorkID);
+                        if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                            console.log('CHUAN BI =============BUT TOAN')
+
+                            let infoWork = await BUDGET_WORK_COLL.findById(subitem.budgetWork);
+                            console.log(infoWork)
                             if(infoWork){
                                 if(infoWork.budget){
                                     dataInsert.budget = infoWork.budget;
@@ -448,11 +452,13 @@ class AccountingFinancialVoucher extends BaseModel {
                                 if(infoWork.group){
                                     dataInsert.budgetGroup = infoWork.group;
                                 }
-                                dataInsert.budgetWork = infoWork.budgetWorkID;
+                                dataInsert.budgetWork = subitem.budgetWork;
                             }
                         }
 
-                        console.log(dataInsert)
+                        // console.log('====Đưa sang bút toán')
+                        // console.log(dataInsert)
+                        console.log('====Đưa sang bút toán')
                         
                         //_________Tiến hành tạo chi tiết_________//
                         const res = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
