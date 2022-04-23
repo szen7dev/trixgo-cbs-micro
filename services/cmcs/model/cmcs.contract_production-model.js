@@ -415,6 +415,10 @@ class Model extends BaseModel {
                     conditionObjAgg.field = ObjectID(field)
                 }
 
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
+                }
+
                 if(chair && checkObjectIDs(chair)){
                     conditionObjAgg.chair = ObjectID(chair)
                 }

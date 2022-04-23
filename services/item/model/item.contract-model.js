@@ -1805,22 +1805,12 @@ class Model extends BaseModel {
                 //3-Cập nhật Chi phí
                 if(option && Number(option) === 3){
                     console.log('3-Cập nhật Chi phí')
-                    let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
+                    let infoExpenseContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
-                    // console.log(infoIpcContract)
-                    if(infoIpcContract){
-                        dataUpdate.acceptance = Number(infoIpcContract.data.acceptance);
-                        dataUpdate.vatAcceptance = Number(infoIpcContract.data.vatAcceptance);
-                        dataUpdate.plusAcceptance = Number(infoIpcContract.data.plusAcceptance);
-                        dataUpdate.vatPlusAcceptance = Number(infoIpcContract.data.vatPlusAcceptance);
-                        dataUpdate.retainedValue = Number(infoIpcContract.data.retainedValue);
-                        dataUpdate.advancePaymentDeduction = Number(infoIpcContract.data.advancePaymentDeduction);
-                        dataUpdate.otherDeduction = Number(infoIpcContract.data.otherDeduction);
-                        dataUpdate.recommendedPayment = Number(infoIpcContract.data.recommendedPayment);
-                        dataUpdate.advancePaymentPaid = Number(infoIpcContract.data.advancePaymentPaid);
-                        dataUpdate.amountPaid = Number(infoIpcContract.data.amountPaid);
-                        dataUpdate.remainingPayment = Number(infoIpcContract.data.recommendedPayment) - Number(infoIpcContract.data.advancePaymentPaid) - Number(infoIpcContract.data.amountPaid)
+                    // console.log(infoExpenseContract)
+                    if(infoExpenseContract){
+                        dataUpdate.expense = Number(infoExpenseContract.data.value);
                     }
                 }
 

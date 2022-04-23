@@ -90,6 +90,7 @@ class Model extends BaseModel {
      * Author: Depv
      */
     update({ expenseID, subtype, date, name, note, value, userID, ctx  }){
+        console.log({ expenseID, subtype, date, name, note, value, userID })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -329,6 +330,10 @@ class Model extends BaseModel {
                     conditionObjAgg.field = ObjectID(field)
                 }
 
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
+                }
+
                 if(chair && checkObjectIDs(chair)){
                     conditionObjAgg.chair = ObjectID(chair)
                 }
@@ -544,36 +549,31 @@ class Model extends BaseModel {
                  * BA
                  * Phục vụ cập nhật thông tin cho hợp đồng, dự án, công ty
                  */
+                let value = 0
 
-                let value1 = 0
-                let value2 = 0
-
-                let conditionObj1 = { type: 1 }, conditionObj2 = { type: 2 }
+                let conditionObj = { }
 
                 // if(!isNaN(outin) && Number(outin) >= 0){
-                //     conditionObj1.outin = outin
-                //     conditionObj2.outin = outin
+                //     conditionObj.outin = outin
                 // }
 
                 if(contractID && checkObjectIDs(contractID)){
-                    conditionObj1.contract = ObjectID(contractID)
-                    conditionObj2.contract = ObjectID(contractID)
+                    conditionObj.contract = ObjectID(contractID)
                 }else{
                     if(projectID && checkObjectIDs(projectID)){
-                        conditionObj1.project = ObjectID(projectID)
-                        conditionObj2.project = ObjectID(projectID)
+                        conditionObj.project = ObjectID(projectID)
                     }else{
                         if(companyID && checkObjectIDs(companyID)){
-                            conditionObj1.company = ObjectID(companyID)
-                            conditionObj2.company = ObjectID(companyID)
+                            conditionObj.company = ObjectID(companyID)
                         }
                     }
                 }
 
-                // Tạm ứng
-                let listData1 = await CMCS__CONTRACT_EXPENSE_COLL.aggregate([
+                console.log(conditionObj)
+
+                let listData = await CMCS__CONTRACT_EXPENSE_COLL.aggregate([
                     {
-                        $match: conditionObj1
+                        $match: conditionObj
                     }, 
                     {
                         $group: {
@@ -582,31 +582,12 @@ class Model extends BaseModel {
                         }
                     }, 
                 ])
-                console.log(listData1)
-                
-                // Thanh toán
-                let listData2 = await CMCS__CONTRACT_EXPENSE_COLL.aggregate([
-                    {
-                        $match: conditionObj2
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            value: { $sum: "$value" },
-                        }
-                    }, 
-                ])
-                console.log(listData2)
 
-                if(listData1 && listData1.length){
-                    value1 = Number(listData1[0].value)
+                if(listData && listData.length){
+                    value = Number(listData[0].value)
                 }
 
-                if(listData2 && listData2.length){
-                    value2 = Number(listData2[0].value)
-                }
-
-                return resolve({ error: false, data: { value1, value2 } });
+                return resolve({ error: false, data: { value } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
