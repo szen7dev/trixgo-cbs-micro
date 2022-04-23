@@ -106,7 +106,7 @@ class Model extends BaseModel {
      * Name: update contract payment 
      * Author: Depv
      */
-    update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
+    update({ contractPaymentID, date, name, sign, description, value, userID, ctx  }){
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -161,7 +161,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
-                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
+                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: infoPayment.ipc, userID })
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG

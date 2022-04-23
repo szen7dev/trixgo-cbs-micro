@@ -3,6 +3,10 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+/**
+ * SẢN LƯỢNG
+ */
+
 module.exports  = DATABASE_MIDDLEWARE("contract_production", {
 
     /**
@@ -29,17 +33,17 @@ module.exports  = DATABASE_MIDDLEWARE("contract_production", {
         ref : 'contact'
     },
 
-    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
+    //_________Phân loại theo Phụ trách (POSTMAN ITEM -> CONTACT)
     personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
 
-    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    //_________Phân loại theo Chủ trì (POSTMAN ITEM -> CONTACT)
     chair: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
-    },   
+    },    
 
     //_________Bên mua (POSTMAN ITEM > CONTACT)
     buyerInfo: {

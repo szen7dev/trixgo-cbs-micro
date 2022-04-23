@@ -8,11 +8,13 @@ const CMCS__CONTRACT_BILL_JOB_COLL		= require('./database/cmcs.contract_bill_job
 const CMCS__CONTRACT_IPC_COLL			= require('./database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PRODUCTION_COLL	= require('./database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_PAYMENT_COLL		= require('./database/cmcs.contract_payment-coll');
+const CMCS__CONTRACT_EXPENSE_COLL		= require('./database/cmcs.contract_expense-coll');
 
 const CMCS__CONTRACT_BILL_JOB_HANDLER   = require('./handler/cmcs.contract_bill_job-handler');
 const CMCS__CONTRACT_IPC_HANDLER   		= require('./handler/cmcs.contract_ipc-handler');
 const CMCS__CONTRACT_PRODUCTION_HANDLER = require('./handler/cmcs.contract_production-handler');
 const CMCS__CONTRACT_PAYMENT_HANDLER 	= require('./handler/cmcs.contract_payment-handler');
+const CMCS__CONTRACT_EXPENSE_HANDLER 	= require('./handler/cmcs.contract_expense-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CMCS,
@@ -21,6 +23,7 @@ module.exports = {
 		DbService(CMCS__CONTRACT_IPC_COLL),
 		DbService(CMCS__CONTRACT_PRODUCTION_COLL),  
 		DbService(CMCS__CONTRACT_PAYMENT_COLL),  
+		DbService(CMCS__CONTRACT_EXPENSE_COLL),  
 		CacheCleaner([CF_DOMAIN_SERVICES.CMCS])
     ],
 
@@ -74,6 +77,16 @@ module.exports = {
 		[CF_ACTIONS_CMCS.CONTRACT_PAYMENT_GET_AMOUNT_BY_MONTH]						: CMCS__CONTRACT_PAYMENT_HANDLER.getAmountByMonth,
 		[CF_ACTIONS_CMCS.CONTRACT_PAYMENT_AMOUNT_BY_OBJECT]							: CMCS__CONTRACT_PAYMENT_HANDLER.getAmountByObject,
 		[CF_ACTIONS_CMCS.CONTRACT_PAYMENT_GET_AMOUNT_BY_PROPERTY]					: CMCS__CONTRACT_PAYMENT_HANDLER.getAmountByProperty,
+
+		//==========================================   CONTRACT EXPENSE   ================================
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_INSERT]   								: CMCS__CONTRACT_EXPENSE_HANDLER.insert,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_UPDATE]   								: CMCS__CONTRACT_EXPENSE_HANDLER.update,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_REMOVE]   								: CMCS__CONTRACT_EXPENSE_HANDLER.remove,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_INFO_AND_GET_LIST] 					: CMCS__CONTRACT_EXPENSE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_LIST_BY_MONTH]						: CMCS__CONTRACT_EXPENSE_HANDLER.getListByMonth,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_MONTH]						: CMCS__CONTRACT_EXPENSE_HANDLER.getAmountByMonth,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT]						: CMCS__CONTRACT_EXPENSE_HANDLER.getAmountByObject,
+		[CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_PROPERTY]					: CMCS__CONTRACT_EXPENSE_HANDLER.getAmountByProperty,
 	},
 
 	/**
