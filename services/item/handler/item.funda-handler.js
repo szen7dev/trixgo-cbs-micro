@@ -78,6 +78,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, isListParentOfListChilds, } = ctx.params;
+                
                 const { _id: userID, company } = ctx.meta.infoUser;
                 
                 if(!companyID){

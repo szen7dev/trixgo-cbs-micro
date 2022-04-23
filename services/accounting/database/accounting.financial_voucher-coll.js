@@ -27,23 +27,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     },
-    //_________Kỳ thanh toán (NEW***)
-    ipc: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract_ipc'
-    }, 
-    /**
-     * Loại khoản mục (NEW***)
-     * 1-Chung
-     * 2-Chi phí
-     * 3-Doanh thu
-     */
-    feeType: { type: Number, default: 1 },
-    //_________Khoản mục phí (NEW***)
-    fee: {
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    }, 
     //_________Mã khách/khách hàng
     customer: {
         type: Schema.Types.ObjectId,
@@ -88,9 +71,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     //_________Ngày hóa đơn (phục vụ bảng kê VAT)
     dateInvoice: { type: Date, default: null },   
     //_________Số hóa đơn
-    signInvoice: String,  
-    //_________Trạng thái đơn hàng
-    status: { type: Number, default: 1 },   
+    signInvoice: String,   
     //_________Khóa phiếu
     lock: { type: Number, default: 0 }, 
     //_________Tên chứng từ
@@ -115,6 +96,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
      /**
      * DÀNH RIÊNG CHO BÁN HÀNG
      */    
+    //_________Trạng thái đơn hàng
+    status: { type: Number, default: 1 },  
     //_________Nhân viên thực hiện đơn hàng
     staff: [{
         type: Schema.Types.ObjectId,
@@ -149,5 +132,5 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     journals: [{
         type: Schema.Types.ObjectId,
         ref: 'financial_general_journal'
-    }], 
+    }] 
 })
