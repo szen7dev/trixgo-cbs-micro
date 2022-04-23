@@ -148,6 +148,7 @@ module.exports = {
             outin           : { type: "string", optional: true },
             real            : { type: "string", optional: true },
             field           : { type: "string", optional: true },
+            dependentUnit   : { type: "string", optional: true },
             chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
             buyerInfo       : { type: "string", optional: true },
