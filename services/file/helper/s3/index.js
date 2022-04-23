@@ -23,7 +23,7 @@ let render_link_upload_file_s3 = ({ fileName, type, typeUpload, pathS3 }) =>{
         if(typeUpload == "contact"){
             bucket = `${config.bucket}/files/db/contacts`;
         }
-        
+
         if(typeUpload == "project"){
             bucket = `${config.bucket}/files/db/projects`;
         }
@@ -104,8 +104,8 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
             const extension = getExtension(fileName);
             const newFileName = `${uuidv4()}.${extension}`;
 
-            return { 
-                error: false, 
+            return {
+                error: false,
                 data: {
                     newFileName,
                     pathS3: ''
@@ -119,8 +119,8 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     if(!appID || !checkObjectIDs([appID])) {
         return {
             error: true,
-            message: 'Tham số AppID không hợp lệ', 
-            keyError: 'params_appID_invalid', 
+            message: 'Tham số AppID không hợp lệ',
+            keyError: 'params_appID_invalid',
             status: 400
         };
     }
@@ -140,7 +140,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     const GROUPS   = [APP_KEYS.PCM_PLAN_TASK];
     const PACKAGES = [APP_KEYS.DOCUMENT];
     const CONVERSATIONS = [APP_KEYS.CHATTING];
-    
+
     // Validate tham số theo app
     if(COMPANIES.includes(appID) && (!companyID || !checkObjectIDs([companyID]))) {
         return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
@@ -151,7 +151,7 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     }
 
     if(GROUPS.includes(appID) && (!groupID || !checkObjectIDs([groupID]))) {
-        return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 }; 
+        return { error: true, message: 'Tham số groupID không hợp lệ', keyError: 'params_groupID_invalid', status: 400 };
     }
 
     if(PACKAGES.includes(appID) && (!packageID || !checkObjectIDs([packageID]))) {
@@ -191,8 +191,8 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
     let extension   = getExtension(fileName);
     let newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${appName}.${extension}`;
 
-    return { 
-        error: false, 
+    return {
+        error: false,
         data: {
             newFileName,
             pathS3
