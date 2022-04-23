@@ -6,20 +6,12 @@ const Schema                = require('mongoose').Schema;
  * KẾ HOẠCH LỰA CHỌN NHÀ THẦU
  * - Áp dụng cho tất cả các ngành của nền kinh tế, không chỉ xây dựng
  * - Được triển khai trên cơ sở ngân sách được duyệt
- * - 
+ * - Cũng chính là 1 gói thầu để đem đi mời thầu luôn
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     /**
      * THÔNG TIN CHUNG
-     */    
-    /**
-     * Phân loại
-     * 1-Kế hoạch lựa chọn nhà thầu
-     * 2-Hồ sơ mời thầu
-     * 3-Hồ sơ dự thầu
-     * 4-Báo cáo đánh giá
      */
-    type: { type: Number, default: 1 },
     //_________Lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
@@ -48,14 +40,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref: "bidding_plan"
     },
-    level: {
-        type: Number,
-        default: 1
-    },
     //_________Tên gói thầu
     name: String,
     //_________Ký hiệu gói thầu
     sign: String,
+    //_________Mô tả/Tên hồ sơ mời thầu
+    description: String,
     //_________Ghi chú
     note: String,
     /**
@@ -71,6 +61,8 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     finishTime: { type: Date, default: null },
     //_________Thực tế bắt đầu chọn
     actualStartTime: { type: Date, default: null },
+    //_________Thời điểm đóng thầu
+    closingTime: { type: Date, default: null },
     //_________Thực tế kết thúc chọn
     actualFinishTime: { type: Date, default: null },
     /**
