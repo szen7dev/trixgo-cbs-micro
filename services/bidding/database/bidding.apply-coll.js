@@ -79,19 +79,19 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_apply", {
         type: Schema.Types.ObjectId,
         ref: "bidding_apply"
     },
-    /**
-     * Phân loại
-     * 1-Bảng dữ liệu
-     * 2-Năng lực nhân sự
-     * 3-Năng lực thiết bị
-     * 4-Giải pháp tổ chức thực hiện
-     */
-    type: { type: Number, default: 1 },
     //_________Dự thầu ứng với yêu cầu nào
     request: {
         type: Schema.Types.ObjectId,
         ref : "bidding_request"
     },
+    /**
+     * Phân loại
+     * 1-Bảng dữ liệu
+     * 2-Năng lực nhân sự
+     * 3-Năng lực máy móc
+     * 4-Yêu cầu vật tư thiết bị
+     * 5-Giải pháp tổ chức thực hiện
+     */
     /**
      * 2-NĂNG LỰC NHÂN SỰ
      */
@@ -108,7 +108,15 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_apply", {
         ref: "file"
     }],
     /**
-     * 4-GIẢI PHÁP TỔ CHỨC THỰC HIỆN
+     * 4-YÊU CẦU VẬT TƯ THIẾT BỊ
+     */
+    //________Tài liệu xác nhận
+    materialAttachs: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
+    /**
+     * 5-GIẢI PHÁP TỔ CHỨC THỰC HIỆN
      */
     //________Tài liệu xác nhận
     solutionAttachs: [{

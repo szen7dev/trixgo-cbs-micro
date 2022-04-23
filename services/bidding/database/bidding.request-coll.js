@@ -104,11 +104,11 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     //_________Nội dung (với phân nhóm thì sẽ viết Hoa, bỏ trống, sử dụng order)
     materialContent: String,    
     //_________Vị trí, khu vực
-    materialContent: String,
+    materialArea: String,
     //_________Yêu cầu kỹ thuật
-    materialContent: String,
+    materialRequest: String,
     //_________Thương hiệu, xuất xứ
-    materialContent: String,
+    materialBrand: String,
     /**
      * 5-GIẢI PHÁP TỔ CHỨC
      */
