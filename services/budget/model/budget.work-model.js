@@ -471,12 +471,12 @@ class Model extends BaseModel {
                     const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
                         workID
                     })
-                    console.log('COONG VIỆC NGÂN SÁCH ĐÃ THỰC HIỆN')
-                    console.log(infoImpleBudget)
+                    // console.log('COONG VIỆC NGÂN SÁCH ĐÃ THỰC HIỆN')
+                    // console.log(infoImpleBudget)
                     if(infoImpleBudget){
                         dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
                         dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
-                        dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                        dataUpdate.impleUnitPrice = infoImpleBudget.data.quantity != 0 ? Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity) : 0
                     }
                 }
 

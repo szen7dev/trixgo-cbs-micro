@@ -324,7 +324,9 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI THÔNG TIN PHIẾU
                  * Cập nhật: amount, fcuAmount
                  */
-                const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherId: voucherID })
+                const resultUpdate = await ACCOUNTING__FINANCIAL_VOUCHER.updateWithChangingJournal({ voucherID })
+                console.log('Update lại voucherID')
+                console.log(resultUpdate)
                 // await session.commitTransaction();
 
                 //---- Không cần check kĩ --> sẽ đưa qua trasaction//
@@ -401,6 +403,11 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name  : Update
+     * Author: Hiepnh
+     * Date  : 23/4/2022 
+     */
     update({
         journalID, debit, credit, customerDebit,
         customerCredit, goods, quantity, 
@@ -408,6 +415,14 @@ class Model extends BaseModel {
         contract, project, job, authorID, warehouse, group, unitprice
     }){
         return new Promise(async (resolve) => {
+            /**
+             * BA-Author: HiepNH - 23/4/2022
+             * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
+             * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
+             * +++budgetWorkID cũ
+             * +++budgetWorkID mới
+            */
+            
             let responseResultUpdate = {};
             const session = await connection.startSession();
             await session.startTransaction();

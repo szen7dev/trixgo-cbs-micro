@@ -293,7 +293,7 @@ class AccountingFinancialVoucher extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * BA-Author: HiepNH/10/4/2022
+                 * BA-Author: HiepNH - 23/4/2022
                  * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
                  * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
                  * +++budgetWorkID cũ
@@ -772,7 +772,7 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // Cập nhật một số trường như amout, fcuAmount, date khi có 1 chi tiết phiếu thay đổi thông tin.
-    updateWithChangingJournal({ voucherId, journalAmount, journalFcuAmount }){
+    updateWithChangingJournal({ voucherID }){
         return new Promise(async (resolve, reject) => {
             try {
                 let dataUpdate = { amount: 0, fcuAmount: 0 }
@@ -780,7 +780,7 @@ class AccountingFinancialVoucher extends BaseModel {
                 let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $match: {
-                            voucher: ObjectID(voucherId),
+                            voucher: ObjectId(voucherID),
                         }
                     }, 
                     {
@@ -791,6 +791,7 @@ class AccountingFinancialVoucher extends BaseModel {
                         }
                     }, 
                 ])
+                console.log('Tinh tong but toan cua phieu==========>>>>>>>>>>>>')
                 console.log(listData)
 
                 if(listData && listData.length){
@@ -798,7 +799,7 @@ class AccountingFinancialVoucher extends BaseModel {
                     dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
                 }
 
-                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherId, listData)
+                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
                 if(!resultUpdateVoucher)
                     return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
             
