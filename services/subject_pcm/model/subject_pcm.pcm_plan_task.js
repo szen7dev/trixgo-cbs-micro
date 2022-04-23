@@ -119,7 +119,7 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
-
+                 
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
                     dataInsert.actualFinishTime = new Date(expiredTime);
@@ -169,7 +169,7 @@ class Model extends BaseModel {
                 }
 
                 if(isproposal){
-                    dataInsert.isproposal = isproposal;
+                    dataInsert.subtype = isproposal;
                 }
 
                 if(description){
@@ -231,11 +231,11 @@ class Model extends BaseModel {
 
                 //_________Trường hợp tạo Đệ trình phê duyệt
                 if(isproposal && !isNaN(isproposal)){
-                    dataInsert.isproposal = Number(isproposal);
+                    dataInsert.subtype = Number(isproposal);
                 }else{
                     // Lấy theo group
                     if(infoGroup.type){
-                        dataInsert.isproposal = infoGroup.type
+                        dataInsert.subtype = infoGroup.type
                     }
                 }
 
@@ -385,7 +385,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ typeUpdate,
-        taskID, sign, name, description, note, startTime, expiredTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
+        taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
         contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
         valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, ctx
@@ -438,13 +438,13 @@ class Model extends BaseModel {
                 if(note){
                     dataUpdate.note = note;
                 }
-                //_________Kế hoạch ban đầu
-                if(startTime){
-                    dataUpdate.startTime = startTime;
+
+                if(actualStartTime){
+                    dataUpdate.actualStartTime = actualStartTime;
                 }
-                //_________Kế hoạch ban đầu
-                if(expiredTime){
-                    dataUpdate.expiredTime = expiredTime;
+                
+                if(actualFinishTime){
+                    dataUpdate.actualFinishTime = new Date(actualFinishTime);
                 }
                 //_________Dự kiến thời lượng (h)
                 if(amountoftime){
@@ -487,7 +487,7 @@ class Model extends BaseModel {
 
                 //_________Phân loại công việc
                 if(isproposal){
-                    dataUpdate.isproposal = +isproposal;
+                    dataUpdate.subtype = +isproposal;
                 }
 
                 //_________User xóa task

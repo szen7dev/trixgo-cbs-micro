@@ -11,15 +11,15 @@ exports.infoTaskContent = ({ content }) => {
     let taskAssigneeImage = content.infoTask.assignee.image;
     let taskProjectImage = content.infoTask.project.name;
     let taskExpired = '';
-    let isproposalTask = content.infoTask.isproposal
+    let subtypeTask = content.infoTask.subtype
     let txtAuthorTask = ``;
     let txtAssigneeTask = ``;
 
-    if([0,1,6,7,8,10,11].includes(Number(isproposalTask))){
+    if([0,1,6,7,8,10,11].includes(Number(subtypeTask))){
         txtAuthorTask = `Author/Người tạo việc`;
         txtAssigneeTask = `Assignee/Người thực hiện`;
     } else{
-        if(Number(isproposalTask) === 4 && Number(content.infoTask.level) === 2){
+        if(Number(subtypeTask) === 4 && Number(content.infoTask.level) === 2){
             txtAuthorTask = `Đơn vị mời thầu`;
             txtAssigneeTask = `Đơn vị dự thầu`;
         } else{
