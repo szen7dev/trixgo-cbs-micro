@@ -198,37 +198,6 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    remove({ contractProductionID }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(contractProductionID))
-                    return resolve({ error: true, message: "contractProductionID không hợp lệ", keyError: "contractProductionID_invalid" });
-                    
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAterRemove = await CMCS__CONTRACT_PRODUCTION_COLL.findByIdAndDelete(contractProductionID);
-                if(!infoAterRemove)
-                    return resolve({ error: true, message: "can't_remove", status: 403 });
- 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
 
     /**
      * Name: get info contract production 
@@ -413,6 +382,10 @@ class Model extends BaseModel {
 
                 if(field && checkObjectIDs(field)){
                     conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(chair && checkObjectIDs(chair)){
@@ -797,7 +770,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
@@ -830,6 +803,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.chair": 1,
+                        }
+                    }
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
                         }
                     }
                 }
@@ -935,6 +926,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.chair": 1,
+                        }
+                    }
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
                         }
                     }
                 }

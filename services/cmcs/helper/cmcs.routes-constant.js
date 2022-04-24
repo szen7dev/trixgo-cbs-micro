@@ -6,6 +6,7 @@ const CONTRACT_BILL_JOB     = '/contract_bill_jobs';
 const CONTRACT_IPC          = '/contract_ipcs';
 const CONTRACT_PRODUCTION   = '/contract_productions';
 const CONTRACT_PAYMENT      = '/contract_payments';
+const CONTRACT_EXPENSE      = '/contract_expenses';
 
 const CF_ROUTINGS_CMCS = {
     ORIGIN_APP: BASE_ROUTE,
@@ -34,6 +35,13 @@ const CF_ROUTINGS_CMCS = {
     CONTRACT_PAYMENT_GET_AMOUNT_CONTRACT_VALUE_GROUP_BY_DATE    : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-contract-value-group-by-date`,
     CONTRACT_PAYMENT_GET_AMOUNT_BY_OBJECT                       : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-object`,
     CONTRACT_PAYMENT_GET_AMOUNT_BY_PROPERTY                     : `${BASE_ROUTE}${CONTRACT_PAYMENT}/get-amount-by-property`,
+
+    // ================================CONTRACT EXPENSE=====================================//
+    CONTRACT_EXPENSE                                         : `${BASE_ROUTE}${CONTRACT_EXPENSE}`,
+    CONTRACT_EXPENSE_GET_LIST_BY_MONTH                       : `${BASE_ROUTE}${CONTRACT_EXPENSE}/get-list-by-month`,
+    CONTRACT_EXPENSE_GET_AMOUNT_BY_MONTH                     : `${BASE_ROUTE}${CONTRACT_EXPENSE}/get-amount-by-month`,
+    CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT                    : `${BASE_ROUTE}${CONTRACT_EXPENSE}/get-amount-by-object`,
+    CONTRACT_EXPENSE_GET_AMOUNT_BY_PROPERTY                  : `${BASE_ROUTE}${CONTRACT_EXPENSE}/get-amount-by-property`,
 }
 
 exports.CF_ROUTINGS_CMCS = CF_ROUTINGS_CMCS;

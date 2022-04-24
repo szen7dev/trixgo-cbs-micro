@@ -25,6 +25,9 @@ let CF_DOMAIN_SERVICES = {
     BIDDING         : 'biiding',
     FIN             : 'fin',
     BUDGET          : 'budget',
+    REE             : 'ree',
+    QRCODE          : 'qrcode',
+    MARKET          : 'market',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

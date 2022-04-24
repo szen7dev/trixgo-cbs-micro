@@ -1780,9 +1780,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                //2-Cập nhật Doanh thu
+                //2-Cập nhật Doanh thu, tiền về
                 if(option && Number(option) === 2){
-                    console.log('2-Cập nhật Doanh thu')
+                    console.log('2-Cập nhật Doanh thu, tiền về')
                     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_IPC_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
@@ -1802,7 +1802,17 @@ class Model extends BaseModel {
                     }
                 }
 
-                //3-Cập nhật Tiền về
+                //3-Cập nhật Chi phí
+                if(option && Number(option) === 3){
+                    console.log('3-Cập nhật Chi phí')
+                    let infoExpenseContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_EXPENSE_GET_AMOUNT_BY_OBJECT}`, {
+                        userID, contractID
+                    })
+                    // console.log(infoExpenseContract)
+                    if(infoExpenseContract){
+                        dataUpdate.expense = Number(infoExpenseContract.data.value);
+                    }
+                }
 
                 //4-Cập nhật Ngân sách
 

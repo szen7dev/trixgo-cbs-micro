@@ -57,40 +57,15 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
      */
     updown: { type: Number, default: 1 }, 
     /**
-     * LINK HỢP ĐỒNG, IPC,...
-     */
-    //_________Hợp đồng
-    contract: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract'
-    }, 
-    //_________Kỳ thanh toán
-    contractIpc: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract_ipc'
-    }, 
-    /**
-     * Phân loại khoản mục phí
-     * 1-Chung
-     * 2-Chi phí
-     * 3-Doanh thu
-     */
-    feeType: { type: Number, default: 1 },
-    //_________Khoản mục phí
-    fee: {
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    },
-    /**
      * LINK TỪ PHIẾU
      */
-    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
-    date: { type: Date, default: Date.now },
     //_________Phiếu/chứng từ
     voucher: {
         type: Schema.Types.ObjectId,
         ref: 'financial_voucher'
     }, 
+    //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
+    date: { type: Date, default: Date.now },
     //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
     forward: { type: Number, default: 0 },
     //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
@@ -106,18 +81,13 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     //_________Phiếu có hủy hay không
     cancel: { type: Number, default: 0 },
     /**
-     * Phân biệt phiếu tạm ứng hay thanh toán
-     * 0-Thanh toán
-     * 1-Tạm ứng
-     */
-    advancePayment: { type: Number, default: 0 }, 
-    /**
      * Có phải là hóa đơn dịch vụ hay không
      * 0-Không phải
      * 1-Mua vào
      * 2-Bán ra
      */
     vat: { type: Number, default: 0 }, 
+
     /**
      * KẾ TOÁN
      */
@@ -151,6 +121,16 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
+    //_________Hợp đồng
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref: 'contract'
+    }, 
+    //_________Kỳ thanh toán của hợp đồng
+    contractIpc: {
+        type: Schema.Types.ObjectId,
+        ref: 'contract_ipc'
+    }, 
     //_________Diễn giải nội dung
     name: String,
     //_________Ghi chú
@@ -165,8 +145,23 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     unitprice: { type: Number, default: 0 },   
     //_________Thành tiền
     amount: { type: Number, default: 0 }, 
+    //_________Có in ra trên phiếu để tính giá trị hay không
+    cash: { type: Number, default: 1 },  
     //_________Tiền về thực tế (áp dụng theo dõi cho các hoá đơn VAT)
     amountPayment: { type: Number, default: 0 }, 
+    /**
+     * Phân loại khoản mục phí
+     * 1-Chung
+     * 2-Chi phí
+     * 3-Doanh thu
+     */
+    // feeType: { type: Number, default: 1 },
+    //_________Khoản mục phí
+    // fee: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'doctype'
+    // },
+
     /**
      * USD-NGOẠI TỆ
      */ 
@@ -176,8 +171,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     fcuExRate: { type: Number, default: 0 },
     //_________Thành tiền ngoại tệ
     fcuAmount: { type: Number, default: 0 }, 
-    //_________Có in ra trên phiếu để tính giá trị hay không
-    cash: { type: Number, default: 1 },     
+
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

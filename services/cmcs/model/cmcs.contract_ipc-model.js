@@ -483,6 +483,10 @@ class Model extends BaseModel {
                     conditionObj.field = ObjectID(field)
                 }
 
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
+                }
+
                 if(chair && checkObjectIDs(chair)){
                     conditionObj.chair = ObjectID(chair)
                 }
@@ -638,6 +642,10 @@ class Model extends BaseModel {
 
                 if(field && checkObjectIDs(field)){
                     conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(chair && checkObjectIDs(chair)){
@@ -1076,7 +1084,7 @@ class Model extends BaseModel {
                         }
                     }
                     
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(!isNaN(option) && Number(option) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
@@ -1111,6 +1119,24 @@ class Model extends BaseModel {
                             "_id.chair": 1,
                         }
                     }  
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit" },
+                            amount: { $sum: "$remainingPayment" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
+                        }
+                    }
                 }else{
                     console.log('2.1==================')
                     // BÁO CÁO DOANH THU
@@ -1181,7 +1207,7 @@ class Model extends BaseModel {
                             }
                         }
                         
-                        // Theo Phụ trách/đơn vị
+                        // Theo Phụ trách
                         if(!isNaN(option) && Number(option) === 4){
                             conditionGroup = {
                                 _id: { personInCharge: "$personInCharge" },
@@ -1216,6 +1242,24 @@ class Model extends BaseModel {
                                 "_id.chair": 1,
                             }
                         }  
+
+                        // Theo Đơn vị
+                        if(Number(optionProperty) === 6){
+                            conditionGroup = {
+                                _id: { dependentUnit: "$dependentUnit" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.dependentUnit',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.dependentUnit": 1,
+                            }
+                        }
                     }
 
                      // TÍNH TỔNG THEO THÁNG
@@ -1285,7 +1329,7 @@ class Model extends BaseModel {
                             }
                         }
                         
-                        // Theo Phụ trách/đơn vị
+                        // Theo Phụ trách
                         if(!isNaN(option) && Number(option) === 4){
                             conditionGroup = {
                                 _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
@@ -1320,6 +1364,24 @@ class Model extends BaseModel {
                                 "_id.chair": 1,
                             }
                         }  
+
+                        // Theo Đơn vị
+                        if(Number(optionProperty) === 6){
+                            conditionGroup = {
+                                _id: { dependentUnit: "$dependentUnit", month: "$month", year: "$year" },
+                                amount: { $sum: "$amount" },
+                            }
+
+                            conditionPopulate = {
+                                path: '_id.dependentUnit',
+                                select: '_id name sign',
+                                model: 'contact'
+                            }
+
+                            sortBy = {
+                                "_id.dependentUnit": 1,
+                            }
+                        }
                     }
                 }
 

@@ -12,8 +12,9 @@ const ACCOUNTING__FINANCIAL_VOUCHER_MODEL                         	= require('..
 
 module.exports = {
     /**
-     *  Code: F0011
-     *  Author: Depv
+     * Name  : Insert (OK)
+     * Author: Hiepnh
+     * Date  : 23/4/2022 
      */
     insertFull: {
         auth: "required",
@@ -27,49 +28,46 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                let { fundaID, type, date, 
-                    dateInvoice, name, sign, signInvoice, 
-                    customer, receiver, note, vat, contract, 
-                    storage, inspection, termination, advancePayment,
-                    returning, forward, cancel, source, orderNew, pricePolicy,
-                    discountCost, otherCost, shipperName, shipperCost, staff, 
-                    fcuExRate, selectedJournals, isImport,
-                    ipc, fee, subtype, project } = ctx.params;
+                let { 
+                    fundaID, customer,
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note, contract, storage, project,
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate, 
+                    selectedJournals, 
+                    isImport,
+                } = ctx.params;
+
                 const { _id: userID, company } = ctx.meta.infoUser;
-
-                // console.log(userID)
-
-                // console.log( { fundaID, type, date, 
-                //     dateInvoice, name, sign, signInvoice, 
-                //     customer, receiver, note, vat, contract, 
-                //     storage, inspection, termination, advancePayment,
-                //     returning, forward, cancel, source, orderNew, pricePolicy,
-                //     discountCost, otherCost, shipperName, shipperCost, staff, 
-                //     fcuExRate, selectedJournals, isImport,
-                //     ipc, fee, subtype, project })
 
                 let  resultAfterCallHandler;
 
-                let infoFundaCompany    = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
-
-                // console.log(infoFundaCompany)
+                if(!fundaID){
+                    let infoFundaCompany = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ });
                 
-                if(infoFundaCompany.error){
-                    resultAfterCallHandler.message = 'Not found funda comany ';
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                    if(infoFundaCompany.error){
+                        resultAfterCallHandler.message = 'Not found funda comany ';
+                        return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx });
+                    }
+    
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 }
-                fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id;
                 
                 resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insertFull({ 
-                    authorID : userID, companyID: company._id, ctx,
-                    fundaID, type, date, 
-                    dateInvoice, name, sign, signInvoice, 
-                    customer, receiver, note, vat, contract, 
-                    storage, inspection, termination, advancePayment,
-                    returning, forward, cancel, source, orderNew, pricePolicy,
-                    discountCost, otherCost, shipperName, shipperCost, staff, 
-                    fcuExRate, selectedJournals, isImport,
-                    ipc, fee, subtype, project
+                    authorID : userID, 
+                    companyID: company._id,
+                    fundaID, customer,
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note, contract, storage, project,
+                    forward: (!isNaN(forward) && [0,1].includes(Number(forward))) ? Number(forward) : 0,
+                    forwardIs: (!isNaN(forwardIs) && [0,1].includes(Number(forwardIs))) ? Number(forwardIs) : 0,
+                    returning: (!isNaN(returning) && [0,1].includes(Number(returning))) ? Number(returning) : 0,
+                    advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
+                    cancel: (!isNaN(cancel) && [0,1].includes(Number(cancel))) ? Number(cancel) : 0,
+                    fcuExRate: !isNaN(fcuExRate) ? Number(fcuExRate) : 0,
+                    selectedJournals, 
+                    isImport,
+                    ctx,
                 }) 
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -81,6 +79,7 @@ module.exports = {
     },
 
     update: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -119,6 +118,7 @@ module.exports = {
     },
 
     remnove:{
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -141,6 +141,7 @@ module.exports = {
     },
   
     getInfoVoucher:{
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -165,6 +166,7 @@ module.exports = {
     },
 
     getListVoucherOfCompany:{
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -196,6 +198,7 @@ module.exports = {
     },
 
     getListVATVoucherOfCompany:{
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -220,6 +223,7 @@ module.exports = {
     },
 
     findVoucherInCompany:{
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -244,6 +248,7 @@ module.exports = {
 
     // Danh sách VAT đầu vào 
     reportVATIn: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -284,6 +289,7 @@ module.exports = {
 
     // Danh sách VAT đầu ra
     reportVATOut: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -324,6 +330,7 @@ module.exports = {
 
 
     updateOlDB:{
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },

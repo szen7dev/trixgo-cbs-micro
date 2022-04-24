@@ -3,6 +3,10 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+/**
+ * TIỀN VỀ-THANH TOÁN
+ */
+
 module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
     //_________Phân loại (1-Tạm ứng/2-Thanh toán/3-Quyết toán )(*) Lấy theo ipc
     type: { type: Number, default: 1 },
@@ -28,17 +32,17 @@ module.exports  = DATABASE_MIDDLEWARE("contract_payment", {
         ref : 'contact'
     },
 
-    //_________Phân loại theo phụ trách (POSTMAN ITEM -> CONTACT)
+    //_________Phân loại theo Phụ trách (POSTMAN ITEM -> CONTACT)
     personInCharge: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
 
-    //_________Phân loại theo chủ trì (POSTMAN ITEM -> CONTACT)
+    //_________Phân loại theo Chủ trì (POSTMAN ITEM -> CONTACT)
     chair: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
-    },   
+    },    
 
     //_________Bên mua (POSTMAN ITEM > CONTACT)
     buyerInfo: {

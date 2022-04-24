@@ -136,7 +136,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     //_________Khóa cập nhật(1-Open/2-Khóa)
     lock: { type: Number, default: 0 },
     /**
-     * DOANH THU
+     * GIÁ TRỊ KÝ
      */
     //_________(1)Giá trị trước VAT
     value: { type: Number, default: 0 },
@@ -148,7 +148,10 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vatPlus: { type: Number, default: 0 },
     //_________(5)Tạm ứng theo hợp đồng
     advancePayment: { type: Number, default: 0 },
-    /**SẢN LƯỢNG */
+
+    /**
+     * SẢN LƯỢNG 
+     */
     //_________(6)Sản lượng trước VAT
     produce: { type: Number, default: 0 },
     //_________(7)Sản lượng phần VAT
@@ -157,7 +160,10 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     plusProduce: { type: Number, default: 0 },
     //_________(9)Sản lượng phát sinh phần VAT
     vatPlusProduce: { type: Number, default: 0 },
-    /**IPC */
+
+    /**
+     * NGHIỆM THU HOÀN THÀNH
+    */
     //_________(10)Giá trị nghiệm thu trước VAT
     acceptance: { type: Number, default: 0 },
     //_________(11)Giá trị nghiệm thu phần VAT
@@ -186,6 +192,19 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     finalValue: { type: Number, default: 0 },
     //_________Thuế VAT (%)
     vat: { type: Number, default: 10 },
+    
+    /**
+     * CHI PHÍ
+     */
+    //_________Chi phí
+    expense: { type: Number, default: 0 },
+    //_________Phí quản lý
+    managementFee: { type: Number, default: 0 },
+    //_________Tỷ lệ giao khoán (Thống kê giao cho Đơn vị, trung tâm)
+    subcontractFee: { type: Number, default: 0 },
+    // //_________Lợi nhuận
+    // profit: { type: Number, default: 0 },
+
     /**
      * USD-NGOẠI TỆ
      */ 
@@ -223,15 +242,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     finalVatBudget: {
         type: Number,
         default : 0
-    }, 
-    // //_________Phí quản lý
-    // managementFee: { type: Number, default: 0 },
-    // //_________Tỷ lệ giao khoán
-    // subcontractFee: { type: Number, default: 0 },
-    // //_________Chi phí
-    // expenses: { type: Number, default: 0 },
-    // //_________Lợi nhuận
-    // profit: { type: Number, default: 0 },
+    },
 
     /**
      * ĐẤU THẦU

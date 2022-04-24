@@ -30,7 +30,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_group", {
         ref : "user"
     },
     //_________Phân loại công việc/trình duyệt
-    //_________Phục vụ để gán type/isproposal tự động cho task khi khởi tạo trong thư mục này
+    //_________Phục vụ để gán type/subtype tự động cho task khi khởi tạo trong thư mục này
     type: { type: Number, default: 1 },
     //_________Phân loại tính chất
     property: {

@@ -5,25 +5,30 @@ const Schema                = require('mongoose').Schema;
 /**
  * HỒ SƠ YÊU CẦU, MỜI THẦU
  */
-module.exports  = DATABASE_MIDDLEWARE("bidding_document_request", {
+module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     /**
-     * Phân loại
-     * 1-Bảng dữ liệu
-     * 2-Năng lực nhân sự
-     * 3-Năng lực thiết bị
-     * 4-Giải pháp tổ chức thực hiện
+     * Chủ đầu tư
+     * Công ty Phát hành hồ sơ mời thầu
+     * Công ty tạo ra task
      */
-    type: { type: Number, default: 1 },
-    //_________Công ty Phát hành hồ sơ mời thầu/Công ty tạo ra task
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Công việc phát hành hồ sơ mời thầu
-    task: {
+    //_________Kế hoạch lựa chọn thầu
+    plan: {
         type: Schema.Types.ObjectId,
-        ref : "pcm_plan_task"
+        ref : "bidding_plan"
     },
+    /**
+     * Phân loại
+     * 1-Bảng dữ liệu
+     * 2-Năng lực nhân sự
+     * 3-Năng lực máy móc
+     * 4-Yêu cầu vật tư thiết bị
+     * 5-Giải pháp tổ chức thực hiện
+     */
+    type: { type: Number, default: 1 },    
     /**
      * 1-BẢNG DỮ LIỆU
      */
@@ -84,17 +89,6 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_document_request", {
     //_________Điều khoản hợp đồng
     contractCondition: String,
     /**
-     * Tài liệu đính kèm
-     * - Bản vẽ
-     * - Spec
-     * - Mẫu đơn tham gia
-     * - Mẫu bảo lãnh,...
-     */
-    documentAttachs: [{
-        type: Schema.Types.ObjectId,
-        ref: "file"
-    }],
-    /**
      * 2-NĂNG LỰC NHÂN SỰ
      */
     //_________Điều kiện về nhân sự
@@ -105,30 +99,43 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_document_request", {
     //_________Điều kiện về máy móc thiết bị
     machineCondition: String,
     /**
-     * 4-GIẢI PHÁP TỔ CHỨC
+     * 4-YÊU CẦU VỀ VẬT TƯ THIẾT BỊ
      */
-    //_________Nội dung/Phân cấp cha-con
-    solutionContent: String,
-    //_________Nội dung cha
-    parent: {
-        type: Schema.Types.ObjectId,
-        ref: "bidding_document_request"
-    },
-    //_________Nội dung con
-    childs: [{
-        type: Schema.Types.ObjectId,
-        ref: "bidding_document_request"
-    }],
-    level: {
+    //_________Nội dung (với phân nhóm thì sẽ viết Hoa, bỏ trống, sử dụng order)
+    materialContent: String,    
+    //_________Vị trí, khu vực
+    materialArea: String,
+    //_________Yêu cầu kỹ thuật
+    materialRequest: String,
+    //_________Thương hiệu, xuất xứ
+    materialBrand: String,
+    /**
+     * 5-GIẢI PHÁP TỔ CHỨC
+     */
+    //_________Thứ tự, dùng để sắp xếp
+    order: {
         type: Number,
         default: 1
     }, 
+    //_________Nội dung
+    solutionContent: String,
+    /**
+     * CHUNG CHO CÁC YÊU CẦU
+     */
+    //_________Mô tả yêu cầu/Ghi chú
+    description: String,
+    // Tài liệu, ảnh đính kèm
+    documentAttachs: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * HỒ SƠ DỰ THẦU CỦA NHÀ THẦU
+     * Một yêu cầu sẽ có nhiều nhà thầu tham dự
      */
     details: [{
         type: Schema.Types.ObjectId,
-        ref: "bidding_document_apply"
+        ref: "bidding_apply"
     }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT

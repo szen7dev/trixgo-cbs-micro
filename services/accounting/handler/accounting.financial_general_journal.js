@@ -17,6 +17,7 @@ module.exports = {
      *  Author: Depv
      */
     insertFull: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -34,8 +35,6 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                // console.log(ctx)
-
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insertFull({ 
                     authorID: userID, companyID: company._id, fundaID, voucher, debit, credit, customerDebit,
                     customerCredit, goods, quantity, amount, fcuExRate, contract, 
@@ -52,6 +51,7 @@ module.exports = {
     },
 
     update: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -80,7 +80,9 @@ module.exports = {
             }
         }
     },
+
     removeById: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -102,6 +104,7 @@ module.exports = {
     },
 
     getInfo: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -195,6 +198,7 @@ module.exports = {
 
     // Chi tiết tài khoản
     getListJournalOfAccount: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -228,6 +232,7 @@ module.exports = {
 
     // Sổ tổng hợp tài khoản chữ T
     tBookAccount: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -262,6 +267,7 @@ module.exports = {
 
     // Bảng cân đối tài chính
     financialReport: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },
@@ -295,6 +301,7 @@ module.exports = {
   
     // Danh sách công nợ 
     debtTracking: {
+        auth: "required",
         params: {
             // email           : { type: "string" },
             // fullname        : { type: "string" },

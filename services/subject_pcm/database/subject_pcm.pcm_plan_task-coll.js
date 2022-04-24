@@ -98,7 +98,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 10-Tiến độ
      * 11-Biên bản họp
      */
-    subtype: { type: Number, default: 0 }, // Thay thế cho isproposal để tiện cho việc xử lý code
+    subtype: { type: Number, default: 0 },
     /**
      * Phân loại tiến độ
      * 0-Việc thông thường
@@ -226,13 +226,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * THÔNG TIN VỀ THỜI HẠN
      */
     //_________Kế hoạch ban đầu
-    startTime: { type: Date, default: null },
+    startTime: { type: Date, default: new Date() },
     //_________Kế hoạch ban đầu
-    expiredTime: { type: Date, default: null },
+    expiredTime: { type: Date, default: new Date() },
     //_________Kế hoạch thực tế
-    actualStartTime: { type: Date, default: null },
+    actualStartTime: { type: Date, default: new Date() },
     //_________Kế hoạch thực tế
-    actualFinishTime: { type: Date, default: null },
+    actualFinishTime: { type: Date, default: new Date() },
     //_________Hẹn gửi theo lịch biểu (chuyển việc nháp thành chính thức)
     schedule: { type: Date, default: null },
     //_________Thông báo trước thời hạn (h)

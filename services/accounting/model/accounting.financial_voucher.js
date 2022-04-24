@@ -33,8 +33,6 @@ const FUNDA_COLL                                    = require('../../item/databa
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll');
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll');
 
-const BUDGET_WORK_COLL                              = require('../../budget/database/budget.work-coll'); // Kiểm tra fix lại, không Import trực tiếp
-
 /**
  * MODELS
 */
@@ -71,13 +69,10 @@ class AccountingFinancialVoucher extends BaseModel {
     }
 
     // OK
-    checkInputInsertFull({ date, name, type, fundaID, authorID, customerID }){
-        const checkVoucher = this.checkInputVoucher({ date, name, type, authorID, customerID });
+    checkInputInsertFull({ date, name, type, fundaID, authorID, customerID, companyID }){
+        const checkVoucher = this.checkInputVoucher({ date, name, type, authorID, customerID, companyID });
         if(checkVoucher.error)
             return checkVoucher; 
-
-        if(!fundaID || !ObjectId.isValid(fundaID))
-            return { error: true, message: 'fundaId_invalid', status: 400};
 
         return { error: false }; 
     }
@@ -95,14 +90,15 @@ class AccountingFinancialVoucher extends BaseModel {
     // -------------------- End function check params for add, update, remove, search -----------
 
     // -------------------- Start function collect data for add, update, search -----------------
-    collectDataForInsertFull({ ctx, authorID , fundaID, type, date, 
-        dateInvoice, name, sign, signInvoice, 
-        customer, receiver, note, vat, contract, 
-        storage, inspection, termination, advancePayment,
-        returning, forward, cancel, source, orderNew, pricePolicy,
-        discountCost, otherCost, shipperName, shipperCost, staff, 
-        fcuExRate, selectedJournals, isImport, voucherSign, companyID,
-        ipc, subtype, fee, project }){
+    collectDataForInsertFull({ 
+        authorID, fundaID, customer,
+        type, date, name, sign, signInvoice, dateInvoice, vat,
+        receiver, note, contract, storage, project,
+        forward, forwardIs, returning, advancePayment, cancel, 
+        fcuExRate, 
+        selectedJournals, 
+        isImport
+    }){
         //_________Khai báo dữ liệu
         let dataInsertVoucher = {
             company: companyID, 
@@ -268,17 +264,32 @@ class AccountingFinancialVoucher extends BaseModel {
 
     // -------------------- end function check params for add, update, remove, search -----------
     // Tạo phiếu.
+    /**
+     * Name  : Insert (OK)
+     * Author: Hiepnh
+     * Date  : 23/4/2022 
+     */
     insertFull({
-        ctx, authorID , fundaID, type, date, 
-        dateInvoice, name, sign, signInvoice, 
-        customer, receiver, note, vat, contract, 
-        storage, inspection, termination, advancePayment,
-        returning, forward, cancel, source, orderNew, pricePolicy,
-        discountCost, otherCost, shipperName, shipperCost, staff, 
-        fcuExRate, selectedJournals, isImport,
-        ipc, fee, subtype, project
+        authorID, companyID, 
+        fundaID, customer,
+        type, date, name, sign, signInvoice, dateInvoice, vat,
+        receiver, note, contract, storage, project,
+        forward, forwardIs, returning, advancePayment, cancel, 
+        fcuExRate, 
+        selectedJournals,
+        ctx, 
     }) {
         const that = this;
+        console.log('===========Tao phieu')
+        console.log({
+            authorID, companyID, 
+            fundaID, customer,
+            type, date, name, sign, signInvoice, dateInvoice, vat,
+            receiver, note, contract, storage, project,
+            forward, forwardIs, returning, advancePayment, cancel, 
+            fcuExRate, 
+            selectedJournals, 
+        })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -295,14 +306,23 @@ class AccountingFinancialVoucher extends BaseModel {
                 */
 
                 //_________Kiểm tra xác thực dữ liệu đầu vào
-                const checkParams = this.checkInputInsertFull({ date, name, type, fundaID, authorID, customerID: customer });
+                const checkParams = this.checkInputInsertFull({ date, name, type, fundaID, authorID, customerID: customer, companyID });
                 if(checkParams.error){
                     return resolve(checkParams)
                 }
 
+                console.log(checkParams)
+
+                /**
+                 * Lấy thông tin Funda, company nếu client không truyền vào
+                 */
+
+                /**
+                 * TỰ ĐỘNG GHI SỐ HIỆU PHIẾU
+                 */
                 //_________Lấy số lượng phiếu hiện tại của công ty/đơn vị cơ sở
-                const number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type });
-                const infoFunda       = await FUNDA_COLL.findById(fundaID);
+                const number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
+                const infoFunda       = await FUNDA_COLL.findById(fundaID)
                 
                 /**
                  * Sample:
@@ -311,9 +331,7 @@ class AccountingFinancialVoucher extends BaseModel {
                  * VOUCHER_TYPES  = PX
                  * {Number(number+1)} = 4740
                  */
-
                 let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
-                const companyID = infoFunda.company;
                 if(sign && sign != ""){
                     const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
                         funda: fundaID, 
@@ -325,24 +343,28 @@ class AccountingFinancialVoucher extends BaseModel {
                     }
                 }
 
+                // console.log(infoFunda)
+
                 /**
-                 * Thực hiện Insert phiếu
+                 * THỰC HIỆN INSERT PHIẾU
                  */
-                const dataInsertVoucher = this.collectDataForInsertFull({
-                    authorID, companyID, fundaID, type, date, 
-                    dateInvoice, name, sign, signInvoice, 
-                    customer, receiver, note, vat, 
-                    storage, inspection, termination, advancePayment,
-                    returning, forward, cancel, source, orderNew, pricePolicy,
-                    discountCost, otherCost, shipperName, shipperCost, staff, 
-                    fcuExRate, selectedJournals, isImport, voucherSign, 
-                    subtype, fee, project, contract, ipc
-                });
+                const dataInsertVoucher = {
+                    userCreate: authorID, 
+                    company: companyID, 
+                    funda: fundaID, 
+                    customer,
+                    modifyAt: Date.now(),
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note, contract, storage, project,
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate, 
+                    selectedJournals
+                }
 
-                if(dataInsertVoucher.error)
-                    return resolve(dataInsertVoucher);
+                console.log('=======data')
+                console.log(dataInsertVoucher)
 
-                const infoAfterInsert = await this.insertData(dataInsertVoucher.data);
+                const infoAfterInsert = await this.insertData(dataInsertVoucher);
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert", status: 400 });
@@ -351,23 +373,21 @@ class AccountingFinancialVoucher extends BaseModel {
                  * CẬP NHẬT BÚT TOÁN
                  */
                 if(selectedJournals && selectedJournals.length >0){
-                    console.log('=============>OKKKKKKKKKKKKKKKKKKKKKKKKK')
-                    console.log(selectedJournals)
-
                     //_________Get ID của phiếu vừa tạo để tiến hành tạo chi tiết chứng từ
                     const voucherID = infoAfterInsert._id;           
 
                     for (const subitem of selectedJournals) {
 
                         const dataInsert = {
-                            authorID, companyID, fundaID, voucher: voucherID, 
-                            quantity: subitem.quantity ? Number(subitem.quantity) : 1,
-                            amount: subitem.amount ? Number(subitem.amount) : 0,
-                            unitprice: subitem.unitprice ? Number(subitem.unitprice) : 0,
-                            fcuExRate: fcuExRate ? Number(fcuExRate) : 0,
-                            note: subitem.note,
+                            authorID, companyID, fundaID, voucherID, 
+                            date, forward, forwardIs, returning, advancePayment, cancel, vat,
                             updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
-                            advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
+                            quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                            amount: subitem.amount ? Number(subitem.amount) : 0,
+                            unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                            fcuExRate,
+                            fcuAmount: Number(subitem.amount*fcuExRate), // Giá trị tính theo VND * Tỷ giá
+                            note: subitem.note,
                             ctx
                         }
 
@@ -432,33 +452,8 @@ class AccountingFinancialVoucher extends BaseModel {
                          * Cập nhật ngân sách thực hiện
                          */
                         if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                            console.log('CHUAN BI =============BUT TOAN')
-
-                            let infoWork = await BUDGET_WORK_COLL.findById(subitem.budgetWork);
-                            console.log(infoWork)
-                            if(infoWork){
-                                if(infoWork.budget){
-                                    dataInsert.budget = infoWork.budget;
-                                }
-                                if(infoWork.project){
-                                    dataInsert.budgetProject = infoWork.project;
-                                }
-                                if(infoWork.contract){
-                                    dataInsert.budgetContract = infoWork.contract;
-                                }
-                                if(infoWork.item){
-                                    dataInsert.budgetItem = infoWork.item;
-                                }
-                                if(infoWork.group){
-                                    dataInsert.budgetGroup = infoWork.group;
-                                }
-                                dataInsert.budgetWork = subitem.budgetWork;
-                            }
+                            dataInsert.budgetWork = subitem.budgetWork
                         }
-
-                        // console.log('====Đưa sang bút toán')
-                        // console.log(dataInsert)
-                        console.log('====Đưa sang bút toán')
                         
                         //_________Tiến hành tạo chi tiết_________//
                         const res = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL.insertFull(dataInsert);
@@ -776,33 +771,41 @@ class AccountingFinancialVoucher extends BaseModel {
         return { error: false };  
     }
 
-    // Cập nhật một số trưởng như amout, fcuAmount, date khi có 1 chi tiết phiếu thay đổi thông tin.
+    // Cập nhật một số trường như amout, fcuAmount, date khi có 1 chi tiết phiếu thay đổi thông tin.
     updateWithChangingJournal({ voucherId, journalAmount, journalFcuAmount }){
-        const that = this;
         return new Promise(async (resolve, reject) => {
             try {
-                const checkInput = this.checkInputUpdateWithNewJournals({ voucherId, journalAmount, journalFcuAmount })
-                if(checkInput.error)
-                    return resolve(checkInput);
-                
-                const infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherId);
+                let dataUpdate = { amount: 0, fcuAmount: 0 }
 
-                if(!infoVoucher)
-                    return resolve({ erorr: true, message:'voucher_exits', data: null, status: 400 });
-                
-                const dataUpdateVoucher = {
-                    amount: Number(infoVoucher.amount || 0) + Number(journalAmount || 0), 
-                    fcuAmount: Number(infoVoucher.fcuAmount || 0) + Number(journalFcuAmount || 0)
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: {
+                            voucher: ObjectID(voucherId),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                            fcuAmount: { $sum: "$fcuAmount" },
+                        }
+                    }, 
+                ])
+                console.log(listData)
+
+                if(listData && listData.length){
+                    dataUpdate.amount = Number(listData[0].amount)
+                    dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
                 }
-                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherId,dataUpdateVoucher);
-                if(!resultUpdateVoucher)
-                    return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400});
-            
-                return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 });
 
+                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherId, listData)
+                if(!resultUpdateVoucher)
+                    return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
+            
+                return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 })
             } catch (error) {
-                console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`);
-                return resolve({ erorr: true, message: 'update_voucher_fail', status: 400});
+                console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
+                return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
             }
         });
     }

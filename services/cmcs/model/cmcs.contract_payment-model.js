@@ -106,7 +106,7 @@ class Model extends BaseModel {
      * Name: update contract payment 
      * Author: Depv
      */
-    update({ contractPaymentID, ipc, date, name, sign, description, value, userID, ctx  }){
+    update({ contractPaymentID, date, name, sign, description, value, userID, ctx  }){
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -161,7 +161,7 @@ class Model extends BaseModel {
                 /**
                  * CẬP NHẬT CHO PHẦN IPC
                  */    
-                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: ipc, userID })
+                await CMCS__CONTRACT_IPC_MODEL.updateValue({ option: 3, ipcID: infoPayment.ipc, userID })
 
                 /**
                  * CẬP NHẬT CHO PHẦN HỢP ĐỒNG
@@ -354,6 +354,10 @@ class Model extends BaseModel {
 
                 if(field && checkObjectIDs(field)){
                     conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(chair && checkObjectIDs(chair)){
@@ -758,7 +762,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
@@ -791,6 +795,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.chair": 1,
+                        }
+                    }
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
                         }
                     }
                 }
@@ -863,7 +885,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
@@ -896,6 +918,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.chair": 1,
+                        }
+                    }
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
                         }
                     }
                 }

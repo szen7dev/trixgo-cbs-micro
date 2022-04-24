@@ -160,6 +160,7 @@ module.exports = {
             outin           : { type: "string", optional: true },
             real            : { type: "string", optional: true },
             field           : { type: "string", optional: true },
+            dependentUnit   : { type: "string", optional: true },
             chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
             buyerInfo       : { type: "string", optional: true },
@@ -178,8 +179,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
-                console.log({ contractIpcID, isMember, option, companyID, projectID, contractID, type, outin, real, field, dependentUnit, personInCharge, chair, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select })
-
+                
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
@@ -255,6 +255,7 @@ module.exports = {
             outin           : { type: "string", optional: true },
             real            : { type: "string", optional: true },
             field           : { type: "string", optional: true },
+            dependentUnit   : { type: "string", optional: true },
             chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
             buyerInfo       : { type: "string", optional: true },
