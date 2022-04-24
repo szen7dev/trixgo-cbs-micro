@@ -1,15 +1,11 @@
-const BASE_ACTIONS 	     = 'ACT_BIDDING';
-const BIDDING_DOC                           = "BIDDING_DOC"
-const BIDDING_DOCUMENT_REQUEST              = "BIDDING_DOCUMENT_REQUEST"
-const BIDDING_DOCUMENT_APPLY                = "BIDDING_DOCUMENT_APPLY"
-const BIDDING_BILL                          = "BIDDING_BILL"
-const BIDDING_QUOTATION                     = "BIDDING_QUOTATION"
+const BASE_ACTIONS 	                    = 'ACT_BIDDING';
+const BIDDING_PLAN                      = "BIDDING_PLAN"
+const BIDDING_REQUEST                   = "BIDDING_REQUEST"
+const BIDDING_APPLY                     = "BIDDING_APPLY"
+const BIDDING_BILL                      = "BIDDING_BILL"
+const BIDDING_QUOTATION                 = "BIDDING_QUOTATION"
 const CF_ACTIONS_BIDDING = {
-    // BIDDING_DOC
-	BIDDING_DOC_INSERT		            : `${BASE_ACTIONS}_${BIDDING_DOC}_INSERT`,
-    BIDDING_DOC_UPDATE		            : `${BASE_ACTIONS}_${BIDDING_DOC}_UPDATE`,
-    BIDDING_DOC_REMOVE		            : `${BASE_ACTIONS}_${BIDDING_DOC}_REMOVE`,
-    BIDDING_DOC_GET_INFO_AND_GET_LIST	: `${BASE_ACTIONS}_${BIDDING_DOC}_GET_INFO_AND_GET_LIST`,
+
 	
 }
 

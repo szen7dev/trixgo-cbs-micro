@@ -971,6 +971,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year, ctx }){
+        console.log({ userID, outin, companyID, projectID, contractID, optionTime, option, debt, year })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}
@@ -1121,7 +1122,7 @@ class Model extends BaseModel {
                     }  
 
                     // Theo Đơn vị
-                    if(Number(optionProperty) === 6){
+                    if(Number(option) === 6){
                         conditionGroup = {
                             _id: { dependentUnit: "$dependentUnit" },
                             amount: { $sum: "$remainingPayment" },
@@ -1244,7 +1245,7 @@ class Model extends BaseModel {
                         }  
 
                         // Theo Đơn vị
-                        if(Number(optionProperty) === 6){
+                        if(Number(option) === 6){
                             conditionGroup = {
                                 _id: { dependentUnit: "$dependentUnit" },
                                 amount: { $sum: "$amount" },
@@ -1366,7 +1367,7 @@ class Model extends BaseModel {
                         }  
 
                         // Theo Đơn vị
-                        if(Number(optionProperty) === 6){
+                        if(Number(option) === 6){
                             conditionGroup = {
                                 _id: { dependentUnit: "$dependentUnit", month: "$month", year: "$year" },
                                 amount: { $sum: "$amount" },

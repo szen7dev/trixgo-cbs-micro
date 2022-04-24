@@ -7,23 +7,22 @@ const CacheCleaner                	    = require("../../tools/mixins/cache.clean
  * DOMAIN AND ACTIONS
  */
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_BIDDING } 	        	= require('./helper/bidding.actions-constant');
+const { CF_ACTIONS_BIDDING } 	        = require('./helper/bidding.actions-constant');
 
 /**
  * HANDLERS
  */
-const BIDDING__DOC_HANDLER            = require('./handler/bidding.plan-handler');
 
 /**
  * COLLECTIONS
  */
-const BIDDING__DOC_COLL				= require('./database/bidding.plan-coll');
+const BIDDING__PLAN_COLL				= require('./database/bidding.plan-coll');
 const BIDDING__BILL_COLL				= require('./database/bidding.bill-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.BIDDING,
 	mixins: [
-		DbService(BIDDING__DOC_COLL),
+		DbService(BIDDING__PLAN_COLL),
 		DbService(BIDDING__BILL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.BIDDING])
     ],
@@ -45,12 +44,7 @@ module.exports = {
 	*/
 	actions: {
 		//==========================================  BIDDING_DOC  ==================================//
-		[CF_ACTIONS_BIDDING.BIDDING_DOC_INSERT] 						: BIDDING__DOC_HANDLER.insert,
-		// [CF_ACTIONS_BIDDING.BIDDING_DOC_UPDATE] 						: BIDDING__DOC_HANDLER.update,
-		[CF_ACTIONS_BIDDING.BIDDING_DOC_REMOVE] 						: BIDDING__DOC_HANDLER.remove,
-		[CF_ACTIONS_BIDDING.BIDDING_DOC_GET_INFO_AND_GET_LIST] 			: BIDDING__DOC_HANDLER.getInfoAndGetList,
 
-		//==========================================  DEPARTMENT  ================================
 	},
 
 	/**
