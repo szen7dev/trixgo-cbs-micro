@@ -11,9 +11,8 @@ module.exports = function(collection) {
 	if(DATABASE_MODE) {
 		return {
 			mixins: [DbService],
-			adapter: new MongoAdapter(MONGODB_URL, { 
-				useNewUrlParser: true, 
-				useUnifiedTopology: true 
+			adapter: new MongoAdapter(MONGODB_URL, {
+				timestamps: false
 			}),
 			model: collection,
 			methods: {
@@ -31,9 +30,8 @@ module.exports = function(collection) {
 	
 			return {
 				mixins: [DbService],
-				adapter: new MongoAdapter(MONGODB_URL, { 
-					useNewUrlParser: true, 
-					useUnifiedTopology: true 
+				adapter: new MongoAdapter(MONGODB_URL, {
+					timestamps: false
 				}),
 				model: collection,
 				methods: {
