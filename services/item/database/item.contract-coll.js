@@ -243,14 +243,6 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
         type: Number,
         default : 0
     },
-
-    /**
-     * ĐẤU THẦU
-     */
-    //_______Giá trúng thầu
-    tenderPrice: { type: Number, default: 0 },
-    //_______VAT trúng thầu
-    tenderPriceAT: { type: Number, default: 0 },
     /**
      * BẢO LÃNH
      */
