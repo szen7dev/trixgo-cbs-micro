@@ -117,7 +117,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { expenseID, contractID, keyword, limit, lastestID, populates, select } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler;
                 if(expenseID){
                     resultAfterCallHandler = await CMCS__CONTRACT_EXPENSE_MODEL.getInfo({
