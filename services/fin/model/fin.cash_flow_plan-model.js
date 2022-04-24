@@ -238,7 +238,10 @@ class Model extends BaseModel {
 
                 // Cập nhật lại phần tử cha
                 if(checkObjectIDs(infoAfterUpdate.parent)){
+                    // Cập nhật giá trị của phần tử cha
                     await that.updateValue({cashFlowID: infoAfterUpdate.parent, userID})
+
+                    // Cập nhật thuộc tính theo phần tử cha
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
