@@ -93,7 +93,10 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách file
 	 * Date: ...
 	 */
-    getList({ companyID, projectID, groupID, taskID, keyword, type, limit = 10, lastestID, select, populates }) {
+    getList({
+        companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
+        limit = 10, lastestID, select, populates
+    }) {
         return new Promise(async (resolve) => {
             try {
                 if(!companyID && !projectID && !groupID && !taskID) {
@@ -141,8 +144,31 @@ class Model extends BaseModel {
                     conditionObj.task = taskID;
                 }
 
+                if(checkObjectIDs([authorID])) {
+                    conditionObj.author = authorID;
+                }
+
                 if(type){
                     conditionObj.type = type;
+                }
+
+                if(fromDate) {
+                    conditionObj.createAt = {
+                        $gte: moment(fromDate).startOf('days').toDate(),
+                    }
+                }
+
+                if(toDate) {
+                    conditionObj.createAt = {
+                        $lte: moment(toDate).endOf('days').toDate()
+                    }
+                }
+
+                if(fromDate && toDate) {
+                    conditionObj.createAt = {
+                        $gte: moment(fromDate).startOf('days').toDate(),
+                        $lte: moment(toDate).endOf('days').toDate()
+                    }
                 }
 
                 if(keyword){
@@ -180,7 +206,8 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get data", status: 422 });
 
                 let nextCursor	= null;
-                if(infoDataAfterGet && infoDataAfterGet.length){
+                let prevCursor	= null;
+                if(infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;

@@ -101,10 +101,9 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log({ params: ctx.params });
-                // await this.validateEntity(ctx.params);
-                let { 
-                    appID, mimeType, type, name, size, typeUpload, 
+                await this.validateEntity(ctx.params);
+                let {
+                    appID, mimeType, type, name, size, typeUpload,
                     companyID, projectID, groupID, packageID, conversationID
                 } = ctx.params;
                 let { _id: userID } = ctx.meta.infoUser;
