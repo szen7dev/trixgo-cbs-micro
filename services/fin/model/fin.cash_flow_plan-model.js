@@ -40,7 +40,6 @@ class Model extends BaseModel {
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
                     })
-                    // console.log(infoProject)
 
                     // Trường hợp lập kế hoạch cho Dự án thuộc công ty khác
                     if(infoProject){
@@ -254,29 +253,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    // remove({ cashFlowsID, userID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(cashFlowsID))
-    //                 return resolve({ error: true, message: 'param_cashFlowsID_invalid', status: 400 });
-
-    //             if(!checkObjectIDs([userID]))
-    //                 return resolve({ error: true, message: 'param_userID_invalid', status: 400 });
-
-    //             const infoAfterDelete = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
-    //                 _id: {
-    //                     $in: cashFlowsID
-    //                 },
-    //                 userCreate: userID
-    //             })
-
-    //             return resolve({ error: false, data: infoAfterDelete, status: 201 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
-
+    
     /**
      * Name: Get info 
      * Author: Hiepnh

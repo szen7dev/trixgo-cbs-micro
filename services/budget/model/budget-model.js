@@ -345,14 +345,10 @@ class Model extends BaseModel {
                     }else{
                         if(companyID){
                             conditionObj.company = companyID
+                            conditionObj.members = { $in: [userID] }
                         }
                     }
                 }
-
-                // if(isMember == 1){
-                //     conditionObj.members = { $in: [userID] }
-                // }
-                conditionObj.members = { $in: [userID] }
 
                 if(keyword){
                     keyword = keyword.split(" ");
