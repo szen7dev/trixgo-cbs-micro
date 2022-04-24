@@ -77,12 +77,15 @@ class Model extends BaseModel {
                 // Nếu được tạo từ phần tử cha => lấy company theo phần tử cha
                 if(checkObjectIDs(parentID)){
                     let infoParent = await FIN__CASH_FLOW_PLAN_COLL.findById(parentID)
-                    console.log(infoParent)
                     if(infoParent){
-                        let { company } = infoParent;
+                        let { company, outin, property, type } = infoParent;
 
                         dataInsert.parent = parentID;
                         dataInsert.company = company;
+
+                        dataInsert.outin = outin;
+                        dataInsert.property = property;
+                        dataInsert.type = type;
                     }
                 }
 
@@ -223,10 +226,23 @@ class Model extends BaseModel {
                     dataUpdate.timeApproved = new Date();
                 }
 
-                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
+                
+                // Cập nhật thuộc tính cho các phẩn tử con
+                await FIN__CASH_FLOW_PLAN_COLL.updateMany(
+                    { parent: ObjectID(cashFlowID)},
+                    { $set: 
+                        { 
+                            "outin" : outin,
+                            "property" : property,
+                            "type" : type,
+                        } 
+                    }
+                 );
 
+                // Lấy thông tin của mẩu tin populate
                 infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.populate(infoAfterUpdate, {
                     path: 'contract',
                     select: '_id sellerInfo',
