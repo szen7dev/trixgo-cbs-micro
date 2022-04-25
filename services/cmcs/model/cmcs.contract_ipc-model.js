@@ -1406,6 +1406,7 @@ class Model extends BaseModel {
                             buyerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
+                            dependentUnit: 1,
                             timeForPayment: 1,
                             remainingPayment: 1,
                         }
