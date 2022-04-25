@@ -820,7 +820,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -905,6 +905,10 @@ class Model extends BaseModel {
 
                 if(chair && checkObjectIDs(chair)){
                     conditionObj.chair = ObjectID(chair)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObj.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(personInCharge && checkObjectIDs(personInCharge)){
@@ -1019,7 +1023,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getListIsMembers({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -1098,6 +1102,10 @@ class Model extends BaseModel {
 
                 if(chair && checkObjectIDs(chair)){
                     conditionObj.chair = ObjectID(chair)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObj.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(personInCharge && checkObjectIDs(personInCharge)){
@@ -1392,7 +1400,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
@@ -1425,6 +1433,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.chair": 1,
+                        }
+                    }
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
                         }
                     }
                 }
@@ -1497,7 +1523,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
@@ -1532,8 +1558,27 @@ class Model extends BaseModel {
                             "_id.chair": 1,
                         }
                     }
-                }
 
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
+                        }
+                    }
+                }
+                
+                console.log('===================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
                 console.log(conditionObj)
                 console.log(conditionObjYear)
                 console.log(conditionGroup)
@@ -1554,6 +1599,7 @@ class Model extends BaseModel {
                             buyerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
+                            dependentUnit: 1,
                         }
                     },
                     {
@@ -1583,7 +1629,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit = 20, lastestID, select, populates= {} }){
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
 
@@ -1621,6 +1667,10 @@ class Model extends BaseModel {
 
                 if(field && checkObjectIDs(field)){
                     conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(chair && checkObjectIDs(chair)){
