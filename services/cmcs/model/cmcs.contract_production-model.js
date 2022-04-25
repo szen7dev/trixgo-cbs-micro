@@ -968,6 +968,7 @@ class Model extends BaseModel {
                             buyerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
+                            dependentUnit: 1,
                         }
                     },
                     {
@@ -980,6 +981,8 @@ class Model extends BaseModel {
                         $sort: sortBy
                     } 
                 ])
+
+                console.log(listData)
 
                 if(!isNaN(optionProperty) && Number(optionProperty) > 0){
                     await CMCS__CONTRACT_PRODUCTION_COLL.populate(listData, conditionPopulate)
