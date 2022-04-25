@@ -206,7 +206,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Can't get data", status: 422 });
 
                 let nextCursor	= null;
-                let prevCursor	= null;
                 if(infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
