@@ -296,7 +296,6 @@ class Model extends BaseModel {
      */
     getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-        console.log({ outin, userID, companyID, accountID, customerID, contractID, parentID, sortKey })
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -350,9 +349,9 @@ class Model extends BaseModel {
                         conditionObj.account = accountID
                     }
                 } else {
-                    conditionObj = { members: { $in: [userID] } };
+                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
                     conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false }
+                    conditionObj.parent = { $exists: false } // Lấy theo công ty
                 }
 
                 // Lấy dòng tiền vào ra (có giá trị income > 0)

@@ -43,6 +43,7 @@ module.exports = {
             type            : { type: "number", optional: true },
             subType         : { type: "number", optional: true },
             field           : { type: "string", optional: true },
+            dependentUnit   : { type: "string", optional: true },
             chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
             debtStatus      : { type: "string", optional: true },
@@ -97,14 +98,14 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name,
+                const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg  } = ctx.params;
                 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.insert({
-					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -138,6 +139,7 @@ module.exports = {
             type            : { type: "number", optional: true },
             subType         : { type: "number", optional: true },
             field           : { type: "string", optional: true },
+            dependentUnit   : { type: "string", optional: true },
             chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
             debtStatus      : { type: "string", optional: true },
@@ -194,7 +196,7 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name,
+                const { contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
@@ -204,7 +206,7 @@ module.exports = {
                       
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
-					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, dataInc, photos, ctx
+					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, dataInc, photos, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

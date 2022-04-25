@@ -1517,18 +1517,7 @@ module.exports = {
 		//---------------------------🏁 END SERVICE DATAHUB 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE BIDDING 🏁-------------------------//
-		//____bidding_doc
-		[`POST ${CF_ROUTINGS_BIDDING.BIDDING_DOC}`] :
-		[`${CF_DOMAIN_SERVICES.BIDDING}.${CF_ACTIONS_BIDDING.BIDDING_DOC_INSERT}`],
 
-		[`PUT ${CF_ROUTINGS_BIDDING.BIDDING_DOC}`] :
-		[`${CF_DOMAIN_SERVICES.BIDDING}.${CF_ACTIONS_BIDDING.BIDDING_DOC_UPDATE}`],
-
-		[`DELETE ${CF_ROUTINGS_BIDDING.BIDDING_DOC}`] :
-		[`${CF_DOMAIN_SERVICES.BIDDING}.${CF_ACTIONS_BIDDING.BIDDING_DOC_REMOVE}`],
-
-		[`GET ${CF_ROUTINGS_BIDDING.BIDDING_DOC}`] :
-		[`${CF_DOMAIN_SERVICES.BIDDING}.${CF_ACTIONS_BIDDING.BIDDING_DOC_GET_INFO_AND_GET_LIST}`],
 
 		//---------------------------🏁 END SERVICE BIDDING 🏁---------------------------//
 

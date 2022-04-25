@@ -362,6 +362,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                console.log('++++++++++++++++++++++++++++++')
                 console.log(conditionObjAgg)
                 console.log(conditionObjYear)
 
@@ -466,6 +467,7 @@ class Model extends BaseModel {
      * Date: 04/04/2022
      */
     getAmountByMonth({ userID, companyID, projectID, outin, year, ctx }){
+        console.log({userID, companyID, projectID, outin, year})
         return new Promise(async resolve => {
             try {
                 /**
@@ -503,6 +505,10 @@ class Model extends BaseModel {
                     }
                 }
 
+                // console.log(conditionObj)
+                // console.log(conditionObjYear)
+                // console.log(conditionGroup)
+
                 let listData = await CMCS__CONTRACT_EXPENSE_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -527,6 +533,7 @@ class Model extends BaseModel {
                         }
                     } 
                 ])
+                console.log(listData)
 
                 return resolve({ error: false, data: listData });
             } catch (error) {

@@ -22,9 +22,11 @@ const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-co
  * COLLECTIONS
  */
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
+
 const CMCS__CONTRACT_PRODUCTION_COLL            	= require('../../cmcs/database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
+const CMCS__CONTRACT_EXPENSE_COLL            		= require('../../cmcs/database/cmcs.contract_expense-coll');
 
 class Model extends BaseModel {
 
@@ -37,7 +39,7 @@ class Model extends BaseModel {
 	 * Func: Tạo hợp đồng
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
@@ -45,14 +47,14 @@ class Model extends BaseModel {
          }){
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
-                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|chair|personInCharge|field invalid', status: 400 });
+                if(!checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo)|| !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
+                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|dependentUnit|chair|personInCharge|field invalid', status: 400 });
 
                 let dataInsert = {
                     project: projectID, 
                     buyerInfo: buyerInfo, 
                     sellerInfo: sellerInfo, 
-                    dependentUnit: personInCharge, // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                    dependentUnit: dependentUnit,
                     personInCharge: personInCharge, 
                     chair: chair, 
                     field: field, 
@@ -315,7 +317,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật hợp đồng
 	 * Date: 13/12/2021
 	 */
-	update({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+	update({ contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
@@ -335,8 +337,8 @@ class Model extends BaseModel {
                  * - sellerInfo
                  */
 
-                if(!checkObjectIDs(contractID) || !checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
-                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|chair|personInCharge|field invalid', status: 400 });
+                if(!checkObjectIDs(contractID) || !checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
+                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|dependentUnit|chair|personInCharge|field invalid', status: 400 });
 
                 let dataUpdate    = {}
                 let dataAddToSet = {};
@@ -421,9 +423,12 @@ class Model extends BaseModel {
                     dataUpdate.field = field;
                 }
 
+                if(checkObjectIDs(dependentUnit)){
+                    dataUpdate.dependentUnit = dependentUnit;
+                }
+
                 if(checkObjectIDs(personInCharge)){
                     dataUpdate.personInCharge = personInCharge;
-                    dataUpdate.dependentUnit = personInCharge; // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
                 }
 
                 if(checkObjectIDs(chair)){
@@ -671,6 +676,7 @@ class Model extends BaseModel {
 
                 /**
                  * CẬP NHẬT LẠI CÁC THUỘC TÍNH CHO SẢN LƯỢNG, NGHIỆM THU, TIỀN VỀ
+                 * 24/4/2022: Hiepnh => Đệ viết giúp anh API bên các service của CMCS để call sang, thay vì anh đang call trực tiếp theo Collection nhé
                  * - projectID
                  * - field
                  * - dependentUnit
@@ -685,7 +691,7 @@ class Model extends BaseModel {
                     { $set: { 
                         "project" : ObjectID(projectID),
                         "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(personInCharge), // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                        "dependentUnit" : ObjectID(dependentUnit),
                         "personInCharge" : ObjectID(personInCharge),
                         "chair" : ObjectID(chair),
                         "buyerInfo" : ObjectID(buyerInfo),
@@ -701,7 +707,7 @@ class Model extends BaseModel {
                     { $set: { 
                         "project" : ObjectID(projectID),
                         "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(personInCharge), // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                        "dependentUnit" : ObjectID(dependentUnit),
                         "personInCharge" : ObjectID(personInCharge),
                         "chair" : ObjectID(chair),
                         "buyerInfo" : ObjectID(buyerInfo),
@@ -717,7 +723,23 @@ class Model extends BaseModel {
                     { $set: { 
                         "project" : ObjectID(projectID),
                         "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(personInCharge), // Tạm thời lấy theo trường này => sau bổ sung trên UI thêm trường Đơn vị riêng
+                        "dependentUnit" : ObjectID(dependentUnit),
+                        "personInCharge" : ObjectID(personInCharge),
+                        "chair" : ObjectID(chair),
+                        "buyerInfo" : ObjectID(buyerInfo),
+                        "sellerInfo" : ObjectID(sellerInfo),
+                        "type" : Number(type),
+                        "outin" : Number(outin),
+                        "real" : Number(real),
+                    } }
+                 );
+
+                 await CMCS__CONTRACT_EXPENSE_COLL.updateMany(
+                    { contract: ObjectID(contractID) },
+                    { $set: { 
+                        "project" : ObjectID(projectID),
+                        "field" : ObjectID(field),
+                        "dependentUnit" : ObjectID(dependentUnit),
                         "personInCharge" : ObjectID(personInCharge),
                         "chair" : ObjectID(chair),
                         "buyerInfo" : ObjectID(buyerInfo),

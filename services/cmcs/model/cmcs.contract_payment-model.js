@@ -664,7 +664,7 @@ class Model extends BaseModel {
                  * optionProperty: Báo cáo theo tính chất/phân loại
                  * 1-Báo cáo theo phân loại: Giá trị ký, Sản lượng, Doanh thu, Tiền về
                  * 2.1-Tính tổng Tất cả-Theo năm (1)/Theo tháng (2)
-                 * 2.2-Tính tổng theo thuộc tính: Lĩnh vực (1)/Người mua (2)/Người bán (3)/Đơn vị (4)/Chủ trì (5)
+                 * 2.2-Tính tổng theo thuộc tính: Lĩnh vực (1)/Người mua (2)/Người bán (3)/Phụ trách (4)/Chủ trì (5)/Đơn vị (6)
                  * 2.3-Tính tổng kết hợp
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"amount": 1}

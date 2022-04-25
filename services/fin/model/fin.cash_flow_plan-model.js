@@ -40,7 +40,6 @@ class Model extends BaseModel {
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                         departmentID: projectID
                     })
-                    // console.log(infoProject)
 
                     // Trường hợp lập kế hoạch cho Dự án thuộc công ty khác
                     if(infoProject){
@@ -78,12 +77,15 @@ class Model extends BaseModel {
                 // Nếu được tạo từ phần tử cha => lấy company theo phần tử cha
                 if(checkObjectIDs(parentID)){
                     let infoParent = await FIN__CASH_FLOW_PLAN_COLL.findById(parentID)
-                    console.log(infoParent)
                     if(infoParent){
-                        let { company } = infoParent;
+                        let { company, outin, property, type } = infoParent;
 
                         dataInsert.parent = parentID;
                         dataInsert.company = company;
+
+                        dataInsert.outin = outin;
+                        dataInsert.property = property;
+                        dataInsert.type = type;
                     }
                 }
 
@@ -224,10 +226,23 @@ class Model extends BaseModel {
                     dataUpdate.timeApproved = new Date();
                 }
 
-                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
+                
+                // Cập nhật thuộc tính cho các phẩn tử con
+                await FIN__CASH_FLOW_PLAN_COLL.updateMany(
+                    { parent: ObjectID(cashFlowID)},
+                    { $set: 
+                        { 
+                            "outin" : outin,
+                            "property" : property,
+                            "type" : type,
+                        } 
+                    }
+                 );
 
+                // Lấy thông tin của mẩu tin populate
                 infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.populate(infoAfterUpdate, {
                     path: 'contract',
                     select: '_id sellerInfo',
@@ -239,7 +254,10 @@ class Model extends BaseModel {
 
                 // Cập nhật lại phần tử cha
                 if(checkObjectIDs(infoAfterUpdate.parent)){
+                    // Cập nhật giá trị của phần tử cha
                     await that.updateValue({cashFlowID: infoAfterUpdate.parent, userID})
+
+                    // Cập nhật thuộc tính theo phần tử cha
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -254,29 +272,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    // remove({ cashFlowsID, userID }) {
-    //     return new Promise(async resolve => {
-    //         try {
-    //             if(!checkObjectIDs(cashFlowsID))
-    //                 return resolve({ error: true, message: 'param_cashFlowsID_invalid', status: 400 });
-
-    //             if(!checkObjectIDs([userID]))
-    //                 return resolve({ error: true, message: 'param_userID_invalid', status: 400 });
-
-    //             const infoAfterDelete = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
-    //                 _id: {
-    //                     $in: cashFlowsID
-    //                 },
-    //                 userCreate: userID
-    //             })
-
-    //             return resolve({ error: false, data: infoAfterDelete, status: 201 });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
-
+    
     /**
      * Name: Get info 
      * Author: Hiepnh
