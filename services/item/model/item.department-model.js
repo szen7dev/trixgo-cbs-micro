@@ -809,10 +809,6 @@ class Model extends BaseModel {
                     limit = +limit
                 }
 
-                if(unLimit){
-                    limit = 100;
-                }
-
                 if(isBudget == 1){
                     conditionObj.budget = { $gt: 0 }
                 }
@@ -878,19 +874,28 @@ class Model extends BaseModel {
                     sortBy        = dataPagingAndSort?.data?.sort;
                 }
 
-                //_____Bắt đầu query database
-                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
-                    .find(conditionObj)
-                    .limit(limit+1)
-                    .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
+                let infoDataAfterGet = null;
+
+                if(unLimit) {
+                    infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                        .find(conditionObj)
+                        .select(select)
+                        .populate(populates)
+                        .lean();
+                } else{
+                    infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                        .find(conditionObj)
+                        .limit(limit+1)
+                        .sort(sortBy)
+                        .select(select)
+                        .populate(populates)
+                        .lean();
+                }
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
-                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObjOrg);
+                let totalRecord = await ITEM__DEPARTMENT_COLL.countDocuments(conditionObjOrg);
                 let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
 
@@ -903,7 +908,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,

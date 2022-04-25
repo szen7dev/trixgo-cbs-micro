@@ -16,33 +16,35 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            pcmFileID    : { type: "string", optional: true },
-            companyID    : { type: "string", optional: true },
-            projectID    : { type: "string", optional: true },
-            groupID      : { type: "string", optional: true },
-            taskID       : { type: "string", optional: true },
-            authorID     : { type: "string", optional: true },
-            type         : { type: "string", optional: true },
-            fromDate     : { type: "string", optional: true },
-            toDate       : { type: "string", optional: true },
+            pcmFileID       : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            projectID       : { type: "string", optional: true },
+            groupID         : { type: "string", optional: true },
+            taskID          : { type: "string", optional: true },
+            authorID        : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            fromDate        : { type: "string", optional: true },
+            toDate          : { type: "string", optional: true },
+            isFileOfProject : { type: "string", optional: true },
 
-            keyword      : { type: "string", optional: true },
-            limit        : { type: "string", optional: true },
-            lastestID    : { type: "string", optional: true },
-            select       : { type: "string", optional: true },
-            populates    : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+				const { _id: userID } = ctx.meta.infoUser;
                 const {
                     keyword, companyID, projectID, groupID, taskID, authorID, type, fromDate, toDate,
-                    limit, lastestID, select, populates
+                    limit, lastestID, select, populates, isFileOfProject
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getList({
                     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-                    limit, lastestID, select, populates
+                    limit, lastestID, select, populates, isFileOfProject, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -95,11 +95,11 @@ class Model extends BaseModel {
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-        limit = 10, lastestID, select, populates
+        limit = 10, lastestID, select, populates, isFileOfProject, ctx
     }) {
         return new Promise(async (resolve) => {
             try {
-                if(!companyID && !projectID && !groupID && !taskID) {
+                if(!companyID && !projectID && !groupID && !taskID && !isFileOfProject) {
 					return resolve({
                         error: true,
                         message: 'Request params require companyID || projectID || groupID || taskID',
@@ -108,7 +108,7 @@ class Model extends BaseModel {
                 }
 
                 if(limit > 20){
-                    limit = 20
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }
@@ -175,6 +175,25 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.nameOrg = new RegExp(keyword, 'i');
+                }
+
+                // Lấy danh sách file của dự án mà user là member
+                if(isFileOfProject) {
+                    let dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                        unLimit: 'true',
+                        select: '_id'
+                    });
+                    let { error, data } = dataProject;
+
+                    if(!error) {
+                        const projectsID = data?.listRecords?.map(item => item._id) ?? [];
+
+                         if(projectsID.length) {
+                            conditionObj.project = {
+                                $in: projectsID
+                            }
+                        }
+                    }
                 }
 
                 let conditionObjOrg = { ...conditionObj };

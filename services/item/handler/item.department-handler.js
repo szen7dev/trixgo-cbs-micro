@@ -12,7 +12,7 @@ module.exports = {
 
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Thêm dự án/phòng ban
 	 */
     insert: {
@@ -56,7 +56,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, 
+                let { companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
@@ -73,8 +73,8 @@ module.exports = {
                     companyID = company._id
                 }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                    ctx, authorID: userID, company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones, 
-                    budget, 
+                    ctx, authorID: userID, company: companyID, type, name, sign, startTime, expiredTime, milestones, completedMilestones,
+                    budget,
                     vatBudget,
                     forecastBudget,
                     vatForecastBudget,
@@ -93,7 +93,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Cập nhật dự án/phòng ban
 	 */
     update: {
@@ -212,7 +212,7 @@ module.exports = {
                     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs } = ctx.params;
-                    
+
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
                     departmentID, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
                     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
@@ -233,14 +233,14 @@ module.exports = {
         }
     },
 
-      
+
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Xoá dự án phòng ban => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 */
-    
+
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách dự án (Hàm dùng chung)
 	 */
     getInfoAndGetList: {
@@ -266,7 +266,7 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id;
                 }
-                
+
                 let resultAfterCallHandler;
                 if(departmentID){
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getInfo({
@@ -287,7 +287,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: Danh sách dự án mà user được quyền truy cập
      */
     getListByMembers: {
@@ -297,7 +297,7 @@ module.exports = {
             type            : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             isBudget        : { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             unLimit         : { type: "string", optional: true },
@@ -311,7 +311,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { companyID, type, isBudget, keyword, limit, unLimit, lastestID, select, populates } = ctx.params;
 				let { _id: userID } = ctx.meta.infoUser;
-               
+
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getListByMembers({
                     companyID, lastestID, userID, type, isBudget, keyword, limit, unLimit, select, populates
                 });
@@ -323,7 +323,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Thống kê theo tiến độ, ngân sách
 	 */
     analysisOntimeOnbudget: {
@@ -343,4 +343,4 @@ module.exports = {
             }
         }
     },
-}   
+}
