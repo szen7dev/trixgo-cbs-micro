@@ -20,12 +20,14 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * import inter-coll, exter-coll
  */
-const PCM_FILE_COLL = require('../database/subject_pcm.pcm_file-coll');
+const PCM_FILE__COLL                    = require('../database/subject_pcm.pcm_file-coll');
+const PCM_PLAN_TASK__COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
+const PCM_PLAN_GROUP__COLL              = require('../database/subject_pcm.pcm_plan_group-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(PCM_FILE_COLL);
+        super(PCM_FILE__COLL);
     }
 
     /**
@@ -95,16 +97,24 @@ class Model extends BaseModel {
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-        limit = 10, lastestID, select, populates, isFileOfProject, ctx
+        limit = 10, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
     }) {
         return new Promise(async (resolve) => {
             try {
-                if(!companyID && !projectID && !groupID && !taskID && !isFileOfProject) {
-					return resolve({
-                        error: true,
-                        message: 'Request params require companyID || projectID || groupID || taskID',
-                        status: 400
-                    });
+                /**
+                 * Kiểm tra bắt buộc phải có companyID hoặc projectID hoặc groupID hoặc taskID, Nếu không thuộc trường hợp:
+                 * - Tìm kiếm file (VIAS)
+                 * - Lấy danh sách file của tất cả dự án mà user là member
+                 */
+                if(!isFileOfProject && !isSearchFile) {
+                    if(!companyID && !projectID && !groupID && !taskID) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số companyID || projectID || groupID || taskID là cần thiết",
+                            keyError: "params_invalid",
+                            status: 400
+                        });
+                    }
                 }
 
                 if(limit > 20){
@@ -128,19 +138,19 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(checkObjectIDs(companyID)){
+                if(checkObjectIDs([companyID])){
                     conditionObj.company = companyID;
                 }
 
-                if(checkObjectIDs(projectID)){
+                if(checkObjectIDs([projectID])){
                     conditionObj.project = projectID;
                 }
 
-                if(checkObjectIDs(groupID)){
+                if(checkObjectIDs([groupID])){
                     conditionObj.group = groupID;
                 }
 
-                if(checkObjectIDs(taskID)){
+                if(checkObjectIDs([taskID])){
                     conditionObj.task = taskID;
                 }
 
@@ -179,11 +189,11 @@ class Model extends BaseModel {
 
                 // Lấy danh sách file của dự án mà user là member
                 if(isFileOfProject) {
-                    let dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
                         unLimit: 'true',
                         select: '_id'
                     });
-                    let { error, data } = dataProject;
+                    const { error, data } = dataProject;
 
                     if(!error) {
                         const projectsID = data?.listRecords?.map(item => item._id) ?? [];
@@ -196,9 +206,59 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Tìm kiếm file (VIAS)
+                if(isSearchFile) {
+                    const listGroupUserIsMember = await PCM_PLAN_GROUP__COLL
+                        .find({
+                            $or: [
+                                { admins: { $in: [userID] } },
+                                { members: { $in: [userID] } },
+                            ]
+                        })
+                        .select('_id')
+                        .lean();
+
+                    const groupsID = listGroupUserIsMember.map(item => item._id);
+
+                    const listTaskUserIsMember = await PCM_PLAN_TASK__COLL
+                        .find({
+                            $or: [
+                                { author: userID },
+                                { assignee: userID },
+                                { related: { $in: [userID] } },
+                                { group: { $in: groupsID } }
+                            ]
+                        })
+                        .select('_id project')
+                        .lean();
+
+                    const projectsID    = [];
+                    const tasksID       = [];
+
+                    listTaskUserIsMember.map(task => {
+                        projectsID[projectsID.length] = task.project;
+                        tasksID[tasksID.length] = task._id;
+                    })
+
+                    conditionObj.$or = [
+                        {
+                            $and: [
+                                { project: { $in: projectsID } },
+                                { task: { $in: tasksID } },
+                            ]
+                        },
+                        {
+                            $and: [
+                                { project: { $in: projectsID } },
+                                { task: { $in: tasksID } },
+                            ]
+                        }
+                    ]
+                }
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await PCM_FILE_COLL.findById(lastestID);
+					let infoData = await PCM_FILE__COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
@@ -208,12 +268,16 @@ class Model extends BaseModel {
 
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
+                // conditionObj.$and?.map(item => {
+                //     item.$and?.map(and => console.log({ and }))
+                //     item.$or?.map(or => console.log({ or }))
+                // })
 
-                let infoDataAfterGet = await PCM_FILE_COLL
+                let infoDataAfterGet = await PCM_FILE__COLL
                     .find(conditionObj)
                     .select(select)
                     .limit(limit+1)
@@ -221,26 +285,38 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 422 });
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
 
                 let nextCursor	= null;
+
                 if(infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-                let totalRecord = await PCM_FILE_COLL.countDocuments(conditionObjOrg);
+
+                let totalRecord = await PCM_FILE__COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                }, status: 200 });
+                return resolve({
+                    error: false,
+                    data: {
+                        listRecords: infoDataAfterGet,
+                        limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    },
+                    status: 200
+                });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -314,7 +390,7 @@ class Model extends BaseModel {
                     }
                 ]
 
-                const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
+                const dataFilesGroupByDate = await PCM_FILE__COLL.aggregate(pipeline);
 
                 if(!dataFilesGroupByDate) {
                     return resolve({
@@ -384,7 +460,7 @@ class Model extends BaseModel {
                     }
                 ]
 
-                const dataFilesGroupByContract = await PCM_FILE_COLL.aggregate(pipeline);
+                const dataFilesGroupByContract = await PCM_FILE__COLL.aggregate(pipeline);
 
                 if(!dataFilesGroupByContract) {
                     return resolve({
@@ -401,7 +477,7 @@ class Model extends BaseModel {
                     conditionKeyword['contract.name'] = new RegExp(keyword, 'i');
                 }
 
-                await PCM_FILE_COLL.populate(dataFilesGroupByContract, {
+                await PCM_FILE__COLL.populate(dataFilesGroupByContract, {
                     path: "contract",
                     select: "_id name photos",
                     // match: conditionKeyword,

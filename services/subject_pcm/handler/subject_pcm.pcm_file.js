@@ -16,7 +16,6 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            pcmFileID       : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             projectID       : { type: "string", optional: true },
             groupID         : { type: "string", optional: true },
@@ -26,6 +25,7 @@ module.exports = {
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
             isFileOfProject : { type: "string", optional: true },
+            isSearchFile    : { type: "string", optional: true },
 
             keyword         : { type: "string", optional: true },
             limit           : { type: "string", optional: true },
@@ -39,12 +39,12 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const {
                     keyword, companyID, projectID, groupID, taskID, authorID, type, fromDate, toDate,
-                    limit, lastestID, select, populates, isFileOfProject
+                    limit, lastestID, select, populates, isFileOfProject, isSearchFile
                 } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getList({
                     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-                    limit, lastestID, select, populates, isFileOfProject, userID, ctx
+                    limit, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
