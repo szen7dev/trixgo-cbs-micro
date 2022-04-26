@@ -219,6 +219,7 @@ class Model extends BaseModel {
 
                 /***
                  * Lấy danh sách file của dự án mà user là Members
+                 * Phục vụ lấy file từ ngoài trang chủ, từ tất cả các dự án
                  */
                 if(isFileOfProject) {
                     console.log('isFileOfProject============>>>>>>>>>>>>>>>>>>>>>')
