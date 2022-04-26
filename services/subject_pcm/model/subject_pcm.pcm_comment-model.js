@@ -46,18 +46,6 @@ class Model extends BaseModel {
     handleAddFiles({ infoTask, infoComment, files, fileType, authorID, ctx }) {
         return new Promise(async resolve => {
             try {
-                if(fileType === 'image') {
-                    infoTask.contract && await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                        contractID: infoTask.contract.toString(),
-                        photos: files
-                    })
-
-                    infoTask.project && await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
-                        departmentID: infoTask.project?._id?.toString(),
-                        photos: files
-                    })
-                }
-
                 let { results, errors } = await PromisePool
                     .for(files)
                     .withConcurrency(2)
@@ -103,8 +91,6 @@ class Model extends BaseModel {
                         }
                     });
 
-                console.log({ results, errors, files })
-
                 if(errors.length) {
                     return resolve({
                         error: true,
@@ -116,22 +102,32 @@ class Model extends BaseModel {
                 }
 
                 results = results.filter(Boolean);
+                let oldFiles = [];
 
-                if(!results.length) {
-                    return resolve({
-                        error: true,
-                        message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
-                        keyError: "error_occurred",
-                        status: 422
-                    })
+                if(results.length) {
+                    oldFiles = await PCM_FILE_COLL
+                        .find({
+                            _id: { $nin: results },
+                            comment: infoComment._id,
+                            type: fileType === 'image' ? 1 : 2
+                        })
+                        .select('_id')
+                        .lean();
+
+                    oldFiles = oldFiles.map(item => item._id);
                 }
 
-                let oldFiles = await PCM_FILE_COLL
-                    .find({ _id: { $ne: results } })
-                    .select('_id')
-                    .lean();
+                if(fileType === 'image') {
+                    infoTask.contract && await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                        contractID: infoTask.contract.toString(),
+                        photos: files
+                    })
 
-                oldFiles = oldFiles.map(item => item._id);
+                    infoTask.project && await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: infoTask.project?._id?.toString(),
+                        photos: files
+                    })
+                }
 
                 return resolve({
                     error: false,
@@ -581,7 +577,6 @@ class Model extends BaseModel {
                     })
                 }
 
-                // Bổ sung files, images trong phản hồi liên quan
                 if(infoComment.type === 1) {
                     content && (dataUpdate.content = content);
 
@@ -613,7 +608,6 @@ class Model extends BaseModel {
                         status: 422
                     })
                 }
-                console.log({ files, images })
 
                 // Cập nhật bổ sung
                 switch (infoComment.type) {
@@ -648,7 +642,7 @@ class Model extends BaseModel {
 
                             if(result.error) return resolve(result);
 
-                            filesRemove = result.data?.oldFiles;
+                            filesRemove = [...filesRemove, ...result.data?.oldFiles];
                             dataAdditional.$set['images'] = result.data?.results;
                         } else{
                             await PCM_FILE_COLL.deleteMany({
@@ -686,7 +680,6 @@ class Model extends BaseModel {
                     default:
                         break;
                 }
-                console.log({ dataAdditional, filesRemove })
 
                 if(Object.keys(dataAdditional).length) {
                     await PCM_COMMENT_COLL.findOneAndUpdate({
@@ -696,8 +689,9 @@ class Model extends BaseModel {
                 }
 
                 if(filesRemove.length) {
-                    await PCM_COMMENT_COLL.deleteMany({
-                        _id: { $in: filesRemove }
+                    await PCM_FILE_COLL.deleteMany({
+                        _id: { $in: filesRemove },
+                        comment: commentID,
                     })
                 }
 
@@ -849,6 +843,17 @@ class Model extends BaseModel {
                         keyError: 'error_occurred',
                         status: 422
                     });
+                }
+
+                switch (infoComment.type) {
+                    case 1: // Pre-calculate comment
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
+                        break;
+                    case 2: // Pre-calculate related response
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
+                        break;
+                    default:
+                        break;
                 }
 
                 await PCM_FILE_COLL.deleteMany({

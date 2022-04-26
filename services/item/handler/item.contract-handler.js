@@ -194,8 +194,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log({ PARAMS: ctx.params });
-				// await this.validateEntity(ctx.params);
+				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
