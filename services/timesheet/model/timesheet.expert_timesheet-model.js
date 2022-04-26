@@ -72,7 +72,7 @@ class Model extends BaseModel {
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
-                    userCreate, name
+                    userCreate, name, admins: [userCreate], members: [userCreate]
                 }
 
                 if(checkObjectIDs(parentID)){
@@ -120,7 +120,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, ctx  }){
+    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, 
+        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, adminsRemove, members, membersRemove, ctx  }){
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(expertTimesheetID))
@@ -217,6 +218,32 @@ class Model extends BaseModel {
                 
                 if(dateOut3){
                     dataUpdate.dateOut3 = dateOut3;
+                }
+
+                let dataAddToSet = {};
+                let dataPullAll  = {};
+                if(admins){
+                    dataAddToSet.admins = admins;
+                }
+
+                if(adminsRemove){
+                    dataPullAll.admins = adminsRemove;
+                }
+
+                if(members){
+                    dataAddToSet.members = members;
+                }
+
+                if(membersRemove){
+                    dataPullAll.members = membersRemove;
+                }
+
+                if(dataAddToSet){
+                    dataUpdate.$addToSet = dataAddToSet;
+                }
+
+                if(dataPullAll){
+                    dataUpdate.$pullAll = dataPullAll;
                 }
                 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });

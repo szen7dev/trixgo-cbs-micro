@@ -203,7 +203,7 @@ module.exports = {
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
                       photos,
                     } = ctx.params;
-                      
+
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
 					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, dataInc, photos, ctx
@@ -241,6 +241,7 @@ module.exports = {
             subType             : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             field               : { type: "string", optional: true },
+            dependentUnit       : { type: "string", optional: true },
             chair               : { type: "string", optional: true },
             personInCharge      : { type: "string", optional: true },
             debtStatus          : { type: "string", optional: true },
@@ -258,7 +259,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
+                let { companyID, contractID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, isExpiredAg, isMember,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
@@ -276,7 +277,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getList({
-                        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
+                        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                         debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
                         keyword, limit, lastestID, select, populates
                     });
@@ -306,6 +307,7 @@ module.exports = {
             subType             : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             field               : { type: "string", optional: true },
+            dependentUnit       : { type: "string", optional: true },
             chair               : { type: "string", optional: true },
             personInCharge      : { type: "string", optional: true },
             debtStatus          : { type: "string", optional: true },
@@ -322,7 +324,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
+                let { companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, isExpiredAg, isMember,
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
@@ -330,7 +332,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
-                    companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge,
+                    companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
                     keyword, limit, lastestID, select, populates
                 });
@@ -392,6 +394,7 @@ module.exports = {
             outin           : { type: "string", optional: true },
             real            : { type: "string", optional: true },
             field           : { type: "string", optional: true },
+            dependentUnit   : { type: "string", optional: true },
             chair           : { type: "string", optional: true },
             personInCharge  : { type: "string", optional: true },
             buyerInfo       : { type: "string", optional: true },
@@ -410,7 +413,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 
-                let { companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
+                let { companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, populates, select } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -419,7 +422,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getListByMonth({
-                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
+                    userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit, lastestID, select, populates
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -502,6 +505,43 @@ module.exports = {
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getAmountByProperty({
                     userID, companyID, projectID, contractID, type: Number(type), outin: Number(outin), real: Number(real), year: Number(year), optionTime: Number(optionTime), optionProperty: Number(optionProperty), ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
+
+    /**
+     * Name: Gom nhóm theo thuộc tính 
+     * Author: Hiepnh
+     * Date: 18/04/2022
+     */
+     getRetainProduce: {
+        auth: "required",
+        params: {
+            companyID           : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, outin } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                
+                if(!companyID){
+                    companyID = company._id
+                }
+                console.log({companyID})
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getRetainProduce({
+                    userID, companyID, projectID, contractID, outin: Number(outin), ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

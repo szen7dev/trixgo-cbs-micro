@@ -801,16 +801,12 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let keys	      = ['createAt__-1', '_id__-1'];
+                let keys = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
                 }else{
                     limit = +limit
-                }
-
-                if(unLimit){
-                    limit = 100;
                 }
 
                 if(isBudget == 1){
@@ -878,8 +874,17 @@ class Model extends BaseModel {
                     sortBy        = dataPagingAndSort?.data?.sort;
                 }
 
-                //_____Bắt đầu query database
-                let infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                if(unLimit) {
+                    console.log({ conditionObj, select })
+                    const dataUnlimit = await ITEM__DEPARTMENT_COLL
+                        .find(conditionObj)
+                        .select(select)
+                        .lean();
+
+                    return resolve({ error: false, data: dataUnlimit, status: 200 });
+                }
+
+                const infoDataAfterGet = await ITEM__DEPARTMENT_COLL
                     .find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
@@ -890,7 +895,7 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
 
-                let totalRecord = await ITEM__DEPARTMENT_COLL.count(conditionObjOrg);
+                let totalRecord = await ITEM__DEPARTMENT_COLL.countDocuments(conditionObjOrg);
                 let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
 
@@ -903,7 +908,7 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,

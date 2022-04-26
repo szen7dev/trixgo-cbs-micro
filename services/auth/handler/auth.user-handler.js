@@ -472,6 +472,7 @@ module.exports = {
             companyID     : { type: "string", optional: true },
             positionID    : { type: "string", optional: true },
             departmentID  : { type: "string", optional: true },
+            groupDefault  : { type: "string", optional: true },
             sendRequestToFriendID   : { type: "string", optional: true },
             acceptFriendRequestID   : { type: "string", optional: true },
             removeFriendRequestID   : { type: "string", optional: true },
@@ -482,7 +483,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let {
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
-                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status
                 } = ctx.params;
 				let { _id: currentUserID, company } = ctx.meta.infoUser;
@@ -493,7 +494,7 @@ module.exports = {
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
-                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, ctx,
+                    sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status, company, ctx
                 });
 

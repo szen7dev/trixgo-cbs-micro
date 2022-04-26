@@ -17,6 +17,9 @@ const CMCS__CONTRACT_PRODUCTION_COLL    = require('../database/cmcs.contract_pro
 const CMCS__CONTRACT_IPC_COLL           = require('../database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_payment-coll');
 
+/**
+ * SAU BỎ ĐI, CALL QUA SERVICE
+ */
 const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll');
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
@@ -1406,6 +1409,7 @@ class Model extends BaseModel {
                             buyerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
+                            dependentUnit: 1,
                             timeForPayment: 1,
                             remainingPayment: 1,
                         }

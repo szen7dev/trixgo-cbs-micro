@@ -23,6 +23,9 @@ const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-co
  */
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 
+/**
+ * SAU BỎ ĐI, CALL QUA SERVICE
+ */
 const CMCS__CONTRACT_PRODUCTION_COLL            	= require('../../cmcs/database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
@@ -820,7 +823,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -905,6 +908,10 @@ class Model extends BaseModel {
 
                 if(chair && checkObjectIDs(chair)){
                     conditionObj.chair = ObjectID(chair)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObj.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(personInCharge && checkObjectIDs(personInCharge)){
@@ -1019,7 +1026,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getListIsMembers({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, chair, personInCharge, debtStatus, warehouse,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -1100,6 +1107,10 @@ class Model extends BaseModel {
                     conditionObj.chair = ObjectID(chair)
                 }
 
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObj.dependentUnit = ObjectID(dependentUnit)
+                }
+
                 if(personInCharge && checkObjectIDs(personInCharge)){
                     conditionObj.personInCharge = ObjectID(personInCharge)
                 }
@@ -1135,6 +1146,137 @@ class Model extends BaseModel {
                 // Theo giỏi bảo lảnh
                 if(isExpiredAg == 1){
                     conditionObj.expiredAg = { $exists: true, $ne: null }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { name: regSearch },
+                        { sign: regSearch },
+                        { storeSign: regSearch },
+                    ]
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+					conditionObj = dataPagingAndSort?.data?.find;
+					sortBy       = dataPagingAndSort?.data?.sort;
+				}else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy                = dataPagingAndSort?.data?.sort;
+                }
+
+                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	    = null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Danh sách bảo lãnh
+     * Author: Hiepnh
+     * Date  : 25/4/2022
+     */
+    getListGuarantee({
+        isMember,
+        keyword, limit = 10, lastestID, select, populates= {} }) {
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * 1-Bảo lãnh tạm ứng
+                 * 2-Bảo lãnh thực hiện hợp đồng
+                 * 3.1-Bảo lãnh quá hạn
+                 * 3.2-Bảo lãnh tháng tới
+                 * 3.3-Bảo lãnh sau tháng tới
+                 */
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let conditionObj = {};
+                let keys	     = ['createAt__-1', '_id__-1'];
+                let sortBy;
+
+                if(limit > 20){
+                    limit = 20
+                }else{
+                    limit = +limit
+                }
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                // POPULATE
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */  
+                // Theo dõi bảo lảnh
+                if(isExpiredAg == 1){
+                    conditionObj.expiredAg = { $exists: true, $ne: null }
+                }
+
+                if(isMember == 1){
+                    conditionObj.members = { $in: [userID] }
                 }
 
                 if(keyword){
@@ -1392,7 +1534,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge" },
@@ -1425,6 +1567,24 @@ class Model extends BaseModel {
 
                         sortBy = {
                             "_id.chair": 1,
+                        }
+                    }
+
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
                         }
                     }
                 }
@@ -1497,7 +1657,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Theo Phụ trách/đơn vị
+                    // Theo Phụ trách
                     if(Number(optionProperty) === 4){
                         conditionGroup = {
                             _id: { personInCharge: "$personInCharge", month: "$month", year: "$year" },
@@ -1532,8 +1692,27 @@ class Model extends BaseModel {
                             "_id.chair": 1,
                         }
                     }
-                }
 
+                    // Theo Đơn vị
+                    if(Number(optionProperty) === 6){
+                        conditionGroup = {
+                            _id: { dependentUnit: "$dependentUnit", month: "$month", year: "$year" },
+                            amount: { $sum: "$amount" },
+                        }
+
+                        conditionPopulate = {
+                            path: '_id.dependentUnit',
+                            select: '_id name sign',
+                            model: 'contact'
+                        }
+
+                        sortBy = {
+                            "_id.dependentUnit": 1,
+                        }
+                    }
+                }
+                
+                console.log('===================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
                 console.log(conditionObj)
                 console.log(conditionObjYear)
                 console.log(conditionGroup)
@@ -1554,6 +1733,7 @@ class Model extends BaseModel {
                             buyerInfo: 1,
                             chair: 1,
                             personInCharge: 1,
+                            dependentUnit: 1,
                         }
                     },
                     {
@@ -1583,7 +1763,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 05/04/2022
      */
-    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit = 20, lastestID, select, populates= {} }){
+    getListByMonth({ userID, companyID, projectID, contractID, month, year, type, outin, real, field, dependentUnit, chair, personInCharge, buyerInfo, sellerInfo, keyword, limit = 20, lastestID, select, populates= {} }){
         return new Promise(async resolve => {
             try {
 
@@ -1621,6 +1801,10 @@ class Model extends BaseModel {
 
                 if(field && checkObjectIDs(field)){
                     conditionObjAgg.field = ObjectID(field)
+                }
+
+                if(dependentUnit && checkObjectIDs(dependentUnit)){
+                    conditionObjAgg.dependentUnit = ObjectID(dependentUnit)
                 }
 
                 if(chair && checkObjectIDs(chair)){
@@ -1847,6 +2031,63 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Tính sản lượng còn lại chưa thực hiện
+     * Author: Hiepnh
+     * Date: 05/04/2022
+     */
+    getRetainProduce({ userID, outin, companyID, projectID, contractID, ctx }){
+        console.log({ userID, outin, companyID, projectID, contractID })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, conditionGroup = {}
+
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
+                }
+
+                conditionGroup = {
+                    _id: { },
+                    value: { $sum: "$value" },
+                    produce: { $sum: "$produce" },
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+                }
+                
+                let listData = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            value: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                            produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    }
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

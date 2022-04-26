@@ -20,12 +20,14 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 /**
  * import inter-coll, exter-coll
  */
-const PCM_FILE_COLL = require('../database/subject_pcm.pcm_file-coll');
+const PCM_FILE__COLL                    = require('../database/subject_pcm.pcm_file-coll');
+const PCM_PLAN_TASK__COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
+const PCM_PLAN_GROUP__COLL              = require('../database/subject_pcm.pcm_plan_group-coll');
 
 class Model extends BaseModel {
 
     constructor() {
-        super(PCM_FILE_COLL);
+        super(PCM_FILE__COLL);
     }
 
     /**
@@ -39,7 +41,24 @@ class Model extends BaseModel {
     }) {
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { author: authorID };
+                let dataInsert = {
+                    nameOrg,
+                    name,
+                    path,
+                    size,
+                    type,
+                    mimeType,
+                    author: authorID
+                };
+
+                if(!nameOrg || !name || !path || !mimeType) {
+                    return resolve({
+                        error: true,
+                        message: 'Tham số không hợp lệ',
+                        keyError: 'params_invalid',
+                        status: 400
+                    });
+                }
 
                 if(checkObjectIDs(companyID)){
                     dataInsert.company = companyID;
@@ -69,17 +88,13 @@ class Model extends BaseModel {
                     dataInsert.file = fileID;
                 }
 
-                type        && (dataInsert.type         = type);
-                nameOrg     && (dataInsert.nameOrg      = nameOrg);
-                name        && (dataInsert.name         = name);
-                path        && (dataInsert.path         = path);
-                size        && (dataInsert.size         = size);
-                mimeType    && (dataInsert.mimeType     = mimeType);
-                description && (dataInsert.description  = description);
+                if(description){
+                    dataInsert.description = description;
+                }
 
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
-                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 422 });
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
@@ -88,30 +103,50 @@ class Model extends BaseModel {
         })
     }
 
-   /**
-	 * Dev: MinhVH
+    /**
 	 * Func: Lấy danh sách file
-	 * Date: ...
+     * Dev: MinhVH
+     * Update: Hiepnh
+	 * Date: 26/4/2022
 	 */
-    getList({ companyID, projectID, groupID, taskID, keyword, type, limit = 10, lastestID, select, populates }) {
+    getList({
+        companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
+        limit = 10, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+    }) {
+        console.log({
+            companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
+            isFileOfProject, isSearchFile, userID
+        })
         return new Promise(async (resolve) => {
             try {
-                if(!companyID && !projectID && !groupID && !taskID) {
-					return resolve({
-                        error: true,
-                        message: 'Request params require companyID || projectID || groupID || taskID',
-                        status: 400
-                    });
+                /**
+                 * Kiểm tra bắt buộc phải có companyID hoặc projectID hoặc groupID hoặc taskID, Nếu không thuộc trường hợp:
+                 * - Tìm kiếm file (VIAS)
+                 * - Lấy danh sách file của tất cả dự án mà user là member
+                 */
+                if(!isFileOfProject && !isSearchFile) {
+                    if(!companyID && !projectID && !groupID && !taskID) {
+                        return resolve({
+                            error: true,
+                            message: "Tham số companyID || projectID || groupID || taskID là cần thiết",
+                            keyError: "params_invalid",
+                            status: 400
+                        });
+                    }
                 }
 
                 if(limit > 20){
-                    limit = 20
+                    limit = 20;
                 } else{
                     limit = +limit;
                 }
 
                 let sortBy;
-                let conditionObj = {};
+
+                let conditionObj = {}
+                let conditionObjTask = {} // Tìm kiếm task
+                let conditionObjGroup = {} // Tìm kiếm group
+
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
@@ -125,25 +160,41 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(checkObjectIDs(companyID)){
-                    conditionObj.company = companyID;
+                /**
+                 * KIỂM TRA ĐIỀU KIỆN
+                 * Về nguyên tắc các taskID/groupID/projectID/companyID chỉ được lấy hoặc, không thể diễn ra đồng thời
+                 */
+                if(taskID && checkObjectIDs(taskID)){
+                    conditionObj.task = ObjectID(taskID)
+                }else{
+                    if(groupID && checkObjectIDs(groupID)){
+                        conditionObj.group = ObjectID(groupID)
+                    }else{
+                        if(projectID && checkObjectIDs(projectID)){
+                            conditionObj.project = ObjectID(projectID)
+                        }else{
+                            if(companyID && checkObjectIDs(companyID)){
+                                conditionObj.company = ObjectID(companyID)
+                            }
+                        }
+                    }
                 }
 
-                if(checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
-                }
-
-                if(checkObjectIDs(groupID)){
-                    conditionObj.group = groupID;
-                }
-
-                if(checkObjectIDs(taskID)){
-                    conditionObj.task = taskID;
+                if(checkObjectIDs(authorID)) {
+                    conditionObj.author = ObjectID(authorID)
                 }
 
                 if(type){
                     conditionObj.type = type;
                 }
+
+                if(fromDate && toDate) {
+                    conditionObj.createAt = {
+                        $gte: moment(fromDate).startOf('days').toDate(),
+                        $lte: moment(toDate).endOf('days').toDate()
+                    }
+                }
+                // console.log(conditionObj)
 
                 if(keyword){
                     keyword = keyword.split(" ");
@@ -151,9 +202,109 @@ class Model extends BaseModel {
                     conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
+                /**
+                 * Lấy danh sách file của dự án mà user là Members
+                 * Phục vụ lấy file từ ngoài trang chủ, từ TẤT CẢ các dự án
+                 */
+                if(isFileOfProject) {
+                    const { error, data } = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                        unLimit: true,
+                        select: '_id'
+                    });
+
+                    if(!error) {
+                        const projectsID = data?.map(item => item._id) ?? [];
+
+                        if(projectsID.length) {
+                            conditionObj.project = {
+                                $in: projectsID
+                            }
+                        }
+                    }
+                }
+
+                // Tìm kiếm file (VIAS)
+                if(isSearchFile) {
+                    console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
+
+                    // Danh sách các Group mà user là members hoặc amdins
+                    if(projectID && checkObjectIDs(projectID)){
+                        // Điều kiện tìm kiếm task
+                        conditionObjTask.project = ObjectID(projectID)
+
+                        // Điều kiện tìm kiếm Group
+                        conditionObjGroup.project = ObjectID(projectID)
+                        conditionObjGroup.$or = [
+                            { admins: { $in: [userID] } },
+                            { members: { $in: [userID] } },
+                        ]
+                    }else{
+                        conditionObjGroup.$or = [
+                            { admins: { $in: [userID] } },
+                            { members: { $in: [userID] } },
+                        ]
+                    }
+                    // console.log('conditionObjGroup===========>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(conditionObjGroup)
+
+                    const listGroupUserIsMember = await PCM_PLAN_GROUP__COLL
+                        .find(conditionObjGroup)
+                        .select('_id')
+                        .lean();
+
+                    // console.log('List Group===========>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(listGroupUserIsMember)
+
+                    const groupsID = listGroupUserIsMember.map(item => item._id)
+
+                    conditionObjTask.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] } },
+                        { group: { $in: groupsID } }
+                    ]
+
+                    // console.log('conditionObjTask===========>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(conditionObjTask)
+
+                    // Danh sách các Task mà user có quyền truy cập
+                    const listTaskUserIsMember = await PCM_PLAN_TASK__COLL
+                        .find(conditionObjTask)
+                        .select('_id project')
+                        .lean()
+                    // console.log(listTaskUserIsMember.length)
+
+                    const projectsID    = [];
+                    const tasksID       = [];
+
+                    listTaskUserIsMember.map(task => {
+                        // projectsID[projectsID.length] = task.project;
+                        tasksID[tasksID.length] = task._id;
+                    })
+
+                    conditionObj.task = { $in: tasksID }
+
+                    // Mẹo xử lý phân trang của Minh
+                    // conditionObj.$or = [
+                    //     {
+                    //         $and: [
+                    //             { task: { $in: tasksID } },
+                    //         ]
+                    //     },
+                    //     {
+                    //         $and: [
+                    //             { task: { $in: tasksID } },
+                    //         ]
+                    //     }
+                    // ]
+                }
+
+                // console.log('Final==============>conditionObj')
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await PCM_FILE_COLL.findById(lastestID);
+					let infoData = await PCM_FILE__COLL.findById(lastestID);
 					if(!infoData)
 						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
@@ -163,12 +314,12 @@ class Model extends BaseModel {
 
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await PCM_FILE_COLL
+                let infoDataAfterGet = await PCM_FILE__COLL
                     .find(conditionObj)
                     .select(select)
                     .limit(limit+1)
@@ -176,26 +327,38 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 422 });
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
 
                 let nextCursor	= null;
-                if(infoDataAfterGet && infoDataAfterGet.length){
+
+                if(infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
                         infoDataAfterGet.length = limit;
                     }
                 }
-                let totalRecord = await PCM_FILE_COLL.countDocuments(conditionObjOrg);
+
+                let totalRecord = await PCM_FILE__COLL.countDocuments(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                }, status: 200 });
+                return resolve({
+                    error: false,
+                    data: {
+                        listRecords: infoDataAfterGet,
+                        limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    },
+                    status: 200
+                });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -269,7 +432,7 @@ class Model extends BaseModel {
                     }
                 ]
 
-                const dataFilesGroupByDate = await PCM_FILE_COLL.aggregate(pipeline);
+                const dataFilesGroupByDate = await PCM_FILE__COLL.aggregate(pipeline);
 
                 if(!dataFilesGroupByDate) {
                     return resolve({
@@ -339,7 +502,7 @@ class Model extends BaseModel {
                     }
                 ]
 
-                const dataFilesGroupByContract = await PCM_FILE_COLL.aggregate(pipeline);
+                const dataFilesGroupByContract = await PCM_FILE__COLL.aggregate(pipeline);
 
                 if(!dataFilesGroupByContract) {
                     return resolve({
@@ -356,7 +519,7 @@ class Model extends BaseModel {
                     conditionKeyword['contract.name'] = new RegExp(keyword, 'i');
                 }
 
-                await PCM_FILE_COLL.populate(dataFilesGroupByContract, {
+                await PCM_FILE__COLL.populate(dataFilesGroupByContract, {
                     path: "contract",
                     select: "_id name photos",
                     // match: conditionKeyword,
