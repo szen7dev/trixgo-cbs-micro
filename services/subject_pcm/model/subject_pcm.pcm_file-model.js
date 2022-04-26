@@ -24,11 +24,6 @@ const PCM_FILE__COLL                    = require('../database/subject_pcm.pcm_f
 const PCM_PLAN_TASK__COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP__COLL              = require('../database/subject_pcm.pcm_plan_group-coll');
 
-/**
- * SAU BỎ ĐI, CALL QUA SERVICE
- */
-const ITEM__DEPARTMENT_COLL            	= require('../../item/database/item.department-coll');
-
 class Model extends BaseModel {
 
     constructor() {
@@ -207,7 +202,7 @@ class Model extends BaseModel {
                     conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
-                /***
+                /**
                  * Lấy danh sách file của dự án mà user là Members
                  * Phục vụ lấy file từ ngoài trang chủ, từ TẤT CẢ các dự án
                  */
