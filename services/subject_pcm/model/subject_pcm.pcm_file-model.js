@@ -207,14 +207,13 @@ class Model extends BaseModel {
                  * Phục vụ lấy file từ ngoài trang chủ, từ TẤT CẢ các dự án
                  */
                 if(isFileOfProject) {
-                    const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    const { error, data } = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
                         unLimit: true,
                         select: '_id'
                     });
-                    const { error, data } = dataProject;
 
                     if(!error) {
-                        const projectsID = data?.listRecords?.map(item => item._id) ?? [];
+                        const projectsID = data?.map(item => item._id) ?? [];
 
                         if(projectsID.length) {
                             conditionObj.project = {
