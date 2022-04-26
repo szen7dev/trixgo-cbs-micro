@@ -90,15 +90,20 @@ class Model extends BaseModel {
         })
     }
 
-   /**
-	 * Dev: MinhVH
+    /**
 	 * Func: Lấy danh sách file
-	 * Date: ...
+     * Dev: MinhVH
+     * Update: Hiepnh
+	 * Date: 26/4/2022
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
         limit = 10, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
     }) {
+        console.log({
+            companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
+            isFileOfProject, isSearchFile, userID
+        })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -124,7 +129,11 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let conditionObj = {};
+
+                let conditionObj = {}
+                let conditionObjTask = {} // Tìm kiếm task
+                let conditionObjGroup = {} // Tìm kiếm group
+
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
@@ -138,40 +147,59 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(checkObjectIDs([companyID])){
-                    conditionObj.company = companyID;
+                /**
+                 * KIỂM TRA ĐIỀU KIỆN
+                 */
+                // if(checkObjectIDs([companyID])){
+                //     conditionObj.company = companyID;
+                // }
+
+                // if(checkObjectIDs([projectID])){
+                //     conditionObj.project = projectID;
+                // }
+
+                // if(checkObjectIDs([groupID])){
+                //     conditionObj.group = groupID;
+                // }
+
+                // if(checkObjectIDs([taskID])){
+                //     conditionObj.task = taskID;
+                // }
+
+                // if(fromDate) {
+                //     conditionObj.createAt = {
+                //         $gte: moment(fromDate).startOf('days').toDate(),
+                //     }
+                // }
+
+                // if(toDate) {
+                //     conditionObj.createAt = {
+                //         $lte: moment(toDate).endOf('days').toDate()
+                //     }
+                // }
+
+                if(taskID && checkObjectIDs(taskID)){
+                    conditionObj.task = ObjectID(taskID)
+                }else{
+                    if(groupID && checkObjectIDs(groupID)){
+                        conditionObj.group = ObjectID(groupID)
+                    }else{
+                        if(projectID && checkObjectIDs(projectID)){
+                            conditionObj.project = ObjectID(projectID)
+                        }else{
+                            if(companyID && checkObjectIDs(companyID)){
+                                conditionObj.company = ObjectID(companyID)
+                            }
+                        }        
+                    }
                 }
 
-                if(checkObjectIDs([projectID])){
-                    conditionObj.project = projectID;
-                }
-
-                if(checkObjectIDs([groupID])){
-                    conditionObj.group = groupID;
-                }
-
-                if(checkObjectIDs([taskID])){
-                    conditionObj.task = taskID;
-                }
-
-                if(checkObjectIDs([authorID])) {
-                    conditionObj.author = authorID;
+                if(checkObjectIDs(authorID)) {
+                    conditionObj.author = ObjectID(authorID)
                 }
 
                 if(type){
                     conditionObj.type = type;
-                }
-
-                if(fromDate) {
-                    conditionObj.createAt = {
-                        $gte: moment(fromDate).startOf('days').toDate(),
-                    }
-                }
-
-                if(toDate) {
-                    conditionObj.createAt = {
-                        $lte: moment(toDate).endOf('days').toDate()
-                    }
                 }
 
                 if(fromDate && toDate) {
@@ -181,14 +209,19 @@ class Model extends BaseModel {
                     }
                 }
 
+                // console.log(conditionObj)
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
-                // Lấy danh sách file của dự án mà user là member
+                /***
+                 * Lấy danh sách file của dự án mà user là Members
+                 */
                 if(isFileOfProject) {
+                    console.log('isFileOfProject============>>>>>>>>>>>>>>>>>>>>>')
                     const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
                         unLimit: 'true',
                         select: '_id'
@@ -198,7 +231,7 @@ class Model extends BaseModel {
                     if(!error) {
                         const projectsID = data?.listRecords?.map(item => item._id) ?? [];
 
-                         if(projectsID.length) {
+                        if(projectsID.length) {
                             conditionObj.project = {
                                 $in: projectsID
                             }
@@ -208,52 +241,83 @@ class Model extends BaseModel {
 
                 // Tìm kiếm file (VIAS)
                 if(isSearchFile) {
+                    console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')                    
+
+                    // Danh sách các Group mà user là members hoặc amdins
+                    if(projectID && checkObjectIDs(projectID)){
+                        // Điều kiện tìm kiếm task
+                        conditionObjTask.project = ObjectID(projectID)
+
+                        // Điều kiện tìm kiếm Group
+                        conditionObjGroup.project = ObjectID(projectID)
+                        conditionObjGroup.$or = [
+                            { admins: { $in: [userID] } },
+                            { members: { $in: [userID] } },
+                        ]
+                    }else{
+                        conditionObjGroup.$or = [
+                            { admins: { $in: [userID] } },
+                            { members: { $in: [userID] } },
+                        ]
+                    }  
+                    // console.log('conditionObjGroup===========>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(conditionObjGroup) 
+
                     const listGroupUserIsMember = await PCM_PLAN_GROUP__COLL
-                        .find({
-                            $or: [
-                                { admins: { $in: [userID] } },
-                                { members: { $in: [userID] } },
-                            ]
-                        })
+                        .find(conditionObjGroup)
                         .select('_id')
                         .lean();
 
-                    const groupsID = listGroupUserIsMember.map(item => item._id);
+                    // console.log('List Group===========>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(listGroupUserIsMember)
 
+                    const groupsID = listGroupUserIsMember.map(item => item._id)
+
+                    conditionObjTask.$or = [
+                        { author: userID },
+                        { assignee: userID },
+                        { related: { $in: [userID] } },
+                        { group: { $in: groupsID } }
+                    ]
+
+                    // console.log('conditionObjTask===========>>>>>>>>>>>>>>>>>>>>>')
+                    // console.log(conditionObjTask) 
+
+                    // Danh sách các Task mà user có quyền truy cập
                     const listTaskUserIsMember = await PCM_PLAN_TASK__COLL
-                        .find({
-                            $or: [
-                                { author: userID },
-                                { assignee: userID },
-                                { related: { $in: [userID] } },
-                                { group: { $in: groupsID } }
-                            ]
-                        })
+                        .find(conditionObjTask)
                         .select('_id project')
-                        .lean();
+                        .lean()
+                    // console.log(listTaskUserIsMember.length)
 
                     const projectsID    = [];
                     const tasksID       = [];
 
                     listTaskUserIsMember.map(task => {
-                        projectsID[projectsID.length] = task.project;
+                        // projectsID[projectsID.length] = task.project;
                         tasksID[tasksID.length] = task._id;
                     })
 
-                    conditionObj.$or = [
-                        {
-                            $and: [
-                                { project: { $in: projectsID } },
-                                { task: { $in: tasksID } },
-                            ]
-                        },
-                        {
-                            $and: [
-                                { project: { $in: projectsID } },
-                                { task: { $in: tasksID } },
-                            ]
-                        }
-                    ]
+                    conditionObj.task = { $in: tasksID }
+
+                    // Bị trùng 2 điều kiện
+                    // conditionObj.$or = [
+                    //     {
+                    //         $and: [
+                    //             { project: { $in: projectsID } },
+                    //             { task: { $in: tasksID } },
+                    //         ]
+                    //     },
+                    //     {
+                    //         $and: [
+                    //             { project: { $in: projectsID } },
+                    //             { task: { $in: tasksID } },
+                    //         ]
+                    //     }
+                    // ]
+
+                    console.log('Final==============>conditionObj')
+                    console.log(conditionObj)
                 }
 
                 let conditionObjOrg = { ...conditionObj };
@@ -272,10 +336,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                // conditionObj.$and?.map(item => {
-                //     item.$and?.map(and => console.log({ and }))
-                //     item.$or?.map(or => console.log({ or }))
-                // })
 
                 let infoDataAfterGet = await PCM_FILE__COLL
                     .find(conditionObj)
