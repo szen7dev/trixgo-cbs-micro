@@ -163,7 +163,7 @@ class Model extends BaseModel {
                             if(companyID && checkObjectIDs(companyID)){
                                 conditionObj.company = ObjectID(companyID)
                             }
-                        }        
+                        }
                     }
                 }
 
@@ -195,7 +195,7 @@ class Model extends BaseModel {
                  */
                 if(isFileOfProject) {
                     const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                        unLimit: 'true',
+                        unLimit: true,
                         select: '_id'
                     });
                     const { error, data } = dataProject;
@@ -212,7 +212,9 @@ class Model extends BaseModel {
                 }
 
                 // Tìm kiếm file (VIAS)
-                if(isSearchFile) {               
+                if(isSearchFile) {
+                    console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
+
                     // Danh sách các Group mà user là members hoặc amdins
                     if(projectID && checkObjectIDs(projectID)){
                         // Điều kiện tìm kiếm task
@@ -229,9 +231,9 @@ class Model extends BaseModel {
                             { admins: { $in: [userID] } },
                             { members: { $in: [userID] } },
                         ]
-                    }  
+                    }
                     // console.log('conditionObjGroup===========>>>>>>>>>>>>>>>>>>>>>')
-                    // console.log(conditionObjGroup) 
+                    // console.log(conditionObjGroup)
 
                     const listGroupUserIsMember = await PCM_PLAN_GROUP__COLL
                         .find(conditionObjGroup)
@@ -251,7 +253,7 @@ class Model extends BaseModel {
                     ]
 
                     // console.log('conditionObjTask===========>>>>>>>>>>>>>>>>>>>>>')
-                    // console.log(conditionObjTask) 
+                    // console.log(conditionObjTask)
 
                     // Danh sách các Task mà user có quyền truy cập
                     const listTaskUserIsMember = await PCM_PLAN_TASK__COLL

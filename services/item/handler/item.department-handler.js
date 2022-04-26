@@ -300,7 +300,7 @@ module.exports = {
 
             // Field mặc định
             limit           : { type: "string", optional: true },
-            unLimit         : { type: "string", optional: true },
+            unLimit         : { type: "boolean", optional: true },
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
