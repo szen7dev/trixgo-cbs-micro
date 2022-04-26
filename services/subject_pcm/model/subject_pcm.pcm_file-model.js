@@ -41,7 +41,24 @@ class Model extends BaseModel {
     }) {
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { author: authorID };
+                let dataInsert = {
+                    nameOrg,
+                    name,
+                    path,
+                    size,
+                    type,
+                    mimeType,
+                    author: authorID
+                };
+
+                if(!nameOrg || !name || !path || !mimeType) {
+                    return resolve({
+                        error: true,
+                        message: 'Tham số không hợp lệ',
+                        keyError: 'params_invalid',
+                        status: 400
+                    });
+                }
 
                 if(checkObjectIDs(companyID)){
                     dataInsert.company = companyID;
@@ -71,17 +88,13 @@ class Model extends BaseModel {
                     dataInsert.file = fileID;
                 }
 
-                type        && (dataInsert.type         = type);
-                nameOrg     && (dataInsert.nameOrg      = nameOrg);
-                name        && (dataInsert.name         = name);
-                path        && (dataInsert.path         = path);
-                size        && (dataInsert.size         = size);
-                mimeType    && (dataInsert.mimeType     = mimeType);
-                description && (dataInsert.description  = description);
+                if(description){
+                    dataInsert.description = description;
+                }
 
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
-                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 422 });
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {

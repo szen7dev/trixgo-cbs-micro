@@ -43,15 +43,39 @@ class Model extends BaseModel {
      * Func: Thêm file vào pcm_file-coll + thêm vào field photos trong project/contract nếu là ảnh
      * Date: 06/04/2022
      */
-    handleAddPhoto({ infoTask, commentID, files, fileType, authorID, ctx }) {
+    handleAddFiles({ infoTask, infoComment, files, fileType, authorID, ctx }) {
         return new Promise(async resolve => {
             try {
-                await PromisePool
+                if(fileType === 'image') {
+                    infoTask.contract && await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
+                        contractID: infoTask.contract.toString(),
+                        photos: files
+                    })
+
+                    infoTask.project && await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: infoTask.project?._id?.toString(),
+                        photos: files
+                    })
+                }
+
+                let { results, errors } = await PromisePool
                     .for(files)
                     .withConcurrency(2)
                     .process(async fileID => {
+                        // File Cũ
+                        const infoPcmFile = await PCM_FILE_COLL
+                            .findOne({
+                                _id: fileID,
+                                comment: infoComment._id,
+                            })
+                            .select('_id')
+                            .lean();
+
+                        if(infoPcmFile) return infoPcmFile._id;
+
+                        // File mới
                         const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-                            fileID: fileID
+                            fileID: fileID.toString()
                         }, {
                             meta: {
                                 infoUser: { _id: authorID }
@@ -63,16 +87,9 @@ class Model extends BaseModel {
                                 name, nameOrg, description, path, size, mimeType, type, author
                             } = infoFileCore.data;
 
-                            const infoPcmFile = await PCM_FILE_COLL.findOne({
-                                comment: commentID,
-                                file: fileID
-                            }).select('_id')
-
-                            if(infoPcmFile) return;
-
                             const infoAfterInserted = await PCM_FILE_MODEL.insert({
                                 fileID: fileID,
-                                commentID,
+                                commentID: infoComment._id,
                                 taskID: infoTask._id,
                                 contractID: infoTask.contract,
                                 projectID: infoTask.project?._id,
@@ -82,22 +99,44 @@ class Model extends BaseModel {
                                 name, nameOrg, path, size, mimeType, description, type
                             });
 
-                            return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+                            return infoAfterInserted.data && infoAfterInserted.data._id;
                         }
                     });
 
-                if(fileType === 'image') {
-                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
-                        contractID: infoTask.contract?.toString(),
-                        photos: files
-                    })
-                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
-                        departmentID: infoTask.project?._id?.toString(),
-                        photos: files
+                console.log({ results, errors, files })
+
+                if(errors.length) {
+                    return resolve({
+                        error: true,
+                        errors,
+                        message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
                     })
                 }
 
-                return resolve({ error: false, message: 'success' });
+                results = results.filter(Boolean);
+
+                if(!results.length) {
+                    return resolve({
+                        error: true,
+                        message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                }
+
+                let oldFiles = await PCM_FILE_COLL
+                    .find({ _id: { $ne: results } })
+                    .select('_id')
+                    .lean();
+
+                oldFiles = oldFiles.map(item => item._id);
+
+                return resolve({
+                    error: false,
+                    data: { results, oldFiles },
+                });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -116,8 +155,9 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                const dataInsert = { type, task: taskID, author: authorID };
-                const TYPE_COMMENT = [this.COMMENT_PCM, this.RESPONSE_PCM];
+                const TYPE_COMMENT  = [this.COMMENT_PCM, this.RESPONSE_PCM];
+                const dataInsert    = { type, task: taskID, author: authorID };
+                const dataUpdate    = {};
                 let dataSend        = {};
                 let webUrl          = '';
                 let titleMSS        = '';
@@ -208,14 +248,9 @@ class Model extends BaseModel {
                     dataInsert.group = infoTask.group;
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                content && (dataInsert.content  = content);
-                files   && (dataInsert.files    = files);
-                images  && (dataInsert.images   = images);
+                if(content) {
+                    dataInsert.content = content;
+                }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
 
@@ -228,8 +263,50 @@ class Model extends BaseModel {
                     })
                 }
 
+                if(files && files.length) {
+                    let { results, errors } = await PromisePool
+                        .for(files)
+                        .withConcurrency(2)
+                        .process(async fileID => {
+                            const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID: fileID
+							}, {
+								meta: {
+									infoUser: { _id: authorID }
+								}
+							});
+
+							if(!infoFileCore.error) {
+								const {
+									name, nameOrg, description, path, size, mimeType, type, author
+								} = infoFileCore.data;
+
+								const infoAfterInserted = await PCM_FILE_MODEL.insert({
+									fileID,
+                                    taskID,
+                                    commentID: infoAfterInsert._id,
+                                    contractID: infoTask.contract,
+                                    projectID: infoTask.project?._id,
+                                    groupID: infoTask.group,
+                                    companyID: infoTask.company,
+                                    authorID: author,
+									name, nameOrg, path, size, mimeType, description, type
+								});
+
+								return infoAfterInserted.data && infoAfterInserted.data._id;
+							}
+                        });
+
+                    if(!errors.length) {
+                        results = results.filter(Boolean);
+                        if(results.length) {
+                            dataUpdate.files = results;
+                        }
+                    }
+                }
+
                 if(images && images.length) {
-                    await PromisePool
+                    let { results, errors } = await PromisePool
                         .for(images)
                         .withConcurrency(2)
                         .process(async imageID => {
@@ -258,9 +335,16 @@ class Model extends BaseModel {
 									name, nameOrg, path, size, mimeType, description, type
 								});
 
-								return { file: infoAfterInserted.data && infoAfterInserted.data._id }
+								return infoAfterInserted.data && infoAfterInserted.data._id
 							}
                         });
+
+                    if(!errors.length) {
+                        results = results.filter(Boolean);
+                        if(results.length) {
+                            dataUpdate.images = results;
+                        }
+                    }
 
                     if(infoTask.contract) {
                         await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_UPDATE}`, {
@@ -287,6 +371,22 @@ class Model extends BaseModel {
                     });
                 }
 
+                // Cập nhật lại cho comment comment
+                if(Object.keys(dataUpdate).length) {
+                    const infoAfterUpdate = await PCM_COMMENT_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                        $set: dataUpdate
+                    });
+
+                    if(!infoAfterUpdate) {
+                        return resolve({
+                            error: true,
+                            message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
+                    }
+                }
+
                 switch (type) {
                     case 1: // Pre-calculate comment
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, { $inc: { amountComment: 1 } });
@@ -297,6 +397,10 @@ class Model extends BaseModel {
                     default:
                         break;
                 }
+
+                /**
+                 * Insert notification and cloud messaging
+                 */
 
                 let { name: taskName, sign: taskSign, author, assignee, related, project, contract } = infoTask;
                 related = related.map(userID => userID.toString());
@@ -409,6 +513,8 @@ class Model extends BaseModel {
                 * DECALARTION VARIABLE (1)
                 */
                let dataUpdate = {};
+               let dataAdditional = {};
+               let filesRemove = [];
 
                /**
                 * VALIDATION STEP (2)
@@ -475,25 +581,8 @@ class Model extends BaseModel {
                     })
                 }
 
-                /**
-                * LOGIC STEP (3)
-                *  3.1: convert type + update name (ví dụ: string -> number)
-                *  3.2: operation database
-                */
-
-                if(infoComment.type === 2) {
-                    dataUpdate = {
-                        $addToSet: {}
-                    };
-
-                    if(checkObjectIDs(files)){
-                        dataUpdate.$addToSet['files'] = files;
-                    }
-
-                    if(checkObjectIDs(images)){
-                        dataUpdate.$addToSet['images'] = images;
-                    }
-                } else{
+                // Bổ sung files, images trong phản hồi liên quan
+                if(infoComment.type === 1) {
                     content && (dataUpdate.content = content);
 
                     const expireTime = new Date(infoComment.createAt).addHours(1);
@@ -507,26 +596,14 @@ class Model extends BaseModel {
                             status: 403
                         })
                     }
-
-                    // CẬP NHẬT FILE MỚI
-                    if(checkObjectIDs(files)){
-                        dataUpdate.files = files;
-                    } else{
-                        dataUpdate.files = [];
-                    }
-
-                    // CẬP NHẬT HÌNH ẢNH MỚI
-                    if(checkObjectIDs(images)){
-                        dataUpdate.images = images;
-                    } else{
-                        dataUpdate.images = [];
-                    }
                 }
 
                 let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
                     _id: commentID,
                     author: authorID
-                }, dataUpdate);
+                }, {
+                    $set: dataUpdate
+                });
 
                 if(!infoAfterUpdate) {
                     return resolve({
@@ -536,34 +613,92 @@ class Model extends BaseModel {
                         status: 422
                     })
                 }
+                console.log({ files, images })
 
-                // Cập nhật/Xóa pcm_file
-                if(infoComment.type !== 2) {
-                    if(!checkObjectIDs(files)) {
-                        await PCM_FILE_COLL.deleteMany({
-                            comment: infoComment._id,
-                            type: 2
-                        })
-                    }
+                // Cập nhật bổ sung
+                switch (infoComment.type) {
+                    case 1: { // Bình luận
+                        dataAdditional = {
+                            $set: {}
+                        };
 
-                    if(!checkObjectIDs(images)) {
-                        await PCM_FILE_COLL.deleteMany({
-                            comment: infoComment._id,
-                            type: 1
-                        })
-                    }
-                } else{
-                    if(checkObjectIDs(files)) {
-                        await this.handleAddPhoto({
-                            infoTask, commentID, files, fileType: 'file', authorID, ctx
-                        })
-                    }
+                        // Xử lý update/remove file
+                        if(checkObjectIDs(files)){
+                            const result = await this.handleAddFiles({
+                                infoTask, infoComment, files, fileType: 'file', authorID, ctx
+                            })
 
-                    if(checkObjectIDs(images)) {
-                        await this.handleAddPhoto({
-                            infoTask, commentID, files: images, fileType: 'image', authorID, ctx
-                        })
+                            if(result.error) return resolve(result);
+
+                            filesRemove = result.data?.oldFiles;
+                            dataAdditional.$set['files'] = result.data?.results;
+                        } else{
+                            await PCM_FILE_COLL.deleteMany({
+                                comment: infoComment._id,
+                                type: 2
+                            })
+                            dataAdditional.$set['files'] = [];
+                        }
+
+                        // Xử lý update/remove hình ảnh
+                        if(checkObjectIDs(images)){
+                            const result = await this.handleAddFiles({
+                                infoTask, infoComment, files: images, fileType: 'image', authorID, ctx
+                            })
+
+                            if(result.error) return resolve(result);
+
+                            filesRemove = result.data?.oldFiles;
+                            dataAdditional.$set['images'] = result.data?.results;
+                        } else{
+                            await PCM_FILE_COLL.deleteMany({
+                                comment: infoComment._id,
+                                type: 1
+                            })
+                            dataAdditional.$set['images'] = [];
+                        }
+                        break;
                     }
+                    case 2: { // Phản hồi liên quan
+                        dataAdditional = {
+                            $addToSet: {}
+                        };
+
+                        if(checkObjectIDs(files)){
+                            const result = await this.handleAddFiles({
+                                infoTask, infoComment, files, fileType: 'file', authorID, ctx
+                            })
+
+                            if(result.error) return resolve(result);
+                            dataAdditional.$addToSet['files'] = result.data?.results;
+                        }
+
+                        if(checkObjectIDs(images)){
+                            const result = await this.handleAddFiles({
+                                infoTask, infoComment, files: images, fileType: 'image', authorID, ctx
+                            })
+
+                            if(result.error) return resolve(result);
+                            dataAdditional.$addToSet['images'] = result.data?.results;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                console.log({ dataAdditional, filesRemove })
+
+                if(Object.keys(dataAdditional).length) {
+                    await PCM_COMMENT_COLL.findOneAndUpdate({
+                        _id: commentID,
+                        author: authorID
+                    }, dataAdditional);
+                }
+
+                if(filesRemove.length) {
+                    await PCM_COMMENT_COLL.deleteMany({
+                        _id: { $in: filesRemove }
+                    })
                 }
 
                 infoAfterUpdate = await PCM_COMMENT_COLL
@@ -645,10 +780,6 @@ class Model extends BaseModel {
     delete({ commentID, authorID }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
