@@ -20,7 +20,16 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Schema.Types.ObjectId,
         ref : "expert_timesheet"
     },
-
+    //_________Admin
+    admins: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+    //_________Member
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
     //________Nội dung công việc (*)
     name: String,
 
