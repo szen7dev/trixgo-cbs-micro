@@ -235,6 +235,7 @@ class Model extends BaseModel {
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
+                    groupDefault: isExist.groupDefault, 
                     _id: isExist._id,
                 }
 
@@ -1129,7 +1130,7 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status,
+    update({ userID, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault,
         sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, companyID, departmentID, positionID, company, ctx }) {
         return new Promise(async (resolve) => {
             try {
@@ -1205,6 +1206,10 @@ class Model extends BaseModel {
 
                 if(positionID){
                     dataUpdate.position = positionID;
+                }
+                
+                if(checkObjectIDs(groupDefault)){
+                    dataUpdate.groupDefault = groupDefault;
                 }
 
                 // Gửi yêu cầu kết bạn tới người khác
