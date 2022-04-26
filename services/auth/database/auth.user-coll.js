@@ -215,7 +215,14 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
             default: 1
         }
     }],
-    
+
+    /**
+     * Group default
+     */
+    groupDefault: {
+        type: Schema.Types.ObjectId,
+        ref: 'pcm_plan_group'
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

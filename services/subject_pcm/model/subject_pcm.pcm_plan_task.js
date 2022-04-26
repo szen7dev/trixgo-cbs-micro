@@ -547,7 +547,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
                 }
-
+                
                 //_________userUpdate
                 if(checkObjectIDs(userID)){
                     dataUpdate.userUpdate = userID;
@@ -649,7 +649,7 @@ class Model extends BaseModel {
                 if(judgement){
                     dataUpdate.judgement = judgement;
                 }
-
+                
                 //_________Tiến độ
                 if(overdue){
                     dataUpdate.overdue = overdue;
