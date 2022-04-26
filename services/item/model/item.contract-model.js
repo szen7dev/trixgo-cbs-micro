@@ -23,6 +23,9 @@ const { CF_ACTIONS_CMCS } 		        = require('../../cmcs/helper/cmcs.actions-co
  */
 const ITEM__CONTRACT_COLL            				= require('../database/item.contract-coll');
 
+/**
+ * SAU BỎ ĐI, CALL QUA SERVICE
+ */
 const CMCS__CONTRACT_PRODUCTION_COLL            	= require('../../cmcs/database/cmcs.contract_production-coll');
 const CMCS__CONTRACT_IPC_COLL            			= require('../../cmcs/database/cmcs.contract_ipc-coll');
 const CMCS__CONTRACT_PAYMENT_COLL            		= require('../../cmcs/database/cmcs.contract_payment-coll');
@@ -2028,6 +2031,63 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Tính sản lượng còn lại chưa thực hiện
+     * Author: Hiepnh
+     * Date: 05/04/2022
+     */
+    getRetainProduce({ userID, outin, companyID, projectID, contractID, ctx }){
+        console.log({ userID, outin, companyID, projectID, contractID })
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}, conditionGroup = {}
+
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
+                }
+
+                conditionGroup = {
+                    _id: { },
+                    value: { $sum: "$value" },
+                    produce: { $sum: "$produce" },
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+                }
+                
+                let listData = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            value: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                            produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    }
+                ])
+
+                return resolve({ error: false, data: listData });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

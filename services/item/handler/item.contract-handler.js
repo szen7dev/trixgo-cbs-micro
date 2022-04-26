@@ -513,4 +513,41 @@ module.exports = {
             }
         }
     }, 
+
+    /**
+     * Name: Gom nhóm theo thuộc tính 
+     * Author: Hiepnh
+     * Date: 18/04/2022
+     */
+     getRetainProduce: {
+        auth: "required",
+        params: {
+            companyID           : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, outin } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                
+                if(!companyID){
+                    companyID = company._id
+                }
+                console.log({companyID})
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getRetainProduce({
+                    userID, companyID, projectID, contractID, outin: Number(outin), ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
 }
