@@ -149,35 +149,8 @@ class Model extends BaseModel {
 
                 /**
                  * KIỂM TRA ĐIỀU KIỆN
+                 * Về nguyên tắc các taskID/groupID/projectID/companyID chỉ được lấy hoặc, không thể diễn ra đồng thời
                  */
-                // if(checkObjectIDs([companyID])){
-                //     conditionObj.company = companyID;
-                // }
-
-                // if(checkObjectIDs([projectID])){
-                //     conditionObj.project = projectID;
-                // }
-
-                // if(checkObjectIDs([groupID])){
-                //     conditionObj.group = groupID;
-                // }
-
-                // if(checkObjectIDs([taskID])){
-                //     conditionObj.task = taskID;
-                // }
-
-                // if(fromDate) {
-                //     conditionObj.createAt = {
-                //         $gte: moment(fromDate).startOf('days').toDate(),
-                //     }
-                // }
-
-                // if(toDate) {
-                //     conditionObj.createAt = {
-                //         $lte: moment(toDate).endOf('days').toDate()
-                //     }
-                // }
-
                 if(taskID && checkObjectIDs(taskID)){
                     conditionObj.task = ObjectID(taskID)
                 }else{
@@ -208,7 +181,6 @@ class Model extends BaseModel {
                         $lte: moment(toDate).endOf('days').toDate()
                     }
                 }
-
                 // console.log(conditionObj)
 
                 if(keyword){
@@ -222,7 +194,6 @@ class Model extends BaseModel {
                  * Phục vụ lấy file từ ngoài trang chủ, từ tất cả các dự án
                  */
                 if(isFileOfProject) {
-                    console.log('isFileOfProject============>>>>>>>>>>>>>>>>>>>>>')
                     const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
                         unLimit: 'true',
                         select: '_id'
@@ -241,9 +212,7 @@ class Model extends BaseModel {
                 }
 
                 // Tìm kiếm file (VIAS)
-                if(isSearchFile) {
-                    console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')                    
-
+                if(isSearchFile) {               
                     // Danh sách các Group mà user là members hoặc amdins
                     if(projectID && checkObjectIDs(projectID)){
                         // Điều kiện tìm kiếm task
@@ -301,24 +270,22 @@ class Model extends BaseModel {
 
                     conditionObj.task = { $in: tasksID }
 
-                    // Bị trùng 2 điều kiện
+                    // Mẹo xử lý phân trang của Minh
                     // conditionObj.$or = [
                     //     {
                     //         $and: [
-                    //             { project: { $in: projectsID } },
                     //             { task: { $in: tasksID } },
                     //         ]
                     //     },
                     //     {
                     //         $and: [
-                    //             { project: { $in: projectsID } },
                     //             { task: { $in: tasksID } },
                     //         ]
                     //     }
                     // ]
 
-                    console.log('Final==============>conditionObj')
-                    console.log(conditionObj)
+                    // console.log('Final==============>conditionObj')
+                    // console.log(conditionObj)
                 }
 
                 let conditionObjOrg = { ...conditionObj };
