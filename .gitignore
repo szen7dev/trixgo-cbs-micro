@@ -66,3 +66,5 @@ typings/
 
 tools/db/cf_database.js
 cbs_query.mongodb
+
+.vscode

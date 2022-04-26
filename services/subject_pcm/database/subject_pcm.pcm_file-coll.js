@@ -49,8 +49,6 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_file", {
     /**
      * 1. Hình ảnh
      * 2. file
-     * 3. Audio
-     * 4. Video
      */
     type: {
         type: Number,

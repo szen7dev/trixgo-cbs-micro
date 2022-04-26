@@ -1225,7 +1225,7 @@ class Model extends BaseModel {
             try {
                 // Call service list project
                 let listProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                    unLimit: "100", select: "sign name"
+                    unLimit: true, select: "sign name"
                 });
                 listProject       = listProject?.data?.listRecords || [];
 

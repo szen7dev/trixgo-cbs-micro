@@ -206,16 +206,16 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     links: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
-    }],
+    }], 
     //_________File của người tạo việc
     authorAttachs: [{
         type: Schema.Types.ObjectId,
-        ref: "file"
+        ref: "pcm_file"
     }],
     //_________File của người thực hiện
     assigneeAttachs: [{
         type: Schema.Types.ObjectId,
-        ref: "file"
+        ref: "pcm_file"
     }],
     //_________Hoạt động cuối cùng(bỏ thay bằng history_log)
     lastLog: {

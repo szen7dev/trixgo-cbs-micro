@@ -203,7 +203,7 @@ module.exports = {
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
                       photos,
                     } = ctx.params;
-                      
+
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
 					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, dataInc, photos, ctx
