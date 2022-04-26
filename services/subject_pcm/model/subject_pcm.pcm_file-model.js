@@ -24,6 +24,11 @@ const PCM_FILE__COLL                    = require('../database/subject_pcm.pcm_f
 const PCM_PLAN_TASK__COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP__COLL              = require('../database/subject_pcm.pcm_plan_group-coll');
 
+/**
+ * SAU BỎ ĐI, CALL QUA SERVICE
+ */
+const ITEM__DEPARTMENT_COLL            	= require('../../item/database/item.department-coll');
+
 class Model extends BaseModel {
 
     constructor() {
@@ -194,20 +199,29 @@ class Model extends BaseModel {
                  * Phục vụ lấy file từ ngoài trang chủ, từ tất cả các dự án
                  */
                 if(isFileOfProject) {
-                    const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                        unLimit: 'true',
-                        select: '_id'
-                    });
-                    const { error, data } = dataProject;
+                    // Không dùng được vì đang bị phân trang, trong khi đó cần lấy tất cả project
+                    // const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                    //     unLimit: 'true',
+                    //     select: '_id name sign'
+                    // });
+                    // const { error, data } = dataProject;
 
-                    if(!error) {
-                        const projectsID = data?.listRecords?.map(item => item._id) ?? [];
+                    // console.log(data)
 
-                        if(projectsID.length) {
-                            conditionObj.project = {
-                                $in: projectsID
-                            }
-                        }
+                    // if(!error) {
+                    //     const projectsID = data?.listRecords?.map(item => item._id) ?? [];
+
+                    //     if(projectsID.length) {
+                    //         conditionObj.project = {
+                    //             $in: projectsID
+                    //         }
+                    //     }
+                    // }
+
+                    let listProject = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                    // console.log(listProject)
+                    conditionObj.project = {
+                        $in: listProject.map(item=>item._id)
                     }
                 }
 
@@ -283,10 +297,10 @@ class Model extends BaseModel {
                     //         ]
                     //     }
                     // ]
-
-                    // console.log('Final==============>conditionObj')
-                    // console.log(conditionObj)
                 }
+
+                console.log('Final==============>conditionObj')
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
