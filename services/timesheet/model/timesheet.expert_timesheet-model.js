@@ -72,7 +72,7 @@ class Model extends BaseModel {
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
-                    userCreate, name
+                    userCreate, name, admins: [userCreate], members: [userCreate]
                 }
 
                 if(checkObjectIDs(parentID)){
