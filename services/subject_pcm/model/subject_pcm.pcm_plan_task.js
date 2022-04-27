@@ -163,7 +163,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
                 }
-
+                
                 if(checkObjectIDs(relatedIDs)){
                     dataInsert.related = relatedIDs;
                 }
