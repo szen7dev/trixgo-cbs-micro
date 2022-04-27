@@ -16,16 +16,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Công việc phát hành hồ sơ mời thầu
-    task: {
+    //__________Thuộc hồ sơ mời thầu
+    plan: {
         type: Schema.Types.ObjectId,
-        ref : "pcm_plan_task"
-    }, 
-    // //_________Hồ sơ dự thầu
-    // bidsDocument: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : "pcm_plan_task"
-    // },
+        ref : "bidding_plan"
+    },
+    //_________Thuộc hồ sơ dự thầu
+    bidsDocument: {
+        type: Schema.Types.ObjectId,
+        ref : "bidding_request"
+    },
     /**
      * DỮ LIỆU DỰ THẦU
      */ 
@@ -37,17 +37,17 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
     //_________Hạng mục
     item: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_bill"
+        ref : "bidding_bill_item"
     }, 
     //_________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_bill"
+        ref : "bidding_bill_group"
     },  
     //_________Công việc mời thầu
-    job: {
+    work: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_bill"
+        ref : "bidding_bill_work"
     }, 
     //_________Mã công tác trong datahub (phục vụ thống kê)
     datahubJob: {

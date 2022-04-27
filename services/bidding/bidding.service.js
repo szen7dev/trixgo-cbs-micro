@@ -17,13 +17,13 @@ const { CF_ACTIONS_BIDDING } 	        = require('./helper/bidding.actions-consta
  * COLLECTIONS
  */
 const BIDDING__PLAN_COLL				= require('./database/bidding.plan-coll');
-const BIDDING__BILL_COLL				= require('./database/bidding.bill-coll');
+// const BIDDING__BILL_COLL				= require('./database/bidding.bill-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.BIDDING,
 	mixins: [
 		DbService(BIDDING__PLAN_COLL),
-		DbService(BIDDING__BILL_COLL),
+		// DbService(BIDDING__BILL_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.BIDDING])
     ],
 
