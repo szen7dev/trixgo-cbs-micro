@@ -283,20 +283,6 @@ class Model extends BaseModel {
                     })
 
                     conditionObj.task = { $in: tasksID }
-
-                    // Mẹo xử lý phân trang của Minh
-                    // conditionObj.$or = [
-                    //     {
-                    //         $and: [
-                    //             { task: { $in: tasksID } },
-                    //         ]
-                    //     },
-                    //     {
-                    //         $and: [
-                    //             { task: { $in: tasksID } },
-                    //         ]
-                    //     }
-                    // ]
                 }
 
                 // console.log('Final==============>conditionObj')

@@ -625,7 +625,7 @@ class Model extends BaseModel {
                             if(result.error) return resolve(result);
 
                             filesRemove = result.data?.oldFiles;
-                            dataAdditional.$set['files'] = result.data?.results;
+                            dataAdditional.$set['files'] = files;
                         } else{
                             await PCM_FILE_COLL.deleteMany({
                                 comment: infoComment._id,
@@ -643,7 +643,7 @@ class Model extends BaseModel {
                             if(result.error) return resolve(result);
 
                             filesRemove = [...filesRemove, ...result.data?.oldFiles];
-                            dataAdditional.$set['images'] = result.data?.results;
+                            dataAdditional.$set['images'] = images;
                         } else{
                             await PCM_FILE_COLL.deleteMany({
                                 comment: infoComment._id,
@@ -664,7 +664,7 @@ class Model extends BaseModel {
                             })
 
                             if(result.error) return resolve(result);
-                            dataAdditional.$addToSet['files'] = result.data?.results;
+                            dataAdditional.$addToSet['files'] = files;
                         }
 
                         if(checkObjectIDs(images)){
@@ -673,7 +673,7 @@ class Model extends BaseModel {
                             })
 
                             if(result.error) return resolve(result);
-                            dataAdditional.$addToSet['images'] = result.data?.results;
+                            dataAdditional.$addToSet['images'] = images;
                         }
                         break;
                     }

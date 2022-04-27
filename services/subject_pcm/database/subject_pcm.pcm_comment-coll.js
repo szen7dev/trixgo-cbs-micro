@@ -63,13 +63,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     //_________File đính kèm
     files: [{
         type: Schema.Types.ObjectId,
-        ref : "pcm_file"
+        ref : "file"
     }],
 
     //_________Các ảnh được đính kèm trong bài viết
     images: [{
         type: Schema.Types.ObjectId,
-        ref: 'pcm_file'
+        ref: 'file'
     }],
 
     //_________Số lượng comment con của comment cha

@@ -761,7 +761,7 @@ class Model extends BaseModel {
 
                     if(result.error) return resolve(result);
 
-                    dataAddToset = { ...dataAddToset, authorAttachs: result.data?.results };
+                    dataAddToset = { ...dataAddToset, authorAttachs };
                 }
 
                 if(checkObjectIDs(assigneeAttachs)){
@@ -771,7 +771,7 @@ class Model extends BaseModel {
 
                     if(result.error) return resolve(result);
 
-                    dataAddToset = { ...dataAddToset, assigneeAttachs: result.data?.results };
+                    dataAddToset = { ...dataAddToset, assigneeAttachs };
                 }
 
                 //_________Trường hợp cập nhật nhiều dữ liệu addToSet cùng 1 lúc
