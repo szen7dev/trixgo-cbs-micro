@@ -1,30 +1,105 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
+const PromisePool				        = require('@supercharge/promise-pool');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 const moment                            = require('moment')
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH }               = require('../../auth/helper/auth.actions-constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
-const { CF_ACTIONS_NOTIFICATION }       = require('../../notification/helper/notification.actions-constant');
-const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS } = require('../../../tools/keys');
-const { sendNoticeToMember }            = require('../../../tools/mailer/module/notice_pcm_task');
-const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/notification.keys-constant');
+/**
+ * Import utils, constants
+ */
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_FILE } 				        = require('../../file/helper/file.actions-constant');
+const { CF_ACTIONS_AUTH }                       = require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_NOTIFICATION }               = require('../../notification/helper/notification.actions-constant');
+
+const {
+    checkObjectIDs,
+    IsJsonString,
+    validateParamsObjectID
+} = require('../../../tools/utils/utils');
+
+const stringUtils					            = require('../../../tools/utils/string_utils');
+const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
+const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
+const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
+const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
 
 /**
  * import inter-coll, exter-coll
  */
 const PCM_PLAN_TASK_COLL                = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP_COLL               = require('../database/subject_pcm.pcm_plan_group-coll');
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
+const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL;
 
 class Model extends BaseModel {
 
     constructor() {
         super(PCM_PLAN_TASK_COLL);
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Thêm file vào pcm_file
+     * Date: 26/04/2022
+     */
+    handleAddFiles({ infoTask, files, authorID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                let { results, errors } = await PromisePool
+                    .for(files)
+                    .withConcurrency(2)
+                    .process(async fileID => {
+                        // File mới
+                        const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+                            fileID: fileID.toString()
+                        }, {
+                            meta: {
+                                infoUser: { _id: authorID }
+                            }
+                        });
+
+                        if(!infoFileCore.error) {
+                            const {
+                                name, nameOrg, description, path, size, mimeType, type, author
+                            } = infoFileCore.data;
+
+                            const infoAfterInserted = await PCM_FILE_MODEL.insert({
+                                fileID: fileID,
+                                taskID: infoTask._id,
+                                contractID: infoTask.contract,
+                                projectID: infoTask.project?._id,
+                                groupID: infoTask.group,
+                                companyID: infoTask.company,
+                                authorID: author,
+                                name, nameOrg, path, size, mimeType, description, type
+                            });
+
+                            return infoAfterInserted.data && infoAfterInserted.data._id;
+                        }
+                    });
+
+                results = results?.filter(Boolean);
+
+                if(errors.length || !results.length) {
+                    return resolve({
+                        error: true,
+                        errors,
+                        message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                }
+
+                return resolve({
+                    error: false,
+                    data: { results },
+                });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
     }
 
     /**
@@ -163,8 +238,13 @@ class Model extends BaseModel {
                 if(checkObjectIDs(authorAttachs)){
                     dataInsert.authorAttachs = authorAttachs;
                 }
-                
-                if(checkObjectIDs(relatedIDs)){
+
+                if(relatedIDs && relatedIDs.length){
+                    relatedIDs = [...new Set(relatedIDs)];
+
+                    if(!checkObjectIDs(relatedIDs)) {
+                        return resolve({ error: true, message: "relatedIDs_invalid", status: 400 });
+                    }
                     dataInsert.related = relatedIDs;
                 }
 
@@ -257,17 +337,24 @@ class Model extends BaseModel {
                 //relatedIDs thêm người liên quan chờ collections related_pcm_plan_task
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if(!infoAfterInsert)
-                    return resolve({ error: true, message: "can't_insert_task ", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, message: "can't_insert_task", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 // Cập nhật amountChecklist hoặc amountSubtask cho việc cha
                 if(parentID && checkObjectIDs(parentID)){
                     // Việc con
                     if(type == 1){
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountSubtask: 1}})
-                    }else{ // checklist
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChecklist: 1}})
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountSubtask: 1 }})
+                    } else{ // checklist
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(parentID, { $inc: { amountChecklist: 1 }})
                     }
                 }
+
+                // if(Object.keys(dataAdditional).length) {
+                //     infoAfterInsert = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterInsert._id, dataAdditional, { new: true });
+
+                //     if(!infoAfterInsert)
+                //         return resolve({ error: true, message: "Can't_update_task", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                // }
 
                 /**
                  * Tạo checklist hoặc việc con mới
@@ -552,16 +639,6 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, links }
                 }
 
-                //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
-                if(checkObjectIDs(authorAttachs)){
-                    dataAddToset = { ...dataAddToset, authorAttachs }
-                }
-
-                //_________File của người thực hiện-cân nhắc bỏ do không linh hoạt phiên bản
-                if(checkObjectIDs(assigneeAttachs)){
-                    dataAddToset = { ...dataAddToset, assigneeAttachs }
-                }
-
                 //_________% hoàn thành (max = 100)
                 if(percentage){
                     dataUpdate.percentage = percentage;
@@ -666,6 +743,36 @@ class Model extends BaseModel {
                     dataAddToset = { ...dataAddToset, signatures: _id }
                 }
 
+                //_________File của người tạo việc-cân nhắc bỏ do không linh hoạt phiên bản
+                //  if(checkObjectIDs(authorAttachs)){
+                //     dataAddToset = { ...dataAddToset, authorAttachs }
+                // }
+
+                //_________File của người thực hiện-cân nhắc bỏ do không linh hoạt phiên bản
+                // if(checkObjectIDs(assigneeAttachs)){
+                //     dataAddToset = { ...dataAddToset, assigneeAttachs }
+                // }
+
+                if(checkObjectIDs(authorAttachs)){
+                    const result = await this.handleAddFiles({
+                        infoTask, files: authorAttachs, authorID: userID, ctx
+                    })
+
+                    if(result.error) return resolve(result);
+
+                    dataAddToset = { ...dataAddToset, authorAttachs };
+                }
+
+                if(checkObjectIDs(assigneeAttachs)){
+                    const result = await this.handleAddFiles({
+                        infoTask, files: assigneeAttachs, authorID: userID, ctx
+                    })
+
+                    if(result.error) return resolve(result);
+
+                    dataAddToset = { ...dataAddToset, assigneeAttachs };
+                }
+
                 //_________Trường hợp cập nhật nhiều dữ liệu addToSet cùng 1 lúc
                 if(dataAddToset){
                     dataUpdate.$addToSet = dataAddToset;
@@ -690,7 +797,6 @@ class Model extends BaseModel {
                         await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate.parent, { $inc: { amountFinishedChecklist: 1}})
                     }
                 }
-
 
                 if(related && related.length) {
                     const relatedCurrent = infoTask?.related?.map(item => item.toString()) ?? [];

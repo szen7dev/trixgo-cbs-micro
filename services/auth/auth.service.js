@@ -27,15 +27,15 @@ const AUTH__APP_ROLE_MENU_COLL	    = require('./database/permission/auth.app_rol
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
 	mixins: [
-		DbService(AUTH__COMPANY_COLL),
-		DbService(AUTH__USER_COLL),
-		DbService(AUTH__REGISTER_TRIAL_COLL),
-		DbService(AUTH__APP_COLL),
-		DbService(AUTH__APP_ROLE_COLL),
-		DbService(AUTH__APP_MENU_COLL),
-		DbService(AUTH__APP_ROLE_MENU_COLL),
-		DbService(AUTH__APP_USER_COLL),
-		DbService(AUTH__APP_COMPANY_COLL),
+		DbService('companies'),
+		DbService('users'),
+		DbService('register_trials'),
+		DbService('apps'),
+		DbService('app_roles'),
+		DbService('app_menus'),
+		DbService('app_role_menus'),
+		DbService('app_users'),
+		DbService('app_companies'),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**

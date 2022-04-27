@@ -203,7 +203,7 @@ module.exports = {
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
                       photos,
                     } = ctx.params;
-                      
+
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
 					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, dataInc, photos, ctx
@@ -505,6 +505,43 @@ module.exports = {
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getAmountByProperty({
                     userID, companyID, projectID, contractID, type: Number(type), outin: Number(outin), real: Number(real), year: Number(year), optionTime: Number(optionTime), optionProperty: Number(optionProperty), ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
+
+    /**
+     * Name: Gom nhóm theo thuộc tính 
+     * Author: Hiepnh
+     * Date: 18/04/2022
+     */
+     getRetainProduce: {
+        auth: "required",
+        params: {
+            companyID           : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, outin } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                
+                if(!companyID){
+                    companyID = company._id
+                }
+                console.log({companyID})
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getRetainProduce({
+                    userID, companyID, projectID, contractID, outin: Number(outin), ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

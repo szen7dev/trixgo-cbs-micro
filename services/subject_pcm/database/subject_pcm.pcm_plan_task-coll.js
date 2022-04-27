@@ -206,7 +206,7 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     links: [{
         type: Schema.Types.ObjectId,
         ref: "pcm_plan_task"
-    }],
+    }], 
     //_________File của người tạo việc
     authorAttachs: [{
         type: Schema.Types.ObjectId,

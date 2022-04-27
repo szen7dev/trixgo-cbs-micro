@@ -41,7 +41,24 @@ class Model extends BaseModel {
     }) {
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { author: authorID };
+                let dataInsert = {
+                    nameOrg,
+                    name,
+                    path,
+                    size,
+                    type,
+                    mimeType,
+                    author: authorID
+                };
+
+                if(!nameOrg || !name || !path || !mimeType) {
+                    return resolve({
+                        error: true,
+                        message: 'Tham số không hợp lệ',
+                        keyError: 'params_invalid',
+                        status: 400
+                    });
+                }
 
                 if(checkObjectIDs(companyID)){
                     dataInsert.company = companyID;
@@ -71,17 +88,13 @@ class Model extends BaseModel {
                     dataInsert.file = fileID;
                 }
 
-                type        && (dataInsert.type         = type);
-                nameOrg     && (dataInsert.nameOrg      = nameOrg);
-                name        && (dataInsert.name         = name);
-                path        && (dataInsert.path         = path);
-                size        && (dataInsert.size         = size);
-                mimeType    && (dataInsert.mimeType     = mimeType);
-                description && (dataInsert.description  = description);
+                if(description){
+                    dataInsert.description = description;
+                }
 
                 let infoDataAfterInserted = await this.insertData(dataInsert);
                 if(!infoDataAfterInserted)
-                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, keyError: KEY_ERROR.INSERT_FAILED, status: 422 });
 
                 return resolve({ error: false, data: infoDataAfterInserted, status: 200 });
             } catch (error) {
@@ -163,7 +176,7 @@ class Model extends BaseModel {
                             if(companyID && checkObjectIDs(companyID)){
                                 conditionObj.company = ObjectID(companyID)
                             }
-                        }        
+                        }
                     }
                 }
 
@@ -189,19 +202,18 @@ class Model extends BaseModel {
                     conditionObj.nameOrg = new RegExp(keyword, 'i');
                 }
 
-                /***
+                /**
                  * Lấy danh sách file của dự án mà user là Members
-                 * Phục vụ lấy file từ ngoài trang chủ, từ tất cả các dự án
+                 * Phục vụ lấy file từ ngoài trang chủ, từ TẤT CẢ các dự án
                  */
                 if(isFileOfProject) {
-                    const dataProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
-                        unLimit: 'true',
+                    const { error, data } = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST_IS_MEMBERS}`, {
+                        unLimit: true,
                         select: '_id'
                     });
-                    const { error, data } = dataProject;
 
                     if(!error) {
-                        const projectsID = data?.listRecords?.map(item => item._id) ?? [];
+                        const projectsID = data?.map(item => item._id) ?? [];
 
                         if(projectsID.length) {
                             conditionObj.project = {
@@ -212,7 +224,9 @@ class Model extends BaseModel {
                 }
 
                 // Tìm kiếm file (VIAS)
-                if(isSearchFile) {               
+                if(isSearchFile) {
+                    console.log('isSearchFile============>>>>>>>>>>>>>>>>>>>>>')
+
                     // Danh sách các Group mà user là members hoặc amdins
                     if(projectID && checkObjectIDs(projectID)){
                         // Điều kiện tìm kiếm task
@@ -229,9 +243,9 @@ class Model extends BaseModel {
                             { admins: { $in: [userID] } },
                             { members: { $in: [userID] } },
                         ]
-                    }  
+                    }
                     // console.log('conditionObjGroup===========>>>>>>>>>>>>>>>>>>>>>')
-                    // console.log(conditionObjGroup) 
+                    // console.log(conditionObjGroup)
 
                     const listGroupUserIsMember = await PCM_PLAN_GROUP__COLL
                         .find(conditionObjGroup)
@@ -251,7 +265,7 @@ class Model extends BaseModel {
                     ]
 
                     // console.log('conditionObjTask===========>>>>>>>>>>>>>>>>>>>>>')
-                    // console.log(conditionObjTask) 
+                    // console.log(conditionObjTask)
 
                     // Danh sách các Task mà user có quyền truy cập
                     const listTaskUserIsMember = await PCM_PLAN_TASK__COLL
@@ -269,24 +283,10 @@ class Model extends BaseModel {
                     })
 
                     conditionObj.task = { $in: tasksID }
-
-                    // Mẹo xử lý phân trang của Minh
-                    // conditionObj.$or = [
-                    //     {
-                    //         $and: [
-                    //             { task: { $in: tasksID } },
-                    //         ]
-                    //     },
-                    //     {
-                    //         $and: [
-                    //             { task: { $in: tasksID } },
-                    //         ]
-                    //     }
-                    // ]
-
-                    // console.log('Final==============>conditionObj')
-                    // console.log(conditionObj)
                 }
+
+                // console.log('Final==============>conditionObj')
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){

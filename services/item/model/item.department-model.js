@@ -801,7 +801,7 @@ class Model extends BaseModel {
                 }
 
                 let sortBy;
-                let keys	      = ['createAt__-1', '_id__-1'];
+                let keys = ['createAt__-1', '_id__-1'];
 
                 if(limit > 20){
                     limit = 20;
@@ -874,23 +874,23 @@ class Model extends BaseModel {
                     sortBy        = dataPagingAndSort?.data?.sort;
                 }
 
-                let infoDataAfterGet = null;
-
                 if(unLimit) {
-                    infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                    console.log({ conditionObj, select })
+                    const dataUnlimit = await ITEM__DEPARTMENT_COLL
                         .find(conditionObj)
                         .select(select)
-                        .populate(populates)
                         .lean();
-                } else{
-                    infoDataAfterGet = await ITEM__DEPARTMENT_COLL
-                        .find(conditionObj)
-                        .limit(limit+1)
-                        .sort(sortBy)
-                        .select(select)
-                        .populate(populates)
-                        .lean();
+
+                    return resolve({ error: false, data: dataUnlimit, status: 200 });
                 }
+
+                const infoDataAfterGet = await ITEM__DEPARTMENT_COLL
+                    .find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get department", status: 403 });
