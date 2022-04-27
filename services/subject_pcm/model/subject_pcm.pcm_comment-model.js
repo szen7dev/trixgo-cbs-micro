@@ -53,7 +53,7 @@ class Model extends BaseModel {
                         // File Cũ
                         const infoPcmFile = await PCM_FILE_COLL
                             .findOne({
-                                _id: fileID,
+                                file: fileID,
                                 comment: infoComment._id,
                             })
                             .select('_id')
@@ -260,7 +260,7 @@ class Model extends BaseModel {
                 }
 
                 if(files && files.length) {
-                    let { results, errors } = await PromisePool
+                    const { errors } = await PromisePool
                         .for(files)
                         .withConcurrency(2)
                         .process(async fileID => {
@@ -293,16 +293,28 @@ class Model extends BaseModel {
 							}
                         });
 
-                    if(!errors.length) {
-                        results = results.filter(Boolean);
-                        if(results.length) {
-                            dataUpdate.files = results;
-                        }
+                    // if(!errors.length) {
+                    //     results = results.filter(Boolean);
+                    //     if(results.length) {
+                    //         dataUpdate.files = results;
+                    //     }
+                    // }
+
+                    if(errors.length) {
+                        return resolve({
+                            error: true,
+                            errors,
+                            message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
                     }
+
+                    dataUpdate.files = files;
                 }
 
                 if(images && images.length) {
-                    let { results, errors } = await PromisePool
+                    const { errors } = await PromisePool
                         .for(images)
                         .withConcurrency(2)
                         .process(async imageID => {
@@ -335,11 +347,14 @@ class Model extends BaseModel {
 							}
                         });
 
-                    if(!errors.length) {
-                        results = results.filter(Boolean);
-                        if(results.length) {
-                            dataUpdate.images = results;
-                        }
+                    if(errors.length) {
+                        return resolve({
+                            error: true,
+                            errors,
+                            message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
                     }
 
                     if(infoTask.contract) {
@@ -353,6 +368,8 @@ class Model extends BaseModel {
                         departmentID: infoTask.project?._id?.toString(),
                         photos: images
                     })
+
+                    dataUpdate.images = images;
                 }
 
                 // Cập nhật lastestReplyID và amountCommentReply cho comment cha
@@ -367,7 +384,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Cập nhật lại cho comment comment
+                // Cập nhật lại cho comment
                 if(Object.keys(dataUpdate).length) {
                     const infoAfterUpdate = await PCM_COMMENT_COLL.findByIdAndUpdate(infoAfterInsert._id, {
                         $set: dataUpdate
