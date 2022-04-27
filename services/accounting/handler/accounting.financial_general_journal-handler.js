@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
 /**
  * MODELS
  */
-const FIN__CASH_BOOK_MODEL = require('../model/accounting.financial_general_journal-model').MODEL;
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL = require('../model/accounting.financial_general_journal-model').MODEL;
 
 module.exports = {
     /**
@@ -38,7 +38,7 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.insert({
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert({
                     companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance
                 });
 
@@ -75,7 +75,7 @@ module.exports = {
                 const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update({
                     cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -101,7 +101,7 @@ module.exports = {
                 const { cashBooksID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.remove({
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.remove({
                     cashBooksID, userID
                 });
 
@@ -148,11 +148,11 @@ module.exports = {
 
                 let resultAfterCallHandler;
                 if (cashBookID) {
-                    resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getInfo({
+                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getInfo({
                         cashBookID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
+                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
                         outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }

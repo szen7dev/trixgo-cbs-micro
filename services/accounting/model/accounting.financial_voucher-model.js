@@ -10,7 +10,7 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 /**
  * import inter-coll, exter-coll
  */
-const ACCOUNTING__FINANCIAL_VOUCHER_COLL = require('../database/fin.cash_book-coll');
+const ACCOUNTING__FINANCIAL_VOUCHER_COLL = require('../database/accounting.financial_voucher-coll');
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
