@@ -32,12 +32,12 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, companyID, parent, userID }) { 
+    insert({ type, name, description, companyID, parent, userID }) {
         return new Promise(async resolve => {
             try {
                 const dataInsert = { name, type, description, company: companyID, userCreate: userID };
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -113,12 +113,12 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, userID }) { 
+    update({ doctypeID, name, description, userID }) {
         return new Promise(async resolve => {
             try {
                 const dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -160,21 +160,21 @@ class Model extends BaseModel {
      */
 
     /**
-     * Name: get Hợp đồng 
+     * Name: get Hợp đồng
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ doctypeID, select, populates }) { 
+    getInfo({ doctypeID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(doctypeID))
                     return resolve({ error: true, message: 'Request params doctypeID invalid', status: 400 });
-                
+
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -214,11 +214,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách hợp đồng 
+     * Name  : Danh sách hợp đồng
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
-    getList({ companyID, projectID, type, keyword, limit = 10, lastestID, select, populates }) { 
+    getList({ companyID, projectID, type, keyword, limit = 10, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
@@ -233,7 +233,7 @@ class Model extends BaseModel {
                 let sortBy = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -250,14 +250,14 @@ class Model extends BaseModel {
                     }
                 }
 
-              
-               
+
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
-                
+                 */
+
                 // TRẠNG THÁI CÔNG VIỆC
                 //____________Công ty
                 if(companyID){
@@ -285,7 +285,7 @@ class Model extends BaseModel {
                     ]
                 }
                 let conditionObjOrg = { ...conditionObj }
-                
+
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__DOCTYPE_COLL.findById(lastestID);
 					if(!infoData)
