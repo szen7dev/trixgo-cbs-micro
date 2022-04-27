@@ -15,9 +15,7 @@ module.exports = function (dbName, dbOb) {
         type: Number,
         default: 1,
     };
-    let s = new Schema(dbOb, {
-        timestamps: true
-    });
+    let s = new Schema(dbOb);
     s.plugin(random);
     return mongoose.model(dbName, s);
 };
