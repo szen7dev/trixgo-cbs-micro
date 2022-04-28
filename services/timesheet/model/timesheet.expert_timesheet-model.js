@@ -120,7 +120,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+    update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
         dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID }){
         return new Promise(async (resolve) => {
             try {
@@ -144,7 +144,7 @@ class Model extends BaseModel {
                 }
 
                 let dataUpdate = {
-                    userUpdate: userUpdate,
+                    userUpdate: userID,
                     modifyAt: Date.now(),
                 }
 
@@ -233,9 +233,9 @@ class Model extends BaseModel {
                 let dataAddToSet = {};
                 let dataPullAll  = {};
 
-                const adminsID = infoTimeSheetID.admins?.map(item => item.toString());
+                const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
 
-                if(adminsID.includes(userID)) {
+                if(adminsID.includes(userID.toString())) {
                     if(admins && admins.length) {
                         if(checkObjectIDs(admins)) {
                             admins = [...new Set(admins)];
@@ -283,12 +283,13 @@ class Model extends BaseModel {
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
 
-                if(!infoAfterUpdate)
+                if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
                         message: "Cannot update",
                         keyError: "cannot_update",
                     });
+                }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {

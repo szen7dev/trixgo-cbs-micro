@@ -170,9 +170,9 @@ class Model extends BaseModel {
                     });
                 }
 
-                const adminsID = infoCashBook.admins?.map(item => item.toString());
+                const adminsID = [...infoCashBook.admins?.map(item => item.toString()), infoCashBook.userCreate?.toString()];
 
-                if(adminsID.includes(userID)) {
+                if(adminsID.includes(userID.toString())) {
                     if(admins && admins.length) {
                         if(checkObjectIDs(admins)) {
                             admins = [...new Set(admins)];

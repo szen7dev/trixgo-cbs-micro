@@ -235,9 +235,9 @@ class Model extends BaseModel {
                     });
                 }
 
-                const adminsID = infoCashFlow.admins?.map(item => item.toString());
+                const adminsID = [...infoCashFlow.admins?.map(item => item.toString()), infoCashFlow.userCreate?.toString()];
 
-                if(adminsID.includes(userID)) {
+                if(adminsID.includes(userID.toString())) {
                     if(admins && admins.length) {
                         if(checkObjectIDs(admins)) {
                             admins = [...new Set(admins)];
