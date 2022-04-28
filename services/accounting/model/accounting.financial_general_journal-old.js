@@ -3749,4 +3749,4 @@ class Model extends BaseModel {
     }
 }
 exports.MODEL = new Model;
-var ACCOUNTING__FINANCIAL_VOUCHER     = require('../model/accounting.financial_voucher').MODEL;
+var ACCOUNTING__FINANCIAL_VOUCHER     = require('./accounting.financial_voucher-old').MODEL;

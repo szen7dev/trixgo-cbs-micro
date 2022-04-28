@@ -12,7 +12,7 @@ const CF_ROUTINGS_FIN = {
     CASH_FLOW_PLAN                          : `${BASE_ROUTE}${CASH_FLOW_PLAN}`, 
     CASH_FLOW_PLAN_GET_AMOUNT_BY_PROPERTY   : `${BASE_ROUTE}${CASH_FLOW_PLAN}/get-amount-by-property`,
 
-    // ================================CASH_FLOW_PLAN=======================================//
+    // ================================CASH_BOOK=======================================//
     CASH_BOOK                               : `${BASE_ROUTE}${CASH_BOOK}`, 
     CASH_BOOK_GET_AMOUNT_BY_PROPERTY        : `${BASE_ROUTE}${CASH_BOOK}/get-amount-by-property`,
     CASH_BOOK_GET_AMOUNT_INCOME_EXPENSE_BY_PARENT   : `${BASE_ROUTE}${CASH_BOOK}/get-amount-income-expense-by-parent`,

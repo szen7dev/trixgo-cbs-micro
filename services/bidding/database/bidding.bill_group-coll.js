@@ -7,52 +7,39 @@ const Schema                = require('mongoose').Schema;
  * 2. NHÓM DỮ LIỆU
  * 3. CÔNG VIỆC MỜI THẦU
  */
-module.exports  = DATABASE_MIDDLEWARE("bidding_bill", {
-    //_________Khu vực
+module.exports  = DATABASE_MIDDLEWARE("bidding_bill_group", {
+    //_________Lĩnh vực
+    field: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_type"
+    },      
+    //_________Khu vực (xã/phường)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"
-    },
-    //_________Chủ đầu tư (lấy từ task mời thầu => thuộc phân vùng của Chủ đầu tư)
+    },    
+    //_________Chủ đầu tư
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     }, 
-    //_________Nhà thầu trúng thầu
-    bidder: {
+    //_________Dự án
+    project: {
         type: Schema.Types.ObjectId,
-        ref : "company"
+        ref : "department"
     },
     //_________Thuộc hồ sơ gói thầu
-    doc: {
+    plan: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_doc"
-    },
-    /**
-     * CẤU TRÚC ĐỆ QUY
-     */
-    //_________Hạng mục
-    item: {
-        type: Schema.Types.ObjectId,
-        ref : "bidding_bill"
-    },
-    //_________Nhóm dữ liệu
-    group: {
-        type: Schema.Types.ObjectId,
-        ref : "bidding_bill"
-    },
-    //_________Level
-    level: {
-        type: Number,
-        default: 1
+        ref : "bidding_plan"
     },
     /**
      * THÔNG TIN CĂN BẢN
      */
-    //_________Mã công tác trong DataHub (xét sau)
-    datahubJob: {
+    //_________Hạng mục
+    item: {
         type: Schema.Types.ObjectId,
-        ref : "datahub_job"
+        ref : "bidding_bill_item"
     },
     //_________Tên
     name: String,

@@ -8,6 +8,12 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const DOCUMENT__DOC_MODEL                   	= require('../model/document.doc-model').MODEL;
 
+/**
+ * CALL OTHER SERVICE
+ */
+const { APP_ID } 		                = require('../../../tools/keys/index');
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ANALYSIS } 		    = require('../../analysis/helper/analysis.actions-constant');
 
 module.exports = {
     /**
@@ -218,6 +224,12 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                // Call traffic
+                const infoTraffic = await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, {
+                    appID: `${APP_ID.DOCUMENT.id}`, menuID: `${APP_ID.DOCUMENT.menuDocumentApp.dashboard.id}`, type: 1
+                })
+                // console.log(infoTraffic)
+
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { 
