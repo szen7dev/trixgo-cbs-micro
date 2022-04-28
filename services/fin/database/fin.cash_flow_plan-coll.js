@@ -148,11 +148,6 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     timeApproved: {
         type: Date
     },
-    //_________Thành viên truy cập
-    members: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
     //_________Ngày dự kiến/kế hoạch
     date: Date,
     //_________Ngày thực tế

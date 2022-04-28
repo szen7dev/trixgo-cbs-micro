@@ -66,9 +66,7 @@ module.exports = {
             dateIn3                 : { type: "string", optional: true },
             dateOut3                : { type: "string", optional: true },
             members                 : { type: "array", optional: true },
-            membersRemove           : { type: "array", optional: true },
             admins                  : { type: "array", optional: true },
-            adminsRemove            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {

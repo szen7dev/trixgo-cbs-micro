@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -30,17 +30,17 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert expert timesheet 
+     * Name: Insert expert timesheet
      * Author: Depv
-     * Code: 
+     * Code:
      */
     insert({ userCreate, companyID, parentID, name, date, type, note, projectID, assigneeID, ctx }) {
         return new Promise(async resolve => {
             try {
 
                 if(!name){
-                    return resolve({ 
-                        error: true, 
+                    return resolve({
+                        error: true,
                         message: "Name invalid",
                         keyError: "name_invalid",
                     });
@@ -55,11 +55,11 @@ class Model extends BaseModel {
                 //     /**
                 //      * Company lấy theo company của project
                 //      * Chứ không phải lấy theo company của user tạo task
-                //      */ 
+                //      */
                 //     companyID = infoProject.data.company;
                 //     if(!companyID)
-                //         return resolve({ 
-                //             error: true, 
+                //         return resolve({
+                //             error: true,
                 //             message: "Company invalid",
                 //             keyError: "company_invalid",
                 //         });
@@ -78,7 +78,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID
                 }
-                
+
                 if(assigneeID){
                     dataInsert.assignee = assigneeID;
                 }
@@ -114,24 +114,34 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
-     * Name: Update expert timesheet 
+     * Name: Update expert timesheet
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, 
-        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, adminsRemove, members, membersRemove, ctx  }){
+    update({ expertTimesheetID, userUpdate, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date,
+        dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, admins, members, userID }){
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(expertTimesheetID))
-                    return resolve({ 
-                        error: true, 
+                    return resolve({
+                        error: true,
                         message: 'expertTimesheetID invalid',
-                        keyError: "expertTimesheetID_invalid"
+                        keyError: "expertTimesheetID_invalid",
+                        status: 400
                     });
-                
+
                 let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
+
+                if(!infoTimeSheetID) {
+                    return resolve({
+                        error: true,
+                        message: 'Timesheet không tồn tại',
+                        keyError: "timesheet_not_exists",
+                        status: 400
+                    });
+                }
 
                 let dataUpdate = {
                     userUpdate: userUpdate,
@@ -141,7 +151,7 @@ class Model extends BaseModel {
                 if(projectID){
                     dataUpdate.project = projectID;
                 }
-               
+
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
                 }
@@ -167,8 +177,8 @@ class Model extends BaseModel {
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(infoTimeSheetID.parent, { $inc: { hours: hoursAfter }})
                     }
                 }
-                
-                if(unitprice){ 
+
+                if(unitprice){
                     dataUpdate.unitprice = unitprice;
                 }
 
@@ -215,27 +225,52 @@ class Model extends BaseModel {
                 if(dateIn3){
                     dataUpdate.dateIn3 = dateIn3;
                 }
-                
+
                 if(dateOut3){
                     dataUpdate.dateOut3 = dateOut3;
                 }
 
                 let dataAddToSet = {};
                 let dataPullAll  = {};
-                if(admins){
-                    dataAddToSet.admins = admins;
-                }
 
-                if(adminsRemove){
-                    dataPullAll.admins = adminsRemove;
-                }
+                const adminsID = infoTimeSheetID.admins?.map(item => item.toString());
 
-                if(members){
-                    dataAddToSet.members = members;
-                }
+                if(adminsID.includes(userID)) {
+                    if(admins && admins.length) {
+                        if(checkObjectIDs(admins)) {
+                            admins = [...new Set(admins)];
+                            dataUpdate.admins = admins;
+                        } else{
+                            dataUpdate.admins = [];
+                        }
+                    }
 
-                if(membersRemove){
-                    dataPullAll.members = membersRemove;
+                    if(members && members.length) {
+                        if(checkObjectIDs(members)) {
+                            members = [...new Set(members)];
+                            dataUpdate.members = members;
+                        } else{
+                            dataUpdate.members = [];
+                        }
+                    }
+                } else{
+                    if(checkObjectIDs(admins)) {
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
+
+                    if(checkObjectIDs(members)) {
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
                 }
 
                 if(dataAddToSet){
@@ -245,11 +280,12 @@ class Model extends BaseModel {
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
-                
+
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
+
                 if(!infoAfterUpdate)
-                    return resolve({ 
-                        error: true, 
+                    return resolve({
+                        error: true,
                         message: "Cannot update",
                         keyError: "cannot_update",
                     });
@@ -262,30 +298,30 @@ class Model extends BaseModel {
     }
 
     /**
-    * Name: Remove expert timesheet 
+    * Name: Remove expert timesheet
     * Author: Depv
-    * Code: 
+    * Code:
     */
-   remove({ expertTimesheetID }) { 
+   remove({ expertTimesheetID }) {
        return new Promise(async (resolve) => {
            try {
                 /**
                 * DECALARTION VARIABLE (1)
                 */
 
-                /** 
+                /**
                 * VALIDATION STEP (2)
                 *  - Kiểm tra valid từ các input
                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                 */
                 if(!checkObjectIDs(expertTimesheetID))
-                    return resolve({ 
-                       error: true, 
-                       message: 'Request params expertTimesheetID invalid', 
-                       keyError: 'request_params_expertTimesheetID_invalid', 
-                       status: 400 
+                    return resolve({
+                       error: true,
+                       message: 'Request params expertTimesheetID invalid',
+                       keyError: 'request_params_expertTimesheetID_invalid',
+                       status: 400
                     });
-             
+
                 /**
                 * LOGIC STEP (3)
                 * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -304,25 +340,25 @@ class Model extends BaseModel {
    }
 
     /**
-     * Name: get info expert timesheet 
+     * Name: get info expert timesheet
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ expertTimesheetID, select, populates }) { 
+    getInfo({ expertTimesheetID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(expertTimesheetID))
                     return resolve({ error: true, message: 'Request params expertTimesheetID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -342,10 +378,10 @@ class Model extends BaseModel {
                  */
                 let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID)
                                     .select(select)
-                                    .populate(populates) 
+                                    .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -353,23 +389,23 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách expert timesheet 
+     * Name  : Danh sách expert timesheet
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
         parentID, companyID, projectID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { 
+                let conditionObj = {
                 };
 
                 let sortBy   = { createAt: 1, _id: 1 };
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -391,7 +427,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
 
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
@@ -406,7 +442,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(projectID)){
 					conditionObj.project = projectID;
 				}
-                  
+
 				if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -428,13 +464,13 @@ class Model extends BaseModel {
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
 				}
-                
+
                 let infoDataAfterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -449,7 +485,7 @@ class Model extends BaseModel {
 
                 let totalRecord = await TIMESHEET__EXPERT_TIMESHEET_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
-                
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,
@@ -457,7 +493,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
