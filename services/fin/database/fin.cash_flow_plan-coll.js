@@ -80,7 +80,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         default: 1,
         enum: [1, 2]
     },
-    //_________Admin
+    //_________Admin (được quyền xem, sửa)
     admins : [{
         type   : Schema.Types.ObjectId,
         ref: 'user'
@@ -154,7 +154,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         ref : "user"
     }],
     //_________Ngày dự kiến/kế hoạch
-    date: Date,
+    date: { type: Date, default: Date.now },
     //_________Ngày thực tế
     realDate: Date,
     /**

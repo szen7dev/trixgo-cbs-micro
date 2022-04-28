@@ -31,7 +31,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },    
-    //_________Admin
+    //_________Admin (được quyền xem, sửa)
     admins : [{
         type   : Schema.Types.ObjectId,
         ref: 'user'
