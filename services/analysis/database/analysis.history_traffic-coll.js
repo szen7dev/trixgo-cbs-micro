@@ -4,7 +4,12 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("history_traffic", {
-    //_________Thiết bị (1-Web/2-Mobile/3-Tablet)
+    /**
+     * PHÂN LOẠI THIẾT BỊ
+     * 1-Web
+     * 2-Mobile
+     * 3-Tablet
+     */
     type: {
         type: Number,
         default: 1
