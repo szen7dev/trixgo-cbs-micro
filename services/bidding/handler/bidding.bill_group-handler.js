@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const FIN__CASH_FLOW_PLAN_MODEL              = require('../model/fin.cash_flow_plan-model').MODEL;
+const BIDDING__BILL_GROUP_MODEL              = require('../model/bidding.bill_group-model').MODEL;
 
 module.exports = {
     /**
@@ -48,7 +48,7 @@ module.exports = {
                     companyID = company._id
                 }
 
-                const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.insert({
+                const resultAfterCallHandler = await BIDDING__BILL_GROUP_MODEL.insert({
                     companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, userID, ctx
                 });
 
@@ -93,7 +93,7 @@ module.exports = {
                 } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
+                const resultAfterCallHandler = await BIDDING__BILL_GROUP_MODEL.update({
                     cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type, userID, ctx
                 });
 
@@ -120,7 +120,7 @@ module.exports = {
                 const { cashFlowsID  } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.remove({
+                let resultAfterCallHandler = await BIDDING__BILL_GROUP_MODEL.remove({
                     cashFlowsID, userID
                 });
 
@@ -170,11 +170,11 @@ module.exports = {
 
                 let resultAfterCallHandler;
                 if(cashFlowID){
-                    resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getInfo({
+                    resultAfterCallHandler = await BIDDING__BILL_GROUP_MODEL.getInfo({
                         cashFlowID, userID, select, populates
                     });
                 }else{
-                    resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getList({
+                    resultAfterCallHandler = await BIDDING__BILL_GROUP_MODEL.getList({
                         companyID, projectID, contractID, parentID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
@@ -215,7 +215,7 @@ module.exports = {
                     companyID = company._id
                 }
 
-                let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getAmountByProperty({
+                let resultAfterCallHandler = await BIDDING__BILL_GROUP_MODEL.getAmountByProperty({
                     userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx
                 })
 
