@@ -80,7 +80,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         default: 1,
         enum: [1, 2]
     },
-    //_________Admin
+    //_________Admin (được quyền xem, sửa)
     admins : [{
         type   : Schema.Types.ObjectId,
         ref: 'user'
