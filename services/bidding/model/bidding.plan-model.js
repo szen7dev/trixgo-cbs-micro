@@ -10,7 +10,7 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 /**
  * import inter-coll, exter-coll
  */
-const FIN__CASH_BOOK_COLL = require('../database/fin.cash_book-coll');
+const BIDDING__PLAN_COLL = require('../database/bidding.plan-coll');
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -20,13 +20,13 @@ const { KEY_ERROR } = require('../../../tools/keys/index');
  */
 class Model extends BaseModel {
     constructor() {
-        super(FIN__CASH_BOOK_COLL);
+        super(BIDDING__PLAN_COLL);
     }
 
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 28/4/2022
      */
     insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
         const that = this
@@ -105,7 +105,7 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 28/4/2022
      */
     update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
         const that = this
@@ -159,7 +159,7 @@ class Model extends BaseModel {
                     dataUpdate.active = active;
                 }
 
-                let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+                let infoAfterUpdate = await BIDDING__PLAN_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
@@ -176,88 +176,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị khi chi tiết thay đổi 
-     * Author: Hiepnh
-     * Date  : 14/4/2022
-     */
-    updateValue({
-        cashBookID, userID
-    }){
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * BA
-                 * 1-Cập nhật kế hoạch
-                 * 2-Cập nhật thực tế
-                 */
-                if(!checkObjectIDs(cashBookID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
-
-                let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
-                console.log(infoCashBook)
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
-                    {
-                        $match: {
-                            parent: ObjectID(cashBookID),
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            income: { $sum: "$income" },
-                            expense: { $sum: "$expense" },
-                        }
-                    },
-                ])
-                if(listData && listData.length){
-
-                    let arising = Number(listData[0].income) - Number(listData[0].expense)
-                    let closingBalance = Number(infoCashBook.openingBalance) + Number(arising)
-
-                    dataUpdate.arising = Number(arising)
-                    dataUpdate.closingBalance = Number(closingBalance)
-                    dataUpdate.income = Number(listData[0].income)
-                    dataUpdate.expense = Number(listData[0].expense)
-                }
-
-                let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 28/4/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 28/4/2022
      */
     getInfo({ cashBookID, select, populates }) {
         return new Promise(async resolve => {
@@ -276,7 +203,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await FIN__CASH_BOOK_COLL.findById(cashBookID)
+                let infoContractIPC = await BIDDING__PLAN_COLL.findById(cashBookID)
                     .select(select)
                     .populate(populates)
 
@@ -292,7 +219,7 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 28/4/2022
      */
     getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
@@ -376,7 +303,7 @@ class Model extends BaseModel {
 
                 // PHÂN TRANG KIỂU MỚI
                 if (lastestID && checkObjectIDs(lastestID)) {
-                    let infoData = await FIN__CASH_BOOK_COLL.findById(lastestID);
+                    let infoData = await BIDDING__PLAN_COLL.findById(lastestID);
                     if (!infoData)
                         return resolve({ error: true, message: "Can't get info lastest", status: 400 });
 
@@ -391,7 +318,7 @@ class Model extends BaseModel {
                     sortBy = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await FIN__CASH_BOOK_COLL.find(conditionObj)
+                let infoDataAfterGet = await BIDDING__PLAN_COLL.find(conditionObj)
                     .limit(limit + 1)
                     .sort(sortBy)
                     .select(select)
@@ -410,7 +337,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let totalRecord = await FIN__CASH_BOOK_COLL.count(conditionObjOrg);
+                let totalRecord = await BIDDING__PLAN_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord / limit);
 
                 return resolve({
@@ -425,228 +352,6 @@ class Model extends BaseModel {
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-    * Name  : Lấy tổng thu và chi theo sổ
-    * Author: MinhVH
-    * Date  : 18/4/2022
-    */
-    getAmountIncomeAndExpenseByParent({ parentID }) {
-        return new Promise(async (resolve) => {
-            try {
-                if (!checkObjectIDs(parentID))
-                    return resolve({ error: true, message: "Tham số parentID không hợp lệ", keyError: "parentID_invalid" });
-
-                let listData = await FIN__CASH_BOOK_COLL.aggregate([
-                    {
-                        $match: {
-                            parent: ObjectID(parentID),
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: null,
-                            income: { $sum: "$income" },
-                            expense: { $sum: "$expense" },
-                        }
-                    },
-                ])
-
-                if (listData && listData.length) {
-                    listData = {
-                        income: Number(listData[0].income),
-                        expense: Number(listData[0].expense)
-                    }
-                } else{
-                    listData = null;
-                }
-
-                return resolve({ error: false, data: listData, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /*
-     * Name: Gom nhóm theo thuộc tính 
-     * Author: Hiepnh
-     * Date: 17/04/2022
-     */
-     getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
-        console.log({ userID, companyID, parentID, accountID, year, option })
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * BA
-                 * Tham số của option:
-                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
-                 * 2-Tổng hợp của công ty user
-                 * 3-Tổng hợp theo sổ quỹ cụ thể
-                 */
-                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
-
-                if (!option || isNaN(option) || ![1,2,3].includes(Number(option)))
-                    return resolve({ error: true, message: "Tham số option không hợp lệ", keyError: "option_invalid" })
-
-                // Cấu hình gom nhóm mặc định
-                conditionGroup = {
-                    _id: {},
-                    income: { $sum: "$income" },
-                    expense: { $sum: "$expense" },
-                    date: { $first: "$date" },
-                }
-
-                // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
-                if(Number(option) === 1){
-                    console.log('1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị 556688')
-                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
-                        appID: "5dfe4bc751dc622100bb9d8a",
-                        menuID: "623f2465e998e94feda0cdaa",
-                        type: "1"
-                    })
-
-                    console.log(listCompany)
-
-                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({
-                        active: 1,
-                        parent: {$exists: false},
-                        company: {$in: listCompany.data.map(item=>item._id.company._id)}
-                    })
-
-                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    conditionGroup = {
-                        _id: { account: "$account", company: "$company" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.account',
-                        select: '_id name description company',
-                        model: 'account'
-                    }
-
-                    sortBy = {
-                        "_id.account": 1,
-                    }
-                }
-
-                // 2-Tổng hợp của công ty user
-                if(Number(option) === 2){
-                    console.log('2-Tổng hợp của công ty user')
-                    let listActiveParent = await FIN__CASH_BOOK_COLL.find({
-                        active: 1,
-                        parent: {$exists: false},
-                        company: companyID
-                    })
-                    conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-
-                    conditionGroup = {
-                        _id: { account: "$account" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.account',
-                        select: '_id name description',
-                        model: 'account'
-                    }
-
-                    sortBy = {
-                        "_id.account": 1,
-                    }
-                }
-
-                // 3-Tổng hợp theo sổ quỹ cụ thể
-                if(Number(option) === 3){
-                    console.log('3-Tổng hợp theo sổ quỹ cụ thể')
-                    if(parentID && checkObjectIDs(parentID)){
-                        conditionObj.parent = ObjectID(parentID)
-
-                        // Gom nhóm theo các loại tài khoản
-                        if(accountID && checkObjectIDs(accountID)){
-                            conditionObj.account = ObjectID(accountID)
-                        }
-                    }
-
-                    conditionGroup = {
-                        _id: { account: "$account" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-
-                    conditionPopulate = {
-                        path: '_id.account',
-                        select: '_id name description',
-                        model: 'account'
-                    }
-
-                    sortBy = {
-                        "_id.account": 1,
-                    }
-                }
-
-                // Thống kê theo biểu đồ (tháng/năm)
-                if(!isNaN(year) && Number(year) > 0){
-                    conditionObjYear = {
-                        "year": Number(year),
-                    }
-
-                    conditionGroup = {
-                        _id: { month: "$month", year: "$year" },
-                        income: { $sum: "$income" },
-                        expense: { $sum: "$expense" },
-                        date: { $first: "$date" },
-                    }
-                }
-
-                // console.log(conditionObj)
-                // console.log(conditionGroup)
-
-                let listData = await FIN__CASH_BOOK_COLL.aggregate([
-                    {
-                        $match: conditionObj
-                    },
-                    {
-                        $project : {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            parent: 1,
-                            company: 1,
-                            account: 1,
-                            income: 1,
-                            expense: 1,
-                            date: 1,
-                        }
-                    },
-                    {
-                        $match: conditionObjYear
-                    },
-                    {
-                        $group: conditionGroup
-                    },
-                    {
-                        $sort: sortBy
-                    }
-                ])
-
-                // Pop lấy thông tin tài khoản
-                if(!isNaN(option) && Number(option) > 0){
-                    await FIN__CASH_BOOK_COLL.populate(listData, conditionPopulate)
-                }
-
-                return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
             }
         })
     }
