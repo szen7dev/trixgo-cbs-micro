@@ -10,7 +10,7 @@ const FIN__CASH_FLOW_PLAN_MODEL              = require('../model/fin.cash_flow_p
 
 module.exports = {
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -60,7 +60,7 @@ module.exports = {
     },
 
     /**
-     * Name: Update 
+     * Name: Update
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -84,17 +84,19 @@ module.exports = {
             realDate            : { type: "string", optional: true },
             realValue           : { type: "number", optional: true },
             priority            : { type: "number", optional: true },
+            members             : { type: "array", optional: true },
+            admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { 
-                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type
+                const {
+                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type, members, admins
                 } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
-                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type, userID, ctx
+                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type, userID, members, admins, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -132,7 +134,7 @@ module.exports = {
     },
 
     /**
-     * Name: Get info and get list 
+     * Name: Get info and get list
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -161,7 +163,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { cashFlowID, companyID, projectID, contractID, parentID, outin, type, property, priority, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
-				
+
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -186,7 +188,7 @@ module.exports = {
     },
 
     /**
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
      * Date: 17/04/2022
      */

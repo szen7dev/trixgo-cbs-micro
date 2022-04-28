@@ -20,17 +20,17 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     account: {
         type: Schema.Types.ObjectId,
         ref: 'account'
-    },   
+    },
     //_________Mã khách
     customer: {
         type: Schema.Types.ObjectId,
         ref: 'contact'
-    },   
+    },
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref : "contract"
-    },    
+    },
     //_________Admin (được quyền xem, sửa)
     admins : [{
         type   : Schema.Types.ObjectId,
@@ -44,27 +44,27 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     //_________Tên
     name: String,
     //_________Ngày tháng
-    date: { type: Date, default: Date.now },    
+    date: { type: Date, default: Date.now },
     //_________Mã hiệu
     sign: String,
     //_________Ghi chú
-    note: String, 
-    //_________Số dư đầu kỳ     
-    openingBalance: { type: Number, default: 0 }, 
+    note: String,
+    //_________Số dư đầu kỳ
+    openingBalance: { type: Number, default: 0 },
     //_________Phát sinh trong kỳ
-    arising: { type: Number, default: 0 }, 
+    arising: { type: Number, default: 0 },
     //_________Số dư cuối kỳ
-    closingBalance: { type: Number, default: 0 }, 
+    closingBalance: { type: Number, default: 0 },
     //_________Thu
-    income: { type: Number, default: 0 }, 
+    income: { type: Number, default: 0 },
     //_________Chi
-    expense: { type: Number, default: 0 },     
+    expense: { type: Number, default: 0 },
     /**
      * Sổ quỹ đang hoạt động hoặc tạm dừng
      * 1-Hoạt động
      * 2-Tạm dừng
      */
-    active: { type: Number, default: 1 },   
+    active: { type: Number, default: 1 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

@@ -23,12 +23,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: Hiepnh
      * Date: 9/4/2022
      */
     insert({ companyID, fundaID, projectID, contractID, parentID, type, property, priority, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, userID, ctx }) {
-        const that = this
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -123,7 +122,7 @@ class Model extends BaseModel {
 
                 // Cập nhật lại phần tử cha
                 if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashFlowID: parentID, userID})
+                    await this.updateValue({cashFlowID: parentID, userID})
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -134,16 +133,15 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update 
+     * Name: Update
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ 
-        cashFlowID, contractID, name, sign, note, date, 
+    update({
+        cashFlowID, contractID, name, sign, note, date,
         value, realDate, realValue, priority,
-        outin, property, status, type, userID, ctx
+        outin, property, status, type, userID, members, admins, ctx
     }){
-        const that = this
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID))
@@ -226,21 +224,73 @@ class Model extends BaseModel {
                     dataUpdate.timeApproved = new Date();
                 }
 
+                const infoCashFlow = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID).lean();
+
+                if(!infoCashFlow) {
+                    return resolve({
+                        error: true,
+                        message: 'Cashflow không tồn tại',
+                        keyError: "cashflow_not_exists",
+                        status: 400
+                    });
+                }
+
+                const adminsID = [...infoCashFlow.admins?.map(item => item.toString()), infoCashFlow.userCreate?.toString()];
+
+                if(adminsID.includes(userID.toString())) {
+                    if(admins && admins.length) {
+                        if(checkObjectIDs(admins)) {
+                            admins = [...new Set(admins)];
+                            dataUpdate.admins = admins;
+                        } else{
+                            dataUpdate.admins = [];
+                        }
+                    }
+
+                    if(members && members.length) {
+                        if(checkObjectIDs(members)) {
+                            members = [...new Set(members)];
+                            dataUpdate.members = members;
+                        } else{
+                            dataUpdate.members = [];
+                        }
+                    }
+                } else{
+                    if(checkObjectIDs(admins)) {
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
+
+                    if(checkObjectIDs(members)) {
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
+                }
+
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
-                
+
                 // Cập nhật thuộc tính cho các phẩn tử con
-                await FIN__CASH_FLOW_PLAN_COLL.updateMany(
-                    { parent: ObjectID(cashFlowID)},
-                    { $set: 
-                        { 
-                            "outin" : outin,
-                            "property" : property,
-                            "type" : type,
-                        } 
-                    }
-                 );
+                if(outin || property || type) {
+                    const dataUpdateMany = {};
+                    outin       && (dataUpdateMany.outin    = outin);
+                    property    && (dataUpdateMany.property = property);
+                    type        && (dataUpdateMany.type     = type);
+
+                    await FIN__CASH_FLOW_PLAN_COLL.updateMany(
+                        { parent: ObjectID(cashFlowID)},
+                        { $set: dataUpdateMany }
+                     );
+                }
 
                 // Lấy thông tin của mẩu tin populate
                 infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.populate(infoAfterUpdate, {
@@ -255,7 +305,7 @@ class Model extends BaseModel {
                 // Cập nhật lại phần tử cha
                 if(checkObjectIDs(infoAfterUpdate.parent)){
                     // Cập nhật giá trị của phần tử cha
-                    await that.updateValue({cashFlowID: infoAfterUpdate.parent, userID})
+                    await this.updateValue({cashFlowID: infoAfterUpdate.parent, userID})
 
                     // Cập nhật thuộc tính theo phần tử cha
                 }
@@ -268,17 +318,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
+     * Name: Get info
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    
-    /**
-     * Name: Get info 
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
-     getInfo({ cashFlowID,
+    getInfo({ cashFlowID,
         select, populates }){
         return new Promise(async resolve => {
             try {
@@ -313,7 +357,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Get list 
+     * Name  : Get list
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -463,13 +507,11 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name  : Cập nhật giá trị khi chi tiết thay đổi 
+     * Name  : Cập nhật giá trị khi chi tiết thay đổi
      * Author: Hiepnh
      * Date  : 14/4/2022
      */
-    updateValue({
-        cashFlowID, userID
-    }){
+    updateValue({ cashFlowID, userID }){
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -527,7 +569,7 @@ class Model extends BaseModel {
     }
 
     /*
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
      * Date: 17/04/2022
      */
@@ -547,7 +589,7 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"_id.realValue": -1}
 
-                let conditionProject = { 
+                let conditionProject = {
                     year : {$year : "$date"},
                     month : {$month : "$date"},
                     parent: 1,
@@ -560,7 +602,7 @@ class Model extends BaseModel {
                 }
 
                 if(real && Number(real) === 1){
-                    conditionProject = { 
+                    conditionProject = {
                         year : {$year : "$realDate"},
                         month : {$month : "$realDate"},
                         parent: 1,
@@ -570,7 +612,7 @@ class Model extends BaseModel {
                         type: 1,
                         property: 1,
                         outin: 1,
-                    }    
+                    }
                 }
 
                 if (isNaN(type) || isNaN(property) || isNaN(Number(option)) || ![1,2,3,4,5].includes(Number(option)))
@@ -581,7 +623,7 @@ class Model extends BaseModel {
                     _id: { outin: "$outin" },
                     value: { $sum: "$value" },
                     realValue: { $sum: "$realValue" }
-                }               
+                }
 
                 // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
                 if(Number(option) === 1){
@@ -593,15 +635,15 @@ class Model extends BaseModel {
                     console.log(listCompany)
 
                     if(listCompany){
-                        let listActiveParent = await FIN__CASH_FLOW_PLAN_COLL.find({ 
-                            type: Number(type), 
-                            property: Number(property), 
+                        let listActiveParent = await FIN__CASH_FLOW_PLAN_COLL.find({
+                            type: Number(type),
+                            property: Number(property),
                             parent: {$exists: false}, // Không lấy các phần tử cha-Kế hoạch tổng
-                            company: {$in: listCompany.data.map(item=>item._id.company._id)} 
+                            company: {$in: listCompany.data.map(item=>item._id.company._id)}
                         })
-                        
+
                         conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
-    
+
                         conditionGroup = {
                             _id: { outin: "$outin", company: "$company" },
                             value: { $sum: "$value" },
@@ -613,14 +655,14 @@ class Model extends BaseModel {
                 // 2-Tổng hợp của công ty user
                 if(Number(option) === 2){
                     console.log('2-Tổng hợp của công ty user')
-                    let listActiveParent = await FIN__CASH_FLOW_PLAN_COLL.find({ 
-                        type: Number(type), 
-                        property: Number(property), 
+                    let listActiveParent = await FIN__CASH_FLOW_PLAN_COLL.find({
+                        type: Number(type),
+                        property: Number(property),
                         parent: {$exists: false},// Không lấy các phần tử cha-Kế hoạch tổng
-                        company: companyID 
+                        company: companyID
                     })
                     console.log(listActiveParent)
-                    
+
                     conditionObj.parent = {$in: listActiveParent.map(item=>item._id)}
                 }
 
@@ -667,19 +709,19 @@ class Model extends BaseModel {
                 let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([
                     {
                         $match: conditionObj
-                    }, 
+                    },
                     {
                         $project : conditionProject
                     },
                     {
                         $match: conditionObjYear
-                    }, 
+                    },
                     {
                         $group: conditionGroup
-                    }, 
+                    },
                     {
                         $sort: sortBy
-                    } 
+                    }
                 ])
 
                 return resolve({ error: false, data: listData });

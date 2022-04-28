@@ -66,9 +66,7 @@ module.exports = {
             dateIn3                 : { type: "string", optional: true },
             dateOut3                : { type: "string", optional: true },
             members                 : { type: "array", optional: true },
-            membersRemove           : { type: "array", optional: true },
             admins                  : { type: "array", optional: true },
-            adminsRemove            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
@@ -78,7 +76,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
-                    expertTimesheetID, userUpdate: userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
+                    expertTimesheetID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
                     note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, ctx
                 });
 

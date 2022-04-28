@@ -107,7 +107,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -157,6 +157,57 @@ class Model extends BaseModel {
 
                 if (!isNaN(active) && Number(active) > 0) {
                     dataUpdate.active = active;
+                }
+
+                const infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID).lean();
+
+                if(!infoCashBook) {
+                    return resolve({
+                        error: true,
+                        message: 'Cashbook không tồn tại',
+                        keyError: "cashbook_not_exists",
+                        status: 400
+                    });
+                }
+
+                const adminsID = [...infoCashBook.admins?.map(item => item.toString()), infoCashBook.userCreate?.toString()];
+
+                if(adminsID.includes(userID.toString())) {
+                    if(admins && admins.length) {
+                        if(checkObjectIDs(admins)) {
+                            admins = [...new Set(admins)];
+                            dataUpdate.admins = admins;
+                        } else{
+                            dataUpdate.admins = [];
+                        }
+                    }
+
+                    if(members && members.length) {
+                        if(checkObjectIDs(members)) {
+                            members = [...new Set(members)];
+                            dataUpdate.members = members;
+                        } else{
+                            dataUpdate.members = [];
+                        }
+                    }
+                } else{
+                    if(checkObjectIDs(admins)) {
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
+
+                    if(checkObjectIDs(members)) {
+                        return resolve({
+                            error: true,
+                            message: 'Bạn không có quyền chia sẻ',
+                            keyError: "permission_denined",
+                            status: 403
+                        });
+                    }
                 }
 
                 let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
