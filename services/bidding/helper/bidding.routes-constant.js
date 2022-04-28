@@ -2,15 +2,37 @@ const BASE_ROUTE = '/bidding';
 /**
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
-const BIDDING_PLAN                  = '/bidding_plans';
-const BIDDING_REQUEST               = '/bidding_requests';
-const BIDDING_APPLY                 = '/bidding_applies';
-const BIDDING_BILL                  = '/bidding_bills';
-const BIDDING_QUOTATION             = '/bidding_quotations';
+const BIIDING_PLAN              = 'bidding_plans';
+const BIIDING_REQUEST           = 'bidding_requests';
+const BIIDING_APPLY             = 'bidding_applies';
+const BIIDING_QUOTATION         = 'bidding_quotations';
+const BIIDING_BILL_ITEM         = 'bidding_bill_items';
+const BIIDING_BILL_GROUP        = 'bidding_bill_groups';
+const BIIDING_BILL_WORK         = 'bidding_bill_works';
 
 const CF_ROUTINGS_BIDDING = {
     ORIGIN_APP: BASE_ROUTE,
 
+    // ================================BIIDING_PLAN=======================================//
+    BIIDING_PLAN                          : `${BASE_ROUTE}${BIIDING_PLAN}`, 
+
+    // ================================BIIDING_REQUEST=======================================//
+    BIIDING_REQUEST                       : `${BASE_ROUTE}${BIIDING_REQUEST}`, 
+
+    // ================================BIIDING_APPLY=======================================//
+    BIIDING_APPLY                         : `${BASE_ROUTE}${BIIDING_APPLY}`, 
+
+    // ================================BIIDING_QUOTATION=======================================//
+    BIIDING_QUOTATION                     : `${BASE_ROUTE}${BIIDING_QUOTATION}`, 
+
+    // ================================BIIDING_BILL_ITEM=======================================//
+    BIIDING_BILL_ITEM                     : `${BASE_ROUTE}${BIIDING_BILL_ITEM}`, 
+
+    // ================================BIIDING_BILL_GROUP=======================================//
+    BIIDING_BILL_GROUP                    : `${BASE_ROUTE}${BIIDING_BILL_GROUP}`,  
+
+    // ================================BIIDING_BILL_WORK=======================================//
+    BIIDING_BILL_WORK                     : `${BASE_ROUTE}${BIIDING_BILL_WORK}`, 
 }
 
 exports.CF_ROUTINGS_BIDDING = CF_ROUTINGS_BIDDING;
