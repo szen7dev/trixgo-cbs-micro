@@ -154,7 +154,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         ref : "user"
     }],
     //_________Ngày dự kiến/kế hoạch
-    date: Date,
+    date: { type: Date, default: Date.now },
     //_________Ngày thực tế
     realDate: Date,
     /**

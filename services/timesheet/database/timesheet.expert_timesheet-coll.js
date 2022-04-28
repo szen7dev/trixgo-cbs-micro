@@ -46,7 +46,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     },
 
     //_______Ngày hoàn thành
-    date: Date,
+    date: { type: Date, default: Date.now },
 
     //________Số giờ hoàn thành
     hours: {
