@@ -50,6 +50,8 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     type: { type: Number, default: 1 },
     //_________Tên gói thầu
     name: String,
+    //_________Giá gói thầu
+    packagePrice: { type: Number, default: 0 },      
     //_________Ký hiệu gói thầu
     sign: String,
     //_________Mô tả/Tên hồ sơ mời thầu
@@ -69,10 +71,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     finishTime: { type: Date, default: null },
     //_________Thực tế bắt đầu chọn
     actualStartTime: { type: Date, default: null },
-    //_________Thời điểm đóng thầu
-    closingTime: { type: Date, default: null },
     //_________Thực tế kết thúc chọn
     actualFinishTime: { type: Date, default: null },
+    //_________Thời điểm đóng thầu
+    closingTime: { type: Date, default: null },
     /**
      * Hình thức lựa chọn nhà thầu
      * 1-Chào giá cạnh tranh

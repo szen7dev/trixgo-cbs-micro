@@ -48,12 +48,6 @@ class Model extends BaseModel {
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
         cgValue, expiredCg, agValue, expiredAg, userID, ctx
          }){
-
-        // console.log( {projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-        //     name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
-        //     value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
-        //     budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-        //     cgValue, expiredCg, agValue, expiredAg, userID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo)|| !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))

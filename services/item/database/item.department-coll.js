@@ -422,18 +422,47 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     },
 
     /**
-    * THÔNG TIN KHÁC
-    */
-    //______Số lượng gói thầu
+     * ĐẤU THẦU
+     */
+    //______Tổng số gói thầu
     numberOfPackage: {
         type: Number,
         default : 0
     },
-    //______Giá trị gói thầu đã hoàn thành
+    //______Số gói chưa thực hiện
+    numberOfUnexecutedPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Số gói đang triển khai
+    numberOfExecutedPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Số gói đã hoàn thành
     numberOfCompletedPackage: {
         type: Number,
         default : 0
     },
+    //______Giá trị gói thầu chưa triển khai
+    amountOfUnexecutedPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Giá trị gói thầu đang triển khai
+    amountOfExecutedPackage: {
+        type: Number,
+        default : 0
+    },
+    //______Giá trị gói thầu đã hoàn thành
+    amountOfCompletedPackage: {
+        type: Number,
+        default : 0
+    },
+
+    /**
+    * THÔNG TIN KHÁC
+    */
     //______Tổng số cột mốc
     milestones: {
         type   : Number,

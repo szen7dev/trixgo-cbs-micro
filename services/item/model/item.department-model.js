@@ -133,7 +133,7 @@ class Model extends BaseModel {
         description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
         pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-        realIrr, numberOfPackage, numberOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
+        realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
         contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
         contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
         closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
@@ -368,8 +368,28 @@ class Model extends BaseModel {
                     dataUpdate.numberOfPackage = numberOfPackage;
                 }
 
+                if(!isNaN(numberOfUnexecutedPackage)){
+                    dataUpdate.numberOfUnexecutedPackage = numberOfUnexecutedPackage;
+                }
+
+                if(!isNaN(numberOfExecutedPackage)){
+                    dataUpdate.numberOfExecutedPackage = numberOfExecutedPackage;
+                }
+
                 if(!isNaN(numberOfCompletedPackage)){
                     dataUpdate.numberOfCompletedPackage = numberOfCompletedPackage;
+                }
+
+                if(!isNaN(amountOfUnexecutedPackage)){
+                    dataUpdate.amountOfUnexecutedPackage = amountOfUnexecutedPackage;
+                }
+
+                if(!isNaN(amountOfExecutedPackage)){
+                    dataUpdate.amountOfExecutedPackage = amountOfExecutedPackage;
+                }
+
+                if(!isNaN(amountOfCompletedPackage)){
+                    dataUpdate.amountOfCompletedPackage = amountOfCompletedPackage;
                 }
 
                 if(!isNaN(numberOfContractIn)){
