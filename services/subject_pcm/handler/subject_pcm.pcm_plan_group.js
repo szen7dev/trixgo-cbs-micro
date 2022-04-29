@@ -10,7 +10,7 @@ const PCM_PLAN_GROUP_MODEL            = require('../model/subject_pcm.pcm_plan_g
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: insert Group
 	 */
     insert: {
@@ -30,7 +30,7 @@ module.exports = {
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.insert({
                     projectID, parentID, name, sign, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -39,7 +39,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: update Group
 	 */
     update: {
@@ -62,16 +62,16 @@ module.exports = {
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.update({
                     groupID, name, sign, userID, members, membersRemove, admins, adminsRemove
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
             }
         }
     },
-    
+
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: remove Group
 	 */
     remove: {
@@ -82,7 +82,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  groupID } = ctx.params; 
+                let {  groupID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.remove({
@@ -97,7 +97,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: remove Group
 	 */
     removeMany: {
@@ -108,7 +108,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  groupsID } = ctx.params; 
+                let {  groupsID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.removeMany({
                     groupsID
@@ -122,10 +122,10 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: getList and getInfo pcm_plan_report
 	 */
-    getInfoAndGetList: { 
+    getInfoAndGetList: {
         auth: "required",
         params: {
             projectID               : { type: "string", optional: true },
@@ -133,7 +133,7 @@ module.exports = {
             parentID                : { type: "string", optional: true },
             isShowAll               : { type: "string", optional: true },
             isShowParentAndChild    : { type: "string", optional: true },
-            
+
             //==============================================
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -150,14 +150,14 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(groupID){
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getInfo({
-                        groupID, select, populates, 
+                        groupID, select, populates,
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.getList({
-                        parentID, keyword, isShowAll, isShowParentAndChild, limit, userID, lastestID, projectID, select, populates, 
+                        parentID, keyword, isShowAll, isShowParentAndChild, limit, userID, lastestID, projectID, select, populates,
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

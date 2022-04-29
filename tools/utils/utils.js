@@ -478,13 +478,38 @@ exports._getLevelMaxInRecursive = async (coll) => {
 exports.validateParamsObjectID = (params) => {
     if(!params || !Object.keys(params).length) return false;
 
-    for (const [key, value] of Object.entries(params)) {
-        if (!this.checkObjectIDs([value])) {
-            return {
-                error: true,
-                message: `Tham số ${key} không hợp lệ`,
-                keyError: `params_${key}_invalid`,
-                status: 400
+    for (const [key, field] of Object.entries(params)) {
+        if(typeof field === 'object') {
+            const { value, isRequire } = field;
+
+            if(isRequire) {
+                if (!this.checkObjectIDs([value])) {
+                    return {
+                        error: true,
+                        message: `Tham số ${key} không hợp lệ`,
+                        keyError: `params_${key}_invalid`,
+                        status: 400
+                    }
+                }
+            } else{
+                if (value && !this.checkObjectIDs([value])) {
+                    return {
+                        error: true,
+                        message: `Tham số ${key} không hợp lệ`,
+                        keyError: `params_${key}_invalid`,
+                        status: 400
+                    }
+                }
+            }
+
+        } else{
+            if (!this.checkObjectIDs([field])) {
+                return {
+                    error: true,
+                    message: `Tham số ${key} không hợp lệ`,
+                    keyError: `params_${key}_invalid`,
+                    status: 400
+                }
             }
         }
     }

@@ -4,7 +4,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { _isValid }                      = require('../../../tools/utils/utils');
 const { KEY_ERROR }                     = require('../../../tools/keys');
 
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -24,7 +24,7 @@ class Model extends BaseModel {
     constructor() {
         super(require('../database/auth.company-coll'));
     }
-    
+
     insert({ name, sign, taxid, address, area, phone, email, userID }) {
         return new Promise(async (resolve) => {
             try {
@@ -36,10 +36,10 @@ class Model extends BaseModel {
                 }).select('_id name sign')
 
                 if(info)
-                    return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` }); 
+                    return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` });
 
                 let dataInsert = {
-                    name, sign, taxid, address, area, phone, email, userCreate: userID, userUpdate: userID, 
+                    name, sign, taxid, address, area, phone, email, userCreate: userID, userUpdate: userID,
                 }
 
                 let infoCompanyAfterSave = await this.insertData(dataInsert);
@@ -61,12 +61,12 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "company_not_exist" });
 
                 // Kiểm tra tên công ty mới thay đổi đã tồn tại mã hiệu hay không ngoại trừ chính nó.
-                let info = await AUTH__COMPANY_COLL.findOne({ 
+                let info = await AUTH__COMPANY_COLL.findOne({
                     _id: { $ne: companyID },
                     $or: [
                         { name: name },
                         { sign: sign },
-                    ] 
+                    ]
                 });
                 if(info)
                     return resolve({ error: true, message: "company_existed" })
@@ -76,7 +76,7 @@ class Model extends BaseModel {
                 }
                 if(area && _isValid(area)){
                     dataUpdate.area = area;
-                } 
+                }
 
                 let infoCompanyAfterUpdate = await AUTH__COMPANY_COLL.findByIdAndUpdate(companyID, dataUpdate, { new: true })
 
@@ -90,21 +90,21 @@ class Model extends BaseModel {
         })
     }
 
-    getInfo({ companyID, select, populates }) { 
+    getInfo({ companyID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-                
+
                  // populates
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -127,7 +127,7 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info",  keyError: KEY_ERROR.GET_INFO_FAILED, status: 200 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -135,13 +135,13 @@ class Model extends BaseModel {
         })
     }
     /**
-     * Name  : Danh sách company 
+     * Name  : Danh sách company
      * Author: Depv
      * Code  : 20/12/2021
      */
-    getList({ 
+    getList({
         userID, arrayID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
 
@@ -156,13 +156,12 @@ class Model extends BaseModel {
                 let sortBy;
                 let conditionObj = {};
                 let keys	 = ['createAt__-1', '_id__-1'];
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-             
-                // populate
+
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -208,14 +207,14 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await AUTH__COMPANY_COLL.find(conditionObj)
                     .select(select)
                     .limit(limit+1)
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
-                
+
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -229,6 +228,7 @@ class Model extends BaseModel {
 
                 let totalRecord = await AUTH__COMPANY_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: limit,
@@ -236,7 +236,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
