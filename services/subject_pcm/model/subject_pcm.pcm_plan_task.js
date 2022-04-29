@@ -567,7 +567,7 @@ class Model extends BaseModel {
                 }
 
                 //_________Việc nháp
-                if(draft && infoTask.draft === 1){
+                if(draft === 0 && infoTask.draft === 1){
                     dataUpdate.draft = 0;
                     dataUpdate.companyOfAuthor = companyOfUser;
                     dataUpdate.author = userID;
@@ -783,6 +783,8 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = dataPullAll;
                 }
 
+                console.log({ dataUpdate })
+
                 let infoAfterUpdate = await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, dataUpdate, { new: true });
 
                 if(!infoAfterUpdate)
@@ -906,7 +908,6 @@ class Model extends BaseModel {
                 if (!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'param_invalid' });
 
-                // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -1909,7 +1910,11 @@ class Model extends BaseModel {
     copyTask({ taskID, userID, companyOfUser }) {
         return new Promise(async resolve => {
             try {
-                const validation = validateParamsObjectID({ taskID, userID, companyOfUser });
+                const validation = validateParamsObjectID({
+                    taskID: { value: taskID, isRequire: true },
+                    userID: { value: userID, isRequire: true },
+                    companyOfUser: { value: companyOfUser, isRequire: true },
+                });
                 if(validation.error) return resolve(validation);
 
                 const infoOldTask = await PCM_PLAN_TASK_COLL

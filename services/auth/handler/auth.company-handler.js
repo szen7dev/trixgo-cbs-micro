@@ -78,7 +78,6 @@ module.exports = {
             lastestID       : { type: "string", optional: true },
             keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
-            filter          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
