@@ -40,6 +40,14 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref: "bidding_plan"
     },
+    /**
+     * Loại gói thầu
+     * 1-Xây lắp
+     * 2-Mua sắm thiết bị
+     * 3-Tư vấn
+     * 4-Khác
+     */
+    type: { type: Number, default: 1 },
     //_________Tên gói thầu
     name: String,
     //_________Ký hiệu gói thầu
@@ -89,7 +97,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     //_________Giá trúng thầu
     tenderPrice: { type: Number, default: 0 },  
     //_________VAT
-    tenderPriceAT: { type: Number, default: 0 },
+    vatTenderPrice: { type: Number, default: 0 },
     //_________Link tới hợp đồng
     contract: {
         type: Schema.Types.ObjectId,

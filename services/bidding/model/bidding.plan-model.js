@@ -28,18 +28,35 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ companyID, userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, tenderPrice, vatTenderPrice,  }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                // let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] }
+                let dataInsert = { userCreate: userID, company: companyID }
 
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
                 }
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
+                if (checkObjectIDs(fieldID)) {
+                    dataInsert.field = fieldID;
+                }
+
+                if (checkObjectIDs(areaID)) {
+                    dataInsert.area = areaID;
+                }
+
+                if (checkObjectIDs(clientID)) {
+                    dataInsert.client = clientID;
+                }
+
+                if (checkObjectIDs(projectID)) {
+                    dataInsert.project = projectID;
+                }
+
+                if (checkObjectIDs(bidderID)) {
+                    dataInsert.bidder = bidderID;
                 }
 
                 if (checkObjectIDs(customerID)) {
@@ -54,37 +71,34 @@ class Model extends BaseModel {
                     dataInsert.name = name;
                 }
 
-                if (date) {
-                    dataInsert.date = date;
-                }
-
                 if (sign) {
                     dataInsert.sign = sign;
+                }
+                
+                if (description) {
+                    dataInsert.description = description;
                 }
 
                 if (note) {
                     dataInsert.note = note;
                 }
 
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataInsert.type = type;
                 }
 
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
+                if (!isNaN(status) && Number(status) > 0) {
+                    dataInsert.status = status;
                 }
 
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataInsert.type = type;
                 }
 
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataInsert.type = type;
                 }
 
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
-                }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
