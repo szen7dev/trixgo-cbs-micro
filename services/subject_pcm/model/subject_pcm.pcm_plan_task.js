@@ -194,7 +194,7 @@ class Model extends BaseModel {
                     amountoftime: (amountoftime && !isNaN(amountoftime) ? Number(amountoftime) : 0),
                     type,
                 }
-                 
+
                 if(expiredTime) {
                     dataInsert.expiredTime = new Date(expiredTime);
                     dataInsert.actualFinishTime = new Date(expiredTime);
@@ -530,7 +530,7 @@ class Model extends BaseModel {
                 if(actualStartTime){
                     dataUpdate.actualStartTime = actualStartTime;
                 }
-                
+
                 if(actualFinishTime){
                     dataUpdate.actualFinishTime = new Date(actualFinishTime);
                 }
@@ -547,7 +547,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
                 }
-                
+
                 //_________userUpdate
                 if(checkObjectIDs(userID)){
                     dataUpdate.userUpdate = userID;
@@ -649,7 +649,7 @@ class Model extends BaseModel {
                 if(judgement){
                     dataUpdate.judgement = judgement;
                 }
-                
+
                 //_________Tiến độ
                 if(overdue){
                     dataUpdate.overdue = overdue;
@@ -1187,7 +1187,7 @@ class Model extends BaseModel {
                         $ne: null
                     }
                 }
-                
+
                 // Lấy việc của người thực hiện
                 if(assigneeID && checkObjectIDs(assigneeID)){
                     conditionObj.assignee = assigneeID;
@@ -1249,7 +1249,6 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = {...conditionObj};
-                // Phân trang kiểu mới
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
 					if(!infoData)
@@ -1261,14 +1260,14 @@ class Model extends BaseModel {
 
                     conditionObj  = dataPagingAndSort.data.find;
 					sortBy        = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
 
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
-                    .limit(+limit+1)
+                    .limit(limit+1)
                     .select(select)
                     .populate(populates)
                     .sort(sortBy)
@@ -1291,6 +1290,7 @@ class Model extends BaseModel {
 
                 // Tổng số trang
                 let totalPage   = Math.ceil(totalRecord/limit);
+
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
                     limit: +limit,

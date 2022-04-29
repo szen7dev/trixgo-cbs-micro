@@ -198,9 +198,9 @@ class Model extends BaseModel {
     getList({ userID, parentID, projectID, lastestID, keyword, limit = 10, select, populates = {}, isShowAll, isShowParentAndChild }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
-                }else{
+                if(limit > 20 || isNaN(limit)){
+                    limit = 20;
+                } else{
                     limit = +limit;
                 }
 
@@ -217,11 +217,6 @@ class Model extends BaseModel {
                     ]
                 };
 
-                // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
-                if(isShowAll == 1){
-                   delete conditionObj.$or;
-                }
-
                 let sortBy;
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 /**
@@ -234,18 +229,18 @@ class Model extends BaseModel {
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
-				}else{
+				} else{
                     populates = {
                         path: "",
                         select: ""
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
+                // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
+                if(isShowAll == 1){
+                    delete conditionObj.$or;
+                 }
+
                 if(projectID){
                     conditionObj.project = projectID;
                 }
@@ -329,7 +324,6 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
