@@ -459,6 +459,11 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    //______% công tác thầu hoàn thành
+    percentOfCompletedPackage: {
+        type: Number,
+        default : 0
+    },
 
     /**
     * THÔNG TIN KHÁC

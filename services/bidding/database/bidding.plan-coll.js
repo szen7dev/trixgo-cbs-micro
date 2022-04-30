@@ -65,6 +65,8 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
      * 3-Đã hoàn thành
      */
     status: { type: Number, default: 1 },
+    //_________Phần trăm gói thầu hoàn thành
+    percentOfCompletedPackage: { type: Number, default: 0 },
     //_________Kế hoạch bắt đầu chọn
     startTime: { type: Date, default: null },
     //_________Kế hoạch kết thúc chọn

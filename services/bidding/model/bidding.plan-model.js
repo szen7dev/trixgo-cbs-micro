@@ -39,7 +39,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    insert({ userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
+    insert({ userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -91,6 +91,10 @@ class Model extends BaseModel {
 
                 if (!isNaN(status) && Number(status) > 0) {
                     dataInsert.status = status;
+                }
+
+                if (!isNaN(percentOfCompletedPackage) && Number(percentOfCompletedPackage) > 0) {
+                    dataInsert.percentOfCompletedPackage = percentOfCompletedPackage;
                 }
 
                 if (!isNaN(form) && Number(form) > 0) {
@@ -177,7 +181,8 @@ class Model extends BaseModel {
                         numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
                         amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
                         amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
-                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
+                        percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
                     })
                 }
 
@@ -193,7 +198,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    update({ planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
+    update({ planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -209,9 +214,6 @@ class Model extends BaseModel {
                 let infoPlan = await BIDDING__PLAN_COLL.findById(planID)
                 if (!infoPlan)
                     return resolve({ error: true, message: 'Can not get info', status: 400 })
-
-                console.log(infoPlan)
-                console.log(infoPlan.project)
 
                 if (checkObjectIDs(fieldID)) {
                     dataUpdate.field = fieldID;
@@ -235,6 +237,10 @@ class Model extends BaseModel {
 
                 if (!isNaN(status) && Number(status) > 0) {
                     dataUpdate.status = status;
+                }
+                
+                if (!isNaN(percentOfCompletedPackage) && Number(percentOfCompletedPackage) > 0) {
+                    dataUpdate.percentOfCompletedPackage = percentOfCompletedPackage;
                 }
 
                 if (!isNaN(form) && Number(form) > 0) {
@@ -321,10 +327,11 @@ class Model extends BaseModel {
                         numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
                         amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
                         amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
-                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
+                        percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
                     })
 
-                    console.log(infoProject)
+                    // console.log(infoProject)
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -536,7 +543,7 @@ class Model extends BaseModel {
     getAmountByObject({ userID, projectID }){
         return new Promise(async resolve => {
             try {
-                let numberOfPackage=0, numberOfUnexecutedPackage=0, numberOfExecutedPackage=0, numberOfCompletedPackage=0, amountOfUnexecutedPackage=0, amountOfExecutedPackage=0, amountOfCompletedPackage=0
+                let numberOfPackage=0, numberOfUnexecutedPackage=0, numberOfExecutedPackage=0, numberOfCompletedPackage=0, amountOfUnexecutedPackage=0, amountOfExecutedPackage=0, amountOfCompletedPackage=0, totalFinishAmount=0, percentOfCompletedPackage=0
 
                 let conditionObj = { }
 
@@ -544,6 +551,7 @@ class Model extends BaseModel {
                     conditionObj.project = ObjectID(projectID)
                 }
 
+                // Tính tổng theo phân loại
                 let listData = await BIDDING__PLAN_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -552,9 +560,13 @@ class Model extends BaseModel {
                         $group: {
                             _id: { status: "$status"}, // Phân loại trạng thái
                             count: { $sum: 1}, // Tính tổng số lượng
-                            amount: { $sum: "$packagePrice" }, // Tổng giá trị
+                            amount: { $sum: "$packagePrice" }, // Tổng giá trị các gói
+                            totalFinishAmount: { $sum: { $multiply: [ "$percentOfCompletedPackage", "$packagePrice", 0.01 ] } }, // Tổng giá trị hoàn thành
                         }
                     }, 
+                    {
+                        $sort: {"_id.status": 1}
+                    }
                 ])
                 console.log(listData)
 
@@ -563,23 +575,33 @@ class Model extends BaseModel {
                         if(Number(item._id.status) === 1){
                             numberOfUnexecutedPackage = Number(item.count)
                             amountOfUnexecutedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
                         }
 
                         if(Number(item._id.status) === 2){
                             numberOfExecutedPackage = Number(item.count)
                             amountOfExecutedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
                         }
 
                         if(Number(item._id.status) === 3){
                             numberOfCompletedPackage = Number(item.count)
                             amountOfCompletedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
                         }
                     }
                     
                     numberOfPackage = Number(numberOfUnexecutedPackage) + Number(numberOfExecutedPackage) + Number(numberOfCompletedPackage)
                 }
 
-                return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage } })
+                if(Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage) != 0){
+                    percentOfCompletedPackage = 100*(Number(totalFinishAmount)/Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage))
+                }
+                percentOfCompletedPackage = percentOfCompletedPackage.toFixed(2)
+                console.log({percentOfCompletedPackage})
+
+
+                return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage } })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
