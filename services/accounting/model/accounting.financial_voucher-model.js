@@ -1,22 +1,34 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
+/**
+ * EXTERNAL PACKAGE
+ */
 const ObjectID = require('mongoose').Types.ObjectId;
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-
 /**
- * import inter-coll, exter-coll
+ * CONSTANTS
  */
-const ACCOUNTING__FINANCIAL_VOUCHER_COLL = require('../database/accounting.financial_voucher-coll');
-
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant')
+const { VOUCHER_TYPES }                 = require('../config/accounting.financial_config')
 
 /**
- * import inter-model, exter-model
+ * TOOLS
+ */
+const BaseModel                             = require('../../../tools/db/base_model')
+const { checkObjectIDs, IsJsonString }      = require('../../../tools/utils/utils')
+const { RANGE_BASE_PAGINATION_V2 }          = require('../../../tools/cursor_base/playground/index')
+const { KEY_ERROR }                         = require('../../../tools/keys/index')
+
+/**
+ * COLLECTIONS
+ */
+const FUNDA_COLL                                   = require('../../item/database/item.funda-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const ACCOUNTING__FINANCIAL_VOUCHER_COLL           = require('../database/accounting.financial_voucher-coll')
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL   = require('../database/accounting.financial_general_journal-coll')
+
+/**
+ * MODELS
  */
 class Model extends BaseModel {
     constructor() {
@@ -26,74 +38,107 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ 
+        authorID, 
+        companyID, 
+        fundaID, 
+        customerID,
+        contractID, 
+        storageID, 
+        projectID,
+        type, date, name, sign, signInvoice, dateInvoice, vat,
+        receiver, note,
+        forward, forwardIs, returning, advancePayment, cancel, 
+        fcuExRate, 
+        selectedJournals,
+        ctx
+     }) {
+        //  console.log({authorID, 
+        //     companyID, 
+        //     fundaID, 
+        //     customerID,
+        //     contractID, 
+        //     storageID, 
+        //     projectID,
+        //     type, date, name, sign, signInvoice, dateInvoice, vat,
+        //     receiver, note,
+        //     forward, forwardIs, returning, advancePayment, cancel, 
+        //     fcuExRate})
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                /**
+                 * BA-Author: HiepNH - 23/4/2022
+                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
+                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
+                 * +++budgetWorkID cũ
+                 * +++budgetWorkID mới
+                */
 
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
+                //_________Kiểm tra dữ liệu đầu vào
+                if(!date || !name || Number.isNaN(Number(type)) ||!checkObjectIDs(authorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
+                    return resolve({ error: true, message: 'date|name|type|authorID|customerID|companyID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+
+                /**
+                 * TỰ ĐỘNG GHI SỐ HIỆU PHIẾU
+                 */
+                //_________Lấy số lượng phiếu hiện tại của công ty/đơn vị cơ sở
+                let number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
+                let infoFunda       = await FUNDA_COLL.findById(fundaID)
+
+                let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
+                if(sign && sign != ""){
+                    // Kiểm tra xem đã tồn tại mã hiệu đó hay chưa
+                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                        funda: fundaID, 
+                        sign: sign
+                    }).select('_id')
+
+                    if(!infoVoucher){
+                        voucherSign = sign
+                    }
                 }
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
+                /**
+                 * THỰC HIỆN INSERT PHIẾU
+                 */
+                 const dataInsertVoucher = {
+                    userCreate: authorID, 
+                    company: companyID, 
+                    funda: fundaID, 
+                    customer: customerID,
+                    modifyAt: Date.now(),
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note,
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate, 
+                    selectedJournals
                 }
 
                 if (checkObjectIDs(contractID)) {
                     dataInsert.contract = contractID;
                 }
 
-                if (name) {
-                    dataInsert.name = name;
+                if (checkObjectIDs(storageID)) {
+                    dataInsert.storage = storageID;
                 }
 
-                if (date) {
-                    dataInsert.date = date;
+                if (checkObjectIDs(projectID)) {
+                    dataInsert.project = projectID;
                 }
 
-                if (sign) {
-                    dataInsert.sign = sign;
-                }
+                console.log('=======data')
+                console.log(dataInsertVoucher)
 
-                if (note) {
-                    dataInsert.note = note;
-                }
-
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
-                }
-
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
-                }
-
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
-                }
-
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
-                }
-
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
-                }
-
-                let infoAfterInsert = await this.insertData(dataInsert);
+                const infoAfterInsert = await this.insertData(dataInsertVoucher)
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
-                }
+                /**
+                 * CẬP NHẬT BÚT TOÁN VÀO PHIẾU
+                 */
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {

@@ -1,48 +1,84 @@
 /**
+ * CONSTANTS
+ */
+ const { CF_DOMAIN_SERVICES } 	        = require('../../gateway/helper/domain.constant')
+ const { CF_ACTIONS_ITEM }              = require('../../item/helper/item.actions-constant')
+
+/**
  * TOOLS
  */
-const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }   = require('../../../tools/utils/status_code')
 
 /**
  * MODELS
  */
-const ACCOUNTING__FINANCIAL_VOUCHER_MODEL = require('../model/accounting.financial_voucher-model').MODEL;
+const ACCOUNTING__FINANCIAL_VOUCHER_MODEL = require('../model/accounting.financial_voucher-model').MODEL
 
 module.exports = {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     insert: {
         auth: "required",
         params: {
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string" },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            arising: { type: "number", optional: true },
-            openingBalance: { type: "number", optional: true },
-            closingBalance: { type: "number", optional: true },
+            
         },
         async handler(ctx) {
             try {
-                await this.validateEntity(ctx.params);
-                const { parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance } = ctx.params;
+                let { 
+                    fundaID, 
+                    customerID,
+                    contractID, 
+                    storageID, 
+                    projectID,
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note, 
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate, 
+                    selectedJournals, 
+                    isImport,
+                } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insert({
-                    companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance
-                });
+                let  resultAfterCallHandler;
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                if(!fundaID){
+                    let infoFundaCompany = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.FUNDA_GET_INFO_AND_GET_LIST}`,{ })
+                    console.log(infoFundaCompany.data.listRecords[0])
+                
+                    if(infoFundaCompany.error){
+                        resultAfterCallHandler.message = 'Not found funda comany ';
+                        return renderStatusCodeAndResponse({ resultAfterCallHandler: infoFundaCompany, ctx })
+                    }
+    
+                    fundaID = infoFundaCompany.data && infoFundaCompany.data.listRecords[infoFundaCompany.data.listRecords.length-1]._id
+                }
+                
+                resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.insert({ 
+                    authorID : userID, 
+                    companyID: company._id,
+                    fundaID,
+                    customerID,
+                    contractID, 
+                    storageID, 
+                    projectID,
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note,
+                    forward: (!isNaN(forward) && [0,1].includes(Number(forward))) ? Number(forward) : 0,
+                    forwardIs: (!isNaN(forwardIs) && [0,1].includes(Number(forwardIs))) ? Number(forwardIs) : 0,
+                    returning: (!isNaN(returning) && [0,1].includes(Number(returning))) ? Number(returning) : 0,
+                    advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
+                    cancel: (!isNaN(cancel) && [0,1].includes(Number(cancel))) ? Number(cancel) : 0,
+                    fcuExRate: !isNaN(fcuExRate) ? Number(fcuExRate) : 0,
+                    selectedJournals, 
+                    isImport,
+                    ctx,
+                }) 
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return { error: true, message: error.message };
             }

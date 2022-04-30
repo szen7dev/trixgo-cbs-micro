@@ -1,13 +1,13 @@
 "use strict";
 
-const DbService                	    	= require("../../tools/mixins/db.mixin");
-const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+const DbService                	    					= require("../../tools/mixins/db.mixin");
+const CacheCleaner                	    				= require("../../tools/mixins/cache.cleaner.mixin");
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_ACCOUNTING } 	    = require('./helper/accounting.actions-constant');
+const { CF_DOMAIN_SERVICES } 		    				= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_ACCOUNTING } 	    				= require('./helper/accounting.actions-constant');
 
 /**
  * HANDLERS
