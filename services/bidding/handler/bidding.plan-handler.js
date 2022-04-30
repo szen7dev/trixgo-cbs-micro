@@ -12,7 +12,7 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     insert: {
         auth: "required",
@@ -31,7 +31,6 @@ module.exports = {
             // openingBalance: { type: "number", optional: true },
             // closingBalance: { type: "number", optional: true },
         },
-
 
         async handler(ctx) {
             try {
@@ -54,31 +53,32 @@ module.exports = {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     update: {
         auth: "required",
         params: {
-            cashBookID: { type: "string" },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string", optional: true },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            active: { type: "number", optional: true },
+            // planID: { type: "string" },
+            // accountID: { type: "string", optional: true },
+            // customerID: { type: "string", optional: true },
+            // contractID: { type: "string", optional: true },
+            // name: { type: "string", optional: true },
+            // sign: { type: "string", optional: true },
+            // note: { type: "string", optional: true },
+            // date: { type: "string", optional: true },
+            // income: { type: "number", optional: true },
+            // expense: { type: "number", optional: true },
+            // active: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
+                const { planID, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice } = ctx.params;
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__PLAN_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
+                    planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -90,21 +90,21 @@ module.exports = {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     remove: {
         auth: "required",
         params: {
-            cashBooksID: { type: "array" },
+            planID: { type: "array" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBooksID } = ctx.params;
+                const { planID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__PLAN_MODEL.remove({
-                    cashBooksID, userID
+                    planID, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -117,18 +117,18 @@ module.exports = {
     /**
      * Name: Get info and Get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            sortKey: { type: "string", optional: true },
-            outin: { type: "string", optional: true },
+            planID: { type: "string", optional: true },
+            // parentID: { type: "string", optional: true },
+            // accountID: { type: "string", optional: true },
+            // customerID: { type: "string", optional: true },
+            // contractID: { type: "string", optional: true },
+            // sortKey: { type: "string", optional: true },
+            // outin: { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -140,7 +140,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { outin, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { planID, 
+                    companyID, projectID, parentID, bidderID, contractID,
+                    type, status, actualStartTime, actualFinishTime, closingTime, form, contractType, 
+                    keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -149,13 +152,15 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if (cashBookID) {
+                if (planID) {
                     resultAfterCallHandler = await BIDDING__PLAN_MODEL.getInfo({
-                        cashBookID, userID, select, populates
+                        planID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await BIDDING__PLAN_MODEL.getList({
-                        outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
+                        clientID: companyID, projectID, parentID, bidderID, contractID,
+                        type, status, actualStartTime, actualFinishTime, closingTime, form, contractType,
+                        keyword, limit, lastestID, populates, select, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -165,65 +170,4 @@ module.exports = {
         }
     },
 
-    /**
-    * Name  : Lấy tổng thu và chi theo sổ
-    * Author: MinhVH
-    * Date  : 18/4/2022
-    */
-    getAmountIncomeAndExpenseByParent: {
-        auth: "required",
-        params: {
-            parentID: { type: "string" }
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { parentID } = ctx.params;
-
-                const resultAfterCallHandler = await BIDDING__PLAN_MODEL.getAmountIncomeAndExpenseByParent({
-                    parentID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
-
-    /**
-     * Name: Gom nhóm theo thuộc tính 
-     * Author: Hiepnh
-     * Date: 17/04/2022
-     */
-    getAmountByProperty: {
-        auth: "required",
-        params: {
-            companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            accountID       : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            option          : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { companyID, parentID, accountID, year, option } = ctx.params;
-
-                const { _id: userID, company } = ctx.meta.infoUser;
-
-                if(!companyID){
-                    companyID = company._id
-                }
-
-                let resultAfterCallHandler = await BIDDING__PLAN_MODEL.getAmountByProperty({
-                    userID, companyID, parentID, accountID, year, option, ctx
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
 }

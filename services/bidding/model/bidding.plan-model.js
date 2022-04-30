@@ -40,22 +40,21 @@ class Model extends BaseModel {
      * Date: 28/4/2022
      */
     insert({ userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
-        // console.log({ userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(projectID))
                     return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid', status: 400 })
-
+                
+                // Thông tin dự án
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: projectID, select: '_id name sign company'
                 })
-                // console.log(infoProject)
 
                 if (!infoProject)
                     return resolve({ error: true, message: 'Can not get Project info', status: 400 })
 
-                // let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] }
+                // let dataInsert = { userCreate: userID, client: infoProject.company, admins: [userID], members: [userID] }
                 let dataInsert = { userCreate: userID, client: infoProject.company }
 
                 if (checkObjectIDs(parentID)) {
@@ -167,7 +166,6 @@ class Model extends BaseModel {
                  */
                 // Tính toán số lượng, giá trị
                 let infoCal = await that.getAmountByObject({ userID, projectID })
-                // console.log(infoCal)
 
                 // Cập nhật vào thông tin dự án
                 if(infoCal){
@@ -181,8 +179,6 @@ class Model extends BaseModel {
                         amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
                         amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage
                     })
-
-                    // console.log(infoProject)
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -197,7 +193,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -206,56 +202,129 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(planID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
+                // Thông tin dự án
+                let infoPlan = await BIDDING__PLAN_COLL.findById(planID)
+                if (!infoPlan)
+                    return resolve({ error: true, message: 'Can not get info', status: 400 })
+
+                console.log(infoPlan)
+                console.log(infoPlan.project)
+
+                if (checkObjectIDs(fieldID)) {
+                    dataUpdate.field = fieldID;
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
+                if (checkObjectIDs(areaID)) {
+                    dataUpdate.area = areaID;
+                }
+
+                if (checkObjectIDs(bidderID)) {
+                    dataUpdate.bidder = bidderID;
                 }
 
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
                 }
 
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataUpdate.type = type;
+                }
+
+                if (!isNaN(status) && Number(status) > 0) {
+                    dataUpdate.status = status;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    dataUpdate.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    dataUpdate.contractType = contractType;
+                }
+
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataUpdate.duration = duration;
+                }
+
+                if (!isNaN(progress) && Number(progress) > 0) {
+                    dataUpdate.progress = progress;
+                }
+
                 if (name) {
                     dataUpdate.name = name;
                 }
 
-                if (date) {
-                    dataUpdate.date = date;
-                }
-
                 if (sign) {
                     dataUpdate.sign = sign;
+                }
+                
+                if (description) {
+                    dataUpdate.description = description;
                 }
 
                 if (note) {
                     dataUpdate.note = note;
                 }
 
-                if (income >= 0) {
-                    dataUpdate.income = income;
+                if (startTime) {
+                    dataUpdate.startTime = startTime;
                 }
 
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
+                if (finishTime) {
+                    dataUpdate.finishTime = finishTime;
                 }
 
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
+                if (actualStartTime) {
+                    dataUpdate.actualStartTime = actualStartTime;
                 }
 
-                let infoAfterUpdate = await BIDDING__PLAN_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+                if (actualFinishTime) {
+                    dataUpdate.actualFinishTime = actualFinishTime;
+                }
+                
+                if (closingTime) {
+                    dataUpdate.closingTime = closingTime;
+                }
+
+                if (!isNaN(packagePrice) && Number(packagePrice) > 0) {
+                    dataUpdate.packagePrice = packagePrice;
+                }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) > 0) {
+                    dataUpdate.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
+                    dataUpdate.vatTenderPrice = vatTenderPrice;
+                }
+
+                let infoAfterUpdate = await BIDDING__PLAN_COLL.findByIdAndUpdate(planID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+                /**
+                 * CẬP NHẬT THÔNG TIN LẠI VỀ DỰ ÁN
+                 */
+                // Tính toán số lượng, giá trị
+                let infoCal = await that.getAmountByObject({ userID, projectID: infoPlan.project })
+
+                // Cập nhật vào thông tin dự án
+                if(infoCal){
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: `${infoPlan.project}`,
+                        numberOfPackage: infoCal.data.numberOfPackage, 
+                        numberOfUnexecutedPackage: infoCal.data.numberOfUnexecutedPackage, 
+                        numberOfExecutedPackage: infoCal.data.numberOfExecutedPackage, 
+                        numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
+                        amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
+                        amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage
+                    })
+
+                    console.log(infoProject)
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -276,10 +345,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ planID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(planID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -293,13 +362,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BIDDING__PLAN_COLL.findById(cashBookID)
+                let info = await BIDDING__PLAN_COLL.findById(planID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -311,7 +380,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ clientID, projectID, parentID, bidderID, contractID,
+        type, status, actualStartTime, actualFinishTime, closingTime, form, contractType,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -324,7 +394,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
                 let conditionObj = { };
                 let keys = ['createAt__-1', '_id__-1'];
@@ -334,7 +403,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -361,24 +429,38 @@ class Model extends BaseModel {
                  */
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
-
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
+                }else{
+                    if (checkObjectIDs(bidderID)) {
+                        conditionObj.bidder = bidderID
                     }
-                } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+    
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }
+
+                    if (projectID && checkObjectIDs(projectID)) {
+                        conditionObj.project = projectID
+                    }else{
+                        if (checkObjectIDs(clientID)) {
+                            conditionObj.client = clientID
+                        }
+                    }
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if (!isNaN(type) && Number(type) > 0) {
+                    conditionObj.type = type;
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
+                if (!isNaN(status) && Number(status) > 0) {
+                    conditionObj.status = status;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    conditionObj.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    conditionObj.contractType = contractType;
                 }
 
                 console.log(conditionObj)
@@ -461,7 +543,6 @@ class Model extends BaseModel {
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = ObjectID(projectID)
                 }
-                // console.log(conditionObj)
 
                 let listData = await BIDDING__PLAN_COLL.aggregate([
                     {
@@ -498,7 +579,6 @@ class Model extends BaseModel {
                     numberOfPackage = Number(numberOfUnexecutedPackage) + Number(numberOfExecutedPackage) + Number(numberOfCompletedPackage)
                 }
 
-                // return resolve({ error: false, data: listData })
                 return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage } })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
