@@ -20,6 +20,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
         type: Schema.Types.ObjectId,
         ref : "bidding_plan"
     },
+    //_________Quản trị
+    admins: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+    //_________Thành viên được quyền xem ngân sách
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
     /**
      * Phân loại
      * 1-Bảng dữ liệu

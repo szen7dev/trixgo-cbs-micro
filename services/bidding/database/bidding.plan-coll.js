@@ -7,6 +7,13 @@ const Schema                = require('mongoose').Schema;
  * - Áp dụng cho tất cả các ngành của nền kinh tế, không chỉ xây dựng
  * - Được triển khai trên cơ sở ngân sách được duyệt
  * - Cũng chính là 1 gói thầu để đem đi mời thầu luôn
+ * B1-Lập kế hoạch lựa chọn nhà thầu, phân chia gói thầu (bidding_plan)
+ * B2-Phát hành hồ sơ mời thầu (bidding_request)
+ * +++Yêu cầu về kỹ thuật (bidding_request)
+ * +++Yêu cầu chào giá (bidding_bill)
+ * B3-Nhà thầu dự thầu
+ * +++Dự thầu kỹ thuật (bidding_apply)
+ * +++Dự thầu tài chính (bidding_quotation)
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     /**
@@ -32,6 +39,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
+    //_________Quản trị
+    admins: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+    //_________Thành viên được quyền xem ngân sách
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
     /**
      * THÔNG TIN GÓI THẦU
      */    
@@ -50,12 +67,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     type: { type: Number, default: 1 },
     //_________Tên gói thầu
     name: String,
+    //_________Mô tả
+    description: String,
     //_________Giá gói thầu
     packagePrice: { type: Number, default: 0 },      
     //_________Ký hiệu gói thầu
     sign: String,
-    //_________Mô tả/Tên hồ sơ mời thầu
-    description: String,
     //_________Ghi chú
     note: String,
     /**

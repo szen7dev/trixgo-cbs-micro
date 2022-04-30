@@ -37,7 +37,7 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
     insert({ userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
         const that = this
@@ -54,8 +54,7 @@ class Model extends BaseModel {
                 if (!infoProject)
                     return resolve({ error: true, message: 'Can not get Project info', status: 400 })
 
-                // let dataInsert = { userCreate: userID, client: infoProject.company, admins: [userID], members: [userID] }
-                let dataInsert = { userCreate: userID, client: infoProject.company }
+                let dataInsert = { userCreate: userID, client: infoProject.company, admins: [userID], members: [userID] }
 
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
@@ -196,7 +195,7 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
     update({ planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
         const that = this
@@ -344,13 +343,13 @@ class Model extends BaseModel {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
     getInfo({ planID, select, populates }) {
         return new Promise(async resolve => {
@@ -385,7 +384,7 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
     getList({ clientID, projectID, parentID, bidderID, contractID,
         type, status, actualStartTime, actualFinishTime, closingTime, form, contractType,
@@ -538,7 +537,7 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo đối tượng 
      * Author: Hiepnh
-     * Date: 04/04/2022
+     * Date: 30/04/2022
      */
     getAmountByObject({ userID, projectID }){
         return new Promise(async resolve => {
@@ -598,8 +597,7 @@ class Model extends BaseModel {
                     percentOfCompletedPackage = 100*(Number(totalFinishAmount)/Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage))
                 }
                 percentOfCompletedPackage = percentOfCompletedPackage.toFixed(2)
-                console.log({percentOfCompletedPackage})
-
+                // console.log({percentOfCompletedPackage})
 
                 return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage } })
             } catch (error) {

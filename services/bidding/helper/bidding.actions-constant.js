@@ -4,6 +4,7 @@ const BASE_ACTIONS = 'ACT_BIDDING';
  * CASE_1, CASE_2 tương ứng trong phần AUTH SERVICE, có 2 coll: user, company
  */
 const BIIDING_PLAN              = 'BIIDING_PLAN';
+const BIIDING_DOC               = 'BIIDING_DOC';
 const BIIDING_REQUEST           = 'BIIDING_REQUEST';
 const BIIDING_APPLY             = 'BIIDING_APPLY';
 const BIIDING_QUOTATION         = 'BIIDING_QUOTATION';
@@ -19,6 +20,14 @@ const CF_ACTIONS_BIDDING = {
     BIIDING_PLAN_UPDATE                   : `${BASE_ACTIONS}_${BIIDING_PLAN}_UPDATE`,
     BIIDING_PLAN_REMOVE                   : `${BASE_ACTIONS}_${BIIDING_PLAN}_REMOVE`,
     BIIDING_PLAN_GET_INFO_AND_GET_LIST    : `${BASE_ACTIONS}_${BIIDING_PLAN}_GET_INFO_AND_GET_LIST`,
+
+    /**
+    * BIIDING_DOC
+    */
+    BIIDING_DOC_INSERT                   : `${BASE_ACTIONS}_${BIIDING_DOC}_INSERT`,
+    BIIDING_DOC_UPDATE                   : `${BASE_ACTIONS}_${BIIDING_DOC}_UPDATE`,
+    BIIDING_DOC_REMOVE                   : `${BASE_ACTIONS}_${BIIDING_DOC}_REMOVE`,
+    BIIDING_DOC_GET_INFO_AND_GET_LIST    : `${BASE_ACTIONS}_${BIIDING_DOC}_GET_INFO_AND_GET_LIST`,
 
     /**
     * BIIDING_REQUEST

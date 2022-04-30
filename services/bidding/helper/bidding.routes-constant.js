@@ -3,6 +3,7 @@ const BASE_ROUTE = '/bidding';
  * vì không tách ra thành từng file action (company, user, app, app_role,...) -> cần thêm prefix phía trước
  */
 const BIIDING_PLAN              = '/bidding_plans';
+const BIIDING_DOC               = '/bidding_docs';
 const BIIDING_REQUEST           = '/bidding_requests';
 const BIIDING_APPLY             = '/bidding_applies';
 const BIIDING_QUOTATION         = '/bidding_quotations';
@@ -15,6 +16,9 @@ const CF_ROUTINGS_BIDDING = {
 
     // ================================BIIDING_PLAN=======================================//
     BIIDING_PLAN                          : `${BASE_ROUTE}${BIIDING_PLAN}`, 
+
+    // ================================BIIDING_PLAN=======================================//
+    BIIDING_DOC                          : `${BASE_ROUTE}${BIIDING_DOC}`, 
 
     // ================================BIIDING_REQUEST=======================================//
     BIIDING_REQUEST                       : `${BASE_ROUTE}${BIIDING_REQUEST}`, 
