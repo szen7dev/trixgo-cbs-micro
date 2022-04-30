@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
+    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -66,12 +66,11 @@ class Model extends BaseModel {
                 }
 
                 if (checkObjectIDs(parentID)) {
-                    // let infoParent = await BIDDING__PLAN_COLL.findById(parentID)
                     dataInsert.parent = parentID;
                 }
 
-                if (checkObjectIDs(bidderID)) {
-                    dataInsert.bidder = bidderID;
+                if (checkObjectIDs(assigneeID)) {
+                    dataInsert.assignee = assigneeID;
                 }
 
                 if (name) {
@@ -94,14 +93,29 @@ class Model extends BaseModel {
                     dataInsert.closingTime = closingTime;
                 }
 
-                if (!isNaN(tenderPrice) && Number(tenderPrice) >= 0) {
-                    dataInsert.tenderPrice = tenderPrice;
+                // Nộp thầu
+                if (!isNaN(agreeStatus) && Number(agreeStatus) >= 0) {
+                    dataInsert.agreeStatus = agreeStatus;
                 }
 
-                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) >= 0) {
-                    dataInsert.vatTenderPrice = vatTenderPrice;
+                if (!isNaN(bidPrice) && Number(bidPrice) >= 0) {
+                    dataInsert.bidPrice = bidPrice;
                 }
 
+                if (!isNaN(bidPriceDiscount) && Number(bidPriceDiscount) >= 0) {
+                    dataInsert.bidPriceDiscount = bidPriceDiscount;
+                }
+
+                if (!isNaN(bidPriceAdjustment) && Number(bidPriceAdjustment) >= 0) {
+                    dataInsert.bidPriceAdjustment = bidPriceAdjustment;
+                }
+
+                // Mở thầu
+                if (!isNaN(openedStatus) && Number(openedStatus) >= 0) {
+                    dataInsert.openedStatus = openedStatus;
+                }
+
+                // Hệ số giá
                 if (!isNaN(factor1) && Number(factor1) >= 0) {
                     dataInsert.factor1 = factor1;
                 }
@@ -116,6 +130,19 @@ class Model extends BaseModel {
                 }
                 if (!isNaN(factor5) && Number(factor5) >= 0) {
                     dataInsert.factor5 = factor5;
+                }
+
+                // Nhà thầu trúng thầu và thông tin trúng thầu
+                if (checkObjectIDs(bidderID)) {
+                    dataInsert.bidder = bidderID;
+                }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) >= 0) {
+                    dataInsert.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) >= 0) {
+                    dataInsert.vatTenderPrice = vatTenderPrice;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -134,7 +161,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5 }) {
+    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -148,6 +175,10 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(bidderID)) {
                     dataUpdate.bidder = bidderID;
+                }
+
+                if (checkObjectIDs(assigneeID)) {
+                    dataInsert.assignee = assigneeID;
                 }
 
                 if (name) {
@@ -170,14 +201,33 @@ class Model extends BaseModel {
                     dataUpdate.closingTime = closingTime;
                 }
 
-                if (!isNaN(tenderPrice) && Number(tenderPrice) >= 0) {
-                    dataUpdate.tenderPrice = tenderPrice;
+                // Nộp thầu
+                if (!isNaN(agreeStatus) && Number(agreeStatus) >= 0) {
+                    dataUpdate.agreeStatus = agreeStatus;
                 }
 
-                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) >= 0) {
-                    dataUpdate.vatTenderPrice = vatTenderPrice;
+                if (!isNaN(bidPrice) && Number(bidPrice) >= 0) {
+                    dataUpdate.bidPrice = bidPrice;
                 }
 
+                if (!isNaN(bidPriceDiscount) && Number(bidPriceDiscount) >= 0) {
+                    dataUpdate.bidPriceDiscount = bidPriceDiscount;
+                }
+
+                if (!isNaN(bidPriceAdjustment) && Number(bidPriceAdjustment) >= 0) {
+                    dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
+                }
+
+                if (timeApproved) {
+                    dataUpdate.timeApproved = timeApproved;
+                }
+
+                // Mở thầu
+                if (!isNaN(openedStatus) && Number(openedStatus) >= 0) {
+                    dataUpdate.openedStatus = openedStatus;
+                }
+
+                // Hệ số giá
                 if (!isNaN(factor1) && Number(factor1) >= 0) {
                     dataUpdate.factor1 = factor1;
                 }
@@ -192,6 +242,19 @@ class Model extends BaseModel {
                 }
                 if (!isNaN(factor5) && Number(factor5) >= 0) {
                     dataUpdate.factor5 = factor5;
+                }
+
+                // Nhà thầu trúng thầu và thông tin trúng thầu
+                if (checkObjectIDs(bidderID)) {
+                    dataUpdate.bidder = bidderID;
+                }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) >= 0) {
+                    dataUpdate.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) >= 0) {
+                    dataUpdate.vatTenderPrice = vatTenderPrice;
                 }
               
                 let infoAfterUpdate = await BIDDING__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true })
@@ -216,7 +279,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    getInfo({ docID, select, populates }) {
+    getInfo({ docID, userID, select, populates }) {
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(docID))
@@ -252,7 +315,9 @@ class Model extends BaseModel {
      * Date: 30/4/2022
      */
     getList({ clientID, projectID, planID, parentID, bidderID, contractID,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        // console.log({clientID, projectID, planID, parentID, bidderID, contractID,
+        //     userID, keyword, limit, lastestID, select, populates, sortKey})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -330,6 +395,7 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI

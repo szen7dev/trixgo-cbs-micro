@@ -54,8 +54,8 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
      * THÔNG TIN GÓI THẦU
      */  
     /**
-     * Phần tử cha: Hồ sơ mời
-     * Phàn tử con: Hồ sơ dự
+     * Phần tử cha: Hồ sơ mời thầu
+     * Phàn tử con: Hồ sơ dự thầu
      */
     parent: {
         type: Schema.Types.ObjectId,
@@ -126,7 +126,11 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
-    //_________Hồ sơ dự đã được mở hay chưa (0/1)
+    /**
+     * Hồ sơ dự đã được mở hay chưa
+     * 0-Chưa
+     * 1-Đã mở
+     */
     openedStatus: { type: Number, default: 0 },
 
     /**
