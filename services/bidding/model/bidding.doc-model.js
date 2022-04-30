@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, planID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
+    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -63,6 +63,11 @@ class Model extends BaseModel {
                     admins: [userID], 
                     members: [userID],
                     plan: planID
+                }
+
+                if (checkObjectIDs(parentID)) {
+                    // let infoParent = await BIDDING__PLAN_COLL.findById(parentID)
+                    dataInsert.parent = parentID;
                 }
 
                 if (checkObjectIDs(bidderID)) {
@@ -246,7 +251,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    getList({ clientID, projectID, planID, bidderID, contractID,
+    getList({ clientID, projectID, planID, parentID, bidderID, contractID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -292,22 +297,28 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
+                // Hồ sơ mời thầu của Kế hoạch đấu thầu
                 if (checkObjectIDs(planID)) {
                     conditionObj.plan = planID
                 }else{
-                    if (checkObjectIDs(bidderID)) {
-                        conditionObj.bidder = bidderID
-                    }
-    
-                    if (checkObjectIDs(contractID)) {
-                        conditionObj.contract = contractID
-                    }
-
-                    if (projectID && checkObjectIDs(projectID)) {
-                        conditionObj.project = projectID
+                    // Hồ sơ dự thầu của Hồ sơ mời thầu
+                    if (checkObjectIDs(parentID)) {
+                        conditionObj.parent = parentID
                     }else{
-                        if (checkObjectIDs(clientID)) {
-                            conditionObj.client = clientID
+                        if (checkObjectIDs(bidderID)) {
+                            conditionObj.bidder = bidderID
+                        }
+        
+                        if (checkObjectIDs(contractID)) {
+                            conditionObj.contract = contractID
+                        }
+    
+                        if (projectID && checkObjectIDs(projectID)) {
+                            conditionObj.project = projectID
+                        }else{
+                            if (checkObjectIDs(clientID)) {
+                                conditionObj.client = clientID
+                            }
                         }
                     }
                 }

@@ -8,7 +8,7 @@ const Schema                = require('mongoose').Schema;
  * - Được triển khai trên cơ sở ngân sách được duyệt
  * - Cũng chính là 1 gói thầu để đem đi mời thầu luôn
  * B1-Lập kế hoạch lựa chọn nhà thầu, phân chia gói thầu (bidding_plan)
- * B2-Phát hành hồ sơ mời thầu (bidding_request)
+ * B2-Phát hành hồ sơ mời thầu (bidding_doc)
  * +++Yêu cầu về kỹ thuật (bidding_request)
  * +++Yêu cầu chào giá (bidding_bill)
  * B3-Nhà thầu dự thầu

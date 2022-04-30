@@ -35,12 +35,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { planID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5 } = ctx.params;
+                const { planID, parentID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5 } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__DOC_MODEL.insert({
-                    userID, planID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx
+                    userID, planID, parentID, name, sign, note, releaseTime, closingTime, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -142,10 +142,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { docID, 
-                    companyID, projectID, planID, bidderID, contractID, 
+                    companyID, projectID, planID, parentID, bidderID, contractID, 
                     keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                console.log({companyID, projectID, planID, bidderID, contractID})
+                console.log({companyID, projectID, planID, parentID, bidderID, contractID})
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -160,7 +160,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await BIDDING__DOC_MODEL.getList({
-                        clientID: companyID, projectID, planID, bidderID, contractID,
+                        clientID: companyID, projectID, planID, parentID, bidderID, contractID,
                         keyword, limit, lastestID, populates, select, sortKey
                     });
                 }

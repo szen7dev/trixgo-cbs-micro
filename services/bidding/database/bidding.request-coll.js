@@ -3,15 +3,14 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * HỒ SƠ YÊU CẦU, MỜI THẦU
+ * YÊU CẦU KỸ THUẬT
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     /**
      * Chủ đầu tư
      * Công ty Phát hành hồ sơ mời thầu
-     * Công ty tạo ra task
      */
-    company: {
+     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
@@ -19,6 +18,11 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     plan: {
         type: Schema.Types.ObjectId,
         ref : "bidding_plan"
+    },
+    //_________Hồ sơ mời thầu
+    doc: {
+        type: Schema.Types.ObjectId,
+        ref : "bidding_doc"
     },
     //_________Quản trị
     admins: [{

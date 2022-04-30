@@ -6,6 +6,7 @@ const Schema                = require('mongoose').Schema;
  * HỒ SƠ MỜI QUAN TÂM
  * HỒ SƠ MỜI SƠ TUYỂN
  * HỒ SƠ MỜI THẦU
+ * HỒ SƠ DỰ
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     /**
@@ -46,14 +47,22 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
-    //_________Thành viên được quyền xem ngân sách
+    //_________Thành viên được quyền xem
     members: [{
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
     /**
      * THÔNG TIN GÓI THẦU
-     */    
+     */  
+    /**
+     * Phần tử cha: Hồ sơ mời
+     * Phàn tử con: Hồ sơ dự
+     */
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "bidding_doc"
+    },  
     //_________Tên hồ sơ
     name: String,
     //_________Ký hiệu
@@ -78,9 +87,6 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     factor4: { type: Number, default: 0 },
     //_________Lợi nhuận
     factor5: { type: Number, default: 0 },
-    /**
-     * THÔNG TIN NHÀ THẦU
-     */
     //_________Nhà thầu trúng thầu
     bidder: {
         type: Schema.Types.ObjectId,
@@ -89,7 +95,38 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     //_________Giá trúng thầu
     tenderPrice: { type: Number, default: 0 },  
     //_________VAT
-    vatTenderPrice: { type: Number, default: 0 },      
+    vatTenderPrice: { type: Number, default: 0 },    
+    /**
+     * THÔNG TIN DỰ THẦU
+     */
+    //_________Người dự thầu
+    assignee: {
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    },
+    //_________Thời điểm xác nhận nộp thầu
+    timeApproved: { type: Date, default: null },
+    //_________Đã đồng ý cho mở thầu hay chưa (0-Chưa/1-Đồng ý)
+    agreeStatus: { type: Number, default: 0 },
+    //_________Giá dự thầu
+    bidPrice: { type: Number, default: 0 },
+    //_________Giảm giá dự thầu
+    bidPriceDiscount: { type: Number, default: 0 },
+    //_________Giá dự thầu thừa/thiếu
+    bidPriceAdjustment: { type: Number, default: 0 },
+    //_________Người được mở thầu
+    bidOpeners: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    //_________Người đã mở thầu
+    openedUsers: [{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    }],
+    //_________Hồ sơ dự đã được mở hay chưa (0/1)
+    openedStatus: { type: Number, default: 0 },
+
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
