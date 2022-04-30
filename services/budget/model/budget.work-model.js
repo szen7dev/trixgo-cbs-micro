@@ -468,7 +468,7 @@ class Model extends BaseModel {
 
                 // Cập nhật Ngân sách thực hiện
                 if(option && Number(option) === 2){
-                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
+                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.JOURNAL_CAL_IMPLE_BUDGET}`, {
                         workID
                     })
                     // console.log('COONG VIỆC NGÂN SÁCH ĐÃ THỰC HIỆN')

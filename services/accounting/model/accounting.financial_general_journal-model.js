@@ -1,23 +1,37 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
-const ObjectID = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+/**
+ * EXTERNAL PACKAGE
+ */
+ const ObjectID                                         = require('mongoose').Types.ObjectId;
+ const moment                                           = require('moment');
 
 /**
- * import inter-coll, exter-coll
+ * CONSTANTS
  */
-const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL = require('../database/accounting.financial_general_journal-coll');
-
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+ const { CF_DOMAIN_SERVICES } 	                        = require('../../gateway/helper/domain.constant');
+ const { VOUCHER_TYPES }                                = require('../config/accounting.financial_config');
+ const { CF_ACTIONS_ITEM }                              = require('../../item/helper/item.actions-constant');
+ const { CF_ACTIONS_BUDGET } 		                    = require('../../budget/helper/budget.actions-constant');
 
 /**
- * import inter-model, exter-model
+ * TOOLS
  */
+ const BaseModel                                        = require('../../../tools/db/base_model')
+ const { checkObjectIDs, _isValid, IsJsonString }       = require('../../../tools/utils/utils')
+ const { RANGE_BASE_PAGINATION_V2 }                     = require('../../../tools/cursor_base/playground/index')
+ const { KEY_ERROR }                                    = require('../../../tools/keys/index')
+
+/**
+ * COLLECTIONS
+ */
+ const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL       = require('../database/accounting.financial_general_journal-coll');
+ const BUDGET_WORK_COLL                                 = require('../../budget/database/budget.work-coll'); // Kiểm tra fix lại, không Import trực tiếp
+
+/**
+ * MODELS
+ */
+
 class Model extends BaseModel {
     constructor() {
         super(ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL);
@@ -28,71 +42,126 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ authorID, companyID, fundaID, voucherID,
+        date, forward, forwardIs, returning, advancePayment, cancel, vat,
+        debit, credit, customerDebit, customerCredit, updown,
+        quantity, unitprice, amount, fcuExRate, fcuAmount,
+        goods, warehouse, contract, budgetWork,
+        note, 
+        ctx }) {
+            
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                /**
+                 * VALIDATE DỮ LIỆU
+                 * 1-Kiểm tra ObjectID
+                 * 2-Kiểm tra Danh mục thuộc công ty
+                 * 3-Kiểm tra khác
+                 */
+                 if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, debit, credit, customerDebit,
+                    customerCredit]))
+                    return { error: true, message: 'params_invalid', status: 400 };
 
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
+                // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
+
+                // Kiểm tra check trùng tài khoản đối ứng
+                if(debit && credit && debit.toString() === credit.toString())
+                    return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
+                
+                // TẠO CHI TIẾT CHỨNG TỪ
+                const dataInsert = {
+                    userCreate: authorID, 
+                    company: companyID, 
+                    funda: fundaID, 
+                    voucher: voucherID,
+                    date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                    debit, credit, customerDebit, customerCredit, updown,
+                    quantity, unitprice, amount, fcuExRate, fcuAmount,
+                    goods, warehouse, contract, budgetWork,
+                    note, 
                 }
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
+                /**
+                 * GÁN MÃ NGÂN SÁCH
+                 */
+                let budget, budgetProject, budgetContract, budgetItem, budgetGroup
+                if(budgetWork && _isValid(budgetWork)){
+                    let infoWork = await BUDGET_WORK_COLL.findById(budgetWork)
+
+                    if(infoWork){
+                        if(infoWork.budget){
+                            budget = infoWork.budget;
+                            dataInsert.budget = infoWork.budget;
+                        }
+                        if(infoWork.project){
+                            budgetProject = infoWork.project;
+                            dataInsert.budgetProject = infoWork.project;
+                        }
+                        if(infoWork.contract){
+                            budgetContract = infoWork.contract;
+                            dataInsert.budgetContract = infoWork.contract;
+                        }
+                        if(infoWork.item){
+                            budgetItem = infoWork.item;
+                            dataInsert.budgetItem = infoWork.item;
+                        }
+                        if(infoWork.group){
+                            budgetGroup = infoWork.group;
+                            dataInsert.budgetGroup = infoWork.group;
+                        }
+                    }
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
-                }
+                let infoAfterInsert = await that.insertData(dataInsert);
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "Thêm bút toán thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
-                if (checkObjectIDs(contractID)) {
-                    dataInsert.contract = contractID;
-                }
+                /**
+                 * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
+                 * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
+                 * 1. Cập nhật ngân sách công việc
+                 * 2. Cập nhật ngân sách Nhóm
+                 * 3. Cập nhật ngân sách Hạng mục
+                 * 4. Cập nhật ngân sách Tổng
+                 */
+                if(budgetWork && _isValid(budgetWork)){
+                    let infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
+                        option: 2,
+                        workID: `${budgetWork}`
+                    })
+                    console.log('1. Update Budget Work==========================>>>>>')
+                    // console.log(infoBudgetWork)
 
-                if (name) {
-                    dataInsert.name = name;
-                }
+                    if(infoBudgetWork){
+                        let infoBudgetGroup = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
+                            option: 2,
+                            groupID: `${budgetGroup}`
+                        })
 
-                if (date) {
-                    dataInsert.date = date;
-                }
+                        console.log('2. Update Budget Group==========================>>>>>')
+                        // console.log(infoBudgetGroup)
 
-                if (sign) {
-                    dataInsert.sign = sign;
-                }
+                        if(infoBudgetGroup){
+                            let infoBudgetItem = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
+                                option: 2,
+                                itemID: `${budgetItem}`
+                            })
 
-                if (note) {
-                    dataInsert.note = note;
-                }
+                            console.log('3. Update Budget Item==========================>>>>>')
+                            // console.log(infoBudgetItem)
 
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
-                }
+                            if(infoBudgetItem){
+                                let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
+                                    option: 2,
+                                    budgetID: `${budget}`
+                                })
 
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
-                }
-
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
-                }
-
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
-                }
-
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
-                }
-
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
+                                console.log('4. Update Budget==========================>>>>>')
+                                // console.log(infoBudget)
+                            }
+                        }
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -355,7 +424,118 @@ class Model extends BaseModel {
             }
         })
     }
+    
+    /**
+     * Name  : Tổng hợp ngân sách đã thực hiện 
+     * Author: Hiepnh
+     * Date  : 10/4/2022 
+     */
+     calImpleBudget({ 
+        option, workID, groupID, itemID, budgetID, userID, ctx
+    }){ 
+        console.log('calImpleBudget')
+        console.log({ 
+            option, workID, groupID, itemID, budgetID, userID
+        })
+        return new Promise(async (resolve) => {
+            try {
+                /**
+                 * BA
+                 * 1-Tổng hợp ngân sách đã thực hiện của công việc-budgetWork
+                 * 2-Tổng hợp ngân sách đã thực hiện của nhóm-budgetGroup
+                 * 3-Tổng hợp ngân sách đã thực hiện của hạng mục-budgetItem
+                 * 4-Tổng hợp ngân sách đã thực hiện của ngân sách-budget
+                 */
+                
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataBudget = {
+                    quantity: 0,
+                    amount: 0
+                }
 
+                let conditionObjUp = { updown: 1 }
+                let conditionObjDown = { updown: -1 }
+
+                if(workID){
+                    conditionObjUp.budgetWork = ObjectID(workID)
+                    conditionObjDown.budgetWork = ObjectID(workID)
+                }
+                if(groupID){
+                    conditionObjUp.budgetGroup = ObjectID(groupID)
+                    conditionObjDown.budgetGroup = ObjectID(groupID)
+                }
+                if(itemID){
+                    conditionObjUp.budgetItem = ObjectID(itemID)
+                    conditionObjDown.budgetItem = ObjectID(itemID)
+                }
+                if(budgetID){
+                    conditionObjUp.budget = ObjectID(budgetID)
+                    conditionObjDown.budget = ObjectID(budgetID)
+                }
+                
+                /** 
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+             
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Dữ liệu tăng ngân sách thực hiện
+                let listDataUp = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjUp
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }, 
+                ])
+
+                // Dữ liệu giảm ngân sách thực hiện
+                let listDataDown = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: conditionObjDown
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            quantity: { $sum: "$quantity" },
+                            amount: { $sum: "$amount" },
+                        }
+                    }, 
+                ])
+
+                console.log(conditionObjUp)
+                console.log(conditionObjDown)
+                console.log(listDataUp)
+                console.log(listDataDown)
+
+                // Tổng hợp giá trị tăng, giảm
+                if(listDataUp && listDataUp.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) + Number(listDataUp[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) + Number(listDataUp[0].amount)
+                }
+
+                if(listDataDown && listDataDown.length){
+                    dataBudget.quantity = Number(dataBudget.quantity) - Number(listDataDown[0].quantity)
+                    dataBudget.amount = Number(dataBudget.amount) - Number(listDataDown[0].amount)
+                }
+
+                return resolve({ error: false, data: dataBudget, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

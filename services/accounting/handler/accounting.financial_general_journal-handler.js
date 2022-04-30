@@ -162,4 +162,35 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Dev: Hiepnh 
+     * Func: Tổng hợp ngân sách đã thực hiện
+     * Date: 10/4/2022
+     */
+    calImpleBudget: {
+        auth: "required",
+        params: {
+            workID : { type: "string", optional: true },
+            groupID : { type: "string", optional: true },
+            itemID : { type: "string", optional: true },
+            budgetID : { type: "string", optional: true },
+        },
+        async handler(ctx) {  
+            try {
+                await this.validateEntity(ctx.params);
+                let { workID, groupID, itemID, budgetID } = ctx.params;
+            
+                const { _id: userID } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.calImpleBudget({
+                    workID, groupID, itemID, budgetID, userID, ctx
+                });
+                
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }
