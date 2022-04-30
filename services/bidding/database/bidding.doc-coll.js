@@ -3,10 +3,8 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * HỒ SƠ MỜI QUAN TÂM
- * HỒ SƠ MỜI SƠ TUYỂN
- * HỒ SƠ MỜI THẦU
- * HỒ SƠ DỰ
+ * HỒ SƠ MỜI QUAN TÂM/HỒ SƠ MỜI SƠ TUYỂN/HỒ SƠ MỜI THẦU
+ * HỒ SƠ DỰ THẦU
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     /**
@@ -106,7 +104,11 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     },
     //_________Thời điểm xác nhận nộp thầu
     timeApproved: { type: Date, default: null },
-    //_________Đã đồng ý cho mở thầu hay chưa (0-Chưa/1-Đồng ý)
+    /**
+     * assignee Đã đồng ý cho mở thầu hay chưa 
+     * 0-Chưa
+     * 1-Đồng ý
+     */
     agreeStatus: { type: Number, default: 0 },
     //_________Giá dự thầu
     bidPrice: { type: Number, default: 0 },

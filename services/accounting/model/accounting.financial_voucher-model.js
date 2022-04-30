@@ -3,7 +3,10 @@
 /**
  * EXTERNAL PACKAGE
  */
-const ObjectID = require('mongoose').Types.ObjectId;
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment')
+const fs                                = require('fs');
+const path                              = require('path');
 
 /**
  * CONSTANTS
@@ -602,10 +605,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ voucherID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(voucherID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -619,13 +622,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(cashBookID)
+                let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -637,12 +640,12 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+    getList({ userID, companyID, fundaID, customerID, contractID, fromDate, toDate, type,
+        keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 50) {
-                    limit = 50
+                if (limit > 20) {
+                    limit = 20
                 } else {
                     limit = +limit;
                 }
@@ -685,29 +688,38 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
+                 if(!isNaN(type) && Number(type) > 0){
+                    conditionObj.type = Number(type)
+                }
 
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
-                    }
+                if (checkObjectIDs(fundaID)) {
+                    conditionObj.funda = fundaID
                 } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
                     conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if (checkObjectIDs(contractID)) {
+                    conditionObj.contract = contractID
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
+                if (checkObjectIDs(customerID)) {
+                    conditionObj.customer = customerID
                 }
 
-                console.log(conditionObj)
+                if(fromDate && toDate){
+                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                        // conditionObj.date = {
+                        //     $gte: startTime,// <=== fix ISODate here
+                        //     $lte: endTime // <=== fix ISODate here
+                        // }
+                        conditionObj.date  = { 
+                            $gte: moment(startTime).toDate(),
+                            $lte: moment(endTime).toDate()
+                        }
+                    }
+                }
 
                 if (keyword) {
                     keyword = keyword.split(" ");
@@ -715,6 +727,8 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
+                console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI

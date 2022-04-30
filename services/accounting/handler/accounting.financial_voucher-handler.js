@@ -154,16 +154,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            cashBooksID: { type: "array" },
+            voucherID: { type: "array" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBooksID } = ctx.params;
+                const { voucherID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.remove({
-                    cashBooksID, userID
+                    voucherID, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -181,13 +181,13 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            sortKey: { type: "string", optional: true },
-            outin: { type: "string", optional: true },
+            // cashBookID: { type: "string", optional: true },
+            // parentID: { type: "string", optional: true },
+            // accountID: { type: "string", optional: true },
+            // customerID: { type: "string", optional: true },
+            // contractID: { type: "string", optional: true },
+            // sortKey: { type: "string", optional: true },
+            // outin: { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -199,7 +199,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { outin, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { voucherID, companyID, fundaID, customerID, contractID, fromDate, toDate, type, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -208,13 +208,14 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if (cashBookID) {
+                if (voucherID) {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getInfo({
-                        cashBookID, userID, select, populates
+                        voucherID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getList({
-                        outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
+                        userID, companyID, fundaID, customerID, contractID, fromDate, toDate, type, 
+                        keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
