@@ -48,8 +48,8 @@ class Model extends BaseModel {
         quantity, unitprice, amount, fcuExRate, fcuAmount,
         goods, warehouse, contract, budgetWork,
         note, 
-        ctx }) {
-            
+        ctx 
+    }) { 
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -59,7 +59,7 @@ class Model extends BaseModel {
                  * 2-Kiểm tra Danh mục thuộc công ty
                  * 3-Kiểm tra khác
                  */
-                 if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, debit, credit, customerDebit,
+                if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, debit, credit, customerDebit,
                     customerCredit]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
@@ -176,65 +176,191 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ 
+        authorID, journalID,
+        date, forward, forwardIs, returning, advancePayment, cancel, vat,
+        debit, credit, customerDebit, customerCredit, updown,
+        quantity, unitprice, amount, fcuExRate, fcuAmount,
+        goods, warehouse, contract, budgetWork,
+        note, 
+        ctx
+     }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * VALIDATE DỮ LIỆU
+                 * 1-Kiểm tra ObjectID
+                 * 2-Kiểm tra Danh mục thuộc công ty
+                 * 3-Kiểm tra khác
                  */
-                let dataUpdate = { userUpdate: userID };
+                 if(!checkObjectIDs([authorID, journalID, debit, credit, customerDebit,
+                    customerCredit]))
+                    return { error: true, message: 'params_invalid', status: 400 };
 
-                if (!checkObjectIDs(cashBookID))
-                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+                // Kiểm tra để đảm bảo "debit, credit, customerDebit, customerCredit, goods, warehouse, contract" thuộc companyID
 
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
+                // Kiểm tra check trùng tài khoản đối ứng
+                if(debit && credit && debit.toString() === credit.toString())
+                    return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
+
+                let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findById(journalID)
+                if(!infoJournal)
+                    return resolve({ error: false, message: 'finacial_journal_exit', status: 400 })
+
+                let voucherID = infoJournal.voucher
+                
+                /**
+                 * CẬP NHẬT CHI TIẾT CHỨNG TỪ
+                 */
+                const dataUpdate = {
+                    userUpdate: authorID, 
+                    date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                    debit, credit, customerDebit, customerCredit, updown,
+                    quantity, unitprice, amount, fcuExRate, fcuAmount,
+                    goods, warehouse, contract, budgetWork,
+                    note, 
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
+                /**
+                 * LẤY THÔNG TIN NGÂN SÁCH CŨ
+                 */
+                let budgetOld, budgetProjectOld, budgetContractOld, budgetItemOld, budgetGroupOld, budgetWorkOld
+                if(infoJournal.budgetWork){
+                    budgetOld = infoJournal.budget
+                    budgetProjectOld = infoJournal.budgetProject
+                    budgetContractOld = infoJournal.budgetContract
+                    budgetItemOld = infoJournal.budgetItem
+                    budgetGroupOld = infoJournal.budgetGroup
+                    budgetWorkOld = infoJournal.budgetWork
+                }   
+
+                /**
+                 * GÁN MÃ NGÂN SÁCH: MỚI VÀ CŨ
+                 */
+                let budget, budgetProject, budgetContract, budgetItem, budgetGroup
+                if(budgetWork && _isValid(budgetWork)){
+                    let infoWork = await BUDGET_WORK_COLL.findById(budgetWork)
+
+                    if(infoWork){
+                        if(infoWork.budget){
+                            budget = infoWork.budget;
+                            dataUpdate.budget = infoWork.budget;
+                        }
+                        if(infoWork.project){
+                            budgetProject = infoWork.project;
+                            dataUpdate.budgetProject = infoWork.project;
+                        }
+                        if(infoWork.contract){
+                            budgetContract = infoWork.contract;
+                            dataUpdate.budgetContract = infoWork.contract;
+                        }
+                        if(infoWork.item){
+                            budgetItem = infoWork.item;
+                            dataUpdate.budgetItem = infoWork.item;
+                        }
+                        if(infoWork.group){
+                            budgetGroup = infoWork.group;
+                            dataUpdate.budgetGroup = infoWork.group;
+                        }
+                    }
                 }
 
-                if (checkObjectIDs(contractID)) {
-                    dataUpdate.contract = contractID;
+                let infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(journalID, dataUpdate , { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update", status: 400 });
+
+                /**
+                 * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
+                 * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
+                 * 1. Cập nhật ngân sách công việc
+                 * 2. Cập nhật ngân sách Nhóm
+                 * 3. Cập nhật ngân sách Hạng mục
+                 * 4. Cập nhật ngân sách Tổng
+                 */
+                // Ngân sách mới
+                if(budgetWork && _isValid(budgetWork)){
+                    console.log('===================CẬP NHẬT NGÂN SÁCH MỚI===================')
+                    console.log({ budgetWork, budgetGroup, budgetItem, budget })
+
+                    let infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
+                        option: 2,
+                        workID: `${budgetWork}`
+                    })
+                    console.log('1. Update Budget Work==========================>>>>>')
+                    // console.log(infoBudgetWork)
+
+                    if(infoBudgetWork){
+                        let infoBudgetGroup = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
+                            option: 2,
+                            groupID: `${budgetGroup}`
+                        })
+
+                        console.log('2. Update Budget Group==========================>>>>>')
+                        // console.log(infoBudgetGroup)
+
+                        if(infoBudgetGroup){
+                            let infoBudgetItem = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
+                                option: 2,
+                                itemID: `${budgetItem}`
+                            })
+
+                            console.log('3. Update Budget Item==========================>>>>>')
+                            // console.log(infoBudgetItem)
+
+                            if(infoBudgetItem){
+                                let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
+                                    option: 2,
+                                    budgetID: `${budget}`
+                                })
+
+                                console.log('4. Update Budget==========================>>>>>')
+                                // console.log(infoBudget)
+                            }
+                        }
+                    }
                 }
 
-                if (name) {
-                    dataUpdate.name = name;
-                }
+                // Ngân sách cũ
+                if(budgetWorkOld && _isValid(budgetWorkOld)){
+                    console.log('===================CẬP NHẬT NGÂN SÁCH CŨ===================')
+                    console.log({ budgetWorkOld, budgetGroupOld, budgetItemOld, budgetOld })
+                    let infoBudgetWorkOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
+                        option: 2,
+                        workID: `${budgetWorkOld}`
+                    })
+                    console.log('1. Update Budget Work Old==========================>>>>>')
+                    // console.log(infoBudgetWorkOld)
 
-                if (date) {
-                    dataUpdate.date = date;
-                }
+                    if(infoBudgetWorkOld){
+                        let infoBudgetGroupOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
+                            option: 2,
+                            groupID: `${budgetGroupOld}`
+                        })
 
-                if (sign) {
-                    dataUpdate.sign = sign;
-                }
+                        console.log('2. Update Budget Group Old==========================>>>>>')
+                        // console.log(infoBudgetGroupOld)
 
-                if (note) {
-                    dataUpdate.note = note;
-                }
+                        if(infoBudgetGroupOld){
+                            let infoBudgetItemOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
+                                option: 2,
+                                itemID: `${budgetItemOld}`
+                            })
 
-                if (income >= 0) {
-                    dataUpdate.income = income;
-                }
+                            console.log('3. Update Budget Item Old==========================>>>>>')
+                            // console.log(infoBudgetItemOld)
 
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
-                }
+                            if(infoBudgetItemOld){
+                                let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
+                                    option: 2,
+                                    budgetID: `${budgetOld}`
+                                })
 
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
-                }
-
-                let infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+                                console.log('4. Update Budget Old==========================>>>>>')
+                                // console.log(infoBudgetItemOld)
+                            }
+                        }
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -433,10 +559,6 @@ class Model extends BaseModel {
      calImpleBudget({ 
         option, workID, groupID, itemID, budgetID, userID, ctx
     }){ 
-        console.log('calImpleBudget')
-        console.log({ 
-            option, workID, groupID, itemID, budgetID, userID
-        })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -514,10 +636,10 @@ class Model extends BaseModel {
                     }, 
                 ])
 
-                console.log(conditionObjUp)
-                console.log(conditionObjDown)
-                console.log(listDataUp)
-                console.log(listDataDown)
+                // console.log(conditionObjUp)
+                // console.log(conditionObjDown)
+                // console.log(listDataUp)
+                // console.log(listDataDown)
 
                 // Tổng hợp giá trị tăng, giảm
                 if(listDataUp && listDataUp.length){

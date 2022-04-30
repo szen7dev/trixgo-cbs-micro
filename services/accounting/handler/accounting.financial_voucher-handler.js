@@ -93,26 +93,51 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            cashBookID: { type: "string" },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string", optional: true },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            active: { type: "number", optional: true },
+            // cashBookID: { type: "string" },
+            // accountID: { type: "string", optional: true },
+            // customerID: { type: "string", optional: true },
+            // contractID: { type: "string", optional: true },
+            // name: { type: "string", optional: true },
+            // sign: { type: "string", optional: true },
+            // note: { type: "string", optional: true },
+            // date: { type: "string", optional: true },
+            // income: { type: "number", optional: true },
+            // expense: { type: "number", optional: true },
+            // active: { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
+                let { 
+                    voucherID,
+                    customerID,
+                    contractID, 
+                    storageID, 
+                    projectID,
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note, 
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate, 
+                    selectedJournals, 
+                    deletedJournals,
+                } = ctx.params;
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
+                    authorID: userID, 
+                    voucherID,
+                    customerID,
+                    contractID, 
+                    storageID, 
+                    projectID,
+                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    receiver, note,
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate, 
+                    selectedJournals, 
+                    deletedJournals,
+                    ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

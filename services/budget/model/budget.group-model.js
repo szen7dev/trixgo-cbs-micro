@@ -437,7 +437,11 @@ class Model extends BaseModel {
                     if(infoImpleBudget){
                         dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
                         dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
-                        dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                        if(Number(infoImpleBudget.data.quantity) != 0){
+                            dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                        }else{
+                            dataUpdate.impleUnitPrice = 0
+                        }
                     }
                 }
 
