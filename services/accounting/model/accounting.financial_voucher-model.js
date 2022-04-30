@@ -110,16 +110,13 @@ class Model extends BaseModel {
                     dataInsertVoucher.contract = contractID;
                 }
 
-                // if (checkObjectIDs(storageID)) {
-                //     dataInsertVoucher.storage = storageID;
-                // }
+                if (checkObjectIDs(storageID)) {
+                    dataInsertVoucher.storage = storageID;
+                }
 
-                // if (checkObjectIDs(projectID)) {
-                //     dataInsertVoucher.project = projectID;
-                // }
-
-                // console.log('=======data')
-                // console.log(dataInsertVoucher)
+                if (checkObjectIDs(projectID)) {
+                    dataInsertVoucher.project = projectID;
+                }
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher)
                 if (!infoAfterInsert)
@@ -204,6 +201,14 @@ class Model extends BaseModel {
                         }else{
                             if(contractID && _isValid(contractID)){
                                 dataInsert.contract = contractID;
+                            }
+                        }
+
+                        if(subitem.project && _isValid(subitem.project)){
+                            dataInsert.project = subitem.project
+                        }else{
+                            if(projectID && _isValid(projectID)){
+                                dataInsert.project = projectID;
                             }
                         }
 
@@ -309,16 +314,13 @@ class Model extends BaseModel {
                     dataUpdateVoucher.contract = contractID;
                 }
 
-                // if (checkObjectIDs(storageID)) {
-                //     dataUpdateVoucher.storage = storageID;
-                // }
+                if (checkObjectIDs(storageID)) {
+                    dataUpdateVoucher.storage = storageID;
+                }
 
-                // if (checkObjectIDs(projectID)) {
-                //     dataUpdateVoucher.project = projectID;
-                // }
-
-                // console.log('=======data')
-                // console.log(dataUpdateVoucher)
+                if (checkObjectIDs(projectID)) {
+                    dataUpdateVoucher.project = projectID;
+                }
 
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
                 if(!infoAfterUpdate)
@@ -402,6 +404,14 @@ class Model extends BaseModel {
                             }else{
                                 if(contractID && _isValid(contractID)){
                                     dataInsert.contract = contractID;
+                                }
+                            }
+
+                            if(subitem.project && _isValid(subitem.project)){
+                                dataInsert.project = subitem.project
+                            }else{
+                                if(projectID && _isValid(projectID)){
+                                    dataInsert.project = projectID;
                                 }
                             }
     
@@ -495,6 +505,14 @@ class Model extends BaseModel {
                             }else{
                                 if(contractID && _isValid(contractID)){
                                     dataUpdate.contract = contractID;
+                                }
+                            }
+
+                            if(subitem.project && _isValid(subitem.project)){
+                                dataUpdate.project = subitem.project
+                            }else{
+                                if(projectID && _isValid(projectID)){
+                                    dataUpdate.project = projectID;
                                 }
                             }
     

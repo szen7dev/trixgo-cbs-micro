@@ -12,35 +12,21 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     insert: {
         auth: "required",
         params: {
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string" },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            arising: { type: "number", optional: true },
-            openingBalance: { type: "number", optional: true },
-            closingBalance: { type: "number", optional: true },
+            
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance } = ctx.params;
+                const { } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert({
-                    companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance
-                });
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert({});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -52,32 +38,21 @@ module.exports = {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     update: {
         auth: "required",
         params: {
-            cashBookID: { type: "string" },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string", optional: true },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            active: { type: "number", optional: true },
+
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
+                const { } = ctx.params;
+
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
-                });
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update({});
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -88,12 +63,12 @@ module.exports = {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     remove: {
         auth: "required",
         params: {
-            cashBooksID: { type: "array" },
+            
         },
         async handler(ctx) {
             try {
@@ -101,9 +76,7 @@ module.exports = {
                 const { cashBooksID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.remove({
-                    cashBooksID, userID
-                });
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.remove({});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -120,14 +93,13 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
+            journalID: { type: "string", optional: true },
+            companyID: { type: "string", optional: true },
+            fundaID: { type: "string", optional: true },
+            projectID: { type: "string", optional: true },
+            voucherID: { type: "string", optional: true },
             contractID: { type: "string", optional: true },
-            sortKey: { type: "string", optional: true },
-            outin: { type: "string", optional: true },
-
+            
             // Field mặc định
             keyword: { type: "string", optional: true },
             limit: { type: "string", optional: true },
@@ -138,7 +110,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { outin, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { journalID, companyID, fundaID, projectID, contractID, voucherID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -147,13 +119,13 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if (cashBookID) {
+                if (journalID) {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getInfo({
-                        cashBookID, userID, select, populates
+                        journalID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getList({
-                        outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
+                        companyID, fundaID, projectID, contractID, voucherID, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -166,7 +138,7 @@ module.exports = {
     /**
      * Dev: Hiepnh 
      * Func: Tổng hợp ngân sách đã thực hiện
-     * Date: 10/4/2022
+     * Date: 30/4/2022
      */
     calImpleBudget: {
         auth: "required",

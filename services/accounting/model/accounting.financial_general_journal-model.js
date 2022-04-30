@@ -46,7 +46,7 @@ class Model extends BaseModel {
         date, forward, forwardIs, returning, advancePayment, cancel, vat,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
-        goods, warehouse, contract, budgetWork,
+        goods, warehouse, contract, project, budgetWork,
         note, 
         ctx 
     }) { 
@@ -78,7 +78,7 @@ class Model extends BaseModel {
                     date, forward, forwardIs, returning, advancePayment, cancel, vat,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
-                    goods, warehouse, contract, budgetWork,
+                    goods, warehouse, contract, project, budgetWork,
                     note, 
                 }
 
@@ -181,7 +181,7 @@ class Model extends BaseModel {
         date, forward, forwardIs, returning, advancePayment, cancel, vat,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
-        goods, warehouse, contract, budgetWork,
+        goods, warehouse, contract, project, budgetWork,
         note, 
         ctx
      }) {
@@ -218,7 +218,7 @@ class Model extends BaseModel {
                     date, forward, forwardIs, returning, advancePayment, cancel, vat,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
-                    goods, warehouse, contract, budgetWork,
+                    goods, warehouse, contract, project, budgetWork,
                     note, 
                 }
 
@@ -381,10 +381,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ journalID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(journalID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -398,13 +398,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findById(cashBookID)
+                let info = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.findById(journalID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -416,7 +416,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ companyID, fundaID, projectID, contractID, voucherID, userID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -464,29 +464,23 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
-
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
-                    }
+                if (checkObjectIDs(voucherID)) {
+                    conditionObj.voucher = voucherID
                 } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }else{
+                        if (checkObjectIDs(projectID)) {
+                            conditionObj.project = projectID
+                        }else{
+                            if (checkObjectIDs(fundaID)) {
+                                conditionObj.funda = fundaID
+                            }else{
+                                conditionObj.company = companyID
+                            }
+                        }
+                    }
                 }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
-                }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
-                }
-
-                console.log(conditionObj)
 
                 if (keyword) {
                     keyword = keyword.split(" ");
@@ -557,7 +551,7 @@ class Model extends BaseModel {
      * Date  : 10/4/2022 
      */
      calImpleBudget({ 
-        option, workID, groupID, itemID, budgetID, userID, ctx
+        workID, groupID, itemID, budgetID, userID, ctx
     }){ 
         return new Promise(async (resolve) => {
             try {

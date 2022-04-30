@@ -126,10 +126,10 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'contract'
     }, 
-    //_________Kỳ thanh toán của hợp đồng
-    contractIpc: {
+    //_________Dự án
+    project: {
         type: Schema.Types.ObjectId,
-        ref: 'contract_ipc'
+        ref: 'department'
     }, 
     //_________Diễn giải nội dung
     name: String,
