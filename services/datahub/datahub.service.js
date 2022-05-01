@@ -13,6 +13,9 @@ const DATAHUB_CONTRACTOR_COLL			= require('./database/datahub_contractor-coll');
 const DATAHUB_PROFILE_COLL				= require('./database/datahub_profile-coll');
 const DATAHUB_INSPECTION_DOC_COLL		= require('./database/datahub_inspection_doc-coll');
 const DATAHUB_INSPECTION_CHECKLIST_COLL	= require('./database/datahub_inspection_checklist-coll');
+const DATAHUB_JOB_COLL					= require('./database/datahub_job-coll');
+const DATAHUB_JOBLINE_COLL				= require('./database/datahub_jobline-coll');
+const DATAHUB_PRODUCT_COLL				= require('./database/datahub_product-coll');
 
 const DATAHUB_CONTACT_HANDLER   		= require('./handler/datahub.datahub_contact-handler');
 const DATAHUB_TYPE_HANDLER   			= require('./handler/datahub.datahub_type-handler');
@@ -23,6 +26,9 @@ const DATAHUB_CONTRACTOR_HANDLER   		= require('./handler/datahub.datahub_contra
 const DATAHUB_PROFILE_HANDLER   		= require('./handler/datahub.datahub_profile-handler');
 const DATAHUB_INSPECTION_DOC_HANDLER   		= require('./handler/datahub.datahub_inspection_doc-handler');
 const DATAHUB_INSPECTION_CHECKLIST_HANDLER  = require('./handler/datahub.datahub_inspection_checklist-handler');
+const DATAHUB_JOB_HANDLER  					= require('./handler/datahub.datahub_job-handler');
+const DATAHUB_JOBLINE_HANDLER  				= require('./handler/datahub.datahub_jobline-handler');
+const DATAHUB_PRODUCT_HANDLER  				= require('./handler/datahub.datahub_product-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.DATAHUB,
@@ -36,6 +42,9 @@ module.exports = {
 		DbService(DATAHUB_PROFILE_COLL), 
 		DbService(DATAHUB_INSPECTION_DOC_COLL), 
 		DbService(DATAHUB_INSPECTION_CHECKLIST_COLL), 
+		DbService(DATAHUB_JOB_COLL), 
+		DbService(DATAHUB_JOBLINE_COLL), 
+		DbService(DATAHUB_PRODUCT_COLL), 
 		CacheCleaner([CF_DOMAIN_SERVICES.DATAHUB])
     ],
 
@@ -109,6 +118,24 @@ module.exports = {
 		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_UPDATE]   			 	: DATAHUB_INSPECTION_CHECKLIST_HANDLER.update,
 		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_REMOVE]				: DATAHUB_INSPECTION_CHECKLIST_HANDLER.remove,
 		[CF_ACTIONS_DATAHUB.DATAHUB_INSPECTION_CHECKLIST_GET_INFO_AND_GET_LIST]	: DATAHUB_INSPECTION_CHECKLIST_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB JOB   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOB_INSERT]   			 	: DATAHUB_JOB_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOB_UPDATE]   			 	: DATAHUB_JOB_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOB_REMOVE]					: DATAHUB_JOB_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOB_GET_INFO_AND_GET_LIST]	: DATAHUB_JOB_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB JOBLINE   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOBLINE_INSERT]   				: DATAHUB_JOBLINE_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOBLINE_UPDATE]   			 	: DATAHUB_JOBLINE_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOBLINE_REMOVE]					: DATAHUB_JOBLINE_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_JOBLINE_GET_INFO_AND_GET_LIST]	: DATAHUB_JOBLINE_HANDLER.getInfoAndGetList,
+
+		//==========================================   DATAHUB PRODUCT   ================================
+		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_INSERT]   				: DATAHUB_PRODUCT_HANDLER.insert,
+		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_UPDATE]   			 	: DATAHUB_PRODUCT_HANDLER.update,
+		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_REMOVE]					: DATAHUB_PRODUCT_HANDLER.remove,
+		[CF_ACTIONS_DATAHUB.DATAHUB_PRODUCT_GET_INFO_AND_GET_LIST]	: DATAHUB_PRODUCT_HANDLER.getInfoAndGetList,
 	},
 	
 	/**

@@ -25,7 +25,6 @@ const {
  */
 const DATAHUB_JOBLINE_COLL           				= require('../database/datahub_jobline-coll');
 const DATAHUB_PRODUCT_COLL                          = require('../database/datahub_product-coll') 
-const DATAHUB_PRODUCT_COLL           				= require('../database/datahub_product-coll');
 
 class Model extends BaseModel {
 

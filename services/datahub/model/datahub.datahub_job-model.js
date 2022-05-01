@@ -37,7 +37,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 01/5/2022
      */
-    insert({ parent, sign, name, description, unit, note, unitprice, authorID }) {
+    insert({ parentID, sign, name, description, unit, note, unitprice, authorID }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -54,8 +54,8 @@ class Model extends BaseModel {
                 }
 
                 // Công tác cha
-                if(parent && _isValid(parent)){
-                    dataInsert.parent = parent
+                if(parentID && _isValid(parentID)){
+                    dataInsert.parent = parentID
                 }
 
                 let infoAfterInsert = await that.insertData(dataInsert, authorID)
