@@ -97,7 +97,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     /**
      * THÔNG TIN DỰ THẦU
      */
-    //_________Người dự thầu
+    //_________Công ty dự thầu
+    companyOfAssignee: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
+    },
+    //_________Người dự thầu => Công ty dự thầu
     assignee: {
         type: Schema.Types.ObjectId,
         ref : "user"

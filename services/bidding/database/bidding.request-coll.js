@@ -121,7 +121,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     //_________Ghi chú/Thương hiệu, xuất xứ
     note: String,
     //_________Tài liệu, ảnh đính kèm
-    documentAttachs: [{
+    attachs: [{
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
