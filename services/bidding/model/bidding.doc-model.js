@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
+    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -49,11 +49,15 @@ class Model extends BaseModel {
                 
                 // Thông tin Kế hoạch
                 let infoPlan = await BIDDING__PLAN_COLL.findById(planID)
-                console.log(infoPlan)
+                // console.log('infoPlan===============>>>>>>>>>>>>>>>>>')
+                // console.log(infoPlan)
 
                 if (!infoPlan)
                     return resolve({ error: true, message: 'Can not get infoPlan', status: 400 })
 
+                /**
+                 * KIỂM TRA DỮ LIỆU
+                 */
                 let dataInsert = { userCreate: userID, 
                     field: infoPlan.field,
                     area: infoPlan.area,
@@ -65,11 +69,10 @@ class Model extends BaseModel {
                     plan: planID
                 }
 
-                if (checkObjectIDs(parentID)) {
+                // Tạo hồ sơ dự thầu
+                if (checkObjectIDs(parentID) && checkObjectIDs(assigneeID) && checkObjectIDs(companyOfAssigneeID)) {
                     dataInsert.parent = parentID;
-                }
-
-                if (checkObjectIDs(assigneeID)) {
+                    dataInsert.companyOfAssignee = companyOfAssigneeID;
                     dataInsert.assignee = assigneeID;
                 }
 
@@ -161,7 +164,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 }) {
+    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -186,11 +189,6 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(bidderID)) {
                     dataUpdate.bidder = bidderID;
-                }
-
-                if (checkObjectIDs(assigneeID) && checkObjectIDs(companyOfAssigneeID)) {
-                    dataInsert.companyOfAssignee = companyOfAssigneeID;
-                    dataInsert.assignee = assigneeID;
                 }
 
                 if (name) {

@@ -17,6 +17,7 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
+            docID                   : { type: "string" },
             // companyID           : { type: "string", optional: true },
             // fundaID             : { type: "string", optional: true },
             // contractID          : { type: "string", optional: true },

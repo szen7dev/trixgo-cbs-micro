@@ -17,6 +17,7 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
+            projectID: { type: "string" },
             // parentID: { type: "string", optional: true },
             // accountID: { type: "string", optional: true },
             // customerID: { type: "string", optional: true },

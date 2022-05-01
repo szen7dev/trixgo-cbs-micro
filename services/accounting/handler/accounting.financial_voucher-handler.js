@@ -1,8 +1,8 @@
 /**
  * CONSTANTS
  */
- const { CF_DOMAIN_SERVICES } 	        = require('../../gateway/helper/domain.constant')
- const { CF_ACTIONS_ITEM }              = require('../../item/helper/item.actions-constant')
+const { CF_DOMAIN_SERVICES } 	        = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_ITEM }              = require('../../item/helper/item.actions-constant')
 
 /**
  * TOOLS
