@@ -15,20 +15,19 @@ module.exports = {
 	 */
     insert: {
         params: {
-            name          : { type: "string" },
-            popular       : { type: "number" },
-            type          : { type: "number" },
-            description   : { type: "string", optional: true },
-            parent        : { type: "string", optional: true },
+            jobID           : { type: "string" },
+            productID       : { type: "string" },
+            quantity        : { type: "number" },
+            note            : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, parent, name, description, popular } = ctx.params;
+                let { jobID, productID, quantity, note } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_JOBLINE_MODEL.insert({
-                    type, parent, name, description, popular, userID
+                    jobID, productID, quantity, note, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -44,19 +43,18 @@ module.exports = {
 	 */
     update: {
         params: {
-            datahubID   : { type: "string" },
-            name        : { type: "string", optional: true },
-            description : { type: "string", optional: true },
-            popular     : { type: "number", optional: true },
+            joblineID       : { type: "string" },
+            quantity        : { type: "number" },
+            note            : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubID, name, description, popular } = ctx.params;
+                let { joblineID, quantity } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_JOBLINE_MODEL.update({
-                    datahubID, name, description, popular, userID
+                    joblineID, quantity, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -72,16 +70,18 @@ module.exports = {
      */
     remove: {
         params: {
-            datahubID: { type: "string" },
+            joblineID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubID } = ctx.params;
+                let { joblineID } = ctx.params;
+                console.log(joblineID)
+
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_JOBLINE_MODEL.remove({
-                    datahubID 
+                    joblineID, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -97,10 +97,8 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            datahubTypeID : { type: "string", optional: true },
-            type      : { type: "string", optional: true },
-            popular     : { type: "string", optional: true },
-            parentID    : { type: "string", optional: true },
+            joblineID   : { type: "string", optional: true },
+            jobID       : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -112,17 +110,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubTypeID, type, popular, parentID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { joblineID, jobID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(datahubTypeID){
+                if(joblineID){
                     resultAfterCallHandler = await DATAHUB_JOBLINE_MODEL.getInfo({
-                        datahubTypeID, select, populates
+                        joblineID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_JOBLINE_MODEL.getList({
-                        type, popular, parentID, userID, lastestID, keyword, limit, select, populates
+                        jobID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
                 

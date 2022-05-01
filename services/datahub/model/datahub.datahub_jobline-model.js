@@ -18,6 +18,7 @@ const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/pl
 const {
     checkObjectIDs,
     IsJsonString,
+    _isValid
 } = require('../../../tools/utils/utils');
 
 /**
@@ -36,39 +37,41 @@ class Model extends BaseModel {
     }
  
     /**
-     * Thêm định mức
-     * Author: HiepNH
-     * Date: 11/9/2021
+     * Name: Insert 
+     * Author: Hiepnh
+     * Date: 01/5/2022
      */
-     insert({ job, product, quantity, note, authorID }) {
+     insert({ jobID, productID, quantity, note, userID }) {
+         const that = this
         return new Promise(async resolve => {
             try {
-                if(!_isValid(job) || !_isValid(product) || !_isValid(authorID))
+                if(!_isValid(jobID) || !_isValid(productID) || !_isValid(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
                 
                 // Kiểm tra sự tồn tại của product trong job
-                let info = await DATAHUB_JOBLINE_COLL.findOne({job: job, product: product})
+                let info = await DATAHUB_JOBLINE_COLL.findOne({job: jobID, product: productID})
                 if(info){
                     return resolve({ error: true, message: 'data_exists' })
                 }else{
                     // Lấy giá của vật tư
-                    let infoProduct = await DATAHUB_PRODUCT_COLL.findById(product)
+                    let infoProduct = await DATAHUB_PRODUCT_COLL.findById(productID)
 
                     let dataInsert = {
-                        job,
-                        product, 
+                        userCreate: userID,
+                        job: jobID,
+                        product: productID, 
                         quantity: (quantity && !isNaN(quantity)) ? Number(quantity).toFixed(3) : 0,
                         unitprice: Number(infoProduct.unitprice).toFixed(3),
                         type: Number(infoProduct.type),
                         note
                     }
     
-                    let infoAfterInsert = await this.insertData(dataInsert, authorID)
+                    let infoAfterInsert = await that.insertData(dataInsert)
                     if (!infoAfterInsert) 
                         return resolve({ error: true, message: 'cannot_insert' })
 
                     // Cập nhật lại giá các công tác chứa Nguồn lực
-                    await DATAHUB_PRODUCT_MODEL.updateJobPrice({ jobID: job })
+                    await DATAHUB_PRODUCT_MODEL.updateJobPrice({ jobID })
 
                     return resolve({ error: false, data: infoAfterInsert })
                 }
@@ -79,81 +82,33 @@ class Model extends BaseModel {
     }
 
     /**
-     * Cập nhật dữ liệu từ excel
-     * Author: HiepNH
-     * Date: 11/9/2021
+     * Name: Get info 
+     * Author: Hiepnh
+     * Date: 30/4/2022
      */
-     updateFromExcel({ parentID, pathFileInternal, authorID }) {
-        const that = this;
+    getInfo({ joblineID, select, populates }) {
+        console.log({ joblineID, select, populates })
         return new Promise(async resolve => {
             try {
-                let list = readFileExcel(pathFileInternal);
-                list.splice(0, 1);
-                // console.log(list)
+                if (!checkObjectIDs(joblineID))
+                    return resolve({ error: true, message: 'param_invalid' });
 
-                // Đánh dấu lỗi
-                let checkIllegal = 0;
-
-                if(!parentID || !_isValid(parentID)){
-                    checkIllegal++
-                }
-
-                if(Number(checkIllegal) > 0){
-                    return resolve({ error: true, message: 'Dữ liệu không hợp lệ', status: 400 });
-                }else{
-                    let job; // Lưu ý chỉ đúng khi đặt ngoài vòng for để nhận giá trị toàn cục
-                    for (const item of list){
-                        /**
-                         * Business Analyst
-                         * 1-Vòng lặp đầu tiên => tạo Công tác => tồn tại job = jobID1
-                         * 2-Vòng lặp tiếp theo...cho tới khi chưa tới công tác mới => luôn tồn tại:
-                         * +++jobID1
-                         * +++Dữ liệu công tác rỗng, dữ liệu nguồn lực tồn tại => tạo định mức hao phí => gán với jobID1
-                         * 3-Vòng lặp tới công tác tiếp theo thì job => jobID2 và quá trình lại tiếp tục
-                         */
-
-                        // Kiểm tra chỉ lấy các hàng có dữ liệu (không lấy Danh mục con - item[0] != null)
-                        if(item[2] != null && item[2] != ''){
-
-                            // Lấy tên và mô tả của danh mục cha
-                            let sign = item[1], name = item[2], description = item[8], unit = item[4], note = item[9], unitprice = item[7]
-                            
-                            // Tạo công tác
-                            let infoAfterInsert = await DATAHUB_JOB_MODEL.insert({ parent: parentID, sign, name, description, unit, note, unitprice, authorID })
-                            job = infoAfterInsert.data._id
-                        }
-
-                        // Tạo nguồn lực
-                        if(item[3] != null && item[3] != ''){
-
-                            // Lấy tên và mô tả của danh mục cha
-                            let quantity = item[5], product = item[10], note = item[9]
-
-                            // Tạo định mức
-                            await that.insert({ job, product, quantity, note, authorID })
-                        }
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
+                        path: "",
+                        select: ""
                     }
-                    
-                    return resolve({ error: false, message: 'read_successfull' });
                 }
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
 
-    //__________Get thông tin
-    // Author: HiepNH
-    getInfo({ joblineID }) {
-        return new Promise(async resolve => {
-            try {
-                let info = await DATAHUB_JOBLINE_COLL.findById(joblineID).populate({
-                    path: 'product',
-                    select: '_id sign name note'
-                })
-                if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' })
-                    // console.log(info)
+                let info = await DATAHUB_JOBLINE_COLL.findById(joblineID)
+                    .select(select)
+                    .populate(populates)
+
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
                 return resolve({ error: false, data: info });
             } catch (error) {
@@ -162,90 +117,148 @@ class Model extends BaseModel {
         })
     }
 
-    //__________Cập nhật lại định mức
-    // Author: HiepNH
-    bulkUpdate({ data, authorID }){
-        const that = this;
+    /**
+     * Name  : Remove
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    remove({ joblineID, userID }){
         return new Promise(async (resolve) => {
             try {
-                if(!_isValid(authorID))
-                    return resolve({ error: true, message: 'param_not_valid' });
+                if(!_isValid(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
 
-                for(const item of data){
-                    if(item.id && _isValid(item.id)){
-                        let info = await DATAHUB_JOBLINE_COLL.findById(item.id)
+                let info = await DATAHUB_JOBLINE_COLL.findById(joblineID)
 
-                        let dataUpdate = {
-                            userUpdate: authorID,
-                            modifyAt: Date.now(),
-                            note: item.note,
-                            quantity: (item.quantity && !isNaN(item.quantity)) ? Number(item.quantity).toFixed(3) : 0
-                        }
+                // Xóa định mức
+                await DATAHUB_JOBLINE_COLL.findByIdAndDelete(joblineID)
 
-                        // Cập nhật lại định mức
-                        await DATAHUB_JOBLINE_COLL.findByIdAndUpdate(item.id, dataUpdate, { new: true })
+                // Cập nhật giá công tác
+                await DATAHUB_PRODUCT_MODEL.updateJobPrice({ jobID: info.job })
 
-                        // Cập nhật lại giá công tác
-                        await DATAHUB_PRODUCT_MODEL.updateJobPrice({ jobID: info.job })
-                    }else{
-                        await that.insert({
-                            job: item.job, 
-                            product: item.product,
-                            quantity: item.quantity, 
-                            note: item.note, 
-                            authorID
-                        })
+                return resolve({ error: false, message: 'Done' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : Get list 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+     getList({ jobID,
+        userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (limit > 50) {
+                    limit = 50
+                } else {
+                    limit = +limit;
+                }
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let sortBy;
+                let conditionObj = { };
+                let keys = ['createAt__-1', '_id__-1'];
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
+                        path: "",
+                        select: ""
                     }
                 }
 
-                return resolve({ error: false, message: 'Done' });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
 
-    //__________Xóa
-    // Author: HiepNH
-    remove({ arr, authorID }){
-        return new Promise(async (resolve) => {
-            try {
-                if(!_isValid(authorID))
-                    return resolve({ error: true, message: 'param_not_valid' })
-
-                for(const item of arr){
-                    let info = await DATAHUB_JOBLINE_COLL.findById(item.joblineID)
-
-                    // Xóa định mức
-                    await DATAHUB_JOBLINE_COLL.findByIdAndDelete(item.joblineID)
-
-                    // Cập nhật giá công tác
-                    await DATAHUB_PRODUCT_MODEL.updateJobPrice({ jobID: info.job })
+                    keys = JSON.parse(sortKey);
                 }
 
-                return resolve({ error: false, message: 'Done' });
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+                if (checkObjectIDs(jobID)) {
+                    conditionObj.job = jobID
+                }
+                console.log(conditionObj)
+
+                if (keyword) {
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+                if (lastestID && checkObjectIDs(lastestID)) {
+                    let infoData = await DATAHUB_JOBLINE_COLL.findById(lastestID);
+                    if (!infoData)
+                        return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if (!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy = dataPagingAndSort.data.sort;
+                } else {
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await DATAHUB_JOBLINE_COLL.find(conditionObj)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                // GET TOTAL RECORD
+                if (!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor = null;
+                if (infoDataAfterGet && infoDataAfterGet.length) {
+                    if (infoDataAfterGet.length > limit) {
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await DATAHUB_JOBLINE_COLL.count(conditionObjOrg);
+                let totalPage = Math.ceil(totalRecord / limit);
+
+                return resolve({
+                    error: false, data: {
+                        listRecords: infoDataAfterGet,
+                        limit: +limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    }, status: 200
+                });
+
             } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    //__________Lấy danh sách (phân trang)
-    // Auth: HiepNH
-    getList({ selectObj, conditionObj, sort, populate }) {
-        return new Promise(async resolve => {
-            try {
-                let listData = await DATAHUB_JOBLINE_COLL.find(conditionObj)
-                    .populate(populate)
-                    .select(selectObj)
-                    .sort(sort)
-
-                if (!listData) 
-                    return resolve({ error: true, message: 'cannot_get_info_data' });
-
-                return resolve({ error: false, data: listData });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
