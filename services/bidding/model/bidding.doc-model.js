@@ -25,6 +25,7 @@ const { KEY_ERROR }                            = require('../../../tools/keys/in
  */
 const BIDDING__PLAN_COLL                       = require('../database/bidding.plan-coll');
 const BIDDING__DOC_COLL                        = require('../database/bidding.doc-coll');
+const BIDDING__BILL_WORK_COLL                  = require('../database/bidding.bill_work-coll');
 
 /**
  * MODELS
@@ -40,7 +41,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, ctx }) {
+    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -132,6 +133,12 @@ class Model extends BaseModel {
                 if (!isNaN(factor5) && Number(factor5) >= 0) {
                     dataInsert.factor5 = factor5;
                 }
+                if (!isNaN(vat) && Number(vat) >= 0) {
+                    dataInsert.vat = vat;
+                }
+                if (!isNaN(vatValue) && Number(vatValue) >= 0) {
+                    dataInsert.vatValue = vatValue;
+                }
 
                 // Nhà thầu trúng thầu và thông tin trúng thầu
                 if (checkObjectIDs(bidderID)) {
@@ -162,7 +169,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 }) {
+    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -259,6 +266,12 @@ class Model extends BaseModel {
                 }
                 if (!isNaN(factor5) && Number(factor5) >= 0) {
                     dataUpdate.factor5 = factor5;
+                }
+                if (!isNaN(vat) && Number(vat) >= 0) {
+                    dataUpdate.vat = vat;
+                }
+                if (!isNaN(vatValue) && Number(vatValue) >= 0) {
+                    dataUpdate.vatValue = vatValue;
                 }
 
                 // Nhà thầu trúng thầu và thông tin trúng thầu
@@ -462,6 +475,77 @@ class Model extends BaseModel {
                     }, status: 200
                 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị
+     * Author: Hiepnh
+     * Date  : 02/5/2022
+     */
+    updateValue({
+        option, docID, userID, ctx
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                let info = await BIDDING__DOC_COLL.findById(docID)
+                if(!info)
+                    return resolve({ error: true, message: "info không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID, status: 400 });
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let dataUpdate = { 
+                    userUpdate: userID 
+                };
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+
+                /**
+                 * LOGIC STEP (3)
+                 * 3.1: Convert type + update name (ví dụ: string -> number)
+                 * 3.2: Operation database
+                 */
+                // Cập nhật Theo thay đổi của công việc
+                if(option && Number(option) === 1){
+                    let listDataWork = await BIDDING__BILL_WORK_COLL.aggregate([
+                        {
+                            $match: {
+                                doc: ObjectID(docID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    console.log(listDataWork)
+                    
+                    if(listDataWork && listDataWork.length){
+                        dataUpdate.amount = Number(listDataWork[0].amount)
+
+                        if(info.quantity != 0){
+                            dataUpdate.unitprice = Number(listDataWork[0].amount)/Number(info.quantity)
+                        }else{
+                            dataUpdate.unitprice = 0
+                        }
+                    }
+                }
+
+                let infoAfterUpdate = await BIDDING__DOC_COLL.findByIdAndUpdate(docID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_contract_ipc", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

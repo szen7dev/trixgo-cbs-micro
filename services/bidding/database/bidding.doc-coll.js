@@ -71,6 +71,8 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     releaseTime: { type: Date, default: null },
     //_________Thời điểm đóng thầu
     closingTime: { type: Date, default: null },
+    //_________Giá NET trước VAT
+    amount: { type: Number, default: 0 },
     /**
      * HỆ SỐ CHI PHÍ (%)
      * Phục vụ phân tích nguồn lực và tính giá
@@ -85,6 +87,17 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_doc", {
     factor4: { type: Number, default: 0 },
     //_________Lợi nhuận
     factor5: { type: Number, default: 0 },
+    /**
+     * VAT
+     * Thuế giá trị gia tăng
+     */
+    //_________%
+    vat: { type: Number, default: 10 },    
+    //_________%
+    vatValue: { type: Number, default: 0 },    
+    /**
+     * ĐƠN VỊ TRÚNG THẦU
+     */    
     //_________Nhà thầu trúng thầu
     bidder: {
         type: Schema.Types.ObjectId,

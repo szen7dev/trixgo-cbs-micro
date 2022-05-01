@@ -121,12 +121,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
                 /**
-                 * CẬP NHẬT LẠI GROUP VÀ ITEM
+                 * CẬP NHẬT LẠI GROUP, ITEM VÀ DOC
                  */
                 let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
                 let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID: infoGroup.item, userID })
+                let infoDoc = await BIDDING__DOC_MODEL.updateValue({ option: 1, docID: infoGroup.doc, userID })
                 console.log(infoGoup)
                 console.log(infoItem)
+                console.log(infoDoc)
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -150,6 +152,7 @@ class Model extends BaseModel {
                 
                 let groupID = infoWork.group
                 let itemID = infoWork.item
+                let docID = infoWork.doc
 
                 /**
                  * DECALARTION VARIABLE (1)
@@ -216,12 +219,14 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update", status: 403 });
 
                 /**
-                 * CẬP NHẬT LẠI GROUP VÀ ITEM
+                 * CẬP NHẬT LẠI GROUP, ITEM VÀ DOC
                  */
                 let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
                 let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID, userID })
+                let infoDoc = await BIDDING__DOC_MODEL.updateValue({ option: 1, docID, userID })
                 console.log(infoGoup)
                 console.log(infoItem)
+                console.log(infoDoc)
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
