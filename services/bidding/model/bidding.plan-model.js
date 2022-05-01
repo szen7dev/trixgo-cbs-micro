@@ -39,7 +39,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, parentID, fieldID, areaID, clientID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
+    insert({ userID, parentID, fieldID, areaID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -50,11 +50,12 @@ class Model extends BaseModel {
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: projectID, select: '_id name sign company'
                 })
+                console.log(infoProject)
 
                 if (!infoProject)
                     return resolve({ error: true, message: 'Can not get Project info', status: 400 })
 
-                let dataInsert = { userCreate: userID, client: infoProject.company, admins: [userID], members: [userID] }
+                let dataInsert = { userCreate: userID, client: infoProject.data.company, admins: [userID], members: [userID] }
 
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
@@ -66,10 +67,6 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(areaID)) {
                     dataInsert.area = areaID;
-                }
-
-                if (checkObjectIDs(clientID)) {
-                    dataInsert.client = clientID;
                 }
 
                 if (checkObjectIDs(projectID)) {
@@ -159,6 +156,8 @@ class Model extends BaseModel {
                 if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
                     dataInsert.vatTenderPrice = vatTenderPrice;
                 }
+
+                console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)

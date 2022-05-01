@@ -45,8 +45,8 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(userID) || !checkObjectIDs(planID))
-                    return resolve({ error: true, message: 'Request params planID|userID invalid', status: 400 })
+                if(!checkObjectIDs(userID) || !checkObjectIDs(docID))
+                    return resolve({ error: true, message: 'Request params docID|userID invalid', status: 400 })
                 
                 // Thông tin Hồ sơ mời thầu
                 let infoDoc = await BIDDING__DOC_COLL.findById(docID)
@@ -174,6 +174,10 @@ class Model extends BaseModel {
                 if (contractCondition) {
                     dataInsert.contractCondition = contractCondition;
                 }
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if (!infoAfterInsert)
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -316,7 +320,7 @@ class Model extends BaseModel {
                     dataUpdate.contractCondition = contractCondition;
                 }
 
-                let infoAfterUpdate = await BIDDING__REQUEST_COLL.findByIdAndUpdate(planID, dataUpdate, { new: true })
+                let infoAfterUpdate = await BIDDING__REQUEST_COLL.findByIdAndUpdate(requestID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
