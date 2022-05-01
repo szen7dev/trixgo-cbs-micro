@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, ctx, docID, type, order, invitationLetter, procuringEntity, client, project, package, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note }) {
+    insert({ userID, ctx, docID, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -102,8 +102,8 @@ class Model extends BaseModel {
                 if (project) {
                     dataInsert.project = project;
                 }
-                if (package) {
-                    dataInsert.package = package;
+                if (packageInfo) {
+                    dataInsert.package = packageInfo;
                 }
                 if (projectAddress) {
                     dataInsert.projectAddress = projectAddress;
@@ -187,7 +187,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ requestID, userID, ctx, type, order, invitationLetter, procuringEntity, client, project, package, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note }) {
+    update({ requestID, userID, ctx, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -243,8 +243,8 @@ class Model extends BaseModel {
                 if (project) {
                     dataUpdate.project = project;
                 }
-                if (package) {
-                    dataUpdate.package = package;
+                if (packageInfo) {
+                    dataUpdate.package = packageInfo;
                 }
                 if (projectAddress) {
                     dataUpdate.projectAddress = projectAddress;

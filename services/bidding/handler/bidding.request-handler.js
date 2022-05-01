@@ -40,12 +40,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { docID, type, order, invitationLetter, procuringEntity, client, project, package, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note } = ctx.params;
+                let { docID, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note } = ctx.params;
 
                 let { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING_REQUEST_MODEL.insert({
-                    userID, ctx, docID, type, order, invitationLetter, procuringEntity, client, project, package, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note
+                    userID, ctx, docID, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -85,12 +85,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { 
-                    requestID, type, order, invitationLetter, procuringEntity, client, project, package, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note
+                    requestID, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note
                 } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING_REQUEST_MODEL.update({
-                    requestID, userID, ctx, type, order, invitationLetter, procuringEntity, client, project, package, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note
+                    requestID, userID, ctx, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
