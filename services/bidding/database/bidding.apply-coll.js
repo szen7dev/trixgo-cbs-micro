@@ -11,11 +11,11 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_apply", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Thuộc hồ sơ mời thầu nào
-    doc: {
-        type: Schema.Types.ObjectId,
-        ref: "bidding_doc"
-    },
+    // //_________Thuộc hồ sơ mời thầu nào
+    // doc: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "bidding_doc"
+    // },
     //_________Dự thầu ứng với yêu cầu nào
     request: {
         type: Schema.Types.ObjectId,
@@ -23,11 +23,11 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_apply", {
     },
     //_________Nội dung
     name: String,
-    //_________Mô tả/Yêu cầu
+    //_________Mô tả
     description: String,
-    //_________Ghi chú/Thương hiệu, xuất xứ
+    //_________Ghi chú
     note: String,
-    //________Tài liệu xác nhận
+    //________Tài liệu đính kèm
     attachs: [{
         type: Schema.Types.ObjectId,
         ref: "file"

@@ -73,12 +73,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { docID, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 } = ctx.params;
+                const { docID, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__DOC_MODEL.update({
-                    docID, userID, ctx, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5
+                    docID, userID, ctx, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

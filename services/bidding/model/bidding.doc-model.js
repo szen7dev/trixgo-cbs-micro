@@ -161,13 +161,24 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 }) {
+    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5 }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * NỘP THẦU VÀ MỞ THẦU
+                 * 1-Ngoài assigneeID => tất cả chỉ được xem nội dung hồ sơ dự sau thời điểm mở thầu
+                 * 2-Chỉ cho assigneeID nộp trước thời điểm closingTime (cập nhật thoải mái)
+                 * 3-Chỉ khi assigneeID đồng ý cho mở thầu (agreeStatus=1) => thì mới được mở thầu
+                 * 4-Chỉ bidOpeners mới được mở thầu 
+                 * 5-Khi bidOpeners mở thầu => add vào mảng openedUsers (người đã mở thầu)
+                 * 6-Khi bidOpeners == openedUsers => openedStatus = 1
                  */
+
+                let infoDoc = await BIDDING__DOC_COLL.findById(docID)
+                if (!infoDoc)
+                    return resolve({ error: true, message: 'Can not get infoDoc', status: 400 })
+
                 let dataUpdate = { userUpdate: userID };
 
                 if (!checkObjectIDs(docID))
@@ -177,7 +188,8 @@ class Model extends BaseModel {
                     dataUpdate.bidder = bidderID;
                 }
 
-                if (checkObjectIDs(assigneeID)) {
+                if (checkObjectIDs(assigneeID) && checkObjectIDs(companyOfAssigneeID)) {
+                    dataInsert.companyOfAssignee = companyOfAssigneeID;
                     dataInsert.assignee = assigneeID;
                 }
 
@@ -201,28 +213,37 @@ class Model extends BaseModel {
                     dataUpdate.closingTime = closingTime;
                 }
 
-                // Nộp thầu
-                if (!isNaN(agreeStatus) && Number(agreeStatus) >= 0) {
-                    dataUpdate.agreeStatus = agreeStatus;
+                /**
+                 * Nộp thầu
+                 * Chỉ cho phép Người thực hiện được nộp thầu
+                 */
+                
+                if(infoDoc.assignee.toString() === userID.toString()){
+                    if (!isNaN(agreeStatus) && Number(agreeStatus) === 1) {
+                        dataUpdate.agreeStatus = agreeStatus;
+                    }
+    
+                    if (!isNaN(bidPrice) && Number(bidPrice) >= 0) {
+                        dataUpdate.bidPrice = bidPrice;
+                    }
+    
+                    if (!isNaN(bidPriceDiscount) && Number(bidPriceDiscount) >= 0) {
+                        dataUpdate.bidPriceDiscount = bidPriceDiscount;
+                    }
+    
+                    if (!isNaN(bidPriceAdjustment) && Number(bidPriceAdjustment) >= 0) {
+                        dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
+                    }
+
+                    // if (timeApproved) {
+                    //     dataUpdate.timeApproved = timeApproved;
+                    // }
                 }
 
-                if (!isNaN(bidPrice) && Number(bidPrice) >= 0) {
-                    dataUpdate.bidPrice = bidPrice;
-                }
-
-                if (!isNaN(bidPriceDiscount) && Number(bidPriceDiscount) >= 0) {
-                    dataUpdate.bidPriceDiscount = bidPriceDiscount;
-                }
-
-                if (!isNaN(bidPriceAdjustment) && Number(bidPriceAdjustment) >= 0) {
-                    dataUpdate.bidPriceAdjustment = bidPriceAdjustment;
-                }
-
-                if (timeApproved) {
-                    dataUpdate.timeApproved = timeApproved;
-                }
-
-                // Mở thầu
+                /**
+                 * Mở thầu
+                 * Kiểm tra nếu đủ người mở thầu => Cập nhật trạng thái sang 1
+                 */
                 if (!isNaN(openedStatus) && Number(openedStatus) >= 0) {
                     dataUpdate.openedStatus = openedStatus;
                 }

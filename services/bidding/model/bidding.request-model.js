@@ -26,6 +26,7 @@
 const BIDDING__PLAN_COLL                        = require('../database/bidding.plan-coll');
 const BIDDING__DOC_COLL                         = require('../database/bidding.doc-coll');
 const BIDDING__REQUEST_COLL                     = require('../database/bidding.request-coll');
+const BIDDING__APPLY_COLL                       = require('../database/bidding.apply-coll');
  
  /**
   * MODELS

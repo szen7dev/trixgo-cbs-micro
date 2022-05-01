@@ -1,23 +1,37 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
-const ObjectID = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-
 /**
- * import inter-coll, exter-coll
+ * EXTERNAL PACKAGE
  */
-const BIDDING__APPLY_COLL = require('../database/bidding.apply-coll');
+ const ObjectID = require('mongoose').Types.ObjectId;
 
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+ /**
+  * CONSTANTS
+  */
+ const { CF_ACTIONS_AUTH } 		                = require('../../auth/helper/auth.actions-constant');
+ const { CF_DOMAIN_SERVICES } 				    = require('../../gateway/helper/domain.constant');
+ const { CF_ACTIONS_ITEM } 					    = require('../../item/helper/item.actions-constant');
+ 
+ /**
+  * TOOLS
+  */
+ const { checkObjectIDs, IsJsonString }         = require('../../../tools/utils/utils');
+ const BaseModel                                = require('../../../tools/db/base_model');
+ const { RANGE_BASE_PAGINATION_V2 }             = require('../../../tools/cursor_base/playground/index');
+ const { KEY_ERROR }                            = require('../../../tools/keys/index')
+ 
+ /**
+  * COLLECTIONS
+  */
+const BIDDING__PLAN_COLL                        = require('../database/bidding.plan-coll');
+const BIDDING__DOC_COLL                         = require('../database/bidding.doc-coll');
+const BIDDING__REQUEST_COLL                     = require('../database/bidding.request-coll');
+const BIDDING__APPLY_COLL                       = require('../database/bidding.apply-coll');
+ 
+ /**
+  * MODELS
+  */
 
-/**
- * import inter-model, exter-model
- */
 class Model extends BaseModel {
     constructor() {
         super(BIDDING__APPLY_COLL);
@@ -28,72 +42,47 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ requestID, userID, contractorID, name, description, note }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                if(!checkObjectIDs(userID) || !checkObjectIDs(requestID) || !checkObjectIDs(contractorID))
+                    return resolve({ error: true, message: 'Request params requestID|contractorID|userID invalid', status: 400 })
 
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
-                }
+                // Kiểm tra sự tồn tại của dữ liệu
+                let infoApply = await BIDDING__APPLY_COLL.findOne({ contractor: contractorID, request: requestID })
+                console.log(infoApply)
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
-                }
+                if(infoApply)
+                    return resolve({ error: true, message: 'Dữ liệu đã tồn tại', status: 400 })
 
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
-                }
-
-                if (checkObjectIDs(contractID)) {
-                    dataInsert.contract = contractID;
-                }
-
+                let dataInsert = { userCreate: userID, contractor: contractorID, request: requestID };
+                
                 if (name) {
                     dataInsert.name = name;
                 }
 
-                if (date) {
-                    dataInsert.date = date;
-                }
-
-                if (sign) {
-                    dataInsert.sign = sign;
+                if (description) {
+                    dataInsert.description = description;
                 }
 
                 if (note) {
                     dataInsert.note = note;
                 }
 
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
-                }
-
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
-                }
-
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
-                }
-
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
-                }
-
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
-                }
-
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                console.log(infoAfterInsert)
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
-                }
+                /**
+                 * CẬP NHẬT LẠI YÊU CẦU CỦA HỒ SƠ
+                 */
+                let infoRequest = await BIDDING__REQUEST_COLL.findByIdAndUpdate(requestID, {
+                    $addToSet: { details: infoAfterInsert._id }
+                }, { new: true })
+                
+                console.log(infoRequest)
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -107,7 +96,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ applyID, name, description, note, userID }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -116,57 +105,23 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(applyID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
-
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
-                }
-
-                if (checkObjectIDs(contractID)) {
-                    dataUpdate.contract = contractID;
-                }
-
                 if (name) {
                     dataUpdate.name = name;
                 }
 
-                if (date) {
-                    dataUpdate.date = date;
-                }
-
-                if (sign) {
-                    dataUpdate.sign = sign;
+                if (description) {
+                    dataUpdate.description = description;
                 }
 
                 if (note) {
                     dataUpdate.note = note;
                 }
 
-                if (income >= 0) {
-                    dataUpdate.income = income;
-                }
-
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
-                }
-
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
-                }
-
-                let infoAfterUpdate = await BIDDING__APPLY_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+                let infoAfterUpdate = await BIDDING__APPLY_COLL.findByIdAndUpdate(applyID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
-                }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -186,10 +141,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ applyID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(applyID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -203,13 +158,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BIDDING__APPLY_COLL.findById(cashBookID)
+                let info = await BIDDING__APPLY_COLL.findById(applyID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -221,7 +176,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ requestID, userID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -269,28 +224,9 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
-
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
-                    }
-                } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+                if (checkObjectIDs(requestID)) {
+                    conditionObj.request = requestID
                 }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
-                }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
-                }
-
                 console.log(conditionObj)
 
                 if (keyword) {
