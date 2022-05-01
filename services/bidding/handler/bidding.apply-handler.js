@@ -12,7 +12,7 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     insert: {
         auth: "required",
@@ -52,7 +52,7 @@ module.exports = {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     update: {
         auth: "required",
@@ -88,7 +88,7 @@ module.exports = {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     remove: {
         auth: "required",
@@ -115,7 +115,7 @@ module.exports = {
     /**
      * Name: Get info and Get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     getInfoAndGetList: {
         auth: "required",
