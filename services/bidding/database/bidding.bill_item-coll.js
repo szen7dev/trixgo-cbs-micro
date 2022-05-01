@@ -9,12 +9,12 @@ const Schema                = require('mongoose').Schema;
  * => Số liệu tính toán đều là trước VAT
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_bill_item", {
-    //_________Khu vực (xã/phường)
+    //_________Khu vực (Lấy theo dự án)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },    
-    //_________Chủ đầu tư
+    //_________Chủ đầu tư (Lấy theo dự án)
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -34,10 +34,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_item", {
      */
     //_________Tên
     name: String,
-    //_________Mô tả
-    description: String,
     //_________Ký hiệu
     sign: String,
+    //_________Đơn vị
+    unit: String,
+    //_________Mô tả
+    description: String,
     //_________Ghi chú
     note: String,
     //_________Khối lượng

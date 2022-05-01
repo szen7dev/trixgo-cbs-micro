@@ -24,7 +24,7 @@ module.exports = {
         auth: "required",
         params: {
             planID          : { type: "string" },
-            parentID      : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
             assigneeID      : { type: "string", optional: true },
             name            : { type: "string" },
             note            : { type: "string", optional: true },
@@ -39,8 +39,6 @@ module.exports = {
                 let companyOfAssigneeID;
                 if(parentID && assigneeID){
                     let infoCompanyOfAssigneeID = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_BY_ID}`,{ userID: assigneeID })
-                    // console.log('infoCompanyOfAssigneeID=================>>>>>>>>>>>>>>')
-                    // console.log(infoCompanyOfAssigneeID)
 
                     if(infoCompanyOfAssigneeID){
                         companyOfAssigneeID = infoCompanyOfAssigneeID.data.company

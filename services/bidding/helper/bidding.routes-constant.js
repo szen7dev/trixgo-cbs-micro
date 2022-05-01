@@ -10,6 +10,8 @@ const BIIDING_QUOTATION         = '/bidding_quotations';
 const BIIDING_BILL_ITEM         = '/bidding_bill_items';
 const BIIDING_BILL_GROUP        = '/bidding_bill_groups';
 const BIIDING_BILL_WORK         = '/bidding_bill_works';
+const BIIDING_BILL_WORKLINE     = '/bidding_bill_worklines';
+const BIIDING_BILL_PRODUCT      = '/bidding_bill_products';
 
 const CF_ROUTINGS_BIDDING = {
     ORIGIN_APP: BASE_ROUTE,
@@ -37,6 +39,12 @@ const CF_ROUTINGS_BIDDING = {
 
     // ================================BIIDING_BILL_WORK=======================================//
     BIIDING_BILL_WORK                     : `${BASE_ROUTE}${BIIDING_BILL_WORK}`, 
+
+    // ================================BIIDING_BILL_WORKLINE=======================================//
+    BIIDING_BILL_WORKLINE                 : `${BASE_ROUTE}${BIIDING_BILL_WORKLINE}`, 
+
+    // ================================BIIDING_BILL_PRODUCT=======================================//
+    BIIDING_BILL_PRODUCT                  : `${BASE_ROUTE}${BIIDING_BILL_PRODUCT}`, 
 }
 
 exports.CF_ROUTINGS_BIDDING = CF_ROUTINGS_BIDDING;

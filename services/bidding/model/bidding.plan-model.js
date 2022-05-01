@@ -15,7 +15,7 @@ const { CF_ACTIONS_ITEM } 					    = require('../../item/helper/item.actions-con
 /**
  * TOOLS
  */
- const { checkObjectIDs, IsJsonString }         = require('../../../tools/utils/utils');
+ const { checkObjectIDs, IsJsonString, _isValid }         = require('../../../tools/utils/utils');
  const BaseModel                                = require('../../../tools/db/base_model');
  const { RANGE_BASE_PAGINATION_V2 }             = require('../../../tools/cursor_base/playground/index');
  const { KEY_ERROR }                            = require('../../../tools/keys/index')
@@ -48,14 +48,23 @@ class Model extends BaseModel {
                 
                 // Thông tin dự án
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                    departmentID: projectID, select: '_id name sign company'
+                    departmentID: projectID, select: '_id name sign company area'
                 })
                 console.log(infoProject)
 
                 if (!infoProject)
                     return resolve({ error: true, message: 'Can not get Project info', status: 400 })
 
-                let dataInsert = { userCreate: userID, client: infoProject.data.company, admins: [userID], members: [userID] }
+                if (!infoProject.data.area || !_isValid(infoProject.data.area))
+                    return resolve({ error: true, message: 'Can not get Project Area info', status: 400 })
+
+                let dataInsert = { 
+                    userCreate: userID, 
+                    area: infoProject.data.area, 
+                    client: infoProject.data.company, 
+                    admins: [userID], 
+                    members: [userID] 
+                }
 
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
@@ -196,7 +205,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
+    update({ planID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -215,10 +224,6 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(fieldID)) {
                     dataUpdate.field = fieldID;
-                }
-
-                if (checkObjectIDs(areaID)) {
-                    dataUpdate.area = areaID;
                 }
 
                 if (checkObjectIDs(bidderID)) {

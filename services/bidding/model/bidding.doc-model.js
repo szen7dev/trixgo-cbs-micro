@@ -49,8 +49,6 @@ class Model extends BaseModel {
                 
                 // Thông tin Kế hoạch
                 let infoPlan = await BIDDING__PLAN_COLL.findById(planID)
-                // console.log('infoPlan===============>>>>>>>>>>>>>>>>>')
-                // console.log(infoPlan)
 
                 if (!infoPlan)
                     return resolve({ error: true, message: 'Can not get infoPlan', status: 400 })

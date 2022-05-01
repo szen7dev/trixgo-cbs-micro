@@ -20,6 +20,8 @@ const { CF_ACTIONS_BIDDING } 	        = require('./helper/bidding.actions-consta
  const BIDDING__BILL_ITEM_HANDLER       = require('./handler/bidding.bill_item-handler');
  const BIDDING__BILL_GROUP_HANDLER      = require('./handler/bidding.bill_group-handler');
  const BIDDING__BILL_WORK_HANDLER       = require('./handler/bidding.bill_work-handler');
+ const BIDDING__BILL_WORKLINE_HANDLER   = require('./handler/bidding.bill_workline-handler');
+ const BIDDING__BILL_PRODUCT_HANDLER    = require('./handler/bidding.bill_product-handler');
 
 /**
  * COLLECTIONS
@@ -32,6 +34,8 @@ const BIDDING__QUOTATION_COLL			= require('./database/bidding.quotation-coll');
 const BIDDING__BILL_ITEM_COLL			= require('./database/bidding.bill_item-coll');
 const BIDDING__BILL_GROUP_COLL			= require('./database/bidding.bill_group-coll');
 const BIDDING__BILL_WORK_COLL			= require('./database/bidding.bill_work-coll');
+const BIDDING__BILL_WORKLINE_COLL		= require('./database/bidding.bill_workline-coll');
+const BIDDING__BILL_PRODUCT_COLL		= require('./database/bidding.bill_product-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.BIDDING,
@@ -44,6 +48,8 @@ module.exports = {
 		DbService(BIDDING__BILL_ITEM_COLL),
 		DbService(BIDDING__BILL_GROUP_COLL),
 		DbService(BIDDING__BILL_WORK_COLL),
+		DbService(BIDDING__BILL_WORKLINE_COLL),
+		DbService(BIDDING__BILL_PRODUCT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.BIDDING])
     ],
 
@@ -110,6 +116,18 @@ module.exports = {
 		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORK_UPDATE] 							: BIDDING__BILL_WORK_HANDLER.update,
 		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORK_REMOVE] 							: BIDDING__BILL_WORK_HANDLER.remove,
 		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORK_GET_INFO_AND_GET_LIST] 			: BIDDING__BILL_WORK_HANDLER.getInfoAndGetList,
+
+		//==========================================  BIIDING_BILL_WORKLINE  ==================================
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORKLINE_INSERT] 							: BIDDING__BILL_WORKLINE_HANDLER.insert,
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORKLINE_UPDATE] 							: BIDDING__BILL_WORKLINE_HANDLER.update,
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORKLINE_REMOVE] 							: BIDDING__BILL_WORKLINE_HANDLER.remove,
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_WORKLINE_GET_INFO_AND_GET_LIST] 			: BIDDING__BILL_WORKLINE_HANDLER.getInfoAndGetList,
+
+		//==========================================  BIIDING_BILL_PRODUCT  ==================================
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_PRODUCT_INSERT] 							: BIDDING__BILL_PRODUCT_HANDLER.insert,
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_PRODUCT_UPDATE] 							: BIDDING__BILL_PRODUCT_HANDLER.update,
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_PRODUCT_REMOVE] 							: BIDDING__BILL_PRODUCT_HANDLER.remove,
+		[CF_ACTIONS_BIDDING.BIIDING_BILL_PRODUCT_GET_INFO_AND_GET_LIST] 			: BIDDING__BILL_PRODUCT_HANDLER.getInfoAndGetList,
 	},
 
 	/**

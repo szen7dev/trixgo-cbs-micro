@@ -24,12 +24,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref : "datahub_type"
     },      
-    //_________Khu vực (xã/phường)
+    //_________Khu vực (lấy từ thông tin dự án)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },    
-    //_________Chủ đầu tư
+    //_________Chủ đầu tư (lấy từ thông tin dự án)
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"

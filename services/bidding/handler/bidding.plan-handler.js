@@ -17,31 +17,24 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            projectID: { type: "string" },
-            // parentID: { type: "string", optional: true },
-            // accountID: { type: "string", optional: true },
-            // customerID: { type: "string", optional: true },
-            // contractID: { type: "string", optional: true },
-            // name: { type: "string" },
-            // sign: { type: "string", optional: true },
-            // note: { type: "string", optional: true },
-            // date: { type: "string", optional: true },
-            // income: { type: "number", optional: true },
-            // expense: { type: "number", optional: true },
-            // arising: { type: "number", optional: true },
-            // openingBalance: { type: "number", optional: true },
-            // closingBalance: { type: "number", optional: true },
+            fieldID             : { type: "string", optional: true },
+            projectID           : { type: "string" },
+            parentID            : { type: "string", optional: true },
+            bidderID            : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            name                : { type: "string" },
+            sign                : { type: "string", optional: true },
         },
 
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, fieldID, areaID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice } = ctx.params;
+                const { parentID, fieldID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__PLAN_MODEL.insert({
-                    userID, parentID, fieldID, areaID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx
+                    userID, parentID, fieldID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -59,27 +52,19 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            // planID: { type: "string" },
-            // accountID: { type: "string", optional: true },
-            // customerID: { type: "string", optional: true },
-            // contractID: { type: "string", optional: true },
-            // name: { type: "string", optional: true },
-            // sign: { type: "string", optional: true },
-            // note: { type: "string", optional: true },
-            // date: { type: "string", optional: true },
-            // income: { type: "number", optional: true },
-            // expense: { type: "number", optional: true },
-            // active: { type: "number", optional: true },
+            planID              : { type: "string" },
+            name                : { type: "string" },
+            sign                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { planID, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice } = ctx.params;
+                const { planID, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__PLAN_MODEL.update({
-                    planID, userID, ctx, fieldID, areaID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice
+                    planID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

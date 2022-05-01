@@ -1,23 +1,43 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
-const ObjectID = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-
 /**
- * import inter-coll, exter-coll
+ * EXTERNAL PACKAGE
  */
-const BIDDING__BILL_WORK_COLL = require('../database/bidding.bill_work-coll');
+ const ObjectID                                 = require('mongoose').Types.ObjectId;
 
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+ /**
+  * CONSTANTS
+  */
+const { CF_DOMAIN_SERVICES } 				    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 		                = require('../../auth/helper/auth.actions-constant');
+const { CF_ACTIONS_ITEM } 					    = require('../../item/helper/item.actions-constant');
+ 
+ /**
+  * TOOLS
+  */
+const BaseModel                                 = require('../../../tools/db/base_model');
+const { checkObjectIDs, IsJsonString, _isValid }= require('../../../tools/utils/utils');
+const { RANGE_BASE_PAGINATION_V2 }              = require('../../../tools/cursor_base/playground/index');
+const { KEY_ERROR }                             = require('../../../tools/keys/index')
+ 
+ /**
+  * COLLECTIONS
+  */
+const BIDDING__DOC_COLL                         = require('../database/bidding.doc-coll');
+const BIDDING__BILL_ITEM_COLL                   = require('../database/bidding.bill_item-coll');
+const BIDDING__BILL_GROUP_COLL                  = require('../database/bidding.bill_group-coll');
+const BIDDING__BILL_WORK_COLL                   = require('../database/bidding.bill_work-coll');
+const BIDDING__BILL_WORKLINE_COLL               = require('../database/bidding.bill_workline-coll');
+const BIDDING__BILL_PRODUCT_COLL                = require('../database/bidding.bill_product-coll');
+const BIDDING__QUOTATION_COLL                   = require('../database/bidding.quotation-coll');
+ 
+ /**
+  * MODELS
+  */
+const BIDDING__DOC_MODEL                        = require('./bidding.doc-model').MODEL;
+const BIDDING__BILL_ITEM_MODEL                  = require('./bidding.bill_item-model').MODEL;
+const BIDDING__BILL_GROUP_MODEL                 = require('./bidding.bill_group-model').MODEL;
 
-/**
- * import inter-model, exter-model
- */
 class Model extends BaseModel {
     constructor() {
         super(BIDDING__BILL_WORK_COLL);
@@ -28,72 +48,85 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ userID, groupID, datahubJobID, name, sign, unit, description, note, plus, quantity, quantity2, unitprice1, unitprice2, unitprice3, unitprice, amount }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                let infoGroup = await BIDDING__BILL_GROUP_COLL.findById(groupID);
+                if(!infoGroup)
+                    return resolve({ error: true, message: "infoGroup không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID, status: 400 });
 
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
-                }
+                let dataInsert = { 
+                    userCreate: userID, 
+                    area: infoGroup.area, 
+                    client: infoGroup.client, 
+                    project: infoGroup.project, 
+                    doc: infoGroup.doc,
+                    item: infoGroup.item,
+                    group: groupID,
+                    name
+                };
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
-                }
-
-                if (checkObjectIDs(contractID)) {
-                    dataInsert.contract = contractID;
-                }
-
-                if (name) {
-                    dataInsert.name = name;
-                }
-
-                if (date) {
-                    dataInsert.date = date;
-                }
-
+                // if (checkObjectIDs(datahubJobID)) {
+                //     dataInsert.datahubJob = datahubJobID;
+                // }
+                
                 if (sign) {
                     dataInsert.sign = sign;
+                }
+
+                if (unit) {
+                    dataInsert.unit = unit;
+                }
+
+                if (description) {
+                    dataInsert.description = description;
                 }
 
                 if (note) {
                     dataInsert.note = note;
                 }
 
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
+                if (!isNaN(plus) && Number(plus) > 0) {
+                    dataInsert.plus = plus;
                 }
 
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
+                if (!isNaN(quantity) && Number(quantity) >= 0) {
+                    dataInsert.quantity = quantity;
                 }
 
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
+                if (!isNaN(quantity2) && Number(quantity2) >= 0) {
+                    dataInsert.quantity2 = quantity2;
                 }
 
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
+                if (!isNaN(unitprice1) && Number(unitprice1) >= 0) {
+                    dataInsert.unitprice1 = unitprice1;
                 }
 
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
+                if (!isNaN(unitprice2) && Number(unitprice2) >= 0) {
+                    dataInsert.unitprice2 = unitprice2;
+                }
+
+                if (!isNaN(unitprice3) && Number(unitprice3) >= 0) {
+                    dataInsert.unitprice3 = unitprice3;
+                }
+
+                if (!isNaN(unitprice) && Number(unitprice) >= 0) {
+                    dataInsert.unitprice = unitprice;
+                    dataInsert.amount = Number(quantity | 0) * Number(unitprice | 0)
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
-                }
+                /**
+                 * CẬP NHẬT LẠI GROUP VÀ ITEM
+                 */
+                let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
+                let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID: infoGroup.item, userID })
+                console.log(infoGoup)
+                console.log(infoItem)
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -107,66 +140,88 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ userID, workID, datahubJobID, name, sign, unit, description, note, plus, quantity, quantity2, unitprice1, unitprice2, unitprice3, unitprice, amount }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
+                let infoWork = await BIDDING__BILL_WORK_COLL.findById(workID);
+                if(!infoWork)
+                    return resolve({ error: true, message: "infoWork không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                
+                let groupID = infoWork.group
+                let itemID = infoWork.item
+
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { 
+                    userUpdate: userID,
+                };
 
-                if (!checkObjectIDs(cashBookID))
-                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
-
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
-                }
-
-                if (checkObjectIDs(contractID)) {
-                    dataUpdate.contract = contractID;
-                }
+                // if (checkObjectIDs(datahubJobID)) {
+                //     dataInsert.datahubJob = datahubJobID;
+                // }
 
                 if (name) {
                     dataUpdate.name = name;
-                }
-
-                if (date) {
-                    dataUpdate.date = date;
                 }
 
                 if (sign) {
                     dataUpdate.sign = sign;
                 }
 
+                if (unit) {
+                    dataUpdate.unit = unit;
+                }
+
+                if (description) {
+                    dataUpdate.description = description;
+                }
+
                 if (note) {
                     dataUpdate.note = note;
                 }
 
-                if (income >= 0) {
-                    dataUpdate.income = income;
+                if (!isNaN(plus) && Number(plus) > 0) {
+                    dataUpdate.plus = plus;
                 }
 
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
+                if (!isNaN(quantity) && Number(quantity) >= 0) {
+                    dataUpdate.quantity = quantity;
                 }
 
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
+                if (!isNaN(quantity2) && Number(quantity2) >= 0) {
+                    dataUpdate.quantity2 = quantity2;
                 }
 
-                let infoAfterUpdate = await BIDDING__BILL_WORK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+                if (!isNaN(unitprice1) && Number(unitprice1) >= 0) {
+                    dataUpdate.unitprice1 = unitprice1;
                 }
+
+                if (!isNaN(unitprice2) && Number(unitprice2) >= 0) {
+                    dataUpdate.unitprice2 = unitprice2;
+                }
+
+                if (!isNaN(unitprice3) && Number(unitprice3) >= 0) {
+                    dataUpdate.unitprice3 = unitprice3;
+                }
+
+                if (!isNaN(unitprice) && Number(unitprice) >= 0) {
+                    dataUpdate.unitprice = unitprice;
+                    dataUpdate.amount = Number(quantity | 0) * Number(unitprice | 0)
+                }
+
+                let infoAfterUpdate = await BIDDING__BILL_WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update", status: 403 });
+
+                /**
+                 * CẬP NHẬT LẠI GROUP VÀ ITEM
+                 */
+                let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
+                let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID, userID })
+                console.log(infoGoup)
+                console.log(infoItem)
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -186,10 +241,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ workID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(workID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -203,13 +258,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BIDDING__BILL_WORK_COLL.findById(cashBookID)
+                let info = await BIDDING__BILL_WORK_COLL.findById(workID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -221,7 +276,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 28/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ groupID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -269,28 +324,9 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
-
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
-                    }
-                } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+                if (checkObjectIDs(groupID)) {
+                    conditionObj.group = groupID
                 }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
-                }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
-                }
-
                 console.log(conditionObj)
 
                 if (keyword) {
