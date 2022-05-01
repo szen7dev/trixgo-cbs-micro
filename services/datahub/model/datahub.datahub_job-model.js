@@ -37,14 +37,15 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 01/5/2022
      */
-    insert({ parentID, sign, name, description, unit, note, unitprice, authorID }) {
+    insert({ parentID, sign, name, description, unit, note, unitprice, userID }) {
         const that = this
         return new Promise(async resolve => {
             try {
-                if(!name || !sign || !_isValid(authorID))
+                if(!name || !sign || !_isValid(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
                 let dataInsert = {
+                    userCreate: userID,
                     name, 
                     sign, 
                     description, 
@@ -58,7 +59,7 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID
                 }
 
-                let infoAfterInsert = await that.insertData(dataInsert, authorID)
+                let infoAfterInsert = await that.insertData(dataInsert)
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: 'cannot_insert' })
                 
@@ -161,43 +162,83 @@ class Model extends BaseModel {
         })
     }
 
-    //__________Cập nhật (nhiều mẩu tin/excel)
-    // Author: HiepNH
-    bulkUpdate({ data, authorID }){
-        const that = this;
-        return new Promise(async (resolve) => {
-            try {
-                if(!_isValid(authorID))
-                    return resolve({ error: true, message: 'param_not_valid' });
+    // //__________Cập nhật (nhiều mẩu tin/excel)
+    // // Author: HiepNH
+    // bulkUpdate({ data, authorID }){
+    //     const that = this;
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!_isValid(authorID))
+    //                 return resolve({ error: true, message: 'param_not_valid' });
 
-                for(const item of data){
-                    if(item.id && _isValid(item.id)){
-                        let dataUpdate = {
-                            userUpdate: authorID,
-                            modifyAt: Date.now(),
-                            sign: item.sign, 
-                            name: item.name, 
-                            description: item.description, 
-                            unit: item.unit, 
-                            note: item.note, 
-                            unitprice: (item.unitprice && !isNaN(item.unitprice)) ? Number(item.unitprice).toFixed(0) : 0
-                        }
-                        await DATAHUB_JOB_COLL.findByIdAndUpdate(item.id, dataUpdate, { new: true })
-                    }else{
-                        await that.insert({
-                            parent: item.parent, 
-                            sign: item.sign, 
-                            name: item.name, 
-                            description: item.description, 
-                            unit: item.unit, 
-                            note: item.note, 
-                            unitprice: item.unitprice, 
-                            authorID
-                        })
-                    }
+    //             for(const item of data){
+    //                 if(item.id && _isValid(item.id)){
+    //                     let dataUpdate = {
+    //                         userUpdate: authorID,
+    //                         modifyAt: Date.now(),
+    //                         sign: item.sign, 
+    //                         name: item.name, 
+    //                         description: item.description, 
+    //                         unit: item.unit, 
+    //                         note: item.note, 
+    //                         unitprice: (item.unitprice && !isNaN(item.unitprice)) ? Number(item.unitprice).toFixed(0) : 0
+    //                     }
+    //                     await DATAHUB_JOB_COLL.findByIdAndUpdate(item.id, dataUpdate, { new: true })
+    //                 }else{
+    //                     await that.insert({
+    //                         parent: item.parent, 
+    //                         sign: item.sign, 
+    //                         name: item.name, 
+    //                         description: item.description, 
+    //                         unit: item.unit, 
+    //                         note: item.note, 
+    //                         unitprice: item.unitprice, 
+    //                         authorID
+    //                     })
+    //                 }
+    //             }
+
+    //             return resolve({ error: false, message: 'Done' });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
+
+    update({ jobID, sign, name, description, unit, note, unitprice, userID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!name || !sign || !_isValid(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                let dataUpdate = { 
+                    modifyAt: Date.now(),
+                    userUpdate: userID, 
+                    sign, 
+                    name 
                 }
 
-                return resolve({ error: false, message: 'Done' });
+                if(description){
+                    dataUpdate.description = description;
+                }
+
+                if(unit){
+                    dataUpdate.unit = unit;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
+                }
+
+                if (!isNaN(unitprice) && Number(unitprice) >= 0) {
+                    dataUpdate.unitprice = unitprice;
+                }
+
+                let infoAfterUpdate = await DATAHUB_JOB_COLL.findByIdAndUpdate(jobID, dataUpdate, { new: true });
+                if (!infoAfterUpdate) 
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
+                
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

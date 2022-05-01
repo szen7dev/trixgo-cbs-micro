@@ -30,7 +30,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_JOB_MODEL.insert({
-                    parentID, sign, name, description, unit, note, unitprice, authorID: userID
+                    parentID, sign, name, description, unit, note, unitprice, userID
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -46,19 +46,22 @@ module.exports = {
 	 */
     update: {
         params: {
-            datahubID   : { type: "string" },
-            name        : { type: "string", optional: true },
-            description : { type: "string", optional: true },
-            popular     : { type: "number", optional: true },
+            jobID           : { type: "string" },
+            name            : { type: "string" },
+            sign            : { type: "string" },
+            unit            : { type: "string" },
+            description     : { type: "string", optional: true },
+            note            : { type: "string", optional: true },
+            unitprice       : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubID, name, description, popular } = ctx.params;
+                let { jobID, sign, name, description, unit, note, unitprice } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_JOB_MODEL.update({
-                    datahubID, name, description, popular, userID
+                    jobID, sign, name, description, unit, note, unitprice, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -99,9 +102,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            datahubTypeID : { type: "string", optional: true },
-            type      : { type: "string", optional: true },
-            popular     : { type: "string", optional: true },
+            jobID       : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
 
             // Field mặc định
@@ -114,17 +115,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubTypeID, type, popular, parentID, lastestID, keyword, limit, select, populates } = ctx.params;
+                let { jobID, parentID, lastestID, keyword, limit, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
-                if(datahubTypeID){
+                if(jobID){
                     resultAfterCallHandler = await DATAHUB_JOB_MODEL.getInfo({
-                        datahubTypeID, select, populates
+                        jobID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DATAHUB_JOB_MODEL.getList({
-                        type, popular, parentID, userID, lastestID, keyword, limit, select, populates
+                        jobID, parentID, userID, lastestID, keyword, limit, select, populates
                     });
                 }
                 
