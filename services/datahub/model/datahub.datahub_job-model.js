@@ -18,6 +18,7 @@ const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/pl
 const {
     checkObjectIDs,
     IsJsonString,
+    _isValid
 } = require('../../../tools/utils/utils');
 
 /**
@@ -30,8 +31,14 @@ class Model extends BaseModel {
     constructor() {
         super(DATAHUB_JOB_COLL);
     }
- 
+
+     /**
+     * Name: Insert 
+     * Author: Hiepnh
+     * Date: 01/5/2022
+     */
     insert({ parent, sign, name, description, unit, note, unitprice, authorID }) {
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!name || !sign || !_isValid(authorID))
@@ -51,7 +58,7 @@ class Model extends BaseModel {
                     dataInsert.parent = parent
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert, authorID)
+                let infoAfterInsert = await that.insertData(dataInsert, authorID)
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: 'cannot_insert' })
                 
@@ -66,6 +73,7 @@ class Model extends BaseModel {
      * Cập nhật dữ liệu excel
      * - Thêm mới (nếu không có ID hệ thống)
      * - Cập nhật (nếu có ID hệ thống)
+     * - Date: 01/5/2022
      */
     updateFromExcel({ parentID, pathFileInternal, authorID }) {
         const that = this;
@@ -198,31 +206,117 @@ class Model extends BaseModel {
 
     //__________Lấy danh sách (phân trang)
     // Auth: HiepNH
-    getList({ selectObj, conditionObj, sort, page = 1, limit = 15 }) {
-        return new Promise(async resolve => {
+    getList({ parentID,
+        userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        return new Promise(async (resolve) => {
             try {
-                let listData = await DATAHUB_JOB_COLL.find(conditionObj)
-                    .select(selectObj)
-                    .limit(limit * 1)
-                    .skip((page - 1) * limit)
-                    .sort(sort)
+                if (limit > 50) {
+                    limit = 50
+                } else {
+                    limit = +limit;
+                }
 
-                if (!listData) 
-                    return resolve({ error: true, message: 'cannot_get_info_data' })
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let sortBy;
+                let conditionObj = { };
+                let keys = ['createAt__-1', '_id__-1'];
 
-                // Tổng số lượng mẩu tin
-                let count = await DATAHUB_JOB_COLL.count(conditionObj)
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-                return resolve({ 
-                    error: false, 
-                    listData,
-                    count,
-                	totalPages: Math.ceil(count / limit), 
-                	perPage: limit,
-                	currentPage: +page
-                })
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+                if (checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID
+                }
+                console.log(conditionObj)
+
+                if (keyword) {
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+                if (lastestID && checkObjectIDs(lastestID)) {
+                    let infoData = await DATAHUB_JOB_COLL.findById(lastestID);
+                    if (!infoData)
+                        return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if (!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy = dataPagingAndSort.data.sort;
+                } else {
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await DATAHUB_JOB_COLL.find(conditionObj)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                // GET TOTAL RECORD
+                if (!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor = null;
+                if (infoDataAfterGet && infoDataAfterGet.length) {
+                    if (infoDataAfterGet.length > limit) {
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await DATAHUB_JOB_COLL.count(conditionObjOrg);
+                let totalPage = Math.ceil(totalRecord / limit);
+
+                return resolve({
+                    error: false, data: {
+                        listRecords: infoDataAfterGet,
+                        limit: +limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    }, status: 200
+                });
+
             } catch (error) {
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
