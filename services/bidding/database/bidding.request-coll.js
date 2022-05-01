@@ -7,33 +7,31 @@ const Schema                = require('mongoose').Schema;
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     /**
-     * Chủ đầu tư
-     * Công ty Phát hành hồ sơ mời thầu
+     * THÔNG TIN CHUNG => LẤY TỪ BIDDING_PLAN SANG
      */
-     client: {
+    //_________Chủ đầu tư
+    client: {
         type: Schema.Types.ObjectId,
         ref : "company"
+    }, 
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
     },
-    //_________Kế hoạch lựa chọn thầu
+    //_________Kế hoạch đầu thầu
     plan: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_plan"
+        ref: "bidding_plan"
     },
     //_________Hồ sơ mời thầu
     doc: {
         type: Schema.Types.ObjectId,
         ref : "bidding_doc"
     },
-    //_________Quản trị
-    admins: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
-    //_________Thành viên được quyền xem ngân sách
-    members: [{
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    }],
+    /**
+     * YÊU CẦU KỸ THUẬT
+     */
     /**
      * Phân loại
      * 1-Bảng dữ liệu
@@ -41,11 +39,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
      * 3-Năng lực máy móc
      * 4-Yêu cầu vật tư thiết bị
      * 5-Giải pháp tổ chức thực hiện
+     * 6-Yêu cầu khác-Bill 2
+     * 7-Điều khoản hợp đồng
      */
-    type: { type: Number, default: 1 },    
-    /**
-     * 1-BẢNG DỮ LIỆU
-     */
+    type: { type: Number, default: 1 }, 
     //________Số hiệu thư mời thầu
     invitationLetter: String,
     //________Tên bên mời thầu
@@ -103,28 +100,13 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     //_________Điều khoản hợp đồng
     contractCondition: String,
     /**
-     * 2-NĂNG LỰC NHÂN SỰ
-     */
-    //_________Điều kiện về nhân sự
-    humanCondition: String,
-    /**
-     * 3-NĂNG LỰC THIẾT BỊ
-     */
-    //_________Điều kiện về máy móc thiết bị
-    machineCondition: String,
-    /**
-     * 4-YÊU CẦU VỀ VẬT TƯ THIẾT BỊ
-     */
-    //_________Nội dung (với phân nhóm thì sẽ viết Hoa, bỏ trống, sử dụng order)
-    materialContent: String,    
-    //_________Vị trí, khu vực
-    materialArea: String,
-    //_________Yêu cầu kỹ thuật
-    materialRequest: String,
-    //_________Thương hiệu, xuất xứ
-    materialBrand: String,
-    /**
-     * 5-GIẢI PHÁP TỔ CHỨC
+     * CHUNG CHO CÁC YÊU CẦU
+     * 2-Yêu cầu nhân sự (Quan hệ 1-n)
+     * 3-Yêu cầu thiết bị (Quan hệ 1-n)
+     * 4-Yêu cầu vật tư thiết bị (phân nhóm sẽ viết hoa)
+     * 5-Giải pháp tổ chức (Quan hệ 1-n)
+     * 6-Một số yêu cầu khác (Quan hệ 1-n)
+     * 7-Điều khoản hợp đồng (Quan hệ 1-n)
      */
     //_________Thứ tự, dùng để sắp xếp
     order: {
@@ -132,13 +114,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
         default: 1
     }, 
     //_________Nội dung
-    solutionContent: String,
-    /**
-     * CHUNG CHO CÁC YÊU CẦU
-     */
-    //_________Mô tả yêu cầu/Ghi chú
+    name: String,
+    //_________Vị trí, khu vực
+    position: String,
+    //_________Đơn vị
+    unit: String,
+    //_________Mô tả/Yêu cầu
     description: String,
-    // Tài liệu, ảnh đính kèm
+    //_________Ghi chú/Thương hiệu, xuất xứ
+    note: String,
+    //_________Tài liệu, ảnh đính kèm
     documentAttachs: [{
         type: Schema.Types.ObjectId,
         ref: "file"
