@@ -4,84 +4,49 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
  * ĐỊNH MỨC CỦA HỆ THỐNG ÁP DỤNG CHO TỪNG GÓI THẦU
+ * => Số liệu tính toán đều là trước VAT
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_bill_workline", {
-    //_________Lĩnh vực
-    field: {
+    //_________Hồ sơ mời thầu
+    doc: {
         type: Schema.Types.ObjectId,
-        ref : "datahub_type"
-    },      
-    //_________Khu vực (xã/phường)
-    area: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },    
-    //_________Chủ đầu tư
-    client: {
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    }, 
-    //_________Dự án
-    project: {
-        type: Schema.Types.ObjectId,
-        ref : "department"
+        ref : "bidding_doc"
     },
-    //_________Thuộc hồ sơ gói thầu
-    plan: {
-        type: Schema.Types.ObjectId,
-        ref : "bidding_plan"
-    },
-    /**
-     * THÔNG TIN CĂN BẢN
-     */
     //_________Hạng mục
     item: {
         type: Schema.Types.ObjectId,
         ref : "bidding_bill_item"
+    }, 
+    //_________Nhóm dữ liệu
+    group: {
+        type: Schema.Types.ObjectId,
+        ref : "bidding_bill_group"
+    },  
+    //_________Tiên lượng mời thầu
+    work: {
+        type: Schema.Types.ObjectId,
+        ref : "bidding_bill_work"
     },
-    //_________Tên
-    name: String,
-    //_________Mô tả
-    description: String,
-    //_________Ký hiệu
-    sign: String,
-    //_________Đơn vị
-    unit: String,
-    //_________Chỉ dẫn kỹ thuật
-    spec: String,
+    //_________Nguồn lực
+    product: {
+        type: Schema.Types.ObjectId,
+        ref: 'datahub_product'
+    },
+    /**
+     * Phân loại nguồn lực: được lấy theo tính chất của nguồn lực
+     * 1-Vật tư
+     * 2-Nhân công
+     * 3-Máy
+     */
+    type: { type: Number, default: 1 },
+    //_________Định mức
+    quantity: { type: Number, default: 0 },
+    /**
+     * Đơn giá: được tính theo đơn giá của nguồn lực khi thêm mới/cập nhật
+     */
+    unitprice: { type: Number, default: 0 },
     //_________Ghi chú
     note: String,
-    /**
-     * Loại phát sinh
-     * 1 - Không phát sinh
-     * 2 - PS được tính với CĐT
-     * 3 - PS không được tính với CĐT
-     */
-    plus: { type: Number, default: 1},
-    //_________Khối lượng
-    quantity: { type: Number, default: 0 },
-    //_________Khối lượng cập nhật sau chào thầu
-    quantity2: { type: Number, default: 0 },
-    /**
-     * ĐƠN GIÁ NET
-     * - Tính từ DataHub đưa sang
-     */
-    //_________Đơn giá chào thầu vật tư
-    materialUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu nhân công
-    laborUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu máy móc/thiết bị
-    machineUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá tính toán từ Datahub
-    unitPrice: { type: Number, default: 0 },
-    //_________Thuế giá trị gia tăng (VAT-%)
-    vat: { type: Number, default: 10 },
-    //_________Thuế giá trị gia tăng (VAT-giá trị)
-    vatValue: { type: Number, default: 0 },
-    //_________Thành tiền tính toán từ Datahub
-    amount: { type: Number, default: 0 },
-    //_________Hệ số chi phí khác
-    factor: { type: Number, default: 1 }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

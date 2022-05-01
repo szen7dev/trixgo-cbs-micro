@@ -6,16 +6,9 @@ const Schema                = require('mongoose').Schema;
  * 1. HẠNG MỤC
  * 2. NHÓM DỮ LIỆU
  * 3. CÔNG VIỆC MỜI THẦU
+ * => Số liệu tính toán đều là trước VAT
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_bill_item", {
-    /**
-     * THÔNG TIN CHUNG
-     */
-    //_________Lĩnh vực
-    field: {
-        type: Schema.Types.ObjectId,
-        ref : "datahub_type"
-    },      
     //_________Khu vực (xã/phường)
     area: {
         type: Schema.Types.ObjectId,
@@ -31,10 +24,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_item", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-    //_________Thuộc hồ sơ gói thầu
-    plan: {
+    //_________Hồ sơ mời thầu
+    doc: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_plan"
+        ref : "bidding_doc"
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -45,43 +38,14 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_item", {
     description: String,
     //_________Ký hiệu
     sign: String,
-    //_________Đơn vị
-    unit: String,
-    //_________Chỉ dẫn kỹ thuật
-    spec: String,
     //_________Ghi chú
     note: String,
-    /**
-     * Loại phát sinh
-     * 1 - Không phát sinh
-     * 2 - PS được tính với CĐT
-     * 3 - PS không được tính với CĐT
-     */
-    plus: { type: Number, default: 1},
     //_________Khối lượng
     quantity: { type: Number, default: 0 },
-    //_________Khối lượng cập nhật sau chào thầu
-    quantity2: { type: Number, default: 0 },
-    /**
-     * ĐƠN GIÁ NET
-     * - Tính từ DataHub đưa sang
-     */
-    //_________Đơn giá chào thầu vật tư
-    materialUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu nhân công
-    laborUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu máy móc/thiết bị
-    machineUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá tính toán từ Datahub
-    unitPrice: { type: Number, default: 0 },
-    //_________Thuế giá trị gia tăng (VAT-%)
-    vat: { type: Number, default: 10 },
-    //_________Thuế giá trị gia tăng (VAT-giá trị)
-    vatValue: { type: Number, default: 0 },
+    //_________Tổng đơn giá
+    unitprice: { type: Number, default: 0 },
     //_________Thành tiền tính toán từ Datahub
     amount: { type: Number, default: 0 },
-    //_________Hệ số chi phí khác
-    factor: { type: Number, default: 1 }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
