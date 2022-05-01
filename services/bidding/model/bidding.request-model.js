@@ -47,6 +47,15 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(docID))
                     return resolve({ error: true, message: 'Request params docID|userID invalid', status: 400 })
+
+                // Kiểm tra sự tồn tại của Bảng dữ liệu
+                if (!isNaN(type) && Number(type) === 1) {
+                    let infoRequest = await BIDDING__REQUEST_COLL.findOne({ doc: docID, type: 1 })
+                    console.log(infoRequest)
+
+                    if(infoRequest)
+                        return resolve({ error: true, message: 'Bảng dữ liệu đã tồn tại', status: 400 })
+                }
                 
                 // Thông tin Hồ sơ mời thầu
                 let infoDoc = await BIDDING__DOC_COLL.findById(docID)
