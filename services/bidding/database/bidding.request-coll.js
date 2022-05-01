@@ -34,13 +34,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
      */
     /**
      * Phân loại
-     * 1-Bảng dữ liệu
-     * 2-Năng lực nhân sự
-     * 3-Năng lực máy móc
-     * 4-Yêu cầu vật tư thiết bị
-     * 5-Giải pháp tổ chức thực hiện
-     * 6-Yêu cầu khác-Bill 2
-     * 7-Điều khoản hợp đồng
+     * 1-Bảng dữ liệu gói thầu
+     * 2-Yêu cầu tư cách hợp lệ
+     * 3-Yêu cầu năng lực tài chính
+     * 4-Yêu cầu về kinh nghiệm/hợp đồng minh chứng
+     * 5-Yêu cầu về nhân sự gói thầu
+     * 6-Yêu cầu về máy móc, thiết bị gói thầu
+     * 7-Yêu cầu về vật tư gói thầu
+     * 8-Yêu cầu giải pháp thực hiện
+     * 9-Yêu cầu khác
+     * 10-Điều khoản hợp đồng
      */
     type: { type: Number, default: 1 }, 
     //________Số hiệu thư mời thầu
@@ -101,12 +104,6 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     contractCondition: String,
     /**
      * CHUNG CHO CÁC YÊU CẦU
-     * 2-Yêu cầu nhân sự (Quan hệ 1-n)
-     * 3-Yêu cầu thiết bị (Quan hệ 1-n)
-     * 4-Yêu cầu vật tư thiết bị (phân nhóm sẽ viết hoa)
-     * 5-Giải pháp tổ chức (Quan hệ 1-n)
-     * 6-Một số yêu cầu khác (Quan hệ 1-n)
-     * 7-Điều khoản hợp đồng (Quan hệ 1-n)
      */
     //_________Thứ tự, dùng để sắp xếp
     order: {
