@@ -18,11 +18,13 @@ const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/pl
 const {
     checkObjectIDs,
     IsJsonString,
+    _isValid
 } = require('../../../tools/utils/utils');
 
 /**
  * COLLECTIONS
  */
+const DATAHUB_JOB_COLL           				    = require('../database/datahub_job-coll');
 const DATAHUB_JOBLINE_COLL           				= require('../database/datahub_jobline-coll');
 const DATAHUB_PRODUCT_COLL                          = require('../database/datahub_product-coll') 
 
@@ -32,13 +34,20 @@ class Model extends BaseModel {
         super(DATAHUB_PRODUCT_COLL);
     }
  
-    insert({ parent, type, sign, name, description, unit, note, unitprice, authorID }) {
+    /**
+     * Name: Insert 
+     * Author: Hiepnh
+     * Date: 01/5/2022
+     */
+    insert({ parentID, type, sign, name, description, unit, note, unitprice, userID }) {
+        const that = this
         return new Promise(async resolve => {
             try {
-                if(!name || !sign || !_isValid(authorID))
+                if(!name || !sign || !_isValid(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
                 let dataInsert = {
+                    userCreate: userID,
                     sign,
                     name, 
                     description, 
@@ -48,11 +57,11 @@ class Model extends BaseModel {
                     unitprice: (unitprice && !isNaN(unitprice)) ? Number(unitprice).toFixed(3) : 0
                 }
 
-                if(parent && _isValid(parent)){
-                    dataInsert.parent = parent
+                if(parentID && _isValid(parentID)){
+                    dataInsert.parent = parentID
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert, authorID)
+                let infoAfterInsert = await that.insertData(dataInsert)
                 if (!infoAfterInsert) 
                     return resolve({ error: true, message: 'cannot_insert' })
                 
@@ -63,6 +72,12 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Cập nhật dữ liệu excel
+     * - Thêm mới (nếu không có ID hệ thống)
+     * - Cập nhật (nếu có ID hệ thống)
+     * - Date: 01/5/2022
+     */
     updateFromExcel({ parentID, pathFileInternal, authorID,  }) {
         const that = this;
         return new Promise(async resolve => {
@@ -135,14 +150,33 @@ class Model extends BaseModel {
         })
     }
 
-    //__________Get thông tin
-    // Author: HiepNH
-    getInfo({ productID }) {
+    /**
+     * Name: Get info 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    getInfo({ productID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                let info = await DATAHUB_PRODUCT_COLL.findById(productID).populate('parent')
-                if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' });
+                if (!checkObjectIDs(productID))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let info = await DATAHUB_PRODUCT_COLL.findById(productID)
+                    .select(select)
+                    .populate(populates)
+
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
                 return resolve({ error: false, data: info });
             } catch (error) {
@@ -151,8 +185,11 @@ class Model extends BaseModel {
         })
     }
     
-    //__________Cập nhật lại giá công tác
-    // Author: HiepNH
+    /**
+     * Name: Update unit price
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
     updateJobPrice({ jobID }){
         return new Promise(async (resolve) => {
             try {
@@ -182,6 +219,8 @@ class Model extends BaseModel {
         })
     }
 
+    // //__________Cập nhật (nhiều mẩu tin/excel)
+    // // Author: HiepNH
     bulkUpdate({ data, authorID }){
         const that = this;
         return new Promise(async (resolve) => {
@@ -258,33 +297,198 @@ class Model extends BaseModel {
         })
     }
 
-    //__________Lấy danh sách (phân trang)
-    // Auth: HiepNH
-    getList({ selectObj, conditionObj, sort, page = 1, limit = 15 }) {
+    /**
+     * Name: Update 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    update({ productID, sign, name, description, unit, note, unitprice, userID }) {
+        const that = this
         return new Promise(async resolve => {
             try {
-                let listData = await DATAHUB_PRODUCT_COLL.find(conditionObj)
-                    .select(selectObj)
-                    .limit(limit * 1)
-                    .skip((page - 1) * limit)
-                    .sort(sort)
+                if(!name || !sign || !_isValid(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
 
-                if (!listData) 
-                    return resolve({ error: true, message: 'cannot_get_info_data' })
+                let dataUpdate = { 
+                    modifyAt: Date.now(),
+                    userUpdate: userID, 
+                    sign, 
+                    name 
+                }
 
-                // Tổng số lượng mẩu tin
-                let count = await DATAHUB_PRODUCT_COLL.count(conditionObj)
+                if(description){
+                    dataUpdate.description = description;
+                }
 
-                return resolve({ 
-                    error: false, 
-                    listData,
-                    count,
-                	totalPages: Math.ceil(count / limit), 
-                	perPage: limit,
-                	currentPage: +page
+                if(unit){
+                    dataUpdate.unit = unit;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
+                }
+
+                if (!isNaN(unitprice) && Number(unitprice) >= 0) {
+                    dataUpdate.unitprice = unitprice;
+                }
+
+                let infoAfterUpdate = await DATAHUB_PRODUCT_COLL.findByIdAndUpdate(productID, dataUpdate, { new: true });
+                if (!infoAfterUpdate) 
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: 'cannot_update' });
+
+                /**
+                 * CẬP NHẬT GIÁ CÔNG TÁC TRONG DATAHUB
+                 */
+                //_________Cập nhật giá vật tư trong định mức
+                await DATAHUB_JOBLINE_COLL.updateMany(
+                    { 
+                        product: ObjectID(productID),
+                    },
+                    { $set: { "unitprice" : unitprice } }
+                );
+
+                /**
+                 * Cập nhật giá công tác trong gói thầu
+                 * 1. Lấy danh sách các công tác có chứa vật tư
+                 * 2. Lặp qua từng công tác để tính toán và update lại đơn giá
+                 */
+                //_________1. Lấy danh sách các công tác có chứa vật tư
+                let listData = await DATAHUB_JOBLINE_COLL.find({
+                    product: productID
                 })
+
+                let listDataJob = await DATAHUB_JOB_COLL.find({
+                _id: {$in: listData.map(item=>item.job)}
+                }).select('_id name')
+
+                //_________2. Lặp qua từng công tác để tính toán và update lại đơn giá
+                for(const job of listDataJob){
+                    await that.updateJobPrice({ jobID: job._id })
+                }                    
+                
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : Get list 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    getList({ parentID,
+        userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (limit > 50) {
+                    limit = 50
+                } else {
+                    limit = +limit;
+                }
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                let sortBy;
+                let conditionObj = { };
+                let keys = ['createAt__-1', '_id__-1'];
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                /**
+                 * LOGIC STEP (3)
+                 *  3.1: Convert type + update name (ví dụ: string -> number)
+                 *  3.2: Operation database
+                 */
+                if (checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID
+                }
+                console.log(conditionObj)
+
+                if (keyword) {
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    let regExpSearch = RegExp(keyword, 'i');
+                    conditionObj.name = regExpSearch;
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+
+                // PHÂN TRANG KIỂU MỚI
+                if (lastestID && checkObjectIDs(lastestID)) {
+                    let infoData = await DATAHUB_PRODUCT_COLL.findById(lastestID);
+                    if (!infoData)
+                        return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if (!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy = dataPagingAndSort.data.sort;
+                } else {
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await DATAHUB_PRODUCT_COLL.find(conditionObj)
+                    .limit(limit + 1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                // GET TOTAL RECORD
+                if (!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor = null;
+                if (infoDataAfterGet && infoDataAfterGet.length) {
+                    if (infoDataAfterGet.length > limit) {
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await DATAHUB_PRODUCT_COLL.count(conditionObjOrg);
+                let totalPage = Math.ceil(totalRecord / limit);
+
+                return resolve({
+                    error: false, data: {
+                        listRecords: infoDataAfterGet,
+                        limit: +limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    }, status: 200
+                });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

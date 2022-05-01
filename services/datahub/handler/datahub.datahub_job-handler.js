@@ -77,16 +77,16 @@ module.exports = {
      */
     remove: {
         params: {
-            datahubID: { type: "string" },
+            jobsID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { datahubID } = ctx.params;
+                let { jobsID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler = await DATAHUB_JOB_MODEL.remove({
-                    datahubID 
+                    jobsID 
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

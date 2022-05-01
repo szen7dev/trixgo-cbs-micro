@@ -146,14 +146,33 @@ class Model extends BaseModel {
         })
     }
 
-    //__________Get thông tin
-    // Author: HiepNH
-    getInfo({ jobID }) {
+    /**
+     * Name: Get info 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    getInfo({ jobID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                let info = await DATAHUB_JOB_COLL.findById(jobID).populate('parent')
-                if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info' });               
+                if (!checkObjectIDs(jobID))
+                    return resolve({ error: true, message: 'param_invalid' });
+
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    populates = JSON.parse(populates);
+                } else {
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let info = await DATAHUB_JOB_COLL.findById(jobID)
+                    .select(select)
+                    .populate(populates)
+
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
                 return resolve({ error: false, data: info });
             } catch (error) {
@@ -162,50 +181,56 @@ class Model extends BaseModel {
         })
     }
 
-    // //__________Cập nhật (nhiều mẩu tin/excel)
-    // // Author: HiepNH
-    // bulkUpdate({ data, authorID }){
-    //     const that = this;
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!_isValid(authorID))
-    //                 return resolve({ error: true, message: 'param_not_valid' });
+    //__________Cập nhật (nhiều mẩu tin/excel)
+    // Author: HiepNH
+    bulkUpdate({ data, authorID }){
+        const that = this;
+        return new Promise(async (resolve) => {
+            try {
+                if(!_isValid(authorID))
+                    return resolve({ error: true, message: 'param_not_valid' });
 
-    //             for(const item of data){
-    //                 if(item.id && _isValid(item.id)){
-    //                     let dataUpdate = {
-    //                         userUpdate: authorID,
-    //                         modifyAt: Date.now(),
-    //                         sign: item.sign, 
-    //                         name: item.name, 
-    //                         description: item.description, 
-    //                         unit: item.unit, 
-    //                         note: item.note, 
-    //                         unitprice: (item.unitprice && !isNaN(item.unitprice)) ? Number(item.unitprice).toFixed(0) : 0
-    //                     }
-    //                     await DATAHUB_JOB_COLL.findByIdAndUpdate(item.id, dataUpdate, { new: true })
-    //                 }else{
-    //                     await that.insert({
-    //                         parent: item.parent, 
-    //                         sign: item.sign, 
-    //                         name: item.name, 
-    //                         description: item.description, 
-    //                         unit: item.unit, 
-    //                         note: item.note, 
-    //                         unitprice: item.unitprice, 
-    //                         authorID
-    //                     })
-    //                 }
-    //             }
+                for(const item of data){
+                    if(item.id && _isValid(item.id)){
+                        let dataUpdate = {
+                            userUpdate: authorID,
+                            modifyAt: Date.now(),
+                            sign: item.sign, 
+                            name: item.name, 
+                            description: item.description, 
+                            unit: item.unit, 
+                            note: item.note, 
+                            unitprice: (item.unitprice && !isNaN(item.unitprice)) ? Number(item.unitprice).toFixed(0) : 0
+                        }
+                        await DATAHUB_JOB_COLL.findByIdAndUpdate(item.id, dataUpdate, { new: true })
+                    }else{
+                        await that.insert({
+                            parent: item.parent, 
+                            sign: item.sign, 
+                            name: item.name, 
+                            description: item.description, 
+                            unit: item.unit, 
+                            note: item.note, 
+                            unitprice: item.unitprice, 
+                            authorID
+                        })
+                    }
+                }
 
-    //             return resolve({ error: false, message: 'Done' });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
+                return resolve({ error: false, message: 'Done' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 
+    /**
+     * Name: Update 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
     update({ jobID, sign, name, description, unit, note, unitprice, userID }) {
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!name || !sign || !_isValid(userID))
@@ -245,8 +270,11 @@ class Model extends BaseModel {
         })
     }
 
-    //__________Lấy danh sách (phân trang)
-    // Auth: HiepNH
+    /**
+     * Name  : Get list 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
     getList({ parentID,
         userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
