@@ -24,48 +24,61 @@ const {
 /**
  * COLLECTIONS
  */
-const BIDDING__BILL_WORK_COLL           				    = require('../database/bidding.bill_work-coll');
-const BIDDING__BILL_WORKLINE_COLL           				= require('../database/bidding.bill_workline-coll');
-const BIDDING__BILL_PRODUCT_COLL                            = require('../database/bidding.bill_product-coll');
+const BIDDING__DOC_COLL                         = require('../database/bidding.doc-coll');
+const BIDDING__BILL_ITEM_COLL                   = require('../database/bidding.bill_item-coll');
+const BIDDING__BILL_GROUP_COLL                  = require('../database/bidding.bill_group-coll');
+const BIDDING__BILL_WORK_COLL                   = require('../database/bidding.bill_work-coll');
+const BIDDING__BILL_WORKLINE_COLL               = require('../database/bidding.bill_workline-coll');
+const BIDDING__BILL_PRODUCT_COLL                = require('../database/bidding.bill_product-coll');
+const BIDDING__QUOTATION_COLL                   = require('../database/bidding.quotation-coll');
 
 class Model extends BaseModel {
 
     constructor() {
         super(BIDDING__BILL_PRODUCT_COLL);
     }
- 
-    insert({ task, product, authorID }) {
+
+     /**
+     * Name: Insert 
+     * Author: Hiepnh
+     * Date: 02/5/2022
+     */
+    insert({ docID, productID, type, unitprice, userID }) {
+        console.log('Insert Product in Package=========>>>>>>>>>>>>>')
+        console.log({ docID, productID, type, unitprice, userID })
         return new Promise(async resolve => {
             try {
-                if(!_isValid(task) || !_isValid(product) || !_isValid(authorID))
+                if(!_isValid(docID) || !_isValid(productID) || !_isValid(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
 
                 // Kiểm tra sự tồn tại của task, product
-                let info = await BIDDING__BILL_PRODUCT_COLL.findOne({task: task, product: product})
+                let info = await BIDDING__BILL_PRODUCT_COLL.findOne({doc: docID, product: productID})
                 if(info){
-                    return resolve({ error: true, message: 'data_exists' })
+                    console.log('Product: Vật tư đã tồn tại in Package=========>>>>>>>>>>>>>')
+                    return resolve({ error: true, message: 'data_exists222222222222222' })
                 }else{
-                    // Giá vật tư của hệ thống
-                    let unitprice = 0, type = 1
-                    let infoProduct = await DATAHUB_PRODUCT_COLL.findById(product)
-                    if(infoProduct){
-                        unitprice = Number(infoProduct.unitprice)
-                        type = Number(infoProduct.type)
-                    }
-
-                    // Khởi tạo dữ liệu
-                    let dataInsert = {
-                        task,
-                        product,
-                        type,
-                        unitprice
-                    }
-    
-                    let infoAfterInsert = await this.insertData(dataInsert, authorID)
-                    if (!infoAfterInsert) 
+                    console.log('Product: Vật tư chưa tồn tại in Package=========>>>>>>>>>>>>>')
+                    let infoDoc = await BIDDING__DOC_COLL.findById(docID)
+                    console.log({infoDoc: infoDoc})
+                    if(infoDoc){
+                        let dataInsert = {
+                            area: infoDoc.area,
+                            client: infoDoc.client,
+                            project: infoDoc.project,
+                            doc: docID,
+                            product: productID,
+                            type,
+                            unitprice
+                        }
+        
+                        let infoAfterInsert = await this.insertData(dataInsert)
+                        if (!infoAfterInsert) 
+                            return resolve({ error: true, message: 'cannot_insert' })
+                        
+                        return resolve({ error: false, data: infoAfterInsert })
+                    }else{
                         return resolve({ error: true, message: 'cannot_insert' })
-                    
-                    return resolve({ error: false, data: infoAfterInsert })
+                    }
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message })

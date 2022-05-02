@@ -52,11 +52,11 @@ class Model extends BaseModel {
                 // Kiểm tra sự tồn tại của product trong job
                 let info = await BIDDING__BILL_WORKLINE_COLL.findOne({work: workID, product: productID})
                 if(info){
-                    return resolve({ error: true, message: 'data_exists' })
+                    return resolve({ error: true, message: 'data_product_exists_in_work' })
                 }else{
                     let infoWork = await BIDDING__BILL_WORK_COLL.findById(workID)
                     if(!infoWork)
-                        return resolve({ error: true, message: 'data_exists' })
+                        return resolve({ error: true, message: 'cannot_get_info' })
 
                     let dataInsert = {
                         userCreate: userID,

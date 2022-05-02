@@ -39,6 +39,7 @@ const BIDDING__DOC_MODEL                        = require('./bidding.doc-model')
 const BIDDING__BILL_ITEM_MODEL                  = require('./bidding.bill_item-model').MODEL;
 const BIDDING__BILL_GROUP_MODEL                 = require('./bidding.bill_group-model').MODEL;
 const BIDDING__BILL_WORKLINE_MODEL              = require('./bidding.bill_workline-model').MODEL;
+const BIDDING__BILL_PRODUCT_MODEL               = require('./bidding.bill_product-model').MODEL;
 
 class Model extends BaseModel {
     constructor() {
@@ -128,9 +129,11 @@ class Model extends BaseModel {
                 let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
                 let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID: infoGroup.item, userID })
                 let infoDoc = await BIDDING__DOC_MODEL.updateValue({ option: 1, docID: infoGroup.doc, userID })
-                console.log(infoGoup)
-                console.log(infoItem)
-                console.log(infoDoc)
+                console.log('==========>>>>>CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
+                // console.log(infoGoup)
+                // console.log(infoItem)
+                // console.log(infoDoc)
+                console.log('==========>>>>>END CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -227,9 +230,11 @@ class Model extends BaseModel {
                 let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
                 let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID, userID })
                 let infoDoc = await BIDDING__DOC_MODEL.updateValue({ option: 1, docID, userID })
-                console.log(infoGoup)
-                console.log(infoItem)
-                console.log(infoDoc)
+                console.log('==========>>>>>CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
+                // console.log(infoGoup)
+                // console.log(infoItem)
+                // console.log(infoDoc)
+                console.log('==========>>>>>END CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -465,9 +470,9 @@ class Model extends BaseModel {
                 let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID, userID })
                 let infoDoc = await BIDDING__DOC_MODEL.updateValue({ option: 1, docID, userID })
                 console.log('==========>>>>>CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
-                console.log(infoGoup)
-                console.log(infoItem)
-                console.log(infoDoc)
+                // console.log(infoGoup)
+                // console.log(infoItem)
+                // console.log(infoDoc)
                 console.log('==========>>>>>END CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
                 
                 return resolve({ error: false, data: infoAfterUpdate })
@@ -573,9 +578,25 @@ class Model extends BaseModel {
 
                             // Nếu gói thầu không có vật tư => lấy giá trong Datahub
                             if(infoProduct && infoProduct.unitprice){
+                                console.log("Có vật tư trong gói thầu===========>>>>>>>>>>")
                                 unitprice = Number(infoProduct.unitprice)
+                                console.log({infoProduct:infoProduct})
                             }else{
+                                console.log("Chưa có vật tư trong gói thầu===========>>>>>>>>>>")
+                                // Lấy giá trong Datahub
                                 unitprice = Number(item.unitprice)
+
+                                // Tạo vật tư cho gói thầu để dùng lại lần sau
+                                let infoNew = await BIDDING__BILL_PRODUCT_MODEL.insert({
+                                    docID, 
+                                    productID: item.product, 
+                                    type: item.type, 
+                                    unitprice: item.unitprice, 
+                                    userID
+                                })
+
+                                console.log("infoProduct===========>>>>>>>>>>")
+                                console.log(infoNew)
                             }
                             console.log({unitprice:unitprice})
 
@@ -630,6 +651,7 @@ class Model extends BaseModel {
                          */
                         console.log('===========3. Tạo định mức cho công tác mới')
                         for(const item of listData.data.listRecords){
+                            console.log({item:item})
                             // Tính toán đơn giá vật tư
                             let unitprice = 0
 
@@ -642,9 +664,25 @@ class Model extends BaseModel {
 
                             // Nếu gói thầu không có vật tư => lấy giá trong Datahub
                             if(infoProduct && infoProduct.unitprice){
+                                console.log("Có vật tư trong gói thầu===========>>>>>>>>>>")
                                 unitprice = Number(infoProduct.unitprice)
+
+                                console.log({infoProduct:infoProduct})
                             }else{
+                                console.log("Chưa có vật tư trong gói thầu===========>>>>>>>>>>")
+                                // Lấy giá trong Datahub
                                 unitprice = Number(item.unitprice)
+
+                                // Tạo vật tư cho gói thầu để dùng lại lần sau
+                                let infoNew = await BIDDING__BILL_PRODUCT_MODEL.insert({
+                                    docID, 
+                                    productID: item.product, 
+                                    type: item.type, 
+                                    unitprice: item.unitprice, 
+                                    userID
+                                })
+                                console.log("infoProduct===========>>>>>>>>>>")
+                                console.log(infoNew)
                             }
                             console.log({unitprice:unitprice})
 
