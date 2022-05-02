@@ -10,6 +10,8 @@ const CF_ROUTINGS_ACCOUNTING = {
 
     // ================================CASH_FLOW_PLAN=======================================//
     VOUCHER                          : `${BASE_ROUTE}${VOUCHER}`, 
+    VOUCHER_UPDATE_TO_JOURNAL        : `${BASE_ROUTE}${VOUCHER}/update-from-voucher-to-journal`,
+    VOUCHER_UPDATE_TO_VOUCHER        : `${BASE_ROUTE}${VOUCHER}/update-from-journal-to-voucher`,
 
     // ================================CASH_FLOW_PLAN=======================================//
     JOURNAL                          : `${BASE_ROUTE}${JOURNAL}`, 

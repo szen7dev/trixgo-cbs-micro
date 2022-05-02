@@ -53,7 +53,7 @@ class Model extends BaseModel {
         contractID, 
         storageID, 
         projectID,
-        type, date, name, sign, signInvoice, dateInvoice, vat,
+        type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
         fcuExRate, 
@@ -103,7 +103,7 @@ class Model extends BaseModel {
                     company: companyID, 
                     funda: fundaID, 
                     customer: customerID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    type, date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate
@@ -139,13 +139,13 @@ class Model extends BaseModel {
                             companyID, 
                             fundaID, 
                             voucherID, 
-                            date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                            date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                             updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                             quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                             amount: subitem.amount ? Number(subitem.amount) : 0,
                             unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
                             fcuExRate,
-                            fcuAmount: Number(subitem.amount*fcuExRate), // Giá trị tính theo VND * Tỷ giá
+                            fcuAmount: fcuExRate != 0 ? Number(subitem.amount*fcuExRate) : 0,
                             note: subitem.note,
                             ctx
                         }
@@ -254,7 +254,7 @@ class Model extends BaseModel {
         contractID, 
         storageID, 
         projectID,
-        type, date, name, sign, signInvoice, dateInvoice, vat,
+        type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
         fcuExRate, 
@@ -307,7 +307,7 @@ class Model extends BaseModel {
                  const dataUpdateVoucher = {
                     userUpdate: authorID, 
                     modifyAt: Date.now(),
-                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate
@@ -342,13 +342,13 @@ class Model extends BaseModel {
                                 companyID, 
                                 fundaID, 
                                 voucherID, 
-                                date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                                date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
                                 unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
                                 fcuExRate,
-                                fcuAmount: Number(subitem.amount*fcuExRate), // Giá trị tính theo VND * Tỷ giá
+                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount*fcuExRate) : 0,
                                 note: subitem.note,
                                 ctx
                             }
@@ -443,13 +443,13 @@ class Model extends BaseModel {
                             const dataUpdate = {
                                 authorID, 
                                 journalID: subitem.journalID, 
-                                date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                                date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
                                 unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
                                 fcuExRate,
-                                fcuAmount: Number(subitem.amount*fcuExRate), // Giá trị tính theo VND * Tỷ giá
+                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount*fcuExRate) : 0,
                                 note: subitem.note,
                                 ctx
                             }
@@ -551,7 +551,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update value
+     * Name: Cập nhật giá trị của phiếu
      * Author: Hiepnh
      * Date: 30/4/2022
      */
@@ -595,15 +595,79 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Cập nhật thuộc tính từ phiếu sang bút toán
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    updateFromVoucherToJournal({ companyID, userID }){
+        return new Promise(async (resolve, reject) => {
+            try {
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ company: companyID })
+                console.log({totalVoucher: listData.length})
+                // console.log(listData)
+                for(const item of listData){
+                    let infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.updateMany(
+                        { voucher: ObjectID(item._id) },
+                        {
+                            $set: {
+                                date: item.date,
+                                forward: !isNaN(item.forward) ? item.forward : 0,
+                                forwardIs: !isNaN(item.forwardIs) ? item.forwardIs : 0,
+                                returning: !isNaN(item.returning) ? item.returning : 0,
+                                advancePayment: !isNaN(item.advancePayment) ? item.advancePayment : 0,
+                                cancel: !isNaN(item.cancel) ? item.cancel : 0,
+                                type: !isNaN(item.type) ? item.type : 1,
+                                vat: !isNaN(item.vat) ? item.vat : 0,
+                                source: !isNaN(item.source) ? item.source : 1,
+                                orderNew: !isNaN(item.orderNew) ? item.orderNew : 1,
+                                pricePolicy: !isNaN(item.pricePolicy) ? item.pricePolicy : 1
+                            }
+                        }
+                    )
+                    // console.log(infoAfterUpdate)
+                }
+
+                return resolve({ erorr: false, message: 'convert_successfull', totalVoucher: listData.length, status: 200 })
+            } catch (error) {
+                return resolve({ erorr: true, message: 'convert_failed', status: 400})
+            }
+        });
+    }
+
+     /**
+     * Name: Cập nhật từ bút toán sang phiếu
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    updateFromJournalToVoucher({ companyID, userID }){
+        const that = this
+        return new Promise(async (resolve, reject) => {
+            try {
+                let listVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({company: companyID}).select('_id name')
+                console.log(listVoucher.length)
+                // console.log(listVoucher)
+                for (const item of listVoucher){
+                    let info = await that.updateValue({ voucherID: item._id })
+                    // console.log(info)
+                }
+
+                return resolve({ erorr: false, message: 'convert_successfull', status: 200 })
+            } catch (error) {
+                return resolve({ erorr: true, message: 'convert_failed', status: 400})
+            }
+        });
+    }
+
+    /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     getInfo({ voucherID, select, populates }) {
         return new Promise(async resolve => {
@@ -638,9 +702,9 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
-    getList({ userID, companyID, fundaID, customerID, contractID, fromDate, toDate, type,
+    getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type,
         keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -692,18 +756,32 @@ class Model extends BaseModel {
                     conditionObj.type = Number(type)
                 }
 
-                if (checkObjectIDs(fundaID)) {
-                    conditionObj.funda = fundaID
-                } else {
-                    conditionObj.company = companyID
-                }
+                // if (checkObjectIDs(fundaID)) {
+                //     conditionObj.funda = fundaID
+                // } else {
+                //     conditionObj.company = companyID
+                // }
 
-                if (checkObjectIDs(contractID)) {
-                    conditionObj.contract = contractID
-                }
+                // if (checkObjectIDs(contractID)) {
+                //     conditionObj.contract = contractID
+                // }
 
                 if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID
+                }else{
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }else{
+                        if (checkObjectIDs(projectID)) {
+                            conditionObj.project = projectID
+                        }else{
+                            if (checkObjectIDs(fundaID)) {
+                                conditionObj.funda = fundaID
+                            } else {
+                                conditionObj.company = companyID
+                            }
+                        }
+                    }
                 }
 
                 if(fromDate && toDate){

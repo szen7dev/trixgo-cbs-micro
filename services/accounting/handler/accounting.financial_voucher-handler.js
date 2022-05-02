@@ -33,7 +33,7 @@ module.exports = {
                     contractID, 
                     storageID, 
                     projectID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate, 
@@ -65,13 +65,16 @@ module.exports = {
                     contractID, 
                     storageID, 
                     projectID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward: (!isNaN(forward) && [0,1].includes(Number(forward))) ? Number(forward) : 0,
                     forwardIs: (!isNaN(forwardIs) && [0,1].includes(Number(forwardIs))) ? Number(forwardIs) : 0,
                     returning: (!isNaN(returning) && [0,1].includes(Number(returning))) ? Number(returning) : 0,
                     advancePayment: (!isNaN(advancePayment) && [0,1].includes(Number(advancePayment))) ? Number(advancePayment) : 0,
                     cancel: (!isNaN(cancel) && [0,1].includes(Number(cancel))) ? Number(cancel) : 0,
+                    source: (!isNaN(source) && [1,2,3,4].includes(Number(source))) ? Number(source) : 1,
+                    orderNew: (!isNaN(orderNew) && [0,1,2].includes(Number(orderNew))) ? Number(orderNew) : 1,
+                    pricePolicy: (!isNaN(pricePolicy) && [0,1,2].includes(Number(pricePolicy))) ? Number(pricePolicy) : 1,
                     fcuExRate: !isNaN(fcuExRate) ? Number(fcuExRate) : 0,
                     selectedJournals, 
                     isImport,
@@ -88,22 +91,12 @@ module.exports = {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     update: {
         auth: "required",
         params: {
-            // cashBookID: { type: "string" },
-            // accountID: { type: "string", optional: true },
-            // customerID: { type: "string", optional: true },
-            // contractID: { type: "string", optional: true },
-            // name: { type: "string", optional: true },
-            // sign: { type: "string", optional: true },
-            // note: { type: "string", optional: true },
-            // date: { type: "string", optional: true },
-            // income: { type: "number", optional: true },
-            // expense: { type: "number", optional: true },
-            // active: { type: "number", optional: true },
+            voucherID: { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -114,7 +107,7 @@ module.exports = {
                     contractID, 
                     storageID, 
                     projectID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate, 
@@ -131,7 +124,7 @@ module.exports = {
                     contractID, 
                     storageID, 
                     projectID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat,
+                    date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate, 
@@ -147,9 +140,59 @@ module.exports = {
     },
 
     /**
+     * Name: Update 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+     updateFromVoucherToJournal: {
+        auth: "required",
+        params: {
+            companyID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID } = ctx.params;
+
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.updateFromVoucherToJournal({ companyID, userID, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Update 
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    updateFromJournalToVoucher: {
+        auth: "required",
+        params: {
+            companyID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID } = ctx.params;
+
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.updateFromJournalToVoucher({ companyID, userID, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     remove: {
         auth: "required",
@@ -176,18 +219,11 @@ module.exports = {
     /**
      * Name: Get info and Get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            // cashBookID: { type: "string", optional: true },
-            // parentID: { type: "string", optional: true },
-            // accountID: { type: "string", optional: true },
-            // customerID: { type: "string", optional: true },
-            // contractID: { type: "string", optional: true },
-            // sortKey: { type: "string", optional: true },
-            // outin: { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },

@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     insert({ authorID, companyID, fundaID, voucherID,
-        date, forward, forwardIs, returning, advancePayment, cancel, vat,
+        date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
         goods, warehouse, contract, project, budgetWork,
@@ -68,6 +68,8 @@ class Model extends BaseModel {
                 // Kiểm tra check trùng tài khoản đối ứng
                 if(debit && credit && debit.toString() === credit.toString())
                     return resolve({ error: false, message: 'debit/credit is duplicated', status: 400 });
+
+                // Lấy thông tin của hợp đồng => Gán kèm dự án
                 
                 // TẠO CHI TIẾT CHỨNG TỪ
                 const dataInsert = {
@@ -75,7 +77,7 @@ class Model extends BaseModel {
                     company: companyID, 
                     funda: fundaID, 
                     voucher: voucherID,
-                    date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                    date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
                     goods, warehouse, contract, project, budgetWork,
@@ -178,7 +180,7 @@ class Model extends BaseModel {
      */
     update({ 
         authorID, journalID,
-        date, forward, forwardIs, returning, advancePayment, cancel, vat,
+        date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
         debit, credit, customerDebit, customerCredit, updown,
         quantity, unitprice, amount, fcuExRate, fcuAmount,
         goods, warehouse, contract, project, budgetWork,
@@ -215,7 +217,7 @@ class Model extends BaseModel {
                  */
                 const dataUpdate = {
                     userUpdate: authorID, 
-                    date, forward, forwardIs, returning, advancePayment, cancel, vat,
+                    date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
                     goods, warehouse, contract, project, budgetWork,
