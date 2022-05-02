@@ -24,9 +24,9 @@ const {
 /**
  * COLLECTIONS
  */
-const BIDDING__BILL_WORK_COLL           				    = require('../database/bidding.bill_work-coll');
-const BIDDING__BILL_WORKLINE_COLL           				= require('../database/bidding.bill_workline-coll');
-const BIDDING__BILL_PRODUCT_COLL                           = require('../database/bidding.bill_product-coll');
+const BIDDING__BILL_WORK_COLL           				= require('../database/bidding.bill_work-coll');
+const BIDDING__BILL_WORKLINE_COLL           			= require('../database/bidding.bill_workline-coll');
+const BIDDING__BILL_PRODUCT_COLL                        = require('../database/bidding.bill_product-coll');
 
 class Model extends BaseModel {
 
@@ -57,6 +57,7 @@ class Model extends BaseModel {
 
                     let dataInsert = {
                         userCreate: userID,
+                        project: infoWork.project,
                         doc: infoWork.doc,
                         item: infoWork.item,
                         group: infoWork.group,
@@ -83,10 +84,9 @@ class Model extends BaseModel {
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 
+     * Date: 02/5/2022
      */
     getInfo({ worklineID, select, populates }) {
-        console.log({ worklineID, select, populates })
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(worklineID))
@@ -119,35 +119,15 @@ class Model extends BaseModel {
     /**
      * Name  : Remove
      * Author: Hiepnh
-     * Date: 
+     * Date: 02/5/2022
      */
-    // remove({ worklineID, userID }){
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(!_isValid(userID))
-    //                 return resolve({ error: true, message: 'param_not_valid' })
-
-    //             let info = await BIDDING__BILL_WORKLINE_COLL.findById(worklineID)
-
-    //             // Xóa định mức
-    //             await BIDDING__BILL_WORKLINE_COLL.findByIdAndDelete(worklineID)
-
-    //             // Cập nhật giá công tác
-    //             await BIDDING__BILL_PRODUCT_MODEL.updateJobPrice({ jobID: info.job })
-
-    //             return resolve({ error: false, message: 'Done' });
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message });
-    //         }
-    //     })
-    // }
 
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 
+     * Date: 02/5/2022
      */
-    getList({ workID,
+    getList({ productID, workID, groupID, itemID, docID, projectID,
         userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -193,8 +173,28 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(workID)) {
-                    conditionObj.work = workID
+                if (checkObjectIDs(productID)) {
+                    conditionObj.product = productID
+                }else{
+                    if (checkObjectIDs(workID)) {
+                        conditionObj.work = workID
+                    }else{
+                        if (checkObjectIDs(groupID)) {
+                            conditionObj.group = groupID
+                        }else{
+                            if (checkObjectIDs(itemID)) {
+                                conditionObj.item = itemID
+                            }else{
+                                if (checkObjectIDs(docID)) {
+                                    conditionObj.doc = docID
+                                }else{
+                                    if (checkObjectIDs(projectID)) {
+                                        conditionObj.project = projectID
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 console.log(conditionObj)
 

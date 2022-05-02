@@ -7,6 +7,11 @@ const Schema                = require('mongoose').Schema;
  * => Số liệu tính toán đều là trước VAT
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_bill_workline", {
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },
     //_________Hồ sơ mời thầu
     doc: {
         type: Schema.Types.ObjectId,
