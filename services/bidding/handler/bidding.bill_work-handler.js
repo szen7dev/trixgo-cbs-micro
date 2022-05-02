@@ -164,10 +164,10 @@ module.exports = {
     },
 
     /**
-     * Name: assignJobInTemplate 
+     * Name  : Gán mã định mức cho công tác
      * Author: Hiepnh
      * Date: 02/5/2022
-     */
+     */  
     assignJobInTemplate: {
         auth: "required",
         params: {
@@ -186,6 +186,39 @@ module.exports = {
 
                 const resultAfterCallHandler = await BIDDING__BILL_WORK_MODEL.assignJobInTemplate({
                     datahubJobID, workID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name  : Cập nhật giá vật tư trong gói thầu
+     * Author: Hiepnh
+     * Date: 02/5/2022
+     */
+     updateProductPrice: {
+        auth: "required",
+        params: {
+            docID            : { type: "string" },
+            productID        : { type: "string" },
+            unitprice        : { type: "number" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { 
+                    docID, productID, unitprice
+                } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
+
+                console.log({docID, productID, unitprice})
+
+                const resultAfterCallHandler = await BIDDING__BILL_WORK_MODEL.updateProductPrice({
+                    userID, ctx, docID, productID, unitprice
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

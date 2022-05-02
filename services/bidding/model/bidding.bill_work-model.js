@@ -483,7 +483,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : assignJobInTemplate
+     * Name  : Gán mã định mức cho công tác
      * Author: Hiepnh
      * Date: 02/5/2022
      */   
@@ -736,6 +736,73 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, message: 'successfull' });
                 }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá vật tư trong gói thầu
+     * Author: Hiepnh
+     * Date: 02/5/2022
+     */
+    updateProductPrice({ docID, productID, unitprice, userID }){
+        const that = this
+        return new Promise(async (resolve) => {
+            try {
+                if(!_isValid(docID) || !_isValid(productID) || !_isValid(userID) )
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                /**
+                 * BA
+                 * B1. CẬP NHẬT GIÁ VẬT TƯ TRONG BIDDING_PRODUCT (phục vụ tổng hợp vật tư gói thầu)
+                 * B2. CẬP NHẬT GIÁ VẬT TƯ TRONG BIDDING_WORKLINE (phục vụ kiểm tra phân tích vật tư)
+                 * B3. CẬP NHẬT GIÁ CÔNG TÁC TRONG GÓI THẦU (phục vụ so sánh giá với nhà thầu)
+                 */
+                
+                // B1. CẬP NHẬT GIÁ VẬT TƯ TRONG BIDDING_PRODUCT
+                await BIDDING__BILL_PRODUCT_COLL.findOneAndUpdate(
+                    {
+                        doc: ObjectID(docID),
+                        product: ObjectID(productID),
+                    }, 
+                    {
+                        unitprice: Number(unitprice).toFixed(3)
+                    }, { new: true });
+
+                //B2. CẬP NHẬT GIÁ VẬT TƯ TRONG BIDDING_WORKLINE
+                await BIDDING__BILL_WORKLINE_COLL.updateMany(
+                    { 
+                        doc: ObjectID(docID),
+                        product: ObjectID(productID),
+                    },
+                    { $set: { "unitprice" : unitprice } }
+                 );
+
+                /**
+                 * B3. CẬP NHẬT GIÁ CÔNG TÁC TRONG GÓI THẦU
+                 * 1. Lấy danh sách các công tác có chứa vật tư
+                 * 2. Lặp qua từng công tác để tính toán và update lại đơn giá
+                 */
+                //_________1. Lấy danh sách các công tác có chứa vật tư
+                let listData = await BIDDING__BILL_WORKLINE_COLL.find({
+                    doc: ObjectID(docID),
+                    product: ObjectID(productID),
+                })
+                console.log('_________1. Lấy danh sách các công tác có chứa vật tư')
+                console.log(listData)
+
+                let listDataWork = await BIDDING__BILL_WORK_COLL.find({
+                   _id: {$in: listData.map(item=>item.work)}
+                }).select('_id name')
+
+                //_________2. Lặp qua từng công tác để tính toán và update lại đơn giá
+                for(const item of listDataWork){
+                    await that.updateJobPrice({ workID: item._id, userID })
+                }
+              
+                return resolve({ error: false, message: 'successfull' })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

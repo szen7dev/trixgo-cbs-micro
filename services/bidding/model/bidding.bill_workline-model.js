@@ -24,12 +24,9 @@ const {
 /**
  * COLLECTIONS
  */
- const BIDDING__BILL_WORK_COLL           				    = require('../database/bidding.bill_work-coll');
- const BIDDING__BILL_WORKLINE_COLL           				= require('../database/bidding.bill_workline-coll');
- const BIDDING__BILL_PRODUCT_COLL                           = require('../database/bidding.bill_product-coll');
-
-const BIDDING__BILL_WORK_MODEL                              = require('./bidding.bill_work-model').MODEL
-const BIDDING__BILL_PRODUCT_MODEL                           = require('./bidding.bill_product-model').MODEL
+const BIDDING__BILL_WORK_COLL           				    = require('../database/bidding.bill_work-coll');
+const BIDDING__BILL_WORKLINE_COLL           				= require('../database/bidding.bill_workline-coll');
+const BIDDING__BILL_PRODUCT_COLL                           = require('../database/bidding.bill_product-coll');
 
 class Model extends BaseModel {
 
