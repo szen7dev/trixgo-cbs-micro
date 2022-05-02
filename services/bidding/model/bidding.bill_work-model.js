@@ -11,6 +11,7 @@
 const { CF_DOMAIN_SERVICES } 				    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 		                = require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 					    = require('../../item/helper/item.actions-constant');
+const { CF_ACTIONS_DATAHUB } 					= require('../../datahub/helper/datahub.actions-constant');
  
  /**
   * TOOLS
@@ -37,6 +38,7 @@ const BIDDING__QUOTATION_COLL                   = require('../database/bidding.q
 const BIDDING__DOC_MODEL                        = require('./bidding.doc-model').MODEL;
 const BIDDING__BILL_ITEM_MODEL                  = require('./bidding.bill_item-model').MODEL;
 const BIDDING__BILL_GROUP_MODEL                 = require('./bidding.bill_group-model').MODEL;
+const BIDDING__BILL_WORKLINE_MODEL              = require('./bidding.bill_workline-model').MODEL;
 
 class Model extends BaseModel {
     constructor() {
@@ -46,9 +48,9 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 02/5/2022
      */
-    insert({ userID, groupID, datahubJobID, name, sign, unit, description, note, plus, quantity, quantity2, unitprice1, unitprice2, unitprice3, unitprice, amount }) {
+    insert({ userID, groupID, name, sign, unit, description, note, plus, quantity, quantity2, unitprice1, unitprice2, unitprice3, unitprice, amount }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -140,9 +142,9 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 02/5/2022
      */
-    update({ userID, workID, datahubJobID, name, sign, unit, description, note, plus, quantity, quantity2, unitprice1, unitprice2, unitprice3, unitprice, amount }) {
+    update({ userID, workID, name, sign, unit, description, note, plus, quantity, quantity2, unitprice1, unitprice2, unitprice3, unitprice, amount }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -159,6 +161,7 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { 
                     userUpdate: userID,
+                    modifyAt: Date.now(),
                 };
 
                 // if (checkObjectIDs(datahubJobID)) {
@@ -238,13 +241,13 @@ class Model extends BaseModel {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 02/5/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 02/5/2022
      */
     getInfo({ workID, select, populates }) {
         return new Promise(async resolve => {
@@ -279,7 +282,7 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 02/5/2022
      */
     getList({ groupID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
@@ -393,6 +396,310 @@ class Model extends BaseModel {
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * PHÂN TÍCH NGUỒN LỰC VỚI DATAHUB
+     */
+    /**
+     * Name  : Cập nhật giá công tác từ định mức => Cập nhật Group, Item, Doc
+     * Author: Hiepnh
+     * Date: 02/5/2022
+     */  
+    updateJobPrice({ workID, userID }){
+        return new Promise(async (resolve) => {
+            try {
+                let infoWork = await BIDDING__BILL_WORK_COLL.findById(workID);
+                if(!infoWork)
+                    return resolve({ error: true, message: "infoWork không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                
+                let quantity = infoWork.quantity || 0
+                let groupID = infoWork.group
+                let itemID = infoWork.item
+                let docID = infoWork.doc
+
+                //_________Danh sách các vật tư thuộc công tác đang xét
+                let listDataWorkline = await BIDDING__BILL_WORKLINE_COLL.find({
+                    work: workID
+                }) 
+
+                //_________Tính toán lại đơn giá công tác
+                let total = 0, total1 = 0, total2 = 0, total3 = 0
+
+                for(const item of listDataWorkline){
+                    if(Number(item.type) === 1){
+                        total1 = Number(total1) + Number(item.quantity*item.unitprice)
+                    }
+                    if(Number(item.type) === 2){
+                        total2 = Number(total2) + Number(item.quantity*item.unitprice)
+                    }
+                    if(Number(item.type) === 3){
+                        total3 = Number(total3) + Number(item.quantity*item.unitprice)
+                    }
+                    total = Number(total) + Number(item.quantity*item.unitprice)
+                }
+
+                //_________Cập nhật đơn giá công tác và thành tiền công tác
+                let infoAfterUpdate = await BIDDING__BILL_WORK_COLL.findByIdAndUpdate(workID, {
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
+                    unitprice1: Number(total1).toFixed(3),
+                    unitprice2: Number(total2).toFixed(3),
+                    unitprice3: Number(total3).toFixed(3),
+                    unitprice: Number(total).toFixed(3),
+                    amount: Number(total)*Number(quantity),
+                }, { new: true })
+
+                if (!infoAfterUpdate) 
+                    return resolve({ error: true, message: 'cannot_update' })
+
+                console.log('==========>>>>>NEW WORK INFO')
+                console.log(infoAfterUpdate)
+
+                /**
+                 * CẬP NHẬT LẠI GROUP, ITEM VÀ DOC
+                 */
+                let infoGoup = await BIDDING__BILL_GROUP_MODEL.updateValue({ option: 1, groupID, userID })
+                let infoItem = await BIDDING__BILL_ITEM_MODEL.updateValue({ option: 1, itemID, userID })
+                let infoDoc = await BIDDING__DOC_MODEL.updateValue({ option: 1, docID, userID })
+                console.log('==========>>>>>CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
+                console.log(infoGoup)
+                console.log(infoItem)
+                console.log(infoDoc)
+                console.log('==========>>>>>END CẬP NHẬT LẠI GROUP, ITEM VÀ DOC')
+                
+                return resolve({ error: false, data: infoAfterUpdate })
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name  : assignJobInTemplate
+     * Author: Hiepnh
+     * Date: 02/5/2022
+     */   
+    assignJobInTemplate({ datahubJobID, workID, userID, ctx }) {
+        const that = this;
+        return new Promise(async resolve => {
+            try { 
+                /**
+                 * BA
+                 * 1-Khi workID chưa có datahubJobID
+                 * +++Gán datahubJobID cho workID
+                 * +++Cập nhật workline và bill_product
+                 * +++Tính đơn giá workID theo datahubJobID/jobline
+                 * +++Cập nhật giá của groupID, itemID, docID chứa workID
+                 * 
+                 * 2-Khi workID đã có link datahubJobID trước đó
+                 * +++Gán datahubJobID mới cho workID
+                 * +++Xóa các định mức cũ của workID trong workline
+                 * +++Cập nhật workline và bill_product
+                 * +++Cập đơn giá workID theo workline mới
+                 * +++Cập nhật giá của groupID, itemID, docID chứa workID
+                 * 
+                 * 3-Nếu hủy gán datahubJobID
+                 * +++Xóa hết định mức của workID trong workline
+                 * +++Cập nhật giá của workID về 0
+                 * +++Cập nhật giá của groupID, itemID, docID chứa workID
+                 */
+                if(!_isValid(workID) || !_isValid(userID))
+                    return resolve({ error: true, message: 'param_not_valid' })
+
+                let info = await BIDDING__BILL_WORK_COLL.findById(workID)
+                if(!info)
+                    return resolve({ error: true, message: "infoWork không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID, status: 400 });
+                let docID = info.doc
+                console.log(info)
+
+                // NẾU CÔNG VIỆC ĐÃ GÁN MÃ TỪ TRƯỚC
+                if(datahubJobID && _isValid(datahubJobID)){
+
+                    // B1 Kiểm tra xem boq đã gán mã trước đó hay chưa
+                    let infoWork = await BIDDING__BILL_WORK_COLL.findOne({_id: workID, datahubJob: { $exists: true, $ne: null } })
+
+                    // B2.1 Đã tồn tại
+                    if(infoWork){
+                        console.log('===========21-Đã tồn tại')
+                        /**
+                         * BA
+                         * 1. Gán lại mã công tác mới
+                         * 2. Xóa các định mức cũ đang có
+                         * 3. Cập nhật theo các định mức mới
+                         * 4. Cập nhật giá thành phần hao phí của công tác
+                         * 5. Cập nhật giá công tác cho gói thầu
+                         */
+
+                        // 1. Gán lại mã công tác mới
+                        console.log('===========1. Gán lại mã công tác mới')
+                        await BIDDING__BILL_WORK_COLL.findByIdAndUpdate(workID, {
+                            datahubJob: datahubJobID
+                        }, { new: true });
+                        
+                        // 2. Xóa các định mức cũ đang có
+                        console.log('===========2. Xóa các định mức cũ đang có')
+                        await BIDDING__BILL_WORKLINE_COLL.deleteMany(
+                            { work: workID }
+                        );    
+
+                        /**
+                         * 3. Cập nhật theo các định mức mới
+                         */
+                         console.log('===========3. Cập nhật theo các định mức mới')
+                        //_________Lấy định mức của công tác mẫu
+                        let listData = await ctx.call(`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_JOBLINE_GET_INFO_AND_GET_LIST}`,{ jobID: datahubJobID })
+                        console.log(listData)
+                        console.log(listData.data.listRecords)
+
+                        /**
+                         * Tạo định mức cho công tác mới => Phục vụ tổng hợp vật tư
+                         * - Tạo định mức mới
+                         * - Cập nhật theo giá vật tư của gói thầu
+                         */
+                        console.log('===========4. Tạo định mức cho công tác mới => Phục vụ tổng hợp vật tư')
+                        for(const item of listData.data.listRecords){
+
+                            // Tính toán đơn giá vật tư
+                            let unitprice = 0
+
+                            // Lấy giá vật tư trong gói thầu
+                            let infoProduct = await BIDDING__BILL_PRODUCT_COLL.findOne({
+                                doc: docID,
+                                product: item.product,
+                            })
+
+                            // Nếu gói thầu không có vật tư => lấy giá trong Datahub
+                            if(infoProduct && infoProduct.unitprice){
+                                unitprice = Number(infoProduct.unitprice)
+                            }else{
+                                unitprice = Number(item.unitprice)
+                            }
+                            console.log({unitprice:unitprice})
+
+                            // Tạo định mức công tác trong gói thầu
+                            await BIDDING__BILL_WORKLINE_MODEL.insert({
+                                workID, 
+                                productID: item.product, 
+                                type: item.type, 
+                                quantity: item.quantity,
+                                unitprice, 
+                                userID
+                            })
+                        }
+
+                        /**
+                         * 4. Cập nhật giá công tác của gói thầu
+                         * - Do cập nhật thành phần hao phí mới
+                         */
+                        await that.updateJobPrice({ workID, userID })
+                    }
+
+                    // B2.2 Chưa tồn tại
+                    else{
+                        console.log('===========22-Chưa tồn tại')
+
+                        /**
+                         * BA
+                         * 1. Gán mã công tác mới
+                         * 2. Cập nhật theo các định mức mới
+                         * 3. Cập nhật giá thành phần hao phí của công tác
+                         * 4. Cập nhật giá công tác của gói thầu
+                         */
+                        // 1. Gán mã công tác mới
+                        console.log('===========1. Gán mã công tác mới')
+                        await BIDDING__BILL_WORK_COLL.findByIdAndUpdate(workID, {
+                            datahubJob: datahubJobID
+                        }, { new: true });
+
+                        /**
+                         * 2. Cập nhật theo các định mức mới
+                         */
+                        console.log('===========2. Cập nhật theo các định mức mới')
+                        //_________Lấy định mức của công tác mẫu
+                        let listData = await ctx.call(`${CF_DOMAIN_SERVICES.DATAHUB}.${CF_ACTIONS_DATAHUB.DATAHUB_JOBLINE_GET_INFO_AND_GET_LIST}`,{ jobID: datahubJobID })
+                        console.log(listData)
+                        console.log(listData.data.listRecords)
+
+                        /**
+                         * Tạo định mức cho công tác mới => Phục vụ tổng hợp vật tư
+                         * - Tạo định mức mới
+                         * - Cập nhật theo giá vật tư của gói thầu
+                         */
+                        console.log('===========3. Tạo định mức cho công tác mới')
+                        for(const item of listData.data.listRecords){
+                            // Tính toán đơn giá vật tư
+                            let unitprice = 0
+
+                            // Lấy giá vật tư trong gói thầu
+                            let infoProduct = await BIDDING__BILL_PRODUCT_COLL.findOne({
+                                doc: docID,
+                                product: item.product,
+                            })
+                            console.log(infoProduct)
+
+                            // Nếu gói thầu không có vật tư => lấy giá trong Datahub
+                            if(infoProduct && infoProduct.unitprice){
+                                unitprice = Number(infoProduct.unitprice)
+                            }else{
+                                unitprice = Number(item.unitprice)
+                            }
+                            console.log({unitprice:unitprice})
+
+                            // Tạo định mức công tác trong gói thầu
+                            let check = await BIDDING__BILL_WORKLINE_MODEL.insert({
+                                workID, 
+                                productID: item.product, 
+                                type: item.type, 
+                                quantity: item.quantity,
+                                unitprice, 
+                                userID
+                            })
+                            console.log(check)
+                        }
+
+                         /**
+                         * 3. Cập nhật giá công tác của gói thầu
+                         * - Do cập nhật thành phần hao phí mới
+                         */
+                        await that.updateJobPrice({ workID, userID })
+                    }
+
+                    return resolve({ error: false, message: 'successfull' });
+                }
+
+                // TRƯỜNG HỢP 2: NẾU HỦY GÁN
+                else{
+                    console.log('===========11-Hủy gán')
+
+                    //_________Reset lại toàn bộ dữ liệu cho công tác
+                    await BIDDING__BILL_WORK_COLL.findByIdAndUpdate(workID, {
+                        unitprice1: 0,
+                        unitprice2: 0,
+                        unitprice3: 0,
+                        unitprice: 0,
+                        amount: 0,
+                        datahubJob: null,
+                        modifyAt: Date.now(),
+                    }, { new: true })
+
+                    //_________Hủy toàn bộ định mức vật tư đã gán trước đó
+                    await BIDDING__BILL_WORKLINE_MODEL.deleteMany(
+                        { work: workID }
+                    )     
+                    
+                    /**
+                     * 3. Cập nhật giá công tác của gói thầu
+                     * - Do cập nhật thành phần hao phí mới
+                     */
+                    await that.updateJobPrice({ workID, userID })
+
+                    return resolve({ error: false, message: 'successfull' });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

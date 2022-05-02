@@ -22,12 +22,15 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_product", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-    //_________Hồ sơ mời thầu
+    //_________Hồ sơ mời thầu (gói thầu)
     doc: {
         type: Schema.Types.ObjectId,
         ref : "bidding_doc"
     },
-    //_________Nhà thầu trúng thầu
+    /**
+     * Nhà thầu trúng thầu
+     * Gán sau khi đã chốt được đơn vị trúng thầu và hiệu chỉnh đơn giá của họ theo Datahub trước khi ký
+     */
     bidder: {
         type: Schema.Types.ObjectId,
         ref : "company"

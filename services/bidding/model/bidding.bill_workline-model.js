@@ -40,39 +40,40 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 01/5/2022
+     * Date: 02/5/2022
      */
-     insert({ jobID, productID, quantity, note, userID }) {
+    insert({ workID, productID, type, quantity, unitprice, note, userID }) {
          const that = this
         return new Promise(async resolve => {
             try {
-                if(!_isValid(jobID) || !_isValid(productID) || !_isValid(userID))
+                if(!_isValid(workID) || !_isValid(productID) || !_isValid(userID))
                     return resolve({ error: true, message: 'param_not_valid' })
                 
                 // Kiểm tra sự tồn tại của product trong job
-                let info = await BIDDING__BILL_WORKLINE_COLL.findOne({job: jobID, product: productID})
+                let info = await BIDDING__BILL_WORKLINE_COLL.findOne({work: workID, product: productID})
                 if(info){
                     return resolve({ error: true, message: 'data_exists' })
                 }else{
-                    // Lấy giá của vật tư
-                    let infoProduct = await BIDDING__BILL_PRODUCT_COLL.findById(productID)
+                    let infoWork = await BIDDING__BILL_WORK_COLL.findById(workID)
+                    if(!infoWork)
+                        return resolve({ error: true, message: 'data_exists' })
 
                     let dataInsert = {
                         userCreate: userID,
-                        job: jobID,
+                        doc: infoWork.doc,
+                        item: infoWork.item,
+                        group: infoWork.group,
+                        work: workID,
                         product: productID, 
+                        type: (type && !isNaN(type)) ? Number(type) : 1,
                         quantity: (quantity && !isNaN(quantity)) ? Number(quantity).toFixed(3) : 0,
-                        unitprice: Number(infoProduct.unitprice).toFixed(3),
-                        type: Number(infoProduct.type),
+                        unitprice: (unitprice && !isNaN(unitprice)) ? Number(unitprice).toFixed(3) : 0,
                         note
                     }
     
                     let infoAfterInsert = await that.insertData(dataInsert)
                     if (!infoAfterInsert) 
                         return resolve({ error: true, message: 'cannot_insert' })
-
-                    // Cập nhật lại giá các công tác chứa Nguồn lực
-                    await BIDDING__BILL_PRODUCT_MODEL.updateJobPrice({ jobID })
 
                     return resolve({ error: false, data: infoAfterInsert })
                 }
@@ -85,13 +86,13 @@ class Model extends BaseModel {
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 30/4/2022
+     * Date: 
      */
-    getInfo({ joblineID, select, populates }) {
-        console.log({ joblineID, select, populates })
+    getInfo({ worklineID, select, populates }) {
+        console.log({ worklineID, select, populates })
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(joblineID))
+                if (!checkObjectIDs(worklineID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -105,7 +106,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let info = await BIDDING__BILL_WORKLINE_COLL.findById(joblineID)
+                let info = await BIDDING__BILL_WORKLINE_COLL.findById(worklineID)
                     .select(select)
                     .populate(populates)
 
@@ -121,35 +122,35 @@ class Model extends BaseModel {
     /**
      * Name  : Remove
      * Author: Hiepnh
-     * Date: 30/4/2022
+     * Date: 
      */
-    remove({ joblineID, userID }){
-        return new Promise(async (resolve) => {
-            try {
-                if(!_isValid(userID))
-                    return resolve({ error: true, message: 'param_not_valid' })
+    // remove({ worklineID, userID }){
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(!_isValid(userID))
+    //                 return resolve({ error: true, message: 'param_not_valid' })
 
-                let info = await BIDDING__BILL_WORKLINE_COLL.findById(joblineID)
+    //             let info = await BIDDING__BILL_WORKLINE_COLL.findById(worklineID)
 
-                // Xóa định mức
-                await BIDDING__BILL_WORKLINE_COLL.findByIdAndDelete(joblineID)
+    //             // Xóa định mức
+    //             await BIDDING__BILL_WORKLINE_COLL.findByIdAndDelete(worklineID)
 
-                // Cập nhật giá công tác
-                await BIDDING__BILL_PRODUCT_MODEL.updateJobPrice({ jobID: info.job })
+    //             // Cập nhật giá công tác
+    //             await BIDDING__BILL_PRODUCT_MODEL.updateJobPrice({ jobID: info.job })
 
-                return resolve({ error: false, message: 'Done' });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
+    //             return resolve({ error: false, message: 'Done' });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
 
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 30/4/2022
+     * Date: 
      */
-     getList({ jobID,
+    getList({ workID,
         userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -195,8 +196,8 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(jobID)) {
-                    conditionObj.job = jobID
+                if (checkObjectIDs(workID)) {
+                    conditionObj.work = workID
                 }
                 console.log(conditionObj)
 

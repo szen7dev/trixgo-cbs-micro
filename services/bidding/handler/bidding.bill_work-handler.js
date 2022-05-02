@@ -12,7 +12,7 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 02/5/2022
      */
     insert: {
         auth: "required",
@@ -54,7 +54,7 @@ module.exports = {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 02/5/2022
      */
     update: {
         auth: "required",
@@ -97,7 +97,7 @@ module.exports = {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 02/5/2022
      */
     remove: {
         auth: "required",
@@ -124,7 +124,7 @@ module.exports = {
     /**
      * Name: Get info and get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 02/5/2022
      */
     getInfoAndGetList: {
         auth: "required",
@@ -161,5 +161,37 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }
+    },
+
+    /**
+     * Name: assignJobInTemplate 
+     * Author: Hiepnh
+     * Date: 02/5/2022
+     */
+    assignJobInTemplate: {
+        auth: "required",
+        params: {
+            workID              : { type: "string" },
+            datahubJobID        : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { 
+                    datahubJobID, workID,
+                } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
+
+                console.log({datahubJobID, workID})
+
+                const resultAfterCallHandler = await BIDDING__BILL_WORK_MODEL.assignJobInTemplate({
+                    datahubJobID, workID, userID, ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 }

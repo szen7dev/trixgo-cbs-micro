@@ -1692,6 +1692,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_BIDDING.BIIDING_BILL_WORK}`] :
 		[`${CF_DOMAIN_SERVICES.BIDDING}.${CF_ACTIONS_BIDDING.BIIDING_BILL_WORK_GET_INFO_AND_GET_LIST}`],
 
+		[`POST ${CF_ROUTINGS_BIDDING.BIIDING_BILL_WORK_ASSIGN_TEMPLATE}`] :
+		[`${CF_DOMAIN_SERVICES.BIDDING}.${CF_ACTIONS_BIDDING.BIIDING_BILL_WORK_ASSIGN_TEMPLATE}`],
+
 		//---------------------------🏁 END SERVICE BIDDING 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE FIN 🏁-------------------------//

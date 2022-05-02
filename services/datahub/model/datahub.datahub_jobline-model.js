@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 01/5/2022
      */
-     insert({ jobID, productID, quantity, note, userID }) {
+    insert({ jobID, productID, quantity, note, userID }) {
          const that = this
         return new Promise(async resolve => {
             try {
@@ -148,7 +148,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-     getList({ jobID,
+    getList({ jobID,
         userID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {

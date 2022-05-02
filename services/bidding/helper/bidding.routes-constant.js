@@ -39,6 +39,7 @@ const CF_ROUTINGS_BIDDING = {
 
     // ================================BIIDING_BILL_WORK=======================================//
     BIIDING_BILL_WORK                     : `${BASE_ROUTE}${BIIDING_BILL_WORK}`, 
+    BIIDING_BILL_WORK_ASSIGN_TEMPLATE     : `${BASE_ROUTE}${BIIDING_BILL_WORK}/assign-job-in-template`, 
 
     // ================================BIIDING_BILL_WORKLINE=======================================//
     BIIDING_BILL_WORKLINE                 : `${BASE_ROUTE}${BIIDING_BILL_WORKLINE}`, 

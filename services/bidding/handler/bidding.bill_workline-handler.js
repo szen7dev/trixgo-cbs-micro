@@ -139,16 +139,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashFlowID      : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            projectID       : { type: "string", optional: true },
-            contractID      : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            outin           : { type: "number", optional: true },
-            type            : { type: "number", optional: true },
-            property        : { type: "number", optional: true },
-            priority        : { type: "number", optional: true },
-            sortKey        : { type: "string", optional: true },
+            worklineID      : { type: "string", optional: true },
+            workID          : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -160,68 +152,23 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { cashFlowID, companyID, projectID, contractID, parentID, outin, type, property, priority, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { worklineID, workID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 				
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
-                }
-
                 let resultAfterCallHandler;
-                if(cashFlowID){
+                if(worklineID){
                     resultAfterCallHandler = await BIDDING__BILL_WORKLINE_MODEL.getInfo({
-                        cashFlowID, userID, select, populates
+                        worklineID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await BIDDING__BILL_WORKLINE_MODEL.getList({
-                        companyID, projectID, contractID, parentID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates, sortKey
+                        workID, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Name: Gom nhóm theo thuộc tính 
-     * Author: Hiepnh
-     * Date: 17/04/2022
-     */
-     getAmountByProperty: {
-        auth: "required",
-        params: {
-            companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            projectID       : { type: "string", optional: true },
-            contractID      : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            outin           : { type: "string", optional: true },
-            type            : { type: "string", optional: true },
-            property        : { type: "string", optional: true },
-            option          : { type: "string", optional: true },
-            real            : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { companyID, parentID, projectID, contractID, outin, year, type, property, option, real } = ctx.params;
-
-                const { _id: userID, company } = ctx.meta.infoUser;
-
-                if(!companyID){
-                    companyID = company._id
-                }
-
-                let resultAfterCallHandler = await BIDDING__BILL_WORKLINE_MODEL.getAmountByProperty({
-                    userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
