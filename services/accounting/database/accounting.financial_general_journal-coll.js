@@ -121,15 +121,15 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
-    //_________Hợp đồng
-    contract: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract'
-    }, 
     //_________Dự án
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
+    }, 
+    //_________Hợp đồng
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref: 'contract'
     }, 
     //_________Diễn giải nội dung
     name: String,
