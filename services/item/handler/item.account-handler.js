@@ -10,8 +10,9 @@ const ITEM__ACCOUNT_MODEL                    = require('../model/item.account-mo
 
 module.exports = {
     /**
-	 * Dev: Depv ✅
-	 * Func: Thêm account
+     * Name: Insert ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
 	 */
     insert:{
         params: {
@@ -32,9 +33,10 @@ module.exports = {
         },
     },
 
-     /**
-	 * Dev: Depv ✅
-	 * Func: Cập nhật account
+    /**
+     * Name: Update ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
 	 */
     update:{  
         params: {
@@ -57,8 +59,9 @@ module.exports = {
     },
     
     /**
-	 * Dev: Depv 
-	 * Func: Danh sách account
+     * Name: Get info and get list ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
 	 */
     getInfoAndGetList: {
         params: {
@@ -66,6 +69,7 @@ module.exports = {
             companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             isListParentOfListChilds: { type: "string", optional: true },
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -95,6 +99,37 @@ module.exports = {
                         companyID, lastestID, keyword, select, limit, populates,
                         status, type, level, isAccountingService, parentID, isListParentOfListChilds,
                     });
+                }
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name : Danh sách tài khoản + con cháu của 1 tài khoản ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
+	 */
+    getListNestedItem: {
+        params: {
+            accountID     : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                const { accountID,status, showInReportMonth, isNestedOfCompany } = ctx.params;
+
+                console.log({ accountID,status, showInReportMonth, isNestedOfCompany })
+                
+                let resultAfterCallHandler;
+                if(!isNestedOfCompany) {
+                    resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListByCompany({ companyID: company._id, status, showInReportMonth });
+                }
+                if(isNestedOfCompany) {
+                    resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListNestedItem({ accountID });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -133,33 +168,6 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { accountID } = ctx.params;
                 const resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getInfoAccount({ accountID });
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
-
-    /**
-     * Dev: HuynhVinh 
-     * Func:
-    */
-    getListNestedItem: {
-        params: {
-            accountID     : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
-                const { accountID,status, showInReportMonth, isNestedOfCompany } = ctx.params;
-                let resultAfterCallHandler;
-                if(!isNestedOfCompany) {
-                    resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListByCompany({ companyID: company._id, status, showInReportMonth });
-                }
-                if(isNestedOfCompany) {
-                    resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.getListNestedItem({ accountID });
-                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

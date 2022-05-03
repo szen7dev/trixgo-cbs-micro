@@ -20,7 +20,7 @@ const CMCS__CONTRACT_PAYMENT_COLL       = require('../database/cmcs.contract_pay
 /**
  * SAU BỎ ĐI, CALL QUA SERVICE
  */
-const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll');
+const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll'); // Kiểm tra fix lại, không Import trực tiếp
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template }                      = require('lodash');

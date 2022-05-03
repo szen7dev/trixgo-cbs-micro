@@ -1,7 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany }                        
-                                        = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, _isValid, checkNumberIsValidWithRange, checkNumberValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
@@ -30,15 +29,20 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev : Depv
-	 * Func: Tạo account
-	 * Date: 13/12/2021
+     * Name: Insert ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
 	 */
 	insert({ companyID, parentID, name, description, userID }){
         return new Promise(async resolve => {
             try {
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+                if(!name || !checkObjectIDs(companyID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: "companyID|name|userID không hợp lệ", keyError: "Request params name invalid" });
+
+                // Kiểm tra tên tồn tại trong công ty hay chưa
+                let checkName = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name });
+                if(checkName)
+                    return resolve({ error: true, message: "name_existed" });
 
                 let dataInsert = {
                     userCreate: userID,
@@ -48,6 +52,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
+
+                    // Cập nhật Level để phục vụ việc tính toán, đệ quy
+                    let infoParent = await ITEM__ACCOUNT_COLL.findById(parentID);
+                    dataInsert.level = infoParent.level + 1;
                 }
 
                 if(description){
@@ -60,7 +68,12 @@ class Model extends BaseModel {
 
                 // Cập nhật amountChilds cho phần tử cha
                 if(checkObjectIDs(parentID)){
-                    await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                    await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID, 
+                        { 
+                            $addToSet: { childs: infoAfterInsert._id },
+                            $inc: { amountChilds: 1 }
+                        }, 
+                        { new: true });
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
@@ -72,21 +85,34 @@ class Model extends BaseModel {
     }
 
     /**
-	 * Dev : Depv
-	 * Func: update account
-	 * Date: 13/12/2021
+     * Name: Update ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
 	 */
 	update({ accountID, name, description, userID }){
         return new Promise(async resolve => { 
             try {
-                if(!checkObjectIDs(accountID))
-                    return resolve({ error: true, message: "accountID không hợp lệ", keyError: "Request params accountID invalid" });
+                if(!name || !checkObjectIDs(accountID))
+                    return resolve({ error: true, message: "accountID|name không hợp lệ", keyError: "Request params accountID invalid" });
 
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
-                
+                // Kiểm tra xem tên có bị trùng hay không
+                let info = await ITEM__ACCOUNT_COLL.findById(accountID);
+
+                let checkName = await ITEM__ACCOUNT_COLL.findOne({ 
+                    company: info.company, 
+                    name: name.trim(),
+                    _id: {
+                        $ne: accountID
+                    }
+                 });
+                if(checkName)
+                    return resolve({ error: true, message: "name_existed" });
+
+                // Cập nhật thông tin nếu không trùng
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date()
+                    name: name.trim(),
+                    userUpdate: userID, 
+                    modifyAt: new Date()
                 }
 
                 if(description){
@@ -94,6 +120,9 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -102,52 +131,161 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info account ✅
-     * Author: vinh
-     * Xoá nhớ báo Vinh vì có thể liên quan đến accouting
-     * Code: 
-     */
-    getInfo({ accountID, select, populates }) { 
-        return new Promise(async (resolve) => {
+     * Name: Get info ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
+	 */
+    getInfo({ accountID, select, populates }) {
+        return new Promise(async resolve => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+                if (!checkObjectIDs(accountID))
+                    return resolve({ error: true, message: 'param_invalid' });
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(accountID))
-                    return resolve({ error: true, message: 'Request params accountID invalid', status: 400 });
-                
-                // populates
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
+                if (populates && typeof populates === 'string') {
+                    if (!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    populates = JSON.parse(populates);
+                } else {
                     populates = {
                         path: "",
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                let infoAterGet = await ITEM__ACCOUNT_COLL.findById(accountID)
-                                    .select(select)
-                                    .populate(populates)
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
-                return resolve({ error: false, data: infoAterGet, status: 200 });
+
+                let info = await ITEM__ACCOUNT_COLL.findById(accountID)
+                    .select(select)
+                    .populate(populates)
+
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
+
+                return resolve({ error: false, data: info });
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name : Danh sách tài khoản + con cháu của 1 tài khoản ✅
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
+	 */
+    getListNestedItem({ accountID }) {
+        return new Promise(async resolve => {
+            try {
+                let { company } = await ITEM__ACCOUNT_COLL.findById(accountID);
+
+                //__________Lấy levelMax của các phần tử
+                let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ITEM__ACCOUNT_COLL , company);
+
+                //__________Khai báo mảng chứa phần tử cha và các con
+                let arrObjectID = [];
+                let getListIDRecursiveForAny = (arr) => {
+                    for(const item of arr) {
+                        arrObjectID.push(item._id)
+                        if (Array.isArray(item.childs) && item.childs.length) {
+                            getListIDRecursiveForAny(item.childs)
+                        }
+                    }
+                }
+
+                //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
+                let infoItemOrigin = await ITEM__ACCOUNT_COLL.findById(accountID)
+                    .populate(
+                        _constructForAny(levelForRecursive, 'childs') 
+                    )
+                
+                //__________Gọi hàm đệ quy để lấy mảng nestedArray
+                getListIDRecursiveForAny([infoItemOrigin], levelForRecursive);
+
+                if (!arrObjectID) 
+                    return resolve({ error: true, message: 'cannot_get_list' });
+                    
+                return resolve({ error: false, data: arrObjectID });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    } 
+
+    /**
+     * Name : Danh sách tài khoản + con cháu của công ty
+	 * Author : Hiepnh
+	 * Date: 03/5/2022
+	 */
+    getListByCompany({ companyID, status, showInReportMonth }){
+        return new Promise(async (resolve) => {
+            try {
+                if( !ObjectID.isValid(companyID))
+                       return resolve({ error: true, message: 'param_not_valid' });
+
+                let pathOrigin;
+                let constructPopulateConfigObj = (level, path) => {
+                    pathOrigin  = `${path}`;
+                    const oneLevel = () => ({ 
+                        path: pathOrigin, options: { sort: { 'name': 1 } }, 
+                    });
+                    let obj = oneLevel();
+
+                    while (level) {
+                        if (level !== 1) {
+                            obj.populate = Object.assign({}, obj);
+                        }
+                        obj = Object.assign({}, obj);
+                        --level;
+                    }
+                    
+                    return obj;
+                };
+
+                let levelMax = await ITEM__ACCOUNT_COLL.aggregate(
+                    [
+                        {
+                            $match: {
+                                company: ObjectID(companyID)
+                            }
+                        },
+                        {
+                            $group:
+                            {
+                                _id: null,
+                                maxLevel: { $max: "$level" }
+                            }
+                        }
+                    ]
+                );
+                let ObjectQuery = { 
+                    company: companyID,   
+                    $or: [
+                        {
+                            parent: {
+                                $exists: false
+                            }  
+                        },
+                        {
+                            parent: null
+                        }
+                    ]
+                }
+                
+                if(status){
+                    ObjectQuery.status  = 1
+                }
+
+                if(showInReportMonth){
+                    ObjectQuery.showInReportMonth  = 1
+                }
+
+                // Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
+                let listParent = await ITEM__ACCOUNT_COLL.find(ObjectQuery)
+                .populate(
+                    constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
+                )
+                .sort({name: 1})
+
+                return resolve({ error: false, data: listParent, maxLevel: Number(levelMax[0].maxLevel) });
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
             }
         })
     }
@@ -280,91 +418,8 @@ class Model extends BaseModel {
             }
         })
     }
+
     /**
-     * Name: get info account 
-     * Author: vinh
-     * Xoá nhớ báo Vinh vì có thể liên quan đến accouting
-     * Code: 
-     */
-
-    //_________Danh sách đệ quy
-    getListByCompany({ companyID, status, showInReportMonth }){
-        return new Promise(async (resolve) => {
-            try {
-                if( !ObjectID.isValid(companyID))
-                       return resolve({ error: true, message: 'param_not_valid' });
-
-                let pathOrigin;
-                let constructPopulateConfigObj = (level, path) => {
-                    pathOrigin  = `${path}`;
-                    const oneLevel = () => ({ 
-                        path: pathOrigin, options: { sort: { 'name': 1 } }, 
-                    });
-                    let obj = oneLevel();
-
-                    while (level) {
-                        if (level !== 1) {
-                            obj.populate = Object.assign({}, obj);
-                        }
-                        obj = Object.assign({}, obj);
-                        --level;
-                    }
-                    
-                    return obj;
-                };
-
-                let levelMax = await ITEM__ACCOUNT_COLL.aggregate(
-                    [
-                        {
-                            $match: {
-                                company: ObjectID(companyID)
-                            }
-                        },
-                        {
-                            $group:
-                            {
-                                _id: null,
-                                maxLevel: { $max: "$level" }
-                            }
-                        }
-                    ]
-                );
-                let ObjectQuery = { 
-                    company: companyID,   
-                    $or: [
-                        {
-                            parent: {
-                                $exists: false
-                            }  
-                        },
-                        {
-                            parent: null
-                        }
-                    ]
-                }
-                
-                if(status){
-                    ObjectQuery.status  = 1
-                }
-
-                if(showInReportMonth){
-                    ObjectQuery.showInReportMonth  = 1
-                }
-                // Lấy các tài khoản cha (có parent = null hoặc không tồn tại)
-                let listAppMenuParent = await ITEM__ACCOUNT_COLL.find(ObjectQuery)
-                .populate(
-                    constructPopulateConfigObj(Number(levelMax[0].maxLevel), 'childs')
-                )
-                .sort({name: 1})
-
-                return resolve({ error: false, data: listAppMenuParent, maxLevel: Number(levelMax[0].maxLevel) });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
-    }
-
-        /**
      * Tìm kiếm
      * Hiepnh [x]
      */
@@ -458,45 +513,7 @@ class Model extends BaseModel {
             }
         })
     }
-    //_________DANH SÁCH TÀI KHOẢN VÀ CON CHÁU CỦA NÓ
-    // Author: HiepNH
-    getListNestedItem({ accountID }) {
-        return new Promise(async resolve => {
-            try {
-                let { company } = await ITEM__ACCOUNT_COLL.findById(accountID);
-                //__________Lấy levelMax của các phần tử
-                // let levelForRecursive = await _getLevelMaxInRecursive(ITEM__ACCOUNT_COLL);
-                let levelForRecursive = await _getLevelMaxInRecursiveByCompany(ITEM__ACCOUNT_COLL , company);
 
-                //__________Khai báo mảng chứa phần tử cha và các con
-                let arrObjectID = [];
-                let getListIDRecursiveForAny = (arr) => {
-                    for(const item of arr) {
-                        arrObjectID.push(item._id)
-                        if (Array.isArray(item.childs) && item.childs.length) {
-                            getListIDRecursiveForAny(item.childs)
-                        }
-                    }
-                }
-
-                //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
-                let infoItemOrigin = await ITEM__ACCOUNT_COLL.findById(accountID)
-                    .populate(
-                        _constructForAny(levelForRecursive, 'childs') 
-                    )
-                
-                //__________Gọi hàm đệ quy để lấy mảng nestedArray
-                getListIDRecursiveForAny([infoItemOrigin], levelForRecursive);
-
-                if (!arrObjectID) 
-                    return resolve({ error: true, message: 'cannot_get_list' });
-                    
-                return resolve({ error: false, data: arrObjectID });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        });
-    } 
 
     getInfoAccount({ accountID }) {
         return new Promise(async resolve => {

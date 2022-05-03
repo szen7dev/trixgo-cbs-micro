@@ -132,9 +132,9 @@
     getInfoAndGetList: {
         auth: "required",
         params: {
-            workID : { type: "string", optional: true },
-            groupID : { type: "string", optional: true },
-            itemID    : { type: "string", optional: true },
+            workID      : { type: "string", optional: true },
+            groupID     : { type: "string", optional: true },
+            itemID      : { type: "string", optional: true },
             budgetID    : { type: "string", optional: true },
 
             // Field mặc định
@@ -148,7 +148,7 @@
             try {
                 await this.validateEntity(ctx.params);
                 let { workID, groupID, itemID, budgetID, keyword, limit, lastestID, populates, select } = ctx.params;
-                const { _id: userID } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 if(workID){
@@ -157,7 +157,7 @@
                     });
                 }else{
                     resultAfterCallHandler = await BUDGET__WORK_MODEL.getList({
-                        groupID, itemID, budgetID, userID, keyword, limit, lastestID, select, populates
+                        companyID: company._id, budgetID, itemID, groupID, userID, keyword, limit, lastestID, select, populates
                     });
                 }
                 
