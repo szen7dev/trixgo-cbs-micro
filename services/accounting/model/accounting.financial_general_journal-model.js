@@ -653,6 +653,11 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * REPORTS
+     */    
+    
 }
 
 exports.MODEL = new Model;
