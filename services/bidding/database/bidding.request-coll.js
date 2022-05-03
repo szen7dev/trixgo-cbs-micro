@@ -3,35 +3,49 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 /**
- * HỒ SƠ YÊU CẦU, MỜI THẦU
+ * YÊU CẦU KỸ THUẬT
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     /**
-     * Chủ đầu tư
-     * Công ty Phát hành hồ sơ mời thầu
-     * Công ty tạo ra task
+     * THÔNG TIN CHUNG => LẤY TỪ BIDDING_PLAN SANG
      */
-    company: {
+    //_________Chủ đầu tư
+    client: {
         type: Schema.Types.ObjectId,
         ref : "company"
+    }, 
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
     },
-    //_________Kế hoạch lựa chọn thầu
+    //_________Kế hoạch đầu thầu
     plan: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_plan"
+        ref: "bidding_plan"
+    },
+    //_________Hồ sơ mời thầu
+    doc: {
+        type: Schema.Types.ObjectId,
+        ref : "bidding_doc"
     },
     /**
-     * Phân loại
-     * 1-Bảng dữ liệu
-     * 2-Năng lực nhân sự
-     * 3-Năng lực máy móc
-     * 4-Yêu cầu vật tư thiết bị
-     * 5-Giải pháp tổ chức thực hiện
+     * YÊU CẦU KỸ THUẬT
      */
-    type: { type: Number, default: 1 },    
     /**
-     * 1-BẢNG DỮ LIỆU
+     * Phân loại
+     * 1-Bảng dữ liệu gói thầu
+     * 2-Yêu cầu tư cách hợp lệ
+     * 3-Yêu cầu năng lực tài chính
+     * 4-Yêu cầu về kinh nghiệm/hợp đồng minh chứng
+     * 5-Yêu cầu về nhân sự gói thầu
+     * 6-Yêu cầu về máy móc, thiết bị gói thầu
+     * 7-Yêu cầu về vật tư gói thầu
+     * 8-Yêu cầu giải pháp thực hiện
+     * 9-Yêu cầu khác
+     * 10-Điều khoản hợp đồng
      */
+    type: { type: Number, default: 1 }, 
     //________Số hiệu thư mời thầu
     invitationLetter: String,
     //________Tên bên mời thầu
@@ -89,28 +103,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
     //_________Điều khoản hợp đồng
     contractCondition: String,
     /**
-     * 2-NĂNG LỰC NHÂN SỰ
-     */
-    //_________Điều kiện về nhân sự
-    humanCondition: String,
-    /**
-     * 3-NĂNG LỰC THIẾT BỊ
-     */
-    //_________Điều kiện về máy móc thiết bị
-    machineCondition: String,
-    /**
-     * 4-YÊU CẦU VỀ VẬT TƯ THIẾT BỊ
-     */
-    //_________Nội dung (với phân nhóm thì sẽ viết Hoa, bỏ trống, sử dụng order)
-    materialContent: String,    
-    //_________Vị trí, khu vực
-    materialArea: String,
-    //_________Yêu cầu kỹ thuật
-    materialRequest: String,
-    //_________Thương hiệu, xuất xứ
-    materialBrand: String,
-    /**
-     * 5-GIẢI PHÁP TỔ CHỨC
+     * CHUNG CHO CÁC YÊU CẦU
      */
     //_________Thứ tự, dùng để sắp xếp
     order: {
@@ -118,14 +111,17 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_request", {
         default: 1
     }, 
     //_________Nội dung
-    solutionContent: String,
-    /**
-     * CHUNG CHO CÁC YÊU CẦU
-     */
-    //_________Mô tả yêu cầu/Ghi chú
+    name: String,
+    //_________Vị trí, khu vực
+    position: String,
+    //_________Đơn vị
+    unit: String,
+    //_________Mô tả/Yêu cầu
     description: String,
-    // Tài liệu, ảnh đính kèm
-    documentAttachs: [{
+    //_________Ghi chú/Thương hiệu, xuất xứ
+    note: String,
+    //_________Tài liệu, ảnh đính kèm
+    attachs: [{
         type: Schema.Types.ObjectId,
         ref: "file"
     }],

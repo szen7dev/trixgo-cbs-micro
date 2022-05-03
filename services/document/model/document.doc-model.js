@@ -85,13 +85,13 @@ class Model extends BaseModel {
                     });
                 }
 
-                if (!checkObjectIDs(datahubContactID)) {
-					return resolve({  
-                        error: true, 
-                        message: 'Request params datahubContactID invalid', 
-                        keyError: 'params_invalid',
-                    });
-                }
+                // if (!checkObjectIDs(datahubContactID)) {
+				// 	return resolve({  
+                //         error: true, 
+                //         message: 'Request params datahubContactID invalid', 
+                //         keyError: 'params_invalid',
+                //     });
+                // }
                 
                 if (!checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
                     return resolve({
@@ -109,13 +109,13 @@ class Model extends BaseModel {
                     });
                 }
                 
-                if (!sign) {
-                    return resolve({
-                        error: true, 
-                        message: 'Request params sign invalid', 
-                        keyError: 'params_type_invalid',
-                    });
-                }
+                // if (!sign) {
+                //     return resolve({
+                //         error: true, 
+                //         message: 'Request params sign invalid', 
+                //         keyError: 'params_type_invalid',
+                //     });
+                // }
 
                 let infoDepartment = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID

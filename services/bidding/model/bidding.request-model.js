@@ -1,23 +1,37 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
-const ObjectID = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-
 /**
- * import inter-coll, exter-coll
+ * EXTERNAL PACKAGE
  */
-const BIDDING__REQUEST_COLL = require('../database/bidding.request-coll');
+ const ObjectID = require('mongoose').Types.ObjectId;
 
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+ /**
+  * CONSTANTS
+  */
+ const { CF_ACTIONS_AUTH } 		                = require('../../auth/helper/auth.actions-constant');
+ const { CF_DOMAIN_SERVICES } 				    = require('../../gateway/helper/domain.constant');
+ const { CF_ACTIONS_ITEM } 					    = require('../../item/helper/item.actions-constant');
+ 
+ /**
+  * TOOLS
+  */
+ const { checkObjectIDs, IsJsonString }         = require('../../../tools/utils/utils');
+ const BaseModel                                = require('../../../tools/db/base_model');
+ const { RANGE_BASE_PAGINATION_V2 }             = require('../../../tools/cursor_base/playground/index');
+ const { KEY_ERROR }                            = require('../../../tools/keys/index')
+ 
+ /**
+  * COLLECTIONS
+  */
+const BIDDING__PLAN_COLL                        = require('../database/bidding.plan-coll');
+const BIDDING__DOC_COLL                         = require('../database/bidding.doc-coll');
+const BIDDING__REQUEST_COLL                     = require('../database/bidding.request-coll');
+const BIDDING__APPLY_COLL                       = require('../database/bidding.apply-coll');
+ 
+ /**
+  * MODELS
+  */
 
-/**
- * import inter-model, exter-model
- */
 class Model extends BaseModel {
     constructor() {
         super(BIDDING__REQUEST_COLL);
@@ -26,74 +40,154 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ userID, ctx, docID, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                if(!checkObjectIDs(userID) || !checkObjectIDs(docID))
+                    return resolve({ error: true, message: 'Request params docID|userID invalid', status: 400 })
 
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
+                // Kiểm tra sự tồn tại của Bảng dữ liệu
+                if (!isNaN(type) && Number(type) === 1) {
+                    let infoRequest = await BIDDING__REQUEST_COLL.findOne({ doc: docID, type: 1 })
+                    console.log(infoRequest)
+
+                    if(infoRequest)
+                        return resolve({ error: true, message: 'Bảng dữ liệu đã tồn tại', status: 400 })
+                }
+                
+                // Thông tin Hồ sơ mời thầu
+                let infoDoc = await BIDDING__DOC_COLL.findById(docID)
+                console.log(infoDoc)
+
+                let dataInsert = { 
+                    userCreate: userID, 
+                    doc: docID,
+                    client: infoDoc.client,
+                    project: infoDoc.project,
+                    plan: infoDoc.plan
                 }
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataInsert.type = type;
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
+                if (!isNaN(order) && Number(order) > 0) {
+                    dataInsert.order = order;
                 }
 
-                if (checkObjectIDs(contractID)) {
-                    dataInsert.contract = contractID;
-                }
-
+                /**
+                 * CHUNG
+                 */
                 if (name) {
                     dataInsert.name = name;
                 }
-
-                if (date) {
-                    dataInsert.date = date;
+                if (unit) {
+                    dataInsert.unit = unit;
                 }
-
-                if (sign) {
-                    dataInsert.sign = sign;
-                }
-
                 if (note) {
                     dataInsert.note = note;
                 }
-
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
+                if (position) {
+                    dataInsert.position = position;
+                }
+                if (description) {
+                    dataInsert.description = description;
                 }
 
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
+                /**
+                 * BẢNG DỮ LIỆU
+                 */
+                if (invitationLetter) {
+                    dataInsert.invitationLetter = invitationLetter;
                 }
-
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
+                if (procuringEntity) {
+                    dataInsert.procuringEntity = procuringEntity;
                 }
-
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
+                if (client) {
+                    dataInsert.client = client;
                 }
-
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
+                if (project) {
+                    dataInsert.project = project;
+                }
+                if (packageInfo) {
+                    dataInsert.package = packageInfo;
+                }
+                if (projectAddress) {
+                    dataInsert.projectAddress = projectAddress;
+                }
+                if (projectInfo) {
+                    dataInsert.projectInfo = projectInfo;
+                }
+                if (scopeOfPackage) {
+                    dataInsert.scopeOfPackage = scopeOfPackage;
+                }
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataInsert.duration = duration;
+                }
+                if (contractType) {
+                    dataInsert.contractType = contractType;
+                }
+                if (documentIntroduction) {
+                    dataInsert.documentIntroduction = documentIntroduction;
+                }
+                if (language) {
+                    dataInsert.language = language;
+                }
+                if (currency) {
+                    dataInsert.currency = currency;
+                }
+                if (method) {
+                    dataInsert.method = method;
+                }
+                if (validity) {
+                    dataInsert.validity = validity;
+                }
+                if (!isNaN(security) && Number(security) > 0) {
+                    dataInsert.security = security;
+                }
+                if (securityValidity) {
+                    dataInsert.securityValidity = securityValidity;
+                }
+                if (bidsClarification) {
+                    dataInsert.bidsClarification = bidsClarification;
+                }
+                if (documentsClarification) {
+                    dataInsert.documentsClarification = documentsClarification;
+                }
+                if (alternative) {
+                    dataInsert.alternative = alternative;
+                }
+                if (subcontractor) {
+                    dataInsert.subcontractor = subcontractor;
+                }
+                if (deadline) {
+                    dataInsert.deadline = deadline;
+                }
+                if (evaluation) {
+                    dataInsert.evaluation = evaluation;
+                }
+                if (negotiation) {
+                    dataInsert.negotiation = negotiation;
+                }
+                if (biddingSolution) {
+                    dataInsert.biddingSolution = biddingSolution;
+                }
+                if (!isNaN(biddingExpense) && Number(biddingExpense) > 0) {
+                    dataInsert.biddingExpense = biddingExpense;
+                }
+                if (biddingOther) {
+                    dataInsert.biddingOther = biddingOther;
+                }
+                if (contractCondition) {
+                    dataInsert.contractCondition = contractCondition;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
-                }
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -105,68 +199,140 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ requestID, userID, ctx, type, order, invitationLetter, procuringEntity, client, project, packageInfo, projectAddress, projectInfo, scopeOfPackage, duration, contractType, documentIntroduction, language, currency, method, validity, security, securityValidity, bidsClarification, documentsClarification, alternative, subcontractor, deadline, evaluation, negotiation, biddingSolution, biddingExpense, biddingOther, contractCondition, name, position, unit, description, note }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { 
+                    userUpdate: userID
+                 };
 
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(requestID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataUpdate.type = type;
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
+                if (!isNaN(order) && Number(order) > 0) {
+                    dataUpdate.order = order;
                 }
 
-                if (checkObjectIDs(contractID)) {
-                    dataUpdate.contract = contractID;
-                }
-
+                /**
+                 * CHUNG
+                 */
                 if (name) {
                     dataUpdate.name = name;
                 }
-
-                if (date) {
-                    dataUpdate.date = date;
+                if (unit) {
+                    dataUpdate.unit = unit;
                 }
-
-                if (sign) {
-                    dataUpdate.sign = sign;
-                }
-
                 if (note) {
                     dataUpdate.note = note;
                 }
-
-                if (income >= 0) {
-                    dataUpdate.income = income;
+                if (position) {
+                    dataUpdate.position = position;
+                }
+                if (description) {
+                    dataUpdate.description = description;
                 }
 
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
+                /**
+                 * BẢNG DỮ LIỆU
+                 */
+                if (invitationLetter) {
+                    dataUpdate.invitationLetter = invitationLetter;
+                }
+                if (procuringEntity) {
+                    dataUpdate.procuringEntity = procuringEntity;
+                }
+                if (client) {
+                    dataUpdate.client = client;
+                }
+                if (project) {
+                    dataUpdate.project = project;
+                }
+                if (packageInfo) {
+                    dataUpdate.package = packageInfo;
+                }
+                if (projectAddress) {
+                    dataUpdate.projectAddress = projectAddress;
+                }
+                if (projectInfo) {
+                    dataUpdate.projectInfo = projectInfo;
+                }
+                if (scopeOfPackage) {
+                    dataUpdate.scopeOfPackage = scopeOfPackage;
+                }
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataUpdate.duration = duration;
+                }
+                if (contractType) {
+                    dataUpdate.contractType = contractType;
+                }
+                if (documentIntroduction) {
+                    dataUpdate.documentIntroduction = documentIntroduction;
+                }
+                if (language) {
+                    dataUpdate.language = language;
+                }
+                if (currency) {
+                    dataUpdate.currency = currency;
+                }
+                if (method) {
+                    dataUpdate.method = method;
+                }
+                if (validity) {
+                    dataUpdate.validity = validity;
+                }
+                if (!isNaN(security) && Number(security) > 0) {
+                    dataUpdate.security = security;
+                }
+                if (securityValidity) {
+                    dataUpdate.securityValidity = securityValidity;
+                }
+                if (bidsClarification) {
+                    dataUpdate.bidsClarification = bidsClarification;
+                }
+                if (documentsClarification) {
+                    dataUpdate.documentsClarification = documentsClarification;
+                }
+                if (alternative) {
+                    dataUpdate.alternative = alternative;
+                }
+                if (subcontractor) {
+                    dataUpdate.subcontractor = subcontractor;
+                }
+                if (deadline) {
+                    dataUpdate.deadline = deadline;
+                }
+                if (evaluation) {
+                    dataUpdate.evaluation = evaluation;
+                }
+                if (negotiation) {
+                    dataUpdate.negotiation = negotiation;
+                }
+                if (biddingSolution) {
+                    dataUpdate.biddingSolution = biddingSolution;
+                }
+                if (!isNaN(biddingExpense) && Number(biddingExpense) > 0) {
+                    dataUpdate.biddingExpense = biddingExpense;
+                }
+                if (biddingOther) {
+                    dataUpdate.biddingOther = biddingOther;
+                }
+                if (contractCondition) {
+                    dataUpdate.contractCondition = contractCondition;
                 }
 
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
-                }
-
-                let infoAfterUpdate = await BIDDING__REQUEST_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+                let infoAfterUpdate = await BIDDING__REQUEST_COLL.findByIdAndUpdate(requestID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
-                }
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
@@ -178,18 +344,18 @@ class Model extends BaseModel {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ requestID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(requestID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -203,13 +369,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BIDDING__REQUEST_COLL.findById(cashBookID)
+                let info = await BIDDING__REQUEST_COLL.findById(requestID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -219,9 +385,9 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ type, docID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -234,7 +400,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
                 let conditionObj = { };
                 let keys = ['createAt__-1', '_id__-1'];
@@ -244,7 +409,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -269,28 +433,14 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
-
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
-                    }
-                } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+                if (checkObjectIDs(docID)) {
+                    conditionObj.doc = docID
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if (!isNaN(type) && Number(type) > 0) {
+                    conditionObj.type = type;
                 }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
-                }
-
+                
                 console.log(conditionObj)
 
                 if (keyword) {

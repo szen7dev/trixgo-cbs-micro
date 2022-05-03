@@ -1,7 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany }                        
-                                        = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString, _isValid, checkNumberIsValidWithRange, checkNumberValid, _getLevelMaxInRecursive, _constructForAny, _getLevelMaxInRecursiveByCompany } = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
@@ -37,8 +36,13 @@ class Model extends BaseModel {
 	insert({ companyID, parentID, name, description, userID }){
         return new Promise(async resolve => {
             try {
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+                if(!name || !checkObjectIDs(companyID) || !checkObjectIDs(userID))
+                    return resolve({ error: true, message: "companyID|name|userID không hợp lệ", keyError: "Request params name invalid" });
+
+                // Kiểm tra tên tồn tại trong công ty hay chưa
+                let checkName = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name });
+                if(checkName)
+                    return resolve({ error: true, message: "name_existed" });
 
                 let dataInsert = {
                     userCreate: userID,
@@ -48,6 +52,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
+
+                    // Cập nhật Level để phục vụ việc tính toán, đệ quy
+                    let infoParent = await ITEM__ACCOUNT_COLL.findById(parentID);
+                    dataInsert.level = infoParent.level + 1;
                 }
 
                 if(description){
@@ -60,7 +68,12 @@ class Model extends BaseModel {
 
                 // Cập nhật amountChilds cho phần tử cha
                 if(checkObjectIDs(parentID)){
-                    await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
+                    await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID, 
+                        { 
+                            $addToSet: { childs: infoAfterInsert._id },
+                            $inc: { amountChilds: 1 }
+                        }, 
+                        { new: true });
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
@@ -79,14 +92,26 @@ class Model extends BaseModel {
 	update({ accountID, name, description, userID }){
         return new Promise(async resolve => { 
             try {
-                if(!checkObjectIDs(accountID))
-                    return resolve({ error: true, message: "accountID không hợp lệ", keyError: "Request params accountID invalid" });
+                if(!name || !checkObjectIDs(accountID))
+                    return resolve({ error: true, message: "accountID|name không hợp lệ", keyError: "Request params accountID invalid" });
 
-                if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
-                
+                // Kiểm tra xem tên có bị trùng hay không
+                let info = await ITEM__ACCOUNT_COLL.findById(accountID);
+
+                let checkName = await ITEM__ACCOUNT_COLL.findOne({ 
+                    company: info.company, 
+                    name: name.trim(),
+                    _id: {
+                        $ne: accountID
+                    }
+                 });
+                if(checkName)
+                    return resolve({ error: true, message: "name_existed" });
+
                 let dataUpdate = {
-                    name, userUpdate: userID, modifyAt: new Date()
+                    name: name.trim(),
+                    userUpdate: userID, 
+                    modifyAt: new Date()
                 }
 
                 if(description){
@@ -94,6 +119,9 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update" });
+
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

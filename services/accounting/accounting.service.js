@@ -1,13 +1,13 @@
 "use strict";
 
-const DbService                	    	= require("../../tools/mixins/db.mixin");
-const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
+const DbService                	    					= require("../../tools/mixins/db.mixin");
+const CacheCleaner                	    				= require("../../tools/mixins/cache.cleaner.mixin");
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
-const { CF_ACTIONS_ACCOUNTING } 	    = require('./helper/accounting.actions-constant');
+const { CF_DOMAIN_SERVICES } 		    				= require('../gateway/helper/domain.constant');
+const { CF_ACTIONS_ACCOUNTING } 	    				= require('./helper/accounting.actions-constant');
 
 /**
  * HANDLERS
@@ -50,12 +50,15 @@ module.exports = {
 		[CF_ACTIONS_ACCOUNTING.VOUCHER_UPDATE] 								: ACCOUNTING__FINANCIAL_VOUCHER_HANDLER.update,
 		[CF_ACTIONS_ACCOUNTING.VOUCHER_REMOVE] 								: ACCOUNTING__FINANCIAL_VOUCHER_HANDLER.remove,
 		[CF_ACTIONS_ACCOUNTING.VOUCHER_GET_INFO_AND_GET_LIST] 				: ACCOUNTING__FINANCIAL_VOUCHER_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ACCOUNTING.VOUCHER_UPDATE_TO_JOURNAL] 					: ACCOUNTING__FINANCIAL_VOUCHER_HANDLER.updateFromVoucherToJournal,
+		[CF_ACTIONS_ACCOUNTING.VOUCHER_UPDATE_TO_VOUCHER] 					: ACCOUNTING__FINANCIAL_VOUCHER_HANDLER.updateFromJournalToVoucher,
 
 		//==========================================  CASH_BOOK  ==================================
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_INSERT] 								: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.insert,
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_UPDATE] 								: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.update,
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_REMOVE] 								: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.remove,
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_GET_INFO_AND_GET_LIST] 				: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ACCOUNTING.JOURNAL_CAL_IMPLE_BUDGET]		 		    : ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.calImpleBudget,
 	},
 
 	/**

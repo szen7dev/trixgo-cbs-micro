@@ -430,14 +430,18 @@ class Model extends BaseModel {
 
                 // Cập nhật Ngân sách thực hiện
                 if(option && Number(option) === 2){
-                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.CAL_IMPLE_BUDGET}`, {
+                    const infoImpleBudget = await ctx.call(`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.JOURNAL_CAL_IMPLE_BUDGET}`, {
                         itemID
                     })
                     // console.log(infoImpleBudget)
                     if(infoImpleBudget){
                         dataUpdate.impleQuantity = Number(infoImpleBudget.data.quantity)
                         dataUpdate.impleAmount = Number(infoImpleBudget.data.amount)
-                        dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                        if(Number(infoImpleBudget.data.quantity) != 0){
+                            dataUpdate.impleUnitPrice = Number(infoImpleBudget.data.amount)/Number(infoImpleBudget.data.quantity)
+                        }else{
+                            dataUpdate.impleUnitPrice = 0
+                        }
                     }
                 }
 

@@ -11,6 +11,9 @@ const DATAHUB_CONTRACTOR                = '/datahub_contractors';
 const DATAHUB_PROFILE                   = '/datahub_profiles';
 const DATAHUB_INSPECTION_DOC            = '/datahub_inspection_docs';
 const DATAHUB_INSPECTION_CHECKLIST      = '/datahub_inspection_checklists';
+const DATAHUB_JOB                       = '/datahub_jobs';
+const DATAHUB_JOBLINE                   = '/datahub_joblines';
+const DATAHUB_PRODUCT                   = '/datahub_products';
 
 const CF_ROUTINGS_DATAHUB = {
     ORIGIN_APP: BASE_ROUTE,
@@ -24,6 +27,9 @@ const CF_ROUTINGS_DATAHUB = {
     DATAHUB_PROFILE             : `${BASE_ROUTE}${DATAHUB_PROFILE}`, 
     DATAHUB_INSPECTION_DOC      : `${BASE_ROUTE}${DATAHUB_INSPECTION_DOC}`, 
     DATAHUB_INSPECTION_CHECKLIST: `${BASE_ROUTE}${DATAHUB_INSPECTION_CHECKLIST}`, 
+    DATAHUB_JOB                 : `${BASE_ROUTE}${DATAHUB_JOB}`, 
+    DATAHUB_JOBLINE             : `${BASE_ROUTE}${DATAHUB_JOBLINE}`, 
+    DATAHUB_PRODUCT             : `${BASE_ROUTE}${DATAHUB_PRODUCT}`, 
 }
 
 exports.CF_ROUTINGS_DATAHUB = CF_ROUTINGS_DATAHUB;

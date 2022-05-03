@@ -64,6 +64,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'financial_voucher'
     }, 
+    //_________Loại chứng từ (phiếu kế toán, thu, chi, nhập, xuất,...)
+    type: { type: Number, default: 1 },  
     //_________Ngày hoạch toán (mặc định lấy theo ngày của Voucher)
     date: { type: Date, default: Date.now },
     //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
@@ -87,7 +89,12 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
      * 2-Bán ra
      */
     vat: { type: Number, default: 0 }, 
-
+    //_________Nguồn đến của khách hàng (Facebook, website, zalo, khác)
+    source: { type: Number, default: 1 }, 
+    //_________Đơn hàng cũ/mới (cũ là đã từng bán cho khách 1 lần rồi)
+    orderNew: { type: Number, default: 1 }, 
+    //_________Chính sách giá bán (buôn/lẻ)
+    pricePolicy: { type: Number, default: 1 }, 
     /**
      * KẾ TOÁN
      */
@@ -121,15 +128,15 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: 'department'
+    }, 
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,
         ref: 'contract'
-    }, 
-    //_________Kỳ thanh toán của hợp đồng
-    contractIpc: {
-        type: Schema.Types.ObjectId,
-        ref: 'contract_ipc'
     }, 
     //_________Diễn giải nội dung
     name: String,

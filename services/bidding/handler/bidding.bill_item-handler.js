@@ -17,29 +17,25 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string" },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            arising: { type: "number", optional: true },
-            openingBalance: { type: "number", optional: true },
-            closingBalance: { type: "number", optional: true },
+            docID       : { type: "string" },
+            name        : { type: "string" },
+            sign        : { type: "string", optional: true },
+            unit        : { type: "string", optional: true },
+            description : { type: "string", optional: true },
+            note        : { type: "string", optional: true },
+            quantity    : { type: "number", optional: true },
+            unitprice   : { type: "number", optional: true },
+            amount      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance } = ctx.params;
+                const { docID, name, sign, unit, description, note, quantity, unitprice, amount } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.insert({
-                    companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance
+                    userID, ctx, docID, name, sign, unit, description, note, quantity, unitprice, amount
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -57,26 +53,24 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            cashBookID: { type: "string" },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            name: { type: "string", optional: true },
-            sign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            income: { type: "number", optional: true },
-            expense: { type: "number", optional: true },
-            active: { type: "number", optional: true },
+            itemID      : { type: "string" },
+            name        : { type: "string" },
+            sign        : { type: "string", optional: true },
+            unit        : { type: "string", optional: true },
+            description : { type: "string", optional: true },
+            note        : { type: "string", optional: true },
+            quantity    : { type: "number", optional: true },
+            unitprice   : { type: "number", optional: true },
+            amount      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active } = ctx.params;
+                const { itemID, name, sign, unit, description, note, quantity, unitprice, amount } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID
+                    itemID, userID, name, sign, unit, description, note, quantity, unitprice, amount
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -93,16 +87,16 @@ module.exports = {
     remove: {
         auth: "required",
         params: {
-            cashBooksID: { type: "array" },
+            itemID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBooksID } = ctx.params;
+                const { itemID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.remove({
-                    cashBooksID, userID
+                    itemID, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -120,13 +114,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            sortKey: { type: "string", optional: true },
-            outin: { type: "string", optional: true },
+            itemID: { type: "string", optional: true },
+            docID: { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -138,22 +127,18 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { outin, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { itemID, docID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
-                }
-
                 let resultAfterCallHandler;
-                if (cashBookID) {
+                if (itemID) {
                     resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.getInfo({
-                        cashBookID, userID, select, populates
+                        itemID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.getList({
-                        outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
+                        docID, userID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -161,67 +146,5 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
-    },
-
-    /**
-    * Name  : Lấy tổng thu và chi theo sổ
-    * Author: MinhVH
-    * Date  : 18/4/2022
-    */
-    getAmountIncomeAndExpenseByParent: {
-        auth: "required",
-        params: {
-            parentID: { type: "string" }
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                const { parentID } = ctx.params;
-
-                const resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.getAmountIncomeAndExpenseByParent({
-                    parentID
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
-
-    /**
-     * Name: Gom nhóm theo thuộc tính 
-     * Author: Hiepnh
-     * Date: 17/04/2022
-     */
-    getAmountByProperty: {
-        auth: "required",
-        params: {
-            companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            accountID       : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            option          : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { companyID, parentID, accountID, year, option } = ctx.params;
-
-                const { _id: userID, company } = ctx.meta.infoUser;
-
-                if(!companyID){
-                    companyID = company._id
-                }
-
-                let resultAfterCallHandler = await BIDDING__BILL_ITEM_MODEL.getAmountByProperty({
-                    userID, companyID, parentID, accountID, year, option, ctx
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
-            }
-        }
-    },
+    }
 }

@@ -1,23 +1,34 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
+/**
+ * EXTERNAL PACKAGE
+ */
 const ObjectID = require('mongoose').Types.ObjectId;
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+/**
+ * CONSTANTS
+ */
+const { CF_ACTIONS_AUTH } 		                = require('../../auth/helper/auth.actions-constant');
+const { CF_DOMAIN_SERVICES } 				    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_ITEM } 					    = require('../../item/helper/item.actions-constant');
 
 /**
- * import inter-coll, exter-coll
+ * TOOLS
  */
-const BIDDING__PLAN_COLL = require('../database/bidding.plan-coll');
-
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+ const { checkObjectIDs, IsJsonString, _isValid }         = require('../../../tools/utils/utils');
+ const BaseModel                                = require('../../../tools/db/base_model');
+ const { RANGE_BASE_PAGINATION_V2 }             = require('../../../tools/cursor_base/playground/index');
+ const { KEY_ERROR }                            = require('../../../tools/keys/index')
 
 /**
- * import inter-model, exter-model
+ * COLLECTIONS
  */
+const BIDDING__PLAN_COLL                        = require('../database/bidding.plan-coll');
+
+/**
+ * MODELS
+ */
+
 class Model extends BaseModel {
     constructor() {
         super(BIDDING__PLAN_COLL);
@@ -26,73 +37,160 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ userID, parentID, fieldID, areaID, projectID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                if(!checkObjectIDs(userID) || !checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid', status: 400 })
+                
+                // Thông tin dự án
+                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID, select: '_id name sign company area'
+                })
+                console.log(infoProject)
+
+                if (!infoProject)
+                    return resolve({ error: true, message: 'Can not get Project info', status: 400 })
+
+                if (!infoProject.data.area || !_isValid(infoProject.data.area))
+                    return resolve({ error: true, message: 'Can not get Project Area info', status: 400 })
+
+                let dataInsert = { 
+                    userCreate: userID, 
+                    area: infoProject.data.area, 
+                    client: infoProject.data.company, 
+                    admins: [userID], 
+                    members: [userID] 
+                }
 
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
                 }
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
+                if (checkObjectIDs(fieldID)) {
+                    dataInsert.field = fieldID;
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
+                if (checkObjectIDs(areaID)) {
+                    dataInsert.area = areaID;
+                }
+
+                if (checkObjectIDs(projectID)) {
+                    dataInsert.project = projectID;
+                }
+
+                if (checkObjectIDs(bidderID)) {
+                    dataInsert.bidder = bidderID;
                 }
 
                 if (checkObjectIDs(contractID)) {
                     dataInsert.contract = contractID;
                 }
 
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataInsert.type = type;
+                }
+
+                if (!isNaN(status) && Number(status) > 0) {
+                    dataInsert.status = status;
+                }
+
+                if (!isNaN(percentOfCompletedPackage) && Number(percentOfCompletedPackage) > 0) {
+                    dataInsert.percentOfCompletedPackage = percentOfCompletedPackage;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    dataInsert.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    dataInsert.contractType = contractType;
+                }
+
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataInsert.duration = duration;
+                }
+
+                if (!isNaN(progress) && Number(progress) > 0) {
+                    dataInsert.progress = progress;
+                }
+
                 if (name) {
                     dataInsert.name = name;
                 }
 
-                if (date) {
-                    dataInsert.date = date;
-                }
-
                 if (sign) {
                     dataInsert.sign = sign;
+                }
+                
+                if (description) {
+                    dataInsert.description = description;
                 }
 
                 if (note) {
                     dataInsert.note = note;
                 }
 
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
+                if (startTime) {
+                    dataInsert.startTime = startTime;
                 }
 
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
+                if (finishTime) {
+                    dataInsert.finishTime = finishTime;
                 }
 
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
+                if (actualStartTime) {
+                    dataInsert.actualStartTime = actualStartTime;
                 }
 
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
+                if (actualFinishTime) {
+                    dataInsert.actualFinishTime = actualFinishTime;
+                }
+                
+                if (closingTime) {
+                    dataInsert.closingTime = closingTime;
                 }
 
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
+                if (!isNaN(packagePrice) && Number(packagePrice) > 0) {
+                    dataInsert.packagePrice = packagePrice;
                 }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) > 0) {
+                    dataInsert.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
+                    dataInsert.vatTenderPrice = vatTenderPrice;
+                }
+
+                console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
+                /**
+                 * CẬP NHẬT THÔNG TIN LẠI VỀ DỰ ÁN
+                 */
+                // Tính toán số lượng, giá trị
+                let infoCal = await that.getAmountByObject({ userID, projectID })
+
+                // Cập nhật vào thông tin dự án
+                if(infoCal){
+                    infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: projectID,
+                        numberOfPackage: infoCal.data.numberOfPackage, 
+                        numberOfUnexecutedPackage: infoCal.data.numberOfUnexecutedPackage, 
+                        numberOfExecutedPackage: infoCal.data.numberOfExecutedPackage, 
+                        numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
+                        amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
+                        amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
+                        percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
+                    })
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -105,9 +203,9 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ planID, userID, ctx, fieldID, bidderID, contractID, type, name, sign, description, note, status, percentOfCompletedPackage, startTime, finishTime, actualStartTime, closingTime, actualFinishTime, form, contractType, duration, progress, packagePrice, tenderPrice, vatTenderPrice }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -116,56 +214,127 @@ class Model extends BaseModel {
                  */
                 let dataUpdate = { userUpdate: userID };
 
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(planID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
 
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
+                // Thông tin dự án
+                let infoPlan = await BIDDING__PLAN_COLL.findById(planID)
+                if (!infoPlan)
+                    return resolve({ error: true, message: 'Can not get info', status: 400 })
+
+                if (checkObjectIDs(fieldID)) {
+                    dataUpdate.field = fieldID;
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
+                if (checkObjectIDs(bidderID)) {
+                    dataUpdate.bidder = bidderID;
                 }
 
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
                 }
 
+                if (!isNaN(type) && Number(type) > 0) {
+                    dataUpdate.type = type;
+                }
+
+                if (!isNaN(status) && Number(status) > 0) {
+                    dataUpdate.status = status;
+                }
+                
+                if (!isNaN(percentOfCompletedPackage) && Number(percentOfCompletedPackage) > 0) {
+                    dataUpdate.percentOfCompletedPackage = percentOfCompletedPackage;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    dataUpdate.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    dataUpdate.contractType = contractType;
+                }
+
+                if (!isNaN(duration) && Number(duration) > 0) {
+                    dataUpdate.duration = duration;
+                }
+
+                if (!isNaN(progress) && Number(progress) > 0) {
+                    dataUpdate.progress = progress;
+                }
+
                 if (name) {
                     dataUpdate.name = name;
                 }
 
-                if (date) {
-                    dataUpdate.date = date;
-                }
-
                 if (sign) {
                     dataUpdate.sign = sign;
+                }
+                
+                if (description) {
+                    dataUpdate.description = description;
                 }
 
                 if (note) {
                     dataUpdate.note = note;
                 }
 
-                if (income >= 0) {
-                    dataUpdate.income = income;
+                if (startTime) {
+                    dataUpdate.startTime = startTime;
                 }
 
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
+                if (finishTime) {
+                    dataUpdate.finishTime = finishTime;
                 }
 
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
+                if (actualStartTime) {
+                    dataUpdate.actualStartTime = actualStartTime;
                 }
 
-                let infoAfterUpdate = await BIDDING__PLAN_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+                if (actualFinishTime) {
+                    dataUpdate.actualFinishTime = actualFinishTime;
+                }
+                
+                if (closingTime) {
+                    dataUpdate.closingTime = closingTime;
+                }
+
+                if (!isNaN(packagePrice) && Number(packagePrice) > 0) {
+                    dataUpdate.packagePrice = packagePrice;
+                }
+
+                if (!isNaN(tenderPrice) && Number(tenderPrice) > 0) {
+                    dataUpdate.tenderPrice = tenderPrice;
+                }
+
+                if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
+                    dataUpdate.vatTenderPrice = vatTenderPrice;
+                }
+
+                let infoAfterUpdate = await BIDDING__PLAN_COLL.findByIdAndUpdate(planID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+                /**
+                 * CẬP NHẬT THÔNG TIN LẠI VỀ DỰ ÁN
+                 */
+                // Tính toán số lượng, giá trị
+                let infoCal = await that.getAmountByObject({ userID, projectID: infoPlan.project })
+
+                // Cập nhật vào thông tin dự án
+                if(infoCal){
+                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: `${infoPlan.project}`,
+                        numberOfPackage: infoCal.data.numberOfPackage, 
+                        numberOfUnexecutedPackage: infoCal.data.numberOfUnexecutedPackage, 
+                        numberOfExecutedPackage: infoCal.data.numberOfExecutedPackage, 
+                        numberOfCompletedPackage: infoCal.data.numberOfCompletedPackage, 
+                        amountOfUnexecutedPackage: infoCal.data.amountOfUnexecutedPackage, 
+                        amountOfExecutedPackage: infoCal.data.amountOfExecutedPackage, 
+                        amountOfCompletedPackage: infoCal.data.amountOfCompletedPackage,
+                        percentOfCompletedPackage: infoCal.data.percentOfCompletedPackage,
+                    })
+
+                    // console.log(infoProject)
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -178,18 +347,18 @@ class Model extends BaseModel {
     /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ planID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(planID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -203,13 +372,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await BIDDING__PLAN_COLL.findById(cashBookID)
+                let info = await BIDDING__PLAN_COLL.findById(planID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -219,9 +388,10 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 28/4/2022
+     * Date: 30/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
+    getList({ clientID, projectID, parentID, bidderID, contractID,
+        type, status, actualStartTime, actualFinishTime, closingTime, form, contractType,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -234,7 +404,6 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
                 let conditionObj = { };
                 let keys = ['createAt__-1', '_id__-1'];
@@ -244,7 +413,6 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -271,24 +439,38 @@ class Model extends BaseModel {
                  */
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
-
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
+                }else{
+                    if (checkObjectIDs(bidderID)) {
+                        conditionObj.bidder = bidderID
                     }
-                } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+    
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }
+
+                    if (projectID && checkObjectIDs(projectID)) {
+                        conditionObj.project = projectID
+                    }else{
+                        if (checkObjectIDs(clientID)) {
+                            conditionObj.client = clientID
+                        }
+                    }
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if (!isNaN(type) && Number(type) > 0) {
+                    conditionObj.type = type;
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
+                if (!isNaN(status) && Number(status) > 0) {
+                    conditionObj.status = status;
+                }
+
+                if (!isNaN(form) && Number(form) > 0) {
+                    conditionObj.form = form;
+                }
+
+                if (!isNaN(contractType) && Number(contractType) > 0) {
+                    conditionObj.contractType = contractType;
                 }
 
                 console.log(conditionObj)
@@ -352,6 +534,78 @@ class Model extends BaseModel {
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Gom nhóm theo đối tượng 
+     * Author: Hiepnh
+     * Date: 30/04/2022
+     */
+    getAmountByObject({ userID, projectID }){
+        return new Promise(async resolve => {
+            try {
+                let numberOfPackage=0, numberOfUnexecutedPackage=0, numberOfExecutedPackage=0, numberOfCompletedPackage=0, amountOfUnexecutedPackage=0, amountOfExecutedPackage=0, amountOfCompletedPackage=0, totalFinishAmount=0, percentOfCompletedPackage=0
+
+                let conditionObj = { }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = ObjectID(projectID)
+                }
+
+                // Tính tổng theo phân loại
+                let listData = await BIDDING__PLAN_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { status: "$status"}, // Phân loại trạng thái
+                            count: { $sum: 1}, // Tính tổng số lượng
+                            amount: { $sum: "$packagePrice" }, // Tổng giá trị các gói
+                            totalFinishAmount: { $sum: { $multiply: [ "$percentOfCompletedPackage", "$packagePrice", 0.01 ] } }, // Tổng giá trị hoàn thành
+                        }
+                    }, 
+                    {
+                        $sort: {"_id.status": 1}
+                    }
+                ])
+                console.log(listData)
+
+                if(listData && listData.length){
+                    for (const item of listData) {
+                        if(Number(item._id.status) === 1){
+                            numberOfUnexecutedPackage = Number(item.count)
+                            amountOfUnexecutedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
+                        }
+
+                        if(Number(item._id.status) === 2){
+                            numberOfExecutedPackage = Number(item.count)
+                            amountOfExecutedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
+                        }
+
+                        if(Number(item._id.status) === 3){
+                            numberOfCompletedPackage = Number(item.count)
+                            amountOfCompletedPackage = Number(item.amount)
+                            totalFinishAmount = Number(totalFinishAmount) + Number(item.totalFinishAmount)
+                        }
+                    }
+                    
+                    numberOfPackage = Number(numberOfUnexecutedPackage) + Number(numberOfExecutedPackage) + Number(numberOfCompletedPackage)
+                }
+
+                if(Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage) != 0){
+                    percentOfCompletedPackage = 100*(Number(totalFinishAmount)/Number(amountOfUnexecutedPackage + amountOfExecutedPackage + amountOfCompletedPackage))
+                }
+                percentOfCompletedPackage = percentOfCompletedPackage.toFixed(2)
+                // console.log({percentOfCompletedPackage})
+
+                return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage } })
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
             }
         })
     }

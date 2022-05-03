@@ -6,22 +6,15 @@ const Schema                = require('mongoose').Schema;
  * 1. HẠNG MỤC
  * 2. NHÓM DỮ LIỆU
  * 3. CÔNG VIỆC MỜI THẦU
+ * => Số liệu tính toán đều là trước VAT
  */
-module.exports  = DATABASE_MIDDLEWARE("bidding_bill_work", {
-    /**
-     * THÔNG TIN CHUNG
-     */
-    //_________Lĩnh vực
-    field: {
-        type: Schema.Types.ObjectId,
-        ref : "datahub_type"
-    },      
-    //_________Khu vực (xã/phường)
+module.exports  = DATABASE_MIDDLEWARE("bidding_bill_work", {  
+    //_________Khu vực (Lấy theo dự án)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },    
-    //_________Chủ đầu tư
+    //_________Chủ đầu tư (Lấy theo dự án)
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -31,10 +24,10 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_work", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-    //_________Thuộc hồ sơ gói thầu
-    plan: {
+    //_________Hồ sơ mời thầu
+    doc: {
         type: Schema.Types.ObjectId,
-        ref : "bidding_plan"
+        ref : "bidding_doc"
     },
     /**
      * THÔNG TIN CĂN BẢN
@@ -49,26 +42,24 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_work", {
         type: Schema.Types.ObjectId,
         ref : "bidding_bill_group"
     },
-    //_________Mã công tác trong DataHub (xét sau)
+    //_________Mã công tác trong DataHub
     datahubJob: {
         type: Schema.Types.ObjectId,
         ref : "datahub_job"
     },
-    //_________Nhà thầu trúng thầu
-    bidder: {
-        type: Schema.Types.ObjectId,
-        ref : "company"
-    },    
+    // //_________Nhà thầu trúng thầu
+    // bidder: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : "company"
+    // },    
     //_________Tên
     name: String,
-    //_________Mô tả
-    description: String,
     //_________Ký hiệu
     sign: String,
     //_________Đơn vị
     unit: String,
-    //_________Chỉ dẫn kỹ thuật
-    spec: String,
+    //_________Mô tả
+    description: String,
     //_________Ghi chú
     note: String,
     /**
@@ -86,22 +77,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_bill_work", {
      * ĐƠN GIÁ NET
      * - Tính từ DataHub đưa sang
      */
-    //_________Đơn giá chào thầu vật tư
-    materialUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu nhân công
-    laborUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu máy móc/thiết bị
-    machineUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá tính toán từ Datahub
-    unitPrice: { type: Number, default: 0 },
-    //_________Thuế giá trị gia tăng (VAT-%)
-    vat: { type: Number, default: 10 },
-    //_________Thuế giá trị gia tăng (VAT-giá trị)
-    vatValue: { type: Number, default: 0 },
+    //_________Đơn giá vật tư
+    unitprice1: { type: Number, default: 0 },
+    //_________Đơn giá nhân công
+    unitprice2: { type: Number, default: 0 },
+    //_________Đơn giá máy móc/thiết bị
+    unitprice3: { type: Number, default: 0 },
+    //_________Tổng đơn giá (unitprice1+unitprice2+unitprice3)
+    unitprice: { type: Number, default: 0 },
     //_________Thành tiền tính toán từ Datahub
     amount: { type: Number, default: 0 },
-    //_________Hệ số chi phí khác
-    factor: { type: Number, default: 1 }, 
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

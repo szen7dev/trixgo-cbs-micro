@@ -807,7 +807,7 @@ class Model extends BaseModel {
     //_________SỐ DƯ ĐẦU KỲ CỦA 1 TÀI KHOẢN (OK)
     // Tính năng sử dụng: Sổ chi tiết tài khoản
     // Author: HiepNH
-    getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate }) {
+    getOpeningBalanceOfCompany({ ctx, companyID, fundaID, contractID, accountID, fromDate }) {//
         const that = this;
         return new Promise(async resolve => {
             try {

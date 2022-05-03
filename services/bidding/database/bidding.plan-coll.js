@@ -7,6 +7,13 @@ const Schema                = require('mongoose').Schema;
  * - Áp dụng cho tất cả các ngành của nền kinh tế, không chỉ xây dựng
  * - Được triển khai trên cơ sở ngân sách được duyệt
  * - Cũng chính là 1 gói thầu để đem đi mời thầu luôn
+ * B1-Lập kế hoạch lựa chọn nhà thầu, phân chia gói thầu (bidding_plan)
+ * B2-Phát hành hồ sơ mời thầu (bidding_doc)
+ * +++Yêu cầu về kỹ thuật (bidding_request)
+ * +++Yêu cầu chào giá (bidding_bill)
+ * B3-Nhà thầu dự thầu
+ * +++Dự thầu kỹ thuật (bidding_apply)
+ * +++Dự thầu tài chính (bidding_quotation)
  */
 module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     /**
@@ -17,12 +24,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref : "datahub_type"
     },      
-    //_________Khu vực (xã/phường)
+    //_________Khu vực (lấy từ thông tin dự án)
     area: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },    
-    //_________Chủ đầu tư
+    //_________Chủ đầu tư (lấy từ thông tin dự án)
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -32,6 +39,16 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
+    //_________Quản trị
+    admins: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
+    //_________Thành viên được quyền xem ngân sách
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref : "user"
+    }],
     /**
      * THÔNG TIN GÓI THẦU
      */    
@@ -40,12 +57,22 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
         type: Schema.Types.ObjectId,
         ref: "bidding_plan"
     },
+    /**
+     * Loại gói thầu
+     * 1-Xây lắp
+     * 2-Mua sắm thiết bị
+     * 3-Tư vấn
+     * 4-Khác
+     */
+    type: { type: Number, default: 1 },
     //_________Tên gói thầu
     name: String,
+    //_________Mô tả
+    description: String,
+    //_________Giá gói thầu
+    packagePrice: { type: Number, default: 0 },      
     //_________Ký hiệu gói thầu
     sign: String,
-    //_________Mô tả/Tên hồ sơ mời thầu
-    description: String,
     //_________Ghi chú
     note: String,
     /**
@@ -55,16 +82,18 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
      * 3-Đã hoàn thành
      */
     status: { type: Number, default: 1 },
+    //_________Phần trăm gói thầu hoàn thành
+    percentOfCompletedPackage: { type: Number, default: 0 },
     //_________Kế hoạch bắt đầu chọn
     startTime: { type: Date, default: null },
     //_________Kế hoạch kết thúc chọn
     finishTime: { type: Date, default: null },
     //_________Thực tế bắt đầu chọn
     actualStartTime: { type: Date, default: null },
-    //_________Thời điểm đóng thầu
-    closingTime: { type: Date, default: null },
     //_________Thực tế kết thúc chọn
     actualFinishTime: { type: Date, default: null },
+    //_________Thời điểm đóng thầu
+    closingTime: { type: Date, default: null },
     /**
      * Hình thức lựa chọn nhà thầu
      * 1-Chào giá cạnh tranh
@@ -89,7 +118,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     //_________Giá trúng thầu
     tenderPrice: { type: Number, default: 0 },  
     //_________VAT
-    tenderPriceAT: { type: Number, default: 0 },
+    vatTenderPrice: { type: Number, default: 0 },
     //_________Link tới hợp đồng
     contract: {
         type: Schema.Types.ObjectId,

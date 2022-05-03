@@ -11,28 +11,20 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
     /**
      * CẤU HÌNH PHÂN LOẠI
      */ 
-    //_________Công ty Phát hành hồ sơ mời thầu/Công ty tạo ra task
+    //_________Chủ đầu tư
     client: {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //__________Thuộc hồ sơ mời thầu
-    plan: {
-        type: Schema.Types.ObjectId,
-        ref : "bidding_plan"
-    },
-    //_________Thuộc hồ sơ dự thầu
-    bidsDocument: {
-        type: Schema.Types.ObjectId,
-        ref : "bidding_request"
-    },
-    /**
-     * DỮ LIỆU DỰ THẦU
-     */ 
-    //_________Công ty dự thầu
+    //_________Nhà thầu dự thầu
     contractor: {
         type: Schema.Types.ObjectId,
         ref : "company"
+    },
+    //_________Hồ sơ mời thầu
+    doc: {
+        type: Schema.Types.ObjectId,
+        ref : "bidding_doc"
     },
     //_________Hạng mục
     item: {
@@ -54,30 +46,21 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_quotation", {
         type: Schema.Types.ObjectId,
         ref : "datahub_job"
     },
-    //_________Khối lượng chào thầu
+    /**
+     * Khối lượng chào thầu
+     * Mặc định lấy theo KL của CĐT đưa ra
+     */
     quantity: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu nhân công
-    laborUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu máy móc/thiết bị
-    machineUnitPrice: { type: Number, default: 0 },
-    //_________Đơn giá chào thầu vật tư
-    materialUnitPrice: { type: Number, default: 0 },
-    /**
-     * Đơn giá chào thầu
-     * Tính = laborUnitPrice+machineUnitPrice+materialUnitPrice
-     */
-    unitPrice: { type: Number, default: 0 },
-    //_________Thuế giá trị gia tăng (VAT-%)
-    vat: { type: Number, default: 10 },
-    /**
-     * Thuế giá trị gia tăng (VAT-giá trị)
-     * - Tính = (unitPrice)*vat%
-     */
-    vatValue: { type: Number, default: 0 },
-    /**
-     * USD-NGOẠI TỆ
-     * - Xử lý sau
-     */  
+    //_________Đơn giá vật tư
+    unitprice1: { type: Number, default: 0 },
+    //_________Đơn giá nhân công
+    unitprice2: { type: Number, default: 0 },
+    //_________Đơn giá máy móc/thiết bị
+    unitprice3: { type: Number, default: 0 },
+    //_________Tổng đơn giá (unitprice1+unitprice2+unitprice3)
+    unitprice: { type: Number, default: 0 },
+    //_________Thành tiền tính toán từ Datahub
+    amount: { type: Number, default: 0 },
     /**
      * CHÀO VIỆC PHÁT SINH
      */  

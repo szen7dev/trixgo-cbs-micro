@@ -1,23 +1,41 @@
 "use strict";
 
-const BaseModel = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
-const ObjectID = require('mongoose').Types.ObjectId;
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
+/**
+ * EXTERNAL PACKAGE
+ */
+const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment')
+const fs                                = require('fs');
+const path                              = require('path');
 
 /**
- * import inter-coll, exter-coll
+ * CONSTANTS
  */
-const ACCOUNTING__FINANCIAL_VOUCHER_COLL = require('../database/accounting.financial_voucher-coll');
-
-const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
-const { KEY_ERROR } = require('../../../tools/keys/index');
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant')
+const { VOUCHER_TYPES }                 = require('../config/accounting.financial_config')
 
 /**
- * import inter-model, exter-model
+ * TOOLS
  */
+const BaseModel                             = require('../../../tools/db/base_model')
+const { checkObjectIDs, _isValid, IsJsonString }      = require('../../../tools/utils/utils')
+const { RANGE_BASE_PAGINATION_V2 }          = require('../../../tools/cursor_base/playground/index')
+const { KEY_ERROR }                         = require('../../../tools/keys/index')
+
+/**
+ * COLLECTIONS
+ */
+const FUNDA_COLL                                    = require('../../item/database/item.funda-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
+
+/**
+ * MODELS
+ */
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL   = require('./accounting.financial_general_journal-model').MODEL;
+
 class Model extends BaseModel {
     constructor() {
         super(ACCOUNTING__FINANCIAL_VOUCHER_COLL);
@@ -26,73 +44,195 @@ class Model extends BaseModel {
     /**
      * Name: Insert 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ 
+        authorID, 
+        companyID, 
+        fundaID, 
+        customerID,
+        contractID, 
+        storageID, 
+        type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+        receiver, note,
+        forward, forwardIs, returning, advancePayment, cancel, 
+        fcuExRate, 
+        selectedJournals,
+        ctx
+     }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                /**
+                 * BA-Author: HiepNH - 23/4/2022
+                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
+                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
+                 * +++budgetWorkID cũ
+                 * +++budgetWorkID mới
+                */
 
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
+                //_________Kiểm tra dữ liệu đầu vào
+                if(!date || !name || Number.isNaN(Number(type)) ||!checkObjectIDs(authorID) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID) || !checkObjectIDs(companyID))
+                    return resolve({ error: true, message: 'date|name|type|authorID|customerID|companyID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+
+                /**
+                 * TỰ ĐỘNG GHI SỐ HIỆU PHIẾU
+                 */
+                //_________Lấy số lượng phiếu hiện tại của công ty/đơn vị cơ sở
+                let number          = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
+                let infoFunda       = await FUNDA_COLL.findById(fundaID)
+
+                let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
+                if(sign && sign != ""){
+                    // Kiểm tra xem đã tồn tại mã hiệu đó hay chưa
+                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                        funda: fundaID, 
+                        sign: sign
+                    }).select('_id')
+
+                    if(!infoVoucher){
+                        voucherSign = sign
+                    }
                 }
 
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    dataInsert.customer = customerID;
+                /**
+                 * B1. TẠO PHIẾU
+                 */
+                 const dataInsertVoucher = {
+                    userCreate: authorID, 
+                    company: companyID, 
+                    funda: fundaID, 
+                    customer: customerID,
+                    type, date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
+                    receiver, note,
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate
                 }
 
                 if (checkObjectIDs(contractID)) {
-                    dataInsert.contract = contractID;
+                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                    if(infoContract.project){
+                        dataInsertVoucher.project = infoContract.project;
+                    }
+                    dataInsertVoucher.contract = contractID;
                 }
 
-                if (name) {
-                    dataInsert.name = name;
+                if (checkObjectIDs(storageID)) {
+                    dataInsertVoucher.storage = storageID;
                 }
 
-                if (date) {
-                    dataInsert.date = date;
-                }
-
-                if (sign) {
-                    dataInsert.sign = sign;
-                }
-
-                if (note) {
-                    dataInsert.note = note;
-                }
-
-                if (!isNaN(arising) && Number(arising) >= 0) {
-                    dataInsert.arising = arising;
-                }
-
-                if (!isNaN(openingBalance) && Number(openingBalance) >= 0) {
-                    dataInsert.openingBalance = openingBalance;
-                }
-
-                if (!isNaN(closingBalance) && Number(closingBalance) >= 0) {
-                    dataInsert.closingBalance = closingBalance;
-                }
-
-                if (!isNaN(income) && Number(income) >= 0) {
-                    dataInsert.income = income;
-                }
-
-                if (!isNaN(expense) && Number(expense) >= 0) {
-                    dataInsert.expense = expense;
-                }
-
-                let infoAfterInsert = await this.insertData(dataInsert);
+                const infoAfterInsert = await this.insertData(dataInsertVoucher)
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Thêm phiếu thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(parentID)){
-                    await that.updateValue({cashBookID: parentID, userID})
+                /**
+                 * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
+                 */
+                if(selectedJournals && selectedJournals.length >0){
+                    //_________Get ID của phiếu vừa tạo để tiến hành tạo chi tiết chứng từ
+                    const voucherID = infoAfterInsert._id;           
+
+                    for (const subitem of selectedJournals) {
+
+                        const dataInsert = {
+                            authorID, 
+                            companyID, 
+                            fundaID, 
+                            voucherID, 
+                            date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
+                            updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                            quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                            amount: subitem.amount ? Number(subitem.amount) : 0,
+                            unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                            fcuExRate,
+                            fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
+                            note: subitem.note,
+                            ctx
+                        }
+
+                        /**
+                         * Kiểm tra xem có tài khoản nợ/có không
+                         * Nếu không thì lấy giá trị null
+                         */
+                        if(subitem.debit && _isValid(subitem.debit)){
+                            dataInsert.debit = subitem.debit
+                        }else{
+                            dataInsert.debit = null
+                        }
+
+                        if(subitem.credit && _isValid(subitem.credit)){
+                            dataInsert.credit = subitem.credit
+                        }else{
+                            dataInsert.credit = null
+                        }
+
+                        /**
+                         * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
+                         * Nếu không  có thì lấy theo mã khách trên phiếu
+                         */
+                        if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                            dataInsert.customerDebit = subitem.customerDebit
+                        }else{
+                            dataInsert.customerDebit = customerID
+                        }
+
+                        if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                            dataInsert.customerCredit = subitem.customerCredit
+                        }else{
+                            dataInsert.customerCredit = customerID
+                        }
+
+                        /**
+                         * Kiểm tra xem có hàng hóa/kho hay không
+                         * Nếu không  có thì lấy theo mã khách trên phiếu
+                         * Chỉ insert khi có cả thông tin goods và warehouse
+                         */
+                        if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
+                            dataInsert.goods = subitem.goods
+                            dataInsert.warehouse = subitem.warehouse
+                        }else{
+                            dataInsert.goods = null
+                            dataInsert.warehouse = null
+                        }
+
+                        /**
+                         * Kiểm tra xem có Hợp đồng hay không
+                         * Nếu không  có thì lấy theo hợp đồng trên phiếu
+                         */
+                        if(subitem.contract && _isValid(subitem.contract)){
+                            let infoContract = await CONTRACT_COLL.findById(subitem.contract)
+                            if(infoContract.project){
+                                dataInsert.project = infoContract.project;
+                            }
+                            dataInsert.contract = subitem.contract
+                        }else{
+                            if(contractID && _isValid(contractID)){
+                                let infoContract = await CONTRACT_COLL.findById(contractID)
+                                if(infoContract.project){
+                                    dataInsert.project = infoContract.project;
+                                }
+                                dataInsert.contract = contractID;
+                            }
+                        }
+
+                        /**
+                         * Cập nhật ngân sách thực hiện
+                         */
+                        if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                            dataInsert.budgetWork = subitem.budgetWork
+                        }
+                        
+                        //_________Tiến hành tạo chi tiết_________//
+                        let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
+
+                        /**
+                         * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
+                         */
+                        if(infoJournal){
+                            let newInfoVoucher = await that.updateValue({ voucherID })
+                            // console.log(newInfoVoucher)
+                        }
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -105,67 +245,305 @@ class Model extends BaseModel {
     /**
      * Name: Update 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, userID }) {
+    update({ 
+        authorID, 
+        voucherID,
+        customerID,
+        contractID, 
+        storageID, 
+        type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+        receiver, note,
+        forward, forwardIs, returning, advancePayment, cancel, 
+        fcuExRate, 
+        selectedJournals, 
+        deletedJournals,
+        ctx
+     }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
+               
                 /**
-                 * DECALARTION VARIABLE (1)
+                 * BA-Author: HiepNH - 23/4/2022
+                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
+                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
+                 * +++budgetWorkID cũ
+                 * +++budgetWorkID mới
+                */
+
+                //_________Kiểm tra dữ liệu đầu vào
+                if(!date || !name || Number.isNaN(Number(type)) ||!checkObjectIDs(authorID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'date|name|type|authorID|customerID|companyID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+
+                let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
+                if (!info) 
+                    return resolve({ error: true, message: 'cannot_get_info_voucher', status: 400 })
+
+                let companyID = info.company
+                let fundaID = info.funda
+
+                /**
+                 * KIỂM TRA TRÙNG PHIẾU
                  */
-                let dataUpdate = { userUpdate: userID };
-
-                if (!checkObjectIDs(cashBookID))
-                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
-
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
+                if(sign != ""){
+                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                        funda: fundaID, 
+                        sign: sign,
+                        _id: {
+                            $ne: voucherID
+                        }
+                    }).select('_id')
+    
+                    if(infoVoucher)
+                        return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
                 }
 
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
+                /**
+                 * B1. CẬP NHẬT PHIẾU
+                 */
+                 const dataUpdateVoucher = {
+                    userUpdate: authorID, 
+                    modifyAt: Date.now(),
+                    type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+                    receiver, note,
+                    forward, forwardIs, returning, advancePayment, cancel, 
+                    fcuExRate
                 }
 
                 if (checkObjectIDs(contractID)) {
-                    dataUpdate.contract = contractID;
+                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                    if(infoContract.project){
+                        dataUpdateVoucher.project = infoContract.project;
+                    }
+                    dataUpdateVoucher.contract = contractID;
                 }
 
-                if (name) {
-                    dataUpdate.name = name;
+                if (checkObjectIDs(storageID)) {
+                    dataUpdateVoucher.storage = storageID;
                 }
 
-                if (date) {
-                    dataUpdate.date = date;
+                if (checkObjectIDs(projectID)) {
+                    dataUpdateVoucher.project = projectID;
                 }
 
-                if (sign) {
-                    dataUpdate.sign = sign;
-                }
+                const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "cannot_update", status: 400 })
 
-                if (note) {
-                    dataUpdate.note = note;
-                }
+                /**
+                 * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
+                 */
+                if(selectedJournals && selectedJournals.length >0){
+                    for (const subitem of selectedJournals) {
+                        // Tạo mới
+                        if(!subitem.journalID){
+                            console.log('===================TẠO BÚT TOÁN===================')
+                            const dataInsert = {
+                                authorID, 
+                                companyID, 
+                                fundaID, 
+                                voucherID, 
+                                date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
+                                updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                                quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                                amount: subitem.amount ? Number(subitem.amount) : 0,
+                                unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                                fcuExRate,
+                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
+                                note: subitem.note,
+                                ctx
+                            }
+    
+                            /**
+                             * Kiểm tra xem có tài khoản nợ/có không
+                             * Nếu không thì lấy giá trị null
+                             */
+                            if(subitem.debit && _isValid(subitem.debit)){
+                                dataInsert.debit = subitem.debit
+                            }else{
+                                dataInsert.debit = null
+                            }
+    
+                            if(subitem.credit && _isValid(subitem.credit)){
+                                dataInsert.credit = subitem.credit
+                            }else{
+                                dataInsert.credit = null
+                            }
+    
+                            /**
+                             * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
+                             * Nếu không  có thì lấy theo mã khách trên phiếu
+                             */
+                            if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                                dataInsert.customerDebit = subitem.customerDebit
+                            }else{
+                                dataInsert.customerDebit = customerID
+                            }
+    
+                            if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                                dataInsert.customerCredit = subitem.customerCredit
+                            }else{
+                                dataInsert.customerCredit = customerID
+                            }
+    
+                            /**
+                             * Kiểm tra xem có hàng hóa/kho hay không
+                             * Nếu không  có thì lấy theo mã khách trên phiếu
+                             * Chỉ insert khi có cả thông tin goods và warehouse
+                             */
+                            if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
+                                dataInsert.goods = subitem.goods
+                                dataInsert.warehouse = subitem.warehouse
+                            }else{
+                                dataInsert.goods = null
+                                dataInsert.warehouse = null
+                            }
+    
+                            /**
+                             * Kiểm tra xem có Hợp đồng hay không
+                             * Nếu không  có thì lấy theo hợp đồng trên phiếu
+                             */
+                            if(subitem.contract && _isValid(subitem.contract)){
+                                let infoContract = await CONTRACT_COLL.findById(subitem.contract)
+                                if(infoContract.project){
+                                    dataInsert.project = infoContract.project;
+                                }
+                                dataInsert.contract = subitem.contract
+                            }else{
+                                if(contractID && _isValid(contractID)){
+                                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                                    if(infoContract.project){
+                                        dataInsert.project = infoContract.project;
+                                    }
+                                    dataInsert.contract = contractID;
+                                }
+                            }
+    
+                            /**
+                             * Cập nhật ngân sách thực hiện
+                             */
+                            if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                                dataInsert.budgetWork = subitem.budgetWork
+                            }
+                            
+                            //_________Tiến hành tạo chi tiết_________//
+                            let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
+    
+                            /**
+                             * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
+                             */
+                            if(infoJournal){
+                                let newInfoVoucher = await that.updateValue({ voucherID })
+                                // console.log(newInfoVoucher)
+                            }
+                        }
 
-                if (income >= 0) {
-                    dataUpdate.income = income;
-                }
+                        // Cập nhật
+                        else{
+                            console.log('===================CẬP NHẬT BÚT TOÁN===================')
+                            const dataUpdate = {
+                                authorID, 
+                                journalID: subitem.journalID, 
+                                date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
+                                updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                                quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                                amount: subitem.amount ? Number(subitem.amount) : 0,
+                                unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                                fcuExRate,
+                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
+                                note: subitem.note,
+                                ctx
+                            }
+    
+                            /**
+                             * Kiểm tra xem có tài khoản nợ/có không
+                             * Nếu không thì lấy giá trị null
+                             */
+                            if(subitem.debit && _isValid(subitem.debit)){
+                                dataUpdate.debit = subitem.debit
+                            }else{
+                                dataUpdate.debit = null
+                            }
+    
+                            if(subitem.credit && _isValid(subitem.credit)){
+                                dataUpdate.credit = subitem.credit
+                            }else{
+                                dataUpdate.credit = null
+                            }
+    
+                            /**
+                             * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
+                             * Nếu không  có thì lấy theo mã khách trên phiếu
+                             */
+                            if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                                dataUpdate.customerDebit = subitem.customerDebit
+                            }else{
+                                dataUpdate.customerDebit = customerID
+                            }
+    
+                            if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                                dataUpdate.customerCredit = subitem.customerCredit
+                            }else{
+                                dataUpdate.customerCredit = customerID
+                            }
+    
+                            /**
+                             * Kiểm tra xem có hàng hóa/kho hay không
+                             * Nếu không  có thì lấy theo mã khách trên phiếu
+                             * Chỉ insert khi có cả thông tin goods và warehouse
+                             */
+                            if(subitem.goods && _isValid(subitem.goods) && subitem.warehouse && _isValid(subitem.warehouse)){
+                                dataUpdate.goods = subitem.goods
+                                dataUpdate.warehouse = subitem.warehouse
+                            }else{
+                                dataUpdate.goods = null
+                                dataUpdate.warehouse = null
+                            }
+    
+                            /**
+                             * Kiểm tra xem có Hợp đồng hay không
+                             * Nếu không  có thì lấy theo hợp đồng trên phiếu
+                             */
+                            if(subitem.contract && _isValid(subitem.contract)){
+                                let infoContract = await CONTRACT_COLL.findById(subitem.contract)
+                                if(infoContract.project){
+                                    dataUpdate.project = infoContract.project;
+                                }
+                                dataUpdate.contract = subitem.contract
+                            }else{
+                                if(contractID && _isValid(contractID)){
+                                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                                    if(infoContract.project){
+                                        dataUpdate.project = infoContract.project;
+                                    }
+                                    dataUpdate.contract = contractID;
+                                }
+                            }
 
-                if (expense >= 0) {
-                    dataUpdate.expense = expense;
-                }
+                            /**
+                             * Cập nhật ngân sách thực hiện
+                             */
+                            if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                                dataUpdate.budgetWork = subitem.budgetWork
+                            }
+                            
+                            //_________Tiến hành tạo chi tiết_________//
+                            let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
+    
+                            /**
+                             * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
+                             */
+                            if(infoJournal){
+                                let newInfoVoucher = await that.updateValue({ voucherID })
+                                // console.log(newInfoVoucher)
+                            }
+                        }
 
-                if (!isNaN(active) && Number(active) > 0) {
-                    dataUpdate.active = active;
-                }
-
-                let infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-                if (!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-                // Cập nhật lại phần tử cha
-                if(checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+                        // Xóa bút toán
+                        
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -176,20 +554,128 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Cập nhật giá trị của phiếu
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    updateValue({ voucherID }){
+        return new Promise(async (resolve, reject) => {
+            try {
+                let dataUpdate = { amount: 0, fcuAmount: 0 }
+
+                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: {
+                            voucher: ObjectID(voucherID),
+                        }
+                    }, 
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                            fcuAmount: { $sum: "$fcuAmount" },
+                        }
+                    }, 
+                ])
+                // console.log('Tính tổng các bút toán của Phiếu==========>>>>>>>>>>>>')
+                // console.log(listData)
+
+                if(listData && listData.length){
+                    dataUpdate.amount = Number(listData[0].amount)
+                    dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
+                }
+
+                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
+                if(!resultUpdateVoucher)
+                    return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
+            
+                return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 })
+            } catch (error) {
+                console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
+                return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
+            }
+        });
+    }
+
+    /**
+     * Name: Cập nhật thuộc tính từ phiếu sang bút toán
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    updateFromVoucherToJournal({ companyID, userID }){
+        return new Promise(async (resolve, reject) => {
+            try {
+                let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({ company: companyID })
+                console.log({totalVoucher: listData.length})
+                // console.log(listData)
+                for(const item of listData){
+                    let infoAfterUpdate = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.updateMany(
+                        { voucher: ObjectID(item._id) },
+                        {
+                            $set: {
+                                date: item.date,
+                                forward: !isNaN(item.forward) ? item.forward : 0,
+                                forwardIs: !isNaN(item.forwardIs) ? item.forwardIs : 0,
+                                returning: !isNaN(item.returning) ? item.returning : 0,
+                                advancePayment: !isNaN(item.advancePayment) ? item.advancePayment : 0,
+                                cancel: !isNaN(item.cancel) ? item.cancel : 0,
+                                type: !isNaN(item.type) ? item.type : 1,
+                                vat: !isNaN(item.vat) ? item.vat : 0,
+                                source: !isNaN(item.source) ? item.source : 1,
+                                orderNew: !isNaN(item.orderNew) ? item.orderNew : 1,
+                                pricePolicy: !isNaN(item.pricePolicy) ? item.pricePolicy : 1
+                            }
+                        }
+                    )
+                    // console.log(infoAfterUpdate)
+                }
+
+                return resolve({ erorr: false, message: 'convert_successfull', totalVoucher: listData.length, status: 200 })
+            } catch (error) {
+                return resolve({ erorr: true, message: 'convert_failed', status: 400})
+            }
+        });
+    }
+
+     /**
+     * Name: Cập nhật từ bút toán sang phiếu
+     * Author: Hiepnh
+     * Date: 30/4/2022
+     */
+    updateFromJournalToVoucher({ companyID, userID }){
+        const that = this
+        return new Promise(async (resolve, reject) => {
+            try {
+                let listVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({company: companyID}).select('_id name')
+                console.log(listVoucher.length)
+                // console.log(listVoucher)
+                for (const item of listVoucher){
+                    let info = await that.updateValue({ voucherID: item._id })
+                    // console.log(info)
+                }
+
+                return resolve({ erorr: false, message: 'convert_successfull', status: 200 })
+            } catch (error) {
+                return resolve({ erorr: true, message: 'convert_failed', status: 400})
+            }
+        });
+    }
+
+    /**
      * Name: Remove
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
 
     /**
      * Name: Get info 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
-    getInfo({ cashBookID, select, populates }) {
+    getInfo({ voucherID, select, populates }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(cashBookID))
+                if (!checkObjectIDs(voucherID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 if (populates && typeof populates === 'string') {
@@ -203,13 +689,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoContractIPC = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(cashBookID)
+                let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                     .select(select)
                     .populate(populates)
 
-                if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+                if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-                return resolve({ error: false, data: infoContractIPC });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -219,14 +705,14 @@ class Model extends BaseModel {
     /**
      * Name  : Get list 
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 30/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+    getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type,
+        keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 50) {
-                    limit = 50
+                if (limit > 20) {
+                    limit = 20
                 } else {
                     limit = +limit;
                 }
@@ -269,29 +755,42 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
+                if(!isNaN(type) && Number(type) > 0){
+                    conditionObj.type = Number(type)
+                }
 
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
+                if (checkObjectIDs(customerID)) {
+                    conditionObj.customer = customerID
+                }else{
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }else{
+                        if (checkObjectIDs(projectID)) {
+                            conditionObj.project = projectID
+                        }else{
+                            if (checkObjectIDs(fundaID)) {
+                                conditionObj.funda = fundaID
+                            } else {
+                                conditionObj.company = companyID
+                            }
+                        }
                     }
-                } else {
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if(fromDate && toDate){
+                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                        // conditionObj.date = {
+                        //     $gte: startTime,// <=== fix ISODate here
+                        //     $lte: endTime // <=== fix ISODate here
+                        // }
+                        conditionObj.date  = { 
+                            $gte: moment(startTime).toDate(),
+                            $lte: moment(endTime).toDate()
+                        }
+                    }
                 }
-
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
-                }
-
-                console.log(conditionObj)
 
                 if (keyword) {
                     keyword = keyword.split(" ");
@@ -299,6 +798,8 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
+                // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
