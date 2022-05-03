@@ -311,7 +311,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date  : 10/4/2022
      */
-    getList({ groupID, itemID, budgetID, userID,
+    getList({ groupID, itemID, budgetID, companyID, userID,
         keyword, limit = 50, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -356,13 +356,17 @@ class Model extends BaseModel {
                 
                 if(groupID && checkObjectIDs(groupID)){
                     conditionObj.group = groupID;
-                }
-                if(itemID && checkObjectIDs(itemID)){
-                    conditionObj.item = itemID;
-                }
-                if(budgetID && checkObjectIDs(budgetID)){
-                    conditionObj.budget = budgetID;
-                }
+                }else{
+                    if(itemID && checkObjectIDs(itemID)){
+                        conditionObj.item = itemID;
+                    }else{
+                        if(budgetID && checkObjectIDs(budgetID)){
+                            conditionObj.budget = budgetID;
+                        }else{
+                            conditionObj.company = companyID;
+                        }
+                    }
+                }                
 
                 if(keyword){
                     keyword = keyword.split(" ");
