@@ -274,8 +274,9 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 0-Việc thông thường
      * 1-Pháp lý
      * 2-Thiết kế
-     * 3-Lựa chọn nhà thầu
-     * 4-Thi công
+     * 3-Dự toán, ngân sách
+     * 4-Lựa chọn nhà thầu
+     * 5-Thi công
      * 5-Bàn giao
      * 6-Quyết toán
      */
