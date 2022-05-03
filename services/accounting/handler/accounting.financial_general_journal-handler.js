@@ -1,4 +1,9 @@
 /**
+ * EXTERNAL PACKAGE
+ */
+const moment = require('moment');
+
+/**
  * TOOLS
  */
 const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
@@ -162,6 +167,52 @@ module.exports = {
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Lấy số dư tài khoản
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    getAccountBalance: {
+        auth: "required",
+        params: {
+            fromDate        : { type: "string" },
+            toDate          : { type: "string" },
+            option          : { type: "number", optional: true },
+            multiple        : { type: "number", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, fundaID, contractID, accountID, fromDate, toDate, option, multiple } = ctx.params;
+                
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                /**
+                 * Convert dữ liệu ngày tháng để theo chuẩn chung
+                 */
+                fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+
+                let resultAfterCallHandler;
+                if (multiple) {
+                    
+                } else {
+                    resultAfterCallHandler = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
+                        companyID, fundaID, contractID, accountID, fromDate, toDate, option, userID, ctx
+                    });
+                }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
             }
         }
     },
