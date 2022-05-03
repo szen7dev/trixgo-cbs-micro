@@ -53,6 +53,7 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================ACCOUNT=========================================//
     ACCOUNT                                    : `${BASE_ROUTE}${ACCOUNT}`,
+    ACCOUNT_GET_LIST_NESTED                    : `${BASE_ROUTE}${ACCOUNT}/get-list-nested-item`,
 
     // ================================GOOD============================================//
     GOODS                                      : `${BASE_ROUTE}${GOODS}`,
