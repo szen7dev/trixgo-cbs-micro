@@ -324,10 +324,6 @@ class Model extends BaseModel {
                     dataUpdateVoucher.storage = storageID;
                 }
 
-                if (checkObjectIDs(projectID)) {
-                    dataUpdateVoucher.project = projectID;
-                }
-
                 const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update", status: 400 })
