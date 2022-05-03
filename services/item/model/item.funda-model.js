@@ -254,21 +254,6 @@ class Model extends BaseModel {
             }
         })
     }
-    
-    getListFundaOfCompany({ companyID }){
-        return new Promise(async (resolve) => {
-            try {
-                if(!ObjectID(companyID))
-                    return resolve({ error: true, message: 'param_not_valid' });
-                let fundas = await ITEM__FUNDA_COLL.find({ company: companyID }).sort({_id: 'asc'});
-                if(!fundas)
-                    return resolve({ error: true, message: "cannot_get_list" });
-                return resolve({ error: false, data: fundas });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
 }
 
