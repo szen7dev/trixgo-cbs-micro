@@ -655,9 +655,298 @@ class Model extends BaseModel {
     }
 
     /**
-     * REPORTS
+     * CÁC BÁO CÁO
      */    
-    
+    /**
+     * Name: Số dư của 1 tài khoản (opening balance, closing balance)
+     * Usage: 
+     * - Sổ chi tiết tài khoản
+     * Author: Hiepnh
+     * Date: 03/5/2022
+     */
+    getAccountBalance({ companyID, fundaID, contractID, accountID, fromDate, toDate, userID, ctx }) {
+        // console.log({ companyID, fundaID, contractID, accountID, fromDate, toDate, userID })
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Business Analyst (BA)
+                 * 1. Lấy mảng chứa tài khoản và các con cháu của nó
+                 * 2. Lấy năm của ngày đầu kỳ
+                 * 3. Lấy số liệu đầu kỳ = Số liệu của phiếu kết chuyển cuối kỳ năm trước (31/12/2019) + Số liệu đầu năm nay cho đến ngày đầu kỳ đang xét (1/1/2020-13/5/2020)
+                 */
+
+                /**
+                 * ĐẦU KỲ: Tính từ ngày 1/1 của năm tới ngày FromDate (ngày đầu kỳ)
+                 * CUỐI KỲ: Tính từ ngày FromDate tới ToDate (ngày cuối kỳ)
+                 */
+
+                //_________Get nestedArray of account
+                let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
+               
+                arrObjectID = arrObjectID.data || []
+                // console.log(arrObjectID)
+
+                let conditionObj1 = {
+                    debit: {
+                        $in: arrObjectID
+                    }
+                }
+                
+                let conditionObj2 = {
+                    credit: {
+                        $in: arrObjectID
+                    }
+                }
+
+                if(contractID){
+                    conditionObj1.contract = ObjectID(contractID)
+                    conditionObj2.contract = ObjectID(contractID)
+                }else{
+                    if(fundaID){
+                        conditionObj1.funda = ObjectID(fundaID)
+                        conditionObj2.funda = ObjectID(fundaID)
+                    }else{
+                        conditionObj1.company = ObjectID(companyID)
+                        conditionObj2.company = ObjectID(companyID)
+                    }
+                }
+                console.log(conditionObj1)
+                console.log(conditionObj2)
+               
+                /**
+                 * Lấy năm của ngày đầu kỳ
+                 * !!!!Xem xét sao không lấy năm của ngày bắt đầu (sẽ áp dụng được cho kỳ kéo dài nhiều năm) !!!
+                 */
+                let year = moment(fromDate).toDate().getFullYear()
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`;
+                console.log({ year, firstDayOfYear })
+
+                /**
+                 * Số liệu của các phiếu kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau: SỐ ĐẦU NĂM (31/12/2019-1/1/2020)
+                 * - Tức trường "forward" = 1 và Không phải là phiếu hủy "cancel" = 0
+                 */
+                let listDataOpeningS = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        "year": Number(year),
+                                        "forward": 1,
+                                        "cancel": 0
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                    
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $project : { 
+                                        year : {$year : "$date"},
+                                        forward: '$forward',
+                                        cancel: '$cancel',
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        "year": Number(year),
+                                        "forward": 1,
+                                        "cancel": 0
+                                    }
+                                },
+ 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                            
+                        }
+                    } 
+                ]);
+                console.log('=========SỐ ĐẦU KỲ-0: MỐC ĐẦU NĂM=========')
+                console.log({_____PSNo:listDataOpeningS[0]._debit})
+                console.log({_____PSCo: listDataOpeningS[0]._credit})
+
+                /**
+                * Số liệu của các phiếu từ ngày 1/1/2020 tới fromDate và không phải là phiếu kết chuyển: SỐ ĐẦU NĂM->ĐẦU KỲ
+                * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
+                */
+                let listDataOpening = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                    
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
+                                            $gte: moment(firstDayOfYear).toDate(),
+                                            $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                                        },
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                            
+                        }
+                    } 
+                ]);
+                console.log('=========SỐ ĐẦU KỲ-1: MỐC ĐẦU NĂM->FROMDATE=========')
+                console.log({_____PSNo:listDataOpening[0]._debit})
+                console.log({_____PSCo: listDataOpening[0]._credit})
+
+                /**
+                * Số liệu của các phiếu từ ngày fromDate tới toDate và không phải là phiếu kết chuyển: SỐ ĐẦU KỲ->CUỐI KỲ
+                * - Tức trường "forward" = 0 và Không phải là phiếu hủy "cancel" = 0
+                */
+                let listDataIncurred = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionObj1
+                                }, 
+                                {
+                                    $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
+                                            $gte: moment(fromDate).toDate(),
+                                            $lte: moment(toDate).toDate(),
+                                        },
+                                    }
+                                }, 
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }                    
+                            ],
+                            
+                            _credit:[
+                                {
+                                    $match: conditionObj2
+                                }, 
+                                {
+                                    $match: {
+                                        "forward": 0,
+                                        "cancel": 0,
+                                        "date": { 
+                                            $gte: moment(fromDate).toDate(),
+                                            $lte: moment(toDate).toDate(),
+                                        },
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { },
+                                        amountPrice: { $sum: "$amount" }
+                                    }
+                                }   
+                            ],            
+                            
+                        }
+                    } 
+                ]);
+                console.log('=========SỐ TRONG KỲ: MỐC FROMDATE->TODATE=========')
+                console.log({_____PSNo:listDataIncurred[0]._debit})
+                console.log({_____PSCo: listDataIncurred[0]._credit})
+
+                
+                let openingBalanceS = listDataOpeningS[0], openingBalance = listDataOpening[0], incurredBalance = listDataIncurred[0]
+
+                let totalOpeningDebitS = 0, totalOpeningCreditS = 0, totalOpeningDebit = 0, totalOpeningCredit = 0, totalIncurredDebit = 0, totaIncurredCredit = 0
+
+                // Số liệu đầu năm
+                if(openingBalanceS._debit.length > 0){
+                    totalOpeningDebitS = openingBalanceS._debit[0].amountPrice;
+                }
+                if(openingBalanceS._credit.length > 0){
+                    totalOpeningCreditS = openingBalanceS._credit[0].amountPrice;
+                }
+
+                // Số liệu từ đầu năm tới đầu kỳ đang xét
+                if(openingBalance._debit.length > 0){
+                    totalOpeningDebit = openingBalance._debit[0].amountPrice;
+                }
+                if(openingBalance._credit.length > 0){
+                    totalOpeningCredit = openingBalance._credit[0].amountPrice;
+                }
+
+                // Số liệu đầu kỳ tới cuối kỳ đang xét
+                if(incurredBalance._debit.length > 0){
+                    totalIncurredDebit = incurredBalance._debit[0].amountPrice;
+                }
+                if(incurredBalance._credit.length > 0){
+                    totaIncurredCredit = incurredBalance._credit[0].amountPrice;
+                }
+
+                return resolve({ error: false, data: { totalOpeningDebitS, totalOpeningCreditS, totalOpeningDebit, totalOpeningCredit, totalIncurredDebit, totaIncurredCredit} });
+            } catch (error) {
+                console.log(`getAccountBalance: ${error} `);
+                return resolve({ error: true, message: error.message });
+            }
+        });
+    } 
+
+
+
+
 }
 
 exports.MODEL = new Model;
