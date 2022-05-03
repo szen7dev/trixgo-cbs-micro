@@ -26,9 +26,10 @@ const { KEY_ERROR }                         = require('../../../tools/keys/index
 /**
  * COLLECTIONS
  */
-const FUNDA_COLL                                   = require('../../item/database/item.funda-coll'); // Kiểm tra fix lại, không Import trực tiếp
-const ACCOUNTING__FINANCIAL_VOUCHER_COLL           = require('../database/accounting.financial_voucher-coll')
-const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL   = require('../database/accounting.financial_general_journal-coll')
+const FUNDA_COLL                                    = require('../../item/database/item.funda-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll'); // Kiểm tra fix lại, không Import trực tiếp
+const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
 
 /**
  * MODELS
@@ -52,7 +53,6 @@ class Model extends BaseModel {
         customerID,
         contractID, 
         storageID, 
-        projectID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -110,15 +110,15 @@ class Model extends BaseModel {
                 }
 
                 if (checkObjectIDs(contractID)) {
+                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                    if(infoContract.project){
+                        dataInsertVoucher.project = infoContract.project;
+                    }
                     dataInsertVoucher.contract = contractID;
                 }
 
                 if (checkObjectIDs(storageID)) {
                     dataInsertVoucher.storage = storageID;
-                }
-
-                if (checkObjectIDs(projectID)) {
-                    dataInsertVoucher.project = projectID;
                 }
 
                 const infoAfterInsert = await this.insertData(dataInsertVoucher)
@@ -200,18 +200,14 @@ class Model extends BaseModel {
                          * Nếu không  có thì lấy theo hợp đồng trên phiếu
                          */
                         if(subitem.contract && _isValid(subitem.contract)){
+                            let infoContract = await CONTRACT_COLL.findById(subitem.contract)
+                            if(infoContract.project){
+                                dataInsert.project = infoContract.project;
+                            }
                             dataInsert.contract = subitem.contract
                         }else{
                             if(contractID && _isValid(contractID)){
                                 dataInsert.contract = contractID;
-                            }
-                        }
-
-                        if(subitem.project && _isValid(subitem.project)){
-                            dataInsert.project = subitem.project
-                        }else{
-                            if(projectID && _isValid(projectID)){
-                                dataInsert.project = projectID;
                             }
                         }
 
@@ -253,7 +249,6 @@ class Model extends BaseModel {
         customerID,
         contractID, 
         storageID, 
-        projectID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, advancePayment, cancel, 
@@ -314,6 +309,10 @@ class Model extends BaseModel {
                 }
 
                 if (checkObjectIDs(contractID)) {
+                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                    if(infoContract.project){
+                        dataUpdateVoucher.project = infoContract.project;
+                    }
                     dataUpdateVoucher.contract = contractID;
                 }
 
@@ -403,18 +402,14 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo hợp đồng trên phiếu
                              */
                             if(subitem.contract && _isValid(subitem.contract)){
+                                let infoContract = await CONTRACT_COLL.findById(subitem.contract)
+                                if(infoContract.project){
+                                    dataInsert.project = infoContract.project;
+                                }
                                 dataInsert.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
                                     dataInsert.contract = contractID;
-                                }
-                            }
-
-                            if(subitem.project && _isValid(subitem.project)){
-                                dataInsert.project = subitem.project
-                            }else{
-                                if(projectID && _isValid(projectID)){
-                                    dataInsert.project = projectID;
                                 }
                             }
     
@@ -504,6 +499,10 @@ class Model extends BaseModel {
                              * Nếu không  có thì lấy theo hợp đồng trên phiếu
                              */
                             if(subitem.contract && _isValid(subitem.contract)){
+                                let infoContract = await CONTRACT_COLL.findById(subitem.contract)
+                                if(infoContract.project){
+                                    dataUpdate.project = infoContract.project;
+                                }
                                 dataUpdate.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
@@ -511,14 +510,6 @@ class Model extends BaseModel {
                                 }
                             }
 
-                            if(subitem.project && _isValid(subitem.project)){
-                                dataUpdate.project = subitem.project
-                            }else{
-                                if(projectID && _isValid(projectID)){
-                                    dataUpdate.project = projectID;
-                                }
-                            }
-    
                             /**
                              * Cập nhật ngân sách thực hiện
                              */
@@ -752,19 +743,9 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                 if(!isNaN(type) && Number(type) > 0){
+                if(!isNaN(type) && Number(type) > 0){
                     conditionObj.type = Number(type)
                 }
-
-                // if (checkObjectIDs(fundaID)) {
-                //     conditionObj.funda = fundaID
-                // } else {
-                //     conditionObj.company = companyID
-                // }
-
-                // if (checkObjectIDs(contractID)) {
-                //     conditionObj.contract = contractID
-                // }
 
                 if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID
@@ -805,7 +786,7 @@ class Model extends BaseModel {
                     let regExpSearch = RegExp(keyword, 'i');
                     conditionObj.name = regExpSearch;
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
