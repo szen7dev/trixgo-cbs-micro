@@ -145,7 +145,7 @@ class Model extends BaseModel {
                             amount: subitem.amount ? Number(subitem.amount) : 0,
                             unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
                             fcuExRate,
-                            fcuAmount: fcuExRate != 0 ? Number(subitem.amount*fcuExRate) : 0,
+                            fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                             note: subitem.note,
                             ctx
                         }
@@ -207,6 +207,10 @@ class Model extends BaseModel {
                             dataInsert.contract = subitem.contract
                         }else{
                             if(contractID && _isValid(contractID)){
+                                let infoContract = await CONTRACT_COLL.findById(contractID)
+                                if(infoContract.project){
+                                    dataInsert.project = infoContract.project;
+                                }
                                 dataInsert.contract = contractID;
                             }
                         }
@@ -347,7 +351,7 @@ class Model extends BaseModel {
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
                                 unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
                                 fcuExRate,
-                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount*fcuExRate) : 0,
+                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                 note: subitem.note,
                                 ctx
                             }
@@ -409,6 +413,10 @@ class Model extends BaseModel {
                                 dataInsert.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
+                                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                                    if(infoContract.project){
+                                        dataInsert.project = infoContract.project;
+                                    }
                                     dataInsert.contract = contractID;
                                 }
                             }
@@ -444,7 +452,7 @@ class Model extends BaseModel {
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
                                 unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
                                 fcuExRate,
-                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount*fcuExRate) : 0,
+                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                 note: subitem.note,
                                 ctx
                             }
@@ -506,6 +514,10 @@ class Model extends BaseModel {
                                 dataUpdate.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
+                                    let infoContract = await CONTRACT_COLL.findById(contractID)
+                                    if(infoContract.project){
+                                        dataUpdate.project = infoContract.project;
+                                    }
                                     dataUpdate.contract = contractID;
                                 }
                             }
