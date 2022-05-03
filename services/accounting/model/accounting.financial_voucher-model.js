@@ -537,7 +537,12 @@ class Model extends BaseModel {
                             }
                         }
 
-                        // Xóa bút toán
+                        /**
+                         * XÓA BÚT TOÁN
+                         * 1-Xóa bút toán
+                         * 2-Update lại giá trị phiếu
+                         * 3-Update lại ngân sách đã thực hiện (nếu có)
+                         */
                         
                     }
                 }
