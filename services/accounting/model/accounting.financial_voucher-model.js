@@ -111,7 +111,7 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(contractID)) {
                     let infoContract = await CONTRACT_COLL.findById(contractID)
-                    if(infoContract.project){
+                    if(infoContract.project && checkObjectIDs(infoContract.project)){
                         dataInsertVoucher.project = infoContract.project;
                     }
                     dataInsertVoucher.contract = contractID;
@@ -201,14 +201,14 @@ class Model extends BaseModel {
                          */
                         if(subitem.contract && _isValid(subitem.contract)){
                             let infoContract = await CONTRACT_COLL.findById(subitem.contract)
-                            if(infoContract.project){
+                            if(infoContract.project && checkObjectIDs(infoContract.project)){
                                 dataInsert.project = infoContract.project;
                             }
                             dataInsert.contract = subitem.contract
                         }else{
                             if(contractID && _isValid(contractID)){
                                 let infoContract = await CONTRACT_COLL.findById(contractID)
-                                if(infoContract.project){
+                                if(infoContract.project && checkObjectIDs(infoContract.project)){
                                     dataInsert.project = infoContract.project;
                                 }
                                 dataInsert.contract = contractID;
@@ -314,7 +314,7 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(contractID)) {
                     let infoContract = await CONTRACT_COLL.findById(contractID)
-                    if(infoContract.project){
+                    if(infoContract.project && checkObjectIDs(infoContract.project)){
                         dataUpdateVoucher.project = infoContract.project;
                     }
                     dataUpdateVoucher.contract = contractID;
@@ -407,14 +407,14 @@ class Model extends BaseModel {
                              */
                             if(subitem.contract && _isValid(subitem.contract)){
                                 let infoContract = await CONTRACT_COLL.findById(subitem.contract)
-                                if(infoContract.project){
+                                if(infoContract.project && checkObjectIDs(infoContract.project)){
                                     dataInsert.project = infoContract.project;
                                 }
                                 dataInsert.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
                                     let infoContract = await CONTRACT_COLL.findById(contractID)
-                                    if(infoContract.project){
+                                    if(infoContract.project && checkObjectIDs(infoContract.project)){
                                         dataInsert.project = infoContract.project;
                                     }
                                     dataInsert.contract = contractID;
@@ -508,14 +508,14 @@ class Model extends BaseModel {
                              */
                             if(subitem.contract && _isValid(subitem.contract)){
                                 let infoContract = await CONTRACT_COLL.findById(subitem.contract)
-                                if(infoContract.project){
+                                if(infoContract.project && checkObjectIDs(infoContract.project)){
                                     dataUpdate.project = infoContract.project;
                                 }
                                 dataUpdate.contract = subitem.contract
                             }else{
                                 if(contractID && _isValid(contractID)){
                                     let infoContract = await CONTRACT_COLL.findById(contractID)
-                                    if(infoContract.project){
+                                    if(infoContract.project && checkObjectIDs(infoContract.project)){
                                         dataUpdate.project = infoContract.project;
                                     }
                                     dataUpdate.contract = contractID;
