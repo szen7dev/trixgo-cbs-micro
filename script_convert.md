@@ -514,77 +514,111 @@ const listComments = db.pcm_comments.find({
 })
 .toArray();
 
-for(let comment of listComments) {
+
+const convertAsync = listComments.map(comment => {
     const { _id: commentID, task, files, images } = comment;
 
     const taskInfo = db.pcm_plan_tasks.findOne({ _id: task });
 
-    if(!taskInfo) continue;
+    if(taskInfo) {
+        const dataUpdate = { $set: {} };
+        const { _id: taskID, contract, project, company, group } = taskInfo;
 
-    const dataUpdate = { $set: {} };
-    const { _id: taskID, contract, project, company, group } = taskInfo;
+        // File đính kèm
+        if(files && files.length) {
+            const filesCore = db.files.find({ _id: { $in: files } }).toArray();
 
-    // File đính kèm
-    if(files && files.length) {
-        const filesCore = db.files.find({ _id: { $in: files } }).toArray();
-        const newFiles = [];
+            if(filesCore && filesCore.length) {
+                const newFiles = [];
 
-        if(filesCore.length) {
-            for(let fileCore of filesCore) {
-                const {
-                    _id: fileCoreID, name, nameOrg, description, path, size, mimeType, author
-                } = fileCore;
+                for(let fileCore of filesCore) {
+                    const {
+                        _id: fileCoreID, name, nameOrg, description, path, size, mimeType, author, createAt, modifyAt
+                    } = fileCore;
 
-                newFiles[newFiles.length] = {
-                    company,
-                    project,
-                    group,
-                    contract,
-                    task: taskID,
-                    comment: commentID,
-                    file: fileCoreID,
-                    type: 2,
-                    name, nameOrg, description, path, size, mimeType, author,
-                    isConvertedFromFileCore: true
+                    newFiles[newFiles.length] = {
+                        company,
+                        project,
+                        group,
+                        contract,
+                        task: taskID,
+                        comment: commentID,
+                        file: fileCoreID,
+                        type: 2,
+                        name, nameOrg, description, path, size, mimeType, author,
+                        isConvertedFromFileCore: true,
+                        createAt, modifyAt
+                    }
                 }
-            }
 
-            const { insertedIds } = db.pcm_files.insertMany(newFiles)
-            dataUpdate.$set['files'] = insertedIds;
+                const { insertedIds } = db.pcm_files.insertMany(newFiles)
+                dataUpdate.$set['files'] = insertedIds;
+            }
+        }
+
+        // Hình ảnh
+        if(images && images.length) {
+            const filesCore = db.files.find({ _id: { $in: images } }).toArray();
+
+            if(filesCore && filesCore.length) {
+                const newFiles = [];
+
+                for(let fileCore of filesCore) {
+                    const {
+                        _id: fileCoreID, name, nameOrg, description, path, size, mimeType, author, createAt, modifyAt
+                    } = fileCore;
+
+                    newFiles[newFiles.length] = {
+                        company,
+                        project,
+                        group,
+                        contract,
+                        task: taskID,
+                        comment: commentID,
+                        file: fileCoreID,
+                        type: 1,
+                        name, nameOrg, description, path, size, mimeType, author,
+                        isConvertedFromFileCore: true,
+                        createAt, modifyAt
+                    }
+                }
+
+                const { insertedIds } = db.pcm_files.insertMany(newFiles)
+                dataUpdate.$set['images'] = insertedIds;
+            }
+        }
+
+        if(Object.keys(dataUpdate.$set).length) {
+            db.pcm_comments.updateOne({
+                _id: commentID
+            }, dataUpdate)
         }
     }
+})
 
-    // Hình ảnh
-    if(images && images.length) {
-        const filesCore = db.files.find({ _id: { $in: images } }).toArray();
-        const newFiles = [];
+Promise.all(convertAsync)
 
-        if(filesCore.length) {
-            for(let fileCore of filesCore) {
-                const {
-                    _id: fileCoreID, name, nameOrg, description, path, size, mimeType, author
-                } = fileCore;
+/**
+* ============================ ************************* ==============================
+* ============================ 	 UPDATE PATH PCM FILE  	 ==============================
+* ============================ ************************* ==============================
+*/
 
-                newFiles[newFiles.length] = {
-                    company,
-                    project,
-                    group,
-                    contract,
-                    task: taskID,
-                    comment: commentID,
-                    file: fileCoreID,
-                    type: 1,
-                    name, nameOrg, description, path, size, mimeType, author,
-                    isConvertedFromFileCore: true
-                }
+const filesPcm = db.pcm_files.find({ isDataConvert: 1 }).toArray();
+
+const convertAsync = filesPcm.map(f => {
+    const infoFile = db.files.findOne({ _id: f.file });
+
+    if(infoFile) {
+        db.pcm_files.updateOne({
+            _id: f._id
+        }, {
+            $set: {
+                size: infoFile.size,
+                path: infoFile.path
             }
-
-            const { insertedIds } = db.pcm_files.insertMany(newFiles)
-            dataUpdate.$set['images'] = insertedIds;
-        }
+        })
     }
+})
 
-    db.pcm_comments.updateOne({
-        _id: commentID
-    }, dataUpdate)
-}
+Promise.all(convertAsync)
