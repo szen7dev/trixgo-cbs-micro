@@ -832,7 +832,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {};
-                let keys	     = ['createAt__-1', '_id__-1'];
+                let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;
 
                 if(limit > 20){
@@ -867,11 +867,12 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                
-                if(projectID){
+                if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID
-                }else{
-                    conditionObj.company = companyID
+                } else {
+                    if (checkObjectIDs(companyID)) {
+                        conditionObj.company = companyID
+                    }
                 }
 
                 if(parentID){
@@ -1029,13 +1030,15 @@ class Model extends BaseModel {
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            // console.log({companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
+            //     date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg})
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = { members: { $in: [userID] } };
-                let keys	     = ['createAt__-1', '_id__-1'];
+                let keys	     = ['date__-1', '_id__-1'];
                 let sortBy;
 
                 if(limit > 20){
@@ -1065,13 +1068,15 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                 if(projectID){
+                if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID
-                }else{
-                    conditionObj.company = companyID
+                } else {
+                    if (checkObjectIDs(companyID)) {
+                        conditionObj.company = companyID
+                    }
                 }
 
-                if(parentID){
+                if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 }
 
@@ -1141,11 +1146,6 @@ class Model extends BaseModel {
 
                 if(lock){
                     conditionObj.lock = lock
-                }
-                
-                // Theo giỏi bảo lảnh
-                if(isExpiredAg == 1){
-                    conditionObj.expiredAg = { $exists: true, $ne: null }
                 }
 
                 if(keyword){
