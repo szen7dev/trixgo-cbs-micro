@@ -15,7 +15,7 @@ const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-consta
 const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
 const { CF_ACTIONS_ITEM }               		= require('../../item/helper/item.actions-constant');
 const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
-const { APP_KEYS, LANGUAGE_KEYS }				= require('../../../tools/keys');
+const { APP_KEYS, LANGUAGE_KEYS, KEY_ERROR }	= require('../../../tools/keys');
 const { ENV_DEVICE_WEB_CBS } 					= require('../../notification/helper/notification.keys-constant');
 
 /**
@@ -766,7 +766,7 @@ class Model extends BaseModel {
 	 * Func: THÔNG TIN BÀI VIẾT	
      * Updated: 24/02/2022
 	 */
-	getInfoMedia({ mediaID, authorID, select, populates }) {
+	getInfoMedia({ mediaID, authorID, companyID, select, populates, ctx }) {
         return new Promise(async resolve => {
             try {
 				if(!checkObjectIDs([mediaID])) {
@@ -812,6 +812,56 @@ class Model extends BaseModel {
 						keyError: "media_not_exists",
 						status: 400
 					})
+				}
+
+				let hasPermission = true;
+
+				switch (infoMedia.type) {
+					case 1:
+						if(typeof infoMedia.company === 'string' && infoMedia.company?.toString() !== companyID.toString()) {
+							hasPermission = false;
+						} else if(infoMedia.company?._id?.toString() !== companyID.toString()){
+							hasPermission = false;
+						}
+						break;
+					case 2:
+						let departmentID = '';
+
+						if(typeof infoMedia.department === 'string') {
+							departmentID = infoMedia.department;
+						} else {
+							departmentID = infoMedia.department?._id;
+						}
+
+						const infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+							departmentID: departmentID.toString()
+						})
+						if(!infoProject.error && infoProject.status === 200) {
+							const membersID = infoProject.data?.members.map(item => item.toString());
+
+							if(!membersID.includes(authorID.toString())) {
+								hasPermission = false;
+							}
+						}
+						break;
+					case 5:
+						if(typeof infoMedia.author === 'string' && infoMedia.author?.toString() !== authorID.toString()) {
+							hasPermission = false;
+						} else if(infoMedia.author?._id?.toString() !== authorID.toString()) {
+							hasPermission = false;
+						}
+						break;
+					default:
+						break;
+				}
+
+				if(!hasPermission) {
+					return resolve({
+						error: true,
+						message: 'Bạn không có quyền truy cập bài viết này',
+						keyError: KEY_ERROR.PERMISSION_DENIED,
+						status: 400
+					});
 				}
 
 				const infoReaction = await MEDIA__REACIONT_COLL.findOne({

@@ -236,8 +236,8 @@ class Model extends BaseModel {
                 const adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString()), infoTimeSheetID.userCreate?.toString()];
 
                 if(adminsID.includes(userID.toString())) {
-                    if(admins && admins.length) {
-                        if(checkObjectIDs(admins)) {
+                    if(admins) {
+                        if(admins.length && checkObjectIDs(admins)) {
                             admins = [...new Set(admins)];
                             dataUpdate.admins = admins;
                         } else{
@@ -245,8 +245,8 @@ class Model extends BaseModel {
                         }
                     }
 
-                    if(members && members.length) {
-                        if(checkObjectIDs(members)) {
+                    if(members) {
+                        if(members.length && checkObjectIDs(members)) {
                             members = [...new Set(members)];
                             dataUpdate.members = members;
                         } else{
