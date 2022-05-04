@@ -115,7 +115,7 @@ class Model extends BaseModel {
                 titleMSS        = `BÀI VIẾT: ${infoMedia.title}`;
                 descriptionMSS  = `${bizfullname} đã tạo 1 bình luận`;
                 arrReceiver     = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
-                console.log({ LENGTH: arrReceiver.length, mediaType: infoMedia.type })
+                // console.log({ LENGTH: arrReceiver.length, mediaType: infoMedia.type })
 
                 if(arrReceiver && arrReceiver.length) {
                     const content = infoComment?.content?.length > 100 ? infoComment?.content?.substr(0, 100) : infoComment?.content;
@@ -130,7 +130,7 @@ class Model extends BaseModel {
                     });
 
                     ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                        content,
+                        content: content || 'Đã gửi 1 bình luận file',
                         receivers: arrReceiver,
                         path: `/media/post/${infoMedia._id}#${infoComment._id}`,
                         languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
