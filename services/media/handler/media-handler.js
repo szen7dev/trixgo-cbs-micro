@@ -40,13 +40,13 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { 
-                    title, content, type, otherID, companyID, departmentID, location, 
+                const {
+                    title, content, type, otherID, companyID, departmentID, location,
                     tagFriends, files, images, background
                 } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
-                    title, content, type, otherID, companyID, departmentID, location, 
+                    title, content, type, otherID, companyID, departmentID, location,
                     tagFriends, files, images, background, authorID, bizfullname, ctx
 				});
 
@@ -81,13 +81,13 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { 
-                    mediaID, title, content, type, otherID, companyID, departmentID, location, 
+                const {
+                    mediaID, title, content, type, otherID, companyID, departmentID, location,
                     tagFriends, files, images, background
                 } = ctx.params;
-               
-                const resultAfterCallHandler = await MEDIA_MODEL.updateMedia({ 
-                    mediaID, title, content, type, otherID, companyID, departmentID, location, 
+
+                const resultAfterCallHandler = await MEDIA_MODEL.updateMedia({
+                    mediaID, title, content, type, otherID, companyID, departmentID, location,
                     tagFriends, files, images, background, authorID, ctx
 				});
 
@@ -100,7 +100,7 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: XÓA BÀI VIẾT	
+	 * Func: XÓA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
     deleteMedia: {
@@ -114,7 +114,7 @@ module.exports = {
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA_MODEL.deleteMedia({ 
+                let resultAfterCallHandler = await MEDIA_MODEL.deleteMedia({
 					mediaID, authorID
 				});
 
@@ -127,7 +127,7 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: CHI TIẾT BÀI VIẾT	
+	 * Func: CHI TIẾT BÀI VIẾT
      * Updated: 24/02/2022
 	 */
     getInfoMedia: {
@@ -140,11 +140,11 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				let { _id: authorID } = ctx.meta.infoUser;
-                let { mediaID, select, populates } = ctx.params;
+				const { _id: authorID, company } = ctx.meta.infoUser;
+                const { mediaID, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA_MODEL.getInfoMedia({ 
-					mediaID, authorID, select, populates
+                const resultAfterCallHandler = await MEDIA_MODEL.getInfoMedia({
+					mediaID, authorID, companyID: company._id, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -156,7 +156,7 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: LẤY DANH SÁCH BÀI VIẾT 
+	 * Func: LẤY DANH SÁCH BÀI VIẾT
      * Updated: 24/02/2022
 	 */
     getListMedia: {
@@ -177,13 +177,13 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { 
-                    lastestID, companyID, departmentID, otherID, mediaID, 
+                const {
+                    lastestID, companyID, departmentID, otherID, mediaID,
                     keyword, isRelated, type, limit, select, populates
                 } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getListMedia({ 
-					authorID, lastestID, companyID, departmentID, otherID, mediaID, 
+                const resultAfterCallHandler = await MEDIA_MODEL.getListMedia({
+					authorID, lastestID, companyID, departmentID, otherID, mediaID,
                     keyword, isRelated, type, limit, select, populates
 				});
 
@@ -211,7 +211,7 @@ module.exports = {
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA_MODEL.updateView({ 
+                let resultAfterCallHandler = await MEDIA_MODEL.updateView({
 					mediaID, authorID
 				});
 
@@ -224,7 +224,7 @@ module.exports = {
 
     /**
 	 * Dev: MinhVH
-	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
+	 * Func: LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT
 	 */
     getListUsersSeen: {
         auth: "required",
@@ -241,7 +241,7 @@ module.exports = {
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID, lastestID, limit, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await MEDIA_MODEL.getListUsersSeen({ 
+                let resultAfterCallHandler = await MEDIA_MODEL.getListUsersSeen({
 					authorID, mediaID, lastestID, limit, select, populates
 				});
 

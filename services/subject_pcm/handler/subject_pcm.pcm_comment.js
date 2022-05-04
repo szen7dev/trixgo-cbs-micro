@@ -143,12 +143,14 @@ module.exports = {
             taskID              : { type: "string", optional: true },
             type                : { type: "string", optional: true },
             official            : { type: "string", optional: true },
-            limit               : { type: "string", optional: true },
-            lastestID           : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
             commentID           : { type: "string", optional: true },
             contractID          : { type: "string", optional: true },
             projectID           : { type: "string", optional: true },
+            isHaveImage         : { type: "string", optional: true },
+
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
             sortKey             : { type: "string", optional: true },
@@ -157,7 +159,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
-                let { taskID, limit, parentID, lastestID, commentID, contractID, projectID, type, official, sortKey, select, populates } = ctx.params;
+                let {
+                    taskID, parentID, commentID, contractID, projectID, type, official, isHaveImage,
+                    limit, lastestID, sortKey, select, populates
+                } = ctx.params;
+
                 let resultAfterCallHandler = null;
 
                 if(commentID){
@@ -166,7 +172,8 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
-                        taskID, contractID, projectID, parentID, limit, lastestID, type, official, sortKey, select, populates, authorID
+                        taskID, contractID, projectID, parentID, type, official, isHaveImage,
+                        limit, lastestID, sortKey, select, populates, authorID
                     });
                 }
 

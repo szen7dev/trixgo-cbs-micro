@@ -940,14 +940,12 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment
 	 * Date: 22/02/2022
 	 */
-    getList({ taskID, contractID, projectID, parentID, limit = 10, lastestID, type, official, sortKey, select, populates, authorID }) {
+    getList({
+        taskID, contractID, projectID, parentID, isHaveImage, type, official,
+        limit = 10, lastestID, sortKey, select, populates, authorID,
+    }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
-                }else{
-                    limit = +limit;
-                }
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -1013,19 +1011,21 @@ class Model extends BaseModel {
                     if(checkObjectIDs([projectID])) {
                         conditionObj.project = projectID;
                     }
-
-                    conditionObj.$expr = {
-                        $gt: [
-                            { $size: "$images" }, 0
-                        ]
-                    }
-                    // conditionObj['images.1'] = { $exists: true };
 				} else {
                     if(parentID && checkObjectIDs([parentID])){
                         conditionObj.parent = parentID;
                     } else{
                         conditionObj.parent = { $exists: false };
                     }
+                }
+
+                if(isHaveImage) {
+                    conditionObj.$expr = {
+                        $gt: [
+                            { $size: "$images" }, 0
+                        ]
+                    }
+                    // conditionObj['images.1'] = { $exists: true };
                 }
 
                 if(official === 'true') {
