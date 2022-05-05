@@ -386,11 +386,11 @@ class Model extends BaseModel {
                     }, status: 200 });
                 }else{
                     infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
-                    .select(select)
-                    .limit(+limit+1)
-                    .sort(sortBy)
-                    .populate(populates)
-                    .lean();
+                        .select(select)
+                        .limit(+limit+1)
+                        .sort(sortBy)
+                        .populate(populates)
+                        .lean();
                 }
 
                 if(!infoDataAfterGet)
