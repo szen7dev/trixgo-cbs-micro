@@ -20,6 +20,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant')
 /**
  * COLLECTIONS
  */
+const ITEM__DEPARTMENT_COLL            				= require('../database/item.department-coll');
 const ITEM__CONTACT_COLL            				= require('../database/item.contact-coll');
 
 class Model extends BaseModel {
@@ -560,8 +561,8 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({
-        companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
-        insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
+        userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
+        insuranceStatus, parentID, isBirthday, isLinkUser, isListParentOrListChilds, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -573,7 +574,7 @@ class Model extends BaseModel {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = { company: companyID };
+                let conditionObj = { };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
                 /** 
@@ -600,19 +601,27 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */  
-                
-                // TRẠNG THÁI CÔNG VIỆC
-                //____________Công ty
-                if(companyID){
-                    conditionObj.company = companyID
+                //
+                if(isMember){
+                    // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
+                    let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                    // console.log(listDepartment)
+                    // console.log(listDepartment.map(item=>item._id))
+
+                    conditionObj.department = {$in: listDepartment.map(item=>item._id) }
+                }else{
+                    // Lấy nhân sự theo công ty
+                    if(companyID){
+                        conditionObj.company = companyID
+                    }
+
+                    if(checkObjectIDs(departmentID)){
+                        conditionObj.department = departmentID
+                    }
                 }
 
                 if(type){
                     conditionObj.type = type
-                }
-
-                if(checkObjectIDs(departmentID)){
-                    conditionObj.department = departmentID
                 }
 
                 if(checkObjectIDs(positionID)){
@@ -634,16 +643,19 @@ class Model extends BaseModel {
                 if(insuranceStatus){
                     conditionObj.insuranceStatus = insuranceStatus
                 }
+
                 // Lấy những danh bạ có sinh nhật vào hôm nay
                 if(isBirthday == 1){
                     const day = (new Date()).getDate();
                     const month = (new Date()).getMonth();
                     conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
                 }
+
                 // Lấy những tài khoản có trường linkUser
                 if(isLinkUser == 1){
                     conditionObj.linkUser = { $exists: true }
                 }
+
                 // Lấy danh sách danh bạ cha hoặc danh bạ con
                 if(isListParentOrListChilds == 1){
                     if(checkObjectIDs(parentID)){
@@ -664,8 +676,10 @@ class Model extends BaseModel {
                         { phone: regSearch },
                     ]
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
+
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
