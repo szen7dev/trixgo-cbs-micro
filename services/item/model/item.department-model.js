@@ -900,7 +900,7 @@ class Model extends BaseModel {
 
                 // Sử dụng UnLimit để lấy mảng toàn bộ các phần tử, sử dụng cho phương thức $in tại các ứng dụng
                 if(unLimit) {
-                    console.log({ conditionObj, select })
+                    // console.log({ conditionObj, select })
                     const dataUnlimit = await ITEM__DEPARTMENT_COLL
                         .find(conditionObj)
                         .select(select)

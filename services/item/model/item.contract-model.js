@@ -640,7 +640,6 @@ class Model extends BaseModel {
                 if(dataPull){
                     dataUpdate.$pullAll = dataPull;
                 }
-                console.log({ dataUpdate })
                 if(dataInc){
                     dataUpdate.$inc = dataInc;
                 }
