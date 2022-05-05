@@ -612,7 +612,8 @@ class Model extends BaseModel {
                 }
 
                 if(checkObjectIDs(departmentID)){
-                    conditionObj.department = departmentID
+                    conditionObj.department = departmentID,
+                    delete  conditionObj.company;
                 }
 
                 if(checkObjectIDs(positionID)){

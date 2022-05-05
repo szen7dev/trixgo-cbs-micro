@@ -174,7 +174,7 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Email không tồn tại',
                         keyError: "email_not_exists",
-                        status: 400
+                        // status: 400
                     });
                 }
 
@@ -183,7 +183,7 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Nền tảng không tồn tại',
                         keyError: "platform_invalid",
-                        status: 400
+                        // status: 400
                     });
                 }
 
