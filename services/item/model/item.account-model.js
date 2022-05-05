@@ -47,8 +47,8 @@ class Model extends BaseModel {
                 let dataInsert = {
                     userCreate: userID,
                     company: companyID,
-                    name, 
-                }    
+                    name,
+                }
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
@@ -68,11 +68,11 @@ class Model extends BaseModel {
 
                 // Cập nhật amountChilds cho phần tử cha
                 if(checkObjectIDs(parentID)){
-                    await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID, 
-                        { 
+                    await ITEM__ACCOUNT_COLL.findByIdAndUpdate(parentID,
+                        {
                             $addToSet: { childs: infoAfterInsert._id },
                             $inc: { amountChilds: 1 }
-                        }, 
+                        },
                         { new: true });
                 }
 
@@ -90,7 +90,7 @@ class Model extends BaseModel {
 	 * Date: 03/5/2022
 	 */
 	update({ accountID, name, description, userID }){
-        return new Promise(async resolve => { 
+        return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(accountID))
                     return resolve({ error: true, message: "accountID|name không hợp lệ", keyError: "Request params accountID invalid" });
@@ -98,8 +98,8 @@ class Model extends BaseModel {
                 // Kiểm tra xem tên có bị trùng hay không
                 let info = await ITEM__ACCOUNT_COLL.findById(accountID);
 
-                let checkName = await ITEM__ACCOUNT_COLL.findOne({ 
-                    company: info.company, 
+                let checkName = await ITEM__ACCOUNT_COLL.findOne({
+                    company: info.company,
                     name: name.trim(),
                     _id: {
                         $ne: accountID
@@ -111,7 +111,7 @@ class Model extends BaseModel {
                 // Cập nhật thông tin nếu không trùng
                 let dataUpdate = {
                     name: name.trim(),
-                    userUpdate: userID, 
+                    userUpdate: userID,
                     modifyAt: new Date()
                 }
 
@@ -192,21 +192,21 @@ class Model extends BaseModel {
                 //__________Lấy thông tin phần tử kèm theo populate vào bên trong các phần tử con
                 let infoItemOrigin = await ITEM__ACCOUNT_COLL.findById(accountID)
                     .populate(
-                        _constructForAny(levelForRecursive, 'childs') 
+                        _constructForAny(levelForRecursive, 'childs')
                     )
-                
+
                 //__________Gọi hàm đệ quy để lấy mảng nestedArray
                 getListIDRecursiveForAny([infoItemOrigin], levelForRecursive);
 
-                if (!arrObjectID) 
+                if (!arrObjectID)
                     return resolve({ error: true, message: 'cannot_get_list' });
-                    
+
                 return resolve({ error: false, data: arrObjectID });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         });
-    } 
+    }
 
     /**
      * Name : Danh sách tài khoản + con cháu của công ty
@@ -222,8 +222,8 @@ class Model extends BaseModel {
                 let pathOrigin;
                 let constructPopulateConfigObj = (level, path) => {
                     pathOrigin  = `${path}`;
-                    const oneLevel = () => ({ 
-                        path: pathOrigin, options: { sort: { 'name': 1 } }, 
+                    const oneLevel = () => ({
+                        path: pathOrigin, options: { sort: { 'name': 1 } },
                     });
                     let obj = oneLevel();
 
@@ -234,7 +234,7 @@ class Model extends BaseModel {
                         obj = Object.assign({}, obj);
                         --level;
                     }
-                    
+
                     return obj;
                 };
 
@@ -254,20 +254,20 @@ class Model extends BaseModel {
                         }
                     ]
                 );
-                let ObjectQuery = { 
-                    company: companyID,   
+                let ObjectQuery = {
+                    company: companyID,
                     $or: [
                         {
                             parent: {
                                 $exists: false
-                            }  
+                            }
                         },
                         {
                             parent: null
                         }
                     ]
                 }
-                
+
                 if(status){
                     ObjectQuery.status  = 1
                 }
@@ -289,17 +289,17 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
     /**
-     * Name  : Danh sách account 
+     * Name  : Danh sách account
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
         companyID, parentID, isListParentOfListChilds,
         keyword, limit = 10, lastestID, select, populates= {},
         status, type, level, isAccountingService
-    }) { 
+    }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -328,11 +328,15 @@ class Model extends BaseModel {
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
                 }
-                
+
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+
+                    conditionObj.$or = [
+                        { name: new RegExp(keyword, 'i') },
+                        { description: new RegExp(keyword, 'i') }
+                    ]
                 }
 
                 if(status){
@@ -355,7 +359,7 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false };
                     }
                 }
-                
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await ITEM__ACCOUNT_COLL.findById(lastestID);
@@ -374,7 +378,7 @@ class Model extends BaseModel {
                 }
                 let infoDataAfterGet;
                 // Accounting service : 1 số báo cáo cần  lấy hết account ra để tính toán
-                // nên không limit 
+                // nên không limit
                 if(isAccountingService){
                     infoDataAfterGet = await ITEM__ACCOUNT_COLL.find(conditionObj)
                     return resolve({ error: false, data: {
@@ -386,10 +390,8 @@ class Model extends BaseModel {
                     .limit(+limit+1)
                     .sort(sortBy)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
                 }
-                
-                
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -412,7 +414,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -435,13 +437,13 @@ class Model extends BaseModel {
 
                 if( !ObjectID.isValid(companyID))
                     return resolve({ error: true, message: 'param_not_valid' });
-         
+
                 let keyword;
                 let conditionObj ={}
                 if(key && key.length > 0){
                     keyword = key.split(" ");
 
-                    conditionObj ={ 
+                    conditionObj ={
                         $or: [
                             {name: new RegExp(keyword, 'i')},
                             {description: new RegExp(keyword, 'i')},
@@ -454,20 +456,20 @@ class Model extends BaseModel {
                     const checkExitLastRecord = await ITEM__ACCOUNT_COLL.findById(lastestID);
                     if(!checkExitLastRecord)
                         return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
-                    
+
                     latestRecord = checkExitLastRecord;
                 }
                 const keys = ['createAt__-1', '_id__-1'];
                 const resultPagination = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery: conditionObj })
                 if(resultPagination.eror)
                     return resolve({ error: true, message: "cant_get_list_vat", status: 400 });
-            
+
                 const listAccount = await ITEM__ACCOUNT_COLL.find(resultPagination.data.find)
                 .select('_id name description')
                 .sort({_id: 'asc'})
                 .limit(limit+1)
                 .sort(resultPagination.data.sort);
-    
+
                 if (!listAccount)
                     return resolve({ error: true, message: 'cannot_get_data', status: 400 });
 
@@ -483,22 +485,22 @@ class Model extends BaseModel {
 
                 const totalPage   = Math.ceil(totalRecord/limit);
 
-                return resolve({ 
+                return resolve({
                     error: false,
                     data: {
                         listAccount,
-                        nextCursor, 
-                        limit: +limit || 0 ,      
+                        nextCursor,
+                        limit: +limit || 0 ,
                         totalRecord,
                         totalPage,
-                    } 
+                    }
                 });
             } catch (error) {
                 console.log(`[ITEM][ACCOUNT-MODEL][getListWithKey]${error.message}`);
                 return resolve({ error: true, message: error.message, status: 400 });
             }
         });
-    }   
+    }
 
     getInfoAccountWithName({ companyID, name }) {
         return new Promise(async resolve => {
@@ -529,6 +531,6 @@ class Model extends BaseModel {
         })
     }
 }
-    
+
 
 exports.MODEL = new Model;

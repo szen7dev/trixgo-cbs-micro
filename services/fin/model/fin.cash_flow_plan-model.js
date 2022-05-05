@@ -362,27 +362,27 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
-        keyword, limit = 50, lastestID, select, populates= {}, sortKey }) {
+        keyword, limit = 50, lastestID, select, populates= {}, sortKey, isCompanyOther, companyOfUser }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 50){
-                    limit = 50
-                }else{
-                    limit = +limit;
-                }
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                  let sortBy;
                  let conditionObj = {};
-                 let keys	     = ['createAt__-1', '_id__-1'];
+                 let keys = ['createAt__-1', '_id__-1'];
 
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+
+                if(limit > 50){
+                    limit = 50
+                } else{
+                    limit = +limit;
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -428,32 +428,31 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: false }
 
                     if(checkObjectIDs(contractID)){
-                        // conditionObj = { members: { $in: [userID] } }
-                        // conditionObj.parent = { $exists: false }
                         conditionObj.contract = contractID
-                    }else{
+                    } else{
                         if(checkObjectIDs(projectID)){
-                            // conditionObj = { members: { $in: [userID] } }
-                            // conditionObj.parent = { $exists: false }
                             conditionObj.project = projectID
-                        }else{
-                            // conditionObj = { members: { $in: [userID] } }
-                            // conditionObj.parent = { $exists: false }
+                        } else{
                             conditionObj.company = companyID
                         }
                     }
+
+                    if(isCompanyOther === 'true') {
+                        conditionObj.company = {
+                            $nin: [companyOfUser]
+                        }
+                    }
                 }
-                console.log(conditionObj)
 
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regExpSearch = RegExp(keyword, 'i');
-                    conditionObj.name = regExpSearch;
+                    conditionObj.name = RegExp(keyword, 'i');
                 }
+
+                console.log(conditionObj)
                 let conditionObjOrg = { ...conditionObj };
 
-                // PHÂN TRANG KIỂU MỚI
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await FIN__CASH_FLOW_PLAN_COLL.findById(lastestID);
 					if(!infoData)
@@ -465,7 +464,7 @@ class Model extends BaseModel {
 
                     conditionObj = dataPagingAndSort.data.find;
 					sortBy       = dataPagingAndSort.data.sort;
-				}else{
+				} else{
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy       = dataPagingAndSort.data.sort;
                 }
@@ -477,7 +476,6 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                // GET TOTAL RECORD
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 

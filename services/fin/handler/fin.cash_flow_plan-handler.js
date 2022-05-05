@@ -150,7 +150,7 @@ module.exports = {
             type            : { type: "number", optional: true },
             property        : { type: "number", optional: true },
             priority        : { type: "number", optional: true },
-            sortKey        : { type: "string", optional: true },
+            isCompanyOther  : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -158,11 +158,15 @@ module.exports = {
             lastestID   : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
+            sortKey     : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { cashFlowID, companyID, projectID, contractID, parentID, outin, type, property, priority, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let {
+                    cashFlowID, companyID, projectID, contractID, parentID, outin, type, property, priority,
+                    keyword, limit, lastestID, populates, select, sortKey, isCompanyOther
+                } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -177,7 +181,8 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getList({
-                        companyID, projectID, contractID, parentID, outin, type, property, priority, userID, keyword, limit, lastestID, select, populates, sortKey
+                        companyID, projectID, contractID, parentID, outin, type, property, priority, userID,
+                        keyword, limit, lastestID, select, populates, sortKey, isCompanyOther, companyOfUser: company._id
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

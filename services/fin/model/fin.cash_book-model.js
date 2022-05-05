@@ -345,22 +345,15 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, userID, companyID, accountID, customerID, contractID, parentID,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+    getList({ outin, userID, companyID, accountID, parentID, companyOfUser,
+        keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 50) {
-                    limit = 50
-                } else {
-                    limit = +limit;
-                }
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                // Chỉ hiển thị sổ quỹ mà user là member
                 let sortBy;
-                let conditionObj = { };
+                let conditionObj = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
                 /**
@@ -368,6 +361,11 @@ class Model extends BaseModel {
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
+                if (limit > 50) {
+                    limit = 50
+                } else {
+                    limit = +limit;
+                }
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -394,15 +392,24 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
                 if (checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
+                    conditionObj.parent = parentID;
 
                     if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID
+                        conditionObj.account = accountID;
                     }
                 } else {
+                    // Chỉ hiển thị sổ quỹ mà user là member
                     conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.company = companyID
                     conditionObj.parent = { $exists: false } // Lấy theo công ty
+
+                    // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
+                    if(isCompanyOther === 'true') {
+                        conditionObj.company = {
+                            $nin: [companyOfUser]
+                        }
+                    } else{
+                        conditionObj.company = companyID;
+                    }
                 }
 
                 // Lấy dòng tiền vào ra (có giá trị income > 0)
@@ -415,14 +422,12 @@ class Model extends BaseModel {
                     conditionObj.expense = { $gt: 0 }
                 }
 
-                console.log(conditionObj)
-
                 if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    let regExpSearch = RegExp(keyword, 'i');
-                    conditionObj.name = regExpSearch;
+                    conditionObj.name = RegExp(keyword, 'i');
                 }
+
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
@@ -449,7 +454,6 @@ class Model extends BaseModel {
                     .populate(populates)
                     .lean();
 
-                // GET TOTAL RECORD
                 if (!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
@@ -467,7 +471,7 @@ class Model extends BaseModel {
                 return resolve({
                     error: false, data: {
                         listRecords: infoDataAfterGet,
-                        limit: +limit,
+                        limit,
                         totalRecord,
                         totalPage,
                         nextCursor,
