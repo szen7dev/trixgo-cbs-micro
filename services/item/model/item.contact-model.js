@@ -608,7 +608,14 @@ class Model extends BaseModel {
                     // console.log(listDepartment)
                     // console.log(listDepartment.map(item=>item._id))
 
-                    conditionObj.department = {$in: listDepartment.map(item=>item._id) }
+                    // conditionObj.department = {$in: listDepartment.map(item=>item._id) }
+
+                    // Hoặc lấy theo công ty của userID, hoặc Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
+                    conditionObj.$or = [
+                        { company: companyID },
+                        { department: {$in: listDepartment.map(item=>item._id) } },
+                    ]
+                    // console.log(conditionObj)
                 }else{
                     // Lấy nhân sự theo công ty
                     if(companyID){
@@ -676,7 +683,7 @@ class Model extends BaseModel {
                         { phone: regSearch },
                     ]
                 }
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
