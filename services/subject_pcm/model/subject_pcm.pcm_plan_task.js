@@ -475,7 +475,7 @@ class Model extends BaseModel {
         taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
         contractID, draft, isproposal, usersDeleteID, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
         links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isAddSignature,
-        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, ctx
+        valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, companyOfUser, milestone, ctx
     }){
         return new Promise(async (resolve) => {
             try {
@@ -726,6 +726,11 @@ class Model extends BaseModel {
                 //_________Những user đánh dấu quan tâm/start/bookmark
                 if(checkObjectIDs(flags)){
                     dataAddToset = { ...dataAddToset, flags }
+                }
+
+                //_________Cột mốc
+                if(!isNaN(milestone)){
+                    dataUpdate.milestone = milestone;
                 }
 
                 if(isAddSignature) {

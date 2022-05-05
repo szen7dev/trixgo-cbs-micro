@@ -97,6 +97,7 @@ module.exports = {
             isAddSignature : { type: "boolean", optional: true },
             authorAttachs  : { type: "array", optional: true },
             assigneeAttachs: { type: "array", optional: true },
+            milestone      : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -106,7 +107,7 @@ module.exports = {
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, progressType, fieldID,
                     contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, milestone
                  } = ctx.params;
 				const { _id: userID, bizfullname, company } = ctx.meta.infoUser;
 
@@ -115,7 +116,8 @@ module.exports = {
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
                     contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, companyOfUser: company._id, ctx
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, 
+                    companyOfUser: company._id, milestone, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

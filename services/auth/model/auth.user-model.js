@@ -193,7 +193,7 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Mật khẩu không trùng khớp',
                         keyError: "password_not_match",
-                        status: 400
+                        // status: 400
                     });
                 }
   
@@ -202,7 +202,7 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Tài khoản của bạn đã bị khóa',
                         keyError: "account_is_blocked",
-                        status: 403
+                        // status: 403
                     });
                 }
 
@@ -211,7 +211,7 @@ class Model extends BaseModel {
                         error: true, 
                         message: 'Tài khoản của bạn chưa được kích hoạt',
                         keyError: "account_is_not_active",
-                        status: 403
+                        // status: 403
                     });
                 }
                 
