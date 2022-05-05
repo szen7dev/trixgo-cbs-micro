@@ -5,9 +5,6 @@ const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonStr
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -52,7 +49,7 @@ class Model extends BaseModel {
             try {
                 if(!checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo)|| !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
                     return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|dependentUnit|chair|personInCharge|field invalid', status: 400 });
-
+                
                 let dataInsert = {
                     project: projectID, 
                     buyerInfo: buyerInfo, 
@@ -1068,7 +1065,9 @@ class Model extends BaseModel {
                  if(projectID){
                     conditionObj.project = projectID
                 }else{
-                    conditionObj.company = companyID
+                    if(companyID){
+                        conditionObj.company = companyID
+                    }
                 }
 
                 if(parentID){
@@ -1160,6 +1159,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
+                console.log({ conditionObj });
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){

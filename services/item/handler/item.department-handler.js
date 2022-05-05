@@ -271,7 +271,6 @@ module.exports = {
                 if(!companyID){
                     companyID = company._id;
                 }
-
                 let resultAfterCallHandler;
                 if(departmentID){
                     resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.getInfo({

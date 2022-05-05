@@ -487,7 +487,6 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
-               
                 /** 
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -498,7 +497,7 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-				
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -553,7 +552,7 @@ class Model extends BaseModel {
                 }
 
                 if(fromDate && toDate){
-                    conditionObj.createAt = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
+                    conditionObj.date = { $gte: new Date(fromDate), $lt: moment(toDate, 'YYYY-MM-DD').endOf('day')._d }
                 }
 
                 if(packageID){
