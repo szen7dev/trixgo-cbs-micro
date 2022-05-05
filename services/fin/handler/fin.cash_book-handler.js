@@ -10,7 +10,7 @@ const FIN__CASH_BOOK_MODEL = require('../model/fin.cash_book-model').MODEL;
 
 module.exports = {
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -50,7 +50,7 @@ module.exports = {
     },
 
     /**
-     * Name: Update 
+     * Name: Update
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -115,33 +115,37 @@ module.exports = {
     },
 
     /**
-     * Name: Get info and Get list 
+     * Name: Get info and Get list
      * Author: Hiepnh
      * Date: 9/4/2022
      */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            accountID: { type: "string", optional: true },
-            customerID: { type: "string", optional: true },
-            contractID: { type: "string", optional: true },
-            sortKey: { type: "string", optional: true },
-            outin: { type: "string", optional: true },
+            cashBookID      : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            accountID       : { type: "string", optional: true },
+            customerID      : { type: "string", optional: true },
+            contractID      : { type: "string", optional: true },
+            sortKey         : { type: "string", optional: true },
+            outin           : { type: "string", optional: true },
+            isCompanyOther  : { type: "string", optional: true },
 
             // Field mặc định
-            keyword: { type: "string", optional: true },
-            limit: { type: "string", optional: true },
-            lastestID: { type: "string", optional: true },
-            select: { type: "string", optional: true },
-            populates: { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { outin, cashBookID, companyID, accountID, customerID, contractID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
-                
+                let {
+                    outin, cashBookID, companyID, accountID, customerID, contractID, parentID, isCompanyOther,
+                    keyword, limit, lastestID, populates, select, sortKey
+                } = ctx.params;
+
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
@@ -155,9 +159,11 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        outin, companyID, accountID, customerID, contractID, parentID, userID, keyword, limit, lastestID, select, populates, sortKey
+                        outin, companyID, accountID, customerID, contractID, parentID, userID, isCompanyOther,
+                        keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id
                     });
                 }
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -192,7 +198,7 @@ module.exports = {
     },
 
     /**
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
      * Date: 17/04/2022
      */
