@@ -1,22 +1,19 @@
 "use strict";
+
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const _isValid                          = require('mongoose').Types.ObjectId;
 
 /**
  * DOMAIN AND ACTIONS
  */
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_ITEM } 		    = require('../../item/helper/item.actions-constant');
 
 /**
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 
 /**
  * COLLECTIONS
@@ -303,42 +300,42 @@ class Model extends BaseModel {
     * Author: Depv
     * Code:
     */
-   remove({ expertTimesheetID }) {
-       return new Promise(async (resolve) => {
-           try {
-                /**
-                * DECALARTION VARIABLE (1)
-                */
+    remove({ expertTimesheetID }) {
+        return new Promise(async (resolve) => {
+            try {
+                    /**
+                    * DECALARTION VARIABLE (1)
+                    */
 
-                /**
-                * VALIDATION STEP (2)
-                *  - Kiểm tra valid từ các input
-                *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                */
-                if(!checkObjectIDs(expertTimesheetID))
-                    return resolve({
-                       error: true,
-                       message: 'Request params expertTimesheetID invalid',
-                       keyError: 'request_params_expertTimesheetID_invalid',
-                       status: 400
-                    });
+                    /**
+                    * VALIDATION STEP (2)
+                    *  - Kiểm tra valid từ các input
+                    *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                    */
+                    if(!checkObjectIDs(expertTimesheetID))
+                        return resolve({
+                        error: true,
+                        message: 'Request params expertTimesheetID invalid',
+                        keyError: 'request_params_expertTimesheetID_invalid',
+                        status: 400
+                        });
 
-                /**
-                * LOGIC STEP (3)
-                * 3.1: Convert type + update name (ví dụ: string -> number)
-                * 3.2: Operation database
-                */
-                let infoAterRemove = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(expertTimesheetID)
+                    /**
+                    * LOGIC STEP (3)
+                    * 3.1: Convert type + update name (ví dụ: string -> number)
+                    * 3.2: Operation database
+                    */
+                    let infoAterRemove = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(expertTimesheetID)
 
-                if(!infoAterRemove)
-                   return resolve({ error: true, message: "can't_remove", status: 403 });
+                    if(!infoAterRemove)
+                    return resolve({ error: true, message: "can't_remove", status: 403 });
 
-                return resolve({ error: false, data: infoAterRemove, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-       })
-   }
+                    return resolve({ error: false, data: infoAterRemove, status: 200 });
+                } catch (error) {
+                    return resolve({ error: true, message: error.message, status: 500 });
+                }
+        })
+    }
 
     /**
      * Name: get info expert timesheet
