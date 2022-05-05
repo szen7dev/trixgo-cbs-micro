@@ -337,12 +337,11 @@ class Model extends BaseModel {
                  * - sellerInfo
                  */
 
-                if(!checkObjectIDs(contractID) || !checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
-                    return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|dependentUnit|chair|personInCharge|field invalid', status: 400 });
-
+                // if(!checkObjectIDs(contractID) || !checkObjectIDs(projectID) || !checkObjectIDs(buyerInfo) || !checkObjectIDs(sellerInfo) || !checkObjectIDs(dependentUnit) || !checkObjectIDs(chair) || !checkObjectIDs(personInCharge) || !checkObjectIDs(field))
+                //     return resolve({ error: true, message: 'Request params projectID|buyerInfo|sellerInfo|dependentUnit|chair|personInCharge|field invalid', status: 400 });
                 let dataUpdate    = {}
-                let dataAddToSet = {};
-                let dataPull     = {};
+                let dataAddToSet  = {};
+                let dataPull      = {};
 
                 const infoContract = await ITEM__CONTRACT_COLL.findById(contractID).lean();
 
@@ -634,7 +633,6 @@ class Model extends BaseModel {
                 if(!isNaN(expiredAg) && Number(expiredAg) >= 0){      
                     dataUpdate.expiredAg = expiredAg;
                 }
-
                 if(dataAddToSet){
                     dataUpdate.$addToSet = dataAddToSet;
                 }
@@ -642,11 +640,10 @@ class Model extends BaseModel {
                 if(dataPull){
                     dataUpdate.$pullAll = dataPull;
                 }
-
+                console.log({ dataUpdate })
                 if(dataInc){
                     dataUpdate.$inc = dataInc;
                 }
-
                 if(photos && photos.length) {
                     if(infoContract.photos.length >= 10){
 						await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, {
@@ -685,69 +682,50 @@ class Model extends BaseModel {
                  * - buyerInfo
                  * - sellerInfo
                  */
+                let { 
+                    project: projectAfterUpdate , 
+                    field: fieldAfterUpdate, 
+                    dependentUnit: dependentUnitAfterUpdate,
+                    personInCharge: personInChargeAfterUpdate, 
+                    chair: chairAfterUpdate, 
+                    buyerInfo: buyerInfoAfterUpdate, 
+                    sellerInfo: sellerInfoAfterUpdate, 
+                    type: typeAfterUpdate, 
+                    outin: outinAfterUpdate, 
+                    real: realAfterUpdate } = infoAfterInsert;
+                
+                let fieldUpdate = {
+                    "project" : ObjectID(projectAfterUpdate),
+                    "field" : ObjectID(fieldAfterUpdate),
+                    "dependentUnit" : ObjectID(dependentUnitAfterUpdate),
+                    "personInCharge" : ObjectID(personInChargeAfterUpdate),
+                    "chair" : ObjectID(chairAfterUpdate),
+                    "buyerInfo" : ObjectID(buyerInfoAfterUpdate),
+                    "sellerInfo" : ObjectID(sellerInfoAfterUpdate),
+                    "type" : Number(typeAfterUpdate),
+                    "outin": Number(outinAfterUpdate),
+                    "real" : Number(realAfterUpdate)
+                }
+                
                 // HiepNH: Dùng tạm theo cách này, sau bổ theo call Service
                 await CMCS__CONTRACT_PRODUCTION_COLL.updateMany(
                     { contract: ObjectID(contractID) },
-                    { $set: { 
-                        "project" : ObjectID(projectID),
-                        "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(dependentUnit),
-                        "personInCharge" : ObjectID(personInCharge),
-                        "chair" : ObjectID(chair),
-                        "buyerInfo" : ObjectID(buyerInfo),
-                        "sellerInfo" : ObjectID(sellerInfo),
-                        "type" : Number(type),
-                        "outin" : Number(outin),
-                        "real" : Number(real),
-                    } }
+                    { $set: fieldUpdate }
+                );
+
+                await CMCS__CONTRACT_IPC_COLL.updateMany(
+                    { contract: ObjectID(contractID) },
+                    { $set: fieldUpdate }
                  );
 
-                 await CMCS__CONTRACT_IPC_COLL.updateMany(
+                await CMCS__CONTRACT_PAYMENT_COLL.updateMany(
                     { contract: ObjectID(contractID) },
-                    { $set: { 
-                        "project" : ObjectID(projectID),
-                        "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(dependentUnit),
-                        "personInCharge" : ObjectID(personInCharge),
-                        "chair" : ObjectID(chair),
-                        "buyerInfo" : ObjectID(buyerInfo),
-                        "sellerInfo" : ObjectID(sellerInfo),
-                        "type" : Number(type),
-                        "outin" : Number(outin),
-                        "real" : Number(real),
-                    } }
+                    { $set: fieldUpdate }
                  );
-
-                 await CMCS__CONTRACT_PAYMENT_COLL.updateMany(
+                
+                await CMCS__CONTRACT_EXPENSE_COLL.updateMany(
                     { contract: ObjectID(contractID) },
-                    { $set: { 
-                        "project" : ObjectID(projectID),
-                        "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(dependentUnit),
-                        "personInCharge" : ObjectID(personInCharge),
-                        "chair" : ObjectID(chair),
-                        "buyerInfo" : ObjectID(buyerInfo),
-                        "sellerInfo" : ObjectID(sellerInfo),
-                        "type" : Number(type),
-                        "outin" : Number(outin),
-                        "real" : Number(real),
-                    } }
-                 );
-
-                 await CMCS__CONTRACT_EXPENSE_COLL.updateMany(
-                    { contract: ObjectID(contractID) },
-                    { $set: { 
-                        "project" : ObjectID(projectID),
-                        "field" : ObjectID(field),
-                        "dependentUnit" : ObjectID(dependentUnit),
-                        "personInCharge" : ObjectID(personInCharge),
-                        "chair" : ObjectID(chair),
-                        "buyerInfo" : ObjectID(buyerInfo),
-                        "sellerInfo" : ObjectID(sellerInfo),
-                        "type" : Number(type),
-                        "outin" : Number(outin),
-                        "real" : Number(real),
-                    } }
+                    { $set: fieldUpdate }
                  );
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
