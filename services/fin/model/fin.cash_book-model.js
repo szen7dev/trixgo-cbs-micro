@@ -129,6 +129,8 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
+                }else{
+                    dataUpdate.contract = null
                 }
 
                 if (name) {
@@ -531,7 +533,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 17/04/2022
      */
-     getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
+    getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
         console.log({ userID, companyID, parentID, accountID, year, option })
         return new Promise(async resolve => {
             try {

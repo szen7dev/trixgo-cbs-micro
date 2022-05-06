@@ -86,6 +86,7 @@ module.exports = {
             }
         }
     },
+
     /**
      * Dev: Depv 
      * Func: Cập nhật contact
@@ -194,6 +195,7 @@ module.exports = {
             isBirthday          : { type: "string", optional: true },
             isLinkUser          : { type: "string", optional: true },
             isListParentOrListChilds: { type: "string", optional: true },
+            isMember            : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
             
             // Field mặc định
@@ -207,7 +209,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, contactID, type, departmentID, positionID, contractTypeID, 
-                    workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
+                    workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -223,7 +225,7 @@ module.exports = {
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
                         companyID, type, departmentID, positionID, contractTypeID, 
-                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, parentID,
+                        workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }
