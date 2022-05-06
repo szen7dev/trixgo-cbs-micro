@@ -232,6 +232,7 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
+            companyID           : { type: "string", optional: true },
             contractID          : { type: "string", optional: true },
             projectID           : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
@@ -247,7 +248,6 @@ module.exports = {
             personInCharge      : { type: "string", optional: true },
             debtStatus          : { type: "string", optional: true },
             warehouse           : { type: "string", optional: true },
-            companyID           : { type: "string", optional: true },
             isExpiredAg         : { type: "string", optional: true },
             
             // Field mặc định

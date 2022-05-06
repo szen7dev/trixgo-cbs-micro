@@ -11,7 +11,7 @@ const ITEM__CONTACT_MODEL                       = require('../model/item.contact
 module.exports = {
 
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: Thêm contact
      */
     insert: {
@@ -67,15 +67,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  
-                    parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, 
-                    linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, 
+                let {
+                    parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property,
+                    linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate,
                     sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
-                    company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+                    company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
                     signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
                 });
@@ -88,7 +88,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Depv 
+     * Dev: Depv
      * Func: Cập nhật contact
      */
     update: {
@@ -153,18 +153,18 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { 
-                    contactID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, 
-                    linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, 
+                let {
+                    contactID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property,
+                    linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate,
                     sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
                     amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory, documents, documentsRemove
                 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                
+
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.update({
-                    contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+                    contactID, company: company._id, authorID: userID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                     insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
-                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,   
+                    signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image,
                     amountWorkHistory: +amountWorkHistory, amountProjectHistory: +amountProjectHistory, documents, documentsRemove,
                     amountContractHistory: +amountContractHistory , amountEducationHistory: +amountEducationHistory, amountCertificateHistory: +amountCertificateHistory, ctx
                 });
@@ -175,9 +175,9 @@ module.exports = {
             }
         }
     },
-    
+
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách contact
 	 */
     getInfoAndGetList: {
@@ -197,7 +197,7 @@ module.exports = {
             isListParentOrListChilds: { type: "string", optional: true },
             isMember            : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
-            
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -208,7 +208,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, contactID, type, departmentID, positionID, contractTypeID, 
+                let { companyID, contactID, type, departmentID, positionID, contractTypeID,
                     workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
@@ -224,12 +224,12 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        companyID, type, departmentID, positionID, contractTypeID, 
+                        companyID, type, departmentID, positionID, contractTypeID,
                         workingStatusID, gender, insuranceStatus, isBirthday, isLinkUser, isListParentOrListChilds, isMember, parentID,
                         lastestID, userID, keyword, limit, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -238,7 +238,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Danh sách danh bạ của hệ thống
 	 */
     getListOfSystem: {
@@ -253,10 +253,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { 
+                let {
                     keyword, limit, lastestID, select, populates } = ctx.params;
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListOfSystem({ keyword, limit, lastestID, select, populates });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

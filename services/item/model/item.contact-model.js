@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
@@ -30,11 +30,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thêm danh bạ, nhân sự 
+     * Name: Thêm danh bạ, nhân sự
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    insert({ company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+    insert({ company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire
     }) {
@@ -69,10 +69,10 @@ class Model extends BaseModel {
                     inDocument: 1,
                     type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 1,
                     province: (!isNaN(province) && Number(province) > 0) ? Number(province) : 1,
-                    name, 
+                    name,
                     description,
-                    sign, 
-                    address, 
+                    sign,
+                    address,
                     taxid,
                     birthday,
                     phone,
@@ -163,7 +163,7 @@ class Model extends BaseModel {
                 if(insuranceSign){
                     dataInsert.insuranceSign = insuranceSign;
                 }
-                
+
                 if(insuranceDate){
                     dataInsert.insuranceDate = insuranceDate;
                 }
@@ -223,21 +223,21 @@ class Model extends BaseModel {
                         $inc: { amountChilds: 1 }
                     }, { new: true });
                 }
-                
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
         })
     }
-    
+
     /**
-     * Name: update danh bạ, nhân sự 
+     * Name: update danh bạ, nhân sự
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    update({ 
-        contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, 
+    update({
+        contactID, company, authorID, parent, type, name, description, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
         insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn,
         signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, image, documents, documentsRemove,
         amountWorkHistory, amountProjectHistory, amountContractHistory, amountEducationHistory, amountCertificateHistory
@@ -247,7 +247,7 @@ class Model extends BaseModel {
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
                     company: company,
-                    _id: { $ne: contactID } 
+                    _id: { $ne: contactID }
                 };
 
                 if((sign && sign != "") || (taxid && taxid != "")){
@@ -259,7 +259,7 @@ class Model extends BaseModel {
                 if((taxid && taxid != "")){
                     conditionObj.$or.push({taxid: taxid})
                 }
-                
+
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
                 if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
                     return resolve({ error: true, message: 'Mã hiệu/Mã số thuế đã tồn tại' });
@@ -409,7 +409,7 @@ class Model extends BaseModel {
                 if(insuranceSign){
                     dataUpdate.insuranceSign = insuranceSign;
                 }
-                
+
                 if(insuranceDate){
                     dataUpdate.insuranceDate = insuranceDate;
                 }
@@ -482,7 +482,7 @@ class Model extends BaseModel {
                 if(amountCertificateHistory){
                     dataINC.amountCertificateHistory = amountCertificateHistory
                 }
-                
+
                 if(dataINC){
                     dataUpdate.$inc = dataINC
                 }
@@ -507,25 +507,25 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Thông tin nhân sự 
+     * Name: Thông tin nhân sự
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    getInfo({ contactID, select, populates }) { 
+    getInfo({ contactID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
                 if(!checkObjectIDs(contactID))
                     return resolve({ error: true, message: 'Request params contactID invalid', status: 400 });
-                
+
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -547,7 +547,7 @@ class Model extends BaseModel {
                                     .populate(populates)
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
+
                 return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -556,9 +556,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách nhân sự 
+     * Name  : Danh sách nhân sự
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
     getList({
         userID, companyID, type, departmentID, positionID, contractTypeID, workingStatusID, gender,
@@ -577,12 +577,12 @@ class Model extends BaseModel {
                 let conditionObj = { };
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let sortBy;
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-				
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -595,12 +595,12 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-               
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 //
                 if(isMember){
                     // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
@@ -618,7 +618,7 @@ class Model extends BaseModel {
                     // console.log(conditionObj)
                 }else{
                     // Lấy nhân sự theo công ty
-                    if(companyID){
+                    if(checkObjectIDs(companyID)){
                         conditionObj.company = companyID
                     }
 
@@ -639,7 +639,7 @@ class Model extends BaseModel {
                 if(checkObjectIDs(positionID)){
                     conditionObj.position = positionID
                 }
-                
+
                 if(checkObjectIDs(contractTypeID)){
                     conditionObj.contractType = contractTypeID
                 }
@@ -688,7 +688,6 @@ class Model extends BaseModel {
                         { phone: regSearch },
                     ]
                 }
-                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
@@ -708,13 +707,13 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy                = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -732,12 +731,12 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
-                    limit: +limit,
+                    limit,
                     totalRecord,
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -745,12 +744,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách danh bạ của hệ thống 
+     * Name  : Danh sách danh bạ của hệ thống
      * Author: HiepNH/DePV-update
-     * Code  : 
+     * Code  :
      */
     getListOfSystem({
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -763,13 +762,13 @@ class Model extends BaseModel {
                 if(limit > 20){
                     limit = 20
                 }
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
                  */
-                
+
                 // POPULATE
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
@@ -786,7 +785,7 @@ class Model extends BaseModel {
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
@@ -814,13 +813,13 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy                = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
                     .limit(+limit+1)
                     .sort(sortBy)
                     .select(select)
                     .populate(populates)
-                    .lean(); 
+                    .lean();
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
@@ -843,32 +842,32 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }
-    
+
     /**
-     * Name  : Báo cáo biến động nhân sự 
+     * Name  : Báo cáo biến động nhân sự
      * Author: Depv
-     * Code  : 
+     * Code  :
      */
-    // dashboardContactchange({}) { 
+    // dashboardContactchange({}) {
     //     return new Promise(async (resolve) => {
     //         try {
     //             // Cần hỏi lại nghiệp vụ chỗ 12 tháng
     //             // Block 1
     //             let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
-                   
+
     //             if(!infoDataAfterGet)
     //                 return resolve({ error: true, message: "Can't get data", status: 403 });
-              
+
     //             return resolve({ error: false, data: {
-                 
+
     //             }, status: 200 });
-                
+
     //         } catch (error) {
     //             return resolve({ error: true, message: error.message, status: 500 });
     //         }
