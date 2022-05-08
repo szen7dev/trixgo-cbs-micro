@@ -76,7 +76,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     //_________Ghi chú
     note: String,
     /**
-     * Trạng thái triển khai lựa chọn nhà thầu
+     * Trạng thái triển khai
      * 1-Chưa thực hiện
      * 2-Đang triển khai
      * 3-Đã hoàn thành
@@ -101,7 +101,12 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
      * 3-Chỉ định thầu
      */
     form: { type: Number, default: 1 },
-    //_________Loại hợp đồng
+    /**
+     * Loại hợp đồng
+     * 1-Đơn giá cố định
+     * 2-Trọn gói
+     * 3-Theo tháng
+     */
     contractType: { type: Number, default: 1 },
     //_________Thời gian thực hiện hợp đồng theo mời thầu (ngày)
     duration: { type: Number, default: 0 },

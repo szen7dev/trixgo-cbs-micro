@@ -68,13 +68,7 @@ class Model extends BaseModel {
                     plan: planID
                 }
 
-                // Tạo hồ sơ dự thầu
-                if (checkObjectIDs(parentID) && checkObjectIDs(assigneeID) && checkObjectIDs(companyOfAssigneeID)) {
-                    dataInsert.parent = parentID;
-                    dataInsert.companyOfAssignee = companyOfAssigneeID;
-                    dataInsert.assignee = assigneeID;
-                }
-
+                // Hồ sơ mời thầu/Dự thầu
                 if (name) {
                     dataInsert.name = name;
                 }
@@ -93,6 +87,13 @@ class Model extends BaseModel {
                 
                 if (closingTime) {
                     dataInsert.closingTime = closingTime;
+                }
+
+                // Tạo hồ sơ dự thầu
+                if (checkObjectIDs(parentID) && checkObjectIDs(assigneeID) && checkObjectIDs(companyOfAssigneeID)) {
+                    dataInsert.parent = parentID;
+                    dataInsert.companyOfAssignee = companyOfAssigneeID;
+                    dataInsert.assignee = assigneeID;
                 }
 
                 // Nộp thầu
