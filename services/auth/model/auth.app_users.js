@@ -56,7 +56,8 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Người dùng vượt quá số lượng cho phép", keyError: "User_exceeds_the_allowed_number", status: 200 });
 
                 for (const user of users) {
-                    let checkExist = await AUTH__APP_USER_COLL.findOne({ app, company, user })
+                    // let checkExist = await AUTH__APP_USER_COLL.findOne({ app, company, user })  
+                    let checkExist = await AUTH__APP_USER_COLL.findOne({ app, user })  // mỗi user và app chỉ tồn tại duy nhất 1 mẩu tin
                     if(checkExist)
                         return resolve({ error: true, message: "Người dùng đã tồn tại trong app user", keyError: "user_existed_in_app_user", status: 200 });
                     // Bắt đầu thêm
@@ -327,7 +328,8 @@ class Model extends BaseModel {
                  */
                 let today = new Date();
                 let conditionObj = {
-                    app: appID, user: userID,
+                    app: appID, 
+                    user: userID,
                     endTime: { $gte: today }
                 };
                 
