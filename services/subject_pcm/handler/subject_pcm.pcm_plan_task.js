@@ -327,6 +327,28 @@ module.exports = {
         }
     },
 
+     /**
+	 * Dev: Depv
+	 * Func: Lấy số lượng công việc của companyOfAssignee trong dự án theo milestone
+	 */
+    getAmountTaskOfMilestone: {
+        auth: "required",
+        params: {
+            projectID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                let { projectID } = ctx.params;
+                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getAmountTaskByMilestone({ projectID, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
     /**
 	 * Dev: Depv
 	 * Func: Lấy số lượng công việc của tất cả project mà user là members

@@ -1663,6 +1663,135 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Lấy số lượng công việc theo milestone
+     * Author: Depv
+     * Code:
+     */
+    getAmountTaskByMilestone({ projectID, ctx }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'projectID_invalid' });
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+
+                let taskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            status: 3
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskAll = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                return resolve({ error: false, data: {
+                    taskOverdueWork, taskNextWeekWork, taskMoreThan7Days, taskAll, taskFinish
+                } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Lấy số lượng công việc của tất cả project mà user là members
      * Author: Depv
      */
@@ -1768,7 +1897,7 @@ class Model extends BaseModel {
                     { $sort: { _id: -1 }},
                 ]);
 
-                // Số lượng công việc > 7 ngày tới
+                // Số lượng công việc hoàn thành
                 let listAmountTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
                     {
                         $match: {
