@@ -604,26 +604,26 @@ class Model extends BaseModel {
                 //
                 if(isMember){
                     // // Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
-                    // let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                    let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
                     // // console.log(listDepartment)
                     // // console.log(listDepartment.map(item=>item._id))
 
                     // // conditionObj.department = {$in: listDepartment.map(item=>item._id) }
 
                     // // Hoặc lấy theo công ty của userID, hoặc Lấy nhân sự thuộc Deparment mà user là members của Deparment đó
-                    // conditionObj.$or = [
-                    //     { company: companyID },
-                    //     { department: {$in: listDepartment.map(item=>item._id) } },
-                    // ]
+                    conditionObj.$or = [
+                        { company: companyID },
+                        { department: {$in: listDepartment.map(item=>item._id) } },
+                    ]
                     // // console.log(conditionObj)
 
-                    if(companyID){
-                        conditionObj.company = companyID
-                    }
+                    // if(companyID){
+                    //     conditionObj.company = companyID
+                    // }
 
-                    if(checkObjectIDs(departmentID)){
-                        conditionObj.department = departmentID
-                    }
+                    // if(checkObjectIDs(departmentID)){
+                    //     conditionObj.department = departmentID
+                    // }
                 }else{
                     // Lấy nhân sự theo công ty
                     if(companyID){
@@ -689,15 +689,24 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                        { taxid: regSearch },
-                        { phone: regSearch },
+                    let listDepartment = await ITEM__DEPARTMENT_COLL.find({members: { $in: [userID] }}).select('_id name sign')
+                    conditionObj.$and = [
+                        { 
+                            $or: [
+                                { name: regSearch },
+                                { sign: regSearch },
+                                { taxid: regSearch },
+                                { phone: regSearch },
+                            ] 
+                        },
+                        {
+                            $or: [
+                                { company: companyID },
+                                { department: {$in: listDepartment.map(item=>item._id) } },
+                            ]
+                        }
                     ]
                 }
-                console.log(conditionObj)
-
                 let conditionObjOrg = { ...conditionObj };
 
                 // PHÂN TRANG KIỂU MỚI
