@@ -114,44 +114,44 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    remove({ groupID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(groupID))
-                    return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+    // remove({ groupID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!checkObjectIDs(groupID))
+    //                 return resolve({ error: true, message: 'groupID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let infoAfterRemove = await PCM_PLAN_GROUP_COLL.findByIdAndDelete(groupID);
-                if (!infoAfterRemove)
-                    return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
+    //             let infoAfterRemove = await PCM_PLAN_GROUP_COLL.findByIdAndDelete(groupID);
+    //             if (!infoAfterRemove)
+    //                 return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
 
-                return resolve({ error: false, data: infoAfterRemove });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
-    };
+    //             return resolve({ error: false, data: infoAfterRemove });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // };
 
     /**
      * Name: remove many 
      * Author: Depv
      * Code:
      */
-    removeMany({ groupsID }) {
-        return new Promise(async resolve => {
-            try {
-                if(!checkObjectIDs(groupsID))
-                    return resolve({ error: true, message: 'groupsID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+    // removeMany({ groupsID }) {
+    //     return new Promise(async resolve => {
+    //         try {
+    //             if(!checkObjectIDs(groupsID))
+    //                 return resolve({ error: true, message: 'groupsID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let infoAfterRemove = await PCM_PLAN_GROUP_COLL.deleteMany({ _id: { $in: groupsID }});
-                if (!infoAfterRemove)
-                    return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
+    //             let infoAfterRemove = await PCM_PLAN_GROUP_COLL.deleteMany({ _id: { $in: groupsID }});
+    //             if (!infoAfterRemove)
+    //                 return resolve({ error: true, message: 'Xoá thất bại', keyError: KEY_ERROR.DELETE_FAILED });
 
-                return resolve({ error: false, message: "Xoá thành công" });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
-    };
+    //             return resolve({ error: false, message: "Xoá thành công" });
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message })
+    //         }
+    //     })
+    // };
 
     /**
      * Name: get info user_pcm_plan_group 
