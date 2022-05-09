@@ -193,6 +193,7 @@ module.exports = {
             statusNe         : { type: "string", optional: true },
             groupID          : { type: "string", optional: true },
             isPassPermision  : { type: "string", optional: true },
+            milestone        : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },
@@ -208,7 +209,7 @@ module.exports = {
                 let {
                     taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                     fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID,
-                    keyword, limit, lastestID, select, populates, isPassPermision
+                    keyword, limit, lastestID, select, populates, isPassPermision, milestone
                 } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
@@ -223,7 +224,7 @@ module.exports = {
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                        keyword, limit, select, lastestID, populates, isPassPermision
+                        keyword, limit, select, lastestID, populates, isPassPermision, milestone
                     });
                 }
 
