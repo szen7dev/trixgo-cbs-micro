@@ -65,6 +65,9 @@ typings/
 .idea
 
 tools/db/cf_database.js
-cbs_query.mongodb
+temp/cbs_query.mongodb
 
 .vscode
+
+temp/test.js
+temp/.gitlab-ci_demo.yml
