@@ -1167,7 +1167,7 @@ class Model extends BaseModel {
                 // Lấy việc quá hạn
                 if(typeStatus && typeStatus == 1){
                     conditionObj.actualFinishTime = {
-                        $lt: moment(start).endOf('day')._d,
+                        $lt: start,
                         $exists: true,
                         $ne: null
                     }
@@ -1228,11 +1228,11 @@ class Model extends BaseModel {
                 // Công ty của người thực hiện
                 if(companyOfAssignee && checkObjectIDs(companyOfAssignee)){
                     conditionObj.companyOfAssignee = companyOfAssignee;
-
-                    // isPassPermision dùng để bỏ qua 1 trong 4 quyền
-                    if(isPassPermision == 1){
-                        delete conditionObj.$or;
-                    }
+                }
+                
+                // isPassPermision dùng để bỏ qua 1 trong 4 quyền
+                if(isPassPermision == 1){
+                    delete conditionObj.$or;
                 }
 
                 if(fieldID && checkObjectIDs(fieldID)){
@@ -1272,7 +1272,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
-
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(limit+1)
@@ -1723,14 +1722,28 @@ class Model extends BaseModel {
                             project: ObjectID(projectID),
                             milestone: { $exists: true },
                             actualFinishTime: {
-                                $gte: start,
-                                $lt: addDate(7),
+                                // $gte: start,
+                                // $lt: addDate(7),
+                                $gte:  moment(start).startOf('day')._d,
+                                $lt: moment(addDate(7)).endOf('day')._d,
                                 $exists: true,
                                 $ne: null
                             },
                             status: { $ne: 3 }
                         }
                     },
+
+                //      // lấy việc tới hạn Tuần tới
+                // if(typeStatus && typeStatus == 2){
+                //     conditionObj.actualFinishTime = {
+                //         $gte:  moment(start).startOf('day')._d,
+                //         $lt: moment(addDate(7)).endOf('day')._d,
+                //         // $gte: start,
+                //         // $lt: addDate(7),
+                //         $exists: true,
+                //         $ne: null
+                //     }
+                // }
                     {
                         $group: {
                             _id: "$milestone",
