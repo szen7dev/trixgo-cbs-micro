@@ -355,8 +355,12 @@ class Model extends BaseModel {
                  * 3.2: Operation database
                  */
                 let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
-                    members: { $in: [userID] },
                     _id: expertTimesheetID,
+                    $or: [
+                        {userCreate: userID},
+                        {admins: { $in: [userID] }},
+                        {members: { $in: [userID] }}
+                    ]
                 })
                 .select(select)
                 .populate(populates)
@@ -378,14 +382,20 @@ class Model extends BaseModel {
     getList({
         parentID, companyID, projectID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            // console.log({parentID, companyID, projectID, userID,
+            //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {
-                    members: { $in: [userID] }
-                };
+                let conditionObj = {};
+
+                conditionObj.$or = [
+                    {userCreate: userID},
+                    {admins: { $in: [userID] }},
+                    {members: { $in: [userID] }}
+                ]
 
                 let sortBy   = { createAt: 1, _id: 1 };
                 /**
@@ -417,6 +427,8 @@ class Model extends BaseModel {
 				}else{
 					conditionObj.parent = { $exists: false };
                 }
+
+                console.log(conditionObj)
 
                 // if(checkObjectIDs(companyID)){
 				// 	conditionObj.company = companyID;
@@ -455,6 +467,8 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
+
+                    console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
