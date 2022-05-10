@@ -140,11 +140,11 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(expertTimesheetID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getInfo({
-                        expertTimesheetID, select, populates
+                        expertTimesheetID, userID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        parentID, companyID, projectID, keyword, limit: +limit, lastestID, select, populates
+                        parentID, companyID, projectID, userID, keyword, limit: +limit, lastestID, select, populates
                     });
                 }
 
@@ -153,6 +153,5 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
-    },
-
+    }
 }

@@ -43,25 +43,6 @@ class Model extends BaseModel {
                     });
                 }
 
-                // if(projectID){
-                //     // call service department để lấy thông tin
-                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                //         departmentID: projectID
-                //     })
-
-                //     /**
-                //      * Company lấy theo company của project
-                //      * Chứ không phải lấy theo company của user tạo task
-                //      */
-                //     companyID = infoProject.data.company;
-                //     if(!companyID)
-                //         return resolve({
-                //             error: true,
-                //             message: "Company invalid",
-                //             keyError: "company_invalid",
-                //         });
-                // }
-
                 if(checkObjectIDs(parentID)){
                     let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID);
                     companyID = infoParent.company;
@@ -101,7 +82,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                // console.log(infoAfterInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" });
 
@@ -342,7 +322,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertTimesheetID, select, populates }) {
+    getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -374,9 +354,17 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID)
-                                    .select(select)
-                                    .populate(populates)
+                let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
+                    _id: expertTimesheetID,
+                    $or: [
+                        {userCreate: userID},
+                        {admins: { $in: [userID] }},
+                        {members: { $in: [userID] }}
+                    ]
+                })
+                .select(select)
+                .populate(populates)
+
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
 
@@ -392,15 +380,16 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        parentID, companyID, projectID,
+        parentID, companyID, projectID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
+            // console.log({parentID, companyID, projectID, userID,
+            //     keyword, limit, lastestID, select})
         return new Promise(async (resolve) => {
             try {
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let conditionObj = {
-                };
+                let conditionObj = {};
 
                 let sortBy   = { createAt: 1, _id: 1 };
                 /**
@@ -430,16 +419,23 @@ class Model extends BaseModel {
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
+                    conditionObj.$or = [
+                        {userCreate: userID},
+                        {admins: { $in: [userID] }},
+                        {members: { $in: [userID] }}
+                    ]
 					conditionObj.parent = { $exists: false };
                 }
 
-                if(checkObjectIDs(companyID)){
-					conditionObj.company = companyID;
-				}
+                // console.log(conditionObj)
 
-                if(checkObjectIDs(projectID)){
-					conditionObj.project = projectID;
-				}
+                // if(checkObjectIDs(companyID)){
+				// 	conditionObj.company = companyID;
+				// }
+
+                // if(checkObjectIDs(projectID)){
+				// 	conditionObj.project = projectID;
+				// }
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -447,6 +443,7 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 let conditionObjOrg = { ...conditionObj };
+                
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(lastestID);
@@ -469,6 +466,8 @@ class Model extends BaseModel {
                     .sort(sortBy)
                     .populate(populates)
                     .lean();
+
+                    console.log(infoDataAfterGet)
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
