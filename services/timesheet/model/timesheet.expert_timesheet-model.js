@@ -43,25 +43,6 @@ class Model extends BaseModel {
                     });
                 }
 
-                // if(projectID){
-                //     // call service department để lấy thông tin
-                //     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                //         departmentID: projectID
-                //     })
-
-                //     /**
-                //      * Company lấy theo company của project
-                //      * Chứ không phải lấy theo company của user tạo task
-                //      */
-                //     companyID = infoProject.data.company;
-                //     if(!companyID)
-                //         return resolve({
-                //             error: true,
-                //             message: "Company invalid",
-                //             keyError: "company_invalid",
-                //         });
-                // }
-
                 if(checkObjectIDs(parentID)){
                     let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID);
                     companyID = infoParent.company;
@@ -101,7 +82,6 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-                // console.log(infoAfterInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" });
 
@@ -342,7 +322,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertTimesheetID, select, populates }) {
+    getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -374,9 +354,13 @@ class Model extends BaseModel {
                  * 3.1: Convert type + update name (ví dụ: string -> number)
                  * 3.2: Operation database
                  */
-                let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID)
-                                    .select(select)
-                                    .populate(populates)
+                let infoAterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
+                    members: { $in: [userID] },
+                    _id: expertTimesheetID,
+                })
+                .select(select)
+                .populate(populates)
+
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
 
@@ -392,7 +376,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        parentID, companyID, projectID,
+        parentID, companyID, projectID, userID,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -400,6 +384,7 @@ class Model extends BaseModel {
                  * DECALARTION VARIABLE (1)
                  */
                 let conditionObj = {
+                    members: { $in: [userID] }
                 };
 
                 let sortBy   = { createAt: 1, _id: 1 };
@@ -433,13 +418,13 @@ class Model extends BaseModel {
 					conditionObj.parent = { $exists: false };
                 }
 
-                if(checkObjectIDs(companyID)){
-					conditionObj.company = companyID;
-				}
+                // if(checkObjectIDs(companyID)){
+				// 	conditionObj.company = companyID;
+				// }
 
-                if(checkObjectIDs(projectID)){
-					conditionObj.project = projectID;
-				}
+                // if(checkObjectIDs(projectID)){
+				// 	conditionObj.project = projectID;
+				// }
 
 				if(keyword){
                     keyword = keyword.split(" ");
@@ -447,6 +432,7 @@ class Model extends BaseModel {
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
                 let conditionObjOrg = { ...conditionObj };
+                
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(lastestID);
