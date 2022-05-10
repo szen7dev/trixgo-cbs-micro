@@ -391,12 +391,6 @@ class Model extends BaseModel {
                  */
                 let conditionObj = {};
 
-                conditionObj.$or = [
-                    {userCreate: userID},
-                    {admins: { $in: [userID] }},
-                    {members: { $in: [userID] }}
-                ]
-
                 let sortBy   = { createAt: 1, _id: 1 };
                 /**
                  * VALIDATION STEP (2)
@@ -425,10 +419,15 @@ class Model extends BaseModel {
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 				}else{
+                    conditionObj.$or = [
+                        {userCreate: userID},
+                        {admins: { $in: [userID] }},
+                        {members: { $in: [userID] }}
+                    ]
 					conditionObj.parent = { $exists: false };
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // if(checkObjectIDs(companyID)){
 				// 	conditionObj.company = companyID;
