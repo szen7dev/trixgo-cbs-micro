@@ -979,7 +979,7 @@ class Model extends BaseModel {
     getList({
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
         subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision,
-        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask,
+        userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 10, lastestID, select, populates = {}
     }) {
         return new Promise(async (resolve) => {
@@ -1250,6 +1250,10 @@ class Model extends BaseModel {
                     conditionObj.group = groupID
                     conditionObj.parent = { $exists: false }
                     delete conditionObj.$or;
+                }
+
+                if(!isNaN(milestone)){
+                    conditionObj.milestone = milestone;
                 }
 
                 let conditionObjOrg = {...conditionObj};
@@ -1554,10 +1558,18 @@ class Model extends BaseModel {
                     { $sort: { _id: -1} }
                 ]);
 
-                listCompanyOfAssignee = listCompanyOfAssignee.map(item => item?._id);
-                let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
-                    arrayID: JSON.stringify(listCompanyOfAssignee), select: "name sign", unLimit: "100"
-                });
+                let conditionPopulate = {
+                    path: '_id',
+                    select: '_id name sign image',
+                    model: 'company'
+                }
+                await PCM_PLAN_TASK_COLL.populate(listCompanyOfAssignee, conditionPopulate);
+                let listCompany = listCompanyOfAssignee.map(item => item._id);
+                console.log({ listCompany });
+                // listCompanyOfAssignee = listCompanyOfAssignee.map(item => item?._id);
+                // let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_INFO_AND_GET_LIST_COMPANY}`, {
+                //     arrayID: JSON.stringify(listCompanyOfAssignee), select: "name sign", unLimit: "100"
+                // });
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
@@ -1651,11 +1663,141 @@ class Model extends BaseModel {
                     },
                     { $sort: { _id: -1 }},
                 ]);
-
-                return resolve({ error: false, data: { listCompany: listCompany?.data?.listRecords,
+                
+                return resolve({ error: false, data: { 
+                    listCompany,
                     listCompanyAndTaskOverdueWork, listCompanyAndTaskNextWeekWork,  listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
                     } });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Lấy số lượng công việc theo milestone
+     * Author: Depv
+     * Code:
+     */
+    getAmountTaskByMilestone({ projectID, ctx }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs(projectID))
+                    return resolve({ error: true, message: 'projectID_invalid' });
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                function addDate(days) {
+                    let date = new Date();
+                    date.setDate(date.getDate() + days);
+                    return date;
+                }
+
+                let taskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            actualFinishTime: {
+                                $lt: start,
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskNextWeekWork = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            actualFinishTime: {
+                                $gte: start,
+                                $lt: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskMoreThan7Days = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            actualFinishTime: {
+                                $gte: addDate(7),
+                                $exists: true,
+                                $ne: null
+                            },
+                            status: { $ne: 3 }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskFinish = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                            status: 3
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                let taskAll = await PCM_PLAN_TASK_COLL.aggregate([
+                    {
+                        $match: {
+                            project: ObjectID(projectID),
+                            milestone: { $exists: true },
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$milestone",
+                            count: { $sum: 1 }
+                        }
+                    },
+                    { $sort: { _id: -1 }},
+                ]);
+
+                return resolve({ error: false, data: {
+                    taskOverdueWork, taskNextWeekWork, taskMoreThan7Days, taskAll, taskFinish
+                } });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -1768,7 +1910,7 @@ class Model extends BaseModel {
                     { $sort: { _id: -1 }},
                 ]);
 
-                // Số lượng công việc > 7 ngày tới
+                // Số lượng công việc hoàn thành
                 let listAmountTaskFinish = await PCM_PLAN_TASK_COLL.aggregate([
                     {
                         $match: {
