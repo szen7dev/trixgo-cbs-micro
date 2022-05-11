@@ -418,7 +418,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, fundaID, projectID, contractID, voucherID, userID,
+    getList({ companyID, fundaID, projectID, contractID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, userID,
         keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -483,6 +483,31 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                // Bút toán của Thực hiện ngân sách
+                if(checkObjectIDs(budgetID)){
+                    conditionObj = {
+                        budget: budgetID
+                    }
+                }  
+
+                if(checkObjectIDs(budgetItemID)){
+                    conditionObj = {
+                        budgetItem: budgetItemID
+                    }
+                }  
+
+                if(checkObjectIDs(budgetGroupID)){
+                    conditionObj = {
+                        budgetGroup: budgetGroupID
+                    }
+                }  
+
+                if(checkObjectIDs(budgetWorkID)){
+                    conditionObj = {
+                        budgetWork: budgetWorkID
+                    }
+                } 
 
                 if (keyword) {
                     keyword = keyword.split(" ");
