@@ -162,7 +162,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
     vatPlusProduce: { type: Number, default: 0 },
     //_________Sản lượng còn lại chưa thực hiện
     remainingProduce: { type: Number, default: 0 },
-
+    
     /**
      * NGHIỆM THU HOÀN THÀNH
     */

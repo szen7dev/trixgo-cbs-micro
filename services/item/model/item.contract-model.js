@@ -39,11 +39,11 @@ class Model extends BaseModel {
 	 * Func: Tạo hợp đồng
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
+	insert({ projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, 
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, userID, ctx
+        cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce
          }){
         return new Promise(async resolve => {
             try {
@@ -304,6 +304,10 @@ class Model extends BaseModel {
                     dataInsert.expiredAg = expiredAg;
                 }
 
+                if(remainingProduce){
+                    dataInsert.remainingProduce = remainingProduce;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -321,7 +325,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx
+        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce
         }){
         return new Promise(async resolve => {
             try {
@@ -640,9 +644,11 @@ class Model extends BaseModel {
                 if(dataPull){
                     dataUpdate.$pullAll = dataPull;
                 }
+
                 if(dataInc){
                     dataUpdate.$inc = dataInc;
                 }
+
                 if(photos && photos.length) {
                     if(infoContract.photos.length >= 10){
 						await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, {
@@ -666,6 +672,10 @@ class Model extends BaseModel {
 					}
                 }
 
+                if(remainingProduce){
+                    dataUpdate.remainingProduce = remainingProduce;
+                }
+                
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Cannot update contract", status: 422 });
