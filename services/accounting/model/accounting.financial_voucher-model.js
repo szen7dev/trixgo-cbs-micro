@@ -261,6 +261,17 @@ class Model extends BaseModel {
         deletedJournals,
         ctx
      }) {
+        console.log({authorID, 
+            voucherID,
+            customerID,
+            contractID, 
+            storageID, 
+            type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+            receiver, note,
+            forward, forwardIs, returning, advancePayment, cancel, 
+            fcuExRate, 
+            selectedJournals, 
+            deletedJournals})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -283,22 +294,24 @@ class Model extends BaseModel {
 
                 let companyID = info.company
                 let fundaID = info.funda
+                // console.log(info)
 
                 /**
                  * KIỂM TRA TRÙNG PHIẾU
                  */
-                if(sign != ""){
-                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
-                        funda: fundaID, 
-                        sign: sign,
-                        _id: {
-                            $ne: voucherID
-                        }
-                    }).select('_id')
+                // if(sign != ""){
+                //     let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                //         funda: fundaID, 
+                //         sign: sign,
+                //         _id: {
+                //             $ne: voucherID
+                //         }
+                //     }).select('_id')
+                //     // console.log(infoVoucher)
     
-                    if(infoVoucher)
-                        return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
-                }
+                //     if(infoVoucher)
+                //         return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
+                // }
 
                 /**
                  * B1. CẬP NHẬT PHIẾU
