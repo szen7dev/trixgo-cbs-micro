@@ -418,8 +418,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ companyID, fundaID, projectID, contractID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, userID,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+    getList({ companyID, fundaID, projectID, contractID, accountID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, userID,
+        keyword, limit = 50, lastestID, select, populates = {}, sortKey, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 if (limit > 50) {
@@ -484,30 +484,58 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Bút toán của Thực hiện ngân sách
+                /**
+                 * Bút toán của Thực hiện ngân sách
+                 */
                 if(checkObjectIDs(budgetID)){
                     conditionObj = {
                         budget: budgetID
                     }
                 }  
-
                 if(checkObjectIDs(budgetItemID)){
                     conditionObj = {
                         budgetItem: budgetItemID
                     }
                 }  
-
                 if(checkObjectIDs(budgetGroupID)){
                     conditionObj = {
                         budgetGroup: budgetGroupID
                     }
                 }  
-
                 if(checkObjectIDs(budgetWorkID)){
                     conditionObj = {
                         budgetWork: budgetWorkID
                     }
                 } 
+
+                /**
+                 * THEO TÀI KHOẢN
+                 */
+                if(checkObjectIDs(accountID)){
+                    //_________Get nestedArray of account
+                    let arrObjectID = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.ACCOUNT_GET_LIST_NESTED}`,{ accountID, isNestedOfCompany: true }); 
+                
+                    arrObjectID = arrObjectID.data || []
+                    console.log(arrObjectID)
+                    
+                    conditionObj.$or = [
+                        { debit:   {
+                            $in: arrObjectID
+                        }},
+                        { credit:  {
+                            $in: arrObjectID
+                        } },
+                    ]
+
+                    if(fromDate && toDate){
+                        conditionObj.date = { 
+                            $gte: moment(fromDate).toDate(),
+                            $lte: moment(toDate).toDate(),
+                        }
+                    }
+
+                    console.log(conditionObj)
+                }
 
                 if (keyword) {
                     keyword = keyword.split(" ");
@@ -689,8 +717,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 03/5/2022
      */
-    getAccountBalance({ companyID, fundaID, contractID, accountID, fromDate, toDate, userID, ctx }) {
-        // console.log({ companyID, fundaID, contractID, accountID, fromDate, toDate, userID })
+    getAccountBalance({ companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -724,16 +751,21 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(contractID){
+                if (checkObjectIDs(contractID)) {
                     conditionObj1.contract = ObjectID(contractID)
                     conditionObj2.contract = ObjectID(contractID)
                 }else{
-                    if(fundaID){
-                        conditionObj1.funda = ObjectID(fundaID)
-                        conditionObj2.funda = ObjectID(fundaID)
+                    if (checkObjectIDs(projectID)) {
+                        conditionObj1.project = projectID
+                        conditionObj2.project = projectID
                     }else{
-                        conditionObj1.company = ObjectID(companyID)
-                        conditionObj2.company = ObjectID(companyID)
+                        if (checkObjectIDs(fundaID)) {
+                            conditionObj1.funda = fundaID
+                            conditionObj2.funda = fundaID
+                        }else{
+                            conditionObj1.company = companyID
+                            conditionObj2.company = companyID
+                        }
                     }
                 }
                 console.log(conditionObj1)
