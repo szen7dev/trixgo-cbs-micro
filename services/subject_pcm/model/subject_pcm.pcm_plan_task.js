@@ -1381,13 +1381,13 @@ class Model extends BaseModel {
                 ]
 
                 // Điều kiện bộ lọc
-                (status && status.length)                           && (conditionObj.status = { $in: status });
-                (projectsID && projectsID.length)                   && (conditionObj.project = { $in: projectsID });
-                (subtypes && subtypes.length)                       && (conditionObj.subtype = { $in: subtypes });
-                (assigneesID && assigneesID.length)                 && (conditionObj.assignee = { $in: assigneesID });
-                (authorsID && authorsID.length)                     && (conditionObj.author = { $in: authorsID });
-                (fieldsID && fieldsID.length)                       && (conditionObj.field = { $in: fieldsID });
-                (companiesOfAssignee && companiesOfAssignee.length) && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
+                status && status.length                             && (conditionObj.status = { $in: status });
+                projectsID && projectsID.length                     && (conditionObj.project = { $in: projectsID });
+                subtypes && subtypes.length                         && (conditionObj.subtype = { $in: subtypes });
+                assigneesID && assigneesID.length                   && (conditionObj.assignee = { $in: assigneesID });
+                authorsID && authorsID.length                       && (conditionObj.author = { $in: authorsID });
+                fieldsID && fieldsID.length                         && (conditionObj.field = { $in: fieldsID });
+                companiesOfAssignee && companiesOfAssignee.length   && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
 
                 if(isExpired){
                     // Việc bình thường
@@ -1705,6 +1705,10 @@ class Model extends BaseModel {
 
                 if(emails) {
                     arrayMailSend += emails;
+                    // if(arrayMailSend.endsWith(',')) {
+                    // } else{
+                    //     arrayMailSend += `,${emails}`;
+                    // }
                 }
 
                 const result = await sendNoticeToMember({

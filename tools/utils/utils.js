@@ -496,11 +496,14 @@ exports.validateParamsObjectID = (params) => {
             if(require) {
                 return this.checkObjectIDs(value);
             } else if(value){
+
                 if(Array.isArray(value)) {
+                    if(!value.length) return true;
+
                     return value && value.length && this.checkObjectIDs(value);
-                } else{
-                    return value && this.checkObjectIDs(value);
                 }
+
+                return value && this.checkObjectIDs(value);
             }
 
             return true;
