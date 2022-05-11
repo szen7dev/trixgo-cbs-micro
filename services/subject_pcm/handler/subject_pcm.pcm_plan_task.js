@@ -116,7 +116,7 @@ module.exports = {
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID,
                     contractID, draft, isproposal, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures,
                     links, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved,
-                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, 
+                    valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature,
                     companyOfUser: company._id, milestone, ctx
                 });
 
@@ -236,6 +236,54 @@ module.exports = {
     },
 
     /**
+     * Dev: MinhVH
+     * Func: Search Task
+     * Date: 11/05/2022
+     */
+    getListByFilter: {
+        auth: 'required',
+        params: {
+            fromDate            : { type: 'string', optional: true },
+            toDate              : { type: 'string', optional: true },
+            assigneesID         : { type: 'array', optional: true },
+            companiesOfAssignee : { type: 'array', optional: true },
+            authorsID           : { type: 'array', optional: true },
+            projectsID          : { type: 'array', optional: true },
+            subtypes            : { type: 'array', optional: true },
+            status              : { type: 'array', optional: true },
+            fieldsID            : { type: 'array', optional: true },
+            isExpired           : { type: 'number', optional: true },
+
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { _id: userID } = ctx.meta.infoUser;
+                const {
+                    fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+                    projectsID, subtypes, status, fieldsID, isExpired, keyword,
+                    limit, lastestID, select, populates
+                } = ctx.params;
+
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
+                    fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+                    projectsID, subtypes, status, fieldsID, isExpired, keyword,
+                    limit, lastestID, select, populates, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
 	 * Dev: Depv
 	 * Func: Lấy số lượng công việc của bạn để hiển thị ngoài trang chủ
 	 */
@@ -287,21 +335,23 @@ module.exports = {
             title    : { type: "string" },
             notice   : { type: "string" },
             members  : { type: "array"  },
+            emails   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, email, fullname } = ctx.meta.infoUser;
-                let { taskID, title, notice, members } = ctx.params;
+                const { taskID, title, notice, members, emails } = ctx.params;
                 members.push(userID);
 
-                let resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.sendEmailToMembersInTask({ taskID, title, notice,
+                const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.sendEmailToMembersInTask({
+                    taskID, title, notice, emails,
                     sender: { email, fullname }, receivers: members, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
@@ -455,5 +505,4 @@ module.exports = {
             }
         }
     },
-
 }

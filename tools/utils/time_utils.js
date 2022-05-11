@@ -91,6 +91,12 @@ exports.subMinuteToDate = function (subAdded, minute) {
     return new Date((new Date(subAdded)).getTime() - minute * 60000);
 };
 
+exports.addDate = function(days) {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
 Date.prototype.addHours = function(h) {
 	this.setTime(this.getTime() + (h*60*60*1000));
 	return this;

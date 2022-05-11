@@ -229,6 +229,7 @@ module.exports = {
             fromDate        : { type: "string", optional: true },
             toDate          : { type: "string", optional: true },
             type            : { type: "string", optional: true },
+            userCreateID      : { type: "string", optional: true },
 
             // Field mặc định
             keyword: { type: "string", optional: true },
@@ -240,7 +241,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { voucherID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { voucherID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, userCreateID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -255,7 +256,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getList({
-                        userID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, 
+                        userID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, userCreateID, 
                         keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
