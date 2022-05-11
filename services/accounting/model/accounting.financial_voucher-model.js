@@ -723,6 +723,8 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
         keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
+            console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
+                keyword})
         return new Promise(async (resolve) => {
             try {
                 if (limit > 20) {
@@ -775,7 +777,7 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(userCreateID)) {
                     conditionObj.userCreate = userCreateID
-                }e
+                }
 
                 if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID
