@@ -721,7 +721,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type,
+    getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, userCreateID,
         keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
@@ -772,6 +772,10 @@ class Model extends BaseModel {
                 if(!isNaN(type) && Number(type) > 0){
                     conditionObj.type = Number(type)
                 }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID
+                }e
 
                 if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID
