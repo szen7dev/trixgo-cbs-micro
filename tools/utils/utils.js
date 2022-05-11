@@ -474,36 +474,54 @@ exports._getLevelMaxInRecursive = async (coll) => {
 /**
  * Dev: MinhVH
  * Date: 22/04/2022
+ * Example params:
+ *  Format 1:
+ *  params: {
+ *      [field]: {
+ *          value: ObjectID,
+ *          isRequire?: boolean,
+ *      }
+ *  }
+ *  Format 2:
+ *  params: {
+ *      [field]: ObjectID
+ *  }
+ * @params Object
  */
 exports.validateParamsObjectID = (params) => {
     if(!params || !Object.keys(params).length) return false;
+
+    const validation = {
+        check: (value, require = false) => {
+            if(require) {
+                return this.checkObjectIDs(value);
+            } else if(value){
+                if(Array.isArray(value)) {
+                    return value && value.length && this.checkObjectIDs(value);
+                } else{
+                    return value && this.checkObjectIDs(value);
+                }
+            }
+
+            return true;
+        }
+    }
 
     for (const [key, field] of Object.entries(params)) {
         if(typeof field === 'object') {
             const { value, isRequire } = field;
 
-            if(isRequire) {
-                if (!this.checkObjectIDs([value])) {
-                    return {
-                        error: true,
-                        message: `Tham số ${key} không hợp lệ`,
-                        keyError: `params_${key}_invalid`,
-                        status: 400
-                    }
-                }
-            } else{
-                if (value && !this.checkObjectIDs([value])) {
-                    return {
-                        error: true,
-                        message: `Tham số ${key} không hợp lệ`,
-                        keyError: `params_${key}_invalid`,
-                        status: 400
-                    }
+            if (!validation.check(value, isRequire)) {
+                return {
+                    error: true,
+                    message: `Tham số ${key} không hợp lệ`,
+                    keyError: `params_${key}_invalid`,
+                    status: 400
                 }
             }
 
         } else{
-            if (!this.checkObjectIDs([field])) {
+            if (!this.checkObjectIDs(field)) {
                 return {
                     error: true,
                     message: `Tham số ${key} không hợp lệ`,

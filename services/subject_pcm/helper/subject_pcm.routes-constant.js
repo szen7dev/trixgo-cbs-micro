@@ -14,6 +14,7 @@ const CF_ROUTINGS_SUBJECT_PCM = {
     ORIGIN_APP: BASE_ROUTE,
     // ================================PCM_PLAN_TASK=======================================//
     PCM__PCM_PLAN_TASK                                          : `${BASE_ROUTE}${PCM_PLAN_TASK}`,
+    PCM__PCM_PLAN_TASK_GET_LIST_BY_FILTER                       : `${BASE_ROUTE}${PCM_PLAN_TASK}/filter`,
     PCM__PCM_PLAN_TASK_UPDATE_STATUS_MUTIPLE                    : `${BASE_ROUTE}${PCM_PLAN_TASK}/update-status-mutiple`,
     PCM__PCM_PLAN_TASK_GET_BADGE                                : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge`,
     PCM__PCM_PLAN_TASK_GET_BADGE_BIDDING                        : `${BASE_ROUTE}${PCM_PLAN_TASK}/badge-bidding`,

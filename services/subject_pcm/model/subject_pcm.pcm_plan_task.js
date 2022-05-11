@@ -21,6 +21,7 @@ const {
 } = require('../../../tools/utils/utils');
 
 const stringUtils					            = require('../../../tools/utils/string_utils');
+const { addDate }					            = require('../../../tools/utils/time_utils');
 const { KEY_ERROR, APP_KEYS, LANGUAGE_KEYS }    = require('../../../tools/keys');
 const { sendNoticeToMember }                    = require('../../../tools/mailer/module/notice_pcm_task');
 const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/helper/notification.keys-constant');
@@ -1013,11 +1014,6 @@ class Model extends BaseModel {
                 let end = new Date();
                 end.setHours(23,59,59,999);
 
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
                 /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
@@ -1272,6 +1268,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
+
                 // Bắt đầu query trong db
                 let infoDataAfterGet = await PCM_PLAN_TASK_COLL.find(conditionObj)
                     .limit(limit+1)
@@ -1305,6 +1302,189 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Search Task
+     * Date: 11/05/2022
+     */
+    getListByFilter({
+        fromDate, toDate, assigneesID, companiesOfAssignee, authorsID,
+        projectsID, subtypes, status, fieldsID, isExpired, keyword,
+        limit = 20, lastestID, select, populates, userID
+    }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * VALIDATION (1)
+                 */
+                const validation = validateParamsObjectID({
+                    assigneesID         : { value: assigneesID, isRequire: false },
+                    authorsID           : { value: authorsID, isRequire: false },
+                    projectsID          : { value: projectsID, isRequire: false },
+                    fieldsID            : { value: fieldsID, isRequire: false },
+                    companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
+                });
+                if(validation.error) return resolve(validation);
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                /**
+                 * DECALARTION VARIABLE (2)
+                 */
+                let conditionObj = {
+                    usersDelete: { $nin: [userID] },
+                };
+                let nextCursor  = null;
+                let sortBy      = null;
+                let keys	    = ['actualFinishTime__-1', '_id__-1'];
+
+                let start = new Date();
+                start.setHours(0,0,0,0);
+
+                let end = new Date();
+                end.setHours(23,59,59,999);
+
+                /**
+                 * LOGIC CODE (3)
+                 */
+                if(limit > 20 && isNaN(limit)){
+                    limit = 20;
+                } else{
+                    limit = +limit;
+                }
+
+                // Lấy danh sách các nhóm dữ liệu mà userID là members
+                const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+
+                // Lấy công việc mà mình được quyền truy cập
+                conditionObj.$or = [
+                    { author: userID },
+                    { assignee: userID },
+                    { related: { $in: [userID] }},
+                    { group: { $in: listGroups.map(item => item._id) }},
+                ]
+
+                // Điều kiện bộ lọc
+                (status && status.length)                           && (conditionObj.status = { $in: status });
+                (projectsID && projectsID.length)                   && (conditionObj.project = { $in: projectsID });
+                (subtypes && subtypes.length)                       && (conditionObj.subtype = { $in: subtypes });
+                (assigneesID && assigneesID.length)                 && (conditionObj.assignee = { $in: assigneesID });
+                (authorsID && authorsID.length)                     && (conditionObj.author = { $in: authorsID });
+                (fieldsID && fieldsID.length)                       && (conditionObj.field = { $in: fieldsID });
+                (companiesOfAssignee && companiesOfAssignee.length) && (conditionObj.companyOfAssignee = { $in: companiesOfAssignee });
+
+                if(isExpired){
+                    // Việc bình thường
+                    if(isExpired == 1) {
+                        conditionObj.actualFinishTime = {
+                            $gt: new Date(),
+                            $exists: true,
+                            $ne: null
+                        }
+                    }
+
+                    // Việc chậm
+                    if(isExpired == 2) {
+                        conditionObj.status = { $ne: 3 };
+                        conditionObj.actualFinishTime = {
+                            $lt: new Date(),
+                            $exists: true,
+                            $ne: null
+                        }
+                    }
+                }
+
+                // Lấy những công việc từ ngày đến ngày
+                if(fromDate && toDate){
+                    conditionObj.actualFinishTime = {
+                        $exists: true,
+                        $ne: null,
+                        $gte: new Date(fromDate),
+                        $lte: new Date(toDate),
+                    }
+				}
+
+                // Tìm kiếm theo keyword
+				if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = {...conditionObj};
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await PCM_PLAN_TASK_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj  = dataPagingAndSort.data.find;
+					sortBy        = dataPagingAndSort.data.sort;
+				} else{
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                /**
+                 * QUERY DATABASE (4)
+                 */
+                const infoDataAfterGet = await PCM_PLAN_TASK_COLL
+                    .find(conditionObj)
+                    .limit(limit+1)
+                    .select(select)
+                    .populate(populates)
+                    .sort(sortBy)
+                    .lean();
+
+                if(!infoDataAfterGet) {
+                    return resolve({
+                        error: true,
+                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
+                        keyError: 'error_occurred',
+                        status: 422
+                    });
+                }
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                const totalRecord = await PCM_PLAN_TASK_COLL.countDocuments(conditionObjOrg);
+                const totalPage   = Math.ceil(totalRecord / limit);
+
+                return resolve({
+                    error: false,
+                    status: 200,
+                    data: {
+                        listRecords: infoDataAfterGet,
+                        limit,
+                        totalRecord,
+                        totalPage,
+                        nextCursor,
+                    },
+                });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1491,7 +1671,7 @@ class Model extends BaseModel {
      * Gửi thông báo email tới các thành viên trong task
      * Depv
      */
-    sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, ctx }) {
+    sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, emails, ctx }) {
         return new Promise(async resolve => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL
@@ -1523,11 +1703,17 @@ class Model extends BaseModel {
                     indexMember++;
                 }
 
-                await sendNoticeToMember({
+                if(emails) {
+                    arrayMailSend += emails;
+                }
+
+                const result = await sendNoticeToMember({
                     email: arrayMailSend,
                     title,
                     content: { sender, notice, infoTask }
                 });
+
+                if(result.error) return resolve(result);
 
                 // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: arrayMailSend, title, content: { sender, notice, infoTask } } });
                 // pool
@@ -1572,12 +1758,6 @@ class Model extends BaseModel {
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
 
                 let listCompanyAndTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
@@ -1687,12 +1867,6 @@ class Model extends BaseModel {
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
 
                 let taskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
                     {
@@ -1849,12 +2023,6 @@ class Model extends BaseModel {
 
                 let start = new Date();
                 start.setHours(0,0,0,0);
-
-                function addDate(days) {
-                    let date = new Date();
-                    date.setDate(date.getDate() + days);
-                    return date;
-                }
 
                 // Số lượng công việc quá hạn
                 let listAmountTaskOverdueWork = await PCM_PLAN_TASK_COLL.aggregate([
