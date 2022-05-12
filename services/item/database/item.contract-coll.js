@@ -46,7 +46,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
      * 2-Đang là gói thầu
      */
     draft: { type: Number, default: 1 },
-        /**
+    /**
      * Ontime
      * 1-Ontime
      * 2-Offtime
@@ -57,7 +57,7 @@ module.exports  = DATABASE_MIDDLEWARE("contract", {
      * 1-Onbudget
      * 2-Offbudget
      */
-    onbudget: { type: Number, default: 1 },  
+    onbudget: { type: Number, default: 1 },
     /**
      * Phân loại trạng thái (cân nhắc sử dụng cho cả trạng thái thầu và hợp đồng)
      * 1-Đang triển khai
