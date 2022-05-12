@@ -718,6 +718,7 @@ class Model extends BaseModel {
      * Date: 03/5/2022
      */
     getAccountBalance({ companyID, fundaID, projectID, contractID, accountID, fromDate, toDate, userID, ctx }) {
+        console.log({ companyID, fundaID, contractID, accountID, fromDate, toDate, userID })
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -750,24 +751,29 @@ class Model extends BaseModel {
                         $in: arrObjectID
                     }
                 }
-
-                if (checkObjectIDs(contractID)) {
-                    conditionObj1.contract = ObjectID(contractID)
+                
+                if(contractID && checkObjectIDs(contractID)){
+                    console.log('============1')
+                    conditionObj1.contract = ObjectID(contractID) // Do sử dụng Aggregate nên phải đưa vào dạng ObjectID()
                     conditionObj2.contract = ObjectID(contractID)
                 }else{
-                    if (checkObjectIDs(projectID)) {
-                        conditionObj1.project = projectID
-                        conditionObj2.project = projectID
+                    if (projectID && checkObjectIDs(projectID)) {
+                        console.log('============2')
+                        conditionObj1.project = ObjectID(projectID)
+                        conditionObj2.project = ObjectID(projectID)
                     }else{
-                        if (checkObjectIDs(fundaID)) {
-                            conditionObj1.funda = fundaID
-                            conditionObj2.funda = fundaID
+                        if(fundaID && checkObjectIDs(fundaID)){
+                            console.log('============3')
+                            conditionObj1.funda = ObjectID(fundaID)
+                            conditionObj2.funda = ObjectID(fundaID)
                         }else{
-                            conditionObj1.company = companyID
-                            conditionObj2.company = companyID
+                            console.log('============4')
+                            conditionObj1.company = ObjectID(companyID)
+                            conditionObj2.company = ObjectID(companyID)
                         }
                     }
                 }
+
                 console.log(conditionObj1)
                 console.log(conditionObj2)
                
