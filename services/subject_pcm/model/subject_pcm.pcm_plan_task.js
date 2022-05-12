@@ -1671,7 +1671,7 @@ class Model extends BaseModel {
      * Gửi thông báo email tới các thành viên trong task
      * Depv
      */
-    sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, emails, ctx }) {
+    sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, emails, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL
@@ -1681,49 +1681,66 @@ class Model extends BaseModel {
 
                 if (!infoTask)
                     return resolve({ error: true, message: 'cannot_get_info_task', status: 400 });
+
                 /**
                  * CẤU TRÚC EMAIL
                  * Người nhận email
                  * Tiêu đề
                  * Nội dung
                  */
-                let listMembers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
-                    { arrayID: JSON.stringify(receivers), select: "_id email" }
-                );
-                listMembers = listMembers?.data?.listRecords || [];
+                let mailsUser = [];
 
-                let arrayMailSend = '';
-                let indexMember = 0;
-                for(const item of listMembers){
-                    if(indexMember != listMembers.length){
-                        arrayMailSend += `${item.email},`;
-                    } else{
-                        arrayMailSend += `${item.email}`;
+                if(receivers && receivers.length) {
+                    let users = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
+                        { arrayID: JSON.stringify([...receivers, userID]), select: "_id email" }
+                    );
+                    users = users?.data?.listRecords || [];
+
+                    if(users.length) {
+                        mailsUser = users.map(item => item.email);
                     }
-                    indexMember++;
                 }
 
                 if(emails) {
-                    arrayMailSend += emails;
-                    // if(arrayMailSend.endsWith(',')) {
-                    // } else{
-                    //     arrayMailSend += `,${emails}`;
-                    // }
+                    emails = emails.split(',');
+
+                    if(emails.length) {
+                        mailsUser = [...mailsUser, ...emails];
+                    }
                 }
 
+                if(!mailsUser.length) {
+                    return resolve({
+                        error: true,
+                        message: 'Tham số mails không hợp lệ',
+                        keyError: 'params_mails_invalid',
+                        status: 400
+                    });
+                }
+
+                for (const email of mailsUser) {
+                    if(!stringUtils.validEmail(email.trim())) {
+                        return resolve({
+                            error: true,
+                            message: `Mail không hợp lệ: ${email}`,
+                            keyError: 'params_mail_invalid',
+                            status: 400
+                        });
+                    }
+                }
+                mailsUser = mailsUser.join(',');
+
                 const result = await sendNoticeToMember({
-                    email: arrayMailSend,
+                    email: mailsUser,
                     title,
                     content: { sender, notice, infoTask }
                 });
 
-                if(result.error) return resolve(result);
+                return resolve(result);
 
-                // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: arrayMailSend, title, content: { sender, notice, infoTask } } });
+                // console.log({ __: MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, __: { email: mailsUser, title, content: { sender, notice, infoTask } } });
                 // pool
-                //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: arrayMailSend, title, content: { sender, notice, infoTask } })])
-
-                return resolve({ error: false, data: listMembers, status: 200 });
+                //     .exec(MAIL_CONSTANTS.MAIL_NOTI_PCM_TASK, [JSON.stringify({ email: mailsUser, title, content: { sender, notice, infoTask } })])
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

@@ -10,7 +10,7 @@ const PCM_PLAN_REPORT_MODEL            = require('../model/subject_pcm.pcm_plan_
 
 module.exports = {
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: insert pcm_plan_report
 	 */
     insert: {
@@ -30,7 +30,7 @@ module.exports = {
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.insert({
                     companyID: company._id, type, name, description, parentID, userID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -39,7 +39,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: update pcm_plan_report
 	 */
     update: {
@@ -61,7 +61,7 @@ module.exports = {
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.update({
                     reportID: subjectID, name, type, userID, select, conditionPin
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -70,7 +70,7 @@ module.exports = {
     },
 
      /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: remove pcm_plan_report
 	 */
     remove: {
@@ -84,12 +84,12 @@ module.exports = {
                 let { subjectID } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;
-                
+
                 // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.remove({
                     reportID: subjectID
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -98,7 +98,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: getList and getInfo pcm_plan_report
 	 */
     getInfoAndGetList: {
@@ -113,15 +113,15 @@ module.exports = {
             lastestID   : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
-         
+
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, type, parentID, 
+                let { subjectID, type, parentID,
                     keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
-                    
+
                 let resultAfterCallHandler;
                 if(subjectID){
                     resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.getInfo({
@@ -132,7 +132,7 @@ module.exports = {
                         type, parentID, userID, keyword, limit, lastestID, select, populates
                     })
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };

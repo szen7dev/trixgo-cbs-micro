@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
 const ObjectID                          = require('mongoose').Types.ObjectId;
@@ -26,20 +26,20 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: insert pcm_plan_report 
+     * Name: insert pcm_plan_report
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    insert({ companyID, projectID, type, name, description, parentID, userID }) { 
+    insert({ companyID, projectID, type, name, description, parentID, userID }) {
         return new Promise(async (resolve) => {
-            try {   
+            try {
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataInsert = { };
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -49,7 +49,7 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
-                
+
                 /**
                  * LOGIC STEP (3)
                  * 3.1: Convert type + update name (ví dụ: string -> number)
@@ -62,11 +62,11 @@ class Model extends BaseModel {
                 }
 
                 if(name){
-                    dataInsert.name = name; 
+                    dataInsert.name = name;
                 }
 
                 if(description) {
-                    dataInsert.description = description; 
+                    dataInsert.description = description;
                 }
 
                 if(ObjectID.isValid(parentID)){
@@ -90,20 +90,20 @@ class Model extends BaseModel {
     }
 
      /**
-     * Name: update pcm_plan_report 
+     * Name: update pcm_plan_report
      * Author: Depv
-     * Code: 
+     * Code:
      */
-    update({ reportID, name, type, userID, select, conditionPin }) { 
+    update({ reportID, name, type, userID, select, conditionPin }) {
         return new Promise(async (resolve) => {
-            try {   
+            try {
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
                 let dataUpdate = { };
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -120,7 +120,7 @@ class Model extends BaseModel {
                  *  3.2: Operation database
                  */
                 dataUpdate = { userUpdate: userID };
-                
+
                 if(name){
                     dataUpdate.name = name;
                 }
@@ -132,7 +132,7 @@ class Model extends BaseModel {
                 if(conditionPin){
                     dataUpdate.conditionPin = conditionPin;
                 }
-                
+
                 let infoAfterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
 
                 if(!infoAfterUpdate)
@@ -147,18 +147,18 @@ class Model extends BaseModel {
 
 
      /**
-     * Name: Remove pcm_plan_report 
-     * Author: Depv 
+     * Name: Remove pcm_plan_report
+     * Author: Depv
      * Code: F02503
      */
-    remove({ reportID }) { 
+    remove({ reportID }) {
         return new Promise(async (resolve) => {
-            try {   
+            try {
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -172,7 +172,7 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-              
+
                 let infoAfterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndDelete(reportID);
 
                 if(!infoAfterUpdate)
@@ -186,19 +186,19 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Get info pcm_plan_report 
-     * Author: Depv 
+     * Name: Get info pcm_plan_report
+     * Author: Depv
      * Code: F02504
      */
-    getInfo({ reportID, select, populates= {} }) { 
+    getInfo({ reportID, select, populates= {} }) {
         return new Promise(async (resolve) => {
-            try {   
+            try {
 
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                
-                /** 
+
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -218,7 +218,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-              
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
@@ -238,13 +238,13 @@ class Model extends BaseModel {
             }
         })
     }
-    
-    /** 
-     * Name: Danh sách pcm_plan_report 
-     * Author: Depv 
+
+    /**
+     * Name: Danh sách pcm_plan_report
+     * Author: Depv
      * Code:
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, userID, select, populates= {} }) { 
+    getList({ keyword, limit = 10, lastestID, type, parentID, userID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -260,7 +260,7 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
-                /** 
+                /**
                  * VALIDATION STEP (2)
                  *  - Kiểm tra valid từ các input
                  *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
@@ -270,11 +270,11 @@ class Model extends BaseModel {
                 }else{
                     conditionObj.parent = null;
                 }
-                
+
                 if(type){
                     conditionObj.type = type;
                 }
-				
+
                 // populates
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -296,12 +296,12 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
-                
+
                 /**
                  * LOGIC STEP (3)
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
-                 */  
+                 */
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_REPORT_COLL.findById(lastestID);
@@ -325,14 +325,14 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
                     .lean();
-                
+
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
 
                 let totalRecord = await PCM_PLAN_REPORT_COLL.countDocuments(conditionObjOrg);
 				let nextCursor	= null;
                 let totalPage = Math.ceil(totalRecord/limit);
-                    
+
 				if(infoDataAfterGet && infoDataAfterGet.length){
 					if(infoDataAfterGet.length > limit){
 						nextCursor = infoDataAfterGet[limit - 1]._id;
@@ -347,7 +347,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

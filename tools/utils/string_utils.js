@@ -100,12 +100,12 @@ exports.validEmail = function (email) {
 exports.checkValidPhoneNumber = function(phone) {
     var vnf_regex = /((09|03|07|08|05)+([0-9]{8})\b)/g;
     if(phone !==''){
-        if (vnf_regex.test(phone) == false) 
-            return false;   
+        if (vnf_regex.test(phone) == false)
+            return false;
         return true;
     }else {
         return false;
-    }   
+    }
 }
 
 exports.nonAccentVietnamese = (str) => {
@@ -142,7 +142,7 @@ exports.nonAccentVietnamese = (str) => {
     str = str.replace(/đ/g, "d");
 
     // Some system encode vietnamese combining accent as individual utf-8 characters
-    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); // Huyền sắc hỏi ngã nặng 
+    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); // Huyền sắc hỏi ngã nặng
     str = str.replace(/\u02C6|\u0306|\u00D4|\u00F4|\u031B/g, ""); // Â, Ê, Ă, Ơ, Ư
     return str;
 }
@@ -231,8 +231,8 @@ exports.nl2p = function (string){
     let urlRegex = /(https?:\/\/[^\s]+)/g;
     let paragraphs = '';
     let arr = string.split("\n");
-    for (const item of arr) { 
-        paragraphs = paragraphs + '<p>' + item.replace(urlRegex, '<a style="font-weight: normal;" href="$1">$1</a>') + '</p>'; 
+    for (const item of arr) {
+        paragraphs = paragraphs + '<p>' + item.replace(urlRegex, '<a style="font-weight: normal;" href="$1">$1</a>') + '</p>';
     }
     return paragraphs;
 }
@@ -273,7 +273,7 @@ exports.getDayOfWeek = function(date) {
     weekday[4] = "Năm";
     weekday[5] = "Sáu";
     weekday[6] = "Bảy";
-  
+
     return weekday[d.getDay()];
 }
 //__________Convert chữ cái đầu tiên thành chữ hoa

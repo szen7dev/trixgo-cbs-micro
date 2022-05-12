@@ -327,6 +327,7 @@ module.exports = {
     /**
 	 * Dev: Depv
 	 * Func: Gửi email trong task
+     * Updated: MinhVH - 12/05/2022
 	 */
     sendEmailToMembersInTask: {
         auth: "required",
@@ -334,7 +335,7 @@ module.exports = {
             taskID   : { type: "string" },
             title    : { type: "string" },
             notice   : { type: "string" },
-            members  : { type: "array"  },
+            members  : { type: "array" },
             emails   : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -342,11 +343,10 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, email, fullname } = ctx.meta.infoUser;
                 const { taskID, title, notice, members, emails } = ctx.params;
-                members.push(userID);
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.sendEmailToMembersInTask({
                     taskID, title, notice, emails,
-                    sender: { email, fullname }, receivers: members, ctx
+                    sender: { email, fullname }, receivers: members, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
