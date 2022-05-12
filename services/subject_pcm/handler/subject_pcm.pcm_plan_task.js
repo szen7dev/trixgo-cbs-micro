@@ -255,7 +255,7 @@ module.exports = {
             isExpired           : { type: 'number', optional: true },
 
             keyword             : { type: "string", optional: true },
-            limit               : { type: "string", optional: true },
+            limit               : { type: "number", optional: true },
             lastestID           : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
