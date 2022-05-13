@@ -144,7 +144,7 @@ module.exports = {
                 const { mediaID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getInfoMedia({
-					mediaID, authorID, companyID: company._id, select, populates, ctx
+					mediaID, authorID, companyID: company?._id, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -818,9 +818,9 @@ class Model extends BaseModel {
 
 				switch (infoMedia.type) {
 					case 1:
-						if(typeof infoMedia.company === 'string' && infoMedia.company?.toString() !== companyID.toString()) {
+						if(typeof infoMedia.company === 'string' && infoMedia.company?.toString() !== companyID?.toString()) {
 							hasPermission = false;
-						} else if(infoMedia.company?._id?.toString() !== companyID.toString()){
+						} else if(infoMedia.company?._id?.toString() !== companyID?.toString()){
 							hasPermission = false;
 						}
 						break;

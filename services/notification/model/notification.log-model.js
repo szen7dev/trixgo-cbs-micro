@@ -407,7 +407,7 @@ class Model extends BaseModel {
                                 dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
                             }
                             console.info('MOBILE PUSH (CBS)')
-                            console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids })
+                            // console.log({ include_player_ids: dataForMobilePushCBS.include_player_ids })
 
                             sendNotificationviaOneSignal(dataForMobilePushCBS)
 
@@ -428,7 +428,7 @@ class Model extends BaseModel {
                                 dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
                             }
                             console.info('MOBILE PUSH (TEASER)')
-                            console.log({ include_player_ids: dataForMobilePushTeaser.include_player_ids })
+                            // console.log({ include_player_ids: dataForMobilePushTeaser.include_player_ids })
 
                             sendNotificationviaOneSignal(dataForMobilePushTeaser)
 
@@ -454,7 +454,7 @@ class Model extends BaseModel {
                                 include_player_ids: listDeviceFromWebBrowserWith_CBS.map(item => item.oneSignalID)
                             }
                             console.info('WEB PUSH = CBS')
-                            console.log({ include_player_ids: dataForWebPushCBS.include_player_ids })
+                            // console.log({ include_player_ids: dataForWebPushCBS.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushCBS)
 
                             // WEB PUSH = TEASER
@@ -469,7 +469,7 @@ class Model extends BaseModel {
                                 include_player_ids: listDeviceFromWebBrowserWith_TEASER.map(item => item.oneSignalID)
                             }
                             console.info('WEB PUSH = TEASER')
-                            console.log({ include_player_ids: dataForWebPushTeaser.include_player_ids })
+                            // console.log({ include_player_ids: dataForWebPushTeaser.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushTeaser)
                         }
 

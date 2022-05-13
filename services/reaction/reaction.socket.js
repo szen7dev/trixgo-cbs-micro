@@ -17,7 +17,7 @@ const { sendDataToMultilSocketsOfListUser } 	= require('../../tools/socket');
 
 exports.REACTION_SOCKET = {
 
-    [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_CSS_ADD_COMMENT]: async function(data) { 
+    [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_CSS_ADD_COMMENT]: async function(data) {
         try {
 			let socket                     		= this;
 			let broker							= socket.$service.broker;
@@ -26,20 +26,20 @@ exports.REACTION_SOCKET = {
 			let userID             				= socket.client.user;
 			let io                         		= socket.$service.io;
 
-			let { objectID, infoComment, parentID, method, select, populates, app } = data;
+			let { objectID, infoComment, parentID, method, commentType, select, populates, app } = data;
 
 			if(!infoComment || !app){
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, message: "Tham số infoComment hoặc app không hợp lệ" }, 
+					data: { error: true, message: "Tham số infoComment hoặc app không hợp lệ" },
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}
 
-			let titleMSS 		= 'THÔNG BÁO';
-			let descriptionMSS 	= '';
-			let webUrl 			= '';
+			// let titleMSS 		= 'THÔNG BÁO';
+			// let descriptionMSS 	= '';
+			// let webUrl 			= '';
 			let infoObject 		= null;
 			let arrReceiver 	= [];
 			let dataSend 		= { app };
@@ -109,7 +109,6 @@ exports.REACTION_SOCKET = {
 					if(infoObject.error) break;
 
 					const { company, department, type, author } = infoObject.data;
-					console.log({ company, department, type })
 
 					/**
 					 * Loại bài viết
@@ -164,7 +163,7 @@ exports.REACTION_SOCKET = {
 						languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
 						mainColl: {
 							kind: 'media',
-							item: { 
+							item: {
 								_id: objectID,
 								author
 							}
@@ -185,12 +184,13 @@ exports.REACTION_SOCKET = {
 					break;
 			}
 			// console.log({ infoObject, dataSend, LENGTH: arrReceiver.length });
+			// console.log({ arrReceiver })
 
 			if(!arrReceiver.length) {
-				return sendDataToMultilSocketsOfListUser({ 
+				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, data: arrReceiver, message: "Người nhận không hợp lệ" }, 
+					data: { error: true, data: arrReceiver, message: "Người nhận không hợp lệ" },
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}
@@ -198,13 +198,14 @@ exports.REACTION_SOCKET = {
 			// arrReceiver = arrReceiver.filter(receiverID => receiverID !== userID.toString());
 
 			// SEND SOCKET
-			sendDataToMultilSocketsOfListUser({ 
-				listUserConnected: listUserActive, 
+			sendDataToMultilSocketsOfListUser({
+				listUserConnected: listUserActive,
 				arrReceiver,
 				data: {
 					error: false,
 					data: {
 						method,
+						commentType,
 						parentID,
 						infoObject,
 						infoComment,
@@ -214,7 +215,7 @@ exports.REACTION_SOCKET = {
 			});
 
 			// SEND CLOUD-MSG
-			// broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", { 
+			// broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
 			// 	users: arrReceiver,
 			// 	title: 'THÔNG BÁO TỪ SOCKET',
 			// 	description: 'MÔ TẢ TỪ SOCKET',
