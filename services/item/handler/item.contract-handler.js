@@ -94,6 +94,8 @@ module.exports = {
             agValue                : { type: "number", optional: true },
             expiredAg              : { type: "string", optional: true },
             remainingProduce       : { type: "number", optional: true },
+            ontime                 : { type: "number", optional: true },
+            onbudget               : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -103,7 +105,7 @@ module.exports = {
                      sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
-                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce  } = ctx.params;
+                      forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce, ontime, onbudget  } = ctx.params;
 
                       console.log('=======================>>>>>>>>>>>>>>>>>>>>')
                 
@@ -113,7 +115,7 @@ module.exports = {
                     sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance,
                     plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, 
                     amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, 
-                    managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce
+                    managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -200,6 +202,8 @@ module.exports = {
             dataInc                : { type: "object", optional: true },
             photos                 : { type: "array", optional: true },
             remainingProduce       : { type: "number", optional: true },
+            ontime                 : { type: "number", optional: true },
+            onbudget               : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
@@ -210,7 +214,7 @@ module.exports = {
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
                       otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
-                      photos, remainingProduce
+                      photos, remainingProduce, ontime, onbudget
                     } = ctx.params;
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
@@ -220,7 +224,7 @@ module.exports = {
                     plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction,
                     recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, 
                     forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, 
-                    userID, dataInc, photos, ctx, remainingProduce
+                    userID, dataInc, photos, ctx, remainingProduce, ontime, onbudget
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

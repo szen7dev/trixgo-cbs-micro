@@ -43,7 +43,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce
+        cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
          }){
         return new Promise(async resolve => {
             try {
@@ -308,6 +308,14 @@ class Model extends BaseModel {
                     dataInsert.remainingProduce = remainingProduce;
                 }
 
+                if(ontime){
+                    dataInsert.ontime = ontime;
+                }
+
+                if(onbudget){
+                    dataInsert.onbudget = onbudget;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert);
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -325,7 +333,7 @@ class Model extends BaseModel {
         name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
         value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue,
         budget, budgetVAT, forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit,
-        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce
+        cgValue, expiredCg, agValue, expiredAg, dataInc, photos, ctx, remainingProduce,  ontime, onbudget
         }){
         return new Promise(async resolve => {
             try {
@@ -674,6 +682,14 @@ class Model extends BaseModel {
 
                 if(remainingProduce){
                     dataUpdate.remainingProduce = remainingProduce;
+                }
+
+                if(ontime){
+                    dataUpdate.ontime = ontime;
+                }
+
+                if(onbudget){
+                    dataUpdate.onbudget = onbudget;
                 }
                 
                 let infoAfterInsert = await ITEM__CONTRACT_COLL.findByIdAndUpdate(contractID, dataUpdate, { new: true });
