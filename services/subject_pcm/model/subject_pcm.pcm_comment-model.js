@@ -1082,7 +1082,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord / limit);
                 let dataResponse = [];
 
-                if(infoDataAfterGet && infoDataAfterGet.length && !contractID) {
+                if(infoDataAfterGet && infoDataAfterGet.length && !contractID && !isHaveImage) {
                     for (const comment of infoDataAfterGet) {
                         const lastReactionComment = await PCM_COMMENT_REACTION_COLL
                             .find({ comment: comment._id })

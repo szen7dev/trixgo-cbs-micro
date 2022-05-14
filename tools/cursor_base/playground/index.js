@@ -11,19 +11,19 @@ let _ = require('lodash');
 //     limit = limit || 2;
 
 //     let condition = {};
-//     if (next) 
+//     if (next)
 //         condition = { ...condition, _id: { $lt: next } }
 //     // const items = db.items.find({}).sort({
 //     //     _id: -1
 //     //  }).limit(limit);
-     
+
 //     // const next = items[items.length - 1]._id
 
 //     const items = db.items.find(condition).sort({
 //         _id: -1
 //     }).limit(limit);
-      
-//     const next = items[items.length - 1]._id; //last item in array 
+
+//     const next = items[items.length - 1]._id; //last item in array
 //     res.json({ items, next });
 // });
 
@@ -37,7 +37,7 @@ let _ = require('lodash');
 //  */
 // //  Then to fetch the subsequent page we’d call:
 // //  curl /items?limit=2&sort=createAt&next=2017-09-11T00%3A44%3A54.036Z_590e9abd4abbf1165862d342
- 
+
 // var next = `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`;
 // /**
 //  * nextCreateAt: createAt của phần tử cuối cùng
@@ -45,7 +45,7 @@ let _ = require('lodash');
 //  */
 
 // // cần đánh index composeIndex: 'createAt_-1_id_-1'
-// const [nextCreateAt, nextID] = next.split("_"); 
+// const [nextCreateAt, nextID] = next.split("_");
 
 // //demo trên noSQLBootster
 // db.message_messages.find({
@@ -71,11 +71,11 @@ let _ = require('lodash');
   //     + save -> field
 
   /**
-   * 
-   * @param {*} nextInfo nếu phân trang theo _id -> nextInfo=6093ca895ad4a270bce7234d, 
+   *
+   * @param {*} nextInfo nếu phân trang theo _id -> nextInfo=6093ca895ad4a270bce7234d,
    *                     nếu nhiều field  -> nextInfo=2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d
    * @param {*} keys ['createAt__-1', '_id__-1']
-   * @returns { find: findObject, sort: sortObject } 
+   * @returns { find: findObject, sort: sortObject }
    */
   const RANGE_BASE_PAGINATION = ({ nextInfo, keys }) => {
     console.log({ nextInfo, keys })
@@ -86,7 +86,7 @@ let _ = require('lodash');
         let [prop, sort] = key.split('__');
         return { prop, sort };
       });
-  
+
       const KEYWORD_RECOGNITE_VALID = '_';  //EXM: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
       if (nextInfo && nextInfo.includes(KEYWORD_RECOGNITE_VALID)) { // other first page
         const listParamsFind = nextInfo.split("_"); //['2021-05-06T10:13:15.000Z', '6093ca895ad4a270bce7234d']
@@ -95,41 +95,41 @@ let _ = require('lodash');
             nextInfo: {
               ['_id']: `6093ca895ad4a270bce7234d`,
               ['-createAt-_id']: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`
-            }, 
+            },
             keys: [
               'createAt__-1',
               '_id__-1',
             ]
           } });
         } else { //* !!listParamsFind  == false -> có tồn tại phần tử từ listParamsFind
-          
-          if (listParamsFind.length != keys.length) 
+
+          if (listParamsFind.length != keys.length)
             return resolve({ error: true, message: 'param_invalid', valid_example: {
               nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`,
               keys: [`createAt__-1`, '_id__-1']
             } });
-  
+
           let listParmsAssignWithKey = listParamsFind.map((itemValue, index) => {
             return {
               key: keysParse[index].prop, value: itemValue // key: createAt, value: 2021-05-06T10:13:15.000z
             }
           });
           /**
-           * expected result: 
+           * expected result:
            *  listParmsAssignWithKey:
            *    key: createAt, value: '2021-05-06T10:13:15.000Z'
            *    key: _id, value: '6093ca895ad4a270bce7234d'
-           * 
+           *
            */
-  
+
           const ARRAY_HAVE_ONE_ITEM = 1;
           if (listParmsAssignWithKey.length == ARRAY_HAVE_ONE_ITEM) { //nếu mảng chỉ có 1 item -> đang phân trang theo _id
-  
+
           } else { //nếu mảng có nhiều item, có thể rơi vào phân trang theo 1 trường bất kỳ (ví dụ: createAt)
             let [firstItemInParam, ...rest] = listParmsAssignWithKey;
-  
+
             let firstItemInParmAfterFormatDate = new Date(firstItemInParam.value);
-  
+
             let secondObjInFindMethod = {
               [firstItemInParam.key]: firstItemInParmAfterFormatDate,
             }
@@ -152,9 +152,9 @@ let _ = require('lodash');
           }
         }
       } else { // first page
-        
-      } 
-  
+
+      }
+
       //---------------------------------SORT Workspace -------------------//
       let objectSort = {};
       keysParse.forEach(itemExcludeFirstItem => {
@@ -166,16 +166,16 @@ let _ = require('lodash');
       sort = {
         ...objectSort
       };
-  
+
       return resolve({ error: false, data: { find, sort }, params: { nextInfo, keys } });
     });
   }
-  
+
   // RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z`, keys: ['createAt__-1'] })
   // RANGE_BASE_PAGINATION({ nextInfo: `2021-05-06T10:13:15.000Z_6093ca895ad4a270bce7234d`, keys: ['createAt__-1', '_id__-1'] })
   //   .then(result => console.log({ result }))
   //   .catch(err => console.log({ err }))
-  
+
 
   /**
    * func thực hiện chuyển đổi:
@@ -189,15 +189,15 @@ let _ = require('lodash');
       } else if (sortValue == -1) {
         return '$lt';
       } else {
-        return '';  
+        return '';
       }
     } else {
-      return '';  
+      return '';
     }
   }
-  
+
   /**
-   * ['createAt__-1', '_id__-1'] 
+   * ['createAt__-1', '_id__-1']
    *  -> {
    *         createAt: -1,
    *         -id: -1
@@ -214,7 +214,7 @@ let _ = require('lodash');
 
     return objectSort;
   }
-  
+
   /**
    * Func cập nhật các bugs liên quan
    *  - không sortBy ngược lại
@@ -226,14 +226,14 @@ let _ = require('lodash');
    *  - NON_UNIQUE (VD: createAt, fullname, ...)
    *      + ONLY PAGINATION (func chỉ phân trang)
    *      + QUERY & PAGNIATION (func gồm filter)
-   * 
-   * @params 
+   *
+   * @params
    *    1/ keys  (require)
    *        VD:(non-unique) ['createAt__-1', '_id__-1']
    *        VD(unique): ['_id__-1'], ['_id__1']
    *    2/ latestRecord (require)
    *    3/ objectQuery (optional)
-   * 
+   *
    * @returns object {find, sort}
    */
 
@@ -248,7 +248,7 @@ let _ = require('lodash');
      *  - 1: là unique field
      *  - 2 || n: là non-unique field
      */
-    
+
     const LENGTH_PARAMS_PAGINATION = keys && keys.length;
     const IS_UNIQUE_FIELD          = LENGTH_PARAMS_PAGINATION == 1 ? true : false;
     const IS_FIRST_PAGE            = (latestRecord && _.get(latestRecord, '_id', 0) != 0) ? false : true;
@@ -262,7 +262,7 @@ let _ = require('lodash');
       let [prop, sort] = key.split('__');
       return { prop, sort };
     });
-    
+
     if (IS_UNIQUE_FIELD) { // là unique field
       if (IS_FIRST_PAGE) {
         /**
@@ -323,7 +323,7 @@ let _ = require('lodash');
           let ValueOfKeysParse     = keysParse[0]['sort']; // value của unique_field
           let valueOfLatestRecordWithFieldName = latestRecord[fieldNameOfKeysParse];
           let operationWithConditionSort = _getOperationWithSort({ sortValue: ValueOfKeysParse });
-  
+
           resultForReturn.find = {
             ...resultForReturn.find,
             $or: [
@@ -334,9 +334,9 @@ let _ = require('lodash');
               },
               {
                 [fieldNameOfKeysParse]:  valueOfLatestRecordWithFieldName,
-                
+
                 // keysParse[1]['prop']: luôn luôn là _id
-                [keysParse[1]['prop']]: { 
+                [keysParse[1]['prop']]: {
                   [operationWithConditionSort]: latestRecord[keysParse[1]['prop']] // <-- hard code
                 }
               }
@@ -357,7 +357,7 @@ let _ = require('lodash');
           {
             ...objectPaginationBefore
           }
-        ] 
+        ]
       }
       return ({ error: false, data: { find: objFindAfterAddQuery, sort: resultForReturn.sort } });
     } else {
@@ -378,9 +378,9 @@ let _ = require('lodash');
   //   username: 'lucde'
   // }
   // let result = RANGE_BASE_PAGINATION_V2({ keys, latestRecord, objectQuery })
- 
+
   /**
-   * expected: 
+   * expected:
    *  - find: { username: { $lt: "khanhney" } }
    *  - sort: { username: -1 }
    */
