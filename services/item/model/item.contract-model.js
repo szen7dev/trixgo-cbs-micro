@@ -2058,6 +2058,7 @@ class Model extends BaseModel {
         // console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
+                let remainingProduce = 0
                 let conditionObj = {}, conditionGroup = {}
 
                 if(outin && Number(outin) > 0){
@@ -2101,7 +2102,11 @@ class Model extends BaseModel {
                     }
                 ])
 
-                return resolve({ error: false, data: listData });
+                if(listData && listData.length){
+                    remainingProduce = Number(listData[0].remainingProduce)
+                }
+
+                return resolve({ error: false, data: remainingProduce });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -2114,7 +2119,7 @@ class Model extends BaseModel {
      * Date: 16/5/2022
      */
     getInventory({ userID, outin, companyID, projectID, contractID, ctx }){
-        console.log({ userID, outin, companyID, projectID, contractID })
+        // console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
                 let inventory = 0
@@ -2126,8 +2131,8 @@ class Model extends BaseModel {
 
                 conditionGroup = {
                     _id: { },
-                    produce: { $sum: ["$produce"] },
-                    acceptance: { $sum: ["$acceptance"] },
+                    produce: { $sum: "$produce" },
+                    acceptance: { $sum: "$acceptance" },
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
@@ -2158,6 +2163,7 @@ class Model extends BaseModel {
                         $group: conditionGroup
                     }
                 ])
+                // console.log(listData)
 
                 if(listData && listData.length){
                     inventory = Number(listData[0].produce) - Number(listData[0].acceptance)
