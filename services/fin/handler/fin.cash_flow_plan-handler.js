@@ -146,10 +146,10 @@ module.exports = {
             projectID       : { type: "string", optional: true },
             contractID      : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
-            outin           : { type: "number", optional: true },
-            type            : { type: "number", optional: true },
-            property        : { type: "number", optional: true },
-            priority        : { type: "number", optional: true },
+            outin           : { type: "string", optional: true },
+            type            : { type: "string", optional: true },
+            property        : { type: "string", optional: true },
+            priority        : { type: "string", optional: true },
             isCompanyOther  : { type: "string", optional: true },
 
             // Field mặc định

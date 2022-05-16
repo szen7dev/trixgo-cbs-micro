@@ -567,8 +567,8 @@ class Model extends BaseModel {
      * Date: 16/04/2022
      */
     getAmountByObject({ userID, outin, companyID, projectID, contractID, ipcID }){
-        console.log('=================PAYMENT:getAmountByObject==>>>>>>>>>>>')
-        console.log({ userID, outin, companyID, projectID, contractID, ipcID })
+        // console.log('=================PAYMENT:getAmountByObject==>>>>>>>>>>>')
+        // console.log({ userID, outin, companyID, projectID, contractID, ipcID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -655,7 +655,7 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty, ctx }){
-        console.log({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty })
+        // console.log({ userID, type, outin, real, companyID, projectID, contractID, year, optionTime, optionProperty })
         return new Promise(async resolve => {
             try {
                 /**
@@ -693,7 +693,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 // TÍNH TỔNG THEO TẤT CẢ/THEO NĂM
                 if(Number(optionTime) === 1){
@@ -940,9 +940,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                console.log(conditionObj)
-                console.log(conditionObjYear)
-                console.log(conditionGroup)
+                // console.log(conditionObj)
+                // console.log(conditionObjYear)
+                // console.log(conditionGroup)
 
                 let listData = await CMCS__CONTRACT_PAYMENT_COLL.aggregate([
                     {

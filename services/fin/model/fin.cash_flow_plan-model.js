@@ -363,6 +363,7 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
         keyword, limit = 50, lastestID, select, populates= {}, sortKey, isCompanyOther, companyOfUser }) {
+            // console.log({userID, companyID, projectID, contractID, parentID, outin, type, property, priority})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -408,23 +409,23 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                if(outin){
-                    conditionObj.outin = outin
-                }
-                if(!isNaN(type)){
-                    conditionObj.type = Number(type);
-                }
-                if(!isNaN(property)){
-                    conditionObj.property = Number(property);
-                }
-                if(!isNaN(priority)){
-                    conditionObj.priority = Number(priority);
-                }
-
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 } else{
-                    conditionObj = { members: { $in: [userID] } }
+                    if(!isNaN(outin)){
+                        conditionObj.outin = Number(outin)
+                    }
+                    if(!isNaN(type)){
+                        conditionObj.type = Number(type);
+                    }
+                    if(!isNaN(property)){
+                        conditionObj.property = Number(property);
+                    }
+                    if(!isNaN(priority)){
+                        conditionObj.priority = Number(priority);
+                    }
+                    
+                    conditionObj.members = { $in: [userID] }
                     conditionObj.parent = { $exists: false }
 
                     if(checkObjectIDs(contractID)){
@@ -450,7 +451,7 @@ class Model extends BaseModel {
                     conditionObj.name = RegExp(keyword, 'i');
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
                 let conditionObjOrg = { ...conditionObj };
 
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -572,8 +573,8 @@ class Model extends BaseModel {
      * Date: 17/04/2022
      */
     getAmountByProperty({ userID, companyID, parentID, projectID, contractID, outin, year, type, property, option, real, ctx }){
-        console.log('=========>Tham số đầu vào')
-        console.log({ userID, companyID, parentID, projectID, outin, year, type, property, option })
+        // console.log('=========>Tham số đầu vào')
+        // console.log({ userID, companyID, parentID, projectID, outin, year, type, property, option })
         return new Promise(async resolve => {
             try {
                 /**
@@ -699,9 +700,16 @@ class Model extends BaseModel {
                         value: { $sum: "$value" },
                         realValue: { $sum: "$realValue" }
                     }
+                }else{
+                    conditionGroup = {
+                        _id: {outin: "$outin", month: "$month", year: "$year" },
+                        value: { $sum: "$value" },
+                        realValue: { $sum: "$realValue" }
+                    }
                 }
 
                 console.log(conditionObj)
+                console.log(conditionProject)
                 console.log(conditionGroup)
 
                 let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([

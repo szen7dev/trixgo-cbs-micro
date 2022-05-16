@@ -86,6 +86,7 @@ class Model extends BaseModel {
                     dataInsert.expense = expense;
                 }
 
+                // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
                 if(checkObjectIDs(parentID)) {
                     const infoParentCashbook = await FIN__CASH_BOOK_COLL
                         .findById(parentID)
@@ -172,7 +173,10 @@ class Model extends BaseModel {
                     dataUpdate.active = active;
                 }
 
-                const infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID).lean();
+                const infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
+                .populate('parent')
+                .lean();
+                // console.log(infoCashBook)
 
                 if(!infoCashBook) {
                     return resolve({
@@ -182,6 +186,12 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
+
+                // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
+                if(infoCashBook.parent && infoCashBook.parent.company){
+                    dataUpdate.company = infoCashBook.parent.company
+                }
+                // console.log(dataUpdate)
 
                 const adminsID = [...infoCashBook.admins?.map(item => item.toString()), infoCashBook.userCreate?.toString()];
 
@@ -258,7 +268,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
 
                 let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
-                console.log(infoCashBook)
+                // console.log(infoCashBook)
 
                 /**
                  * DECALARTION VARIABLE (1)
