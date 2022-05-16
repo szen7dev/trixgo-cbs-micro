@@ -32,7 +32,7 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let dataInsert = { userCreate: userID, company: companyID, admins: [userID], members: [userID] };
+                let dataInsert = { userCreate: userID, admins: [userID], members: [userID] };
 
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
@@ -84,6 +84,17 @@ class Model extends BaseModel {
 
                 if (!isNaN(expense) && Number(expense) >= 0) {
                     dataInsert.expense = expense;
+                }
+
+                if(checkObjectIDs(parentID)) {
+                    const infoParentCashbook = await FIN__CASH_BOOK_COLL
+                        .findById(parentID)
+                        .select('company')
+                        .lean();
+
+                    dataInsert.company = infoParentCashbook.company;
+                } else{
+                    dataInsert.company = companyID;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -566,8 +577,6 @@ class Model extends BaseModel {
                         type: "1"
                     })
 
-                    console.log(listCompany)
-
                     let listActiveParent = await FIN__CASH_BOOK_COLL.find({
                         active: 1,
                         parent: {$exists: false},
@@ -666,9 +675,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                // console.log(conditionObj)
-                // console.log(conditionGroup)
-
                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
                     {
                         $match: conditionObj
@@ -695,6 +701,8 @@ class Model extends BaseModel {
                         $sort: sortBy
                     }
                 ])
+                // listData.map(item => console.log({ item }))
+                // console.log(conditionObj)
 
                 // Pop lấy thông tin tài khoản
                 if(!isNaN(option) && Number(option) > 0){

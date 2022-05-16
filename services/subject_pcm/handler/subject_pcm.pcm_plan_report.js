@@ -49,17 +49,17 @@ module.exports = {
             name              : { type: "string", optional: true },
             type              : { type: "number", optional: true },
             select            : { type: "string", optional: true },
+            members           : { type: "array", optional: true },
             conditionPin      : { type: "object", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { subjectID, name, type, select, conditionPin } = ctx.params;
+                let { subjectID, name, type, select, members, conditionPin } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                // Bước check quyền
                 let resultAfterCallHandler = await PCM_PLAN_REPORT_MODEL.update({
-                    reportID: subjectID, name, type, userID, select, conditionPin
+                    reportID: subjectID, name, type, userID, select, members, conditionPin
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

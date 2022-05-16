@@ -94,14 +94,13 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ reportID, name, type, userID, select, conditionPin }) {
+    update({ reportID, name, type, userID, select, members, conditionPin }) {
         return new Promise(async (resolve) => {
             try {
-
                 /**
                  * DECALARTION VARIABLE (1)
                  */
-                let dataUpdate = { };
+                let dataUpdate = { userUpdate: userID };
 
                 /**
                  * VALIDATION STEP (2)
@@ -111,7 +110,7 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
-                if(!ObjectID.isValid(reportID))
+                if(!checkObjectIDs(reportID))
                     return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
 
                 /**
@@ -119,7 +118,37 @@ class Model extends BaseModel {
                  *  3.1: Convert type + update name (ví dụ: string -> number)
                  *  3.2: Operation database
                  */
-                dataUpdate = { userUpdate: userID };
+                const infoReport = await PCM_PLAN_REPORT_COLL
+                    .findById(reportID)
+                    .select('author')
+                    .lean();
+
+                if(!infoReport) {
+                    return resolve({
+                        error: true,
+                        message: 'Report không tồn tại',
+                        keyError: 'report_not_exists',
+                        status: 403
+                    });
+                }
+
+                if(infoReport.author?.toString() === userID.toString()) {
+                    if(members && members.length) {
+                        if(checkObjectIDs(members)) {
+                            members = [...new Set(members)];
+                            dataUpdate.members = members;
+                        } else{
+                            dataUpdate.members = [];
+                        }
+                    }
+                } else if(checkObjectIDs(members)){
+                    return resolve({
+                        error: true,
+                        message: 'Bạn không có quyền chia sẻ',
+                        keyError: "permission_denined",
+                        status: 403
+                    });
+                }
 
                 if(name){
                     dataUpdate.name = name;
@@ -133,7 +162,9 @@ class Model extends BaseModel {
                     dataUpdate.conditionPin = conditionPin;
                 }
 
-                let infoAfterUpdate = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true }).select(select);
+                let infoAfterUpdate = await PCM_PLAN_REPORT_COLL
+                    .findByIdAndUpdate(reportID, dataUpdate, { new: true })
+                    .select(select);
 
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Can't update pcm plan report", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
