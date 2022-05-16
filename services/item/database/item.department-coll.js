@@ -242,7 +242,8 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     numberOfContractIn: {
         type: Number,
         default : 0
-    },    
+    },   
+    /** GIÁ TRỊ KÝ */ 
     //______Giá trị ký hợp đồng trước VAT
     contractValue: {
         type: Number,
@@ -268,6 +269,7 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    /** SẢN LƯỢNG */
     //______Sản lượng trước VAT
     contractProduce: {
         type: Number,
@@ -278,6 +280,19 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Number,
         default : 0
     },
+    //______Sản lượng trước VAT
+    contractPlusProduce: {
+        type: Number,
+        default : 0
+    },
+    //______VAT
+    contractVatPlusProduce: {
+        type: Number,
+        default : 0
+    },
+    //_________Sản lượng còn lại chưa thực hiện
+    contractRemainingProduce: { type: Number, default: 0 },
+    /** NGHIỆM THU HOÀN THÀNH */
     //______Giá trị nghiệm thu trước VAT
     contractAcceptance: {
         type: Number,

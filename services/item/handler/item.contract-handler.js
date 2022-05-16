@@ -532,7 +532,7 @@ module.exports = {
     }, 
 
     /**
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Tính sản lượng còn lại chưa thực hiện
      * Author: Hiepnh
      * Date: 18/04/2022
      */
@@ -558,6 +558,43 @@ module.exports = {
                 console.log({companyID})
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getRetainProduce({
+                    userID, companyID, projectID, contractID, outin: Number(outin), ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    }, 
+    
+    /**
+     * Name: Tính tồn kho
+     * Author: Hiepnh
+     * Date: 16/5/2022
+     */
+     getInventory: {
+        auth: "required",
+        params: {
+            companyID           : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            contractID          : { type: "string", optional: true },
+            outin               : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                let { companyID, projectID, contractID, outin } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                
+                if(!companyID){
+                    companyID = company._id
+                }
+                console.log({companyID})
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getInventory({
                     userID, companyID, projectID, contractID, outin: Number(outin), ctx
                 });
 
