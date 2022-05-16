@@ -88,6 +88,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.CONTRACT_UPDATE_VALUE]					: ITEM__CONTRACT_HANDLER.updateValue,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_AMOUNT_BY_PROPERTY]		: ITEM__CONTRACT_HANDLER.getAmountByProperty,
 		[CF_ACTIONS_ITEM.CONTRACT_GET_RETAIN_PRODUCE]			: ITEM__CONTRACT_HANDLER.getRetainProduce,
+		[CF_ACTIONS_ITEM.CONTRACT_GET_INVENTORY]				: ITEM__CONTRACT_HANDLER.getInventory,
 
 		//==========================================  DOCTYPE  ===================================
 		[CF_ACTIONS_ITEM.DOCTYPE_INSERT] 						: ITEM__DOCTYPE_HANDLER.insert,

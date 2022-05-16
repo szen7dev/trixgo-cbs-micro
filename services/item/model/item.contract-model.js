@@ -1955,6 +1955,9 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(contractID))
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "contractID_invalid" });
                 
+                let infoContract = await ITEM__CONTRACT_COLL.findById(contractID)
+                // console.log({infoContract})
+                
                 /**
                  * DECALARTION VARIABLE (1)
                  */
@@ -1978,12 +1981,22 @@ class Model extends BaseModel {
                     let infoIpcContract = await ctx.call(`${CF_DOMAIN_SERVICES.CMCS}.${CF_ACTIONS_CMCS.CONTRACT_PRODUCTION_GET_AMOUNT_BY_OBJECT}`, {
                         userID, contractID
                     })
+
+                    // Sản lượng còn lại chưa thực hiện
+                    let totalValue = 0, remainingProduce = 0
+                    totalValue = Number(infoContract.value | 0)+Number(infoContract.vatValue | 0)+Number(infoContract.plus | 0)+Number(infoContract.vatPlus | 0)
+
+                    remainingProduce = Number(totalValue)-Number(infoIpcContract.data.produce)-Number(infoIpcContract.data.vatProduce)-Number(infoIpcContract.data.plusProduce)-Number(infoIpcContract.data.vatPlusProduce)
+                    // console.log({totalValue})
+                    // console.log({remainingProduce})
+
                     // console.log(infoIpcContract)
                     if(infoIpcContract){
-                        dataUpdate.produce = Number(infoIpcContract.data.produce);
-                        dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce);
-                        dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce);
-                        dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce);
+                        dataUpdate.produce = Number(infoIpcContract.data.produce)
+                        dataUpdate.vatProduce = Number(infoIpcContract.data.vatProduce)
+                        dataUpdate.plusProduce = Number(infoIpcContract.data.plusProduce)
+                        dataUpdate.vatPlusProduce = Number(infoIpcContract.data.vatPlusProduce)
+                        dataUpdate.remainingProduce = Number(remainingProduce)
                     }
                 }
 
@@ -2042,9 +2055,10 @@ class Model extends BaseModel {
      * Date: 05/04/2022
      */
     getRetainProduce({ userID, outin, companyID, projectID, contractID, ctx }){
-        console.log({ userID, outin, companyID, projectID, contractID })
+        // console.log({ userID, outin, companyID, projectID, contractID })
         return new Promise(async resolve => {
             try {
+                let remainingProduce = 0
                 let conditionObj = {}, conditionGroup = {}
 
                 if(outin && Number(outin) > 0){
@@ -2053,8 +2067,9 @@ class Model extends BaseModel {
 
                 conditionGroup = {
                     _id: { },
-                    value: { $sum: "$value" },
-                    produce: { $sum: "$produce" },
+                    remainingProduce: { $sum: "$remainingProduce" },
+                    // value: { $sum: "$value" },
+                    // produce: { $sum: "$produce" },
                 }
 
                 if(contractID && checkObjectIDs(contractID)){
@@ -2077,8 +2092,9 @@ class Model extends BaseModel {
                         $project : { 
                             year : {$year : "$date"},
                             month : {$month : "$date"},
-                            value: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
-                            produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
+                            remainingProduce : "$remainingProduce",
+                            // value: { $sum: ["$value", "$vatValue", "$plus", "$vatPlus"] },
+                            // produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
                         }
                     },
                     {
@@ -2086,7 +2102,74 @@ class Model extends BaseModel {
                     }
                 ])
 
-                return resolve({ error: false, data: listData });
+                if(listData && listData.length){
+                    remainingProduce = Number(listData[0].remainingProduce)
+                }
+
+                return resolve({ error: false, data: remainingProduce });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Tính tồn kho
+     * Author: Hiepnh
+     * Date: 16/5/2022
+     */
+    getInventory({ userID, outin, companyID, projectID, contractID, ctx }){
+        // console.log({ userID, outin, companyID, projectID, contractID })
+        return new Promise(async resolve => {
+            try {
+                let inventory = 0
+                let conditionObj = {}, conditionGroup = {}
+
+                if(outin && Number(outin) > 0){
+                    conditionObj.outin = Number(outin)
+                }
+
+                conditionGroup = {
+                    _id: { },
+                    produce: { $sum: "$produce" },
+                    acceptance: { $sum: "$acceptance" },
+                }
+
+                if(contractID && checkObjectIDs(contractID)){
+                    conditionObj.contract = ObjectID(contractID)
+                }else{
+                    if(projectID && checkObjectIDs(projectID)){
+                        conditionObj.project = ObjectID(projectID)
+                    }else{
+                        if(companyID && checkObjectIDs(companyID)){
+                            conditionObj.company = ObjectID(companyID)
+                        }
+                    }
+                }
+                
+                let listData = await ITEM__CONTRACT_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $project : { 
+                            year : {$year : "$date"},
+                            month : {$month : "$date"},
+                            produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
+                            acceptance: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                        }
+                    },
+                    {
+                        $group: conditionGroup
+                    }
+                ])
+                // console.log(listData)
+
+                if(listData && listData.length){
+                    inventory = Number(listData[0].produce) - Number(listData[0].acceptance)
+                }
+
+                return resolve({ error: false, data: inventory });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
