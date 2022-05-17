@@ -22,7 +22,7 @@ module.exports  = DATABASE_MIDDLEWARE("bidding_plan", {
     //_________Lĩnh vực
     field: {
         type: Schema.Types.ObjectId,
-        ref : "datahub_type"
+        ref : "datahub_type" 
     },      
     //_________Khu vực (lấy từ thông tin dự án)
     area: {

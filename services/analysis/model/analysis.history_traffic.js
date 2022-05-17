@@ -80,7 +80,7 @@ class Model extends BaseModel {
                     { 
                         $group: {
                             _id: { 
-                                month: { $month: "$createdAt" },
+                                month: { $month: "$createAt" },
                                 type:  "$type"
                             }, 
                             amountAccesses: { $sum: 1 },
@@ -173,6 +173,11 @@ class Model extends BaseModel {
                             amountAccesses: { $sum: 1 },
                         }
                     },
+                    { 
+                        $sort: {
+                            "_id.app": -1
+                        }
+                    },
                     {
                         $lookup: {
                             from: "apps",
@@ -226,7 +231,7 @@ class Model extends BaseModel {
                         } 
                     },
                     {
-                        $sort: { "_id.type": 1 }
+                        $sort: { "_id.app": 1 }
                     },
                     { 
                         $group: {

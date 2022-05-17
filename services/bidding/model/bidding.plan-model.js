@@ -35,7 +35,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Insert 
+     * Name: Insert
      * Author: Hiepnh
      * Date: 30/4/2022
      */
@@ -44,19 +44,18 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid', status: 400 })
+                    return resolve({ error: true, message: 'Request params projectID|companyID|userID invalid' })
                 
                 // Thông tin dự án
                 let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
                     departmentID: projectID, select: '_id name sign company area'
                 })
-                console.log(infoProject)
 
                 if (!infoProject)
-                    return resolve({ error: true, message: 'Can not get Project info', status: 400 })
-
+                    return resolve({ error: true, message: 'Can not get Project info' });
+                    
                 if (!infoProject.data.area || !_isValid(infoProject.data.area))
-                    return resolve({ error: true, message: 'Can not get Project Area info', status: 400 })
+                    return resolve({ error: true, message: 'Không tồn tại khu vực trong dự án' })
 
                 let dataInsert = { 
                     userCreate: userID, 
@@ -165,8 +164,6 @@ class Model extends BaseModel {
                 if (!isNaN(vatTenderPrice) && Number(vatTenderPrice) > 0) {
                     dataInsert.vatTenderPrice = vatTenderPrice;
                 }
-
-                console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)

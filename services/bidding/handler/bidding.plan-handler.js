@@ -24,6 +24,17 @@ module.exports = {
             contractID          : { type: "string", optional: true },
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
+            packagePrice        : { type: "number", optional: true },
+            startTime           : { type: "string", optional: true },
+            finishTime          : { type: "string", optional: true },
+            from                : { type: "number", optional: true },
+            contractType        : { type: "number", optional: true },
+            duration            : { type: "number", optional: true },
+            bidder              : { type: "string", optional: true },
+            bidder              : { type: "string", optional: true },
+            status              : { type: "number", optional: true },
+            percentOfCompletedPackage: { type: "number", optional: true },
+            note                : { type: "string", optional: true },
         },
 
         async handler(ctx) {
