@@ -24,7 +24,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Thêm contract
 	 * Date: 19/08/2021
 	 */
@@ -102,19 +102,19 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
-                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
+                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
-                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
+                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget,
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, remainingProduce, ontime, onbudget  } = ctx.params;
 
                       console.log('=======================>>>>>>>>>>>>>>>>>>>>')
-                
+
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.insert({
-					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, 
-                    debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, 
+					projectID, parentID, admins, members, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
+                    debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank,
                     sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance,
-                    plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid, 
-                    amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT, 
+                    plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction, recommendedPayment, advancePaymentPaid,
+                    amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, forecastBudgetVAT,
                     managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, userID, ctx, remainingProduce, ontime, onbudget
 				});
 
@@ -127,7 +127,7 @@ module.exports = {
 
 
      /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: Cập nhật hợp đồng
 	 * Date: 19/08/2021
 	 */
@@ -176,7 +176,7 @@ module.exports = {
             plusProduce     : { type: "number", optional: true },
             vatProduce      : { type: "number", optional: true },
             acceptance      : { type: "number", optional: true },
-            plusAcceptance  : { type: "number", optional: true }, 
+            plusAcceptance  : { type: "number", optional: true },
             vatAcceptance   : { type: "number", optional: true },
             retainedValue   : { type: "number", optional: true },
             advancePaymentDeduction: { type: "number", optional: true },
@@ -210,20 +210,20 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { contractID, projectID, parentID, admins, adminsRemove, members, membersRemove, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, name,
-                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, 
+                     sign, storeSign, description, note, note1, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock,
                      value, plus, vatValue, advancePayment, produce, plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction,
-                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget, 
+                      otherDeduction, recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, forecastBudget,
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
                       photos, remainingProduce, ontime, onbudget
                     } = ctx.params;
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
-					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field, 
+					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field,
                     dependentUnit, chair, personInCharge, debtStatus, warehouse, name, sign, storeSign, description, note, note1, date, startTime,
-                    endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce, 
+                    endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, packageName, lock, value, plus, vatValue, advancePayment, produce,
                     plusProduce, vatProduce, acceptance, plusAcceptance, vatAcceptance, retainedValue, advancePaymentDeduction, otherDeduction,
-                    recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT, 
-                    forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, 
+                    recommendedPayment, advancePaymentPaid, amountPaid, remainingPayment, advancePaymentOverage, finalValue, budget, budgetVAT,
+                    forecastBudget, forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg,
                     userID, dataInc, photos, ctx, remainingProduce, ontime, onbudget
 				});
 
@@ -235,13 +235,13 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: XÓA HỢP ĐỒNG => KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
 	 * Date: 19/08/2021
 	 */
 
      /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: LẤY THÔNG TIN HOẶC LẤY DANH SACH HỢP ĐỒNG
 	 * Date: 19/08/2021
 	 */
@@ -266,7 +266,7 @@ module.exports = {
             warehouse           : { type: "string", optional: true },
             isExpiredAg         : { type: "string", optional: true },
             isExpiredCg         : { type: "string", optional: true },
-            
+
             // Field mặc định
             keyword     : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -300,7 +300,7 @@ module.exports = {
                         keyword, limit, lastestID, select, populates
                     });
                 }
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -309,7 +309,7 @@ module.exports = {
     },
 
     /**
-	 * Dev: Depv 
+	 * Dev: Depv
 	 * Func: LẤY DANH SÁCH HỢP ĐỒNG MÀ USER LÀ MEMBERS
 	 * Date: 19/08/2021
 	 */
@@ -349,14 +349,14 @@ module.exports = {
                     keyword, limit, lastestID, select, populates
                 } = ctx.params;
 
-				const { _id: userID, company } = ctx.meta.infoUser;
-                
+				const { _id: userID } = ctx.meta.infoUser;
+
                 let resultAfterCallHandler = await ITEM__CONTRACT_MODEL.getListIsMembers({
                     companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge,
                     debtStatus, warehouse, date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg, isMember,
                     keyword, limit, lastestID, select, populates
                 });
-                
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
@@ -365,7 +365,7 @@ module.exports = {
     },
 
     /**
-     * Dev: Hiepnh 
+     * Dev: Hiepnh
      * Func: get amount by month
      */
      getAmountByMonth: {
@@ -383,7 +383,7 @@ module.exports = {
                 let { companyID, projectID, year, outin } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                
+
                 if(!companyID){
                     companyID = company._id
                 }
@@ -450,10 +450,10 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }, 
+    },
 
     /**
-     * Name: Cập nhật giá trị 
+     * Name: Cập nhật giá trị
      * Author: Hiepnh
      * Date: 15/04/2022
      */
@@ -490,10 +490,10 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }, 
+    },
 
     /**
-     * Name: Gom nhóm theo thuộc tính 
+     * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
      * Date: 18/04/2022
      */
@@ -508,7 +508,7 @@ module.exports = {
             real                : { type: "string", optional: true },
             year                : { type: "string", optional: true },
             optionTime          : { type: "string", optional: true },
-            optionProperty      : { type: "string", optional: true }, 
+            optionProperty      : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -517,7 +517,7 @@ module.exports = {
                 let { companyID, projectID, contractID, type, outin, real, year, optionTime, optionProperty, debt } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                
+
                 if(!companyID){
                     companyID = company._id
                 }
@@ -532,7 +532,7 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }, 
+    },
 
     /**
      * Name: Tính sản lượng còn lại chưa thực hiện
@@ -554,7 +554,7 @@ module.exports = {
                 let { companyID, projectID, contractID, outin } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                
+
                 if(!companyID){
                     companyID = company._id
                 }
@@ -569,8 +569,8 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }, 
-    
+    },
+
     /**
      * Name: Tính tồn kho
      * Author: Hiepnh
@@ -591,7 +591,7 @@ module.exports = {
                 let { companyID, projectID, contractID, outin } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                
+
                 if(!companyID){
                     companyID = company._id
                 }
@@ -606,5 +606,5 @@ module.exports = {
                 return { error:  true, message: error.message };
             }
         }
-    }, 
+    },
 }

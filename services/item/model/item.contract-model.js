@@ -1043,7 +1043,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getListIsMembers({
-        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
+        companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isMember,
         date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
