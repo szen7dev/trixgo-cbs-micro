@@ -292,7 +292,7 @@ class Model extends BaseModel {
                     dataInsert.cgValue = cgValue;
                 }
 
-                if(expiredCg){
+                if(expiredCg != ""){      
                     dataInsert.expiredCg = expiredCg;
                 }
 
@@ -300,7 +300,7 @@ class Model extends BaseModel {
                     dataInsert.agValue = agValue;
                 }
 
-                if(expiredAg){
+                if(expiredAg != ""){      
                     dataInsert.expiredAg = expiredAg;
                 }
 
@@ -634,17 +634,22 @@ class Model extends BaseModel {
                     dataUpdate.cgValue = cgValue;
                 }
 
-                if(!isNaN(expiredCg) && Number(expiredCg) >= 0){      
+                if(expiredCg != ""){      
                     dataUpdate.expiredCg = expiredCg;
+                }else{
+                    dataUpdate.expiredCg = null
                 }
 
                 if(!isNaN(agValue) && Number(agValue) >= 0){      
                     dataUpdate.agValue = agValue;
                 }
 
-                if(!isNaN(expiredAg) && Number(expiredAg) >= 0){      
+                if(expiredAg != ""){      
                     dataUpdate.expiredAg = expiredAg;
+                }else{
+                    dataUpdate.expiredAg = null
                 }
+
                 if(dataAddToSet){
                     dataUpdate.$addToSet = dataAddToSet;
                 }
@@ -824,7 +829,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isMember,
+        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg, isMember,
         keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
@@ -947,9 +952,20 @@ class Model extends BaseModel {
                     conditionObj.lock = lock
                 }
 
-                // Theo dõi bảo lảnh
+                // Theo dõi bảo lãnh tạm ứng
                 if(isExpiredAg == 1){
+                    keys = ['expiredAg__1', '_id__-1'];
+
                     conditionObj.expiredAg = { $exists: true, $ne: null }
+                    conditionObj.status = { $ne: 3 } // Chỉ lấy các hợp đồng chưa hoàn thành
+                }
+
+                // Theo dõi bảo lãnh thực hiện hợp đồng
+                if(isExpiredCg == 1){
+                    keys = ['expiredCg__1', '_id__-1']
+
+                    conditionObj.expiredCg = { $exists: true, $ne: null }
+                    conditionObj.status = { $ne: 3 } // Chỉ lấy các hợp đồng chưa hoàn thành
                 }
 
                 if(isMember == 1){
@@ -1028,10 +1044,8 @@ class Model extends BaseModel {
      */
     getListIsMembers({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg,
+        date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg, isExpiredCg,
         keyword, limit = 10, lastestID, select, populates= {} }) {
-            // console.log({companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse,
-            //     date, startTime, endTime, buyerInfo, buyerBank, sellerInfo, sellerBank, lock, userID, isExpiredAg})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1148,132 +1162,20 @@ class Model extends BaseModel {
                     conditionObj.lock = lock
                 }
 
-                if(keyword){
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                        { storeSign: regSearch },
-                    ]
-                }
-
-                let conditionObjOrg = { ...conditionObj };
-                console.log({ conditionObj });
-
-                // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await ITEM__CONTRACT_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
-
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-					conditionObj = dataPagingAndSort?.data?.find;
-					sortBy       = dataPagingAndSort?.data?.sort;
-				}else{
-                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy                = dataPagingAndSort?.data?.sort;
-                }
-
-                let infoDataAfterGet = await ITEM__CONTRACT_COLL.find(conditionObj)
-                    .limit(+limit+1)
-                    .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
-
-                let nextCursor	    = null;
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
-
-                let totalRecord = await ITEM__CONTRACT_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit);
-
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: +limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor
-                }, status: 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Name  : Danh sách bảo lãnh
-     * Author: Hiepnh
-     * Date  : 25/4/2022
-     */
-    getListGuarantee({
-        isMember,
-        keyword, limit = 10, lastestID, select, populates= {} }) {
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * 1-Bảo lãnh tạm ứng
-                 * 2-Bảo lãnh thực hiện hợp đồng
-                 * 3.1-Bảo lãnh quá hạn
-                 * 3.2-Bảo lãnh tháng tới
-                 * 3.3-Bảo lãnh sau tháng tới
-                 */
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = {};
-                let keys	     = ['createAt__-1', '_id__-1'];
-                let sortBy;
-
-                if(limit > 20){
-                    limit = 20
-                }else{
-                    limit = +limit
-                }
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                // POPULATE
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                if(!checkObjectIDs(companyID) && !checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'Bắt buộc phải truyền companyID hoặc projectID', keyError: "params_invalid" });
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
-                // Theo dõi bảo lảnh
+                // Theo dõi bảo lãnh tạm ứng
                 if(isExpiredAg == 1){
+                    keys = ['expiredAg__1', '_id__-1'];
+
                     conditionObj.expiredAg = { $exists: true, $ne: null }
+                    conditionObj.status = { $ne: 3 } // Chỉ lấy các hợp đồng chưa hoàn thành
+                }
+
+                // Theo dõi bảo lãnh thực hiện hợp đồng
+                if(isExpiredCg == 1){
+                    keys = ['expiredCg__1', '_id__-1'];
+
+                    conditionObj.expiredCg = { $exists: true, $ne: null }
+                    conditionObj.status = { $ne: 3 } // Chỉ lấy các hợp đồng chưa hoàn thành
                 }
 
                 if(isMember == 1){
@@ -1292,6 +1194,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = { ...conditionObj };
+                console.log({ conditionObj });
 
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
