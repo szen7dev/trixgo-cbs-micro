@@ -32,6 +32,7 @@ const CF_ROUTINGS_ITEM = {
     CONTRACT_GET_AMOUNT_BY_PROPERTY            : `${BASE_ROUTE}${CONTRACT}/get-amount-by-property`,
     CONTRACT_GET_RETAIN_PRODUCE                : `${BASE_ROUTE}${CONTRACT}/get-retain-produce`,
     CONTRACT_GET_INVENTORY                     : `${BASE_ROUTE}${CONTRACT}/get-inventory`,
+    CONTRACT_STATISTICAL_STATUS_BY_ONTIME_ON_BUDGET: `${BASE_ROUTE}${CONTRACT}/statistical-status-by-ontime-onbudget`,
 
     // ================================DOCTYPE==========================================//
     DOCTYPES                                   : `${BASE_ROUTE}${DOCTYPE}`,

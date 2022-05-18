@@ -543,7 +543,15 @@ class Model extends BaseModel {
     getAmountByObject({ userID, projectID }){
         return new Promise(async resolve => {
             try {
-                let numberOfPackage=0, numberOfUnexecutedPackage=0, numberOfExecutedPackage=0, numberOfCompletedPackage=0, amountOfUnexecutedPackage=0, amountOfExecutedPackage=0, amountOfCompletedPackage=0, totalFinishAmount=0, percentOfCompletedPackage=0
+                let numberOfPackage=0, 
+                    numberOfUnexecutedPackage=0, 
+                    numberOfExecutedPackage=0, 
+                    numberOfCompletedPackage=0, 
+                    amountOfUnexecutedPackage=0, 
+                    amountOfExecutedPackage=0, 
+                    amountOfCompletedPackage=0, 
+                    totalFinishAmount=0, 
+                    percentOfCompletedPackage=0
 
                 let conditionObj = { }
 
@@ -568,8 +576,6 @@ class Model extends BaseModel {
                         $sort: {"_id.status": 1}
                     }
                 ])
-                console.log(listData)
-
                 if(listData && listData.length){
                     for (const item of listData) {
                         if(Number(item._id.status) === 1){
@@ -601,6 +607,45 @@ class Model extends BaseModel {
                 // console.log({percentOfCompletedPackage})
 
                 return resolve({ error: false, data: { numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage } })
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Báo cáo lựa chọn nhà thầu
+     * Author: Depv
+     * Date: 18/05/2022
+     */
+    contractorSelection({ userID, projectID }){
+        return new Promise(async resolve => {
+            try {
+                let conditionObj = {}
+
+                if(!checkObjectIDs(projectID)){
+                    return resolve({ error: true, message: "projectID không hợp lệ" });
+                }else{
+                    conditionObj.project = ObjectID(projectID)
+                }
+
+                let listData = await BIDDING__PLAN_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    }, 
+                    {
+                        $group: {
+                            _id: { status: "$status"}, // Phân loại trạng thái
+                            amount: { $sum: 1}, // số lượng gói thầu
+                            amountPackagePrice: { $sum: "$packagePrice" }, // Tổng giá trị các gói
+                        }
+                    }, 
+                    {
+                        $sort: {"_id.status": 1}
+                    }
+                ])
+
+                return resolve({ error: false, data: listData })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

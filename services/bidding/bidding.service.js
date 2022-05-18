@@ -64,7 +64,7 @@ module.exports = {
 	* Service dependencies
 	*/
 	dependencies: [],
-
+	
 	/**
 	* Actions
 	*/
@@ -74,7 +74,8 @@ module.exports = {
 		[CF_ACTIONS_BIDDING.BIIDING_PLAN_UPDATE] 								: BIDDING__PLAN_HANDLER.update,
 		[CF_ACTIONS_BIDDING.BIIDING_PLAN_REMOVE] 								: BIDDING__PLAN_HANDLER.remove,
 		[CF_ACTIONS_BIDDING.BIIDING_PLAN_GET_INFO_AND_GET_LIST] 				: BIDDING__PLAN_HANDLER.getInfoAndGetList,
-
+		[CF_ACTIONS_BIDDING.BIIDING_PLAN_CONTRACTOR_SELECTION] 					: BIDDING__PLAN_HANDLER.contractorSelection,
+		
 		//========================================== BIIDING_DOC  ==================================
 		[CF_ACTIONS_BIDDING.BIIDING_DOC_INSERT] 								: BIDDING__DOC_HANDLER.insert,
 		[CF_ACTIONS_BIDDING.BIIDING_DOC_UPDATE] 								: BIDDING__DOC_HANDLER.update,

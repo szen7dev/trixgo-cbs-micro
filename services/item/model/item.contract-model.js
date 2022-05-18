@@ -2017,62 +2017,37 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Tính tồn kho
+     * Name: Thống kê trạng thái hợp đồng theo(ontime, onbudget)
      * Author: Hiepnh
      * Date: 16/5/2022
      */
-    getInventory({ userID, outin, companyID, projectID, contractID, ctx }){
-        // console.log({ userID, outin, companyID, projectID, contractID })
+    statisticalStatusByOntimeOnbudget({  projectID }){
         return new Promise(async resolve => {
             try {
-                let inventory = 0
-                let conditionObj = {}, conditionGroup = {}
+                let conditionObj = { ontime: {$exists: true}, onbudget: {$exists: true} };
 
-                if(outin && Number(outin) > 0){
-                    conditionObj.outin = Number(outin)
-                }
-
-                conditionGroup = {
-                    _id: { },
-                    produce: { $sum: "$produce" },
-                    acceptance: { $sum: "$acceptance" },
-                }
-
-                if(contractID && checkObjectIDs(contractID)){
-                    conditionObj.contract = ObjectID(contractID)
+                if(!checkObjectIDs(projectID)){
+                    return resolve({ error: true, message: "projectID không hợp lệ" });
                 }else{
-                    if(projectID && checkObjectIDs(projectID)){
-                        conditionObj.project = ObjectID(projectID)
-                    }else{
-                        if(companyID && checkObjectIDs(companyID)){
-                            conditionObj.company = ObjectID(companyID)
-                        }
-                    }
+                    conditionObj.project = ObjectID(projectID)
                 }
-                
+
                 let listData = await ITEM__CONTRACT_COLL.aggregate([
                     {
                         $match: conditionObj
-                    },
+                    }, 
                     {
-                        $project : { 
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            produce: { $sum: ["$produce", "$vatProduce", "$plusProduce", "$vatPlusProduce"] },
-                            acceptance: { $sum: ["$acceptance", "$vatAcceptance", "$plusAcceptance", "$vatPlusAcceptance"] },
+                        $group: {
+                            _id: { ontime: "$ontime" , onbudget: "$onbudget" }, // Phân loại trạng thái
+                            amount: { $sum: 1},
                         }
                     },
                     {
-                        $group: conditionGroup
+                        $sort: {"_id.ontime": 1 }
                     }
                 ])
-                // console.log(listData)
 
-                if(listData && listData.length){
-                    inventory = Number(listData[0].produce) - Number(listData[0].acceptance)
-                }
-
-                return resolve({ error: false, data: inventory });
+                return resolve({ error: false, data: listData })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

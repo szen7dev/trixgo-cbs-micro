@@ -216,6 +216,7 @@ module.exports = {
                       forecastBudgetVAT, managementFee, subcontractFee, expenses, profit, cgValue, expiredCg, agValue, expiredAg, dataInc,
                       photos, remainingProduce, ontime, onbudget
                     } = ctx.params;
+
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.update({
                     contractID,
 					projectID, parentID, admins, members, adminsRemove, membersRemove, draft, outin, status, real, subType, type, field,
@@ -368,7 +369,7 @@ module.exports = {
      * Dev: Hiepnh
      * Func: get amount by month
      */
-     getAmountByMonth: {
+    getAmountByMonth: {
         auth: "required",
         params: {
             companyID   : { type: "string", optional: true },
@@ -539,7 +540,7 @@ module.exports = {
      * Author: Hiepnh
      * Date: 18/04/2022
      */
-     getRetainProduce: {
+    getRetainProduce: {
         auth: "required",
         params: {
             companyID           : { type: "string", optional: true },
@@ -576,7 +577,7 @@ module.exports = {
      * Author: Hiepnh
      * Date: 16/5/2022
      */
-     getInventory: {
+    getInventory: {
         auth: "required",
         params: {
             companyID           : { type: "string", optional: true },
@@ -599,6 +600,33 @@ module.exports = {
 
                 let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.getInventory({
                     userID, companyID, projectID, contractID, outin: Number(outin), ctx
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Thống kê trạng thái theo(ontime, onbuget)
+     * Author: Depv
+     * Date: 16/5/2022
+     */
+    statisticalStatusByOntimeOnbudget: {
+        auth: "required",
+        params: {
+            projectID           : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { projectID } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler=await ITEM__CONTRACT_MODEL.statisticalStatusByOntimeOnbudget({
+                    projectID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

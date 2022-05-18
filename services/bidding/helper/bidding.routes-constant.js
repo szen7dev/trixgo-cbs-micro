@@ -17,7 +17,8 @@ const CF_ROUTINGS_BIDDING = {
     ORIGIN_APP: BASE_ROUTE,
 
     // ================================BIIDING_PLAN=======================================//
-    BIIDING_PLAN                          : `${BASE_ROUTE}${BIIDING_PLAN}`, 
+    BIIDING_PLAN                          : `${BASE_ROUTE}${BIIDING_PLAN}`,
+    BIIDING_PLAN_CONTRACTOR_SELECTION     : `${BASE_ROUTE}${BIIDING_PLAN}/contractor-selection`,
 
     // ================================BIIDING_PLAN=======================================//
     BIIDING_DOC                          : `${BASE_ROUTE}${BIIDING_DOC}`, 

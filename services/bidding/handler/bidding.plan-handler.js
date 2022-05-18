@@ -168,4 +168,30 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: Báo cáo lựa chọn nhà thầu
+     * Author: Depv
+     * Date: 30/4/2022
+     */
+    contractorSelection: {
+        auth: "required",
+        params: {
+            projectID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { projectID } = ctx.params;
+                
+                let resultAfterCallHandler = await BIDDING__PLAN_MODEL.contractorSelection({
+                    projectID
+                });
+             
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
 }
