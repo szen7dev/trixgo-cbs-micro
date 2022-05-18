@@ -27,7 +27,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_file", {
         ref : 'company'
     },
     //______Tên gốc
-    nameOrg     : { type: String, require: true }, 
+    nameOrg     : { type: String, require: true },
     //______Tên uuidv1
     name        : { type: String, require: true },
     //______Mô tả file
@@ -44,7 +44,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_conversation_file", {
      * 3. Audio
      * 4. Video
      */
-    type: { 
+    type: {
         type: Number,
         default: 1
     },

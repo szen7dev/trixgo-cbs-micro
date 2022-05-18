@@ -92,43 +92,11 @@ const uploadFile = (pathFile, key) => {
 
 };
 
-/**
- * GET PATH S3 BY APP
- * @returns { error: boolean, data: string }
- */
-const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
-    switch (typeUpload) {
-        case 'contact':
-        case 'project':
-        case 'user': {
-            const extension = getExtension(fileName);
-            const newFileName = `${uuidv4()}.${extension}`;
-
-            return {
-                error: false,
-                data: {
-                    newFileName,
-                    pathS3: ''
-                }
-            };
-        }
-        default:
-            break;
-    }
-
-    if(!appID || !checkObjectIDs([appID])) {
-        return {
-            error: true,
-            message: 'Tham số AppID không hợp lệ',
-            keyError: 'params_appID_invalid',
-            status: 400
-        };
-    }
-
+const getPathByApp = (params) => {
+    const { appID, companyID, projectID, groupID, packageID, conversationID } = params;
     let pathS3 = `/${appID}`;
     let appName = '';
 
-    // Khai báo constants các app
     const COMPANIES = [
         APP_KEYS.MEDIA,
         APP_KEYS.CHATTING,
@@ -188,8 +156,93 @@ const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID,
             break;
     }
 
+    return { appName, pathS3 };
+}
+
+const getPathByType = (params) => {
+    const { typeUpload, companyID, projectID } = params;
+    let pathS3 = '';
+
+    const COMPANIES = ['in-project'];
+    const PROJECTS = ['in-project'];
+
+    // Validate tham số theo app
+    if(COMPANIES.includes(typeUpload) && (!companyID || !checkObjectIDs([companyID]))) {
+        return { error: true, message: 'Tham số companyID không hợp lệ', keyError: 'params_companyID_invalid', status: 400 };
+    }
+
+    if(PROJECTS.includes(typeUpload) && (!projectID || !checkObjectIDs([projectID]))) {
+        return { error: true, message: 'Tham số projectID không hợp lệ', keyError: 'params_projectID_invalid', status: 400 };
+    }
+
+    // Nối đường dẫn lưu s3
+    switch (typeUpload) {
+        case 'in-project':
+            pathS3 += `/${companyID}/${projectID}`;
+            break;
+        default:
+            break;
+    }
+
+    return { pathS3 };
+}
+
+/**
+ * GET PATH S3 BY APP
+ * @returns { error: boolean, data: string }
+ */
+const getPathS3 = ({ typeUpload, fileName, appID, companyID, projectID, groupID, packageID, conversationID }) => {
+    switch (typeUpload) {
+        case 'contact':
+        case 'project':
+        case 'user': {
+            const extension = getExtension(fileName);
+            const newFileName = `${uuidv4()}.${extension}`;
+
+            return {
+                error: false,
+                data: {
+                    newFileName,
+                    pathS3: ''
+                }
+            };
+        }
+        default:
+            break;
+    }
+
     let extension   = getExtension(fileName);
-    let newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${appName}.${extension}`;
+    let pathS3      = '';
+    let newFileName = '';
+
+    const SPECIAL_CASE = ['in-project'];
+
+    if(SPECIAL_CASE.includes(typeUpload)) {
+        const result = getPathByType({
+            typeUpload, companyID, projectID
+        })
+        if(result.error) return result;
+
+        pathS3 = result.pathS3;
+        newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}.${extension}`;
+    } else {
+        if(!appID || !checkObjectIDs([appID])) {
+            return {
+                error: true,
+                message: 'Tham số AppID không hợp lệ',
+                keyError: 'params_appID_invalid',
+                status: 400
+            };
+        }
+
+        const result = getPathByApp({
+            appID, companyID, projectID, groupID, packageID, conversationID
+        })
+        if(result.error) return result;
+
+        pathS3 = result.pathS3;
+        newFileName = `${nonAccentVietnamese(fileName)}___${uuidv4()}___${result.appName}.${extension}`;
+    }
 
     return {
         error: false,

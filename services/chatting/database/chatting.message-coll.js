@@ -97,7 +97,7 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 
 	/**
      * Loại tin nhắn
-     * 0: Tin nhắn thông thường 
+     * 0: Tin nhắn thông thường
 	 * 1: Tin nhắn ảnh
 	 * 2: Tin nhắn file
 	 * 3: Tin nhắn link (bỏ => sử dụng chatting.conversation_link-model)
@@ -106,35 +106,35 @@ module.exports  = DATABASE_MIDDLEWARE("message_message", {
 	 * 6: Tin nhắn share location
 	 * 7: Tin nhắn share contact
      * 8: Tin nhắn NPS
-	 * 
+	 *
      * 101: Thêm thành viên vào cuộc hội thoại
      * 102: Xóa thành viên khỏi cuộc hội thoại
-	 * 
+	 *
      * 103: Đổi tên cuộc hội thoại
      * 104: Đổi logo cuộc hội thoại
-	 * 
+	 *
      * 105: Xét thêm admin cuộc hội thoại
      * 106: Xoá bỏ quyền admin của member trong cuộc hội thoại
-     * 107: Thành viên rời khỏi cuộc hội thoại 
-	 * 
-     * 108: Pin 1 tin nhắn trong cuộc hội thoại 
-     * 109: Bỏ Pin 1 tin nhắn trong cuộc hội thoại 
-	 * 
-     * 110: Tạo cuộc bình chọn trong cuộc hội thoại 
-     * 111: Tham gia bình chọn trong cuộc hội thoại 
-     * 112: Thay đổi bình chọn trong cuộc hội thoại 
-     * 113: Đóng bình chọn trong cuộc hội thoại 
-	 * 
-     * 114: Tạo nhắc hẹn trong cuộc hội thoại 
-     * 115: Cập nhật nhắc hẹn trong cuộc hội thoại 
-     * 116: Xác nhận tham gia nhắc hẹn trong cuộc hội thoại 
-     * 117: Xác nhận không tham gia nhắc hẹn trong cuộc hội thoại 
-     * 118: Xoá nhắc hẹn trong cuộc hội thoại 
-     * 
-     * 119: Tạo nps trong cuộc hội thoại 
-     * 120: Tham gia nps trong cuộc hội thoại 
-     * 121: Thay đổi nps trong cuộc hội thoại 
-     * 122: Đóng nps trong cuộc hội thoại 
+     * 107: Thành viên rời khỏi cuộc hội thoại
+	 *
+     * 108: Pin 1 tin nhắn trong cuộc hội thoại
+     * 109: Bỏ Pin 1 tin nhắn trong cuộc hội thoại
+	 *
+     * 110: Tạo cuộc bình chọn trong cuộc hội thoại
+     * 111: Tham gia bình chọn trong cuộc hội thoại
+     * 112: Thay đổi bình chọn trong cuộc hội thoại
+     * 113: Đóng bình chọn trong cuộc hội thoại
+	 *
+     * 114: Tạo nhắc hẹn trong cuộc hội thoại
+     * 115: Cập nhật nhắc hẹn trong cuộc hội thoại
+     * 116: Xác nhận tham gia nhắc hẹn trong cuộc hội thoại
+     * 117: Xác nhận không tham gia nhắc hẹn trong cuộc hội thoại
+     * 118: Xoá nhắc hẹn trong cuộc hội thoại
+     *
+     * 119: Tạo nps trong cuộc hội thoại
+     * 120: Tham gia nps trong cuộc hội thoại
+     * 121: Thay đổi nps trong cuộc hội thoại
+     * 122: Đóng nps trong cuộc hội thoại
 	 */
     type: {
         type: Number,
