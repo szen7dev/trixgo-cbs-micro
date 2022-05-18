@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue, ctx }) {
+    insert({ userID, planID, parentID, name, sign, note, releaseTime, closingTime, amount, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue, ctx }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -87,6 +87,10 @@ class Model extends BaseModel {
                 
                 if (closingTime) {
                     dataInsert.closingTime = closingTime;
+                }
+
+                if (amount) {
+                    dataInsert.amount = amount;
                 }
 
                 // Tạo hồ sơ dự thầu
@@ -170,7 +174,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue }) {
+    update({ docID, userID, ctx, name, sign, note, releaseTime, closingTime, amount, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -217,12 +221,16 @@ class Model extends BaseModel {
                     dataUpdate.closingTime = closingTime;
                 }
 
+                if (amount) {
+                    dataUpdate.amount = amount;
+                }
+
                 /**
                  * Nộp thầu
                  * Chỉ cho phép Người thực hiện được nộp thầu
                  */
                 
-                if(infoDoc.assignee.toString() === userID.toString()){
+                if(infoDoc?.assignee?.toString() === userID.toString()){
                     if (!isNaN(agreeStatus) && Number(agreeStatus) === 1) {
                         dataUpdate.agreeStatus = agreeStatus;
                     }

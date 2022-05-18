@@ -24,16 +24,23 @@ module.exports = {
         auth: "required",
         params: {
             planID          : { type: "string" },
-            parentID        : { type: "string", optional: true },
-            assigneeID      : { type: "string", optional: true },
             name            : { type: "string" },
             note            : { type: "string", optional: true },
+            releaseTime     : { type: "string", optional: true },
+            closingTime     : { type: "string", optional: true },
+            amount          : { type: "number", optional: true },
+            factor1         : { type: "number", optional: true },
+            factor2         : { type: "number", optional: true },
+            factor3         : { type: "number", optional: true },
+            factor4         : { type: "number", optional: true },
+            factor5         : { type: "number", optional: true },
+            vatValue             : { type: "number", optional: true },
         },
 
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { planID, parentID, name, sign, note, releaseTime, closingTime, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue } = ctx.params;
+                const { planID, parentID, name, sign, note, releaseTime, closingTime, amount, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue } = ctx.params;
 
                 // Hồ sơ dự thầu
                 let companyOfAssigneeID;
@@ -48,7 +55,7 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await BIDDING__DOC_MODEL.insert({
-                    userID, ctx, planID, parentID, name, sign, note, releaseTime, closingTime, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue
+                    userID, ctx, planID, parentID, name, sign, note, releaseTime, closingTime, amount, companyOfAssigneeID, assigneeID, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, factor1, factor2, factor3, factor4, factor5, vat, vatValue
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -66,17 +73,29 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-
+            docID       : { type: "string" },
+            name            : { type: "string" },
+            note            : { type: "string", optional: true },
+            releaseTime     : { type: "string", optional: true },
+            closingTime     : { type: "string", optional: true },
+            amount          : { type: "number", optional: true },
+            factor1         : { type: "number", optional: true },
+            factor2         : { type: "number", optional: true },
+            factor3         : { type: "number", optional: true },
+            factor4         : { type: "number", optional: true },
+            factor5         : { type: "number", optional: true },
+            vatValue        : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { docID, name, sign, note, releaseTime, closingTime, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue } = ctx.params;
-
+                const { docID, name, sign, note, releaseTime, closingTime, amount, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
-
+                console.log({
+                    docID, name, sign, note, releaseTime, closingTime, amount, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue 
+                })
                 const resultAfterCallHandler = await BIDDING__DOC_MODEL.update({
-                    docID, userID, ctx, name, sign, note, releaseTime, closingTime, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue
+                    docID, userID, ctx, name, sign, note, releaseTime, closingTime, amount, agreeStatus, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedStatus, bidderID, tenderPrice, vatTenderPrice, timeApproved, factor1, factor2, factor3, factor4, factor5, vat, vatValue
                 });
                 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
