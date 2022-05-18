@@ -19,8 +19,10 @@ module.exports = {
         auth: "required",
         params: {
 			content    : { type: "string", optional: true },
-            taskID     : { type: "string" },
-            type       : { type: "number" },
+            taskID     : { type: "string", optional: true },
+            type       : { type: "number", optional: true },
+            switchType : { type: "string", optional: true },
+            projectID  : { type: "string", optional: true },
             parentID   : { type: "string", optional: true },
             files      : { type: "array", optional: true },
             images     : { type: "array", optional: true },
@@ -31,10 +33,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { content, taskID, type, parentID, files, images, select, populates } = ctx.params;
+                const { content, taskID, projectID, type, parentID, files, images, switchType, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx
+					taskID, projectID, parentID, authorID, type, content, files, images, switchType, select, populates, bizfullname, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -52,11 +54,13 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            taskID              : { type: "string" },
+            taskID              : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
             commentID           : { type: "string" },
 			content             : { type: "string", optional: true },
             files               : { type: "array", optional: true },
             images              : { type: "array", optional: true },
+            switchType          : { type: "string", optional: true },
             select              : { type: "string", optional: true },
             populates           : { type: "string", optional: true },
         },
@@ -64,10 +68,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { taskID, commentID, content, files, images, select, populates } = ctx.params;
+                const { taskID, commentID, projectID, switchType, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.update({
-					taskID, commentID, authorID, content, files, images, select, populates, ctx
+					taskID, commentID, projectID, switchType, authorID, content, files, images, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -148,6 +152,8 @@ module.exports = {
             contractID          : { type: "string", optional: true },
             projectID           : { type: "string", optional: true },
             isHaveImage         : { type: "string", optional: true },
+            isGetReaction       : { type: "string", optional: true },
+            switchType          : { type: "string", optional: true },
 
             limit               : { type: "string", optional: true },
             lastestID           : { type: "string", optional: true },
@@ -160,7 +166,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
                 let {
-                    taskID, parentID, commentID, contractID, projectID, type, official, isHaveImage,
+                    taskID, parentID, commentID, contractID, projectID, type, official, isHaveImage, isGetReaction, switchType,
                     limit, lastestID, sortKey, select, populates
                 } = ctx.params;
 
@@ -172,7 +178,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await PCM_COMMENT_MODEL.getList({
-                        taskID, contractID, projectID, parentID, type, official, isHaveImage,
+                        taskID, contractID, projectID, parentID, type, official, isHaveImage, isGetReaction, switchType,
                         limit, lastestID, sortKey, select, populates, authorID
                     });
                 }

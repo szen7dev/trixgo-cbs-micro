@@ -7,13 +7,13 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
     //_________Nội dung
     content: String,
 
-    //________Dự án/phòng ban (lấy từ thông tin Task)
+    //________Dự án/phòng ban
     project: {
         type: Schema.Types.ObjectId,
         ref: 'department'
     },
 
-    //________Nhóm dữ liệu (lấy từ thông tin Task)
+    //________Nhóm dữ liệu
     group: {
         type: Schema.Types.ObjectId,
         ref: 'pcm_plan_group'
@@ -45,8 +45,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
 
     /**
      * Phân loại
-     * 1-Comment thông thường (task, document, post,...)
-     * 2-Phản hồi liên quan (task)
+     * 1-Comment thông thường (task, project, document,...)
+     * 2-Phản hồi liên quan (task, project)
      * 3-Hiện trạng (task)
      * 4-Giải pháp (task)
      */

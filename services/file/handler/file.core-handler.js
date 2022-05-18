@@ -96,7 +96,6 @@ module.exports = {
             groupID         : { type: "string", optional: true },
             packageID       : { type: "string", optional: true },
             conversationID  : { type: "string", optional: true },
-            //____(typeUpload == user)
             typeUpload      : { type: "string", optional: true },
         },
         async handler(ctx) {

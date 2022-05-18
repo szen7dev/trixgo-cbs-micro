@@ -36,14 +36,19 @@ class Model extends BaseModel {
 
         this.COMMENT_PCM = 1;
         this.RESPONSE_PCM = 2;
+        this.SWITCH_TYPE = {
+            TASK: 'TASK',
+            PROJECT: 'PROJECT',
+        }
     }
 
     /**
      * Dev: MinhVH
      * Func: Thêm file vào pcm_file-coll + thêm vào field photos trong project/contract nếu là ảnh
      * Date: 06/04/2022
+     * Updated: 18/05/2022
      */
-    handleAddFiles({ infoTask, infoComment, files, fileType, authorID, ctx }) {
+    handleAddFiles({ infoTask, infoComment, infoProject, files, fileType, authorID, switchType = this.SWITCH_TYPE.TASK, ctx }) {
         return new Promise(async resolve => {
             try {
                 let { results, errors } = await PromisePool
@@ -75,18 +80,32 @@ class Model extends BaseModel {
                                 name, nameOrg, description, path, size, mimeType, type, author
                             } = infoFileCore.data;
 
-                            const infoAfterInserted = await PCM_FILE_MODEL.insert({
+                            let dataInsert = {
                                 fileID: fileID,
                                 commentID: infoComment._id,
-                                taskID: infoTask._id,
-                                contractID: infoTask.contract,
-                                projectID: infoTask.project?._id,
-                                groupID: infoTask.group,
-                                companyID: infoTask.company,
                                 authorID: author,
                                 name, nameOrg, path, size, mimeType, description, type
-                            });
+                            };
 
+                            // Bình luận dự án
+                            if(switchType === this.SWITCH_TYPE.PROJECT) {
+                                dataInsert = {
+                                    ...dataInsert,
+                                    projectID: infoProject._id,
+                                    companyID: infoProject.company,
+                                }
+                            } else{ // Bình luận công việc
+                                dataInsert = {
+                                    ...dataInsert,
+                                    taskID: infoTask._id,
+                                    contractID: infoTask.contract,
+                                    projectID: infoTask.project?._id,
+                                    groupID: infoTask.group,
+                                    companyID: infoTask.company,
+                                }
+                            }
+
+                            const infoAfterInserted = await PCM_FILE_MODEL.insert(dataInsert);
                             return infoAfterInserted.data && infoAfterInserted.data._id;
                         }
                     });
@@ -102,6 +121,19 @@ class Model extends BaseModel {
                 }
 
                 results = results.filter(Boolean);
+
+                // Bình luận dự án
+                if(switchType === this.SWITCH_TYPE.PROJECT) {
+                    if(fileType === 'image') {
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                            departmentID: infoProject._id.toString(),
+                            photos: files
+                        })
+                    }
+
+                    return resolve({ error: false, data: results });
+                }
+
                 let oldFiles = [];
 
                 if(results.length) {
@@ -131,7 +163,7 @@ class Model extends BaseModel {
 
                 return resolve({
                     error: false,
-                    data: { results, oldFiles },
+                    data: { results, oldFiles }
                 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -141,11 +173,11 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Thêm comment
+	 * Func: Thêm comment (task)
 	 * Date: 22/02/2022
 	 */
-    insert({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) {
-        return new Promise(async (resolve) => {
+    insertCommentTask({ taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx }) {
+        return new Promise(async resolve => {
             try {
 
                 /**
@@ -293,12 +325,6 @@ class Model extends BaseModel {
 							}
                         });
 
-                    // if(!errors.length) {
-                    //     results = results.filter(Boolean);
-                    //     if(results.length) {
-                    //         dataUpdate.files = results;
-                    //     }
-                    // }
 
                     if(errors.length) {
                         return resolve({
@@ -516,10 +542,322 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Cập nhật comment
+	 * Func: Thêm comment (project)
+	 * Date: 18/05/2022
+	 */
+    insertCommentProject({ projectID, authorID, content, files, images, select, populates, bizfullname, ctx }) {
+        return new Promise(async resolve => {
+            try {
+
+                /**
+                 * DECALARTION VARIABLE (1)
+                 */
+                const dataInsert    = { type: 2, project: projectID, author: authorID };
+                const dataUpdate    = {};
+                let dataSend        = {};
+                let webUrl          = '';
+                let titleMSS        = '';
+                let descriptionMSS  = '';
+                let languageKey     = '';
+
+                /**
+                 * VALIDATION STEP (2)
+                 *  - Kiểm tra valid từ các input
+                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                 */
+                if(!checkObjectIDs([projectID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số projectID không hợp lệ",
+                        keyError: "params_projectID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(!checkObjectIDs([authorID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số authorID không hợp lệ",
+                        keyError: "params_authorID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                const infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID,
+                    select: '_id name sign company members userCreate',
+                    populates: JSON.stringify({
+                        path: 'userCreate',
+                        select: '_id bizfullname image'
+                    })
+                });
+
+                if(!infoProject || infoProject.error) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy dự án',
+                        keyError: 'project_not_exists',
+                        status: 400
+                    });
+                }
+
+                if(content) {
+                    dataInsert.content = content;
+                }
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+
+                if(!infoAfterInsert) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                }
+
+                if(files && files.length) {
+                    const { errors } = await PromisePool
+                        .for(files)
+                        .withConcurrency(2)
+                        .process(async fileID => {
+                            const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID: fileID
+							}, {
+								meta: {
+									infoUser: { _id: authorID }
+								}
+							});
+
+							if(!infoFileCore.error) {
+								const {
+									name, nameOrg, description, path, size, mimeType, type, author
+								} = infoFileCore.data;
+
+								const infoAfterInserted = await PCM_FILE_MODEL.insert({
+									fileID,
+                                    projectID,
+                                    commentID: infoAfterInsert._id,
+                                    companyID: infoProject?.data?.company,
+                                    authorID: author,
+									name, nameOrg, path, size, mimeType, description, type
+								});
+
+								return infoAfterInserted.data && infoAfterInserted.data._id;
+							}
+                        });
+
+
+                    if(errors.length) {
+                        return resolve({
+                            error: true,
+                            errors,
+                            message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
+                    }
+
+                    dataUpdate.files = files;
+                }
+
+                if(images && images.length) {
+                    const { errors } = await PromisePool
+                        .for(images)
+                        .withConcurrency(2)
+                        .process(async imageID => {
+                            const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+								fileID: imageID
+							}, {
+								meta: {
+									infoUser: { _id: authorID }
+								}
+							});
+
+							if(!infoFileCore.error) {
+								const {
+									name, nameOrg, description, path, size, mimeType, type, author
+								} = infoFileCore.data;
+
+								const infoAfterInserted = await PCM_FILE_MODEL.insert({
+									fileID: imageID,
+                                    projectID,
+                                    commentID: infoAfterInsert._id,
+                                    companyID: infoProject?.data?.company,
+                                    authorID: author,
+									name, nameOrg, path, size, mimeType, description, type
+								});
+
+								return infoAfterInserted.data && infoAfterInserted.data._id
+							}
+                        });
+
+                    if(errors.length) {
+                        return resolve({
+                            error: true,
+                            errors,
+                            message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
+                    }
+
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
+                        departmentID: projectID,
+                        photos: images
+                    })
+
+                    dataUpdate.images = images;
+                }
+
+                // Cập nhật lại cho comment
+                if(Object.keys(dataUpdate).length) {
+                    const infoAfterUpdate = await PCM_COMMENT_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                        $set: dataUpdate
+                    });
+
+                    if(!infoAfterUpdate) {
+                        return resolve({
+                            error: true,
+                            message: "Quá trình upload file có vấn đề, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
+                    }
+                }
+
+                /**
+                 * Insert notification and cloud messaging
+                 */
+
+                let { name: projectName, sign: projectSign, members, userCreate } = infoProject.data;
+
+                let listReceivers   = [...new Set(members)];
+                let arrReceiver     = listReceivers.filter(receiverID => receiverID !== authorID.toString());
+
+                languageKey     = LANGUAGE_KEYS.CREATE_RESPONSE_PCM;
+                descriptionMSS  = `${bizfullname} đã tạo 1 bình luận trong dự án`;
+                webUrl          = `/pcm/project/${projectID}/responses#response_${infoAfterInsert._id}`;
+
+                dataSend = {
+                    app: APP_KEYS.PCM_PLAN_TASK,
+                    languageKey,
+                    mainColl: {
+                        kind: 'department',
+                        item: {
+                            _id: projectID,
+                            name: projectName,
+                            author: {
+                                _id: userCreate?._id,
+                                bizfullname: userCreate?.bizfullname,
+                                image: userCreate?.image
+                            }
+                        }
+                    },
+                    subColl: {
+                        kind: 'pcm_comment',
+                        item: {
+                            _id: infoAfterInsert._id
+                        }
+                    },
+                }
+
+                if(projectSign) {
+                    titleMSS = `${projectSign}.${projectName}`;
+                } else{
+                    titleMSS = `${projectName}`;
+                }
+
+                if(arrReceiver && arrReceiver.length) {
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: arrReceiver,
+                        title: titleMSS,
+                        description: descriptionMSS,
+                        dataSend,
+                        web_url: webUrl,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+
+                    ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
+                        content,
+                        receivers: arrReceiver,
+                        project: projectID,
+                        path: webUrl,
+                        languageKey: dataSend.languageKey,
+                        app: APP_KEYS.PCM_PLAN_TASK,
+                        mainColl: {
+                            kind: "department",
+                            item: projectID
+                        },
+                        subColl: {
+                            kind: "pcm_comment",
+                            item: infoAfterInsert._id
+                        },
+                        type: 1 // InApp (Socket)
+                    })
+                }
+
+                infoAfterInsert = await PCM_COMMENT_COLL
+                    .findById(infoAfterInsert._id)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                infoAfterInsert.receivers = arrReceiver;
+
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
+            } catch (error) {
+                console.error(error);
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Thêm comment (middle)
+	 * Date: 18/05/2022
+	 */
+    insert({
+        taskID, projectID, parentID, authorID, type, content, files, images,
+        select, populates, bizfullname, switchType = this.SWITCH_TYPE.TASK, ctx
+    }) {
+        return new Promise(async (resolve) => {
+            switch (switchType) {
+                case this.SWITCH_TYPE.TASK:
+                    resolve(await this.insertCommentTask({
+                        taskID, parentID, authorID, type, content, files, images, select, populates, bizfullname, ctx
+                    }))
+                    break;
+                case this.SWITCH_TYPE.PROJECT:
+                    resolve(await this.insertCommentProject({
+                        projectID, authorID, content, files, images, select, populates, bizfullname, ctx
+                    }))
+                    break;
+                default:
+                    break;
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật comment (task)
 	 * Date: 22/02/2022
 	 */
-    update({ taskID, commentID, authorID, content, files, images, select, populates, ctx }) {
+    updateCommentTask({ taskID, commentID, authorID, content, files, images, select, populates, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -728,6 +1066,179 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
+	 * Func: Cập nhật comment (project)
+	 * Date: 18/05/2022
+	 */
+    updateCommentProject({ projectID, commentID, authorID, files, images, select, populates, ctx }) {
+        return new Promise(async (resolve) => {
+            try {
+               /**
+                * VALIDATION STEP (2)
+                *  - kiểm tra valid từ các input
+                *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
+                */
+                if(!checkObjectIDs([commentID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số commentID không hợp lệ",
+                        keyError: "params_commentID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(!checkObjectIDs([projectID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số projectID không hợp lệ",
+                        keyError: "params_projectID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(!checkObjectIDs([authorID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số authorID không hợp lệ",
+                        keyError: "params_authorID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(!checkObjectIDs(files) && !checkObjectIDs(images)) {
+                    return resolve({
+                        error: true,
+                        message: 'Tham số files hoặc images không hợp lệ',
+                        keyError: 'params_files_or_images_invalid',
+                        status: 400
+                    });
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                const infoComment = await PCM_COMMENT_COLL
+                    .findOne({
+                        _id: commentID,
+                        project: projectID,
+                        author: authorID
+                    }).lean();
+
+                if(!infoComment) {
+                    return resolve({
+                        error: true,
+                        message: "Bình luận không tồn tại (hoặc bình luận không thuộc dự án hiện tại)",
+                        keyError: "comment_not_exists_or_comment_not_belong_project",
+                        status: 400
+                    })
+                }
+
+                const infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+                    departmentID: projectID,
+                    select: '_id name sign company members userCreate',
+                    populates: JSON.stringify({
+                        path: 'userCreate',
+                        select: '_id bizfullname image'
+                    })
+                });
+
+                if(!infoProject || infoProject.error) {
+                    return resolve({
+                        error: true,
+                        message: 'Không tìm thấy dự án',
+                        keyError: 'project_not_exists',
+                        status: 400
+                    });
+                }
+
+                const dataUpdate = {
+                    $addToSet: {},
+                    userUpdate: authorID
+                };
+
+                if(checkObjectIDs(files)){
+                    const result = await this.handleAddFiles({
+                        infoProject: infoProject.data, infoComment, switchType: this.SWITCH_TYPE.PROJECT,
+                        files, fileType: 'file', authorID, ctx
+                    })
+
+                    if(result.error) return resolve(result);
+                    dataUpdate.$addToSet['files'] = files;
+                }
+
+                if(checkObjectIDs(images)){
+                    const result = await this.handleAddFiles({
+                        infoProject: infoProject.data, infoComment, switchType: this.SWITCH_TYPE.PROJECT,
+                        files: images, fileType: 'image', authorID, ctx
+                    })
+
+                    if(result.error) return resolve(result);
+                    dataUpdate.$addToSet['images'] = images;
+                }
+
+                const infoAfterUpdate = await PCM_COMMENT_COLL
+                    .findByIdAndUpdate(commentID, dataUpdate, { new: true })
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                }
+
+                // infoAfterUpdate = await PCM_COMMENT_COLL
+                //     .findById(commentID)
+                //     .select(select)
+                //     .populate(populates)
+                //     .lean();
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                console.error(error);
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+       })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Cập nhật comment (middle)
+	 * Date: 18/05/2022
+	 */
+    update({ taskID, projectID, commentID, authorID, content, files, images, select, populates, switchType = this.SWITCH_TYPE.TASK, ctx }) {
+        return new Promise(async resolve => {
+            switch (switchType) {
+                case this.SWITCH_TYPE.TASK:
+                    resolve(await this.updateCommentTask({
+                        taskID, commentID, authorID, content, files, images, select, populates, ctx
+                    }))
+                    break;
+                case this.SWITCH_TYPE.PROJECT:
+                    resolve(await this.updateCommentProject({
+                        projectID, commentID, authorID, files, images, select, populates, ctx
+                    }))
+                    break;
+                default:
+                    break;
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
 	 * Func: Cập nhật đánh dấu response
 	 * Date: 22/02/2022
 	 */
@@ -862,15 +1373,17 @@ class Model extends BaseModel {
                     });
                 }
 
-                switch (infoComment.type) {
-                    case 1: // Pre-calculate comment
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
-                        break;
-                    case 2: // Pre-calculate related response
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
-                        break;
-                    default:
-                        break;
+                if(infoComment.task) {
+                    switch (infoComment.type) {
+                        case 1: // Pre-calculate comment
+                            await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountComment: -1 } });
+                            break;
+                        case 2: // Pre-calculate related response
+                            await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoComment.task, { $inc: { amountResponse: -1 } });
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
                 await PCM_FILE_COLL.deleteMany({
@@ -942,7 +1455,7 @@ class Model extends BaseModel {
 	 */
     getList({
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
-        limit = 10, lastestID, sortKey, select, populates, authorID,
+        limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
     }) {
         return new Promise(async (resolve) => {
             try {
@@ -1036,6 +1549,10 @@ class Model extends BaseModel {
                     conditionObj.type = type;
                 }
 
+                if(switchType === this.SWITCH_TYPE.PROJECT) {
+                    conditionObj.task = { $exists: false };
+                }
+
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_COMMENT_COLL.findById(lastestID);
@@ -1082,7 +1599,7 @@ class Model extends BaseModel {
                 let totalPage   = Math.ceil(totalRecord / limit);
                 let dataResponse = [];
 
-                if(infoDataAfterGet && infoDataAfterGet.length && !contractID && !isHaveImage) {
+                if(infoDataAfterGet && infoDataAfterGet.length && !contractID && !isHaveImage && isGetReaction === 'true') {
                     for (const comment of infoDataAfterGet) {
                         const lastReactionComment = await PCM_COMMENT_REACTION_COLL
                             .find({ comment: comment._id })
