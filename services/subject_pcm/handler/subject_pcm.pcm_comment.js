@@ -198,8 +198,10 @@ module.exports = {
 	 */
     searchCommentById: {
         params: {
-            taskID      : { type: "string" },
             commentID   : { type: "string" },
+            taskID      : { type: "string", optional: true },
+            projectID   : { type: "string", optional: true },
+            switchType  : { type: "string", optional: true },
             select      : { type: "string", optional: true },
             populates   : { type: "string", optional: true },
         },
@@ -207,10 +209,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                let { taskID, commentID, select, populates } = ctx.params;
+                const { taskID, commentID, projectID, switchType, select, populates } = ctx.params;
 
-                let resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentById({
-                    taskID, authorID, commentID, select, populates
+                const resultAfterCallHandler = await PCM_COMMENT_MODEL.searchCommentById({
+                    taskID, commentID, projectID, switchType, select, populates, authorID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

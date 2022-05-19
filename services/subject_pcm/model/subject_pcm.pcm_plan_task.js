@@ -979,7 +979,7 @@ class Model extends BaseModel {
      */
     getList({
         projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision,
+        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
         keyword, limit = 10, lastestID, select, populates = {}
     }) {
@@ -1006,6 +1006,13 @@ class Model extends BaseModel {
                 let keys	 = ['actualFinishTime__-1', '_id__-1'];
                 if(isSortChecklist == 1 || isSortChildTask == 1){
                     keys = ['createAt__-1', '_id__-1'];
+                }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
                 }
 
                 let start = new Date();

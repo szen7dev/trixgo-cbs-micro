@@ -1657,16 +1657,38 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment tìm kiếm theo id
 	 * Date: 22/02/2022
 	 */
-	searchCommentById({ taskID, authorID, commentID, select, populates }){
+	searchCommentById({ taskID, commentID, projectID, switchType = 'TASK', select, populates, authorID }){
 		return new Promise(async resolve => {
 			try {
-				if(!checkObjectIDs([taskID, commentID, authorID])) {
+				if(!checkObjectIDs([commentID, authorID])) {
                     return resolve({
                         error: true,
-                        message: 'Tham số taskID hoặc commentID, authorID không hợp lệ',
-                        keyError: 'params_taskID_or_commentID_or_authorID_invalid',
+                        message: 'Tham số commentID, authorID không hợp lệ',
+                        keyError: 'params_commentID_or_authorID_invalid',
                         status: 400
                     })
+                }
+
+                if(taskID) {
+                    if(!checkObjectIDs([taskID])) {
+                        return resolve({
+                            error: true,
+                            message: 'Tham số taskID không hợp lệ',
+                            keyError: 'params_taskID_invalid',
+                            status: 400
+                        })
+                    }
+                }
+
+                if(projectID) {
+                    if(!checkObjectIDs([projectID])) {
+                        return resolve({
+                            error: true,
+                            message: 'Tham số projectID không hợp lệ',
+                            keyError: 'params_projectID_invalid',
+                            status: 400
+                        })
+                    }
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -1681,20 +1703,19 @@ class Model extends BaseModel {
                     }
                 }
 
-				let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID).lean();
+				const conditionObjFrontList 		= { _id: { $lt: commentID } };
+				const conditionObjBackList 		    = { _id: { $gt: commentID } };
+				const conditionObjSearchMessage 	= { _id: commentID };
 
-				if(!infoTask) {
-                    return resolve({
-                        error: true,
-                        message: 'Công việc không tồn tại',
-                        keyError: 'task_not_exists',
-                        status: 403
-                    })
+                if(switchType === this.SWITCH_TYPE.PROJECT) {
+                    conditionObjFrontList.project      = projectID;
+                    conditionObjBackList.project       = projectID;
+                    conditionObjSearchMessage.project  = projectID;
+                } else{
+                    conditionObjFrontList.task      = taskID;
+                    conditionObjBackList.task       = taskID;
+                    conditionObjSearchMessage.task  = taskID;
                 }
-
-				const conditionObjFrontList 		= { _id: { $lt: commentID }, task: taskID };
-				const conditionObjBackList 		= { _id: { $gt: commentID }, task: taskID };
-				const conditionObjSearchMessage 	= { _id: commentID, task: taskID };
 
 				const infoComment = await PCM_COMMENT_COLL
 					.findOne(conditionObjSearchMessage)
@@ -1711,14 +1732,16 @@ class Model extends BaseModel {
                     })
                 }
 
-				const listCommentsFront = await PCM_COMMENT_COLL.find(conditionObjFrontList)
+				const listCommentsFront = await PCM_COMMENT_COLL
+                    .find(conditionObjFrontList)
                     .limit(5)
                     .sort({ createAt: -1, _id: -1 })
                     .select(select)
                     .populate(populates)
 					.lean();
 
-				const listCommentsBack = await PCM_COMMENT_COLL.find(conditionObjBackList)
+				const listCommentsBack = await PCM_COMMENT_COLL
+                    .find(conditionObjBackList)
                     .limit(5)
                     .sort({ createAt: 1, _id: 1 })
                     .select(select)

@@ -166,41 +166,42 @@ module.exports = {
         auth: "required",
         params: {
             // Field bổ sung
-            projectID   : { type: "string", optional: true },
-            draft       : { type: "string", optional: true },
-            type        : { type: "string", optional: true },
-            level       : { type: "string", optional: true },
-            status      : { type: "string", optional: true },
-            typeStatus  : { type: "string", optional: true },
-            taskID      : { type: "string", optional: true },
-            collection  : { type: "string", optional: true },
-            assigneeID  : { type: "string", optional: true },
-            authorID    : { type: "string", optional: true },
-            subtype     : { type: "string", optional: true },
-            isExpired   : { type: "string", optional: true },
-            fromDate    : { type: "string", optional: true },
-            toDate      : { type: "string", optional: true },
-            parentID    : { type: "string", optional: true },
-            companyOfAuthor  : { type: "string", optional: true },
-            companyOfAssignee: { type: "string", optional: true },
-            fieldID          : { type: "string", optional: true },
-            isSortChecklist  : { type: "string", optional: true },
-            isChecklist      : { type: "string", optional: true },
-            isChildTask      : { type: "string", optional: true },
-            isSortChildTask  : { type: "string", optional: true },
-            isStatusNot3     : { type: "string", optional: true },
-            isUsersDelete    : { type: "string", optional: true },
-            statusNe         : { type: "string", optional: true },
-            groupID          : { type: "string", optional: true },
-            isPassPermision  : { type: "string", optional: true },
-            milestone        : { type: "string", optional: true },
+            projectID           : { type: "string", optional: true },
+            draft               : { type: "string", optional: true },
+            type                : { type: "string", optional: true },
+            level               : { type: "string", optional: true },
+            status              : { type: "string", optional: true },
+            typeStatus          : { type: "string", optional: true },
+            taskID              : { type: "string", optional: true },
+            collection          : { type: "string", optional: true },
+            assigneeID          : { type: "string", optional: true },
+            authorID            : { type: "string", optional: true },
+            subtype             : { type: "string", optional: true },
+            isExpired           : { type: "string", optional: true },
+            fromDate            : { type: "string", optional: true },
+            toDate              : { type: "string", optional: true },
+            parentID            : { type: "string", optional: true },
+            companyOfAuthor     : { type: "string", optional: true },
+            companyOfAssignee   : { type: "string", optional: true },
+            fieldID             : { type: "string", optional: true },
+            isSortChecklist     : { type: "string", optional: true },
+            isChecklist         : { type: "string", optional: true },
+            isChildTask         : { type: "string", optional: true },
+            isSortChildTask     : { type: "string", optional: true },
+            isStatusNot3        : { type: "string", optional: true },
+            isUsersDelete       : { type: "string", optional: true },
+            statusNe            : { type: "string", optional: true },
+            groupID             : { type: "string", optional: true },
+            isPassPermision     : { type: "string", optional: true },
+            milestone           : { type: "string", optional: true },
+            sortKey             : { type: "string", optional: true },
 
             // Field mặc định
-            keyword     : { type: "string", optional: true },
-            limit       : { type: "string", optional: true },
-            lastestID   : { type: "string", optional: true },
-            select      : { type: "string", optional: true },
-            populates   : { type: "string", optional: true },
+            keyword             : { type: "string", optional: true },
+            limit               : { type: "string", optional: true },
+            lastestID           : { type: "string", optional: true },
+            select              : { type: "string", optional: true },
+            populates           : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -208,7 +209,7 @@ module.exports = {
 
                 let {
                     taskID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, isExpired, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
-                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID,
+                    fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, statusNe, groupID, sortKey,
                     keyword, limit, lastestID, select, populates, isPassPermision, milestone
                 } = ctx.params;
 
@@ -222,7 +223,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
-                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID,
+                        userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, select, lastestID, populates, isPassPermision, milestone
                     });
@@ -230,7 +231,7 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error: true, message: error.message };
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },
