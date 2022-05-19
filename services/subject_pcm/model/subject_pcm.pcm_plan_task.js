@@ -1013,6 +1013,8 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
 
                     keys = JSON.parse(sortKey);
+                } else{
+                    keys = ['actualFinishTime__1', 'expiredTime__1'];
                 }
 
                 let start = new Date();
